@@ -5,25 +5,17 @@
     @for (step of report; track step.name) {
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
       <span class="step-name">{{ step.name }}</span>
-      <span class="test-type">
-        @if(step.testType.toLowerCase() === 'real') {
-        <span class="real-test">{{ 'monitor.dashboard.real' | translate }}</span>
-        }
-        @else {
-        <span class="mock-test">{{ 'monitor.dashboard.mock' | translate }}</span>
-        }
-      </span>
       <span class="step-status">
         @switch (step.status.toLowerCase()) {
-        @case ('passed') {
-        <span class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}</span>
-        }
-        @case ('failed') {
-        <span class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}</span>
-        }
-        @case ('skipped') {
-        <span class="skipped">⏭️ {{ 'monitor.dashboard.skipped' | translate }}</span>
-        }
+          @case ('passed') {
+          <span class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}</span>
+          }
+          @case ('failed') {
+          <span class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}</span>
+          }
+          @case ('skipped') {
+          <span class="skipped">⏭️ {{ 'monitor.dashboard.skipped' | translate }}</span>
+          }
         }
       </span>
     </div>

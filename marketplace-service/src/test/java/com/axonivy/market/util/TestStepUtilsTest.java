@@ -1,7 +1,6 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestEnviroment;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +21,6 @@ class TestStepUtilsTest {
     assertEquals("test1", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
-    assertEquals(TestEnviroment.MOCK, step.getTestType(), "Test step environment should be MOCK");
   }
 
   @Test
@@ -32,7 +30,6 @@ class TestStepUtilsTest {
     assertEquals("test2", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
-    assertEquals(TestEnviroment.REAL, step.getTestType(), "Test step environment should be REAL");
   }
 
   @Test
@@ -42,7 +39,6 @@ class TestStepUtilsTest {
     assertEquals("test3", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
-    assertEquals(TestEnviroment.MOCK, step.getTestType(), "Test step environment should be MOCK");
   }
 
   @Test
@@ -52,7 +48,6 @@ class TestStepUtilsTest {
     assertEquals("test4", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
-    assertEquals(TestEnviroment.REAL, step.getTestType(), "Test step environment should be REAL");
   }
 
   @Test
@@ -62,7 +57,6 @@ class TestStepUtilsTest {
     assertEquals("test5", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
-    assertEquals(TestEnviroment.OTHER, step.getTestType(), "Test step environment should be OTHER");
   }
 
   @Test
@@ -72,7 +66,6 @@ class TestStepUtilsTest {
     assertEquals("test6", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
-    assertEquals(TestEnviroment.OTHER, step.getTestType(), "Test step environment should be OTHER");
   }
 
   @Test
@@ -82,16 +75,12 @@ class TestStepUtilsTest {
     assertEquals(4, steps.size(), "There should be 4 test steps parsed");
     assertEquals("test1", steps.get(0).getName(), "Test step 1 name should match");
     assertEquals(TestStatus.PASSED, steps.get(0).getStatus(), "Test step 1 status should be PASSED");
-    assertEquals(TestEnviroment.MOCK, steps.get(0).getTestType(), "Test step 1 environment should be MOCK");
     assertEquals("test2", steps.get(1).getName(), "Test step 2 name should match");
     assertEquals(TestStatus.FAILED, steps.get(1).getStatus(), "Test step 2 status should be FAILED");
-    assertEquals(TestEnviroment.REAL, steps.get(1).getTestType(), "Test step 2 environment should be REAL");
     assertEquals("test3", steps.get(2).getName(), "Test step 3 name should match");
     assertEquals(TestStatus.PASSED, steps.get(2).getStatus(), "Test step 3 status should be PASSED");
-    assertEquals(TestEnviroment.OTHER, steps.get(2).getTestType(), "Test step 3 environment should be OTHER");
     assertEquals("test4", steps.get(3).getName(), "Test step 4 name should match");
     assertEquals(TestStatus.FAILED, steps.get(3).getStatus(), "Test step 4 status should be FAILED");
-    assertEquals(TestEnviroment.OTHER, steps.get(3).getTestType(), "Test step 4 environment should be OTHER");
   }
 
   @Test

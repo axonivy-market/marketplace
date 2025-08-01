@@ -18,42 +18,20 @@
       </div>
 
       <div class="repo-info">
-        @if (repo.ciBadgeUrl) {
+        @for (build of repo.testResults; track build.workflow) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
-          <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
+          <span class="icon">{{ build.workflow | workflowIcon }}</span> {{ build.workflow }}:
+          <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
-        }
-
-        @if (repo.devBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
-          <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
+          @if(build.results) {
+            <div class="sub-status">
+              @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                <div>
+                  {{ testStatus.label | translate }}: {{ testStatus.count }} {{ testStatus.icon }}
+                </div>
+              }
+            </div>
+          }
         }
         <p>
           <span class="icon">📅</span>
@@ -62,7 +40,6 @@
       </div>
     </div>
     }
-
   </div>
   }
 

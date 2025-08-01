@@ -4,26 +4,30 @@ import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
-  htmlUrl: string;
   language: string | null;
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
+  e2eBadgeUrl: string;
   testResults?: TestResult[];
 }
 
 export interface TestResult {
-  environment: 'ALL' | 'REAL' | 'MOCK';
-  workflow: 'CI' | 'DEV';
-  count: number;
-  status: 'PASSED' | 'FAILED';
+  workflow: 'CI' | 'DEV' | 'E2E';
+  badgeUrl: string;
+  results?: TestSummary;
+}
+
+export interface TestSummary {
+  FAILED: number;
+  PASSED: number;
+  SKIPPED: number;
 }
 
 export interface TestStep {
   name: string;
   status: 'PASSED' | 'FAILED' | 'SKIPPED';
   type: string;
-  testType: string;
 }
 
 @Injectable({

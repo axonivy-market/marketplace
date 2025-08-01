@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -36,20 +37,18 @@ public class GithubRepo extends GenericIdEntity {
   private Date lastUpdated;
   private String ciBadgeUrl;
   private String devBadgeUrl;
+  private String e2eBadgeUrl;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
 
-  public static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
-      String devBadgeUrl) throws IOException {
+  public static GithubRepo createNewGithubRepo(GHRepository repo) throws IOException {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
         .language(repo.getLanguage())
         .lastUpdated(repo.getUpdatedAt())
         .testSteps(new ArrayList<>())
-        .ciBadgeUrl(ciBadgeUrl)
-        .devBadgeUrl(devBadgeUrl)
         .build();
   }
 }

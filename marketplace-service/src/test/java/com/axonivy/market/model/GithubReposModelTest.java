@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.axonivy.market.enums.TestEnviroment.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GithubReposModelTest {
@@ -23,10 +22,6 @@ class GithubReposModelTest {
     githubRepo.setLastUpdated(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
     githubRepo.setCiBadgeUrl("https://github.com/actions/workflows/ci.yml/badge.svg");
     githubRepo.setDevBadgeUrl("https://github.com/actions/workflows/dev.yml/badge.svg");
-    TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED,WorkFlowType.CI,MOCK);
-    TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED,WorkFlowType.CI, REAL);
-    TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED,WorkFlowType.DEV, OTHER);
-    githubRepo.setTestSteps(List.of(step1, step2, step3));
 
     GithubReposModel model = GithubReposModel.from(githubRepo);
 

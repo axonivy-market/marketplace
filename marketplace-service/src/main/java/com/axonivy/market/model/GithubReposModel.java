@@ -23,21 +23,11 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "Repository name", example = "my-awesome-repo")
   private String name;
 
-  @EqualsAndHashCode.Include
-  @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
-  private String htmlUrl;
-
   @Schema(description = "Main programming language used", example = "Java")
   private String language;
 
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
   private String lastUpdated;
-
-  @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
-  private String ciBadgeUrl;
-
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
-  private String devBadgeUrl;
 
   @Schema(
       description = "Test results summary by workflow type and test environment",
@@ -64,11 +54,8 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
     return GithubReposModel.builder()
         .name(githubRepo.getName())
-        .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
         .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
-        .ciBadgeUrl(githubRepo.getCiBadgeUrl())
-        .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .testResults(testResults)
         .build();
   }
