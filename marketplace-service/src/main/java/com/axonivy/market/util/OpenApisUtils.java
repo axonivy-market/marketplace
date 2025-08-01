@@ -22,15 +22,20 @@ public class OpenApisUtils {
     private static final String VALIDATOR_URL = "https://validator.swagger.io/validator/debug";
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    public static String fetchOpenApiYaml(String specUrl, String outputPath) throws IOException {
-        ResponseEntity<String> response = restTemplate.getForEntity(specUrl, String.class);
+    public static String fetchOpenApiYaml(String specUrl, String outputPath) {
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(specUrl, String.class);
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Files.createDirectories(new File(outputPath).getParentFile().toPath());
-            Files.writeString(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()),
-                    StandardCharsets.UTF_8);
-            return outputPath;
-        } else {
+            if (response.getStatusCode().is2xxSuccessful()) {
+                Files.createDirectories(new File(outputPath).getParentFile().toPath());
+                Files.writeString(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()),
+                        StandardCharsets.UTF_8);
+                return outputPath;
+            } else {
+                return StringUtils.EMPTY;
+            }
+        } catch (RestClientException | IOException | IllegalArgumentException e) {
+            log.warn("fetchOpenApiYaml Failed to fetch spec file", e);
             return StringUtils.EMPTY;
         }
     }
