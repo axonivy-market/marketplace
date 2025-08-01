@@ -1,0 +1,32 @@
+package com.axonivy.market.util;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static com.axonivy.market.BaseSetup.DEFAULT_HOST;
+import static com.axonivy.market.BaseSetup.OPEN_API_SPEC_PATH;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class OpenApisUtilsTest {
+
+    @LocalServerPort
+    private int port;
+
+    private String getSpecUrl() {
+        return DEFAULT_HOST + port + "/api-docs";
+    }
+
+    @Test
+    void testFetchAndValidateOpenApi() throws IOException {
+        String savedPath = OpenApisUtils.fetchOpenApiYaml(getSpecUrl(), OPEN_API_SPEC_PATH);
+        boolean isValid = OpenApisUtils.validateUsingSwaggerIO(savedPath);
+        FileUtils.clearDirectory(Path.of(savedPath));
+        assertTrue(isValid, "Expected remote Swagger validator to pass");
+    }
+
+}
