@@ -88,5 +88,11 @@ export const routes: Routes = [
     path: '',
     loadChildren: () =>
       import('./modules/home/home.routes').then(m => m.routes)
+  },
+
+  // Wildcard route for unmatched paths (404)
+  {
+    path: '**',
+    redirectTo: 'error-page/404'
   }
 ];

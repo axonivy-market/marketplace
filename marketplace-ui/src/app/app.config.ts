@@ -9,6 +9,7 @@ import { environment } from '../environments/environment';
 import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 import { BootstrapLoaderService } from './core/services/browser/bootstrap-loader.service';
 import { translateUniversalLoaderFactory } from './core/configs/translate-loader.factory';
+import { Language } from './shared/enums/language.enum';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -38,7 +39,7 @@ export const appConfig: ApplicationConfig = {
           useFactory: translateUniversalLoaderFactory,
           deps: [HttpClient, TransferState, PLATFORM_ID]
         },
-        defaultLanguage: 'en'
+        defaultLanguage: Language.EN
       })
     ),
     provideClientHydration(withI18nSupport()),

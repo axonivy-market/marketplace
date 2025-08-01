@@ -1,4 +1,3 @@
-// src/app/translate-universal-loader.ts
 import { TranslateLoader } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 import { Injectable, Inject, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
@@ -9,7 +8,7 @@ import { tap } from 'rxjs/operators';
 @Injectable()
 export class TranslateUniversalLoader implements TranslateLoader {
   constructor(
-    private readonly http: HttpClient,
+    private readonly httpClient: HttpClient,
     private readonly transferState: TransferState,
     @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {}
@@ -24,7 +23,6 @@ export class TranslateUniversalLoader implements TranslateLoader {
       return of(cachedTranslations);
     }
 
-    // Server-side: load from file system
     if (isPlatformServer(this.platformId)) {
       return this.loadTranslationsFromFileSystem(lang).pipe(
         tap(translations => {
@@ -33,8 +31,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
       );
     }
 
-    // Client-side: load via HTTP
-    return this.http.get(`/assets/i18n/${lang}.json`).pipe(
+    return this.httpClient.get(`/assets/i18n/${lang}.json`).pipe(
       tap(translations => {
         this.transferState.set(key, translations);
       })
@@ -43,12 +40,11 @@ export class TranslateUniversalLoader implements TranslateLoader {
 
   private loadTranslationsFromFileSystem(lang: string): Observable<any> {
     try {
-      // Use dynamic import to avoid issues with bundling
       const fs = require('fs');
       const path = require('path');
 
       // Try multiple possible paths based on different build outputs
-      const possiblePaths = [
+      const i18nPaths = [
         path.join('/app', 'dist', 'browser', 'assets', 'i18n', `${lang}.json`), // For CSR
         path.join('assets', 'i18n', `${lang}.json`), // For development environment
         path.join(process.cwd(), 'src', 'assets', 'i18n', `${lang}.json`),
@@ -56,9 +52,8 @@ export class TranslateUniversalLoader implements TranslateLoader {
         )
       ];
 
-      for (const translationPath of possiblePaths) {
+      for (const translationPath of i18nPaths) {
         if (fs.existsSync(translationPath)) {
-          console.log(`Found translation file at: ${translationPath}`);
           const translation = JSON.parse(
             fs.readFileSync(translationPath, 'utf8')
           );
@@ -73,10 +68,6 @@ export class TranslateUniversalLoader implements TranslateLoader {
   }
 }
 
-export function translateUniversalLoaderFactory(
-  http: HttpClient,
-  transferState: TransferState,
-  platformId: Object
-) {
-  return new TranslateUniversalLoader(http, transferState, platformId);
+export function translateUniversalLoaderFactory(httpClient: HttpClient, transferState: TransferState, platformId: Object) {
+  return new TranslateUniversalLoader(httpClient, transferState, platformId);
 }

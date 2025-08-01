@@ -1,4 +1,4 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
@@ -33,11 +33,10 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly loadingService: LoadingService,
     private readonly productService: ProductService,
     private readonly cookieService: CookieService,
-    private readonly routingQueryParamService: RoutingQueryParamService,
-    @Inject(PLATFORM_ID) private readonly platformId: Object,
+    private readonly routingQueryParamService: RoutingQueryParamService
   ) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<any> {
+  resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
     const productId = route.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
 

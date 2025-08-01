@@ -25,22 +25,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
-  let apiURL: string | null = null;
 
-  if (isPlatformServer(platformId)) {
-    try {
-      apiURL = inject(API_BASE_URL);
-      console.log('SSR Interceptor running. Injected API_BASE_URL:', apiURL);
-    } catch (e) {
-      console.error('SSR Interceptor ERROR: Could not inject BASE_API_URL:', e);
-      // Fallback
-      apiURL = environment.apiUrl;
-    }
-  } else {
-    apiURL = environment.apiUrl;
-  }
-
-  console.error("apiInterceptor handle for " + apiURL);
   if (req.url.includes('i18n')) {
     return next(req);
   }
@@ -49,8 +34,16 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     loadingService.showLoading(req.context.get(LoadingComponent));
   }
 
+  let apiURL = environment.apiUrl;
+  if (isPlatformServer(platformId)) {
+    try {
+      apiURL = inject(API_BASE_URL);
+    } catch (e) {
+      console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL:', e);
+    }
+  }
   let requestURL = req.url;
-  if (!requestURL.includes(apiURL || '')) {
+  if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
 

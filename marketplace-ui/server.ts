@@ -3,8 +3,8 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
-import { error } from 'node:console';
 import { API_BASE_URL } from './src/app/shared/constants/api.constant';
+import { APP_BASE_HREF } from '@angular/common';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -27,9 +27,7 @@ export function app(): express.Express {
   // All regular routes use the Angular engine
   server.get('**', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
-    error("express handle for reuqest: " +  protocol, originalUrl, baseUrl, headers, req.protocol, req.headers.host);
     const apiUrlFromEnv = process.env['MARKET_SERVICE_BASE_URL']; 
-    console.error("express get apiUrlFromEnv: " + apiUrlFromEnv);
 
     commonEngine
       .render({
@@ -38,6 +36,7 @@ export function app(): express.Express {
         url: `${protocol}://${headers.host}${originalUrl}`,
         publicPath: browserDistFolder,
         providers: [
+          { provide: APP_BASE_HREF, useValue: baseUrl },
           { provide: API_BASE_URL, useValue: apiUrlFromEnv }
         ],
       })
