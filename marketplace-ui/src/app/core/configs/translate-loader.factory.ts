@@ -4,7 +4,9 @@ import { Injectable, Inject, PLATFORM_ID, TransferState, makeStateKey } from '@a
 import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+import { APP, ASSETS, BROWSER, DIST, I18N, JSON_EXTENSION, SRC, UTF8 } from '../../shared/constants/common.constant';
 
+const TRANSLATE_KEY = 'translations';
 @Injectable()
 export class TranslateUniversalLoader implements TranslateLoader {
   constructor(
@@ -14,7 +16,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
   ) {}
 
   getTranslation(lang: string): Observable<any> {
-    const key = makeStateKey<any>(`translations-${lang}`);
+    const key = makeStateKey<any>(`${TRANSLATE_KEY}-${lang}`);
 
     // Check if we have cached translations in transfer state
     const cachedTranslations = this.transferState.get(key, null);
@@ -31,7 +33,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
       );
     }
 
-    return this.httpClient.get(`/assets/i18n/${lang}.json`).pipe(
+    return this.httpClient.get(`/${ASSETS}/${I18N}/${lang}${JSON_EXTENSION}`).pipe(
       tap(translations => {
         this.transferState.set(key, translations);
       })
@@ -43,19 +45,19 @@ export class TranslateUniversalLoader implements TranslateLoader {
       const fs = require('fs');
       const path = require('path');
 
+      const languagePath = path.join(ASSETS, I18N, `${lang}${JSON_EXTENSION}`);
       // Try multiple possible paths based on different build outputs
       const i18nPaths = [
-        path.join('/app', 'dist', 'browser', 'assets', 'i18n', `${lang}.json`), // For CSR
-        path.join('assets', 'i18n', `${lang}.json`), // For development environment
-        path.join(process.cwd(), 'src', 'assets', 'i18n', `${lang}.json`),
-        path.join(process.cwd(), 'dist', 'browser', 'assets', 'i18n', `${lang}.json`
-        )
+        path.join(`/${APP}`, DIST, BROWSER, languagePath), // For CSR
+        path.join(languagePath), // For development environment
+        path.join(process.cwd(), SRC,languagePath),
+        path.join(process.cwd(), DIST, BROWSER, languagePath)
       ];
 
       for (const translationPath of i18nPaths) {
         if (fs.existsSync(translationPath)) {
           const translation = JSON.parse(
-            fs.readFileSync(translationPath, 'utf8')
+            fs.readFileSync(translationPath, UTF8)
           );
           return of(translation);
         }
