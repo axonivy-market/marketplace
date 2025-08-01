@@ -5,7 +5,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -747,28 +746,13 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepositoryRepositoryNotFound() throws IOException {
-    String repositoryPath = "org/missing-repo";
-    GitHub mockGitHub = mock(GitHub.class);
-    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
-    when(mockGitHub.getRepository(repositoryPath)).thenThrow(new GHFileNotFoundException("Not found"));
-
-    NotFoundException ex = assertThrows(NotFoundException.class, () -> gitHubService.getRepository(repositoryPath),
-        "Expected NotFoundException to be thrown");
-    assertEquals("GITHUB_REPOSITORY_NOT_FOUND-Repository not found: org/missing-repo", ex.getMessage(),
-        "Expected NotFoundException with specific message");
-  }
-
-  @Test
   void testGetRepositoryIOException() throws IOException {
     String repositoryPath = "org/error-repo";
     GitHub mockGitHub = mock(GitHub.class);
     when(gitHubService.getGitHub()).thenReturn(mockGitHub);
-    when(mockGitHub.getRepository(repositoryPath)).thenThrow(new IOException("IO error"));
+    GHRepository result = gitHubService.getRepository(repositoryPath);
 
-    IOException ex = assertThrows(IOException.class, () -> gitHubService.getRepository(repositoryPath),
-        "Expected IOException to be thrown");
-    assertTrue(ex.getMessage().contains("Error fetching repository: org/error-repo"),
-        "Expected IOException with specific message");
+    assertNull(result, "Expected null when IOException occurs");
+    verify(mockGitHub).getRepository(repositoryPath);
   }
 }

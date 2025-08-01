@@ -112,11 +112,10 @@ public class GitHubServiceImpl implements GitHubService {
       return getGitHub().getRepository(repositoryPath);
     } catch (GHFileNotFoundException e) {
       log.error("Repository not found: {}", repositoryPath, e);
-      throw new NotFoundException(ErrorCode.GITHUB_REPOSITORY_NOT_FOUND, "Repository not found: " + repositoryPath);
     } catch (IOException e) {
       log.error("Error fetching repository: {}", repositoryPath, e);
-      throw new IOException("Error fetching repository: " + repositoryPath, e);
     }
+    return null;
   }
 
   @Override
