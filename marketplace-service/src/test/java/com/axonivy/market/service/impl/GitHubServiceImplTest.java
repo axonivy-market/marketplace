@@ -752,7 +752,7 @@ class GitHubServiceImplTest {
 
     GHRepository result = gitHubService.getRepository("missing/repo");
 
-    assertNull(result);
+    assertNull(result, "Expected null result when GHFileNotFoundException is thrown");
   }
 
   @Test
@@ -762,6 +762,6 @@ class GitHubServiceImplTest {
 
     GHRepository result = gitHubService.getRepository("error/repo");
 
-    assertNull(result);
+    assertNull(result, "Expected null result when IOException is thrown");
   }
 }
