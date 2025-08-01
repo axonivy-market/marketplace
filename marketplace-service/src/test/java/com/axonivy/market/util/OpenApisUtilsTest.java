@@ -33,15 +33,15 @@ class OpenApisUtilsTest {
     }
 
     @Test
-    void testFetchFailed() throws IOException {
+    void testFetchFailed() {
         String savedPath = OpenApisUtils.fetchOpenApiYaml("", "");
-        assertEquals(StringUtils.EMPTY, savedPath);
+        assertEquals(StringUtils.EMPTY, savedPath, "Expected yml path to be EMPTY");
     }
 
     @Test
     void testValidateOpenApiFailed() {
         boolean isValid = OpenApisUtils.validateUsingSwaggerIO("");
-        assertFalse(isValid);
+        assertFalse(isValid, "Expected remote Swagger validator to fail");
     }
 
 }

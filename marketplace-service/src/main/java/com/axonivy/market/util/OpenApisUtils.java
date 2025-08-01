@@ -25,15 +25,10 @@ public class OpenApisUtils {
     public static String fetchOpenApiYaml(String specUrl, String outputPath) {
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(specUrl, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Files.createDirectories(new File(outputPath).getParentFile().toPath());
-                Files.writeString(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()),
-                        StandardCharsets.UTF_8);
-                return outputPath;
-            } else {
-                return StringUtils.EMPTY;
-            }
+            Files.createDirectories(new File(outputPath).getParentFile().toPath());
+            Files.writeString(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()),
+                    StandardCharsets.UTF_8);
+            return outputPath;
         } catch (RestClientException | IOException | IllegalArgumentException e) {
             log.warn("fetchOpenApiYaml Failed to fetch spec file", e);
             return StringUtils.EMPTY;
@@ -45,7 +40,6 @@ public class OpenApisUtils {
             var spec = String.join(CommonConstants.NEW_LINE, Files.readAllLines(new File(specFilePath).toPath()));
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.valueOf("application/yaml"));
-
             HttpEntity<String> request = new HttpEntity<>(spec, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     VALIDATOR_URL,
