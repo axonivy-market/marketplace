@@ -24,17 +24,19 @@ export class RoutingQueryParamService {
     });
   }
 
-  checkSessionStorageForDesignerVersion(params: Params): void {
-    const versionParam =
-      params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName];
-    if (versionParam !== undefined) {
-      this.storageRef.session?.setItem(
-        DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
-        versionParam
-      );
-      this.designerVersion.set(versionParam);
-    }
+checkSessionStorageForDesignerVersion(params: Params): void {
+  const version =
+    params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName] ??
+    params[DESIGNER_SESSION_STORAGE_VARIABLE.newIvyVersionParamName];
+
+  if (version !== undefined) {
+    this.storageRef.session?.setItem(
+      DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
+      version
+    );
+    this.designerVersion.set(version);
   }
+}
 
   checkSessionStorageForDesignerEnv(params: Params): void {
     const ivyViewerParam =
