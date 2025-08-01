@@ -302,6 +302,14 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
 };
 
 export const HASH_SYMBOL = '#';
+export const SRC = 'src';
+export const APP = 'app';
+export const DIST = 'dist';
+export const BROWSER ='browser';
+export const ASSETS = 'assets';
+export const I18N = 'i18n';
+export const JSON_EXTENSION = '.json';
+export const UTF8 = 'utf8';
 
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
