@@ -8,7 +8,7 @@ import {
 import { Language } from '../enums/language.enum';
 import { TimeAgo } from '../enums/time-ago.enum';
 import { TimeAgoPipe } from './time-ago.pipe';
-import { httpLoaderFactory } from '../../core/configs/translate.config';
+import { translateUniversalLoaderFactory } from '../../core/configs/translate-loader.factory';
 
 describe('TimeAgoPipe', () => {
   let pipe: TimeAgoPipe;
@@ -20,7 +20,7 @@ describe('TimeAgoPipe', () => {
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
-            useFactory: httpLoaderFactory
+            useFactory: translateUniversalLoaderFactory
           },
           missingTranslationHandler: {
             provide: MissingTranslationHandler,
