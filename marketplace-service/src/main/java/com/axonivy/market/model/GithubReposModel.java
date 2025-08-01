@@ -39,7 +39,7 @@ public class GithubReposModel {
   private String devBadgeUrl;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
-  private boolean focused;
+  private Boolean focused;
   @Schema(
       description = "Test results summary by workflow type and test environment",
       example = """
@@ -68,7 +68,7 @@ public class GithubReposModel {
         .lastUpdated(githubRepo.getLastUpdated())
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .focused(githubRepo.isFocused())
+        .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();
   }

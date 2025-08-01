@@ -37,8 +37,7 @@ public class GithubRepo extends GenericIdEntity {
   private Date lastUpdated;
   private String ciBadgeUrl;
   private String devBadgeUrl;
-  @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
-  private boolean focused;
+  private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;

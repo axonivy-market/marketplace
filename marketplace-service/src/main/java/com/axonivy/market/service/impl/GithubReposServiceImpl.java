@@ -66,7 +66,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
 
