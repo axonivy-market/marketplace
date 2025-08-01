@@ -4,11 +4,14 @@ import com.axonivy.market.constants.CommonConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
 
@@ -24,17 +27,18 @@ public class OpenApisUtils {
 
         if (response.getStatusCode().is2xxSuccessful()) {
             Files.createDirectories(new File(outputPath).getParentFile().toPath());
-            Files.write(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()).getBytes());
+            Files.writeString(new File(outputPath).toPath(), Objects.requireNonNull(response.getBody()),
+                    StandardCharsets.UTF_8);
             return outputPath;
         } else {
-            throw new IOException("Failed to fetch OpenAPI spec. HTTP " + response.getStatusCode());
+            return StringUtils.EMPTY;
         }
     }
 
     public static boolean validateUsingSwaggerIO(String specFilePath) {
         try {
-            String spec = String.join(CommonConstants.NEW_LINE, Files.readAllLines(new File(specFilePath).toPath()));
-            HttpHeaders headers = new HttpHeaders();
+            var spec = String.join(CommonConstants.NEW_LINE, Files.readAllLines(new File(specFilePath).toPath()));
+            var headers = new HttpHeaders();
             headers.setContentType(MediaType.valueOf("application/yaml"));
 
             HttpEntity<String> request = new HttpEntity<>(spec, headers);
@@ -45,13 +49,13 @@ public class OpenApisUtils {
                     String.class
             );
 
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                return false;
+            if (response.getStatusCode().is2xxSuccessful()) {
+                String body = response.getBody();
+                return body == null || (!body.contains("messages") && !body.contains("error"));
             }
-
-            String body = response.getBody();
-            return body == null || (!body.contains("messages") && !body.contains("error"));
-        } catch (Exception e) {
+            return false;
+        } catch (IOException | RestClientException e) {
+            log.warn("validateUsingSwaggerIO Failed to validate spec file", e);
             return false;
         }
     }
