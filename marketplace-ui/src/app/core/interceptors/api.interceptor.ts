@@ -39,7 +39,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     try {
       apiURL = inject(API_BASE_URL);
     } catch (e) {
-      console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL:', e);
+      console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL: ', e);
     }
   }
   let requestURL = req.url;

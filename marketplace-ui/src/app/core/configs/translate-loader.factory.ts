@@ -48,10 +48,10 @@ export class TranslateUniversalLoader implements TranslateLoader {
       const languagePath = path.join(ASSETS, I18N, `${lang}${JSON_EXTENSION}`);
       // Try multiple possible paths based on different build outputs
       const i18nPaths = [
-        path.join(`/${APP}`, DIST, BROWSER, languagePath), // For CSR
+        path.join(`/${APP}`, DIST, BROWSER, languagePath), // For SSR by router
         path.join(languagePath), // For development environment
-        path.join(process.cwd(), SRC,languagePath),
-        path.join(process.cwd(), DIST, BROWSER, languagePath)
+        path.join(process.cwd(), SRC, languagePath), // For CSR
+        path.join(process.cwd(), DIST, BROWSER, languagePath) // For SSR by absolutely reuqest
       ];
 
       for (const translationPath of i18nPaths) {
@@ -64,7 +64,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
       }
       return of({});
     } catch (error) {
-      console.error(`Error loading translation for ${lang}:`, error);
+      console.error(`Error loading translation for ${lang}: `, error);
       return of({});
     }
   }
