@@ -92,6 +92,8 @@ public class BaseSetup {
   protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   protected static final String IMAGE_NAME = "test.png";
   protected static final String SAMPLE_LOGO_ID = "1234";
+  public static final String DEFAULT_HOST = "http://localhost:";
+  public static final String OPEN_API_SPEC_PATH = "src/test/resources/generated-spec.yaml";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
