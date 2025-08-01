@@ -258,7 +258,13 @@
       },
       "filterLabel": "Filter Repositories",
       "noReport": "There is no test report in this workflow.",
-      "skipped": "Skipped"
+      "skipped": "Skipped",
+      "focus": {
+        "title": "Focused Market Extension"
+      },
+      "standard": {
+        "title": "Standard Market Extension"
+      }
     }
   }
 }

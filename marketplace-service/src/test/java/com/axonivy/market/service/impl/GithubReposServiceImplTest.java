@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -47,8 +46,6 @@ class GithubReposServiceImplTest {
   @Mock
   GithubRepoRepository githubRepoRepository;
   GithubReposServiceImpl serviceSpy;
-  @Mock
-  private GithubReposModelAssembler githubReposModelAssembler;
   @Mock
   private TestStepsService testStepsService;
   @Mock
@@ -136,13 +133,15 @@ class GithubReposServiceImplTest {
   void testFetchAllRepositories() {
     GithubRepo repo = new GithubRepo();
     when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
-    when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
+    try (var mocked = mockStatic(GithubReposModel.class)) {
+      mocked.when(() -> GithubReposModel.from(repo)).thenReturn(new GithubReposModel());
 
-    List<GithubReposModel> result = service.fetchAllRepositories();
+      List<GithubReposModel> result = service.fetchAllRepositories();
 
-    assertEquals(1, result.size(),
-        "Should return one GithubReposModel when one GithubRepo is present");
-    verify(githubReposModelAssembler).toModel(repo);
+      assertEquals(1, result.size(),
+          "Should return one GithubReposModel when one GithubRepo is present");
+      mocked.verify(() -> GithubReposModel.from(repo));
+    }
   }
 
   @Test
@@ -176,6 +175,19 @@ class GithubReposServiceImplTest {
 
     assertEquals(1, steps.size(),
         "Should return one test step when workflow run and artifact are found");
+  }
+
+  @Test
+  void testProcessWorkflowWithFallbackHandlesException() throws Exception {
+    GHRepository ghRepo = mock(GHRepository.class);
+    GithubRepo dbRepo = new GithubRepo();
+
+    when(gitHubService.getLatestWorkflowRun(any(), any()))
+        .thenThrow(new IOException("Simulated IO error"));
+
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
+
+    assertTrue(result.isEmpty(), "Result list should be empty when exception is thrown");
   }
 
   @Test
@@ -216,5 +228,32 @@ class GithubReposServiceImplTest {
       zipOut.closeEntry();
     }
     return Files.newInputStream(zipPath);
+  }
+
+  @Test
+  void testUpdateFocused() {
+    List<String> updates = List.of("repo1", "repo2");
+
+    service.updateFocusedRepo(updates);
+
+    verify(githubRepoRepository).updateFocusedRepoByName(updates);
+  }
+
+  @Test
+  void testUpdateFocusedWithEmptyList() {
+    List<String> updates = new ArrayList<>();
+
+    service.updateFocusedRepo(updates);
+
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
+  }
+
+  @Test
+  void testUpdateFocusedWithNullList() {
+    List<String> updates = null;
+
+    service.updateFocusedRepo(updates);
+
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
   }
 }

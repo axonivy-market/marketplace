@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -46,7 +45,6 @@ public class GithubReposServiceImpl implements GithubReposService {
   private static final String REPORT_FILE_NAME = "test_report.json";
 
   private final GithubRepoRepository githubRepoRepository;
-  private final GithubReposModelAssembler githubReposModelAssembler;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
@@ -68,7 +66,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
 
@@ -146,7 +144,15 @@ public class GithubReposServiceImpl implements GithubReposService {
   public List<GithubReposModel> fetchAllRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
     return entities.stream()
-        .map(githubReposModelAssembler::toModel)
+        .map(GithubReposModel::from)
         .toList();
+  }
+
+  @Override
+  public void updateFocusedRepo(List<String> updates) {
+    if (updates == null || updates.isEmpty()) {
+      return;
+    }
+    githubRepoRepository.updateFocusedRepoByName(updates);
   }
 }

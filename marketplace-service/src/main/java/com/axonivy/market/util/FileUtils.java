@@ -107,31 +107,7 @@ public class FileUtils {
     prepareUnZipDirectory(extractDir.toPath());
 
     try (ZipInputStream zipInputStream = new ZipInputStream(file.getInputStream())) {
-      ZipEntry entry;
-      while ((entry = zipInputStream.getNextEntry()) != null) {
-        Path entryPath = Paths.get(entry.getName()).normalize();
-        Path resolvedPath = extractDir.toPath().resolve(entryPath).normalize();
-
-        if (!resolvedPath.startsWith(extractDir.toPath())) {
-          throw new IllegalArgumentException(ENTRY_OUTSIDE_TARGET_DIR + entry.getName());
-        }
-
-        File outFile = resolvedPath.toFile();
-        if (entry.isDirectory()) {
-          createDirectoryFromFile(outFile);
-        } else {
-          File parentDir = outFile.getParentFile();
-          createDirectoryFromFile(parentDir);
-          try (FileOutputStream fos = new FileOutputStream(outFile)) {
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = zipInputStream.read(buffer)) > 0) {
-              fos.write(buffer, 0, length);
-            }
-          }
-        }
-        zipInputStream.closeEntry();
-      }
+      unzipArtifact(zipInputStream, extractDir);
     } catch (IOException e) {
       throw new IOException("Error unzipping file", e);
     }

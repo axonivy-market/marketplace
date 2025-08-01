@@ -5,7 +5,6 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.repository.TestStepsRepository;
-import com.axonivy.market.assembler.TestStepsModelAssembler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +23,6 @@ import static org.mockito.Mockito.*;
 class TestStepsServiceImplTest {
     @Mock
     private TestStepsRepository testStepsRepository;
-    @Mock
-    private TestStepsModelAssembler testStepsModelAssembler;
     @InjectMocks
     private TestStepsServiceImpl testStepsService;
 
@@ -36,16 +33,18 @@ class TestStepsServiceImplTest {
 
     @Test
     void testFetchTestReportReturnsModels() {
-        TestStep testStep = TestStep.builder().name("step1").status(TestStatus.PASSED).type(WorkFlowType.CI).build();
-        List<TestStep> testSteps = List.of(testStep);
-        TestStepsModel model = new TestStepsModel();
-        when(testStepsRepository.findByRepoAndWorkflowAndType("repo1", WorkFlowType.CI)).thenReturn(testSteps);
-        when(testStepsModelAssembler.toModel(testStep)).thenReturn(model);
-        List<TestStepsModel> result = testStepsService.fetchTestReport("repo1", WorkFlowType.CI);
-        assertEquals(1, result.size(),
-                "Expected one TestStepsModel in the result");
-        assertEquals(model, result.get(0),
-                "Expected the TestStepsModel to match the mocked model");
+      TestStep testStep = TestStep.builder().name("step1").status(TestStatus.PASSED).type(WorkFlowType.CI).build();
+      List<TestStep> testSteps = List.of(testStep);
+      TestStepsModel expectedModel = new TestStepsModel();
+      expectedModel.setName("step1");
+      expectedModel.setStatus(TestStatus.PASSED);
+      expectedModel.setType(WorkFlowType.CI);
+      when(testStepsRepository.findByRepoAndWorkflowAndType("repo1", WorkFlowType.CI)).thenReturn(testSteps);
+      List<TestStepsModel> result = testStepsService.fetchTestReport("repo1", WorkFlowType.CI);
+      assertEquals(1, result.size(),
+          "Expected one TestStepsModel in the result");
+      assertEquals(expectedModel, result.get(0),
+          "Expected the TestStepsModel to match the expected model");
     }
 
     @Test

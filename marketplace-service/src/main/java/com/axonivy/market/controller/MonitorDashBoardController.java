@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(MONITOR_DASHBOARD)
@@ -62,5 +64,11 @@ public class MonitorDashBoardController {
   public ResponseEntity<String> syncGithubMonitor() throws IOException {
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
+  }
+
+  @GetMapping(FOCUSED)
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
+    githubReposService.updateFocusedRepo(repos);
+    return ResponseEntity.ok("Focused repository updated successfully.");
   }
 }
