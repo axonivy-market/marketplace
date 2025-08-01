@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -47,8 +46,6 @@ class GithubReposServiceImplTest {
   @Mock
   GithubRepoRepository githubRepoRepository;
   GithubReposServiceImpl serviceSpy;
-  @Mock
-  private GithubReposModelAssembler githubReposModelAssembler;
   @Mock
   private TestStepsService testStepsService;
   @Mock
@@ -136,13 +133,15 @@ class GithubReposServiceImplTest {
   void testFetchAllRepositories() {
     GithubRepo repo = new GithubRepo();
     when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
-    when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
+    try (var mocked = mockStatic(GithubReposModel.class)) {
+      mocked.when(() -> GithubReposModel.from(repo)).thenReturn(new GithubReposModel());
 
-    List<GithubReposModel> result = service.fetchAllRepositories();
+      List<GithubReposModel> result = service.fetchAllRepositories();
 
-    assertEquals(1, result.size(),
-        "Should return one GithubReposModel when one GithubRepo is present");
-    verify(githubReposModelAssembler).toModel(repo);
+      assertEquals(1, result.size(),
+          "Should return one GithubReposModel when one GithubRepo is present");
+      mocked.verify(() -> GithubReposModel.from(repo));
+    }
   }
 
   @Test

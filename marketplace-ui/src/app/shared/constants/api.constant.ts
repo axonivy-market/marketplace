@@ -1,3 +1,5 @@
+import { InjectionToken } from '@angular/core';
+
 const API = 'api';
 
 export const API_URI = {
@@ -12,3 +14,5 @@ export const API_URI = {
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
 };
+
+export const API_BASE_URL = new InjectionToken<any>('ApiBaseUrl');

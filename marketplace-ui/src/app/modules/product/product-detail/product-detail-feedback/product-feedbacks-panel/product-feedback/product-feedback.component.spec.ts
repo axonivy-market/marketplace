@@ -5,12 +5,12 @@ import { StarRatingComponent } from '../../../../../../shared/components/star-ra
 import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { MissingTranslationHandler, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { httpLoaderFactory } from '../../../../../../core/configs/translate.config';
 import { ProductFeedbackService } from '../product-feedback.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
+import { translateUniversalLoaderFactory } from '../../../../../../core/configs/translate-loader.factory';
 
 describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
@@ -38,7 +38,7 @@ describe('ProductFeedbackComponent', () => {
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
-            useFactory: httpLoaderFactory
+            useFactory: translateUniversalLoaderFactory
           },
           missingTranslationHandler: {
             provide: MissingTranslationHandler,
