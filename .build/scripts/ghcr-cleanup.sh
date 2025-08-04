@@ -28,7 +28,7 @@ if [[ $(echo "$VERSIONS" | jq 'length') -eq 0 ]]; then
 fi
 
 TOTAL=$(echo "$VERSION_IDS" | wc -l)
-DELETE_COUNT=$((TOTAL - VERSION_RETENTION_COUNT))
+DELETE_COUNT=$((TOTAL - 3))
 echo "Total versions found: $TOTAL"
 if [[ $DELETE_COUNT -le 0 ]]; then
   echo "Nothing to delete. Keeping all $TOTAL versions."
@@ -38,7 +38,7 @@ fi
 # Get only the IDs to delete (all but the latest N)
 DELETE_IDS=$(echo "$VERSION_IDS" | tail -n "$DELETE_COUNT")
 
-echo "Deleting $DELETE_COUNT old version(s), keeping $VERSION_RETENTION_COUNT most recent..."
+echo "Deleting $DELETE_COUNT old version(s), keeping 3 most recent..."
 for id in $DELETE_IDS; do
   id=$(echo "$id" | tr -d '\r\n')
   echo "Deleting version ID: $id"
