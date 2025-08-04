@@ -5,7 +5,7 @@ echo "Fetching versions of $IMAGE_NAME from GHCR..."
 
 response=$(curl -s -w "%{http_code}" \
   -H "Authorization: Bearer $GH_TOKEN" \
-  "https://api.github.com/orgs/$GITHUB_ACTOR/packages/container/$IMAGE_NAME/versions?per_page=100")
+  "https://api.github.com/orgs/$GITHUB_REPOSITORY_OWNER/packages/container/$IMAGE_NAME/versions?per_page=100")
 
 # Extract HTTP status code (last 3 chars of response)
 STATUS="${response: -3}"

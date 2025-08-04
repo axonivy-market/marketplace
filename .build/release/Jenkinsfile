@@ -175,14 +175,13 @@ pipeline {
     stage('Release Marketplace UI Image') {
       steps {
         sh """
-          set -euo pipefail
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
 
           # Cleanup old UI image versions
           IMAGE_NAME=$UI_IMAGE_NAME
-          bash ./scripts/ghcr-cleanup.sh
+          bash ./.build/scripts/ghcr-cleanup.sh
         """
       }
     }
@@ -190,7 +189,6 @@ pipeline {
     stage('Release Marketplace Service Image') {
       steps {
         sh """
-          set -euo pipefail
           SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
           docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
           docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
