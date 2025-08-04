@@ -111,4 +111,11 @@ export class ProductFilterComponent {
     this.sortChange.emit(sort);
     this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }
+
+  onClearSearch() {
+    if (this.searchText) {
+      this.searchText = '';
+      this.searchChange.emit('');
+    }
+  }
 }

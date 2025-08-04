@@ -49,10 +49,8 @@
 
   <!-- Search -->
   <div class="input-group">
-    <div class="input-group-prepend">
-      <span class="input-group-text text-primary bg-secondary h-100 border-0 rounded-end-0">
-        <i class="bi bi-search search-icon"></i>
-      </span>
+    <div class="input-group-text text-primary bg-secondary border-0">
+      <i class="bi bi-search search-icon"></i>
     </div>
     <input #productFilter autocomplete="on" [(ngModel)]="searchText" (ngModelChange)="onSearchChanged($event)" type="text"
       [lang]="languageService.selectedLanguage()" class="form-control input__search bg-secondary border-0 rounded-start-0 ps-0 search-input"
@@ -62,6 +60,9 @@
       [matomoCategory]="MatomoCategory.INPUT"
       [matomoAction]="MatomoAction.PRODUCT_SEARCH"
       [matomoName]="productFilter.value"
-    />
+    />  
+    <div id="clear-search-text-button" class="input-group-text text-primary bg-secondary border-0" (click)="onClearSearch()">
+      <i class="bi bi-x clear-icon"></i>
+    </div>
   </div>
 </div>
