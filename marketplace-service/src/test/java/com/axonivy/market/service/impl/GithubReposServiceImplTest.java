@@ -185,7 +185,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(any(), any()))
         .thenThrow(new IOException("Simulated IO error"));
 
-    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
     assertTrue(result.isEmpty(), "Result list should be empty when exception is thrown");
   }

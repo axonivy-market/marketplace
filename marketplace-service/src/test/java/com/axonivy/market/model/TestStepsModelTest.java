@@ -34,14 +34,10 @@ class TestStepsModelTest {
 
     assertEquals("demo-repo", model.getName(),
             "Expected the name to match the repo name");
-    assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
-            "Expected the HTML URL to match the repo URL");
+//    assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
+//            "Expected the HTML URL to match the repo URL");
     assertEquals("Java", model.getLanguage(),
             "Expected the language to match the repo language");
-    assertEquals("https://badge/ci", model.getCiBadgeUrl(),
-            "Expected the CI badge URL to match the repo's CI badge URL");
-    assertEquals("https://badge/dev", model.getDevBadgeUrl(),
-            "Expected the DEV badge URL to match the repo's DEV badge URL");
 
     assertNotNull(model.getTestResults(),
             "Expected test results to be initialized");

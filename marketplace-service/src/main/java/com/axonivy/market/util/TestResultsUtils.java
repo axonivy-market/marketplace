@@ -23,7 +23,7 @@ public class TestResultsUtils {
       return Collections.emptyList();
     }
     Map<String, Integer> groupedCounts = countGroupedResults(githubRepo);
-    List<TestResults> testResults = mapCountsToResults(groupedCounts);
+    List<TestResults> testResults = mapCountsToResults(groupedCounts, githubRepo);
     testResults.forEach(results -> updateBadgeUrl(results, githubRepo));
     return testResults;
   }
@@ -52,11 +52,17 @@ public class TestResultsUtils {
     return groupedCounts;
   }
 
-  private static List<TestResults> mapCountsToResults(Map<String, Integer> counts) {
+  private static List<TestResults> mapCountsToResults(Map<String, Integer> counts, GithubRepo githubRepo) {
     List<TestResults> results = new ArrayList<>();
-    results.add(buildInitialTestResults(WorkFlowType.CI));
-    results.add(buildInitialTestResults(WorkFlowType.DEV));
-    results.add(buildInitialTestResults(WorkFlowType.E2E));
+    if (StringUtils.isNotBlank(githubRepo.getCiBadgeUrl())) {
+      results.add(buildInitialTestResults(WorkFlowType.CI));
+    }
+    if (StringUtils.isNotBlank(githubRepo.getDevBadgeUrl())) {
+      results.add(buildInitialTestResults(WorkFlowType.DEV));
+    }
+    if (StringUtils.isNotBlank(githubRepo.getE2eBadgeUrl())) {
+      results.add(buildInitialTestResults(WorkFlowType.E2E));
+    }
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
       WorkFlowType workFlowType = WorkFlowType.valueOf(parts[0]);

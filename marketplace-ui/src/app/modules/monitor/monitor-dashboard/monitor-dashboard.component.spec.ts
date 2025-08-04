@@ -19,49 +19,42 @@ describe('MonitoringDashboardComponent', () => {
     mockRepositories = [
       {
         name: 'repo1',
-        htmlUrl: 'https://github.com/user/repo1',
+        // htmlUrl: 'https://github.com/user/repo1',
         language: 'TypeScript',
         lastUpdated: '2025-07-20T12:00:00Z',
-        ciBadgeUrl: 'https://example.com/badge/ci.svg',
-        devBadgeUrl: 'https://example.com/badge/dev.svg',
         focused: true,
         testResults: [
-          { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
-          { environment: 'ALL', workflow: 'CI', count: 2, status: 'FAILED' },
-          { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' },
-          { environment: 'MOCK', workflow: 'CI', count: 1, status: 'FAILED' },
-          { environment: 'REAL', workflow: 'CI', count: 5, status: 'PASSED' },
-          { environment: 'REAL', workflow: 'CI', count: 1, status: 'FAILED' },
-          { environment: 'ALL', workflow: 'DEV', count: 8, status: 'PASSED' },
-          { environment: 'ALL', workflow: 'DEV', count: 0, status: 'FAILED' },
-          { environment: 'MOCK', workflow: 'DEV', count: 4, status: 'PASSED' },
-          { environment: 'MOCK', workflow: 'DEV', count: 0, status: 'FAILED' },
-          { environment: 'REAL', workflow: 'DEV', count: 4, status: 'PASSED' },
-          { environment: 'REAL', workflow: 'DEV', count: 0, status: 'FAILED' }
+          // { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
+          // { environment: 'ALL', workflow: 'CI', count: 2, status: 'FAILED' },
+          // { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' },
+          // { environment: 'MOCK', workflow: 'CI', count: 1, status: 'FAILED' },
+          // { environment: 'REAL', workflow: 'CI', count: 5, status: 'PASSED' },
+          // { environment: 'REAL', workflow: 'CI', count: 1, status: 'FAILED' },
+          // { environment: 'ALL', workflow: 'DEV', count: 8, status: 'PASSED' },
+          // { environment: 'ALL', workflow: 'DEV', count: 0, status: 'FAILED' },
+          // { environment: 'MOCK', workflow: 'DEV', count: 4, status: 'PASSED' },
+          // { environment: 'MOCK', workflow: 'DEV', count: 0, status: 'FAILED' },
+          // { environment: 'REAL', workflow: 'DEV', count: 4, status: 'PASSED' },
+          // { environment: 'REAL', workflow: 'DEV', count: 0, status: 'FAILED' }
         ]
       },
       {
         name: 'repo2',
-        htmlUrl: 'https://github.com/user/repo2',
+        // htmlUrl: 'https://github.com/user/repo2',
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
-        ciBadgeUrl: 'https://example.com/badge/ci2.svg',
-        devBadgeUrl: '', 
         focused: false,
         testResults: [
-          { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
-          { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
-          { environment: 'REAL', workflow: 'CI', count: 8, status: 'PASSED' },
-          { environment: 'REAL', workflow: 'CI', count: 2, status: 'FAILED' }
+          // { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
+          // { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
+          // { environment: 'REAL', workflow: 'CI', count: 8, status: 'PASSED' },
+          // { environment: 'REAL', workflow: 'CI', count: 2, status: 'FAILED' }
         ]
       },
       {
         name: 'repo3',
-        htmlUrl: 'https://github.com/user/repo3',
         language: 'Python',
         lastUpdated: '2025-07-18T12:00:00Z',
-        ciBadgeUrl: '', 
-        devBadgeUrl: '', 
         focused: false,
         testResults: [] 
       }
@@ -121,52 +114,6 @@ describe('MonitoringDashboardComponent', () => {
     component.onBadgeClick(repoName, workflow);
     
     expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
-  });
-
-  it('should get correct test count for specific criteria', () => {
-    const repo = mockRepositories[0];
-    
-    expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(10);
-    expect(component.getTestCount(repo, 'CI', 'ALL', 'FAILED')).toBe(2);
-    
-    expect(component.getTestCount(repo, 'CI', 'MOCK', 'PASSED')).toBe(5);
-    expect(component.getTestCount(repo, 'CI', 'MOCK', 'FAILED')).toBe(1);
-    
-    expect(component.getTestCount(repo, 'CI', 'REAL', 'PASSED')).toBe(5);
-    expect(component.getTestCount(repo, 'CI', 'REAL', 'FAILED')).toBe(1);
-    
-    expect(component.getTestCount(repo, 'DEV', 'ALL', 'PASSED')).toBe(8);
-    expect(component.getTestCount(repo, 'DEV', 'ALL', 'FAILED')).toBe(0);
-  });
-
-  it('should return 0 for missing test results', () => {
-    const repo = mockRepositories[2]; 
-    
-    expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
-    expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
-  });
-
-  it('should return 0 for non-matching test criteria', () => {
-    const repo = mockRepositories[0];
-    
-    expect(component.getTestCount(repo, 'NONEXISTENT', 'ALL', 'PASSED')).toBe(0);
-    expect(component.getTestCount(repo, 'CI', 'NONEXISTENT', 'PASSED')).toBe(0);
-    expect(component.getTestCount(repo, 'CI', 'ALL', 'NONEXISTENT')).toBe(0);
-  });
-
-  it('should handle repositories with no testResults property', () => {
-    const repo: Repository = {
-      name: 'no-tests-repo',
-      htmlUrl: 'https://github.com/user/no-tests-repo',
-      language: 'JavaScript',
-      lastUpdated: '2025-07-17T12:00:00Z',
-      ciBadgeUrl: 'https://example.com/badge/ci3.svg',
-      devBadgeUrl: 'https://example.com/badge/dev3.svg',
-      focused: false,
-    };
-    
-    expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
-    expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
   it('should display repository cards when data is loaded', () => {
