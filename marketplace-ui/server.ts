@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
 import { API_BASE_URL } from './src/app/shared/constants/api.constant';
 import { APP_BASE_HREF } from '@angular/common';
+import { environment } from './src/environments/environment';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -27,7 +28,10 @@ export function app(): express.Express {
   // All regular routes use the Angular engine
   server.get('**', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
-    const apiUrlFromEnv = process.env['MARKET_SERVICE_BASE_URL']; 
+    const requestProtocol = headers['x-forwarded-proto'] || protocol;
+    const requestHost = headers['x-forwarded-host'] || headers.host;
+    const apiBaseUrl = `${requestProtocol}://${requestHost}${environment.apiUrl}`;
+    console.error('Request apiBaseUrl: ' + apiBaseUrl);
 
     commonEngine
       .render({
@@ -37,7 +41,7 @@ export function app(): express.Express {
         publicPath: browserDistFolder,
         providers: [
           { provide: APP_BASE_HREF, useValue: baseUrl },
-          { provide: API_BASE_URL, useValue: apiUrlFromEnv }
+          { provide: API_BASE_URL, useValue: apiBaseUrl }
         ],
       })
       .then((html) => res.send(html))
