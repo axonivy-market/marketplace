@@ -31,7 +31,6 @@ export function app(): express.Express {
     const requestProtocol = headers['x-forwarded-proto'] || protocol;
     const requestHost = headers['x-forwarded-host'] || headers.host;
     const apiBaseUrl = `${requestProtocol}://${requestHost}${environment.apiUrl}`;
-    console.error('Request apiBaseUrl: ' + apiBaseUrl);
 
     commonEngine
       .render({
