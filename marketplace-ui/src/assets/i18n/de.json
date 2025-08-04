@@ -257,7 +257,13 @@
       },
       "filterLabel": "Repositories filtern",
       "noReport": "Es gibt keinen Testbericht in diesem Workflow.",
-      "skipped": "Übersprungen"
+      "skipped": "Übersprungen",
+      "focus": {
+        "title": "Fokussierte Markterweiterung"
+      },
+      "standard": {
+        "title": "Standard Markterweiterung"
+      }
     }
   }
 }

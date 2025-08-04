@@ -24,6 +24,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-20T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci.svg',
         devBadgeUrl: 'https://example.com/badge/dev.svg',
+        focused: true,
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 2, status: 'FAILED' },
@@ -46,6 +47,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-19T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci2.svg',
         devBadgeUrl: '', 
+        focused: false,
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
@@ -60,6 +62,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-18T12:00:00Z',
         ciBadgeUrl: '', 
         devBadgeUrl: '', 
+        focused: false,
         testResults: [] 
       }
     ];
@@ -158,7 +161,8 @@ describe('MonitoringDashboardComponent', () => {
       language: 'JavaScript',
       lastUpdated: '2025-07-17T12:00:00Z',
       ciBadgeUrl: 'https://example.com/badge/ci3.svg',
-      devBadgeUrl: 'https://example.com/badge/dev3.svg'
+      devBadgeUrl: 'https://example.com/badge/dev3.svg',
+      focused: false,
     };
     
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);

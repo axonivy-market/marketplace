@@ -64,4 +64,8 @@ export class MonitoringDashboardComponent implements OnInit {
     const upperWorkflow = workflow.toUpperCase();
     this.router.navigate(['/report', repo, upperWorkflow]);
   }
+
+  trackByName(_index: number, repo: Repository) {
+    return repo.name;
+  }
 }

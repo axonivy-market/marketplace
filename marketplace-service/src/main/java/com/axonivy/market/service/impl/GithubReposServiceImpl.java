@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -46,7 +45,6 @@ public class GithubReposServiceImpl implements GithubReposService {
   private static final String REPORT_FILE_NAME = "test_report.json";
 
   private final GithubRepoRepository githubRepoRepository;
-  private final GithubReposModelAssembler githubReposModelAssembler;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
@@ -68,29 +66,29 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo) {
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-
-    if (githubRepoOptional.isPresent()) {
-      githubRepo = githubRepoOptional.get();
-      githubRepo.getTestSteps().clear();
-      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-      githubRepo.setLanguage(ghRepo.getLanguage());
-      githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
-    } else {
-      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
-    }
-
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
     try {
+      if (githubRepoOptional.isPresent()) {
+        githubRepo = githubRepoOptional.get();
+        githubRepo.getTestSteps().clear();
+        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+        githubRepo.setLanguage(ghRepo.getLanguage());
+        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+      } else {
+        String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
+        githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
+      }
+
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
+
       githubRepoRepository.save(githubRepo);
-    } catch (DataAccessException e) {
-      log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
+    } catch (DataAccessException | IOException e) {
+      log.error("Error while saving GitHub repo: {}", ghRepo.getFullName(), e);
     }
   }
 
@@ -146,7 +144,15 @@ public class GithubReposServiceImpl implements GithubReposService {
   public List<GithubReposModel> fetchAllRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
     return entities.stream()
-        .map(githubReposModelAssembler::toModel)
+        .map(GithubReposModel::from)
         .toList();
+  }
+
+  @Override
+  public void updateFocusedRepo(List<String> repos) {
+    if (repos == null || repos.isEmpty()) {
+      return;
+    }
+    githubRepoRepository.updateFocusedRepoByName(repos);
   }
 }
