@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 echo "Fetching versions of my-test-image from GHCR..."
 
