@@ -66,10 +66,10 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo) {
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-
+    try {
     if (githubRepoOptional.isPresent()) {
       githubRepo = githubRepoOptional.get();
       githubRepo.getTestSteps().clear();
@@ -85,9 +85,9 @@ public class GithubReposServiceImpl implements GithubReposService {
         processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
     githubRepo.getTestSteps().addAll(
         processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
-    try {
+
       githubRepoRepository.save(githubRepo);
-    } catch (DataAccessException e) {
+    } catch (DataAccessException | IOException e) {
       log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
     }
   }
@@ -149,10 +149,10 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public void updateFocusedRepo(List<String> updates) {
-    if (updates == null || updates.isEmpty()) {
+  public void updateFocusedRepo(List<String> repos) {
+    if (repos == null || repos.isEmpty()) {
       return;
     }
-    githubRepoRepository.updateFocusedRepoByName(updates);
+    githubRepoRepository.updateFocusedRepoByName(repos);
   }
 }

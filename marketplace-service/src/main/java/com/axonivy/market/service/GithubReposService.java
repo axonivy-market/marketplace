@@ -10,5 +10,5 @@ public interface GithubReposService {
 
   List<GithubReposModel> fetchAllRepositories();
 
-  void updateFocusedRepo(List<String> repoPriorityUpdateModels);
+  void updateFocusedRepo(List<String> repos);
 }
