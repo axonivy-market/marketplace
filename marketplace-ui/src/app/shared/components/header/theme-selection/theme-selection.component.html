@@ -1,9 +1,8 @@
 <div class="header__theme-button" (click)="themeService.changeTheme()">
   <span class="theme-icon text-primary">
-    @if (themeService.isDarkMode()) {
-      <i class="bi bi-sun"></i>
-    } @else {
+ <i *ngIf="themeService.isDarkMode(); else lightIcon" class="bi bi-sun"></i>
+    <ng-template #lightIcon>
       <i class="bi bi-moon"></i>
-    }
+    </ng-template>
   </span>
 </div>
