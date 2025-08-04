@@ -19,9 +19,8 @@ services:
 
   preview_ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
-    volumes:
-      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - marketcache:/usr/share/nginx/html/market-cache
+    environment:
+      - MARKET_SERVICE_BASE_URL=${MARKET_SERVICE_BASE_URL}
     restart: always
     expose:
       - 4000

@@ -18,6 +18,8 @@ services:
 
   ui:
     container_name: marketplace-ui
+    environment:
+      - MARKET_SERVICE_BASE_URL=${MARKET_SERVICE_BASE_URL}
     build:
       context: ../marketplace-ui
       dockerfile: Dockerfile

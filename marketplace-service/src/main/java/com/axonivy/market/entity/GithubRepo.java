@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -38,6 +39,7 @@ public class GithubRepo extends GenericIdEntity {
   private String ciBadgeUrl;
   private String devBadgeUrl;
   private String e2eBadgeUrl;
+  private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;

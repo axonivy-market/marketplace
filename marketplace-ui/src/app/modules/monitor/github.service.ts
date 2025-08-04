@@ -6,9 +6,7 @@ export interface Repository {
   name: string;
   language: string | null;
   lastUpdated: string;
-  ciBadgeUrl: string;
-  devBadgeUrl: string;
-  e2eBadgeUrl: string;
+  focused: boolean;
   testResults?: TestResult[];
 }
 
@@ -45,4 +43,3 @@ export class GithubService {
     return this.http.get<TestStep>(url);
   }
 }
-

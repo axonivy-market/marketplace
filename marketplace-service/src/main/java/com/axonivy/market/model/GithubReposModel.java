@@ -4,9 +4,8 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
@@ -17,7 +16,7 @@ import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class GithubReposModel extends RepresentationModel<GithubReposModel> {
+public class GithubReposModel {
 
   @EqualsAndHashCode.Include
   @Schema(description = "Repository name", example = "my-awesome-repo")
@@ -27,8 +26,10 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   private String language;
 
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
-  private String lastUpdated;
+  private Date lastUpdated;
 
+  @Schema(description = "Indicates if the repository is a focused repository", example = "true")
+  private Boolean focused;
   @Schema(
       description = "Test results summary by workflow type and test environment",
       example = """
@@ -50,12 +51,11 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   public static GithubReposModel from(GithubRepo githubRepo) {
     List<TestResults> testResults = processTestResults(githubRepo);
-    var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .language(githubRepo.getLanguage())
-        .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
+        .lastUpdated(githubRepo.getLastUpdated())
+        .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();
   }

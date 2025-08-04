@@ -204,6 +204,7 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
 ];
 
 export const DESIGNER_SESSION_STORAGE_VARIABLE = {
+  newIvyVersionParamName: 'ivy.version',
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
   defaultDesignerViewer: 'designer-market',
@@ -301,6 +302,14 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
 };
 
 export const HASH_SYMBOL = '#';
+export const SRC = 'src';
+export const APP = 'app';
+export const DIST = 'dist';
+export const BROWSER ='browser';
+export const ASSETS = 'assets';
+export const I18N = 'i18n';
+export const JSON_EXTENSION = '.json';
+export const UTF8 = 'utf8';
 
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 

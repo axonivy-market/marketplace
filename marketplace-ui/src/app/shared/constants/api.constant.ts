@@ -1,3 +1,5 @@
+import { InjectionToken } from '@angular/core';
+
 const API = 'api';
 
 export const API_URI = {
@@ -10,6 +12,7 @@ export const API_URI = {
   PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`,
   PREVIEW_RELEASE: `${API}/release-preview`,
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
-  SYNC_MONITOR_DASHBOARD: `${API}/monitor-dashboard/sync-github-monitor`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
 };
+
+export const API_BASE_URL = new InjectionToken<any>('ApiBaseUrl');

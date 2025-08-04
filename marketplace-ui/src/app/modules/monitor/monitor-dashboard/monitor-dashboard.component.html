@@ -7,16 +7,44 @@
       {{ 'monitor.dashboard.subtitle' | translate }}
     </h3>
   </div>
+  @if (loading) {
+    <div class="loading" [lang]="languageService.selectedLanguage()">
+      {{ 'monitor.dashboard.loading' | translate }}
+    </div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
 
   @if (!loading && repositories.length) {
-  <div class="repo-grid">
-    @for (repo of repositories; track repo.name) {
+    <h4 class="section-title">{{ 'monitor.dashboard.focus.title' | translate }}</h4>
+    <div class="repo-grid">
+      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
+        @if (repo.focused) {
+          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+        }
+      </ng-container>
+    </div>
+  }
+
+  @if (!loading && repositories.length) {
+    <h4 class="section-title">{{ 'monitor.dashboard.standard.title' | translate }}</h4>
+    <div class="repo-grid">
+      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
+        @if (!repo.focused) {
+          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+        }
+      </ng-container>
+    </div>
+  }
+
+  <ng-template #repoCard let-repo>
     <div class="repo-card">
       <div class="repo-header">
         <p>{{ repo.name }}</p>
         <span class="visibility">{{ repo.language }}</span>
       </div>
-
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
@@ -35,21 +63,10 @@
         }
         <p>
           <span class="icon">📅</span>
-          {{ 'monitor.dashboard.lastUpdated' | translate }}: {{ repo.lastUpdated | date:'medium' }}
+          {{ 'monitor.dashboard.lastUpdated' | translate }}:
+          {{ repo.lastUpdated | date: 'medium' }}
         </p>
       </div>
     </div>
-    }
-  </div>
-  }
-
-  @if (loading) {
-  <div class="loading" [lang]="languageService.selectedLanguage()">
-    {{ 'monitor.dashboard.loading' | translate }}
-  </div>
-  }
-
-  @if (error) {
-  <div class="error">{{ error }}</div>
-  }
+  </ng-template>
 </div>

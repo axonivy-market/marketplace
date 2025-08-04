@@ -18,7 +18,7 @@ import org.springframework.hateoas.RepresentationModel;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TestStepsModel extends RepresentationModel<TestStepsModel> {
+public class TestStepsModel {
   @Schema(description = "Test Name", example = "chatWithAssistant")
   private String name;
 
