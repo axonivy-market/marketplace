@@ -70,25 +70,25 @@ public class GithubReposServiceImpl implements GithubReposService {
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
     try {
-    if (githubRepoOptional.isPresent()) {
-      githubRepo = githubRepoOptional.get();
-      githubRepo.getTestSteps().clear();
-      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-      githubRepo.setLanguage(ghRepo.getLanguage());
-      githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
-    } else {
-      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
-    }
+      if (githubRepoOptional.isPresent()) {
+        githubRepo = githubRepoOptional.get();
+        githubRepo.getTestSteps().clear();
+        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+        githubRepo.setLanguage(ghRepo.getLanguage());
+        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+      } else {
+        String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
+        githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
+      }
 
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
 
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException | IOException e) {
-      log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
+      log.error("Error while saving GitHub repo: {}", ghRepo.getFullName(), e);
     }
   }
 
