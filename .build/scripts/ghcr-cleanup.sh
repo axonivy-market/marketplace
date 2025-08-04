@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Fetching versions of $IMAGE_NAME from GHCR..."
+echo "Fetching versions of my-test-image from GHCR..."
 
 response=$(curl -s -w "%{http_code}" \
   -H "Authorization: Bearer $GH_TOKEN" \
-  "https://api.github.com/orgs/dino-test-org/packages/container/$IMAGE_NAME/versions?per_page=100")
+  "https://api.github.com/orgs/dino-test-org/packages/container/my-test-image/versions?per_page=100")
 
 # Extract HTTP status code (last 3 chars of response)
 STATUS="${response: -3}"
