@@ -42,7 +42,7 @@ for id in $DELETE_IDS; do
   id=$(echo "$id" | tr -d '\r\n')
   echo "Deleting version ID: $id"
 
-  url="https://api.github.com/orgs/$GITHUB_ACTOR/packages/container/$IMAGE_NAME/versions/$id"
+  url="https://api.github.com/orgs/dino-test-org/packages/container/my-test-image/versions/$id"
 
   response=$(curl -s -X DELETE -H "Authorization: Bearer $GH_TOKEN" "$url")
 
