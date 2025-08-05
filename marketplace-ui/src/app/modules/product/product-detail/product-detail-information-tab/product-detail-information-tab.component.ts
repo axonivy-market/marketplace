@@ -14,7 +14,7 @@ import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
+import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-objectpipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { Router } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
@@ -25,7 +25,7 @@ const PRODUCT_DETAIL = 'productDetail';
   imports: [
     CommonModule,
     TranslateModule,
-    EmptyProductDetailPipe
+    IsEmptyObjectPipe
 ],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
