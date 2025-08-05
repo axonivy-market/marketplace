@@ -108,8 +108,23 @@ $rowHeight: 37px;
 
 #clear-search-text-button {
   cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .clear-icon {
   font-size: 2.5rem;
+}
+
+:host-context([data-bs-theme='light']) #clear-search-text-button {
+  &:hover {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+  }
+}
+
+:host-context([data-bs-theme='dark']) #clear-search-text-button {
+  &:hover {
+    background-color: #f8f8f8 !important;
+    color: #1b1b1b !important;
+  }
 }
