@@ -1,15 +1,16 @@
 import { Component, Inject } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { NgClass, NgIf, DOCUMENT } from '@angular/common';
-
-const THEME_ICON_CLASS = 'theme-icon-class';
-const LIGHT_ICON_CLASS = 'bi-moon';
-const DARK_ICON_CLASS = 'bi-sun';
+import { NgClass, DOCUMENT } from '@angular/common';
+import {
+  THEME_ICON_ATTR,
+  LIGHT_ICON_CLASS,
+  DARK_ICON_CLASS
+} from '../../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-theme-selection',
   standalone: true,
-  imports: [NgClass, NgIf],
+  imports: [NgClass],
   templateUrl: './theme-selection.component.html',
   styleUrl: './theme-selection.component.scss'
 })
@@ -21,7 +22,7 @@ export class ThemeSelectionComponent {
     public themeService: ThemeService
   ) {
     this.iconClass =
-      this.document.documentElement.getAttribute(THEME_ICON_CLASS);
+      this.document.documentElement.getAttribute(THEME_ICON_ATTR);
   }
 
   onToggleTheme(): void {
