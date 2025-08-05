@@ -51,7 +51,6 @@
           },
           "configurations": {
             "production": {
-              "inlineStyleLanguage": "css",
               "optimization": {
                 "scripts": true,
                 "styles": {

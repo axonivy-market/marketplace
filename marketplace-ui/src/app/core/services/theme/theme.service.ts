@@ -6,44 +6,41 @@ const DATA_THEME = 'data-bs-theme';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  isDarkMode: WritableSignal<boolean>;
-  theme: WritableSignal<Theme>;
+  isDarkMode: WritableSignal<boolean> = signal(false);
+  theme: WritableSignal<Theme> = signal(Theme.DARK);
 
   constructor(@Inject(DOCUMENT) private readonly document: Document) {
-    const html = this.document.documentElement;
-    const storage = this.document.defaultView?.localStorage;
-
-    let initialTheme: Theme = Theme.LIGHT;
-
-    if (storage) {
-      const saved = storage.getItem(DATA_THEME) as Theme;
-      if (saved === Theme.DARK || saved === Theme.LIGHT) {
-        initialTheme = saved;
-      } else {
-        // fallback to system preference
-        const prefersDark = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) initialTheme = Theme.DARK;
-      }
+    const localStorage = this.document.defaultView?.localStorage;
+    if (localStorage) {
+      this.loadDefaultTheme(localStorage);
     }
-
-    this.theme = signal(initialTheme);
-    this.isDarkMode = signal(initialTheme === Theme.DARK);
-
-    html.setAttribute(DATA_THEME, initialTheme);
   }
 
-  setTheme(theme: Theme): void {
-    const html = this.document.documentElement;
-    const storage = this.document.defaultView?.localStorage;
+  loadDefaultTheme(localStorage: Storage) {
+    const theme = localStorage.getItem(DATA_THEME) as Theme;
+    if (theme) {
+      this.setTheme(theme);
+    } else {
+      this.setTheme(Theme.LIGHT);
+    }
+  }
 
-    html.setAttribute(DATA_THEME, theme);
-    if (storage) storage.setItem(DATA_THEME, theme);
-
+  setTheme(theme: Theme) {
     this.theme.set(theme);
-    this.isDarkMode.set(theme === Theme.DARK);
+    localStorage.setItem(DATA_THEME, theme);
+    const html = this.document.querySelector('html');
+    if (html) {
+      html.setAttribute(DATA_THEME, theme);
+    }
+    this.isDarkMode.set(this.theme() === Theme.DARK);
   }
 
-  changeTheme(): void {
-    this.setTheme(this.theme() === Theme.DARK ? Theme.LIGHT : Theme.DARK);
+  changeTheme() {
+    if (this.theme() === Theme.DARK) {
+      this.theme.set(Theme.LIGHT);
+    } else {
+      this.theme.set(Theme.DARK);
+    }
+    this.setTheme(this.theme());
   }
 }
