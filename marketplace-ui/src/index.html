@@ -14,7 +14,9 @@
       const saved = localStorage.getItem(key);
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const theme = saved || (prefersDark ? 'dark' : 'light');
+      const iconClass = theme === 'dark' ? 'bi-sun' : 'bi-moon';
       document.documentElement.setAttribute(key, theme);
+      document.documentElement.setAttribute('theme-icon-class', iconClass);
     })();
   </script>
 </head>
