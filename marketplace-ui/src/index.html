@@ -10,12 +10,12 @@
 
   <script>
     (function () {
-      const key = 'data-bs-theme';
-      const saved = localStorage.getItem(key);
+      const themeKey = 'data-bs-theme';
+      const savedTheme = localStorage.getItem(themeKey);
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
       const iconClass = theme === 'dark' ? 'bi-sun' : 'bi-moon';
-      document.documentElement.setAttribute(key, theme);
+      document.documentElement.setAttribute(themeKey, theme);
       document.documentElement.setAttribute('data-theme-icon', iconClass);
     })();
   </script>
