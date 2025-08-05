@@ -27,6 +27,10 @@ export class ThemeSelectionComponent {
 
   onToggleTheme(): void {
     this.themeService.changeTheme();
-    this.iconClass = this.themeService.isDarkMode() ? DARK_ICON_CLASS : LIGHT_ICON_CLASS;
+    if (this.themeService.isDarkMode()) {
+      this.iconClass = DARK_ICON_CLASS;
+    } else {
+      this.iconClass = LIGHT_ICON_CLASS;
+    }
   }
 }
