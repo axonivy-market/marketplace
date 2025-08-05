@@ -33,6 +33,10 @@ export class LanguageSelectionComponent {
   }
 
   isActiveClass(language: Language): string {
-    return this.currentLanguage === language ? 'active' : 'inactive';
+    if (this.currentLanguage === language) {
+      return 'active';
+    } else {
+      return 'inactive';
+    }
   }
 }
