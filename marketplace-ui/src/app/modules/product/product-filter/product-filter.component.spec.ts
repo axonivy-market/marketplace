@@ -194,6 +194,8 @@ describe('ProductFilterComponent', () => {
   });
 
   it('should call onClearSearch when clear search text button is clicked', () => {
+    component.searchText = 'amazon-connector';
+    fixture.detectChanges();
     spyOn(component, 'onClearSearch');
     const clearSearchTextButton = fixture.debugElement.query(
       By.css('#clear-search-text-button')

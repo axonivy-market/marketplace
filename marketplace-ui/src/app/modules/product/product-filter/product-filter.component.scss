@@ -114,22 +114,12 @@ $rowHeight: 37px;
   font-size: 2.5rem;
 }
 
-:host-context([data-bs-theme='light']) #clear-search-text-button {
+#clear-search-text-button {
   &:hover {
-    background-color: #EEEEEE !important;
+    background-color: var(--clear-search-text-button-bg-hover) !important;
   }
 
   &:active {
-    background-color: #d6d6d6 !important;
-  }
-}
-
-:host-context([data-bs-theme='dark']) #clear-search-text-button {
-  &:hover {
-    background-color: #262626 !important;
-  }
-
-  &:active {
-    background-color: #454545 !important;
+    background-color: var(--clear-search-text-button-bg-active) !important;
   }
 }
