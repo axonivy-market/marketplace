@@ -108,7 +108,6 @@ $rowHeight: 37px;
 
 #clear-search-text-button {
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .clear-icon {
@@ -117,14 +116,20 @@ $rowHeight: 37px;
 
 :host-context([data-bs-theme='light']) #clear-search-text-button {
   &:hover {
-    background-color: #383838 !important;
-    color: #ffffff !important;
+    background-color: #EEEEEE !important;
+  }
+
+  &:active {
+    background-color: #d6d6d6 !important;
   }
 }
 
 :host-context([data-bs-theme='dark']) #clear-search-text-button {
   &:hover {
-    background-color: #f8f8f8 !important;
-    color: #1b1b1b !important;
+    background-color: #262626 !important;
+  }
+
+  &:active {
+    background-color: #454545 !important;
   }
 }

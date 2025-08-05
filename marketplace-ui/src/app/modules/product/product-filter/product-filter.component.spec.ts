@@ -203,6 +203,26 @@ describe('ProductFilterComponent', () => {
     expect(component.onClearSearch).toHaveBeenCalled();
   });
 
+  it('should NOT render clear search text button when searchText is empty', () => {
+    component.searchText = '';
+    fixture.detectChanges();
+    const clearSearchTextButton = fixture.debugElement.query(
+      By.css('#clear-search-text-button')
+    );
+
+    expect(clearSearchTextButton).toBeNull();
+  });
+
+  it('should render clear search text button when searchText is not empty', () => {
+    component.searchText = 'amazon-connector';
+    fixture.detectChanges();
+    const clearSearchTextButton = fixture.debugElement.query(
+      By.css('#clear-search-text-button')
+    );
+
+    expect(clearSearchTextButton).toBeTruthy();
+  });
+
   describe('onClearSearch()', () => {
     it('should clear searchText when searchText has content', () => {
       component.searchText = 'amazon-connector';

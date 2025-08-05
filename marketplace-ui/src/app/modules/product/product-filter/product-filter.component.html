@@ -60,9 +60,11 @@
       [matomoCategory]="MatomoCategory.INPUT"
       [matomoAction]="MatomoAction.PRODUCT_SEARCH"
       [matomoName]="productFilter.value"
-    />  
-    <div id="clear-search-text-button" class="input-group-text text-primary bg-secondary border-0" (click)="onClearSearch()">
-      <i class="bi bi-x clear-icon"></i>
-    </div>
+    />
+    @if(searchText) {
+      <div id="clear-search-text-button" class="input-group-text text-primary bg-secondary border-0" (click)="onClearSearch()">
+        <i class="bi bi-x clear-icon"></i>
+      </div>
+    }
   </div>
 </div>
