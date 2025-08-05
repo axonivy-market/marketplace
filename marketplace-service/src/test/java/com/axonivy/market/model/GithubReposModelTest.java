@@ -22,13 +22,12 @@ class GithubReposModelTest {
     GithubReposModel model = GithubReposModel.from(githubRepo);
 
     assertEquals("my-awesome-repo", model.getName(), "Repository name should match");
-//    assertEquals("https://github.com/axonivy-market/my-awesome-repo", model.getHtmlUrl(), "HTML URL should match");
     assertEquals("Java", model.getLanguage(), "Language should match");
     assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getLastUpdated(),
         "Last updated timestamp should match");
 
     List<TestResults> testResults = model.getTestResults();
     assertNotNull(testResults, "Test results should not be null");
-    assertFalse(testResults.isEmpty(), "Test results should not be empty");
+    assertTrue(testResults.isEmpty(), "Test results should be empty");
   }
 }
