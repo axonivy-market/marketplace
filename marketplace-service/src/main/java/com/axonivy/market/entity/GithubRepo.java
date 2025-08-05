@@ -36,8 +36,11 @@ public class GithubRepo extends GenericIdEntity {
   private String htmlUrl;
   private String language;
   private Date lastUpdated;
+  @JsonIgnore
   private String ciBadgeUrl;
+  @JsonIgnore
   private String devBadgeUrl;
+  @JsonIgnore
   private String e2eBadgeUrl;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

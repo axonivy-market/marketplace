@@ -1,7 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestResults;
+import com.axonivy.market.model.TestResults;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;

@@ -24,18 +24,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-20T12:00:00Z',
         focused: true,
         testResults: [
-          // { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
-          // { environment: 'ALL', workflow: 'CI', count: 2, status: 'FAILED' },
-          // { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' },
-          // { environment: 'MOCK', workflow: 'CI', count: 1, status: 'FAILED' },
-          // { environment: 'REAL', workflow: 'CI', count: 5, status: 'PASSED' },
-          // { environment: 'REAL', workflow: 'CI', count: 1, status: 'FAILED' },
-          // { environment: 'ALL', workflow: 'DEV', count: 8, status: 'PASSED' },
-          // { environment: 'ALL', workflow: 'DEV', count: 0, status: 'FAILED' },
-          // { environment: 'MOCK', workflow: 'DEV', count: 4, status: 'PASSED' },
-          // { environment: 'MOCK', workflow: 'DEV', count: 0, status: 'FAILED' },
-          // { environment: 'REAL', workflow: 'DEV', count: 4, status: 'PASSED' },
-          // { environment: 'REAL', workflow: 'DEV', count: 0, status: 'FAILED' }
+          { workflow: 'CI', results: {PASSED: 20}, badgeUrl: 'www.localhost.badge.yml' } as TestResult
         ]
       },
       {
@@ -44,12 +33,7 @@ describe('MonitoringDashboardComponent', () => {
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
         focused: false,
-        testResults: [
-          // { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
-          // { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
-          // { environment: 'REAL', workflow: 'CI', count: 8, status: 'PASSED' },
-          // { environment: 'REAL', workflow: 'CI', count: 2, status: 'FAILED' }
-        ]
+        testResults: []
       },
       {
         name: 'repo3',
@@ -93,7 +77,7 @@ describe('MonitoringDashboardComponent', () => {
 
   it('should load repositories on init', () => {
     expect(githubService.getRepositories).toHaveBeenCalled();
-    expect(component.repositories).toEqual(mockRepositories);
+    expect(component.repositories()).toEqual(mockRepositories);
     expect(component.loading).toBeFalse();
   });
 

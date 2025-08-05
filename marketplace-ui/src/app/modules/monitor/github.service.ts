@@ -7,13 +7,13 @@ export interface Repository {
   language: string | null;
   lastUpdated: string;
   focused: boolean;
-  testResults?: TestResult[];
+  testResults: TestResult[];
 }
 
 export interface TestResult {
   workflow: 'CI' | 'DEV' | 'E2E';
   badgeUrl: string;
-  results?: TestSummary;
+  results: TestSummary;
 }
 
 export interface TestSummary {

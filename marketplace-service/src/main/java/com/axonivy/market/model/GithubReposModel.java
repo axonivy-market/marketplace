@@ -1,7 +1,6 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
