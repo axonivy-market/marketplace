@@ -2,10 +2,11 @@ import { Component, Inject } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { NgClass, DOCUMENT } from '@angular/common';
 import {
-  THEME_ICON_ATTR,
   LIGHT_ICON_CLASS,
-  DARK_ICON_CLASS
+  DARK_ICON_CLASS,
+  DATA_THEME
 } from '../../../../shared/constants/common.constant';
+import { Theme } from '../../../enums/theme.enum';
 
 @Component({
   selector: 'app-theme-selection',
@@ -21,8 +22,12 @@ export class ThemeSelectionComponent {
     @Inject(DOCUMENT) private readonly document: Document,
     public themeService: ThemeService
   ) {
-    this.iconClass =
-      this.document.documentElement.getAttribute(THEME_ICON_ATTR);
+    const theme = this.document.defaultView?.localStorage.getItem(DATA_THEME) as Theme;
+    if (theme === Theme.DARK) {
+      this.iconClass = DARK_ICON_CLASS;
+    } else {
+      this.iconClass = LIGHT_ICON_CLASS;
+    }
   }
 
   onToggleTheme(): void {

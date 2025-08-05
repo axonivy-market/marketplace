@@ -4,10 +4,10 @@ import { ThemeSelectionComponent } from './theme-selection.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { DOCUMENT } from '@angular/common';
+import { Theme } from '../../../enums/theme.enum';
 
 import {
   DATA_THEME,
-  THEME_ICON_ATTR,
   LIGHT_ICON_CLASS,
   DARK_ICON_CLASS
 } from '../../../../shared/constants/common.constant';
@@ -38,8 +38,7 @@ describe('ThemeSelectionComponent', () => {
   });
 
   afterEach(() => {
-    documentRef.documentElement.removeAttribute(DATA_THEME);
-    documentRef.documentElement.removeAttribute(THEME_ICON_ATTR);
+    documentRef.defaultView?.localStorage.removeItem(DATA_THEME);
   });
 
   it('should create', () => {
@@ -58,8 +57,7 @@ describe('ThemeSelectionComponent', () => {
   });
 
   it(`should set iconClass to dark if theme is dark`, () => {
-    documentRef.documentElement.setAttribute(DATA_THEME, 'dark');
-    documentRef.documentElement.setAttribute(THEME_ICON_ATTR, DARK_ICON_CLASS);
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.DARK);
 
     component = new ThemeSelectionComponent(documentRef, mockThemeService);
 
@@ -67,8 +65,7 @@ describe('ThemeSelectionComponent', () => {
   });
 
   it(`should set iconClass to light if theme is light`, () => {
-    documentRef.documentElement.setAttribute(DATA_THEME, 'light');
-    documentRef.documentElement.setAttribute(THEME_ICON_ATTR, LIGHT_ICON_CLASS);
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.LIGHT);
 
     component = new ThemeSelectionComponent(documentRef, mockThemeService);
 
@@ -76,13 +73,12 @@ describe('ThemeSelectionComponent', () => {
   });
 
   it(`should toggle iconClass from dark to light`, () => {
-    documentRef.documentElement.setAttribute(DATA_THEME, 'dark');
-    documentRef.documentElement.setAttribute(THEME_ICON_ATTR, DARK_ICON_CLASS);
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.DARK);
 
     component = new ThemeSelectionComponent(documentRef, mockThemeService);
 
     // Simulate light mode after toggle
-    documentRef.documentElement.setAttribute(DATA_THEME, 'light');
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.LIGHT);
     mockThemeService.isDarkMode.and.returnValue(false);
 
     component.onToggleTheme();
@@ -92,13 +88,12 @@ describe('ThemeSelectionComponent', () => {
   });
 
   it(`should toggle iconClass from light to dark`, () => {
-    documentRef.documentElement.setAttribute(DATA_THEME, 'light');
-    documentRef.documentElement.setAttribute(THEME_ICON_ATTR, LIGHT_ICON_CLASS);
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.LIGHT);
 
     component = new ThemeSelectionComponent(documentRef, mockThemeService);
 
     // Simulate dark mode after toggle
-    documentRef.documentElement.setAttribute(DATA_THEME, 'dark');
+    documentRef.defaultView?.localStorage.setItem(DATA_THEME, Theme.DARK);
     mockThemeService.isDarkMode.and.returnValue(true);
 
     component.onToggleTheme();

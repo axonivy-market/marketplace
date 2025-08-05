@@ -1,8 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, Inject, Injectable, signal } from '@angular/core';
 import { Language } from '../../../shared/enums/language.enum';
-
-const DATA_LANGUAGE = 'data-language';
+import { DATA_LANGUAGE } from '../../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
