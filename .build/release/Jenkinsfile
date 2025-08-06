@@ -195,7 +195,7 @@ pipeline {
 
           # Cleanup old Service image versions
           IMAGE_NAME=$SERVICE_IMAGE_NAME
-          bash ./scripts/ghcr-cleanup.sh
+          bash ./.build/scripts/ghcr-cleanup.sh
         """
       }
     }
