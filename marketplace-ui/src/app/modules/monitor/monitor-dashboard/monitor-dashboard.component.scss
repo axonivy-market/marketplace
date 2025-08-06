@@ -9,10 +9,11 @@ $rowHeight: 37px;
 .header {
   text-align: center;
   padding: 20px;
-  color: #333;
+  color: var(--ivy-text-primary-color);
   h2 {
     font-size: 4rem;
     margin: 20px 0;
+    color: var(--ivy-text-primary-color);
   }
 }
 
@@ -59,12 +60,13 @@ $rowHeight: 37px;
     }
   }
 
-  .visibility {
+  .badge {
     font-size: 1.1rem;
     padding: 3px 8px;
     border-radius: 20px;
     border: 1px solid gray;
     line-height: 12px;
+    color: #000;
   }
 
   .archived {
@@ -160,7 +162,7 @@ $rowHeight: 37px;
 .section-title {
   font-size: 2.5rem;
   margin: 30px;
-  color: #333;
+  color: var(--ivy-text-primary-color);
   text-align: center;
   font-weight: bold;
   border-bottom: #949191 2px solid;
