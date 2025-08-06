@@ -336,3 +336,7 @@ export const GOOGLE = 'google';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
+
+// Monitoring constants
+export const CI_BUILD = 'CI';
+export const DEV_BUILD = 'DEV';

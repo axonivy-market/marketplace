@@ -1,0 +1,16 @@
+<ng-template #tooltipTemplate>
+  <p class="text-primary">
+    {{ tooltipContent }}
+    <a [href]="monitoringWikiLink" target="_blank">See more</a>
+  </p>
+</ng-template>
+
+<button
+  id="build-info-tooltip"
+  placement="top"
+  [ngbTooltip]="tooltipTemplate"
+  tooltipClass="build-info-tooltip-custom-class">
+  <span>
+    <i class="bi bi-info-circle"></i>
+  </span>
+</button>

@@ -4,10 +4,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { BuildBadgeTooltipComponent } from "../build-badge-tooltip/build-badge-tooltip.component";
+import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, BuildBadgeTooltipComponent],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
@@ -20,6 +22,8 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
+  ciBuild = CI_BUILD;
+  devBuild = DEV_BUILD
 
 
   ngOnInit(): void {

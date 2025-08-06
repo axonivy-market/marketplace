@@ -45,11 +45,13 @@
         <p>{{ repo.name }}</p>
         <span class="visibility">{{ repo.language }}</span>
       </div>
+      
       <div class="repo-info">
         @if (repo.ciBadgeUrl) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
+          <div class="badge-row">
             <span class="icon">🏷️</span>
-            <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" />
+            <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-2" (click)="onBadgeClick(repo.name, 'ci')"/>
+            <app-build-badge-tooltip [buildType]="ciBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</b></p>
@@ -65,9 +67,10 @@
           </div>
         }
         @if (repo.devBadgeUrl) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
+          <div class="badge-row">
             <span class="icon">🛠️</span>
-            <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" />
+            <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-2" (click)="onBadgeClick(repo.name, 'dev')"/>
+            <app-build-badge-tooltip [buildType]="devBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</b></p>
