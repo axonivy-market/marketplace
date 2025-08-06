@@ -33,8 +33,6 @@ class TestStepsModelTest {
 
     assertEquals("demo-repo", model.getName(),
             "Expected the name to match the repo name");
-//    assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
-//            "Expected the HTML URL to match the repo URL");
     assertEquals("Java", model.getLanguage(),
             "Expected the language to match the repo language");
 

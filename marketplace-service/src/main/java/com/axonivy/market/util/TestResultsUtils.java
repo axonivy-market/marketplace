@@ -65,19 +65,23 @@ public class TestResultsUtils {
     }
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
-      WorkFlowType workFlowType = WorkFlowType.valueOf(parts[0]);
-      TestResults targetTestResults =
-          results.stream().filter(testResults -> workFlowType == testResults.getWorkflow()).findAny().orElseGet(() -> {
-            var a = TestResults.builder()
-          .workflow(workFlowType)
-          .results(new HashMap<>())
-          .build();
-            results.add(a);
-            return a;
-          });
+      var workFlowType = WorkFlowType.valueOf(parts[0]);
+      var targetTestResults =
+          results.stream().filter(testResults -> workFlowType == testResults.getWorkflow()).findAny().orElseGet(
+              () -> updateTestResultFromWorkflow(workFlowType, results)
+          );
       targetTestResults.getResults().put(parts[1], entry.getValue());
     }
     return results;
+  }
+
+  private static TestResults updateTestResultFromWorkflow(WorkFlowType workFlowType, List<TestResults> results) {
+    var testResult = TestResults.builder()
+        .workflow(workFlowType)
+        .results(new HashMap<>())
+        .build();
+    results.add(testResult);
+    return testResult;
   }
 
   private static TestResults buildInitialTestResults(WorkFlowType workFlowType) {
