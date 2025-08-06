@@ -12,7 +12,9 @@ export interface TestSummary {
 })
 export class BuildStatusEntriesPipe implements PipeTransform {
   transform(results?: TestSummary): { label: string; icon: string; count: number }[] {
-    if (!results) return [];
+    if (!results) {
+      return [];
+    }
 
     const statusMap: Record<keyof TestSummary, { label: string; icon: string }> = {
       PASSED: { label: 'monitor.dashboard.passed', icon: '✅' },
@@ -21,11 +23,11 @@ export class BuildStatusEntriesPipe implements PipeTransform {
     };
 
     return (Object.keys(statusMap) as (keyof TestSummary)[])
-      .filter((key) => results[key])
-      .map((key) => ({
+      .filter(key => results[key])
+      .map(key => ({
         label: statusMap[key].label,
         icon: statusMap[key].icon,
-        count: results[key]!,
+        count: results[key] || 0
       }));
   }
 }

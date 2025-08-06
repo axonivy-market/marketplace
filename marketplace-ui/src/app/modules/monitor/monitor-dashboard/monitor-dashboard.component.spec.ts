@@ -19,7 +19,6 @@ describe('MonitoringDashboardComponent', () => {
     mockRepositories = [
       {
         name: 'repo1',
-        // htmlUrl: 'https://github.com/user/repo1',
         language: 'TypeScript',
         lastUpdated: '2025-07-20T12:00:00Z',
         focused: true,
@@ -29,7 +28,6 @@ describe('MonitoringDashboardComponent', () => {
       },
       {
         name: 'repo2',
-        // htmlUrl: 'https://github.com/user/repo2',
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
         focused: false,

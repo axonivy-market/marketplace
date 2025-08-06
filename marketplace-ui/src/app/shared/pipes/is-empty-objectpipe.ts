@@ -5,9 +5,10 @@ import { Pipe, PipeTransform } from "@angular/core";
   name: 'isEmptyObjectPipe'
 })
 export class IsEmptyObjectPipe implements PipeTransform {
-  transform(value: any): boolean {
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? Object.keys(value).length === 0
-      : false;
+  transform(value: unknown): boolean {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.keys(value).length === 0;
+    }
+    return false;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -53,22 +53,8 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-getBuildStatuses(results: { [key: string]: number }) {
-  return Object.entries(this.mapping)
-    .filter(([key]) => results[key])
-    .map(([key, meta]) => ({
-      label: meta.label,
-      icon: meta.icon,
-      count: results[key]
-    }));
-}
-
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();
     this.router.navigate(['/report', repo, upperWorkflow]);
-  }
-
-  trackByName(_index: number, repo: Repository) {
-    return repo.name;
   }
 }
