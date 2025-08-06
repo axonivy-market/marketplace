@@ -40,7 +40,6 @@ class TestResultsUtilsTest {
     testStep.setType(WorkFlowType.E2E);
     testStep.setStatus(TestStatus.PASSED);
     testStep.setName("test");
-    githubRepo.setE2eBadgeUrl("http://localhost:8080");
     githubRepo.setTestSteps(List.of(testStep));
 
     List<TestResults> results = TestResultsUtils.processTestResults(githubRepo);

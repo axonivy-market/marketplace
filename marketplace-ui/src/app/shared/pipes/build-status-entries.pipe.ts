@@ -27,7 +27,7 @@ export class BuildStatusEntriesPipe implements PipeTransform {
       .map(key => ({
         label: statusMap[key].label,
         icon: statusMap[key].icon,
-        count: results[key] || 0
+        count: results[key] ?? 0
       }));
   }
 }
