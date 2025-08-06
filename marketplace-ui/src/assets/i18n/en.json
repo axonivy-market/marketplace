@@ -227,7 +227,7 @@
       "failed": "Failed",
       "mock": "Mock",
       "real": "Real",
-      "lastUpdated": "Last Updated",
+      "lastUpdated": "Last Built",
       "language": "Language",
       "testCounts": {
         "title": "Test Results",
