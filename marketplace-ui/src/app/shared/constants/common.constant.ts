@@ -343,4 +343,5 @@ export const DARK_ICON_CLASS = 'bi-sun';
 
 // Local Storage Attribute
 export const DATA_THEME = 'data-bs-theme';
+export const DATA_THEME_ICON = 'data-theme-icon';
 export const DATA_LANGUAGE = 'data-language';

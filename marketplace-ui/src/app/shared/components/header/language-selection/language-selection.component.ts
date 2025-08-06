@@ -1,10 +1,12 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LANGUAGES } from '../../../constants/common.constant';
+import { LANGUAGES, DATA_LANGUAGE } from '../../../constants/common.constant';
 import { Language } from '../../../enums/language.enum';
 import { LanguageService } from '../../../../core/services/language/language.service';
 
+const ACTIVE = 'active';
+const INACTIVE = 'inactive';
 @Component({
   selector: 'app-language-selection',
   standalone: true,
@@ -17,12 +19,10 @@ export class LanguageSelectionComponent {
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
   document = inject(DOCUMENT);
-  currentLanguage: Language | null = null;
+  currentLanguage: Language;
 
   constructor() {
-    this.currentLanguage = this.document.defaultView?.localStorage.getItem(
-      'data-language'
-    ) as Language;
+    this.currentLanguage = this.document.defaultView?.localStorage?.getItem(DATA_LANGUAGE) as Language;
   }
 
   onSelectLanguage(language: Language) {
@@ -34,9 +34,8 @@ export class LanguageSelectionComponent {
 
   isActiveClass(language: Language): string {
     if (this.currentLanguage === language) {
-      return 'active';
-    } else {
-      return 'inactive';
-    }
+      return ACTIVE;
+    } 
+    return INACTIVE;
   }
 }
