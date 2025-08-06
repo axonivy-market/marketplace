@@ -47,9 +47,9 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
     const changedSelectedVersion = changes[SELECTED_VERSION];
-    if ( changedSelectedVersion &&
+    if ((changedSelectedVersion &&
       changedSelectedVersion.currentValue ===
-        changedSelectedVersion.previousValue
+      changedSelectedVersion.previousValue) || changedSelectedVersion.firstChange
     ) {
       return;
     }
