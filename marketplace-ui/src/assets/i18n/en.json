@@ -229,6 +229,7 @@
       "real": "Real",
       "lastUpdated": "Last Built",
       "language": "Language",
+      "pageTitle": "Monitor Dashboard",
       "testCounts": {
         "title": "Test Results",
         "mock": "Mock: ",

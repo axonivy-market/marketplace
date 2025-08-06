@@ -4,6 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { PageTitleService } from '../../../shared/services/page-title.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -20,11 +21,13 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
+  pageTitleService: PageTitleService = inject(PageTitleService);
 
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
+      this.pageTitleService.setTitleOnLangChange('monitor.dashboard.pageTitle');
     } else {
       this.loading = false;
     }

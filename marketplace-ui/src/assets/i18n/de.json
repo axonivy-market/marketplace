@@ -228,6 +228,7 @@
       "real": "Echt",
       "lastUpdated": "Zuletzt Gebaut",
       "language": "Sprache",
+      "pageTitle": "Überwachungs-Dashboard",
       "testCounts": {
         "title": "Testergebnisse",
         "mock": "Simuliert: ",
