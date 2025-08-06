@@ -186,8 +186,8 @@ export class ProductDetailComponent {
     const productDetail = this.route.snapshot.data[
       ROUTER.PRODUCT_DETAIL
     ] as ProductDetail;
-    
     this.handleProductDetailLoad(productId, productDetail);
+    this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
   }
 
   private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
