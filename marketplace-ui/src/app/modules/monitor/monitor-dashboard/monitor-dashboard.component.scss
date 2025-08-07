@@ -8,8 +8,8 @@ $rowHeight: 37px;
 
 .header {
   text-align: center;
-  padding: 2rem;
-  color: #333;
+  padding: 20px;
+  color: var(--ivy-text-primary-color);
   h2 {
     font-size: 4rem;
     margin: 20px 0;
@@ -35,15 +35,13 @@ $rowHeight: 37px;
 }
 
 .repo-card {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: var(--ivy-secondary-bg);
+  border: 1px solid var(--ivy-border-color);
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 30px;
 
   &:hover {
-    background-color: #f5f5f5;
-    border-color: #ccc;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     cursor: default;
   }
@@ -71,21 +69,13 @@ $rowHeight: 37px;
     }
   }
 
-  .visibility {
+  .badge {
     font-size: 1.1rem;
     padding: 3px 8px;
     border-radius: 20px;
-    border: 1px solid gray;
+    border: 1px solid var(--ivy-border-color);
     line-height: 12px;
-  }
-
-  .archived {
-    font-size: 1.1rem;
-    padding: 3px 8px;
-    border-radius: 20px;
-    border: 1px solid orange;
-    line-height: 12px;
-    color: orange;
+    color: var(--ivy-text-primary-color);
   }
 }
 
@@ -96,7 +86,7 @@ $rowHeight: 37px;
   p {
     margin: 8px 0;
     font-size: 1.3rem;
-    color: #555;
+    color: var(--ivy-text-primary-color);
     min-height: 28px;
   }
 
@@ -108,12 +98,14 @@ $rowHeight: 37px;
     padding: 5px 10px;
     background-color: #c4f5cc;
     border-radius: 5px;
+    color: #383838;
   }
 
   .failed {
     padding: 5px 10px;
     background-color: #f7bcbc;
     border-radius: 5px;
+    color: #383838;
   }
 
   .icon {
@@ -140,10 +132,10 @@ $rowHeight: 37px;
   font-size: 1.5rem;
   margin: 10px 0;
   line-height: 1.6;
+  color: var(--ivy-text-primary-color);
 
   .sub-status {
     font-size: 1.4rem;
-    color: #444;
     margin-top: 4px;
     margin-left: 10px;
   }
@@ -172,10 +164,10 @@ $rowHeight: 37px;
 .section-title {
   font-size: 2.5rem;
   margin: 30px;
-  color: #333;
+  color: var(--ivy-text-primary-color);
   text-align: center;
   font-weight: bold;
-  border-bottom: #949191 2px solid;
+  border-bottom: var(--ivy-border-color) 2px solid;
   padding-bottom: 20px;
 }
 

@@ -1,18 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
-import { GithubService, Repository, TestResult } from '../github.service';
+import { GithubService, Repository } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { PageTitleService } from '../../../shared/services/page-title.service';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
   let fixture: ComponentFixture<MonitoringDashboardComponent>;
   let githubService: jasmine.SpyObj<GithubService>;
   let router: jasmine.SpyObj<Router>;
+  let pageTitleService: jasmine.SpyObj<any>;
   let mockRepositories: Repository[];
 
   beforeEach(async () => {
@@ -69,7 +71,8 @@ describe('MonitoringDashboardComponent', () => {
 
     const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    
+    const pageTitleServiceSpy = jasmine.createSpyObj(PageTitleService, ['setTitleOnLangChange']);
+
     await TestBed.configureTestingModule({
       imports: [
         MonitoringDashboardComponent,
@@ -79,6 +82,7 @@ describe('MonitoringDashboardComponent', () => {
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: PageTitleService, useValue: pageTitleServiceSpy },
         LanguageService,
         TranslateService
       ]
@@ -86,6 +90,7 @@ describe('MonitoringDashboardComponent', () => {
 
     githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    pageTitleService = TestBed.inject(PageTitleService) as jasmine.SpyObj<PageTitleService>;
 
     githubService.getRepositories.and.returnValue(of(mockRepositories));
 
@@ -99,8 +104,18 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should load repositories on init', () => {
-    expect(githubService.getRepositories).toHaveBeenCalled();
-    expect(component.repositories).toEqual(mockRepositories);
+    component.platformId = 'browser';
+    component.pageTitleService = pageTitleService;
+    const loadRepositoriesSpy = spyOn(component, 'loadRepositories');
+    component.ngOnInit();
+    expect(loadRepositoriesSpy).toHaveBeenCalled();
+    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('common.monitor.dashboard.pageTitle');
+  });
+
+  it('should set loading to false on ngOnInit if not browser', () => {
+    component.platformId = 'server';
+    component.loading = true;
+    component.ngOnInit();
     expect(component.loading).toBeFalse();
   });
 

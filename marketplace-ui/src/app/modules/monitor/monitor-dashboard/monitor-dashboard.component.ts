@@ -32,6 +32,8 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
+  pageTitleService: PageTitleService = inject(PageTitleService);
+
   ciBuild = CI_BUILD;
   devBuild = DEV_BUILD;
   monitoringWikiLink = MONITORING_WIKI_LINK;
@@ -39,6 +41,7 @@ export class MonitoringDashboardComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
+      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
     } else {
       this.loading = false;
     }

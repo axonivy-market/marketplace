@@ -11,13 +11,13 @@ $height-header: 37px;
     h2 {
         margin: $height-header 0 $gap-large;
         text-align: center;
-        color: var(--ivy-text-secondary-color);
+        color: var(--ivy-text-primary-color);
     }
 
     h3 {
         margin: $gap-small 0;
         text-align: center;
-        color: var(--ivy-text-secondary-color);
+        color: var(--ivy-text-primary-color);
     }
 
     .test-step {
@@ -91,7 +91,7 @@ $height-header: 37px;
 .no-report {
     width: 100%;
     text-align: center;
-    color: var(--ivy-text-secondary-color);
+    color: var(--ivy-text-primary-color);
     font-size: 5rem;
     padding: $gap-small;
 }
