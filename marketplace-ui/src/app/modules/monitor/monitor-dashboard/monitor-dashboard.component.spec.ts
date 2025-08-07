@@ -109,7 +109,7 @@ describe('MonitoringDashboardComponent', () => {
     const loadRepositoriesSpy = spyOn(component, 'loadRepositories');
     component.ngOnInit();
     expect(loadRepositoriesSpy).toHaveBeenCalled();
-    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('monitor.dashboard.pageTitle');
+    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('common.monitor.dashboard.pageTitle');
   });
 
   it('should set loading to false on ngOnInit if not browser', () => {
