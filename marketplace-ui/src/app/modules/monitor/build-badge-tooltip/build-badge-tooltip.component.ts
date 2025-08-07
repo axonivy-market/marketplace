@@ -14,7 +14,7 @@ import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
 export class BuildBadgeTooltipComponent implements OnInit {
   @Input() buildType = '';
   tooltipContent = '';
-  monitoringWikiLink = 'https://github.com/axonivy-market/market/wiki';
+  monitoringWikiLink = 'https://github.com/axonivy-market/market/wiki/Marketplace-Repositories-Security-Monitor-documentation';
   ciTooltipPath = 'monitor.buildTooltip.ci';
   devTooltipPath = 'monitor.buildTooltip.dev';
 

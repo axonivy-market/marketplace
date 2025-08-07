@@ -6,10 +6,11 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { TranslateModule } from '@ngx-translate/core';
 import { BuildBadgeTooltipComponent } from "../build-badge-tooltip/build-badge-tooltip.component";
 import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, BuildBadgeTooltipComponent],
+  imports: [CommonModule, TranslateModule, BuildBadgeTooltipComponent, NgbTooltipModule],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
