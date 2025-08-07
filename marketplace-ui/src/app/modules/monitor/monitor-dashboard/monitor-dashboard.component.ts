@@ -11,6 +11,8 @@ import {
   MONITORING_WIKI_LINK
 } from '../../../shared/constants/common.constant';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
