@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
+import {
+  CI_BUILD,
+  DEV_BUILD,
+  MONITORING_WIKI_LINK
+} from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-build-badge-tooltip',
@@ -14,7 +18,7 @@ import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
 export class BuildBadgeTooltipComponent implements OnInit {
   @Input() buildType = '';
   tooltipContent = '';
-  monitoringWikiLink = 'https://github.com/axonivy-market/market/wiki/Marketplace-Repositories-Security-Monitor-documentation';
+  monitoringWikiLink = MONITORING_WIKI_LINK;
   ciTooltipPath = 'monitor.buildTooltip.ci';
   devTooltipPath = 'monitor.buildTooltip.dev';
 

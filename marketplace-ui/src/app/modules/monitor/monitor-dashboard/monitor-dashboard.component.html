@@ -1,29 +1,16 @@
 <ng-template #tooltipTemplate>
   <p class="text-primary">
-    <a href="https://github.com/axonivy-market/market/wiki/Marketplace-Repositories-Security-Monitor-documentation" target="_blank">See more</a>
+    <a [href]="monitoringWikiLink" target="_blank">See more</a>
   </p>
 </ng-template>
 
 <div class="container">
-  <!-- <div id="monitoring-info-container" class="d-flex justify-content-end align-items-center">
-    <a href="https://github.com/axonivy-market/market/wiki/Marketplace-Repositories-Security-Monitor-documentation" target="_blank"><i class="bi bi-info-circle"></i></a>
-  </div> -->
   <div class="header">
     <div class="d-flex align-items-center justify-content-center gap-2">
       <h2 [lang]="languageService.selectedLanguage()">
         {{ 'monitor.dashboard.title' | translate }}
       </h2>
-      <!-- <button
-        type="button"
-        id="build-info-tooltip"
-        placement="top"
-        [ngbTooltip]="tooltipTemplate"
-        tooltipClass="build-info-tooltip-custom-class">
-        <span>
-            <i class="bi bi-info-circle"></i>
-        </span>
-      </button> -->
-      <a href="https://github.com/axonivy-market/market/wiki/Marketplace-Repositories-Security-Monitor-documentation" target="_blank"><i class="bi bi-info-circle"></i></a>
+      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
     </div>
     <h3 [lang]="languageService.selectedLanguage()">
       {{ 'monitor.dashboard.subtitle' | translate }}
@@ -73,7 +60,7 @@
           <div class="badge-row">
             <span class="icon">🏷️</span>
             <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-2" (click)="onBadgeClick(repo.name, 'ci')"/>
-            <!-- <app-build-badge-tooltip [buildType]="ciBuild"/> -->
+            <app-build-badge-tooltip [buildType]="ciBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</b></p>
@@ -92,7 +79,7 @@
           <div class="badge-row">
             <span class="icon">🛠️</span>
             <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-2" (click)="onBadgeClick(repo.name, 'dev')"/>
-            <!-- <app-build-badge-tooltip [buildType]="devBuild"/> -->
+            <app-build-badge-tooltip [buildType]="devBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</b></p>

@@ -4,13 +4,22 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { BuildBadgeTooltipComponent } from "../build-badge-tooltip/build-badge-tooltip.component";
-import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
+import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
+import {
+  CI_BUILD,
+  DEV_BUILD,
+  MONITORING_WIKI_LINK
+} from '../../../shared/constants/common.constant';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, BuildBadgeTooltipComponent, NgbTooltipModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    BuildBadgeTooltipComponent,
+    NgbTooltipModule
+  ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
@@ -24,8 +33,8 @@ export class MonitoringDashboardComponent implements OnInit {
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   ciBuild = CI_BUILD;
-  devBuild = DEV_BUILD
-
+  devBuild = DEV_BUILD;
+  monitoringWikiLink = MONITORING_WIKI_LINK;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -49,14 +58,20 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
+  getTestCount(
+    repo: Repository,
+    workflow: string,
+    environment: string,
+    status: string
+  ): number {
     if (!repo.testResults) {
       return 0;
     }
-    const result = repo.testResults.find(test =>
-      test.workflow === workflow.toUpperCase() &&
-      test.environment === environment.toUpperCase() &&
-      test.status === status.toUpperCase()
+    const result = repo.testResults.find(
+      test =>
+        test.workflow === workflow.toUpperCase() &&
+        test.environment === environment.toUpperCase() &&
+        test.status === status.toUpperCase()
     );
 
     if (result) {

@@ -340,3 +340,4 @@ export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
 // Monitoring constants
 export const CI_BUILD = 'CI';
 export const DEV_BUILD = 'DEV';
+export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wiki/c5-Marketplace-Repositories-Security-Monitor-documentation';
