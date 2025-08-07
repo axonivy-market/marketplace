@@ -212,58 +212,59 @@
     "externalDocument": {
       "pageHeader": "The document of the {{product}} for version {{version}}",
       "helpText": "The document is not ready to render or has not been published. Please try again later."
-    }
-  },
-  "monitor": {
-    "dashboard": {
-      "title": "GitHub Repository Monitor",
-      "subtitle": "Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.",
-      "loading": "Loading repositories...",
-      "noRepositories": "No repositories found.",
-      "errorLoading": "Error loading repositories",
-      "ciLabel": "CI Build",
-      "devLabel": "DEV Build",
-      "passed": "Passed",
-      "failed": "Failed",
-      "mock": "Mock",
-      "real": "Real",
-      "lastUpdated": "Last Updated",
-      "language": "Language",
-      "testCounts": {
-        "title": "Test Results",
-        "mock": "Mock: ",
-        "real": "Real: ",
-        "total": "Total tests: "
-      },
-      "repo": {
-        "name": "Repository Name",
+    },
+    "monitor": {
+      "dashboard": {
+        "title": "GitHub Repository Monitor",
+        "subtitle": "Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.",
+        "loading": "Loading repositories...",
+        "noRepositories": "No repositories found.",
+        "errorLoading": "Error loading repositories",
+        "ciLabel": "CI Build",
+        "devLabel": "DEV Build",
+        "passed": "Passed",
+        "failed": "Failed",
+        "mock": "Mock",
+        "real": "Real",
+        "lastUpdated": "Last Built",
         "language": "Language",
-        "url": "Repository URL",
-        "workflow": "workflow of"
-      },
-      "actions": {
-        "viewDetails": "View Details",
-        "refresh": "Refresh"
-      },
-      "status": {
-        "active": "Active",
-        "inactive": "Inactive"
-      },
-      "summaryCard": {
-        "title": "Summary",
-        "totalRepos": "Total Repositories",
-        "totalPassed": "Total Passed Tests",
-        "totalFailed": "Total Failed Tests",
-        "lastSync": "Last Synchronization"
-      },
-      "filterLabel": "Filter Repositories",
-      "noReport": "There is no test report in this workflow.",
-      "skipped": "Skipped",
-      "focus": {
-        "title": "Focused Market Extension"
-      },
-      "standard": {
-        "title": "Standard Market Extension"
+        "pageTitle": "Monitor Dashboard",
+        "testCounts": {
+          "title": "Test Results",
+          "mock": "Mock: ",
+          "real": "Real: ",
+          "total": "Total tests: "
+        },
+        "repo": {
+          "name": "Repository Name",
+          "language": "Language",
+          "url": "Repository URL",
+          "workflow": "workflow of"
+        },
+        "actions": {
+          "viewDetails": "View Details",
+          "refresh": "Refresh"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "summaryCard": {
+          "title": "Summary",
+          "totalRepos": "Total Repositories",
+          "totalPassed": "Total Passed Tests",
+          "totalFailed": "Total Failed Tests",
+          "lastSync": "Last Synchronization"
+        },
+        "filterLabel": "Filter Repositories",
+        "noReport": "There is no test report in this workflow.",
+        "skipped": "Skipped",
+        "focus": {
+          "title": "Focused Market Extension"
+        },
+        "standard": {
+          "title": "Standard Market Extension"
+        }
       }
     }
   }

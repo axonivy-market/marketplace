@@ -100,6 +100,9 @@ p {
   --product-latest-release: #{$ivyLatestReleaseColor};
   --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
 
+  --clear-search-text-button-bg-hover: #eeeeee;
+  --clear-search-text-button-bg-active: #d6d6d6;
+
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
   }
@@ -221,6 +224,9 @@ p {
 
   --product-latest-release: #{$ivyLatestReleaseColor};
   --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
+
+  --clear-search-text-button-bg-hover: #262626;
+  --clear-search-text-button-bg-active: #454545;
 
   a {
     color: #{$white};

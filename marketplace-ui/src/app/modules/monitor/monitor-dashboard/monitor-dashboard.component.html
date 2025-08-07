@@ -1,15 +1,15 @@
 <div class="container">
   <div class="header">
     <h2 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.title' | translate }}
+      {{ 'common.monitor.dashboard.title' | translate }}
     </h2>
     <h3 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.subtitle' | translate }}
+      {{ 'common.monitor.dashboard.subtitle' | translate }}
     </h3>
   </div>
   @if (loading) {
     <div class="loading" [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.loading' | translate }}
+      {{ 'common.monitor.dashboard.loading' | translate }}
     </div>
   }
 
@@ -18,7 +18,7 @@
   }
 
   @if (!loading && focusedRepo().length) {
-    <h4 class="section-title">{{ 'monitor.dashboard.focus.title' | translate }}</h4>
+    <h4 class="section-title">{{ 'common.monitor.dashboard.focus.title' | translate }}</h4>
     <div class="repo-grid">
       @for (repo of focusedRepo(); track repo.name) {
         <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
@@ -27,7 +27,7 @@
   }
 
   @if (!loading && standardRepo().length) {
-    <h4 class="section-title">{{ 'monitor.dashboard.standard.title' | translate }}</h4>
+    <h4 class="section-title">{{ 'common.monitor.dashboard.standard.title' | translate }}</h4>
     <div class="repo-grid">
       @for (repo of standardRepo(); track repo.name) {
         <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
@@ -39,29 +39,29 @@
     <div class="repo-card">
       <div class="repo-header">
         <p>{{ repo.name }}</p>
-        <span class="visibility">{{ repo.language }}</span>
+        <span class="badge">{{ repo.language }}</span>
       </div>
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">{{ build.workflow | workflowIcon }}</span>
-          <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="sub-status">
-          @if(!(build.results | isEmptyObjectPipe)) {
-            @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-              <span>
-                {{ testStatus.label | translate }}: {{ testStatus.count }} {{ testStatus.icon }}
-              </span>
-            }            
-          } @else {
-            <br>
-          }
+          <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
+            <span class="icon">{{ build.workflow | workflowIcon }}</span>
+            <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
+          </div>
+          <div class="sub-status">
+            @if(!(build.results | isEmptyObjectPipe)) {
+              @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                <span>
+                  {{ testStatus.label | translate }}: {{ testStatus.count }} {{ testStatus.icon }}
+                </span>
+              }
+            } @else {
+              <br>
+            }
           </div>
         }
         <p>
           <span class="icon">📅</span>
-          {{ 'monitor.dashboard.lastUpdated' | translate }}:
+          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
           {{ repo.lastUpdated | date: 'medium' }}
         </p>
       </div>

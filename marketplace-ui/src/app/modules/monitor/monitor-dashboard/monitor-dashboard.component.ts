@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
 import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
 import { IsEmptyObjectPipe } from "../../../shared/pipes/is-empty-objectpipe";
+import { PageTitleService } from '../../../shared/services/page-title.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -30,10 +31,13 @@ export class MonitoringDashboardComponent implements OnInit {
     FAILED: { label: 'monitor.dashboard.failed', icon: '❌' },
     SKIPPED: { label: 'monitor.dashboard.skipped', icon: '⏩' }
   };
+  pageTitleService: PageTitleService = inject(PageTitleService);
+
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
+      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
     } else {
       this.loading = false;
     }

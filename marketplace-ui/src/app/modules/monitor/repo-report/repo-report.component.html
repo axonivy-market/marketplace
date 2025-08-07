@@ -1,6 +1,6 @@
 @if (report.length && !loading && !errorMessage) {
 <div class="test-report">
-  <h2>{{ workflow | uppercase }} {{ 'monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
+  <h2>{{ workflow | uppercase }} {{ 'common.monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
   <div class="test-steps">
     @for (step of report; track step.name) {
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
@@ -8,13 +8,13 @@
       <span class="step-status">
         @switch (step.status.toLowerCase()) {
           @case ('passed') {
-          <span class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}</span>
+          <span class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}</span>
           }
           @case ('failed') {
-          <span class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}</span>
+          <span class="failed">❌ {{ 'common.monitor.dashboard.failed' | translate }}</span>
           }
           @case ('skipped') {
-          <span class="skipped">⏭️ {{ 'monitor.dashboard.skipped' | translate }}</span>
+          <span class="skipped">⏭️ {{ 'common.monitor.dashboard.skipped' | translate }}</span>
           }
         }
       </span>
@@ -26,13 +26,13 @@
 
 @if (!report.length && !loading && !errorMessage) {
 <div class="test-report">
-  <h2>{{ workflow | uppercase }} {{ 'monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
-  <h3>{{ 'monitor.dashboard.noReport' | translate }}</h3>
+  <h2>{{ workflow | uppercase }} {{ 'common.monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
+  <h3>{{ 'common.monitor.dashboard.noReport' | translate }}</h3>
 </div>
 }
 
 @if (loading) {
-<div class="loading">{{ 'monitor.dashboard.loading' | translate }}</div>
+<div class="loading">{{ 'common.monitor.dashboard.loading' | translate }}</div>
 }
 
 @if (errorMessage) {
