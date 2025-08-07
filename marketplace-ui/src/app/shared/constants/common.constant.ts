@@ -336,3 +336,12 @@ export const GOOGLE = 'google';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
+
+// Theme Icon
+export const LIGHT_ICON_CLASS = 'bi-moon';
+export const DARK_ICON_CLASS = 'bi-sun';
+
+// Local Storage Attribute
+export const DATA_THEME = 'data-bs-theme';
+export const DATA_THEME_ICON = 'data-theme-icon';
+export const DATA_LANGUAGE = 'data-language';

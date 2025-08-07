@@ -1,8 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { Theme } from '../../../shared/enums/theme.enum';
-
-const DATA_THEME = 'data-bs-theme';
+import { DATA_THEME } from '../../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
