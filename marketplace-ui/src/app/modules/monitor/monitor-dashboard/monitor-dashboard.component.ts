@@ -27,7 +27,7 @@ export class MonitoringDashboardComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
-      this.pageTitleService.setTitleOnLangChange('monitor.dashboard.pageTitle');
+      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
     } else {
       this.loading = false;
     }

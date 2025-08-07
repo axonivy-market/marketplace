@@ -13,7 +13,6 @@ $rowHeight: 37px;
   h2 {
     font-size: 4rem;
     margin: 20px 0;
-    color: var(--ivy-text-primary-color);
   }
 }
 
@@ -31,8 +30,6 @@ $rowHeight: 37px;
   padding: 30px;
 
   &:hover {
-    background-color: var(--ivy-secondary-bg);
-    border-color: var(--ivy-border-color);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     cursor: default;
   }
@@ -127,7 +124,6 @@ $rowHeight: 37px;
 
   .sub-status {
     font-size: 1.4rem;
-    color: var(--ivy-text-primary-color);
     margin-top: 4px;
     margin-left: 10px;
   }

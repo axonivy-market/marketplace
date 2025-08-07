@@ -3,15 +3,12 @@
   margin: 20px auto;
   padding: 0 15px;
   cursor: default;
-  background: var(--ivy-secondary-bg);
   color: var(--ivy-text-primary-color);
 }
 
 .header {
   text-align: center;
   padding: 20px 0;
-  color: #333;
-  color: var(--ivy-text-primary-color);
 
   h2 {
     font-size: 4rem;
@@ -147,7 +144,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--ivy-secondary-bg);
   color: var(--ivy-text-primary-color);
   border-radius: 8px;
   padding: 20px;
@@ -173,8 +169,6 @@
   width: 350px;
   border: 1px solid var(--ivy-border-color);
   border-radius: 4px;
-  color: var(--ivy-text-primary-color);
-  background: var(--ivy-secondary-bg);
 }
 
 .token-input-container button {

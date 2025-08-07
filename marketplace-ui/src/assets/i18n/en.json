@@ -212,9 +212,8 @@
     "externalDocument": {
       "pageHeader": "The document of the {{product}} for version {{version}}",
       "helpText": "The document is not ready to render or has not been published. Please try again later."
-    }
-  },
-  "monitor": {
+    },
+    "monitor": {
     "dashboard": {
       "title": "GitHub Repository Monitor",
       "subtitle": "Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.",
@@ -267,5 +266,6 @@
         "title": "Standard Market Extension"
       }
     }
+  }
   }
 }
