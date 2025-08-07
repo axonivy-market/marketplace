@@ -265,11 +265,11 @@
         "standard": {
           "title": "Standard Market Extension"
         }
+      },  
+      "buildTooltip": {
+        "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
+        "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build)."
       }
-    },
-    "buildTooltip": {
-      "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
-      "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build)."
     }
   }
 }

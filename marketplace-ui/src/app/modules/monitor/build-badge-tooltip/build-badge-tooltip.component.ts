@@ -19,8 +19,8 @@ export class BuildBadgeTooltipComponent implements OnInit {
   @Input() buildType = '';
   tooltipContent = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
-  ciTooltipPath = 'monitor.buildTooltip.ci';
-  devTooltipPath = 'monitor.buildTooltip.dev';
+  ciTooltipPath = 'common.monitor.buildTooltip.ci';
+  devTooltipPath = 'common.monitor.buildTooltip.dev';
 
   translateService = inject(TranslateService);
 
