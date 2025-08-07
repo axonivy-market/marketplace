@@ -60,7 +60,7 @@
           <div class="badge-row d-flex justify-content-star align-items-start">
             <span class="icon">🏷️</span>
             <div (click)="onBadgeClick(repo.name, 'ci')">
-              <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-2"/>
+              <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
             </div>
             <app-build-badge-tooltip [buildType]="ciBuild"/>
           </div>
@@ -78,10 +78,10 @@
           </div>
         }
         @if (repo.devBadgeUrl) {
-          <div class="badge-row d-flex justify-content-star align-items-start" (click)="onBadgeClick(repo.name, 'dev')">
+          <div class="badge-row d-flex justify-content-star align-items-start">
             <span class="icon">🛠️</span>
             <div (click)="onBadgeClick(repo.name, 'ci')">
-              <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-2"/>
+              <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
             </div>
             <app-build-badge-tooltip [buildType]="devBuild"/>
           </div>
