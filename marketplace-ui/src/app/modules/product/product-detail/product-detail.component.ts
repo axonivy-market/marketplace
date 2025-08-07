@@ -59,7 +59,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { SafeHtml, Title, DomSanitizer, Meta } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
-import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-objectpipe';
+import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';

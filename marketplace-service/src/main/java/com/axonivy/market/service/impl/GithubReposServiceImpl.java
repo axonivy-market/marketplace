@@ -80,8 +80,8 @@ public class GithubReposServiceImpl implements GithubReposService {
       } else {
       githubRepo = createNewGithubRepo(ghRepo);
     }
-      List<TestStep> testSteps = Arrays.stream(values()).map(workFlow -> processWorkflowWithFallback(ghRepo, githubRepo,
-          workFlow)).flatMap(Collection::stream).toList();
+      List<TestStep> testSteps = Arrays.stream(values()).map(
+          workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
       githubRepo.getTestSteps().addAll(testSteps);
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException | IOException e) {
@@ -109,11 +109,11 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
     String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
-    switch(workflowType) {
+    switch (workflowType) {
       case CI:
         dbRepo.setCiBadgeUrl(runBadgeUrl);
         break;
-        case DEV:
+      case DEV:
         dbRepo.setDevBadgeUrl(runBadgeUrl);
         break;
       case E2E:

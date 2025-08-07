@@ -43,7 +43,7 @@
       </div>
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
+          <div class="badge-row" (click)="onBadgeClick(repo.name, build.build )">
             <span class="icon">{{ build.workflow | workflowIcon }}</span>
             <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
           </div>

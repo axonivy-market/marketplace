@@ -10,9 +10,7 @@ const mockRepos: Repository[] = [
     language: 'TypeScript',
     lastUpdated: '2025-07-20T12:00:00Z',
     focused: true,
-    testResults: [
-     
-    ]
+    testResults: []
   }
 ];
 

@@ -16,10 +16,13 @@ export class BuildStatusEntriesPipe implements PipeTransform {
       return [];
     }
 
-    const statusMap: Record<keyof TestSummary, { label: string; icon: string }> = {
-      PASSED: { label: 'monitor.dashboard.passed', icon: '✅' },
-      FAILED: { label: 'monitor.dashboard.failed', icon: '❌' },
-      SKIPPED: { label: 'monitor.dashboard.skipped', icon: '⏩' },
+    const statusMap: Record<
+      keyof TestSummary,
+      { label: string; icon: string }
+    > = {
+      PASSED: { label: 'common.monitor.dashboard.passed', icon: '✅' },
+      FAILED: { label: 'common.monitor.dashboard.failed', icon: '❌' },
+      SKIPPED: { label: 'common.monitor.dashboard.skipped', icon: '⏩' }
     };
 
     return (Object.keys(statusMap) as (keyof TestSummary)[])

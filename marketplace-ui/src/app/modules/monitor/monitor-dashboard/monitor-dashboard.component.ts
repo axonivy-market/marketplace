@@ -6,7 +6,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { TranslateModule } from '@ngx-translate/core';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
 import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
-import { IsEmptyObjectPipe } from "../../../shared/pipes/is-empty-objectpipe";
+import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 @Component({
   selector: 'app-dashboard',
