@@ -7,8 +7,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class WorkflowIconPipe implements PipeTransform {
   transform(workflow: string): string {
     const icons: Record<string, string> = {
-      CI: '⚙️',
-      DEV: '🚀',
+      CI: '🏷️',
+      DEV: '🛠️',
       E2E: '♻️'
     };
 
