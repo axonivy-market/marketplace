@@ -5,10 +5,12 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { translateUniversalLoaderFactory } from './core/configs/translate-loader.factory';
 import { HttpClient } from '@angular/common/http';
 import { Language } from './shared/enums/language.enum';
+import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 
 const serverConfig: ApplicationConfig = {
   providers: [
     provideServerRendering(),
+    provideClientHydration(withI18nSupport()),
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
