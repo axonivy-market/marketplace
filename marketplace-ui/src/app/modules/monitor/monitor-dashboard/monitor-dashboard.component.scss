@@ -14,6 +14,12 @@ $rowHeight: 37px;
     font-size: 4rem;
     margin: 20px 0;
   }
+  
+  a {
+    font-size: 1.5rem;
+    color: var(--ivy-link-corlor);
+    text-decoration: none;
+  }
 }
 
 .repo-grid {

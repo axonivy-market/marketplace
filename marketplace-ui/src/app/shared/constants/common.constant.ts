@@ -345,3 +345,7 @@ export const DARK_ICON_CLASS = 'bi-sun';
 export const DATA_THEME = 'data-bs-theme';
 export const DATA_THEME_ICON = 'data-theme-icon';
 export const DATA_LANGUAGE = 'data-language';
+// Monitoring constants
+export const CI_BUILD = 'CI';
+export const DEV_BUILD = 'DEV';
+export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wiki/c5-Marketplace-Repositories-Security-Monitor-documentation';

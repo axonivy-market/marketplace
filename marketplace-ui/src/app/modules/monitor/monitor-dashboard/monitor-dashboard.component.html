@@ -1,8 +1,17 @@
+<ng-template #tooltipTemplate>
+  <p class="text-primary">
+    <a [href]="monitoringWikiLink" target="_blank">See more</a>
+  </p>
+</ng-template>
+
 <div class="container">
   <div class="header">
-    <h2 [lang]="languageService.selectedLanguage()">
-      {{ 'common.monitor.dashboard.title' | translate }}
-    </h2>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      <h2 [lang]="languageService.selectedLanguage()">
+        {{ 'common.monitor.dashboard.title' | translate }}
+      </h2>
+      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+    </div>
     <h3 [lang]="languageService.selectedLanguage()">
       {{ 'common.monitor.dashboard.subtitle' | translate }}
     </h3>
@@ -45,11 +54,15 @@
         <p>{{ repo.name }}</p>
         <span class="badge">{{ repo.language }}</span>
       </div>
+      
       <div class="repo-info">
         @if (repo.ciBadgeUrl) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
+          <div class="badge-row d-flex justify-content-star align-items-start">
             <span class="icon">🏷️</span>
-            <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" />
+            <div (click)="onBadgeClick(repo.name, 'ci')">
+              <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
+            </div>
+            <app-build-badge-tooltip [buildType]="ciBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</b></p>
@@ -65,9 +78,12 @@
           </div>
         }
         @if (repo.devBadgeUrl) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
+          <div class="badge-row d-flex justify-content-star align-items-start">
             <span class="icon">🛠️</span>
-            <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" />
+            <div (click)="onBadgeClick(repo.name, 'ci')">
+              <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
+            </div>
+            <app-build-badge-tooltip [buildType]="devBuild"/>
           </div>
           <div class="workflow">
             <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</b></p>
