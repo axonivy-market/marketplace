@@ -38,7 +38,7 @@
   <ng-template #repoCard let-repo>
     <div class="repo-card">
       <div class="repo-header">
-        <a class="text-decoration-none" [href]="repo.htmlUrl" >
+        <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
           <p>{{ repo.name }}</p>
         </a>
         <span class="badge">{{ repo.language }}</span>
