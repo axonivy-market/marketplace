@@ -51,9 +51,9 @@
         @for (build of repo.testResults; track build.workflow) {
           <div class="badge-row" (click)="onBadgeClick(repo.name, build.workflow )">
             <span class="icon">{{ build.workflow | workflowIcon }}</span>
-            <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
+            <img class="me-3" [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
+            <app-build-badge-tooltip [buildType]="build.workflow"/>
           </div>
-          <app-build-badge-tooltip [buildType]="build.workflow"/>
           <div class="sub-status">
             @if(!(build.results | isEmptyObjectPipe)) {
               @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
