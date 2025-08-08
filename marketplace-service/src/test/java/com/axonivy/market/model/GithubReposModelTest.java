@@ -4,7 +4,6 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
