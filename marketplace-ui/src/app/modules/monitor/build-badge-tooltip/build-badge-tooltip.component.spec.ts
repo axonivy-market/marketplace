@@ -46,7 +46,7 @@ describe('BuildBadgeTooltipComponent', () => {
     component.constructToolTipContent();
 
     expect(mockTranslateService.instant).toHaveBeenCalledWith(
-      'monitor.buildTooltip.ci'
+      'common.monitor.buildTooltip.ci'
     );
     expect(component.tooltipContent).toBe(mockTranslation);
   });
@@ -59,7 +59,7 @@ describe('BuildBadgeTooltipComponent', () => {
     component.constructToolTipContent();
 
     expect(mockTranslateService.instant).toHaveBeenCalledWith(
-      'monitor.buildTooltip.dev'
+      'common.monitor.buildTooltip.dev'
     );
     expect(component.tooltipContent).toBe(mockTranslation);
   });
