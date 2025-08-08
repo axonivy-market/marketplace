@@ -6,7 +6,7 @@ import { catchError, EMPTY, finalize, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
-import { API_BASE_URL } from '../../shared/constants/api.constant';
+import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -46,7 +46,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   let apiURL = environment.apiUrl;
   if (isPlatformServer(platformId)) {
     try {
-      apiURL = inject(API_BASE_URL);
+      apiURL = inject(API_INTERNAL_URL);
     } catch (e) {
       console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL: ', e);
     }
@@ -55,7 +55,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
-
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers)
