@@ -1,8 +1,11 @@
 <div class="container">
   <div class="header">
-    <h2 [lang]="languageService.selectedLanguage()">
-      {{ 'common.monitor.dashboard.title' | translate }}
-    </h2>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      <h2 [lang]="languageService.selectedLanguage()">
+        {{ 'common.monitor.dashboard.title' | translate }}
+      </h2>
+      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+    </div>
     <h3 [lang]="languageService.selectedLanguage()">
       {{ 'common.monitor.dashboard.subtitle' | translate }}
     </h3>
@@ -43,12 +46,14 @@
         </a>
         <span class="badge">{{ repo.language }}</span>
       </div>
+      
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
           <div class="badge-row" (click)="onBadgeClick(repo.name, build.workflow )">
             <span class="icon">{{ build.workflow | workflowIcon }}</span>
             <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
           </div>
+          <app-build-badge-tooltip [buildType]="build.workflow"/>
           <div class="sub-status">
             @if(!(build.results | isEmptyObjectPipe)) {
               @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {

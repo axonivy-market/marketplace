@@ -7,7 +7,15 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
 import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
 import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
+import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
+import {
+  CI_BUILD,
+  DEV_BUILD,
+  MONITORING_WIKI_LINK
+} from '../../../shared/constants/common.constant';
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -16,7 +24,9 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
     TranslateModule,
     BuildStatusEntriesPipe,
     WorkflowIconPipe,
-    IsEmptyObjectPipe
+    IsEmptyObjectPipe,
+    BuildBadgeTooltipComponent,
+    NgbTooltipModule
   ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
@@ -34,6 +44,9 @@ export class MonitoringDashboardComponent implements OnInit {
   platformId = inject(PLATFORM_ID);
 
   pageTitleService: PageTitleService = inject(PageTitleService);
+  ciBuild = CI_BUILD;
+  devBuild = DEV_BUILD;
+  monitoringWikiLink = MONITORING_WIKI_LINK;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
