@@ -60,7 +60,7 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  onBadgeClick(repo: string, workflow: string = '') {
+  onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();
     this.router.navigate(['/report', repo, upperWorkflow]);
   }
