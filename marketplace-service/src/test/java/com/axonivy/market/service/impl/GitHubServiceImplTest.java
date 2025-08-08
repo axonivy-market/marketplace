@@ -731,4 +731,37 @@ class GitHubServiceImplTest {
     verify(mockRun).listArtifacts();
   }
 
+  @Test
+  void testGetRepositoryRepositoryFound() throws IOException {
+    String repositoryPath = "org/repo";
+    GHRepository mockRepository = mock(GHRepository.class);
+    GitHub mockGitHub = mock(GitHub.class);
+    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
+    when(mockGitHub.getRepository(repositoryPath)).thenReturn(mockRepository);
+
+    GHRepository result = gitHubService.getRepository(repositoryPath);
+
+    assertNotNull(result, "Expected non-null repository");
+    verify(mockGitHub).getRepository(repositoryPath);
+  }
+
+  @Test
+  void testGetRepositoryGhFileNotFoundException() throws IOException {
+    when(gitHubService.getGitHub()).thenReturn(gitHub);
+    when(gitHub.getRepository("missing/repo")).thenThrow(new GHFileNotFoundException());
+
+    GHRepository result = gitHubService.getRepository("missing/repo");
+
+    assertNull(result, "Expected null result when GHFileNotFoundException is thrown");
+  }
+
+  @Test
+  void testGetRepositoryIOException() throws IOException {
+    when(gitHubService.getGitHub()).thenReturn(gitHub);
+    when(gitHub.getRepository("error/repo")).thenThrow(new IOException("IO error"));
+
+    GHRepository result = gitHubService.getRepository("error/repo");
+
+    assertNull(result, "Expected null result when IOException is thrown");
+  }
 }

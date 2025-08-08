@@ -105,3 +105,19 @@ $rowHeight: 37px;
     font-size: 1.6rem;
   }
 }
+
+#clear-search-text-button {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--clear-search-text-button-bg-hover) !important;
+  }
+
+  &:active {
+    background-color: var(--clear-search-text-button-bg-active) !important;
+  }
+}
+
+.clear-icon {
+  font-size: 2.5rem;
+}

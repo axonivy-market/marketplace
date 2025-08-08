@@ -9,6 +9,7 @@ export interface Repository {
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
+  focused: boolean;
   testResults?: TestResult[];
 }
 
@@ -41,4 +42,3 @@ export class GithubService {
     return this.http.get<TestStep>(url);
   }
 }
-

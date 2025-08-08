@@ -4,10 +4,24 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
+import {
+  CI_BUILD,
+  DEV_BUILD,
+  MONITORING_WIKI_LINK
+} from '../../../shared/constants/common.constant';
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    BuildBadgeTooltipComponent,
+    NgbTooltipModule
+  ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
@@ -20,11 +34,16 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
+  pageTitleService: PageTitleService = inject(PageTitleService);
 
+  ciBuild = CI_BUILD;
+  devBuild = DEV_BUILD;
+  monitoringWikiLink = MONITORING_WIKI_LINK;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
+      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
     } else {
       this.loading = false;
     }
@@ -44,14 +63,20 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
+  getTestCount(
+    repo: Repository,
+    workflow: string,
+    environment: string,
+    status: string
+  ): number {
     if (!repo.testResults) {
       return 0;
     }
-    const result = repo.testResults.find(test =>
-      test.workflow === workflow.toUpperCase() &&
-      test.environment === environment.toUpperCase() &&
-      test.status === status.toUpperCase()
+    const result = repo.testResults.find(
+      test =>
+        test.workflow === workflow.toUpperCase() &&
+        test.environment === environment.toUpperCase() &&
+        test.status === status.toUpperCase()
     );
 
     if (result) {
@@ -63,5 +88,9 @@ export class MonitoringDashboardComponent implements OnInit {
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();
     this.router.navigate(['/report', repo, upperWorkflow]);
+  }
+
+  trackByName(_index: number, repo: Repository) {
+    return repo.name;
   }
 }

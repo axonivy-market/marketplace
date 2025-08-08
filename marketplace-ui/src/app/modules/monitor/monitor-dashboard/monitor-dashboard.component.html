@@ -1,78 +1,103 @@
 <div class="container">
   <div class="header">
-    <h2 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.title' | translate }}
-    </h2>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      <h2 [lang]="languageService.selectedLanguage()">
+        {{ 'common.monitor.dashboard.title' | translate }}
+      </h2>
+      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+    </div>
     <h3 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.subtitle' | translate }}
+      {{ 'common.monitor.dashboard.subtitle' | translate }}
     </h3>
   </div>
-
-  @if (!loading && repositories.length) {
-  <div class="repo-grid">
-    @for (repo of repositories; track repo.name) {
-    <div class="repo-card">
-      <div class="repo-header">
-        <p>{{ repo.name }}</p>
-        <span class="visibility">{{ repo.language }}</span>
-      </div>
-
-      <div class="repo-info">
-        @if (repo.ciBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
-          <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
-        }
-
-        @if (repo.devBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
-          <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
-        }
-        <p>
-          <span class="icon">📅</span>
-          {{ 'monitor.dashboard.lastUpdated' | translate }}: {{ repo.lastUpdated | date:'medium' }}
-        </p>
-      </div>
-    </div>
-    }
-
-  </div>
-  }
-
   @if (loading) {
-  <div class="loading" [lang]="languageService.selectedLanguage()">
-    {{ 'monitor.dashboard.loading' | translate }}
-  </div>
+    <div class="loading" [lang]="languageService.selectedLanguage()">
+      {{ 'common.monitor.dashboard.loading' | translate }}
+    </div>
   }
 
   @if (error) {
-  <div class="error">{{ error }}</div>
+    <div class="error">{{ error }}</div>
   }
+
+  @if (!loading && repositories.length) {
+    <h4 class="section-title">{{ 'common.monitor.dashboard.focus.title' | translate }}</h4>
+    <div class="repo-grid">
+      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
+        @if (repo.focused) {
+          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+        }
+      </ng-container>
+    </div>
+  }
+
+  @if (!loading && repositories.length) {
+    <h4 class="section-title">{{ 'common.monitor.dashboard.standard.title' | translate }}</h4>
+    <div class="repo-grid">
+      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
+        @if (!repo.focused) {
+          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+        }
+      </ng-container>
+    </div>
+  }
+
+  <ng-template #repoCard let-repo>
+    <div class="repo-card">
+      <div class="repo-header">
+        <p>{{ repo.name }}</p>
+        <span class="badge">{{ repo.language }}</span>
+      </div>
+      
+      <div class="repo-info">
+        @if (repo.ciBadgeUrl) {
+          <div class="badge-row d-flex justify-content-star align-items-start">
+            <span class="icon">🏷️</span>
+            <div (click)="onBadgeClick(repo.name, 'ci')">
+              <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
+            </div>
+            <app-build-badge-tooltip [buildType]="ciBuild"/>
+          </div>
+          <div class="workflow">
+            <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</b></p>
+            <p class="failed">❌ {{ 'common.monitor.dashboard.failed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</b></p>
+            <div class="sub-status">
+              {{ 'common.monitor.dashboard.testCounts.mock' | translate }}
+              {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
+              {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
+              {{ 'common.monitor.dashboard.testCounts.real' | translate }}
+              {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
+              {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
+            </div>
+          </div>
+        }
+        @if (repo.devBadgeUrl) {
+          <div class="badge-row d-flex justify-content-star align-items-start">
+            <span class="icon">🛠️</span>
+            <div (click)="onBadgeClick(repo.name, 'ci')">
+              <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
+            </div>
+            <app-build-badge-tooltip [buildType]="devBuild"/>
+          </div>
+          <div class="workflow">
+            <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</b></p>
+            <p class="failed">❌ {{ 'common.monitor.dashboard.failed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</b></p>
+            <div class="sub-status">
+              {{ 'common.monitor.dashboard.testCounts.mock' | translate }}
+              {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
+              {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌|
+              {{ 'common.monitor.dashboard.testCounts.real' | translate }}
+              {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
+              {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
+            </div>
+          </div>
+        }
+        <p>
+          <span class="icon">📅</span>
+          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
+          {{ repo.lastUpdated | date: 'medium' }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
 </div>

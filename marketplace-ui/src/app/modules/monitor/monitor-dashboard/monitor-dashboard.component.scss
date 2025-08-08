@@ -1,3 +1,4 @@
+$rowHeight: 37px;
 .container {
   max-width: 1200px;
   margin: 20px auto;
@@ -7,11 +8,17 @@
 
 .header {
   text-align: center;
-  padding: 20px 0;
-  color: #333;
-
+  padding: 20px;
+  color: var(--ivy-text-primary-color);
   h2 {
     font-size: 4rem;
+    margin: 20px 0;
+  }
+  
+  a {
+    font-size: 1.5rem;
+    color: var(--ivy-link-corlor);
+    text-decoration: none;
   }
 }
 
@@ -22,15 +29,13 @@
 }
 
 .repo-card {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: var(--ivy-secondary-bg);
+  border: 1px solid var(--ivy-border-color);
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 30px;
 
   &:hover {
-    background-color: #f5f5f5;
-    border-color: #ccc;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     cursor: default;
   }
@@ -50,7 +55,7 @@
 
   p {
     margin: 0;
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #007acc;
 
     &:hover {
@@ -58,21 +63,13 @@
     }
   }
 
-  .visibility {
+  .badge {
     font-size: 1.1rem;
     padding: 3px 8px;
     border-radius: 20px;
-    border: 1px solid gray;
+    border: 1px solid var(--ivy-border-color);
     line-height: 12px;
-  }
-
-  .archived {
-    font-size: 1.1rem;
-    padding: 3px 8px;
-    border-radius: 20px;
-    border: 1px solid orange;
-    line-height: 12px;
-    color: orange;
+    color: var(--ivy-text-primary-color);
   }
 }
 
@@ -83,7 +80,7 @@
   p {
     margin: 8px 0;
     font-size: 1.3rem;
-    color: #555;
+    color: var(--ivy-text-primary-color);
     min-height: 28px;
   }
 
@@ -95,12 +92,14 @@
     padding: 5px 10px;
     background-color: #c4f5cc;
     border-radius: 5px;
+    color: #383838;
   }
 
   .failed {
     padding: 5px 10px;
     background-color: #f7bcbc;
     border-radius: 5px;
+    color: #383838;
   }
 
   .icon {
@@ -127,10 +126,10 @@
   font-size: 1.5rem;
   margin: 10px 0;
   line-height: 1.6;
+  color: var(--ivy-text-primary-color);
 
   .sub-status {
     font-size: 1.4rem;
-    color: #444;
     margin-top: 4px;
     margin-left: 10px;
   }
@@ -154,4 +153,20 @@
   &:focus {
     outline: 2px solid #0056b3;
   }
+}
+
+.section-title {
+  font-size: 2.5rem;
+  margin: 30px;
+  color: var(--ivy-text-primary-color);
+  text-align: center;
+  font-weight: bold;
+  border-bottom: var(--ivy-border-color) 2px solid;
+  padding-bottom: 20px;
+}
+
+.loading {
+  font-size: 2.5rem;
+  text-align: center;
+  color: #0056b3;
 }

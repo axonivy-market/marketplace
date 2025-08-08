@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.TestStepsModelAssembler;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
@@ -22,13 +21,12 @@ import java.util.List;
 public class TestStepsServiceImpl implements TestStepsService {
 
     private final TestStepsRepository testStepsRepository;
-    private final TestStepsModelAssembler testStepsModelAssembler;
 
     @Override
     public List<TestStepsModel> fetchTestReport(String repo, WorkFlowType type) {
         List<TestStep> testSteps = testStepsRepository.findByRepoAndWorkflowAndType(repo, type);
         return testSteps.stream()
-                .map(testStepsModelAssembler::toModel)
+                .map(TestStepsModel::from)
                 .toList();
     }
 
