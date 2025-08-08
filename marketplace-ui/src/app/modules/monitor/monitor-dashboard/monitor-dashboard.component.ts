@@ -32,6 +32,7 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
+
   pageTitleService: PageTitleService = inject(PageTitleService);
 
   ngOnInit(): void {
@@ -60,6 +61,7 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   onBadgeClick(repo: string, workflow: string = '') {
-    this.router.navigate(['/report', repo, workflow]);
+    const upperWorkflow = workflow.toUpperCase();
+    this.router.navigate(['/report', repo, upperWorkflow]);
   }
 }
