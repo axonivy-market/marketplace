@@ -76,10 +76,7 @@ public class TestResultsUtils {
   }
 
   private static TestResults updateTestResultFromWorkflow(WorkFlowType workFlowType, List<TestResults> results) {
-    var testResult = TestResults.builder()
-        .workflow(workFlowType)
-        .results(new HashMap<>())
-        .build();
+    var testResult = buildInitialTestResults(workFlowType);
     results.add(testResult);
     return testResult;
   }

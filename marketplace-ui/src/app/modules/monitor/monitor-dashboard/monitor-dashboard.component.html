@@ -38,14 +38,14 @@
   <ng-template #repoCard let-repo>
     <div class="repo-card">
       <div class="repo-header">
-        <a [href]="repo.htmlUrl" >
+        <a class="text-decoration-none" [href]="repo.htmlUrl" >
           <p>{{ repo.name }}</p>
         </a>
         <span class="badge">{{ repo.language }}</span>
       </div>
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, build.workflowhtmlUrl )">
+          <div class="badge-row" (click)="onBadgeClick(repo.name, build.workflow )">
             <span class="icon">{{ build.workflow | workflowIcon }}</span>
             <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
           </div>

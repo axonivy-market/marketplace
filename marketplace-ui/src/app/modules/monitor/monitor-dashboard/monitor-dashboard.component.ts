@@ -11,12 +11,18 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, BuildStatusEntriesPipe, WorkflowIconPipe, IsEmptyObjectPipe],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    BuildStatusEntriesPipe,
+    WorkflowIconPipe,
+    IsEmptyObjectPipe
+  ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
-  repositories= signal<Repository[]>([]);
+  repositories = signal<Repository[]>([]);
   focusedRepo = computed(() => this.repositories().filter(r => r.focused));
   standardRepo = computed(() => this.repositories().filter(r => !r.focused));
   loading = true;
@@ -26,18 +32,14 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
-  protected mapping = {
-    PASSED: { label: 'monitor.dashboard.passed', icon: '✅' },
-    FAILED: { label: 'monitor.dashboard.failed', icon: '❌' },
-    SKIPPED: { label: 'monitor.dashboard.skipped', icon: '⏩' }
-  };
   pageTitleService: PageTitleService = inject(PageTitleService);
-
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
-      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
+      this.pageTitleService.setTitleOnLangChange(
+        'common.monitor.dashboard.pageTitle'
+      );
     } else {
       this.loading = false;
     }
@@ -57,8 +59,7 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  onBadgeClick(repo: string, workflow: string) {
-    const upperWorkflow = workflow.toUpperCase();
-    this.router.navigate(['/report', repo, upperWorkflow]);
+  onBadgeClick(repo: string, workflow: string = '') {
+    this.router.navigate(['/report', repo, workflow]);
   }
 }

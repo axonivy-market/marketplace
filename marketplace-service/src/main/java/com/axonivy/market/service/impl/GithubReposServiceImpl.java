@@ -78,8 +78,8 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo.setLanguage(ghRepo.getLanguage());
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
-      githubRepo = createNewGithubRepo(ghRepo);
-    }
+        githubRepo = createNewGithubRepo(ghRepo);
+      }
       List<TestStep> testSteps = Arrays.stream(values()).map(
           workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
       githubRepo.getTestSteps().addAll(testSteps);

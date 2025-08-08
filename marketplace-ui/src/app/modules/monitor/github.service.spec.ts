@@ -7,6 +7,7 @@ import { API_URI } from '../../shared/constants/api.constant';
 const mockRepos: Repository[] = [
   {
     name: 'repo1',
+    htmlUrl: 'https://github.com/user/repo1',
     language: 'TypeScript',
     lastUpdated: '2025-07-20T12:00:00Z',
     focused: true,
@@ -17,7 +18,7 @@ const mockRepos: Repository[] = [
 const mockTestStep: TestStep = {
   name: 'Step 1',
   status: 'PASSED',
-  type: 'unit',
+  type: 'unit'
 };
 
 describe('GithubService', () => {

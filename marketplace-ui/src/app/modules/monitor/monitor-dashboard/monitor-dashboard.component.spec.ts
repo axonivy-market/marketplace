@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
-import { GithubService, Repository } from '../github.service';
+import { GithubService, Repository, TestResult } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -21,15 +21,21 @@ describe('MonitoringDashboardComponent', () => {
     mockRepositories = [
       {
         name: 'repo1',
+        htmlUrl: 'https://github.com/user/repo1',
         language: 'TypeScript',
         lastUpdated: '2025-07-20T12:00:00Z',
         focused: true,
         testResults: [
-          { workflow: 'CI', results: {PASSED: 20}, badgeUrl: 'www.localhost.badge.yml' } as TestResult
+          {
+            workflow: 'CI',
+            results: { PASSED: 20 },
+            badgeUrl: 'www.localhost.badge.yml'
+          } as TestResult
         ]
       },
       {
         name: 'repo2',
+        htmlUrl: 'https://github.com/user/repo2',
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
         focused: false,
@@ -37,10 +43,11 @@ describe('MonitoringDashboardComponent', () => {
       },
       {
         name: 'repo3',
+        htmlUrl: 'https://github.com/user/repo3',
         language: 'Python',
         lastUpdated: '2025-07-18T12:00:00Z',
         focused: false,
-        testResults: [] 
+        testResults: []
       }
     ];
 

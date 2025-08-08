@@ -33,6 +33,8 @@ class TestStepsModelTest {
 
     assertEquals("demo-repo", model.getName(),
             "Expected the name to match the repo name");
+    assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
+        "Expected the HTML URL to match the repo URL");
     assertEquals("Java", model.getLanguage(),
             "Expected the language to match the repo language");
 
@@ -44,5 +46,7 @@ class TestStepsModelTest {
     TestResults testResult = model.getTestResults().get(0);
     assertEquals(WorkFlowType.CI, testResult.getWorkflow(),
             "Expected the workflow type to be CI");
+    assertEquals(1, testResult.getResults().get("PASSED"),
+        "Expected the count of test steps to be 1");
   }
 }
