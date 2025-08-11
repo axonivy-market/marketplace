@@ -77,7 +77,7 @@ class GithubReposServiceImplTest {
         .htmlUrl("https://old-url")
         .testSteps(new ArrayList<>())
         .build();
-    when(githubRepoRepository.findByName("demo")).thenReturn(Optional.of(existing));
+    when(githubRepoRepository.findByNameWithTestSteps("demo")).thenReturn(Optional.of(existing));
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
@@ -97,7 +97,7 @@ class GithubReposServiceImplTest {
     when(ghRepo.getUpdatedAt()).thenReturn(new Date());
     when(ghRepo.getFullName()).thenReturn("owner/demo");
 
-    when(githubRepoRepository.findByName("demo")).thenReturn(Optional.empty());
+    when(githubRepoRepository.findByNameWithTestSteps("demo")).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
@@ -117,7 +117,7 @@ class GithubReposServiceImplTest {
     when(ghRepo.getUpdatedAt()).thenReturn(new Date());
     when(ghRepo.getFullName()).thenReturn("owner/demo");
 
-    when(githubRepoRepository.findByName("demo")).thenReturn(Optional.empty());
+    when(githubRepoRepository.findByNameWithTestSteps("demo")).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
