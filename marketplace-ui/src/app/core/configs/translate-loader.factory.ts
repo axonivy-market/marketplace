@@ -51,7 +51,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
         path.join(`/${APP}`, DIST, BROWSER, languagePath), // For SSR by router
         path.join(languagePath), // For development environment
         path.join(process.cwd(), SRC, languagePath), // For CSR
-        path.join(process.cwd(), DIST, BROWSER, languagePath) // For SSR by absolutely reuqest
+        path.join(process.cwd(), DIST, BROWSER, languagePath) // For SSR by absolutely request
       ];
 
       for (const translationPath of i18nPaths) {

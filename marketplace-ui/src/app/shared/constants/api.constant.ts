@@ -15,4 +15,5 @@ export const API_URI = {
   GITHUB_REPORT: `${API}/monitor-dashboard`,
 };
 
-export const API_BASE_URL = new InjectionToken<any>('ApiBaseUrl');
+export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');
+export const API_INTERNAL_URL = new InjectionToken<any>('ApiInternalUrl');
