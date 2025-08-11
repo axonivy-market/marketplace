@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { BuildBadgeTooltipComponent } from './build-badge-tooltip.component';
 import { TranslateService } from '@ngx-translate/core';
 import { CI_BUILD, DEV_BUILD, E2E_BUILD } from '../../../shared/constants/common.constant';

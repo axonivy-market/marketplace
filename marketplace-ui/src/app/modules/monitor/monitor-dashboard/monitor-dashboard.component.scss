@@ -84,10 +84,6 @@ $rowHeight: 37px;
     min-height: 28px;
   }
 
-  .visibility {
-    font-weight: bold;
-  }
-
   .passed {
     padding: 5px 10px;
     background-color: #c4f5cc;
@@ -109,14 +105,6 @@ $rowHeight: 37px;
     margin-right: 8px;
     font-size: 1.5rem;
   }
-}
-
-.workflow {
-  font-size: 1.5rem;
-  margin: 10px 0;
-  line-height: 1.6;
-  color: var(--ivy-text-primary-color);
-
 }
 
 .sub-status {
