@@ -23,6 +23,8 @@ services:
       dockerfile: Dockerfile
       args:
         - BUILD_ENV=${BUILD_ENV}
+    environment:
+      - MARKET_API_INTERNAL_URL=${MARKET_API_INTERNAL_URL}
     restart: always
     ports:
       - "4000:4000"

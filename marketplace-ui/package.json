@@ -54,7 +54,7 @@
     "@types/jasmine": "~5.1.0",
     "@types/markdown-it": "^14.1.2",
     "@types/markdown-it-emoji": "^3.0.1",
-    "@types/node": "^18.18.0",
+    "@types/node": "^18.19.121",
     "jasmine": "^5.1.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",

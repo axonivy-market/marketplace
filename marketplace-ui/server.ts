@@ -13,8 +13,8 @@ export function app(): express.Express {
   const serverDistFolder = dirname(fileURLToPath(import.meta.url));
   const browserDistFolder = resolve(serverDistFolder, '../browser');
   const indexHtml = join(serverDistFolder, 'index.server.html');
-
   const commonEngine = new CommonEngine();
+  const defaultApiInternalUrl = 'http://service:8080';
 
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
@@ -31,7 +31,7 @@ export function app(): express.Express {
     const requestProtocol = headers['x-forwarded-proto'] || protocol;
     const requestHost = headers['x-forwarded-host'] || headers.host;
     const apiPublicUrl = `${requestProtocol}://${requestHost}${environment.apiUrl}`;
-    const apiInternalUrl = process.env['MARKET_SERVICE_BASE_URL'] || 'http://service:8080';
+    const apiInternalUrl = process.env['MARKET_API_INTERNAL_URL'] || defaultApiInternalUrl;
 
     commonEngine
       .render({

@@ -19,6 +19,8 @@ services:
 
   preview_ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
+    environment:
+      - MARKET_API_INTERNAL_URL=${MARKET_API_INTERNAL_URL}
     restart: always
     expose:
       - 4000
