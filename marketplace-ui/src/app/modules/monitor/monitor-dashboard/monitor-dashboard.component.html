@@ -39,39 +39,38 @@
   }
 
   <ng-template #repoCard let-repo>
-    <div class="repo-card">
-      <div class="repo-header">
-        <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
-          <p>{{ repo.name }}</p>
-        </a>
-        <span class="badge">{{ repo.language }}</span>
-      </div>
-      
-      <div class="repo-info">
-        @for (build of repo.testResults; track build.workflow) {
-          <div class="badge-row" (click)="onBadgeClick(repo.name, build.workflow )">
+    <div class="repo-card d-flex flex-column justify-content-between">
+      <div class="repo-card__meta">
+        <div class="repo-header">
+          <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
+            <p>{{ repo.name }}</p>
+          </a>
+          <span class="badge">{{ repo.language }}</span>
+        </div>
+        <div class="repo-info">
+          @for (build of repo.testResults; track build.workflow) {
             <span class="icon">{{ build.workflow | workflowIcon }}</span>
-            <img class="me-3" [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
+            <img class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
             <app-build-badge-tooltip [buildType]="build.workflow"/>
-          </div>
-          <div class="sub-status">
-            @if(!(build.results | isEmptyObjectPipe)) {
-              @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-                <span>
-                  {{ testStatus.label | translate }}: {{ testStatus.count }} {{ testStatus.icon }}
-                </span>
+            <div class="sub-status">
+              @if(!(build.results | isEmptyObjectPipe)) {
+                @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                  <span class="fs-5">
+                    {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
+                  </span>
+                }
+              } @else {
+                <br>
               }
-            } @else {
-              <br>
-            }
-          </div>
-        }
-        <p>
-          <span class="icon">📅</span>
-          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
-          {{ repo.lastUpdated | date: 'medium' }}
-        </p>
+            </div>
+          }
+        </div>
       </div>
+      <p>
+        <span class="icon">📅</span>
+        {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
+        {{ repo.lastUpdated | date: 'medium' }}
+      </p>
     </div>
   </ng-template>
 </div>

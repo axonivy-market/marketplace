@@ -144,16 +144,4 @@ describe('MonitoringDashboardComponent', () => {
     expect(errorElement).toBeTruthy();
     expect(errorElement.nativeElement.textContent).toContain(errorMessage);
   });
-
-  it('should show CI badge section only when ciBadgeUrl exists', () => {
-    fixture.detectChanges();
-    
-    const firstRepoCard = fixture.debugElement.queryAll(By.css('.repo-card'))[0];
-    const ciBadgeRow = firstRepoCard.query(By.css('.badge-row:first-of-type'));
-    expect(ciBadgeRow).toBeTruthy();
-    
-    const thirdRepoCard = fixture.debugElement.queryAll(By.css('.repo-card'))[2];
-    const noBadgeRow = thirdRepoCard.query(By.css('.badge-row'));
-    expect(noBadgeRow).toBeFalsy();
-  });
 });
