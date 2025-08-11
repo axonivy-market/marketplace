@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
-import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
+import static com.axonivy.market.entity.GithubRepo.from;
 import static com.axonivy.market.enums.WorkFlowType.CI;
 import static com.axonivy.market.enums.WorkFlowType.DEV;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
@@ -67,9 +67,12 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Transactional
   public synchronized void processProduct(GHRepository ghRepo) {
-    GithubRepo githubRepo;
-    var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
+    if (ghRepo == null) {
+      return;
+    }
+    var githubRepoOptional = githubRepoRepository.findByNameWithTestSteps(ghRepo.getName());
     try {
+      GithubRepo githubRepo;
       if (githubRepoOptional.isPresent()) {
         githubRepo = githubRepoOptional.get();
         githubRepo.getTestSteps().clear();
@@ -78,7 +81,7 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
         String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-        githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
+        githubRepo = from(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
       }
 
       githubRepo.getTestSteps().addAll(
