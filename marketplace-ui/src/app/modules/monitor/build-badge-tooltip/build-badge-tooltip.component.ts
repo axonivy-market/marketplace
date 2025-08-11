@@ -20,6 +20,7 @@ export class BuildBadgeTooltipComponent implements OnInit {
   @Input() buildType = '';
   tooltipContent = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
+  //TODO: Please refactor this one with pipeline after Anais finish mock up
   ciTooltipPath = 'common.monitor.buildTooltip.ci';
   devTooltipPath = 'common.monitor.buildTooltip.dev';
   e2eTooltipPath = 'common.monitor.buildTooltip.e2e';
