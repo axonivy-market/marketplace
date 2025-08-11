@@ -26,11 +26,12 @@ import { finalize } from 'rxjs';
 import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
+import { LoadingSpinnerComponent } from "../../shared/components/loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'app-feedback-approval',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, FeedbackTableComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, FeedbackTableComponent, LoadingSpinnerComponent],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -44,7 +45,7 @@ export class FeedbackApprovalComponent {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-
+  protected LoadingComponentId = LoadingComponentId;
   token = '';
   errorMessage = '';
   isAuthenticated = false;
