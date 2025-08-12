@@ -150,7 +150,6 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   refreshInstallationCount = signal<number>(0);
-  installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
@@ -254,7 +253,6 @@ export class ProductDetailComponent {
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
     this.productDetailService.productNames.set(productDetail.names);
     this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-    this.installationCount = productDetail.installationCount;
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
