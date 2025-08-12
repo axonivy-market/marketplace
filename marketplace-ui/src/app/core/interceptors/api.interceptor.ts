@@ -1,4 +1,4 @@
-import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
@@ -27,17 +27,17 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   const injector = inject(Injector);
   const transferState = inject(TransferState);
-  const key = makeStateKey<any>(req.urlWithParams);
+  const key = makeStateKey<unknown>(req.urlWithParams);
 
   if (req.url.includes('i18n')) {
     return next(req);
   }
 
   // Only cache GET requests to API
-  if (req.method == 'GET' && transferState.hasKey(key)) {
-    const data = transferState.get<any>(key, null);
+  if (req.method === 'GET' && transferState.hasKey(key)) {
+    const data = transferState.get<unknown>(key, null);
     transferState.remove(key);
-    return of(new HttpResponse({ body: data, status: 200 }));
+    return of(new HttpResponse({ body: data, status: HttpStatusCode.Ok }));
   }
 
   if (req.context.get(LoadingComponent)) {
@@ -64,7 +64,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.context.get(ForwardingError)) {
     return next(cloneReq).pipe(
       tap(event => {
-        if (event instanceof HttpResponse && event.status === 200) {
+        if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
           transferState.set(key, event.body);
         }
       })
@@ -81,7 +81,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       return EMPTY;
     }),
     tap(event => {
-      if (event instanceof HttpResponse && event.status === 200) {
+      if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
         transferState.set(key, event.body);
       }
     }),
