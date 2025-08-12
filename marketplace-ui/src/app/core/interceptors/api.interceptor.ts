@@ -49,7 +49,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     try {
       apiURL = injector.get(API_INTERNAL_URL, apiURL);
     } catch (e) {
-      console.error('SSR Interceptor ERROR: Could not inject API_INTERNAL_URL: ', e);
+      console.info('SSR Interceptor ERROR: Could not inject API_INTERNAL_URL: ', e);
     }
   }
   let requestURL = req.url;
