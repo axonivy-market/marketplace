@@ -20,84 +20,59 @@
     <div class="error">{{ error }}</div>
   }
 
-  @if (!loading && repositories.length) {
+  @if (!loading && focusedRepo().length) {
     <h4 class="section-title">{{ 'common.monitor.dashboard.focus.title' | translate }}</h4>
     <div class="repo-grid">
-      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
-        @if (repo.focused) {
-          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
-        }
-      </ng-container>
+      @for (repo of focusedRepo(); track repo.name) {
+        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+      }
     </div>
   }
 
-  @if (!loading && repositories.length) {
+  @if (!loading && standardRepo().length) {
     <h4 class="section-title">{{ 'common.monitor.dashboard.standard.title' | translate }}</h4>
     <div class="repo-grid">
-      <ng-container *ngFor="let repo of repositories; trackBy: trackByName">
-        @if (!repo.focused) {
-          <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
-        }
-      </ng-container>
+      @for (repo of standardRepo(); track repo.name) {
+        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+      }
     </div>
   }
 
   <ng-template #repoCard let-repo>
-    <div class="repo-card">
-      <div class="repo-header">
-        <p>{{ repo.name }}</p>
-        <span class="badge">{{ repo.language }}</span>
-      </div>
-      
-      <div class="repo-info">
-        @if (repo.ciBadgeUrl) {
-          <div class="badge-row d-flex justify-content-star align-items-start">
-            <span class="icon">🏷️</span>
-            <div (click)="onBadgeClick(repo.name, 'ci')">
-              <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
-            </div>
-            <app-build-badge-tooltip [buildType]="ciBuild"/>
-          </div>
-          <div class="workflow">
-            <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</b></p>
-            <p class="failed">❌ {{ 'common.monitor.dashboard.failed' | translate }}: <b>{{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</b></p>
+    <div class="repo-card d-flex flex-column justify-content-between">
+      <div class="repo-card__meta">
+        <div class="repo-header">
+          <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
+            <p>{{ repo.name }}</p>
+          </a>
+          <span class="badge">{{ repo.language }}</span>
+        </div>
+        <div class="repo-info">
+          @for (build of repo.testResults; track build.workflow) {
+            <span class="icon">{{ build.workflow | workflowIcon }}</span>
+            <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
+              <img  [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" />
+            </span>
+            <app-build-badge-tooltip [buildType]="build.workflow"/>
             <div class="sub-status">
-              {{ 'common.monitor.dashboard.testCounts.mock' | translate }}
-              {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-              {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
-              {{ 'common.monitor.dashboard.testCounts.real' | translate }}
-              {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-              {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
+              @if(!(build.results | isEmptyObjectPipe)) {
+                @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                  <span class="fs-5">
+                    {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
+                  </span>
+                }
+              } @else {
+                <br>
+              }
             </div>
-          </div>
-        }
-        @if (repo.devBadgeUrl) {
-          <div class="badge-row d-flex justify-content-star align-items-start">
-            <span class="icon">🛠️</span>
-            <div (click)="onBadgeClick(repo.name, 'ci')">
-              <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer" class="me-3"/>
-            </div>
-            <app-build-badge-tooltip [buildType]="devBuild"/>
-          </div>
-          <div class="workflow">
-            <p class="passed">✅ {{ 'common.monitor.dashboard.passed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</b></p>
-            <p class="failed">❌ {{ 'common.monitor.dashboard.failed' | translate }}: <b>{{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</b></p>
-            <div class="sub-status">
-              {{ 'common.monitor.dashboard.testCounts.mock' | translate }}
-              {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-              {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌|
-              {{ 'common.monitor.dashboard.testCounts.real' | translate }}
-              {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-              {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
-            </div>
-          </div>
-        }
-        <p>
-          <span class="icon">📅</span>
-          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
-          {{ repo.lastUpdated | date: 'medium' }}
-        </p>
+          }
+        </div>
       </div>
+      <p>
+        <span class="icon">📅</span>
+        {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
+        {{ repo.lastUpdated | date: 'medium' }}
+      </p>
     </div>
   </ng-template>
 </div>

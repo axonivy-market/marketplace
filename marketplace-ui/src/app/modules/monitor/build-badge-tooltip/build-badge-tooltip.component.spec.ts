@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { BuildBadgeTooltipComponent } from './build-badge-tooltip.component';
 import { TranslateService } from '@ngx-translate/core';
-import { CI_BUILD, DEV_BUILD } from '../../../shared/constants/common.constant';
+import { CI_BUILD, DEV_BUILD, E2E_BUILD } from '../../../shared/constants/common.constant';
 
 describe('BuildBadgeTooltipComponent', () => {
   let component: BuildBadgeTooltipComponent;
@@ -60,6 +59,19 @@ describe('BuildBadgeTooltipComponent', () => {
 
     expect(mockTranslateService.instant).toHaveBeenCalledWith(
       'common.monitor.buildTooltip.dev'
+    );
+    expect(component.tooltipContent).toBe(mockTranslation);
+  });
+
+  it('should set tooltipContent for E2E build type', () => {
+    const mockTranslation = 'E2E Build Tooltip';
+    mockTranslateService.instant.and.returnValue(mockTranslation);
+
+    component.buildType = E2E_BUILD;
+    component.constructToolTipContent();
+
+    expect(mockTranslateService.instant).toHaveBeenCalledWith(
+      'common.monitor.buildTooltip.e2e'
     );
     expect(component.tooltipContent).toBe(mockTranslation);
   });

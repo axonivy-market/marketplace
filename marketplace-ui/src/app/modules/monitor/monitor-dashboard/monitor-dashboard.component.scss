@@ -84,10 +84,6 @@ $rowHeight: 37px;
     min-height: 28px;
   }
 
-  span {
-    font-weight: bold;
-  }
-
   .passed {
     padding: 5px 10px;
     background-color: #c4f5cc;
@@ -111,28 +107,8 @@ $rowHeight: 37px;
   }
 }
 
-.badge-row {
-  font-size: 1.5rem;
-  margin: 8px 0;
-
-  img {
-    vertical-align: middle;
-    height: 20px;
-    margin-left: 8px;
-  }
-}
-
-.workflow {
-  font-size: 1.5rem;
-  margin: 10px 0;
-  line-height: 1.6;
-  color: var(--ivy-text-primary-color);
-
-  .sub-status {
-    font-size: 1.4rem;
-    margin-top: 4px;
-    margin-left: 10px;
-  }
+.sub-status {
+  margin: 0.5rem 2.5rem;
 }
 
 .reload-link {

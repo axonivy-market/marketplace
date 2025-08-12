@@ -1,8 +1,9 @@
 export enum LoadingComponentId {
   LANDING_PAGE = 'landing-page',
-  PRODUCT_DETAIL_INFORMATION = 'product-detail-information',
+  END_LANDING_PAGE = 'end-landing-page',
   PRODUCT_VERSION = 'product-version',
   DETAIL_PAGE = 'detail-page',
   SECURITY_MONITOR = 'security-monitor',
-  FEEDBACK_APPROVAL = 'feedback-approval'
+  FEEDBACK_APPROVAL = 'feedback-approval',
+  RELEASE_PREVIEW = 'release-preview'
 }

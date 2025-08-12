@@ -9,9 +9,9 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 const mockTestSteps: TestStep[] = [
-  { name: 'Step 1', status: 'PASSED', type: 'unit', testType: 'mock' },
-  { name: 'Step 2', status: 'FAILED', type: 'integration', testType: 'real' },
-  { name: 'Step 3', status: 'SKIPPED', type: 'unit', testType: 'mock' }
+  { name: 'Step 1', status: 'PASSED', type: 'unit' },
+  { name: 'Step 2', status: 'FAILED', type: 'integration' },
+  { name: 'Step 3', status: 'SKIPPED', type: 'unit' }
 ];
 
 describe('RepoReportComponent', () => {

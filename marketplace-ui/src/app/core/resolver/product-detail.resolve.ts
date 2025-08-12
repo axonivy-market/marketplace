@@ -66,7 +66,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     );
     const originalLogoUrl = productDetail.logoUrl;
     let productLogoUrl = '';
-    if (isPlatformServer(this.platformId)) {
+    if (isPlatformServer(this.platformId) && this.apiPublicUrl) {
       productLogoUrl = this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
     } else {
       productLogoUrl = originalLogoUrl;

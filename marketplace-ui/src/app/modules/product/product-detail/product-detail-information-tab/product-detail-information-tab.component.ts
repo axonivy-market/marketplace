@@ -14,7 +14,7 @@ import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
+import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { Router } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
@@ -25,7 +25,7 @@ const PRODUCT_DETAIL = 'productDetail';
   imports: [
     CommonModule,
     TranslateModule,
-    EmptyProductDetailPipe
+    IsEmptyObjectPipe
 ],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
@@ -46,11 +46,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   router = inject(Router);
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
-    const changedSelectedVersion = changes[SELECTED_VERSION];
-    if ( changedSelectedVersion &&
-      changedSelectedVersion.currentValue ===
-        changedSelectedVersion.previousValue
-    ) {
+    if (this.isVersionUnchangedOrFirstChange(changes[SELECTED_VERSION])) {
       return;
     }
     const changedProduct = changes[PRODUCT_DETAIL];
@@ -83,6 +79,13 @@ export class ProductDetailInformationTabComponent implements OnChanges {
         }
       });
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
+  }
+
+  isVersionUnchangedOrFirstChange(change: SimpleChange | undefined): boolean {
+    return (
+      !!change &&
+      (change.currentValue === change.previousValue || change.firstChange)
+    );
   }
 
   resetValues() {

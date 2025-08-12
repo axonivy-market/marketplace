@@ -267,7 +267,8 @@
       },
       "buildTooltip": {
         "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
-        "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build)."
+        "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build).",
+        "e2e": "Validates our code works with the real API and confirms the endpoint is active and correct."
       }
     }
   }

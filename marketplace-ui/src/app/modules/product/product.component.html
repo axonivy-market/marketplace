@@ -47,6 +47,9 @@
     </div>
   </div>
   }
-  <app-loading-spinner [key]="LoadingComponentId.LANDING_PAGE"/>
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.LANDING_PAGE" />
+  <app-loading-spinner  [key]="LoadingComponentId.END_LANDING_PAGE"/>
   <div #observer class="observer"></div>
 </div>

@@ -348,4 +348,5 @@ export const DATA_LANGUAGE = 'data-language';
 // Monitoring constants
 export const CI_BUILD = 'CI';
 export const DEV_BUILD = 'DEV';
+export const E2E_BUILD = 'E2E';
 export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wiki/c5-Security-Monitoring';
