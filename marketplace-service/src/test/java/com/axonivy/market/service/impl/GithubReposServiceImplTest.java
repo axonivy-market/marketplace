@@ -84,7 +84,7 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.of(dbRepo));
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
-        .processWorkflowWithFallback(any(), any(), anyString(), any());
+        .processWorkflowWithFallback(any(), any(), any());
 
     assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
         "Processing product should not throw an exception");
@@ -97,7 +97,7 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
-        .processWorkflowWithFallback(any(), any(), anyString(), any());
+        .processWorkflowWithFallback(any(), any(), any());
 
     assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
         "Processing product should not throw an exception");
@@ -110,7 +110,7 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
-        .processWorkflowWithFallback(any(), any(), anyString(), any());
+        .processWorkflowWithFallback(any(), any(), any());
 
     doThrow(new DataAccessException("DB error") {
     }).when(githubRepoRepository).save(any());
@@ -176,7 +176,7 @@ class GithubReposServiceImplTest {
     when(testStepsService.createTestSteps(any(), eq(WorkFlowType.CI)))
         .thenReturn(List.of(new TestStep()));
 
-    List<TestStep> steps = serviceSpy.processWorkflowWithFallback(ghRepo, dbRepo, CI.getFileName(), CI);
+    List<TestStep> steps = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
     assertEquals(1, steps.size(),
         "Should return one test step when workflow run and artifact are found");
@@ -187,7 +187,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(any(), any()))
         .thenThrow(new IOException("Simulated IO error"));
 
-    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, CI.getFileName(), CI);
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
     assertTrue(result.isEmpty(), "Result list should be empty when exception is thrown");
   }
@@ -195,7 +195,7 @@ class GithubReposServiceImplTest {
   @Test
   void testProcessWorkflowWithFallbackNoRun() throws Exception {
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(null);
-    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, CI.getFileName(), CI);
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
     assertTrue(result.isEmpty(), "Result list should be empty when no workflow run is found");
   }

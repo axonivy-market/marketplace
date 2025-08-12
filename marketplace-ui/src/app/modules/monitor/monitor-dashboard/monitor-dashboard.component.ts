@@ -1,9 +1,12 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
+import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
+import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
 import {
   CI_BUILD,
@@ -19,6 +22,9 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
   imports: [
     CommonModule,
     TranslateModule,
+    BuildStatusEntriesPipe,
+    WorkflowIconPipe,
+    IsEmptyObjectPipe,
     BuildBadgeTooltipComponent,
     NgbTooltipModule
   ],
@@ -26,7 +32,9 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
-  repositories: Repository[] = [];
+  repositories = signal<Repository[]>([]);
+  focusedRepo = computed(() => this.repositories().filter(r => r.focused));
+  standardRepo = computed(() => this.repositories().filter(r => !r.focused));
   loading = true;
   error = '';
   isReloading = false;
@@ -34,8 +42,8 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
-  pageTitleService: PageTitleService = inject(PageTitleService);
 
+  pageTitleService: PageTitleService = inject(PageTitleService);
   ciBuild = CI_BUILD;
   devBuild = DEV_BUILD;
   monitoringWikiLink = MONITORING_WIKI_LINK;
@@ -43,7 +51,9 @@ export class MonitoringDashboardComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadRepositories();
-      this.pageTitleService.setTitleOnLangChange('common.monitor.dashboard.pageTitle');
+      this.pageTitleService.setTitleOnLangChange(
+        'common.monitor.dashboard.pageTitle'
+      );
     } else {
       this.loading = false;
     }
@@ -53,7 +63,7 @@ export class MonitoringDashboardComponent implements OnInit {
     this.loading = true;
     this.githubService.getRepositories().subscribe({
       next: data => {
-        this.repositories = data;
+        this.repositories.set(data);
         this.loading = false;
       },
       error: err => {
@@ -63,34 +73,8 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  getTestCount(
-    repo: Repository,
-    workflow: string,
-    environment: string,
-    status: string
-  ): number {
-    if (!repo.testResults) {
-      return 0;
-    }
-    const result = repo.testResults.find(
-      test =>
-        test.workflow === workflow.toUpperCase() &&
-        test.environment === environment.toUpperCase() &&
-        test.status === status.toUpperCase()
-    );
-
-    if (result) {
-      return result.count;
-    }
-    return 0;
-  }
-
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();
     this.router.navigate(['/report', repo, upperWorkflow]);
-  }
-
-  trackByName(_index: number, repo: Repository) {
-    return repo.name;
   }
 }
