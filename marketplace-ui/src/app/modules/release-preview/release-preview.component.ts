@@ -44,7 +44,6 @@ const MAX_FILE_SIZE_MB = 20;
   encapsulation: ViewEncapsulation.Emulated
 })
 export class ReleasePreviewComponent {
-  [x: string]: any;
   protected LoadingComponentId = LoadingComponentId;
   selectedFile: File | null = null;
   activeTab = DEFAULT_ACTIVE_TAB;
