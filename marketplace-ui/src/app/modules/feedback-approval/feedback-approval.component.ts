@@ -27,6 +27,7 @@ import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { LoadingSpinnerComponent } from "../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 @Component({
   selector: 'app-feedback-approval',
