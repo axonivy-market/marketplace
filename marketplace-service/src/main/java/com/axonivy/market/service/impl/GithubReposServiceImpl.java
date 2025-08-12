@@ -28,13 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
-import static com.axonivy.market.enums.WorkFlowType.CI;
-import static com.axonivy.market.enums.WorkFlowType.DEV;
+import static com.axonivy.market.enums.WorkFlowType.*;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
@@ -77,15 +78,11 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo.setLanguage(ghRepo.getLanguage());
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
-        String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-        githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
+        githubRepo = createNewGithubRepo(ghRepo);
       }
-
-      githubRepo.getTestSteps().addAll(
-          processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-      githubRepo.getTestSteps().addAll(
-          processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
-
+      List<TestStep> testSteps = Arrays.stream(values()).map(
+          workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
+      githubRepo.getTestSteps().addAll(testSteps);
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException | IOException e) {
       log.error("Error while saving GitHub repo: {}", ghRepo.getFullName(), e);
@@ -93,20 +90,38 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      String workflowFileName, WorkFlowType workflowType) {
+      WorkFlowType workflowType) {
     try {
-      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
+      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
+        updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
         }
       }
     } catch (IOException | GHException e) {
-      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
+      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
     }
     return Collections.emptyList();
+  }
+
+  private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
+    String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
+    switch (workflowType) {
+      case CI:
+        dbRepo.setCiBadgeUrl(runBadgeUrl);
+        break;
+      case DEV:
+        dbRepo.setDevBadgeUrl(runBadgeUrl);
+        break;
+      case E2E:
+        dbRepo.setE2eBadgeUrl(runBadgeUrl);
+        break;
+      default:
+        break;
+    }
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,

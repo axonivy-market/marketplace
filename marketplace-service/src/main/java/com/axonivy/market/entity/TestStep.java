@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.enums.TestEnviroment;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import jakarta.persistence.*;
@@ -25,16 +24,12 @@ public class TestStep extends GenericIdEntity {
   private TestStatus status;
   @Enumerated(EnumType.STRING)
   private WorkFlowType type;
-  @Enumerated(EnumType.STRING)
-  private TestEnviroment testType;
 
-  public static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType,
-      TestEnviroment testType) {
+  public static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType) {
     return TestStep.builder()
         .name(name)
         .status(status)
         .type(workflowType)
-        .testType(testType)
         .build();
   }
 }
