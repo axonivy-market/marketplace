@@ -32,6 +32,7 @@ import java.util.Optional;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping(PRODUCT_MARKETPLACE_DATA)
@@ -75,9 +76,8 @@ public class ProductMarketplaceDataController {
         "attachment").body(streamingBody);
   }
 
-  @GetMapping(INSTALLATION_COUNT_BY_ID)
-  public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
-  String id) {
+  @PutMapping(INSTALLATION_COUNT_BY_ID)
+  public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID) String id) {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

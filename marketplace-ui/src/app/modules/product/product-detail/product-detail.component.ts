@@ -149,6 +149,7 @@ export class ProductDetailComponent {
   metaProductJsonUrl: string | undefined = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
+  refreshInstallationCount = signal<number>(0);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
@@ -454,8 +455,8 @@ export class ProductDetailComponent {
     }
   }
 
-  receiveInstallationCountData(data: number): void {
-    this.installationCount = data;
+  receiveInstallationCountUpdate(): void {
+    this.refreshInstallationCount.update(v => v + 1);
   }
 
   private removeQueryParam(): void {
