@@ -49,7 +49,6 @@ const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';
 const ANCHOR_ELEMENT = 'a';
-const DELAY_TIMEOUT = 500;
 const BLOB = 'blob';
 const RESPONSE = 'response';
 
@@ -69,7 +68,7 @@ const RESPONSE = 'response';
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
-  @Output() installationCount = new EventEmitter<number>();
+  @Output() triggerUpdateInstallationCount = new EventEmitter<void>;
   @Input() productId!: string;
   @Input() isMavenDropins!: boolean;
   @Input() actionType!: ProductDetailActionType;
@@ -324,13 +323,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onUpdateInstallationCount(): void {
-    setTimeout(() => {
-      this.productService
-        .sendRequestToGetInstallationCount(this.productId)
-        .subscribe((data: number) => {
-          this.installationCount.emit(data);
-        });
-    }, DELAY_TIMEOUT);
+    this.triggerUpdateInstallationCount.emit();
   }
 
   onNavigateToContactPage(): void {

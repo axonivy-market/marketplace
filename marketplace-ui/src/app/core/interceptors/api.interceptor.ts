@@ -1,12 +1,12 @@
-import { HttpHeaders, HttpContextToken, HttpInterceptorFn } from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { catchError, EMPTY, finalize } from 'rxjs';
+import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
+import { catchError, EMPTY, finalize, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
-import { API_BASE_URL } from '../../shared/constants/api.constant';
+import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -25,9 +25,19 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
+  const injector = inject(Injector);
+  const transferState = inject(TransferState);
+  const key = makeStateKey<unknown>(req.urlWithParams);
 
   if (req.url.includes('i18n')) {
     return next(req);
+  }
+
+  // Only cache GET requests to API
+  if (req.method === 'GET' && transferState.hasKey(key)) {
+    const data = transferState.get<unknown>(key, null);
+    transferState.remove(key);
+    return of(new HttpResponse({ body: data, status: HttpStatusCode.Ok }));
   }
 
   if (req.context.get(LoadingComponent)) {
@@ -37,25 +47,30 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   let apiURL = environment.apiUrl;
   if (isPlatformServer(platformId)) {
     try {
-      apiURL = inject(API_BASE_URL);
+      apiURL = injector.get(API_INTERNAL_URL, apiURL);
     } catch (e) {
-      console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL: ', e);
+      console.info('SSR Interceptor ERROR: Could not inject API_INTERNAL_URL: ', e);
     }
   }
   let requestURL = req.url;
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
-
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers)
   });
 
   if (req.context.get(ForwardingError)) {
-    return next(cloneReq);
+    return next(cloneReq).pipe(
+      tap(event => {
+        if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+          transferState.set(key, event.body);
+        }
+      })
+    );
   }
-  
+
   return next(cloneReq).pipe(
     catchError(error => {
       if (ERROR_CODES.includes(error.status)) {
@@ -64,6 +79,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate([ERROR_PAGE_PATH]);
       }
       return EMPTY;
+    }),
+    tap(event => {
+      if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+        transferState.set(key, event.body);
+      }
     }),
     finalize(() => {
       if (req.context.get(LoadingComponent)) {

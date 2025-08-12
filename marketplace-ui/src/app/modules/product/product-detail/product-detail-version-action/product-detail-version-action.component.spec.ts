@@ -374,17 +374,6 @@ describe('ProductDetailVersionActionComponent', () => {
     httpMock.verify();
   }));
 
-  it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
-    productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
-    spyOn(component.installationCount, 'emit');
-
-    component.onUpdateInstallationCount();
-    tick(1000);
-
-    expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
-    expect(component.installationCount.emit).toHaveBeenCalledWith(42);
-  }));
-
   it('should return the correct marketplace service URL', () => {
     environment.apiUrl = 'https://api.example.com';
 

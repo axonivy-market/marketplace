@@ -149,7 +149,7 @@ export class ProductDetailComponent {
   metaProductJsonUrl: string | undefined = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
-  installationCount = 0;
+  refreshInstallationCount = signal<number>(0);
   logoUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
@@ -253,7 +253,6 @@ export class ProductDetailComponent {
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
     this.productDetailService.productNames.set(productDetail.names);
     this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-    this.installationCount = productDetail.installationCount;
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
@@ -454,8 +453,8 @@ export class ProductDetailComponent {
     }
   }
 
-  receiveInstallationCountData(data: number): void {
-    this.installationCount = data;
+  receiveInstallationCountUpdate(): void {
+    this.refreshInstallationCount.update(v => v + 1);
   }
 
   private removeQueryParam(): void {
