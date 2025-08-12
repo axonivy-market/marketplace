@@ -110,12 +110,13 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
-        .processWorkflowWithFallback(any(), any(), any());
+            .processWorkflowWithFallback(any(), any(), any());
 
     doThrow(new DataAccessException("DB error") {
     }).when(githubRepoRepository).save(any());
 
-    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo));
+    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo),
+            "Should throw DataAccessException");
   }
 
   @Test
