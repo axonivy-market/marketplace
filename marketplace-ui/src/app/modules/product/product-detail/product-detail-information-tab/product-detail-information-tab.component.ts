@@ -46,11 +46,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   router = inject(Router);
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
-    const changedSelectedVersion = changes[SELECTED_VERSION];
-    if ( changedSelectedVersion &&
-      changedSelectedVersion.currentValue ===
-        changedSelectedVersion.previousValue
-    ) {
+    if (this.isVersionUnchangedOrFirstChange(changes[SELECTED_VERSION])) {
       return;
     }
     const changedProduct = changes[PRODUCT_DETAIL];
@@ -83,6 +79,13 @@ export class ProductDetailInformationTabComponent implements OnChanges {
         }
       });
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
+  }
+
+  isVersionUnchangedOrFirstChange(change: SimpleChange | undefined): boolean {
+    return (
+      !!change &&
+      (change.currentValue === change.previousValue || change.firstChange)
+    );
   }
 
   resetValues() {

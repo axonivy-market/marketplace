@@ -23,6 +23,8 @@ import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { LoadingSpinnerComponent } from "../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 const DEFAULT_ACTIVE_TAB = 'description';
 const MAX_FILE_SIZE_MB = 20;
@@ -34,13 +36,15 @@ const MAX_FILE_SIZE_MB = 20;
     FormsModule,
     CommonDropdownComponent,
     TranslateModule,
-    MultilingualismPipe
-  ],
+    MultilingualismPipe,
+    LoadingSpinnerComponent
+],
   templateUrl: './release-preview.component.html',
   styleUrls: ['./release-preview.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
 export class ReleasePreviewComponent {
+  protected LoadingComponentId = LoadingComponentId;
   selectedFile: File | null = null;
   activeTab = DEFAULT_ACTIVE_TAB;
   selectedLanguage = 'en';
