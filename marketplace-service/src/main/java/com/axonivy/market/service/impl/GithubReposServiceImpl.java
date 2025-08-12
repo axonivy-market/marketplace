@@ -51,48 +51,45 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   public void loadAndStoreTestReports() {
-    try {
-      List<Product> products = productRepository.findAll().stream()
-          .filter(product -> Boolean.FALSE != product.getListed()
-              && product.getRepositoryName() != null).toList();
-      for (Product product : products) {
-        log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
+    List<Product> products = productRepository.findAll().stream()
+            .filter(product -> Boolean.FALSE != product.getListed()
+                    && product.getRepositoryName() != null).toList();
+
+    for (Product product : products) {
+      try {
+        log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
         processProduct(repository);
+      } catch (IOException | GHException | DataAccessException e) {
+        log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
       }
-    } catch (IOException | GHException | DataAccessException e) {
-      log.error("Error loading and storing test reports", e);
     }
   }
 
   @Transactional
-  public synchronized void processProduct(GHRepository ghRepo) {
+  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
     if (ghRepo == null) {
       return;
     }
     var githubRepoOptional = githubRepoRepository.findByNameWithTestSteps(ghRepo.getName());
-    try {
-      GithubRepo githubRepo;
-      if (githubRepoOptional.isPresent()) {
-        githubRepo = githubRepoOptional.get();
-        githubRepo.getTestSteps().clear();
-        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-        githubRepo.setLanguage(ghRepo.getLanguage());
-        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
-      } else {
-        String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-        githubRepo = from(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
-      }
-
-      githubRepo.getTestSteps().addAll(
-          processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-      githubRepo.getTestSteps().addAll(
-          processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
-
-      githubRepoRepository.save(githubRepo);
-    } catch (DataAccessException | IOException e) {
-      log.error("Error while saving GitHub repo: {}", ghRepo.getFullName(), e);
+    GithubRepo githubRepo;
+    if (githubRepoOptional.isPresent()) {
+      githubRepo = githubRepoOptional.get();
+      githubRepo.getTestSteps().clear();
+      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+      githubRepo.setLanguage(ghRepo.getLanguage());
+      githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+    } else {
+      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
+      githubRepo = from(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
     }
+
+    githubRepo.getTestSteps().addAll(
+            processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
+    githubRepo.getTestSteps().addAll(
+            processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
+
+    githubRepoRepository.save(githubRepo);
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
