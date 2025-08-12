@@ -83,6 +83,6 @@ class MonitorDashBoardControllerTest {
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),
-            "Response body should match expected message");
+         "Response body should match expected message");
   }
 }
