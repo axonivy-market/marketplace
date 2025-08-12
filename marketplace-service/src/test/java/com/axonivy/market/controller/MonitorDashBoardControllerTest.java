@@ -1,6 +1,8 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -21,6 +23,8 @@ import static org.mockito.Mockito.*;
 class MonitorDashBoardControllerTest {
   @Mock
   private GithubReposService githubReposService;
+  @Mock
+  private GitHubService githubService;
   @Mock
   private TestStepsService testStepsService;
   @InjectMocks
@@ -72,11 +76,13 @@ class MonitorDashBoardControllerTest {
     List<String> updates = List.of("repo1", "repo2");
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
+    doNothing().when(githubService).validateUserInOrganizationAndTeam("token", GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+            GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    ResponseEntity<String> response = controller.updateFocusedRepo(updates);
+    ResponseEntity<String> response = controller.updateFocusedRepo("token", updates);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),
-        "Response body should match expected message");
+         "Response body should match expected message");
   }
 }

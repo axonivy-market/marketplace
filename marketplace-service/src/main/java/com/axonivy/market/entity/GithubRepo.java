@@ -42,7 +42,7 @@ public class GithubRepo extends GenericIdEntity {
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
 
-  public static GithubRepo createNewGithubRepo(GHRepository repo) throws IOException {
+  public static GithubRepo from(GHRepository repo) throws IOException {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())

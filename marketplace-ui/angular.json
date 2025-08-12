@@ -30,7 +30,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/assets/_market",
-              "src/robot.txt",
+              "src/robots.txt",
               "src/sitemap.xml"
             ],
             "styles": [

@@ -1,10 +1,13 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -19,11 +22,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class MonitorDashBoardController {
 
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
+  private final GitHubService gitHubService;
 
   @Operation(summary = "Get all GitHub repositories",
       description = "Fetch all GitHub repositories with their details and test results")
@@ -47,8 +53,7 @@ public class MonitorDashBoardController {
   }
 
   @GetMapping(REPOS_REPORT)
-  @Operation(summary = "Get test report by repository and workflow",
-      description = "Fetch test report details for a specific repository and workflow")
+  @Operation(hidden = true)
   public ResponseEntity<List<TestStepsModel>> getTestReport(
       @PathVariable(REPO) @Parameter(description = "Repository name", example = "my-repo",
           in = ParameterIn.PATH) String repo,
@@ -66,8 +71,13 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
-  @GetMapping(FOCUSED)
-  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
+  @PutMapping(FOCUSED)
+  @Operation(hidden = true)
+  public ResponseEntity<String> updateFocusedRepo(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+                                                  @RequestParam(REPOS) List<String> repos) {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+            GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }

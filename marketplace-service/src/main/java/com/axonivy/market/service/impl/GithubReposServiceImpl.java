@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
-import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
+import static com.axonivy.market.entity.GithubRepo.from;
 import static com.axonivy.market.enums.WorkFlowType.*;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
@@ -52,25 +52,28 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   public void loadAndStoreTestReports() {
-    try {
-      List<Product> products = productRepository.findAll().stream()
-          .filter(product -> Boolean.FALSE != product.getListed()
-              && product.getRepositoryName() != null).toList();
-      for (Product product : products) {
-        log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
+    List<Product> products = productRepository.findAll().stream()
+            .filter(product -> Boolean.FALSE != product.getListed()
+                    && product.getRepositoryName() != null).toList();
+
+    for (Product product : products) {
+      try {
+        log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
         processProduct(repository);
+      } catch (IOException | GHException | DataAccessException e) {
+        log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
       }
-    } catch (IOException | GHException | DataAccessException e) {
-      log.error("Error loading and storing test reports", e);
     }
   }
 
   @Transactional
-  public synchronized void processProduct(GHRepository ghRepo) {
+  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
+    if (ghRepo == null) {
+      return;
+    }
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-    try {
       if (githubRepoOptional.isPresent()) {
         githubRepo = githubRepoOptional.get();
         githubRepo.getTestSteps().clear();
@@ -78,15 +81,13 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo.setLanguage(ghRepo.getLanguage());
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
-        githubRepo = createNewGithubRepo(ghRepo);
+        githubRepo = from(ghRepo);
       }
       List<TestStep> testSteps = Arrays.stream(values()).map(
           workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
       githubRepo.getTestSteps().addAll(testSteps);
       githubRepoRepository.save(githubRepo);
-    } catch (DataAccessException | IOException e) {
-      log.error("Error while saving GitHub repo: {}", ghRepo.getFullName(), e);
-    }
+
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
