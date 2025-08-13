@@ -98,13 +98,13 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
         this.criteria = {
           ...this.criteria,
-          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
-          type: params['type'] ?? this.criteria.type,
-          sort: params['sort'] ?? this.criteria.sort
+          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '',
+          type: params['type'] ?? TypeOption.All_TYPES,
+          sort: params['sort'] ?? SortOption.STANDARD
         };
+        console.warn('subcribe params');
+        this.loadProductItems(true);
       });
-
-      this.loadProductItems();
 
       this.subscriptions.push(
         this.searchTextChanged
@@ -115,6 +115,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
               nextPageHref: '',
               search: value
             };
+            console.warn('subcribe push');
             this.loadProductItems(true);
 
             let queryParams: { search: string | null } = { search: null };
@@ -166,7 +167,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       nextPageHref: '',
       type: selectedType.value
     };
-    this.loadProductItems(true);
 
     let queryParams: { type: TypeOption | null } = { type: null };
     if (selectedType.value !== TypeOption.All_TYPES) {
@@ -186,7 +186,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       nextPageHref: '',
       sort: selectedSort
     };
-    this.loadProductItems(true);
     let queryParams = null;
     if (SortOption.STANDARD !== selectedSort) {
       queryParams = { sort: this.criteria.sort };
@@ -206,6 +205,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   loadProductItems(shouldCleanData = false) {
+    console.error('loadProductItems ' + shouldCleanData);
     this.criteria.language = this.languageService.selectedLanguage();
     if (this.isRESTClient()) {
       this.criteria = {
