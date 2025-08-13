@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -58,6 +59,7 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @Loggable
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<StreamingResponseBody> getArtifactResourceStream(@PathVariable(ID) String productId,
@@ -76,6 +78,7 @@ public class ProductMarketplaceDataController {
         "attachment").body(streamingBody);
   }
 
+  @Loggable
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID) String id) {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
