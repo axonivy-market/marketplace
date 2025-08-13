@@ -66,9 +66,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   loadingService = inject(LoadingService);
   criteria: Criteria = {
     search: '',
-    type: TypeOption.All_TYPES,
+    type: null,
+    sort: null,
     isRESTClientEditor: false,
-    sort: SortOption.STANDARD,
     language: Language.EN,
     pageable: DEFAULT_PAGEABLE
   };
@@ -117,7 +117,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
               nextPageHref: '',
               search: value
             };
-            console.warn('subcribe push');
             this.loadProductItems(true);
 
             let queryParams: { search: string | null } = { search: null };
