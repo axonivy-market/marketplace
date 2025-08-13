@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   CI_BUILD,
   DEV_BUILD,
+  E2E_BUILD,
   MONITORING_WIKI_LINK
 } from '../../../shared/constants/common.constant';
 
@@ -21,6 +22,7 @@ export class BuildBadgeTooltipComponent implements OnInit {
   monitoringWikiLink = MONITORING_WIKI_LINK;
   ciTooltipPath = 'common.monitor.buildTooltip.ci';
   devTooltipPath = 'common.monitor.buildTooltip.dev';
+  e2eTooltipPath = 'common.monitor.buildTooltip.e2e';
 
   translateService = inject(TranslateService);
 
@@ -37,6 +39,12 @@ export class BuildBadgeTooltipComponent implements OnInit {
       case DEV_BUILD:
         this.tooltipContent = this.translateService.instant(
           this.devTooltipPath
+        );
+        break;
+
+      case E2E_BUILD:
+        this.tooltipContent = this.translateService.instant(
+          this.e2eTooltipPath
         );
         break;
 

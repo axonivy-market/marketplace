@@ -7,24 +7,26 @@ export interface Repository {
   htmlUrl: string;
   language: string | null;
   lastUpdated: string;
-  ciBadgeUrl: string;
-  devBadgeUrl: string;
   focused: boolean;
-  testResults?: TestResult[];
+  testResults: TestResult[];
 }
 
 export interface TestResult {
-  environment: 'ALL' | 'REAL' | 'MOCK';
-  workflow: 'CI' | 'DEV';
-  count: number;
-  status: 'PASSED' | 'FAILED';
+  workflow: 'CI' | 'DEV' | 'E2E';
+  badgeUrl: string;
+  results: TestSummary;
+}
+
+export interface TestSummary {
+  FAILED: number;
+  PASSED: number;
+  SKIPPED: number;
 }
 
 export interface TestStep {
   name: string;
   status: 'PASSED' | 'FAILED' | 'SKIPPED';
   type: string;
-  testType: string;
 }
 
 @Injectable({

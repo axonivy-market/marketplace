@@ -59,7 +59,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { SafeHtml, Title, DomSanitizer, Meta } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
-import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
+import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
@@ -101,7 +101,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
     ProductTypeIconPipe,
     CommonDropdownComponent,
     NgOptimizedImage,
-    EmptyProductDetailPipe,
+    IsEmptyObjectPipe,
     LoadingSpinnerComponent,
     NgbAccordionModule
   ],
@@ -186,8 +186,8 @@ export class ProductDetailComponent {
     const productDetail = this.route.snapshot.data[
       ROUTER.PRODUCT_DETAIL
     ] as ProductDetail;
-    
     this.handleProductDetailLoad(productId, productDetail);
+    this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
   }
 
   private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {

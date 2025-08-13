@@ -147,4 +147,23 @@ describe('ProductDetailInformationTabComponent', () => {
     component.ngOnChanges(changes);
     expect(productDetailService.getExternalDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, '12.0.0-m266');
   });
+
+  it('should return false when change is undefined', () => {
+    expect(component.isVersionUnchangedOrFirstChange(undefined)).toBeFalse();
+  });
+
+  it('should return true when currentValue equals previousValue', () => {
+    const change = new SimpleChange('v1', 'v1', false);
+    expect(component.isVersionUnchangedOrFirstChange(change)).toBeTrue();
+  });
+
+  it('should return true when firstChange is true', () => {
+    const change = new SimpleChange('v2', undefined, true);
+    expect(component.isVersionUnchangedOrFirstChange(change)).toBeTrue();
+  });
+
+  it('should return false when values differ and firstChange is false', () => {
+    const change = new SimpleChange('v2', 'v1', false);
+    expect(component.isVersionUnchangedOrFirstChange(change)).toBeFalse();
+  });
 });

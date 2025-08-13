@@ -20,7 +20,7 @@
             </span>
           </div>
         </div>
-        @if (!(productDetail() | emptyProductDetailPipe)) {
+        @if (!(productDetail() | isEmptyObjectPipe)) {
           <div
             class="version-gap d-flex flex-column flex-xl-row justify-content-between">
             <div
@@ -231,7 +231,7 @@
     </div>
     <hr />
     <!-- Product feedback -->
-    @if (!(productDetail() | emptyProductDetailPipe)) {
+    @if (!(productDetail() | isEmptyObjectPipe)) {
       <div class="default-cursor" style="margin-bottom: 12.8rem">
         @if (productDetail() && productFeedbackService.feedbacks().length > 0) {
           <app-product-detail-feedback [isMobileMode]="isMobileMode()" />

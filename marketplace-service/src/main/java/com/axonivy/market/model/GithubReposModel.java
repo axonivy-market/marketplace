@@ -1,7 +1,6 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -32,12 +31,6 @@ public class GithubReposModel {
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
   private Date lastUpdated;
 
-  @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
-  private String ciBadgeUrl;
-
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
-  private String devBadgeUrl;
-
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
   @Schema(
@@ -66,8 +59,6 @@ public class GithubReposModel {
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
         .lastUpdated(githubRepo.getLastUpdated())
-        .ciBadgeUrl(githubRepo.getCiBadgeUrl())
-        .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();

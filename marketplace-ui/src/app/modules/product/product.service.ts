@@ -38,7 +38,7 @@ export class ProductService {
       params: requestParams,
       context: new HttpContext().set(
         LoadingComponent,
-        LoadingComponentId.LANDING_PAGE
+        LoadingComponentId.END_LANDING_PAGE
       )
     });
   }

@@ -146,6 +146,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   viewProductDetail(productId: string) {
+    if (this.loadingService.loadingStates()[LoadingComponentId.LANDING_PAGE]) {
+      return;
+    }
+    this.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     if (this.isRESTClient()) {
       const win = this.windowRef.nativeWindow;
       if (win) {

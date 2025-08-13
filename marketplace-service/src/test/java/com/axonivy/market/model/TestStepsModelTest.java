@@ -1,9 +1,7 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestResults;
 import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestEnviroment;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;
@@ -27,7 +25,6 @@ class TestStepsModelTest {
 
     TestStep result = new TestStep();
     result.setName("Example name test");
-    result.setTestType(TestEnviroment.MOCK);
     result.setStatus(TestStatus.PASSED);
     result.setType(WorkFlowType.CI);
     repo.setTestSteps(List.of(result));
@@ -37,13 +34,9 @@ class TestStepsModelTest {
     assertEquals("demo-repo", model.getName(),
             "Expected the name to match the repo name");
     assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
-            "Expected the HTML URL to match the repo URL");
+        "Expected the HTML URL to match the repo URL");
     assertEquals("Java", model.getLanguage(),
             "Expected the language to match the repo language");
-    assertEquals("https://badge/ci", model.getCiBadgeUrl(),
-            "Expected the CI badge URL to match the repo's CI badge URL");
-    assertEquals("https://badge/dev", model.getDevBadgeUrl(),
-            "Expected the DEV badge URL to match the repo's DEV badge URL");
 
     assertNotNull(model.getTestResults(),
             "Expected test results to be initialized");
@@ -53,11 +46,7 @@ class TestStepsModelTest {
     TestResults testResult = model.getTestResults().get(0);
     assertEquals(WorkFlowType.CI, testResult.getWorkflow(),
             "Expected the workflow type to be CI");
-    assertEquals("MOCK", testResult.getEnvironment(),
-            "Expected the environment to be MOCK");
-    assertEquals(TestStatus.PASSED, testResult.getStatus(),
-            "Expected the test status to be PASSED");
-    assertEquals(1, testResult.getCount(),
-            "Expected the count of test steps to be 1");
+    assertEquals(1, testResult.getResults().get("PASSED"),
+        "Expected the count of test steps to be 1");
   }
 }
