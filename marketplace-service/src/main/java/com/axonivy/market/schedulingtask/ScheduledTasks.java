@@ -18,11 +18,11 @@ import java.io.IOException;
 @AllArgsConstructor
 public class ScheduledTasks {
 
-  private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
+  private static final String SCHEDULING_TASK_PRODUCTS_CRON = "${market.scheduling.products-cron}";
   // External documentation sync will start at 00:40 in order to prevent running at the same time with other
-  private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "0 40 0 * * *";
-  private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "0 0 0 * * ?";
-  private static final String SCHEDULING_TASK_GITHUB_REPOS = " 0 30 * * * *";
+  private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
+  private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
+  private static final String SCHEDULING_TASK_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
 
   final ProductRepository productRepo;
   final ProductService productService;
