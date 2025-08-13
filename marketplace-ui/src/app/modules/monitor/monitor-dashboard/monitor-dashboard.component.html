@@ -70,8 +70,10 @@
       </div>
       <p>
         <span class="icon">📅</span>
-        {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
-        {{ repo.lastUpdated | date: 'medium' }}
+        <span class="last-build">
+          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
+          {{ repo.lastUpdated | date: 'medium' }}
+        </span>
       </p>
     </div>
   </ng-template>

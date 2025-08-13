@@ -5,11 +5,12 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { DOWNLOAD_URL, IVY_FOOTER_LINKS, NAV_ITEMS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 import { NavItem } from '../../models/nav-item.model';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, RouterLink],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss', '../../../app.component.scss']
 })
