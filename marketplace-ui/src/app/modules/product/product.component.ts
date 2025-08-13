@@ -95,17 +95,19 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
             this.isDesignerEnvironment
         );
-
+        const newTypeParam = params['type'] ?? TypeOption.All_TYPES;
+        const newSortParam = params['sort'] ?? SortOption.STANDARD;
+        const isSortAndFilterChanged = this.criteria.sort !== newSortParam || this.criteria.type !== newTypeParam;
         this.criteria = {
           ...this.criteria,
           search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '',
-          type: params['type'] ?? TypeOption.All_TYPES,
-          sort: params['sort'] ?? SortOption.STANDARD
+          type: newTypeParam,
+          sort: newSortParam
         };
-        console.warn('subcribe params');
-        this.loadProductItems(true);
+        if (isSortAndFilterChanged) {
+          this.loadProductItems(true);
+        }
       });
-
       this.subscriptions.push(
         this.searchTextChanged
           .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
@@ -162,15 +164,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
-    this.criteria = {
-      ...this.criteria,
-      nextPageHref: '',
-      type: selectedType.value
-    };
-
     let queryParams: { type: TypeOption | null } = { type: null };
     if (selectedType.value !== TypeOption.All_TYPES) {
-      queryParams = { type: this.criteria.type };
+      queryParams = { type: selectedType.value };
     }
 
     this.router.navigate([], {
@@ -181,14 +177,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSortChange(selectedSort: SortOption) {
-    this.criteria = {
-      ...this.criteria,
-      nextPageHref: '',
-      sort: selectedSort
-    };
     let queryParams = null;
     if (SortOption.STANDARD !== selectedSort) {
-      queryParams = { sort: this.criteria.sort };
+      queryParams = { sort:selectedSort };
     } else {
       queryParams = { sort: null };
     }
@@ -205,7 +196,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   loadProductItems(shouldCleanData = false) {
-    console.error('loadProductItems ' + shouldCleanData);
     this.criteria.language = this.languageService.selectedLanguage();
     if (this.isRESTClient()) {
       this.criteria = {
