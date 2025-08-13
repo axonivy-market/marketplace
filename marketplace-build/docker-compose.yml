@@ -10,6 +10,7 @@ services:
     volumes:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
       - marketcache:/usr/share/nginx/html/market-cache
+      - marketuicache:/usr/share/nginx/html/browser
     ports:
       - "4500:80"
     depends_on:
@@ -25,6 +26,8 @@ services:
         - BUILD_ENV=${BUILD_ENV}
     environment:
       - MARKET_API_INTERNAL_URL=${MARKET_API_INTERNAL_URL}
+    volumes:
+      - marketuicache:/app/dist/browser
     restart: always
     ports:
       - "4000:4000"
@@ -61,3 +64,4 @@ services:
 
 volumes:
   marketcache:
+  marketuicache:
