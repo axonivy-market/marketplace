@@ -97,10 +97,15 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
         );
         const newTypeParam = params['type'] ?? TypeOption.All_TYPES;
         const newSortParam = params['sort'] ?? SortOption.STANDARD;
-        const isSortAndFilterChanged = this.criteria.sort !== newSortParam || this.criteria.type !== newTypeParam;
+        const newSearchParam =
+          params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '';
+        const isSortAndFilterChanged =
+          this.criteria.sort !== newSortParam ||
+          this.criteria.type !== newTypeParam ||
+          this.criteria.search !== newSearchParam;
         this.criteria = {
           ...this.criteria,
-          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '',
+          search: newSearchParam,
           type: newTypeParam,
           sort: newSortParam
         };
