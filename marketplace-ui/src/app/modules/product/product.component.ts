@@ -99,7 +99,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
         const newSortParam = params['sort'] ?? SortOption.STANDARD;
         const newSearchParam =
           params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '';
-        const isSortAndFilterChanged =
+        const isParamChanged =
           this.criteria.sort !== newSortParam ||
           this.criteria.type !== newTypeParam ||
           this.criteria.search !== newSearchParam;
@@ -109,7 +109,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           type: newTypeParam,
           sort: newSortParam
         };
-        if (isSortAndFilterChanged) {
+        if (isParamChanged) {
           this.loadProductItems(true);
         }
       });
