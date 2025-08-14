@@ -22,8 +22,8 @@ class GithubReposModelTest {
     githubRepo.setCiBadgeUrl("https://github.com/actions/workflows/ci.yml/badge.svg");
     githubRepo.setDevBadgeUrl("https://github.com/actions/workflows/dev.yml/badge.svg");
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
-    TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED,WorkFlowType.CI);
-    TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED,WorkFlowType.DEV);
+    TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
+    TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED, WorkFlowType.DEV);
     githubRepo.setTestSteps(List.of(step1, step2, step3));
 
     GithubReposModel model = GithubReposModel.from(githubRepo);
