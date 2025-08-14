@@ -1,5 +1,5 @@
 <configuration scan="true">
-    <property name="LOG_PATH" value="${LOG_PATH:logs/logging}" />
+    <property name="LOG_PATH" value="${LOG_PATH}" />
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -16,21 +16,18 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Roll once per day, compress old logs -->
             <fileNamePattern>${LOG_PATH}/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
-
-            <!-- Keep 14 days -->
+            <maxFileSize>10MB</maxFileSize>
             <maxHistory>14</maxHistory>
         </rollingPolicy>
     </appender>
 
     <!-- Hibernate SQL -->
     <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE" />
         <appender-ref ref="ROLLING_FILE" />
     </logger>
 
     <!-- Hibernate parameter values -->
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-        <appender-ref ref="CONSOLE" />
         <appender-ref ref="ROLLING_FILE" />
     </logger>
 
