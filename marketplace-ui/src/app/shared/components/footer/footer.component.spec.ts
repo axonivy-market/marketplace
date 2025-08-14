@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { IVY_FOOTER_LINKS, DOWNLOAD_URL, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { RouterModule } from '@angular/router';
 
 declare const viewport: Viewport;
 
@@ -20,7 +21,7 @@ describe('FooterComponent', () => {
     jasmine.clock().mockDate(testMockDate);
 
     await TestBed.configureTestingModule({
-      imports: [FooterComponent, TranslateModule.forRoot()],
+      imports: [FooterComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
       providers: [TranslateService]
     }).compileComponents();
 

@@ -66,9 +66,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   loadingService = inject(LoadingService);
   criteria: Criteria = {
     search: '',
-    type: TypeOption.All_TYPES,
+    type: null,
+    sort: null,
     isRESTClientEditor: false,
-    sort: SortOption.STANDARD,
     language: Language.EN,
     pageable: DEFAULT_PAGEABLE
   };
@@ -95,17 +95,24 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
             this.isDesignerEnvironment
         );
-
+        const newTypeParam = params['type'] ?? TypeOption.All_TYPES;
+        const newSortParam = params['sort'] ?? SortOption.STANDARD;
+        const newSearchParam =
+          params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '';
+        const isParamChanged =
+          this.criteria.sort !== newSortParam ||
+          this.criteria.type !== newTypeParam ||
+          this.criteria.search !== newSearchParam;
         this.criteria = {
           ...this.criteria,
-          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
-          type: params['type'] ?? this.criteria.type,
-          sort: params['sort'] ?? this.criteria.sort
+          search: newSearchParam,
+          type: newTypeParam,
+          sort: newSortParam
         };
+        if (isParamChanged) {
+          this.loadProductItems(true);
+        }
       });
-
-      this.loadProductItems();
-
       this.subscriptions.push(
         this.searchTextChanged
           .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
@@ -161,16 +168,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
-    this.criteria = {
-      ...this.criteria,
-      nextPageHref: '',
-      type: selectedType.value
-    };
-    this.loadProductItems(true);
-
     let queryParams: { type: TypeOption | null } = { type: null };
     if (selectedType.value !== TypeOption.All_TYPES) {
-      queryParams = { type: this.criteria.type };
+      queryParams = { type: selectedType.value };
     }
 
     this.router.navigate([], {
@@ -181,15 +181,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSortChange(selectedSort: SortOption) {
-    this.criteria = {
-      ...this.criteria,
-      nextPageHref: '',
-      sort: selectedSort
-    };
-    this.loadProductItems(true);
     let queryParams = null;
     if (SortOption.STANDARD !== selectedSort) {
-      queryParams = { sort: this.criteria.sort };
+      queryParams = { sort:selectedSort };
     } else {
       queryParams = { sort: null };
     }

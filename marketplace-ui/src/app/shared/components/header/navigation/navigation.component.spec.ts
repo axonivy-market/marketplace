@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavigationComponent } from './navigation.component';
+import { RouterModule } from '@angular/router';
 
 declare const viewport: Viewport;
 
@@ -12,7 +13,7 @@ describe('NavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavigationComponent, TranslateModule.forRoot()],
+      imports: [NavigationComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
       providers: [TranslateService]
     }).compileComponents();
 
