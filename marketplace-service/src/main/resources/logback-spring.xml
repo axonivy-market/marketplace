@@ -1,5 +1,5 @@
 <configuration scan="true">
-    <property name="LOG_PATH" value="${LOG_PATH}" />
+    <property name="LOG_PATH" value="${LOG_PATH:logs/logging}" />
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
