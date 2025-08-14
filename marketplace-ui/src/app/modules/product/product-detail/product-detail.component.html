@@ -20,7 +20,7 @@
             </span>
           </div>
         </div>
-        @if (!(productDetail() | emptyProductDetailPipe)) {
+        @if (!(productDetail() | isEmptyObjectPipe)) {
           <div
             class="version-gap d-flex flex-column flex-xl-row justify-content-between">
             <div
@@ -62,7 +62,8 @@
                 ) {
                   <app-product-installation-count-action
                     id="app-product-installation-count-action"
-                    [currentInstallationCount]="installationCount" />
+                    [productId]="productDetail().id"
+                    [refreshInstallationCount]="refreshInstallationCount" />
                 }
                 <div
                   class="analysis-container d-flex flex-column align-items-start p-0">
@@ -88,7 +89,7 @@
                   ProductDetailActionType.DESIGNER_ENV
               }"
               class="mt-md-3 m-sm-0"
-              (installationCount)="receiveInstallationCountData($event)"
+              (triggerUpdateInstallationCount)="receiveInstallationCountUpdate()"
               [(selectedVersion)]="selectedVersion!"
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
@@ -230,7 +231,7 @@
     </div>
     <hr />
     <!-- Product feedback -->
-    @if (!(productDetail() | emptyProductDetailPipe)) {
+    @if (!(productDetail() | isEmptyObjectPipe)) {
       <div class="default-cursor" style="margin-bottom: 12.8rem">
         @if (productDetail() && productFeedbackService.feedbacks().length > 0) {
           <app-product-detail-feedback [isMobileMode]="isMobileMode()" />

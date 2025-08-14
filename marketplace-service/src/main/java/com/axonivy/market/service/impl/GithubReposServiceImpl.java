@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -29,13 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
-import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
-import static com.axonivy.market.enums.WorkFlowType.CI;
-import static com.axonivy.market.enums.WorkFlowType.DEV;
+import static com.axonivy.market.entity.GithubRepo.from;
+import static com.axonivy.market.enums.WorkFlowType.*;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
@@ -46,69 +46,83 @@ public class GithubReposServiceImpl implements GithubReposService {
   private static final String REPORT_FILE_NAME = "test_report.json";
 
   private final GithubRepoRepository githubRepoRepository;
-  private final GithubReposModelAssembler githubReposModelAssembler;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
 
   @Override
   public void loadAndStoreTestReports() {
-    try {
-      List<Product> products = productRepository.findAll().stream()
-          .filter(product -> Boolean.FALSE != product.getListed()
-              && product.getRepositoryName() != null).toList();
-      for (Product product : products) {
-        log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
+    List<Product> products = productRepository.findAll().stream()
+            .filter(product -> Boolean.FALSE != product.getListed()
+                    && product.getRepositoryName() != null).toList();
+
+    for (Product product : products) {
+      try {
+        log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
         processProduct(repository);
+      } catch (IOException | GHException | DataAccessException e) {
+        log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
       }
-    } catch (IOException | GHException | DataAccessException e) {
-      log.error("Error loading and storing test reports", e);
     }
   }
 
   @Transactional
-  public void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
+    if (ghRepo == null) {
+      return;
+    }
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-
-    if (githubRepoOptional.isPresent()) {
-      githubRepo = githubRepoOptional.get();
-      githubRepo.getTestSteps().clear();
-      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-      githubRepo.setLanguage(ghRepo.getLanguage());
-      githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
-    } else {
-      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
-    }
-
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
-    try {
+      if (githubRepoOptional.isPresent()) {
+        githubRepo = githubRepoOptional.get();
+        githubRepo.getTestSteps().clear();
+        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+        githubRepo.setLanguage(ghRepo.getLanguage());
+        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+      } else {
+        githubRepo = from(ghRepo);
+      }
+      List<TestStep> testSteps = Arrays.stream(values()).map(
+          workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
+      githubRepo.getTestSteps().addAll(testSteps);
       githubRepoRepository.save(githubRepo);
-    } catch (DataAccessException e) {
-      log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
-    }
+
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      String workflowFileName, WorkFlowType workflowType) {
+      WorkFlowType workflowType) {
     try {
-      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
+      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
+        updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
         }
       }
     } catch (IOException | GHException e) {
-      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
+      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
     }
     return Collections.emptyList();
+  }
+
+  private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
+    String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
+    switch (workflowType) {
+      case CI:
+        dbRepo.setCiBadgeUrl(runBadgeUrl);
+        break;
+      case DEV:
+        dbRepo.setDevBadgeUrl(runBadgeUrl);
+        break;
+      case E2E:
+        dbRepo.setE2eBadgeUrl(runBadgeUrl);
+        break;
+      default:
+        break;
+    }
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
@@ -146,7 +160,15 @@ public class GithubReposServiceImpl implements GithubReposService {
   public List<GithubReposModel> fetchAllRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
     return entities.stream()
-        .map(githubReposModelAssembler::toModel)
+        .map(GithubReposModel::from)
         .toList();
+  }
+
+  @Override
+  public void updateFocusedRepo(List<String> repos) {
+    if (repos == null || repos.isEmpty()) {
+      return;
+    }
+    githubRepoRepository.updateFocusedRepoByName(repos);
   }
 }

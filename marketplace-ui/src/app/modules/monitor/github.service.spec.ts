@@ -10,20 +10,15 @@ const mockRepos: Repository[] = [
     htmlUrl: 'https://github.com/user/repo1',
     language: 'TypeScript',
     lastUpdated: '2025-07-20T12:00:00Z',
-    ciBadgeUrl: 'https://example.com/badge/ci.svg',
-    devBadgeUrl: 'https://example.com/badge/dev.svg',
-    testResults: [
-      { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
-      { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' }
-    ]
+    focused: true,
+    testResults: []
   }
 ];
 
 const mockTestStep: TestStep = {
   name: 'Step 1',
   status: 'PASSED',
-  type: 'unit',
-  testType: 'mock'
+  type: 'unit'
 };
 
 describe('GithubService', () => {

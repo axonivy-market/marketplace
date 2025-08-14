@@ -30,6 +30,7 @@ pipeline {
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
+    VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
     MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
     MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
     MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
@@ -41,6 +42,11 @@ pipeline {
     OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET')
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
     OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
+    MARKET_SCHEDULING_TASK_PRODUCTS_CRON = credentials('MARKET_SCHEDULING_TASK_PRODUCTS_CRON')
+    MARKET_SCHEDULING_TASK_DOCUMENTS_CRON = credentials('MARKET_SCHEDULING_TASK_DOCUMENTS_CRON')
+    MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON = credentials('MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON')
+    MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON = credentials('MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON')
+    
   }
 
   parameters {
@@ -124,6 +130,10 @@ pipeline {
           sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
           sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
           sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
+          sed -i "s|^MARKET_SCHEDULING_TASK_PRODUCTS_CRON=.*\$|MARKET_SCHEDULING_TASK_PRODUCTS_CRON=${env.MARKET_SCHEDULING_TASK_PRODUCTS_CRON}|" \$ENV_FILE
+          sed -i "s|^MARKET_SCHEDULING_TASK_DOCUMENTS_CRON=.*\$|MARKET_SCHEDULING_TASK_DOCUMENTS_CRON=${env.MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}|" \$ENV_FILE
+          sed -i "s|^MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON=.*\$|MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON=${env.MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}|" \$ENV_FILE
+          sed -i "s|^MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON=.*\$|MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON=${env.MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}|" \$ENV_FILE
         """
       }
     }
@@ -173,21 +183,29 @@ pipeline {
 
     stage('Release Marketplace UI Image') {
       steps {
-        sh '''
+        sh """
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
-        '''
+
+          # Cleanup old UI image versions
+          IMAGE_NAME=$UI_IMAGE_NAME
+          bash ./.build/scripts/ghcr-cleanup.sh
+        """
       }
     }
 
     stage('Release Marketplace Service Image') {
       steps {
-        sh '''
+        sh """
           SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
           docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
           docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
-        '''
+
+          # Cleanup old Service image versions
+          IMAGE_NAME=$SERVICE_IMAGE_NAME
+          bash ./.build/scripts/ghcr-cleanup.sh
+        """
       }
     }
   }

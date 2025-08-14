@@ -38,7 +38,7 @@ export class ProductService {
       params: requestParams,
       context: new HttpContext().set(
         LoadingComponent,
-        LoadingComponentId.LANDING_PAGE
+        LoadingComponentId.END_LANDING_PAGE
       )
     });
   }
@@ -91,7 +91,7 @@ export class ProductService {
 
   sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    return this.httpClient.get<number>(url);
+    return this.httpClient.put<number>(url, null );
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {

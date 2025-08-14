@@ -31,17 +31,22 @@
       <div class="navbar navbar-expand-lg">
         <ul class="navbar-nav me-auto mb-lg-0">
           @for (item of navItems; track $index) {
-          <li class="nav-item">
-            <a
-              [lang]="languageService.selectedLanguage()"
-              class="nav-link"
-              [href]="item.link"
-              [ngClass]="
-                  item.link === '/' ? 'text-primary active' : 'text-muted'
-                " aria-current="page">
-              {{ item.label | translate | uppercase }}
-            </a>
-          </li>
+            @let isHomePage = item.link === '/';
+            <li class="nav-item">
+              @if (isHomePage) {
+                <a [lang]="languageService.selectedLanguage()" class="nav-link text-primary active"
+                  aria-current="page"
+                  [routerLink]="item.link" >
+                  {{ item.label | translate | uppercase }}
+                </a>
+              } @else {
+                <a [lang]="languageService.selectedLanguage()" class="nav-link text-muted"
+                  aria-current="page"
+                  [href]="item.link" >
+                  {{ item.label | translate | uppercase }}
+                </a>
+              }
+            </li>
           }
         </ul>
       </div>

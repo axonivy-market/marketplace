@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum WorkFlowType {
   CI("ci.yml"),
-  DEV("dev.yml");
+  DEV("dev.yml"),
+  E2E("e2e.yml");
 
   private final String fileName;
 

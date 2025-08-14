@@ -192,4 +192,64 @@ describe('ProductFilterComponent', () => {
 
     expect(component.selectedSortLabel).toBe(SORT_TYPES[1].label);
   });
+
+  it('should call onClearSearch when clear search text button is clicked', () => {
+    component.searchText = 'amazon-connector';
+    fixture.detectChanges();
+    spyOn(component, 'onClearSearch');
+    const clearSearchTextButton = fixture.debugElement.query(
+      By.css('#clear-search-text-button')
+    ).nativeElement as HTMLElement;
+    clearSearchTextButton.click();
+
+    expect(component.onClearSearch).toHaveBeenCalled();
+  });
+
+  it('should NOT render clear search text button when searchText is empty', () => {
+    component.searchText = '';
+    fixture.detectChanges();
+    const clearSearchTextButton = fixture.debugElement.query(
+      By.css('#clear-search-text-button')
+    );
+
+    expect(clearSearchTextButton).toBeNull();
+  });
+
+  it('should render clear search text button when searchText is not empty', () => {
+    component.searchText = 'amazon-connector';
+    fixture.detectChanges();
+    const clearSearchTextButton = fixture.debugElement.query(
+      By.css('#clear-search-text-button')
+    );
+
+    expect(clearSearchTextButton).toBeTruthy();
+  });
+
+  describe('onClearSearch()', () => {
+    it('should clear searchText when searchText has content', () => {
+      component.searchText = 'amazon-connector';
+      component.onClearSearch();
+      expect(component.searchText).toBe('');
+    });
+
+    it('should emit empty string through searchChange event when searchText has content', () => {
+      spyOn(component.searchChange, 'emit');
+      component.searchText = 'amazon-connector';
+
+      component.onClearSearch();
+
+      expect(component.searchChange.emit).toHaveBeenCalledWith('');
+      expect(component.searchChange.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should NOT clear searchText or emit event when searchText is already empty', () => {
+      component.searchText = '';
+      spyOn(component.searchChange, 'emit');
+
+      component.onClearSearch();
+
+      expect(component.searchText).toBe('');
+      expect(component.searchChange.emit).not.toHaveBeenCalled();
+    });
+  })
 });

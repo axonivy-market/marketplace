@@ -10,6 +10,7 @@ services:
     volumes:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
       - marketcache:/usr/share/nginx/html/market-cache
+      - marketuicache:/usr/share/nginx/html/browser
     ports:
       - "4500:80"
     depends_on:
@@ -18,13 +19,15 @@ services:
 
   ui:
     container_name: marketplace-ui
-    environment:
-      - MARKET_SERVICE_BASE_URL=${MARKET_SERVICE_BASE_URL}
     build:
       context: ../marketplace-ui
       dockerfile: Dockerfile
       args:
         - BUILD_ENV=${BUILD_ENV}
+    environment:
+      - MARKET_API_INTERNAL_URL=${MARKET_API_INTERNAL_URL}
+    volumes:
+      - marketuicache:/app/dist/browser
     restart: always
     ports:
       - "4000:4000"
@@ -44,6 +47,7 @@ services:
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
       - MARKET_LOG_PATH=${MARKET_LOG_PATH}
+      - LOGGING_FILE_PATH=${LOGGING_FILE_PATH}
       - MARKET_CLICK_LIMIT=${MARKET_CLICK_LIMIT}
       - MARKET_LIMITED_REQUEST_PATHS=${MARKET_LIMITED_REQUEST_PATHS}
       - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
@@ -51,6 +55,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SHOW_SQL=${SHOW_SQL}
       - MARKET_ENVIRONMENT=${MARKET_ENVIRONMENT}
+      - MARKET_SCHEDULING_TASK_PRODUCTS_CRON=${MARKET_SCHEDULING_TASK_PRODUCTS_CRON}
+      - MARKET_SCHEDULING_TASK_DOCUMENTS_CRON=${MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}
+      - MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON=${MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}
+      - MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON=${MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}
     build:
       context: ../marketplace-service
       dockerfile: Dockerfile
@@ -61,3 +69,4 @@ services:
 
 volumes:
   marketcache:
+  marketuicache:

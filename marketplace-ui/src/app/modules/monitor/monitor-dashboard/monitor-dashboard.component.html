@@ -1,78 +1,80 @@
 <div class="container">
   <div class="header">
-    <h2 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.title' | translate }}
-    </h2>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      <h2 [lang]="languageService.selectedLanguage()">
+        {{ 'common.monitor.dashboard.title' | translate }}
+      </h2>
+      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+    </div>
     <h3 [lang]="languageService.selectedLanguage()">
-      {{ 'monitor.dashboard.subtitle' | translate }}
+      {{ 'common.monitor.dashboard.subtitle' | translate }}
     </h3>
   </div>
-
-  @if (!loading && repositories.length) {
-  <div class="repo-grid">
-    @for (repo of repositories; track repo.name) {
-    <div class="repo-card">
-      <div class="repo-header">
-        <p>{{ repo.name }}</p>
-        <span class="visibility">{{ repo.language }}</span>
-      </div>
-
-      <div class="repo-info">
-        @if (repo.ciBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
-          <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
-        }
-
-        @if (repo.devBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
-          <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
-          </div>
-        </div>
-        }
-        <p>
-          <span class="icon">📅</span>
-          {{ 'monitor.dashboard.lastUpdated' | translate }}: {{ repo.lastUpdated | date:'medium' }}
-        </p>
-      </div>
-    </div>
-    }
-
-  </div>
-  }
-
   @if (loading) {
-  <div class="loading" [lang]="languageService.selectedLanguage()">
-    {{ 'monitor.dashboard.loading' | translate }}
-  </div>
+    <div class="loading" [lang]="languageService.selectedLanguage()">
+      {{ 'common.monitor.dashboard.loading' | translate }}
+    </div>
   }
 
   @if (error) {
-  <div class="error">{{ error }}</div>
+    <div class="error">{{ error }}</div>
   }
+
+  @if (!loading && focusedRepo().length) {
+    <h4 class="section-title">{{ 'common.monitor.dashboard.focus.title' | translate }}</h4>
+    <div class="repo-grid">
+      @for (repo of focusedRepo(); track repo.name) {
+        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+      }
+    </div>
+  }
+
+  @if (!loading && standardRepo().length) {
+    <h4 class="section-title">{{ 'common.monitor.dashboard.standard.title' | translate }}</h4>
+    <div class="repo-grid">
+      @for (repo of standardRepo(); track repo.name) {
+        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
+      }
+    </div>
+  }
+
+  <ng-template #repoCard let-repo>
+    <div class="repo-card d-flex flex-column justify-content-between">
+      <div class="repo-card__meta">
+        <div class="repo-header">
+          <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
+            <p>{{ repo.name }}</p>
+          </a>
+          <span class="badge">{{ repo.language }}</span>
+        </div>
+        <div class="repo-info">
+          @for (build of repo.testResults; track build.workflow) {
+            <span class="icon">{{ build.workflow | workflowIcon }}</span>
+            <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
+              <img  [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" />
+            </span>
+            <app-build-badge-tooltip [buildType]="build.workflow"/>
+            <div class="sub-status">
+              @if(!(build.results | isEmptyObjectPipe)) {
+                @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                  <span class="fs-5">
+                    {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
+                  </span>
+                }
+              } @else {
+                <br>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      <p>
+        <span class="icon">📅</span>
+        <span class="last-build">
+          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
+          {{ repo.lastUpdated | date: 'medium' }}
+        </span>
+      </p>
+    </div>
+  </ng-template>
 </div>

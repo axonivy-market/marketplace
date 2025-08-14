@@ -7,5 +7,8 @@ import java.util.List;
 
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
+
   List<GithubReposModel> fetchAllRepositories();
+
+  void updateFocusedRepo(List<String> repos);
 }

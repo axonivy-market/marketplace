@@ -6,7 +6,6 @@ import { routes } from './app.routes';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { provideMatomo, withRouter } from 'ngx-matomo-client';
 import { environment } from '../environments/environment';
-import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 import { BootstrapLoaderService } from './core/services/browser/bootstrap-loader.service';
 import { translateUniversalLoaderFactory } from './core/configs/translate-loader.factory';
 import { Language } from './shared/enums/language.enum';
@@ -42,7 +41,6 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    provideClientHydration(withI18nSupport()),
     {
       provide: APP_INITIALIZER,
       useFactory: (bootstrapLoader: BootstrapLoaderService) => () =>

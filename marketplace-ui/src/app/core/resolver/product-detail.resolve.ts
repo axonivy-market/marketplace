@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
@@ -22,6 +22,8 @@ import {
   SHOW_DEV_VERSION
 } from '../../shared/constants/common.constant';
 import { ROUTER } from '../../shared/constants/router.constant';
+import { API_INTERNAL_URL, API_PUBLIC_URL } from '../../shared/constants/api.constant';
+import { isPlatformServer } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class ProductDetailResolver implements Resolve<ProductDetail> {
@@ -33,7 +35,10 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly loadingService: LoadingService,
     private readonly productService: ProductService,
     private readonly cookieService: CookieService,
-    private readonly routingQueryParamService: RoutingQueryParamService
+    private readonly routingQueryParamService: RoutingQueryParamService,
+    @Inject(PLATFORM_ID) private readonly platformId: Object,
+    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string,
+    @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string
   ) {}
 
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
@@ -59,7 +64,14 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
       OG_DESCRIPTION_KEY,
       productShortDescription[this.languageService.selectedLanguage()]
     );
-    this.updateOGTag(OG_IMAGE_KEY, productDetail.logoUrl);
+    const originalLogoUrl = productDetail.logoUrl;
+    let productLogoUrl = '';
+    if (isPlatformServer(this.platformId) && this.apiPublicUrl) {
+      productLogoUrl = this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
+    } else {
+      productLogoUrl = originalLogoUrl;
+    }
+    this.updateOGTag(OG_IMAGE_KEY, productLogoUrl);
     this.updateOGTag(OG_IMAGE_TYPE_KEY, OG_IMAGE_PNG_TYPE);
   }
 

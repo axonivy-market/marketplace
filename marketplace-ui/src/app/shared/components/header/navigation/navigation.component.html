@@ -7,17 +7,26 @@
 
   <!-- Navigation -->
   <ul class="navbar-nav">
-    @for (item of navItems; track $index) {
-    <li class="nav-item">
-      <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
-            'text-primary': item.link === '/' || isMobileMode(),
-            'text-secondary': item.link !== '/' && !isMobileMode(),
-            active: item.link === '/'
-          }" aria-current="page" [href]="item.link">
-        {{ item.label | translate }}
-      </a>
-      <div class="active-line d-none" [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
-    </li>
+    @for (item of navItems; track item.label) {
+      @let isHomePage = item.link === '/';
+      <li class="nav-item">
+        @if (isHomePage) {
+          <a [lang]="languageService.selectedLanguage()" class="nav-link text-primary active"
+            aria-current="page"
+            [routerLink]="item.link" >
+            {{ item.label | translate }}
+          </a>
+        } @else {
+          <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
+            'text-primary': isMobileMode(),
+            'text-secondary': !isMobileMode(),
+            active: isHomePage }" aria-current="page"
+            [href]="item.link" >
+          {{ item.label | translate }}
+          </a>
+        }
+        <div class="active-line d-none" [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
+      </li>
     }
   </ul>
 </div>

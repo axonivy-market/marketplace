@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { HttpResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -372,17 +372,6 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.onUpdateInstallationCount).toHaveBeenCalled();
     expect(component.isDownloading()).toBeFalse();
     httpMock.verify();
-  }));
-
-  it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
-    productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
-    spyOn(component.installationCount, 'emit');
-
-    component.onUpdateInstallationCount();
-    tick(1000);
-
-    expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
-    expect(component.installationCount.emit).toHaveBeenCalledWith(42);
   }));
 
   it('should return the correct marketplace service URL', () => {
