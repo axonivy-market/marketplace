@@ -142,9 +142,10 @@ class GithubReposServiceImplTest {
 
     when(productRepository.findAll()).thenReturn(List.of(product));
     when(gitHubService.getRepository(product.getRepositoryName())).thenReturn(ghRepo);
-    when(githubRepoRepository.findByNameWithTestSteps(product.getRepositoryName())).thenReturn(Optional.of(dbRepo));
+    when(githubRepoRepository.findByNameWithTestSteps(product.getRepositoryName()))
+        .thenReturn(Optional.of(dbRepo));
     doReturn(List.of(new TestStep())).when(serviceSpy)
-            .processWorkflowWithFallback(any(), any(), any());
+        .processWorkflowWithFallback(any(), any(), any());
     assertDoesNotThrow(() -> serviceSpy.loadAndStoreTestReports(),
             "Should not throw an exception even if GitHub service fails");
     verify(githubRepoRepository).save(any());
