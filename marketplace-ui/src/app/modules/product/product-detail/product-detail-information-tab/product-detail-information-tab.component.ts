@@ -44,9 +44,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   ngOnInit(): void {
     // Set default display version from newestReleaseVersion or selectedVersion
     if (this.productDetail?.newestReleaseVersion) {
-      this.displayVersion = this.extractVersionValue(
-        this.productDetail.newestReleaseVersion
-      );
+      this.displayVersion = this.productDetail.newestReleaseVersion
     } else if (this.selectedVersion) {
       this.displayVersion = this.extractVersionValue(this.selectedVersion);
     }
