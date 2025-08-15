@@ -18,36 +18,36 @@ if [[ "$STATUS" != "200" ]]; then
   echo "GitHub API request failed (HTTP $STATUS)."
   exit 1
 fi
-
-# Sort versions by created_at descending and extract IDs
-VERSION_IDS=$(echo "$VERSIONS" | jq -r 'sort_by(.created_at) | reverse | .[].id')
-
 if [[ $(echo "$VERSIONS" | jq 'length') -eq 0 ]]; then
   echo "No versions found for $IMAGE_NAME."
   exit 0
 fi
 
-TOTAL=$(echo "$VERSION_IDS" | wc -l)
-DELETE_COUNT=$((TOTAL - VERSION_RETENTION_COUNT))
-echo "Total versions found: $TOTAL"
-if [[ $DELETE_COUNT -le 0 ]]; then
-  echo "Nothing to delete. Keeping all $TOTAL versions."
-  exit 0
-fi
+# Get IDs of the latest N tagged versions to keep
+KEEP_IDS=$(echo "$VERSIONS" \
+  | jq -r '[.[] | select(.metadata.container.tags | length > 0)]
+            | sort_by(.created_at)
+            | reverse
+            | .[:'"$VERSION_RETENTION_COUNT"']
+            | .[].id')
 
-# Get only the IDs to delete (all but the latest N)
-DELETE_IDS=$(echo "$VERSION_IDS" | tail -n "$DELETE_COUNT")
+echo "Keeping version IDs:"
+echo "$KEEP_IDS"
 
-echo "Deleting $DELETE_COUNT old version(s), keeping $VERSION_RETENTION_COUNT most recent..."
-for id in $DELETE_IDS; do
+# Loop all versions and delete if not in KEEP_IDS
+ALL_IDS=$(echo "$VERSIONS" | jq -r '.[].id')
+echo "all IDs:"
+echo "$ALL_IDS"
+for id in $ALL_IDS; do
   id=$(echo "$id" | tr -d '\r\n')
-  echo "Deleting version ID: $id"
-
-  url="https://api.github.com/orgs/$GITHUB_REPOSITORY_OWNER/packages/container/$IMAGE_NAME/versions/$id"
-
-  response=$(curl -s -X DELETE -H "Authorization: Bearer $GH_TOKEN" "$url")
-
-  echo "Response: $response"
+  if echo "$KEEP_IDS" | grep -qx "$id"; then
+    echo "Skipping version ID: $id (kept)"
+  else
+    echo "Deleting version ID: $id"
+    url="https://api.github.com/orgs/$GITHUB_REPOSITORY_OWNER/packages/container/$IMAGE_NAME/versions/$id"
+    response=$(curl -s -X DELETE -H "Authorization: Bearer $GH_TOKEN" "$url")
+    echo "Response: $response"
+  fi
 done
 
 echo "Cleanup complete."
