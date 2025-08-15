@@ -22,11 +22,7 @@ const PRODUCT_DETAIL = 'productDetail';
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    IsEmptyObjectPipe
-],
+  imports: [CommonModule, TranslateModule, IsEmptyObjectPipe],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })
@@ -44,6 +40,18 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
   router = inject(Router);
+
+  ngOnInit(): void {
+    // Set default display version from newestReleaseVersion or selectedVersion
+    if (this.productDetail?.newestReleaseVersion) {
+      this.displayVersion = this.extractVersionValue(
+        this.productDetail.newestReleaseVersion
+      );
+    } else if (this.selectedVersion) {
+      this.displayVersion = this.extractVersionValue(this.selectedVersion);
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
     if (this.isVersionUnchangedOrFirstChange(changes[SELECTED_VERSION])) {
