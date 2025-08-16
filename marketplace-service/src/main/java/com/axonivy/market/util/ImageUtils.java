@@ -23,17 +23,17 @@ public class ImageUtils {
   private ImageUtils() {
   }
 
-  public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {
+  public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent, boolean isProduction) {
     if (ObjectUtils.isEmpty(productModuleContent)) {
       return null;
     }
-    mappingImageUrl(productModuleContent.getDescription());
-    mappingImageUrl(productModuleContent.getDemo());
-    mappingImageUrl(productModuleContent.getSetup());
+    mappingImageUrl(productModuleContent.getDescription(), isProduction);
+    mappingImageUrl(productModuleContent.getDemo(), isProduction);
+    mappingImageUrl(productModuleContent.getSetup(), isProduction);
     return productModuleContent;
   }
 
-  private static void mappingImageUrl(Map<String, String> content) {
+  private static void mappingImageUrl(Map<String, String> content, boolean isProduction) {
     if (ObjectUtils.isEmpty(content)) {
       return;
     }
@@ -41,8 +41,12 @@ public class ImageUtils {
       List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
         String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
-        Link link = linkTo(methodOn(ImageController.class).findImageById(rawId)).withSelfRel();
-        value = value.replace(imageId, link.getHref());
+        var imageWebLink = linkTo(methodOn(ImageController.class).findImageById(rawId));
+        var link = imageWebLink.withSelfRel().getHref();
+        if (isProduction) {
+          link = imageWebLink.toUriComponentsBuilder().build().getPath();
+        }
+        value = value.replace(imageId, ObjectUtils.isNotEmpty(link) ? link : imageId);
       }
       content.put(key, value);
     });

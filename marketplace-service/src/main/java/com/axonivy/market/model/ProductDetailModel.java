@@ -71,14 +71,14 @@ public class ProductDetailModel extends ProductModel {
     return new EqualsBuilder().append(getId(), ((ProductDetailModel) obj).getId()).isEquals();
   }
 
-  public static ProductDetailModel createModel(Product product) {
+  public static ProductDetailModel createModel(Product product, boolean isProduction) {
     ProductDetailModel model = new ProductDetailModel();
     ProductModel.createResource(model, product);
-    createDetailResource(model, product);
+    createDetailResource(model, product, isProduction);
     return model;
   }
 
-  public static void createDetailResource(ProductDetailModel model, Product product) {
+  public static void createDetailResource(ProductDetailModel model, Product product, boolean isProduction) {
     model.setVendor(product.getVendor());
     model.setVendorUrl(product.getVendorUrl());
     model.setNewestReleaseVersion(product.getNewestReleaseVersion());
@@ -92,17 +92,22 @@ public class ProductDetailModel extends ProductModel {
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());
-    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
+    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();
-      model.setVendorImage(vendorLink.getHref());
+      model.setVendorImage(createImageLink(product.getVendorImage(), isProduction));
     }
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      Link vendorDarkModeLink =
-              linkTo(methodOn(ImageController.class).findImageById(product.getVendorImageDarkMode())).withSelfRel();
-      model.setVendorImageDarkMode(vendorDarkModeLink.getHref());
+      model.setVendorImageDarkMode(createImageLink(product.getVendorImageDarkMode(), isProduction));
     }
     model.setMavenDropins(product.isMavenDropins());
   }
 
+  private static String createImageLink(String imageId, boolean isProduction) {
+    var imageWebLink = linkTo(methodOn(ImageController.class).findImageById(imageId));
+    var link = imageWebLink.withSelfRel().getHref();
+    if (isProduction) {
+      link = imageWebLink.toUriComponentsBuilder().build().getPath();
+    }
+    return link;
+  }
 }
