@@ -1,6 +1,5 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.util.ImageUtils;
@@ -11,10 +10,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.hateoas.Link;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -92,22 +87,14 @@ public class ProductDetailModel extends ProductModel {
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());
-    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
+    model.setProductModuleContent(
+        ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      model.setVendorImage(createImageLink(product.getVendorImage(), isProduction));
+      model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage(), isProduction));
     }
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      model.setVendorImageDarkMode(createImageLink(product.getVendorImageDarkMode(), isProduction));
+      model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode(), isProduction));
     }
     model.setMavenDropins(product.isMavenDropins());
-  }
-
-  private static String createImageLink(String imageId, boolean isProduction) {
-    var imageWebLink = linkTo(methodOn(ImageController.class).findImageById(imageId));
-    var link = imageWebLink.withSelfRel().getHref();
-    if (isProduction) {
-      link = imageWebLink.toUriComponentsBuilder().build().getPath();
-    }
-    return link;
   }
 }
