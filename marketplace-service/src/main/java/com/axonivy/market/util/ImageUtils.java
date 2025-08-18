@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.entity.ProductModuleContent;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.ArrayList;
@@ -41,7 +42,13 @@ public class ImageUtils {
       List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
         String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
-        value = value.replace(imageId, createImageUrl(rawId, isProduction));
+        String imageLink;
+        if (isProduction) {
+          imageLink = createImageUrlForProduction(rawId);
+        } else {
+          imageLink = createImageUrl(rawId);
+        }
+        value = value.replace(imageId, imageLink);
       }
       content.put(key, value);
     });
@@ -57,12 +64,17 @@ public class ImageUtils {
     return result;
   }
 
-  public static String createImageUrl(String imageId, boolean isProduction) {
-    var imageWebLink = linkTo(methodOn(ImageController.class).findImageById(imageId));
-    var link = imageWebLink.withSelfRel().getHref();
-    if (isProduction) {
-      link = imageWebLink.toUriComponentsBuilder().build().getPath();
+  public static String createImageUrl(String imageId) {
+    if (StringUtils.isBlank(imageId)) {
+      return StringUtils.EMPTY;
     }
-    return ObjectUtils.isEmpty(link) ? imageId : link;
+    return linkTo(methodOn(ImageController.class).findImageById(imageId)).withSelfRel().getHref();
+  }
+
+  public static String createImageUrlForProduction(String imageId) {
+    if (StringUtils.isBlank(imageId)) {
+      return StringUtils.EMPTY;
+    }
+    return linkTo(methodOn(ImageController.class).findImageById(imageId)).toUriComponentsBuilder().build().getPath();
   }
 }

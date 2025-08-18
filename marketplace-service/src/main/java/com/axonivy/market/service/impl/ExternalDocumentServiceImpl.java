@@ -45,11 +45,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  final ProductRepository productRepo;
-  final ExternalDocumentMetaRepository externalDocumentMetaRepo;
-  final FileDownloadService fileDownloadService;
-  final ArtifactRepository artifactRepo;
-  final MarketplaceConfig marketplaceConfig;
+  private final ProductRepository productRepo;
+  private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
+  private final FileDownloadService fileDownloadService;
+  private final ArtifactRepository artifactRepo;
+  private final MarketplaceConfig marketplaceConfig;
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {

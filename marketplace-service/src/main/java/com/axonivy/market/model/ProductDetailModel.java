@@ -90,10 +90,18 @@ public class ProductDetailModel extends ProductModel {
     model.setProductModuleContent(
         ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage(), isProduction));
+      if (isProduction) {
+        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
+      } else {
+        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
+      }
     }
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode(), isProduction));
+      if (isProduction) {
+        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
+      } else {
+        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
+      }
     }
     model.setMavenDropins(product.isMavenDropins());
   }

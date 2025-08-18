@@ -13,7 +13,7 @@ import com.axonivy.market.config.MarketplaceConfig;
 @RequiredArgsConstructor
 @Component
 public class ProductDetailModelAssembler implements RepresentationModelAssembler<Product, ProductDetailModel> {
-  final MarketplaceConfig marketplaceConfig;
+  private final MarketplaceConfig marketplaceConfig;
 
   @Override
   public ProductDetailModel toModel(Product product) {
