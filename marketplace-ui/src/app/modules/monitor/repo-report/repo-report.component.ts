@@ -1,9 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { GithubService, TestStep } from '../github.service';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-repo-report',
@@ -21,6 +22,9 @@ export class RepoReportComponent implements OnInit {
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   route = inject(ActivatedRoute);
+  themeService = inject(ThemeService);
+
+  constructor(private readonly router: Router) {}
 
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
@@ -51,5 +55,9 @@ export class RepoReportComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  backToMonitorPage() {
+    this.router.navigate(['/monitoring']);
   }
 }
