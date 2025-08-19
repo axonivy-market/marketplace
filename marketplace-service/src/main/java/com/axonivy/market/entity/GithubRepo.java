@@ -33,7 +33,9 @@ public class GithubRepo extends GenericIdEntity {
   private String name;
   private String htmlUrl;
   private String language;
-  private Date lastUpdated;
+  private Date ciLastBuilt;
+  private Date devLastBuilt;
+  private Date e2eLastBuilt;
   private String ciBadgeUrl;
   private String devBadgeUrl;
   private String e2eBadgeUrl;
@@ -47,7 +49,6 @@ public class GithubRepo extends GenericIdEntity {
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
         .language(repo.getLanguage())
-        .lastUpdated(repo.getUpdatedAt())
         .testSteps(new ArrayList<>())
         .build();
   }

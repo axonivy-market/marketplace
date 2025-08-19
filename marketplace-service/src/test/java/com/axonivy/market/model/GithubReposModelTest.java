@@ -18,7 +18,9 @@ class GithubReposModelTest {
     githubRepo.setName("my-awesome-repo");
     githubRepo.setHtmlUrl("https://github.com/axonivy-market/my-awesome-repo");
     githubRepo.setLanguage("Java");
-    githubRepo.setLastUpdated(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
+    githubRepo.setCiLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
+    githubRepo.setDevLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
+    githubRepo.setE2eLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
     githubRepo.setCiBadgeUrl("https://github.com/actions/workflows/ci.yml/badge.svg");
     githubRepo.setDevBadgeUrl("https://github.com/actions/workflows/dev.yml/badge.svg");
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
@@ -31,8 +33,13 @@ class GithubReposModelTest {
     assertEquals("my-awesome-repo", model.getName(), "Repository name should match");
     assertEquals("https://github.com/axonivy-market/my-awesome-repo", model.getHtmlUrl(), "HTML URL should match");
     assertEquals("Java", model.getLanguage(), "Language should match");
-    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getLastUpdated(),
+    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getCiLastBuilt(),
         "Last updated timestamp should match");
+    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getDevLastBuilt(),
+        "Last updated timestamp should match");
+    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getE2eLastBuilt(),
+        "Last updated timestamp should match");
+
     List<TestResults> testResults = model.getTestResults();
     assertNotNull(testResults, "Test results should not be null");
     assertFalse(testResults.isEmpty(), "Test results should not be empty");

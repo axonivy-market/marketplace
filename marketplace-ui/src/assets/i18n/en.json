@@ -226,7 +226,9 @@
         "failed": "Failed",
         "mock": "Mock",
         "real": "Real",
-        "lastUpdated": "Last Built",
+        "ciLastBuilt": "Last CI Built",
+        "devLastBuilt": "Last DEV Built",
+        "e2eLastBuilt": "Last E2E Built",
         "language": "Language",
         "pageTitle": "Monitor Dashboard",
         "testCounts": {

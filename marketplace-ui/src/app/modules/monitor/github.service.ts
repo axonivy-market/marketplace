@@ -6,7 +6,9 @@ export interface Repository {
   name: string;
   htmlUrl: string;
   language: string | null;
-  lastUpdated: string;
+  ciLastBuilt: string;
+  devLastBuilt: string;
+  e2eLastBuilt: string;
   focused: boolean;
   testResults: TestResult[];
 }

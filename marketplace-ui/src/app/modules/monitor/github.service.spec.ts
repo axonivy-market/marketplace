@@ -9,7 +9,9 @@ const mockRepos: Repository[] = [
     name: 'repo1',
     htmlUrl: 'https://github.com/user/repo1',
     language: 'TypeScript',
-    lastUpdated: '2025-07-20T12:00:00Z',
+    ciLastBuilt: '2025-07-20T12:00:00Z',
+    devLastBuilt: '2025-07-21T12:00:00Z',
+    e2eLastBuilt: '2025-07-22T12:00:00Z',
     focused: true,
     testResults: []
   }

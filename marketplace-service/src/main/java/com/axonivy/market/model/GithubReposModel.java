@@ -28,8 +28,14 @@ public class GithubReposModel {
   @Schema(description = "Main programming language used", example = "Java")
   private String language;
 
-  @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
-  private Date lastUpdated;
+  @Schema(description = "Last CI built", example = "2025-07-14T10:35:00Z")
+  private Date ciLastBuilt;
+
+  @Schema(description = "Last DEV built", example = "2025-07-14T10:35:00Z")
+  private Date devLastBuilt;
+
+  @Schema(description = "Last E2E built", example = "2025-07-14T10:35:00Z")
+  private Date e2eLastBuilt;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
@@ -58,7 +64,9 @@ public class GithubReposModel {
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
-        .lastUpdated(githubRepo.getLastUpdated())
+        .ciLastBuilt(githubRepo.getCiLastBuilt())
+        .devLastBuilt(githubRepo.getDevLastBuilt())
+        .e2eLastBuilt(githubRepo.getE2eLastBuilt())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();
