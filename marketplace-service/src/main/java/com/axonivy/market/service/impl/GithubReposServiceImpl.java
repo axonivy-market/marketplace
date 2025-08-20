@@ -96,7 +96,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
         updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
-        updateWorkflowLastBuilt(run, dbRepo, workflowType);
+        updateLastBuilt(run, dbRepo, workflowType);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -126,7 +126,8 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
   }
 
-  private static void updateWorkflowLastBuilt(GHWorkflowRun run, GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
+  private static void updateLastBuilt(GHWorkflowRun run, GithubRepo dbRepo, WorkFlowType workflowType)
+      throws IOException {
     Date lastBuilt = run.getCreatedAt();
     switch (workflowType) {
       case CI:

@@ -257,4 +257,77 @@ class GithubReposServiceImplTest {
 
     verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
   }
+  @Test
+  void testProcessProductWithNullRepo() {
+    assertDoesNotThrow(() -> service.processProduct(null),
+        "Should handle null repository gracefully");
+
+    verifyNoInteractions(githubRepoRepository);
+  }
+
+  @Test
+  void testProcessArtifactWithIOException() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+    GHArtifact artifact = mock(GHArtifact.class);
+
+    when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
+    when(gitHubService.downloadArtifactZip(artifact)).thenThrow(new IOException("Download failed"));
+
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
+
+    assertTrue(result.isEmpty(), "Should return empty list when IO exception occurs");
+    assertNotNull(dbRepo.getCiBadgeUrl(), "CI badge URL should be set despite IO error");
+  }
+
+  @Test
+  void testProcessExistingRepo() throws Exception {
+    GithubRepo existingRepo = new GithubRepo();
+    existingRepo.setName("demo");
+    existingRepo.setTestSteps(new ArrayList<>());
+    existingRepo.getTestSteps().add(new TestStep());
+
+    when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(Optional.of(existingRepo));
+    doReturn(List.of()).when(serviceSpy).processWorkflowWithFallback(any(), any(), any());
+
+    serviceSpy.processProduct(ghRepo);
+
+    assertEquals(ghRepo.getHtmlUrl().toString(), existingRepo.getHtmlUrl(),
+        "HTML URL should be updated");
+    assertEquals(ghRepo.getLanguage(), existingRepo.getLanguage(),
+        "Language should be updated");
+    assertTrue(existingRepo.getTestSteps().isEmpty(),
+        "Test steps should be cleared before processing");
+
+    verify(githubRepoRepository).save(existingRepo);
+  }
+
+  @Test
+  void testUpdateWorkflowBadgeUrlAndLastBuiltForAllWorkflowTypes() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+
+    Date createdDate = new Date();
+    when(run.getCreatedAt()).thenReturn(createdDate);
+
+    when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
+    service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
+
+    assertNotNull(dbRepo.getCiBadgeUrl(), "CI badge URL should be set");
+    assertNotNull(dbRepo.getCiLastBuilt(), "CI last built should be set");
+    assertEquals(createdDate, dbRepo.getCiLastBuilt(), "CI last built date should match");
+
+    when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.DEV.getFileName())).thenReturn(run);
+    service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.DEV);
+
+    assertNotNull(dbRepo.getDevBadgeUrl(), "DEV badge URL should be set");
+    assertNotNull(dbRepo.getDevLastBuilt(), "DEV last built should be set");
+    assertEquals(createdDate, dbRepo.getDevLastBuilt(), "DEV last built date should match");
+
+    when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.E2E.getFileName())).thenReturn(run);
+    service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.E2E);
+
+    assertNotNull(dbRepo.getE2eBadgeUrl(), "E2E badge URL should be set");
+    assertNotNull(dbRepo.getE2eLastBuilt(), "E2E last built should be set");
+    assertEquals(createdDate, dbRepo.getE2eLastBuilt(), "E2E last built date should match");
+  }
 }
