@@ -307,7 +307,7 @@ class GithubReposServiceImplTest {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
 
     Date createdDate = new Date();
-    when(run.getCreatedAt()).thenReturn(createdDate);
+    doReturn(createdDate).when(run).getCreatedAt();
 
     when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
     service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
