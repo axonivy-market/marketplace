@@ -95,26 +95,9 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
     describe('ngOnInit', () => {
-      it('should set displayVersion from newestReleaseVersion if available', () => {
-        component.productDetail = {
-          id: TEST_ID,
-          newestReleaseVersion: TEST_VERSION
-        } as ProductDetail;
-        component.selectedVersion = '9.0.0';
-
-        component.ngOnInit();
-
-        expect(component.displayVersion).toBe(TEST_VERSION);
-      });
-
-      it('should set displayVersion from selectedVersion if newestReleaseVersion is not available', () => {
+      it('should set displayVersion from selectedVersion', () => {
         const versionDisplay = 'Version 10.0.0';
         spyOn(component, 'extractVersionValue').and.returnValue(TEST_VERSION);
-
-        component.productDetail = {
-          id: TEST_ID,
-          newestReleaseVersion: ''
-        } as ProductDetail;
         component.selectedVersion = versionDisplay;
 
         component.ngOnInit();

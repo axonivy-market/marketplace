@@ -42,12 +42,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   router = inject(Router);
 
   ngOnInit(): void {
-    // Set default display version from newestReleaseVersion or selectedVersion
-    if (this.productDetail?.newestReleaseVersion) {
-      this.displayVersion = this.productDetail.newestReleaseVersion;
-    } else if (this.selectedVersion) {
-      this.displayVersion = this.extractVersionValue(this.selectedVersion);
-    }
+    this.displayVersion = this.extractVersionValue(this.selectedVersion);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
