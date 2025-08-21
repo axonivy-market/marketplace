@@ -399,7 +399,7 @@ export class ProductDetailComponent {
       replaceUrl: true
     });
 
-    this.scrollPositions[this.activeTab] = window.scrollY || window.pageYOffset;
+    this.scrollPositions[this.activeTab] = window.scrollY;
     this.activeTab = tab;
     this.restoreTabScroll(tab);
 
