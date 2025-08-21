@@ -14,11 +14,6 @@ describe('BackToTopComponent', () => {
     fixture = TestBed.createComponent(BackToTopComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    spyOn(window, 'scrollTo'); 
-  });
-
-  afterEach(() => {
-    (window.scrollTo as jasmine.Spy).calls.reset();
   });
 
   it('should create', () => {
@@ -46,19 +41,24 @@ describe('BackToTopComponent', () => {
   });
 
   it('should scroll to top when button is clicked and showScrollButton is true', () => {
+    const scrollToSpy = spyOn<Window>(window, 'scrollTo');
+    
     const mockScrollOption = {
       top: 0,
       behavior: "smooth"
-    };
+  }
     component.showScrollButton = true;
     component.scrollToTop();
-    expect((window.scrollTo as jasmine.Spy).calls.argsFor(0)).toEqual([mockScrollOption]);
+
+    expect(scrollToSpy.calls.argsFor(0)).toEqual([mockScrollOption]);
   });
 
   it('should not scroll to top when button is clicked and showScrollButton is false', () => {
+    const scrollToSpy = spyOn(window, 'scrollTo');
     component.showScrollButton = false;
     component.scrollToTop();
-    expect((window.scrollTo as jasmine.Spy)).not.toHaveBeenCalled();
+
+    expect(scrollToSpy).not.toHaveBeenCalled();
   });
 
   it('should render the button when showScrollButton is true', () => {

@@ -414,7 +414,7 @@ export class ProductDetailComponent {
   restoreTabScroll(tabId: string) {
     if (this.isBrowser) {
       const pos = this.scrollPositions[tabId] ?? 0;
-      window.scrollTo({ top: pos, behavior: 'auto' });
+      window.scrollTo(0, pos);
     }
   }
 

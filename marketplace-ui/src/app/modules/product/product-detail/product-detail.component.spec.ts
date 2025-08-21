@@ -194,6 +194,15 @@ describe('ProductDetailComponent', () => {
     component = fixture.componentInstance;
 
     fixture.detectChanges();
+    if ((window.scrollTo as any).calls) {
+      (window.scrollTo as jasmine.Spy).and.callThrough();
+    }
+  });
+
+  afterEach(() => {
+    if ((window.scrollTo as any).calls) {
+      (window.scrollTo as jasmine.Spy).and.callThrough();
+    }
   });
 
   it('should create', () => {
@@ -1070,14 +1079,8 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     component.isBrowser = true;
     const tabId = 'demo';
     component['scrollPositions'][tabId] = 1234;
-
-    (window as any).scrollTo = jasmine.createSpy('scrollTo');
-
+    spyOn(window, 'scrollTo');
     component.restoreTabScroll(tabId);
-
-    expect((window as any).scrollTo).toHaveBeenCalledWith({
-      top: 1234,
-      behavior: 'auto'
-    });
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
   });
 });
