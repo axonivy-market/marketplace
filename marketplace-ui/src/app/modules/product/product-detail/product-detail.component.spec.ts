@@ -254,11 +254,11 @@ describe('ProductDetailComponent', () => {
     expect(dropdown.value).toBe('description');
   });
 
-  it('should call updateDropdownSelection when setActiveTab is called', () => {
-    spyOn(component, 'updateDropdownSelection');
+  it('should call restoreTabScroll when setActiveTab is called', () => {
+    spyOn(component, 'restoreTabScroll');
     const tab = 'specifications';
     component.setActiveTab(tab);
-    expect(component.updateDropdownSelection).toHaveBeenCalled();
+    expect(component.restoreTabScroll).toHaveBeenCalledWith(tab);
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
@@ -1064,5 +1064,20 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
+  });
+
+  it('should restore scroll position for a tab', () => {
+    component.isBrowser = true;
+    const tabId = 'demo';
+    component['scrollPositions'][tabId] = 1234;
+
+    (window as any).scrollTo = jasmine.createSpy('scrollTo');
+
+    component.restoreTabScroll(tabId);
+
+    expect((window as any).scrollTo).toHaveBeenCalledWith({
+      top: 1234,
+      behavior: 'auto'
+    });
   });
 });

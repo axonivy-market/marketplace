@@ -157,6 +157,8 @@ export class ProductDetailComponent {
   isBrowser: boolean;
   meta = inject(Meta);
 
+  private scrollPositions: { [tabId: string]: number } = {};
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -397,8 +399,9 @@ export class ProductDetailComponent {
       replaceUrl: true
     });
 
+    this.scrollPositions[this.activeTab] = window.scrollY || window.pageYOffset;
     this.activeTab = tab;
-    this.updateDropdownSelection();
+    this.restoreTabScroll(tab);
 
     const savedTab = {
       productId: this.productDetail().id,
@@ -406,6 +409,13 @@ export class ProductDetailComponent {
     };
 
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+  }
+
+  restoreTabScroll(tabId: string) {
+    if (this.isBrowser) {
+      const pos = this.scrollPositions[tabId] ?? 0;
+      window.scrollTo({ top: pos, behavior: 'auto' });
+    }
   }
 
   onShowInfoContent(): void {
