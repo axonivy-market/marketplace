@@ -1,4 +1,5 @@
 <div class="mt-5">
+  @if (isProductHomepage) {
   <p [lang]="languageService.selectedLanguage()" class="h3 mb-4">
     {{ translateService.get('common.filter.label') | async }}
   </p>
@@ -46,7 +47,7 @@
 
     </div>
   </div>
-
+  }
   <!-- Search -->
   <div class="input-group">
     <div class="input-group-text text-primary bg-secondary border-0">

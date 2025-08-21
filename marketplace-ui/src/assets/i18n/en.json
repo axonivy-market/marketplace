@@ -215,18 +215,15 @@
     },
     "monitor": {
       "dashboard": {
-        "title": "GitHub Repository Monitor",
-        "subtitle": "Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.",
-        "loading": "Loading repositories...",
+        "title": "Axon Ivy Market – Monitoring",
+        "subtitle": "This page summarizes the monitoring results of the Axon Ivy Market Extensions – including build pipelines (CI/DEV), end-to-end tests, and unit test results. The source code is open source and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">available on GitHub</a>.",
         "noRepositories": "No repositories found.",
         "errorLoading": "Error loading repositories",
-        "ciLabel": "CI Build",
-        "devLabel": "DEV Build",
-        "passed": "Passed",
-        "failed": "Failed",
-        "mock": "Mock",
-        "real": "Real",
-        "lastUpdated": "Last Built",
+        "connector": "Connector",
+        "ciLabel": "CI-Build",
+        "devLabel": "DEV-Build",
+        "e2eLabel": "E2E-Build",
+        "github": "Github",
         "language": "Language",
         "pageTitle": "Monitor Dashboard",
         "testCounts": {
@@ -265,7 +262,7 @@
         "standard": {
           "title": "Standard Market Extension"
         }
-      },  
+      },
       "buildTooltip": {
         "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
         "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build).",

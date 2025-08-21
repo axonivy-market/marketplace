@@ -10,16 +10,25 @@ $rowHeight: 37px;
   text-align: center;
   padding: 20px;
   color: var(--ivy-text-primary-color);
-  h2 {
-    font-size: 4rem;
-    margin: 20px 0;
-  }
-  
   a {
     font-size: 1.5rem;
     color: var(--ivy-link-corlor);
     text-decoration: none;
   }
+}
+
+.title {
+  margin-top: 8.2rem;
+  margin-bottom: 3.2rem;
+  cursor: default;
+
+  @media screen and (max-width: 991px) {
+    margin-top: 4.1rem;
+  }
+}
+
+.subtitle {
+  gap: 3.2rem;
 }
 
 .repo-grid {
@@ -149,4 +158,53 @@ $rowHeight: 37px;
   font-size: 2.5rem;
   text-align: center;
   color: #0056b3;
+}
+
+.nav-tabs {
+  gap: 2rem;
+}
+
+.nav-tabs a:hover {
+  cursor: pointer;
+}
+
+.nav-item {
+  gap: 10px;
+
+  a {
+    font-weight: 400;
+    font-size: 2.2rem;
+
+    color: var(--active-tab-indicator-color);
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+
+  a.text-secondary.active {
+    color: #{white} !important;
+  }
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--active-tab-indicator-color);
+  z-index: 1;
+}
+
+.tab-group {
+  gap: 40px;
+
+  .tab-content {
+    .tab-pane {
+      opacity: 1;
+      transition: none;
+    }
+  }
 }

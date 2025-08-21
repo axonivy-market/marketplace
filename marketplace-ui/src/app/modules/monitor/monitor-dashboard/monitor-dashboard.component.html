@@ -1,80 +1,60 @@
 <div class="container">
   <div class="header">
-    <div class="d-flex align-items-center justify-content-center gap-2">
-      <h2 [lang]="languageService.selectedLanguage()">
+    <div class="d-flex align-items-center justify-content-center">
+      <h1 [lang]="languageService.selectedLanguage()" class="title">
         {{ 'common.monitor.dashboard.title' | translate }}
-      </h2>
+      </h1>
       <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
     </div>
-    <h3 [lang]="languageService.selectedLanguage()">
-      {{ 'common.monitor.dashboard.subtitle' | translate }}
+    <h3 [lang]="languageService.selectedLanguage()" class="subtitle"
+      [innerHTML]="translateService.get('common.monitor.dashboard.subtitle') | async">
     </h3>
   </div>
-  @if (loading) {
-    <div class="loading" [lang]="languageService.selectedLanguage()">
-      {{ 'common.monitor.dashboard.loading' | translate }}
-    </div>
-  }
 
   @if (error) {
-    <div class="error">{{ error }}</div>
+  <div class="error">{{ error }}</div>
   }
 
-  @if (!loading && focusedRepo().length) {
-    <h4 class="section-title">{{ 'common.monitor.dashboard.focus.title' | translate }}</h4>
-    <div class="repo-grid">
-      @for (repo of focusedRepo(); track repo.name) {
-        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
-      }
-    </div>
-  }
+  <div class="monitor-container d-flex">
+    <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
+      <div class="row-tab col-12">
+        <ul class="nav nav-tabs form-tabs">
+          <li
+            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+            <a id="focused-tab" class="nav-link tab-title border-0 bg-transparent active" role="tab" [ngClass]="{
+                  'text-secondary': themeService.isDarkMode(),
+                  'text-dark': !themeService.isDarkMode(),
+                  active: activeTab === 'focused'
+                }" data-bs-toggle="tab" data-bs-target="#focused" (click)="setActiveTab('focused')"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.monitor.dashboard.focus.title' | translate }}
+            </a>
+          </li>
+          <li
+            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+            <a id="standard-tab" class="nav-link tab-title border-0 bg-transparent" role="tab" [ngClass]="{
+                  'text-secondary': themeService.isDarkMode(),
+                  'text-dark': !themeService.isDarkMode(),
+                  active: activeTab === 'standard'
+                }" data-bs-toggle="tab" data-bs-target="#standard" (click)="setActiveTab('standard')"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.monitor.dashboard.standard.title' | translate }}
+            </a>
+          </li>
+        </ul>
+      </div>
 
-  @if (!loading && standardRepo().length) {
-    <h4 class="section-title">{{ 'common.monitor.dashboard.standard.title' | translate }}</h4>
-    <div class="repo-grid">
-      @for (repo of standardRepo(); track repo.name) {
-        <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
-      }
-    </div>
-  }
-
-  <ng-template #repoCard let-repo>
-    <div class="repo-card d-flex flex-column justify-content-between">
-      <div class="repo-card__meta">
-        <div class="repo-header">
-          <a class="text-decoration-none" [href]="repo.htmlUrl"  target="_blank" rel="noopener noreferrer">
-            <p>{{ repo.name }}</p>
-          </a>
-          <span class="badge">{{ repo.language }}</span>
+      <div class="tab-content col-12 default-cursor">
+        <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
+          [ngClass]="{ 'show active': activeTab === 'focused' }">
+          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()"
+            [isStandardTab]="false"></app-monitor-repo>
         </div>
-        <div class="repo-info">
-          @for (build of repo.testResults; track build.workflow) {
-            <span class="icon">{{ build.workflow | workflowIcon }}</span>
-            <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
-              <img  [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" />
-            </span>
-            <app-build-badge-tooltip [buildType]="build.workflow"/>
-            <div class="sub-status">
-              @if(!(build.results | isEmptyObjectPipe)) {
-                @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-                  <span class="fs-5">
-                    {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
-                  </span>
-                }
-              } @else {
-                <br>
-              }
-            </div>
-          }
+        <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
+          [ngClass]="{ 'show active': activeTab === 'standard' }">
+          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true"></app-monitor-repo>
         </div>
       </div>
-      <p>
-        <span class="icon">📅</span>
-        <span class="last-build">
-          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
-          {{ repo.lastUpdated | date: 'medium' }}
-        </span>
-      </p>
     </div>
-  </ng-template>
+  </div>
 </div>

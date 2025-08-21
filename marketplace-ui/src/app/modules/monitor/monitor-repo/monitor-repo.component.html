@@ -1,0 +1,92 @@
+<div class="container">
+  <app-product-filter
+      (searchChange)="onSearchChanged($event)"
+      [isProductHomepage] = "false"></app-product-filter>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary username-column" [lang]="languageService.selectedLanguage()" sortable="name">
+          {{ 'common.monitor.dashboard.connector' | translate }}</th>
+        <th class=" text-primary username-column" [lang]="languageService.selectedLanguage()">
+          {{ 'common.monitor.dashboard.ciLabel' | translate }}
+          <app-build-badge-tooltip buildType="CI" />
+        </th>
+        <th class="text-primary content-devLabel" [lang]="languageService.selectedLanguage()">
+          {{ 'common.monitor.dashboard.devLabel' | translate }}
+          <app-build-badge-tooltip buildType="DEV" />
+        </th>
+        <th class="text-primary text-center rating-column" [lang]="languageService.selectedLanguage()">
+          {{ 'common.monitor.dashboard.e2eLabel' | translate }}
+          <app-build-badge-tooltip buildType="E2E" />
+        </th>
+        <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">
+          {{ 'common.monitor.dashboard.github' | translate }}</th>
+      </tr>
+    </thead>
+    @if (displayedRepositories.length > 0) {
+    <tbody>
+      <tr *ngFor="let repo of displayedRepositories">
+        <td class="product-name-column">
+          <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
+            <p>{{ repo.name }}</p>
+          </a>
+        </td>
+
+        @for (build of repo.testResults; track build.workflow) {
+        @if(build.badgeUrl.length > 0) {
+        <td>
+          <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
+            <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" />
+          </span>
+          <span class="text-primary m-0">{{ repo.lastUpdated | date: 'short' }}</span>
+        </td>
+        } @else {
+        <td>
+          <span class="text-primary m-0">-</span>
+        </td>
+        }
+        }
+
+        <td>
+          <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+        </td>
+      </tr>
+    </tbody>
+    }
+    @else if(displayedRepositories.length == 0 && !isLoading) {
+    <tbody>
+      <tr>
+        <td colspan="12" class="border-0">
+          <p class="text-primary m-0 text-center no-feedback" [lang]="languageService.selectedLanguage()">
+            {{ 'common.approval.noFeedbacks' | translate }}
+          </p>
+        </td>
+      </tr>
+    </tbody>
+    }
+  </table>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+  [collectionSize]="filteredRepositories.length"
+  [(page)]="page"
+  [pageSize]="pageSize"
+  (pageChange)="refreshPagination()">
+</ngb-pagination>
+
+<select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
+      <option [ngValue]="10">10 items per page</option>
+      <option [ngValue]="15">15 items per page</option>
+      <option [ngValue]="20">20 items per page</option>
+    </select>
+  </div>
+
+  @if (isLoading) {
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.MONITORING_REPO" />
+  }
+</div>

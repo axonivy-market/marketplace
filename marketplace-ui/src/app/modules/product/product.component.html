@@ -27,7 +27,8 @@
     <app-product-filter
       (searchChange)="onSearchChanged($event)"
       (filterChange)="onFilterChange($event)"
-      (sortChange)="onSortChange($event)"></app-product-filter>
+      (sortChange)="onSortChange($event)"
+      [isProductHomepage] = "true"></app-product-filter>
   }
 
   @if (products().length > 0) {
