@@ -96,6 +96,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
         updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
+        updateWorkflowConclusion(dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -106,6 +107,22 @@ public class GithubReposServiceImpl implements GithubReposService {
           ghRepo.getFullName(), e.getMessage());
     }
     return Collections.emptyList();
+  }
+
+  private void updateWorkflowConclusion(GithubRepo dbRepo, WorkFlowType workflowType, GHWorkflowRun ghWorkflowRun){
+    switch (workflowType) {
+      case CI:
+        dbRepo.setCiConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
+        break;
+      case DEV:
+        dbRepo.setDevConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
+        break;
+      case E2E:
+        dbRepo.setE2eConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
+        break;
+      default:
+        break;
+    }
   }
 
   private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {

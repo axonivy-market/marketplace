@@ -31,6 +31,15 @@ public class GithubReposModel {
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
   private Date lastUpdated;
 
+  @Schema(description = "Last CI result", example = "SUCCESS")
+  private String ciConclusion;
+
+  @Schema(description = "Last DEV result", example = "SUCCESS")
+  private String devConclusion;
+
+  @Schema(description = "Last E2E result", example = "SUCCESS")
+  private String e2eConclusion;
+
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
   @Schema(
@@ -59,6 +68,9 @@ public class GithubReposModel {
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
         .lastUpdated(githubRepo.getLastUpdated())
+        .ciConclusion(githubRepo.getCiConclusion())
+        .devConclusion(githubRepo.getDevConclusion())
+        .e2eConclusion(githubRepo.getE2eConclusion())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();

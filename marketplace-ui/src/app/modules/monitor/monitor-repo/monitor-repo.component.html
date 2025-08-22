@@ -33,7 +33,7 @@
           </a>
         </td>
 
-        @for (build of repo.testResults; track build.workflow) {
+        <!-- @for (build of repo.testResults; track build.workflow) {
         @if(build.badgeUrl.length > 0) {
         <td>
           <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
@@ -46,8 +46,54 @@
           <span class="text-primary m-0">-</span>
         </td>
         }
-        }
+        } -->
 
+        <td class="text-center">
+          @if (repo.ciConclusion === 'success') {
+          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else if (repo.ciConclusion === 'failure') {
+          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else {
+          <span class="text-primary">-</span>
+          }
+        </td>
+
+        <!-- DEV column -->
+        <td class="text-center">
+          @if (repo.devConclusion === 'success') {
+          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else if (repo.devConclusion === 'failure') {
+          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else {
+          <span class="text-primary">-</span>
+          }
+        </td>
+
+        <!-- E2E column -->
+        <td class="text-center">
+          @if (repo.e2eConclusion === 'success') {
+          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else if (repo.e2eConclusion === 'failure') {
+          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
+          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
+          } @else {
+          <span class="text-primary">-</span>
+          }
+        </td>
+        <!-- <td>
+          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
+          <span class="text-primary ml-2">{{ repo.lastUpdated | date: 'short' }}</span>
+        </td>
+
+        <td>
+          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
+          <span class="text-primary ml-2">{{ repo.lastUpdated | date: 'short' }}</span>
+        </td> -->
         <td>
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
             <i class="fa fa-external-link" aria-hidden="true"></i>
@@ -70,14 +116,11 @@
   </table>
 
   <div class="d-flex justify-content-between p-2">
-    <ngb-pagination
-  [collectionSize]="filteredRepositories.length"
-  [(page)]="page"
-  [pageSize]="pageSize"
-  (pageChange)="refreshPagination()">
-</ngb-pagination>
+    <ngb-pagination [collectionSize]="filteredRepositories.length" [(page)]="page" [pageSize]="pageSize"
+      (pageChange)="refreshPagination()">
+    </ngb-pagination>
 
-<select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
+    <select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
       <option [ngValue]="10">10 items per page</option>
       <option [ngValue]="15">15 items per page</option>
       <option [ngValue]="20">20 items per page</option>
