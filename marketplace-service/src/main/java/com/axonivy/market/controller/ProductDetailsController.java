@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -159,23 +160,16 @@ public class ProductDetailsController {
 
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
   @Operation(summary = "Find public releases by product id",
-      description = "Get all public releases by product id", parameters = {
-      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
-          required = true),
-      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
-          required = true)})
-  public ResponseEntity<PagedModel<GitHubReleaseModel>> findGithubPublicReleases(
+      description = "Get all public releases by product id")
+  public ResponseEntity<List<GitHubReleaseModel>> findGithubPublicReleases(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
-          in = ParameterIn.PATH) String productId,
-      @ParameterObject Pageable pageable) throws IOException {
-    Page<GitHubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
+          in = ParameterIn.PATH) String productId) throws IOException {
+    List<GitHubReleaseModel> results = productService.getGitHubReleaseModels(productId);
 
     if (results.isEmpty()) {
-      return generateReleasesEmptyPagedModel();
+      return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
     }
-    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
-    var pageResources = pagedResourcesAssembler.toModel(responseContent, githubReleaseModelAssembler);
-    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+    return new ResponseEntity<>(results, HttpStatus.OK);
   }
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)

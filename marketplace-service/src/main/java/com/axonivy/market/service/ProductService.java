@@ -23,9 +23,9 @@ public interface ProductService {
 
   boolean syncFirstPublishedDateOfAllProducts();
 
-  Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
+  List<GitHubReleaseModel> getGitHubReleaseModels(String productId) throws IOException;
 
-  Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
+  List<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
 
   GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 

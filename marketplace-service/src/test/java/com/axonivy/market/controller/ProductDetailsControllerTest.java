@@ -289,7 +289,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindGithubPublicReleases() throws IOException {
     Page<GitHubReleaseModel> page = new PageImpl<>(List.of(new GitHubReleaseModel()));
-    when(productService.getGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(page);
+    when(productService.getGitHubReleaseModels(anyString())).thenReturn(page);
     when(pagedResourcesAssembler.toModel(any(Page.class), any(GithubReleaseModelAssembler.class)))
         .thenReturn(PagedModel.of(List.of(new GitHubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
 

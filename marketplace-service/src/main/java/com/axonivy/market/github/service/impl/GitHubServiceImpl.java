@@ -364,11 +364,11 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GitHubReleaseModel> getGitHubReleaseModels(Product product,
-      PagedIterable<GHRelease> ghReleasePagedIterable,
-      Pageable pageable) throws IOException {
+  public List<GitHubReleaseModel> getGitHubReleaseModels(Product product,
+      PagedIterable<GHRelease> ghReleasePagedIterable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
-    List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
+    List<GHRelease> ghReleases =
+        ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).limit(5).toList();
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
       for (GHRelease ghRelease : ghReleases) {
@@ -376,7 +376,7 @@ public class GitHubServiceImpl implements GitHubService {
       }
     }
 
-    return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
+    return gitHubReleaseModels;
   }
 
   public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, String latestGitHubReleaseName) throws IOException {

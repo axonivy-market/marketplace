@@ -702,21 +702,21 @@ public class ProductServiceImpl implements ProductService {
 
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
-  public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+  public List<GitHubReleaseModel> getGitHubReleaseModels(String productId) throws IOException {
     Product product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
-      return new PageImpl<>(new ArrayList<>(), pageable, 0);
+      return Collections.emptyList();
     }
 
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
-    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
+    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable);
   }
 
   @CachePut(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
-  public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
-    return this.getGitHubReleaseModels(productId, pageable);
+  public List<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+    return this.getGitHubReleaseModels(productId);
   }
 
   @Override
