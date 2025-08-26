@@ -165,10 +165,6 @@ public class ProductDetailsController {
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId) throws IOException {
     List<GitHubReleaseModel> results = productService.getGitHubReleaseModels(productId);
-
-    if (results.isEmpty()) {
-      return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
-    }
     return new ResponseEntity<>(results, HttpStatus.OK);
   }
 

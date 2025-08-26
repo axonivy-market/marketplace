@@ -20,13 +20,12 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -63,6 +62,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
@@ -75,14 +75,8 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
-
-  public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
-    this.restTemplate = restTemplate;
-    this.githubUserRepository = githubUserRepository;
-    this.gitHubProperty = gitHubProperty;
-    this.taskScheduler = taskScheduler;
-  }
+  @Value("${market.releases.retention}")
+  private long retention;
 
   @Override
   public GitHub getGitHub() throws IOException {
@@ -368,7 +362,7 @@ public class GitHubServiceImpl implements GitHubService {
       PagedIterable<GHRelease> ghReleasePagedIterable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases =
-        ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).limit(5).toList();
+        ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).limit(retention).toList();
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
       for (GHRelease ghRelease : ghReleases) {
