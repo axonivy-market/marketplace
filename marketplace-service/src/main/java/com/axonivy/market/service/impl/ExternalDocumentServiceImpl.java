@@ -15,8 +15,10 @@ import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
@@ -34,6 +36,8 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import com.axonivy.market.config.MarketplaceConfig;
+
 @Log4j2
 @RequiredArgsConstructor
 @Service
@@ -41,12 +45,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  @Value("${market.environment}")
-  private String marketEnvironment;
-  final ProductRepository productRepo;
-  final ExternalDocumentMetaRepository externalDocumentMetaRepo;
-  final FileDownloadService fileDownloadService;
-  final ArtifactRepository artifactRepo;
+  private final ProductRepository productRepo;
+  private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
+  private final FileDownloadService fileDownloadService;
+  private final ArtifactRepository artifactRepo;
+  private final MarketplaceConfig marketplaceConfig;
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
@@ -106,7 +109,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
-              "MARKET_ENVIRONMENT is not production - it was {}", productId, marketEnvironment);
+              "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
     for (String version : missingVersions) {
@@ -118,7 +121,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public boolean shouldDownloadDocAndUnzipToShareFolder() {
-    return StringUtils.equalsIgnoreCase(CommonConstants.PROD_ENV, this.marketEnvironment);
+    return marketplaceConfig.isProduction();
   }
 
   private List<String> getMissingVersions(String productId, boolean isResetSync, List<String> releasedVersions,
