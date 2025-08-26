@@ -1,6 +1,5 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.util.ImageUtils;
@@ -11,10 +10,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.hateoas.Link;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -71,14 +66,14 @@ public class ProductDetailModel extends ProductModel {
     return new EqualsBuilder().append(getId(), ((ProductDetailModel) obj).getId()).isEquals();
   }
 
-  public static ProductDetailModel createModel(Product product) {
+  public static ProductDetailModel createModel(Product product, boolean isProduction) {
     ProductDetailModel model = new ProductDetailModel();
     ProductModel.createResource(model, product);
-    createDetailResource(model, product);
+    createDetailResource(model, product, isProduction);
     return model;
   }
 
-  public static void createDetailResource(ProductDetailModel model, Product product) {
+  public static void createDetailResource(ProductDetailModel model, Product product, boolean isProduction) {
     model.setVendor(product.getVendor());
     model.setVendorUrl(product.getVendorUrl());
     model.setNewestReleaseVersion(product.getNewestReleaseVersion());
@@ -92,17 +87,22 @@ public class ProductDetailModel extends ProductModel {
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());
-    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
+    model.setProductModuleContent(
+        ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();
-      model.setVendorImage(vendorLink.getHref());
+      if (isProduction) {
+        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
+      } else {
+        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
+      }
     }
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      Link vendorDarkModeLink =
-              linkTo(methodOn(ImageController.class).findImageById(product.getVendorImageDarkMode())).withSelfRel();
-      model.setVendorImageDarkMode(vendorDarkModeLink.getHref());
+      if (isProduction) {
+        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
+      } else {
+        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
+      }
     }
     model.setMavenDropins(product.isMavenDropins());
   }
-
 }
