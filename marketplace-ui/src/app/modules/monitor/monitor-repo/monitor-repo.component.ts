@@ -20,6 +20,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from "../../product/product-filter/product-filter.component";
 import { Subject } from 'rxjs';
+import { RepoTestResultComponent } from "../repo-test-result/repo-test-result.component";
 
 export interface SortEvent {
   column: SortColumn;
@@ -43,7 +44,8 @@ export type SortDirection = 'asc' | 'desc' | '';
     FormsModule,
     NgbPagination,
     NgbTypeaheadModule, NgbPaginationModule,
-    ProductFilterComponent
+    ProductFilterComponent,
+    RepoTestResultComponent
 ],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
@@ -53,10 +55,15 @@ export class MonitoringRepoComponent {
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
   @Input() isLoading = false;
+  @Input() activeTab = 'focused';
   @Output() searchChange = new EventEmitter<string>();
   // @Input() sortable: SortColumn = '';
   // @Input() direction: SortDirection = '';
   @Output() sort = new EventEmitter<SortEvent>();
+  mode: Record<string, string> = {
+  focused: 'default',
+  standard: 'default'
+};
 
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
@@ -103,6 +110,11 @@ export class MonitoringRepoComponent {
     const end = start + this.pageSize;
     this.displayedRepositories = this.filteredRepositories.slice(start, end);
   }
+
+  getTestResultsForWorkflow(repo: Repository, workflow: string) {
+  return repo.testResults.find(build => build.workflow === workflow);
+}
+
   // onSort({ column, direction }: SortEvent) {
   // 	// resetting other headers
   // 	for (const header of this.headers) {
@@ -124,6 +136,6 @@ export class MonitoringRepoComponent {
 
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();
-    this.router.navigate(['/report', repo, upperWorkflow]);
+    this.router.navigate(['/monitoring', repo, upperWorkflow]);
   }
 }

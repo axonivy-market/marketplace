@@ -1,8 +1,34 @@
 <div class="container">
-  <app-product-filter
-      (searchChange)="onSearchChanged($event)"
-      [isProductHomepage] = "false"></app-product-filter>
+  <div class="d-flex align-items-center justify-content-between gap-3 p-3">
+    <!-- Search Bar -->
+    <div class="flex-grow-1 d-flex">
+      <app-product-filter class="flex-grow-1 w-100" (searchChange)="onSearchChanged($event)"
+        [isProductHomepage]="false">
+      </app-product-filter>
+    </div>
 
+    <!-- Mode Toggle -->
+    <!-- <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" name="mode" id="defaultMode" autocomplete="off" checked>
+      <label class="btn btn-outline-primary" for="defaultMode">Default mode</label>
+
+      <input type="radio" class="btn-check" name="mode" id="reportMode" autocomplete="off">
+      <label class="btn btn-outline-secondary" for="reportMode">Report mode</label>
+    </div> -->
+
+    <!-- Inside each tab, pass a unique identifier -->
+    <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'defaultMode-' + activeTab"
+        autocomplete="off" [(ngModel)]="mode[activeTab]" value="default">
+      <label class="btn btn-outline-primary" [for]="'defaultMode-' + activeTab">Default mode</label>
+
+      <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'reportMode-' + activeTab"
+        autocomplete="off" [(ngModel)]="mode[activeTab]" value="report">
+      <label class="btn btn-outline-secondary" [for]="'reportMode-' + activeTab">Report mode</label>
+    </div>
+
+
+  </div>
   <table class="table">
     <thead>
       <tr>
@@ -33,67 +59,21 @@
           </a>
         </td>
 
-        <!-- @for (build of repo.testResults; track build.workflow) {
-        @if(build.badgeUrl.length > 0) {
         <td>
-          <span class="me-3" (click)="onBadgeClick(repo.name, build.workflow )" style="cursor: pointer;">
-            <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" />
-          </span>
-          <span class="text-primary m-0">{{ repo.lastUpdated | date: 'short' }}</span>
+          <app-repo-test-result [workflow]="'CI'" [conclusion]="repo.ciConclusion" [lastUpdated]="repo.lastUpdated"
+            [testResults]="repo.testResults">
+          </app-repo-test-result>
         </td>
-        } @else {
         <td>
-          <span class="text-primary m-0">-</span>
+          <app-repo-test-result [workflow]="'DEV'" [conclusion]="repo.devConclusion" [lastUpdated]="repo.lastUpdated"
+            [testResults]="repo.testResults">
+          </app-repo-test-result>
         </td>
-        }
-        } -->
-
-        <td class="text-center">
-          @if (repo.ciConclusion === 'success') {
-          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else if (repo.ciConclusion === 'failure') {
-          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else {
-          <span class="text-primary">-</span>
-          }
-        </td>
-
-        <!-- DEV column -->
-        <td class="text-center">
-          @if (repo.devConclusion === 'success') {
-          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else if (repo.devConclusion === 'failure') {
-          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else {
-          <span class="text-primary">-</span>
-          }
-        </td>
-
-        <!-- E2E column -->
-        <td class="text-center">
-          @if (repo.e2eConclusion === 'success') {
-          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else if (repo.e2eConclusion === 'failure') {
-          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
-          <span class="text-primary p-2">{{ repo.lastUpdated | date: 'short' }}</span>
-          } @else {
-          <span class="text-primary">-</span>
-          }
-        </td>
-        <!-- <td>
-          <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
-          <span class="text-primary ml-2">{{ repo.lastUpdated | date: 'short' }}</span>
-        </td>
-
         <td>
-          <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
-          <span class="text-primary ml-2">{{ repo.lastUpdated | date: 'short' }}</span>
-        </td> -->
+          <app-repo-test-result [workflow]="'E2E'" [conclusion]="repo.e2eConclusion" [lastUpdated]="repo.lastUpdated"
+            [testResults]="repo.testResults">
+          </app-repo-test-result>
+        </td>
         <td>
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
             <i class="fa fa-external-link" aria-hidden="true"></i>

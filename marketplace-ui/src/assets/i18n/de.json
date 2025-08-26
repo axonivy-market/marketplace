@@ -223,6 +223,8 @@
         "devLabel": "DEV-Build",
         "e2eLabel": "E2E-Build",
         "github": "Github",
+        "passed": "Bestanden",
+        "failed": "Fehlgeschlagen",
         "language": "Sprache",
         "pageTitle": "Überwachungs-Dashboard",
         "testCounts": {

@@ -224,6 +224,8 @@
         "devLabel": "DEV-Build",
         "e2eLabel": "E2E-Build",
         "github": "Github",
+        "passed": "Passed",
+        "failed": "Failed",
         "language": "Language",
         "pageTitle": "Monitor Dashboard",
         "testCounts": {

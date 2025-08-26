@@ -48,11 +48,11 @@
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
           [ngClass]="{ 'show active': activeTab === 'focused' }">
           <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()"
-            [isStandardTab]="false"></app-monitor-repo>
+            [isStandardTab]="false" [activeTab]="activeTab"></app-monitor-repo>
         </div>
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
           [ngClass]="{ 'show active': activeTab === 'standard' }">
-          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true"></app-monitor-repo>
+          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true" [activeTab]="activeTab"></app-monitor-repo>
         </div>
       </div>
     </div>
