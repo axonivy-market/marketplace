@@ -5,6 +5,7 @@ import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
 import { TestResult } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-repo-test-result',
@@ -19,7 +20,14 @@ export class RepoTestResultComponent {
   @Input() lastUpdated!: string | Date;
   @Input() testResults: TestResult[] = [];
   @Input() isReportMode = false;
+  @Input() mode!: 'default' | 'report';
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  router = inject(Router);
+
+  onBadgeClick(repo: string, workflow: string) {
+    const upperWorkflow = workflow.toUpperCase();
+    this.router.navigate(['/monitoring', repo, upperWorkflow]);
+  }
 }

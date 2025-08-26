@@ -47,7 +47,7 @@
       <div class="tab-content col-12 default-cursor">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
           [ngClass]="{ 'show active': activeTab === 'focused' }">
-          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()"
+          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()" [activeTab2]="activeTab2"
             [isStandardTab]="false" [activeTab]="activeTab"></app-monitor-repo>
         </div>
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"

@@ -17,13 +17,23 @@
     </div> -->
 
     <!-- Inside each tab, pass a unique identifier -->
-    <div class="btn-group" role="group">
+    <!-- <div class="btn-group" role="group">
       <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'defaultMode-' + activeTab"
         autocomplete="off" [(ngModel)]="mode[activeTab]" value="default">
       <label class="btn btn-outline-primary" [for]="'defaultMode-' + activeTab">Default mode</label>
 
       <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'reportMode-' + activeTab"
         autocomplete="off" [(ngModel)]="mode[activeTab]" value="report">
+      <label class="btn btn-outline-secondary" [for]="'reportMode-' + activeTab">Report mode</label>
+    </div> -->
+
+        <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'defaultMode-' + activeTab"
+        autocomplete="off" value="default" [checked]="activeTab2[activeTab]['default'] === true">
+      <label class="btn btn-outline-primary" [for]="'defaultMode-' + activeTab">Default mode</label>
+
+      <input type="radio" class="btn-check" [attr.name]="'mode-' + activeTab" [id]="'reportMode-' + activeTab"
+        autocomplete="off" value="report" [checked]="activeTab2[activeTab]['report'] === true">
       <label class="btn btn-outline-secondary" [for]="'reportMode-' + activeTab">Report mode</label>
     </div>
 
@@ -61,17 +71,17 @@
 
         <td>
           <app-repo-test-result [workflow]="'CI'" [conclusion]="repo.ciConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+            [testResults]="repo.testResults" [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
         <td>
           <app-repo-test-result [workflow]="'DEV'" [conclusion]="repo.devConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+            [testResults]="repo.testResults" [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
         <td>
           <app-repo-test-result [workflow]="'E2E'" [conclusion]="repo.e2eConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+            [testResults]="repo.testResults" [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
         <td>
