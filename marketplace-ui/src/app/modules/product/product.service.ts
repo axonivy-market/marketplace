@@ -118,9 +118,7 @@ export class ProductService {
         context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
-        catchError(() => {
-          return of([] as ProductRelease[]);
-        })
+        catchError(() => of([] as ProductRelease[]))
       );
   }
 }
