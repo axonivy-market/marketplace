@@ -10,7 +10,7 @@ import { ForwardingError, LoadingComponent } from '../../core/interceptors/api.i
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { ProductRelease } from '../../shared/models/apis/product-release.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -65,10 +65,9 @@ export class ProductService {
     productId: string,
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
-    return this.httpClient
-      .get<ProductDetail>(
-        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-      );
+    return this.httpClient.get<ProductDetail>(
+      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
+    );
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -91,7 +90,7 @@ export class ProductService {
 
   sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    return this.httpClient.put<number>(url, null );
+    return this.httpClient.put<number>(url, null);
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
@@ -111,14 +110,17 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string): Observable<ProductReleasesApiResponse> {
+  getProductChangelogs(productId: string): Observable<ProductRelease[]> {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
 
-    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) }).pipe(
-      catchError(() => {
-        const productReleasesApiResponse = {} as ProductReleasesApiResponse;
-        return of(productReleasesApiResponse);
+    return this.httpClient
+      .get<ProductRelease[]>(url, {
+        context: new HttpContext().set(ForwardingError, true)
       })
-    );
+      .pipe(
+        catchError(() => {
+          return of([] as ProductRelease[]);
+        })
+      );
   }
 }

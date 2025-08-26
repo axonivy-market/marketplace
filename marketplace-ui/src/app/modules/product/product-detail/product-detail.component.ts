@@ -200,12 +200,9 @@ export class ProductDetailComponent {
         changelogs: this.productService.getProductChangelogs(productId)
       }).subscribe(res => {
         this.setupMarkdownParser(productDetail.sourceUrl);
-
-        const gitHubReleaseModelList =
-          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-        if (gitHubReleaseModelList.length > 0) {
+        if (res.changelogs.length > 0) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(
-            gitHubReleaseModelList
+            res.changelogs
           );
         }
 
