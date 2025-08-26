@@ -1,6 +1,11 @@
 @if (report.length && !loading && !errorMessage) {
 <div class="test-report">
   <h2>{{ workflow | uppercase }} {{ 'common.monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
+  <div class="back-to-monitor-page-button mb-5"
+       [ngClass]="themeService.isDarkMode() ? 'text-light' : 'text-link-blue'"
+       (click)="backToMonitorPage()">&lt;
+    <span [lang]="languageService.selectedLanguage()">{{ 'common.product.detail.backToMainPage' | translate }}</span>
+  </div>
   <div class="test-steps">
     @for (step of report; track step.name) {
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
@@ -28,6 +33,11 @@
 <div class="test-report">
   <h2>{{ workflow | uppercase }} {{ 'common.monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
   <h3>{{ 'common.monitor.dashboard.noReport' | translate }}</h3>
+  <div class="back-to-monitor-page-button mb-5"
+       [ngClass]="themeService.isDarkMode() ? 'text-light' : 'text-link-blue'"
+       (click)="backToMonitorPage()">&lt;
+    <span [lang]="languageService.selectedLanguage()">{{ 'common.product.detail.backToMainPage' | translate }}</span>
+  </div>
 </div>
 }
 
