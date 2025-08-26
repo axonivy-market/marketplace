@@ -10,7 +10,7 @@ services:
     volumes:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
       - marketcache:/usr/share/nginx/html/market-cache
-      - marketuicache:/usr/share/nginx/html/browser
+      - marketbrowser:/usr/share/nginx/html/browser
     ports:
       - "4500:80"
     depends_on:
@@ -27,8 +27,9 @@ services:
     environment:
       - MARKET_API_INTERNAL_URL=${MARKET_API_INTERNAL_URL}
     volumes:
-      - marketuicache:/app/dist/browser
+      - marketbrowser:/browser_share
     restart: always
+    command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
     ports:
       - "4000:4000"
 
@@ -69,4 +70,4 @@ services:
 
 volumes:
   marketcache:
-  marketuicache:
+  marketbrowser:

@@ -56,7 +56,7 @@ $height-header: 37px;
             font-weight: 500;
             min-width: 70px;
             text-align: center;
-            
+
             .mock-test, .real-test {
                 padding: 4px 8px;
                 border-radius: 4px;
@@ -64,12 +64,12 @@ $height-header: 37px;
                 display: inline-block;
                 text-align: center;
             }
-            
+
             .mock-test {
                 background-color: #e0f7fa;
                 color: #0097a7;
             }
-            
+
             .real-test {
                 background-color: #e8f5e9;
                 color: #388e3c;
@@ -94,4 +94,13 @@ $height-header: 37px;
     color: var(--ivy-text-primary-color);
     font-size: 5rem;
     padding: $gap-small;
+}
+
+.back-to-monitor-page-button {
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 120%;
+  cursor: pointer;
+  display: flex;
+  width: fit-content;
 }
