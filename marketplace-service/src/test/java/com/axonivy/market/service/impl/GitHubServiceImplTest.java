@@ -33,6 +33,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -47,6 +49,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
+  private final int DEFAULT_RETENTION = 5;
+  private final String RELEASE_RETENTION_FIELD_NAME = "retention";
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -553,7 +557,6 @@ class GitHubServiceImplTest {
       when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
       when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
 
-      Pageable mockPageable = mock(Pageable.class);
       GHRelease mockRelease1 = mock(GHRelease.class);
       GHRelease mockRelease2 = mock(GHRelease.class);
 
@@ -567,7 +570,7 @@ class GitHubServiceImplTest {
       when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
       when(mockLatestRelease.getName()).thenReturn(mockVersion);
       when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
-
+      ReflectionTestUtils.setField(gitHubService, RELEASE_RETENTION_FIELD_NAME, DEFAULT_RETENTION);
       List<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable);
 
       assertNotNull(result);

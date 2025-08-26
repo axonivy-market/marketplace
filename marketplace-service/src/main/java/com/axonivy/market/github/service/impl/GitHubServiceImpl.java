@@ -76,7 +76,7 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
   @Value("${market.releases.retention}")
-  private long retention;
+  private int retention;
 
   @Override
   public GitHub getGitHub() throws IOException {
