@@ -23,8 +23,7 @@ export class RepoReportComponent implements OnInit {
   githubService = inject(GithubService);
   route = inject(ActivatedRoute);
   themeService = inject(ThemeService);
-
-  constructor(private readonly router: Router) {}
+  router = inject(Router);
 
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
