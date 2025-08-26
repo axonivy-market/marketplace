@@ -58,15 +58,7 @@ import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -802,7 +794,6 @@ class ProductServiceImplTest extends BaseSetup {
     String mockProductId = "testProductId";
     String mockRepositoryName = "axonivy-market/portal";
     String mockProductSourceUrl = "axonivy-market/portal";
-    Pageable mockPageable = mock(Pageable.class);
     GHRepository mockRepository = mock(GHRepository.class);
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
@@ -815,29 +806,28 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(gitHubService.getRepository(anyString())).thenReturn(mockRepository);
     when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(mockGhReleasePagedIterable);
-    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class)))
-        .thenReturn(Page.empty());
+    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class)))
+        .thenReturn(Collections.EMPTY_LIST);
 
-    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    List<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId);
 
     assertNotNull(result);
-    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
+    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class));
   }
 
   @Test
   void testGetGitHubReleaseModelsOfProductWithBlankSourceUrl() throws IOException {
     String mockProductId = "testProductId";
-    Pageable mockPageable = PageRequest.of(0, 10);
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName("axonivy-market/portal");
     mockProduct.setSourceUrl("");
     when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
 
-    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    List<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId);
 
     assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
+    assertEquals(0, result.size());
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
@@ -852,10 +842,10 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setSourceUrl("https://github.com/axonivy-market/portal");
     when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
 
-    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    List<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId);
 
     assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
+    assertEquals(0, result.size());
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
@@ -880,6 +870,6 @@ class ProductServiceImplTest extends BaseSetup {
 
     productService.syncGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
 
-    verify(productService, times(1)).getGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
+    verify(productService, times(1)).getGitHubReleaseModels(SAMPLE_PRODUCT_ID);
   }
 }

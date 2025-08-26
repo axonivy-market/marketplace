@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -288,27 +289,22 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testFindGithubPublicReleases() throws IOException {
-    Page<GitHubReleaseModel> page = new PageImpl<>(List.of(new GitHubReleaseModel()));
-    when(productService.getGitHubReleaseModels(anyString())).thenReturn(page);
-    when(pagedResourcesAssembler.toModel(any(Page.class), any(GithubReleaseModelAssembler.class)))
-        .thenReturn(PagedModel.of(List.of(new GitHubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
+    when(productService.getGitHubReleaseModels(anyString())).thenReturn(List.of(new GitHubReleaseModel()));
 
-    var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
+    var result = productDetailsController.findGithubPublicReleases("portal");
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).size());
   }
 
   @Test
   void testFindGithubPublicReleasesWithEmptyResult() throws IOException {
-    Page<GitHubReleaseModel> emptyPage = Page.empty();
-    when(productService.getGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(emptyPage);
-    when(pagedResourcesAssembler.toEmptyModel(any(Page.class), any())).thenReturn(PagedModel.empty());
+    when(productService.getGitHubReleaseModels(anyString())).thenReturn(Collections.emptyList());
 
-    var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
+    var result = productDetailsController.findGithubPublicReleases("portal");
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
+    assertTrue(Objects.requireNonNull(result.getBody()).isEmpty());
   }
 
   @Test
@@ -316,7 +312,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
     when(productService.syncGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(
-        Page.empty());
+        Collections.emptyList());
 
     productDetailsController.syncLatestReleasesForProducts();
 

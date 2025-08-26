@@ -568,10 +568,10 @@ class GitHubServiceImplTest {
       when(mockLatestRelease.getName()).thenReturn(mockVersion);
       when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
-      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+      List<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable);
 
       assertNotNull(result);
-      assertEquals(1, result.getTotalElements());
+      assertEquals(1, result.size());
     }
   }
 
@@ -657,7 +657,7 @@ class GitHubServiceImplTest {
 
     when(mockPagedIterable.toList()).thenReturn(Collections.emptyList());
 
-    Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+    List<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable);
 
     assertNotNull(result);
     assertTrue(result.isEmpty());
