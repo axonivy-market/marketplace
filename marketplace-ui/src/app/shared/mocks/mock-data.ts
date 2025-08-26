@@ -1,6 +1,6 @@
 import { FeedbackStatus } from '../enums/feedback-status.enum';
 import { FeedbackApiResponse } from '../models/apis/feedback-response.model';
-import { ProductReleasesApiResponse } from '../models/apis/product-releases-response.model';
+import { ProductRelease } from '../models/apis/product-release.model';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ExternalDocument } from '../models/external-document.model';
 import { FeedbackApproval } from '../models/feedback-approval.model';
@@ -343,7 +343,8 @@ export const MOCK_STATIC_LIB: ExternalDocument = {
   version: 'dev',
   artifactId: 'workflow-demos',
   artifactName: 'Workflow demos',
-  relativeLink: 'https://market.axonivy.com/workflow-demo/dev/lib/workflow-demos.iar'
+  relativeLink:
+    'https://market.axonivy.com/workflow-demo/dev/lib/workflow-demos.iar'
 };
 
 export const MOCK_RELEASE_PREVIEW_DATA: ReleasePreviewData = {
@@ -417,27 +418,12 @@ export const MOCK_APPROVED_FEEDBACK: FeedbackApproval = {
   userId: '7c419872-4acf-48e9-b2e5-c6b268d21f53'
 };
 
-export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
-  _embedded: {
-    gitHubReleaseModelList: [
-      {
-        "name": "12.0.3",
-        "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
-        "publishedAt": "2025-01-20T10:19:19.000+00:00",
-        "htmlUrl": "https://github.com/axonivy-market/portal/releases/tag/12.0.3",
-        "latestRelease": true
-      }
-    ]
-  },
-  _links: {
-    self: {
-      href: 'http://localhost:8080/api/product-details/portal/releases?page=0&size=20'
-    }
-  },
-  page: {
-    size: 20,
-    totalElements: 1,
-    totalPages: 1,
-    number: 0
+export const MOCK_PRODUCT_RELEASES: ProductRelease[] = [
+  {
+    name: '12.0.3',
+    body: '## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n',
+    publishedAt: '2025-01-20T10:19:19.000+00:00',
+    htmlUrl: 'https://github.com/axonivy-market/portal/releases/tag/12.0.3',
+    latestRelease: true
   }
-}
+];

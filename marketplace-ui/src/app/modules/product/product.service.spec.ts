@@ -15,7 +15,7 @@ import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
 import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
-import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { ProductRelease } from '../../shared/models/apis/product-release.model';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -257,11 +257,10 @@ describe('ProductService', () => {
 
   it('getProductChangelogs', () => {
     const productId = 'portal';
-    const mockResponse: ProductReleasesApiResponse = MOCK_PRODUCT_RELEASES;
+    const mockResponse: ProductRelease[] = MOCK_PRODUCT_RELEASES;
 
     service.getProductChangelogs(productId).subscribe(response => {
-      let productReleaseModelList = response._embedded.gitHubReleaseModelList;
-      expect(productReleaseModelList.length).toEqual(mockResponse._embedded.gitHubReleaseModelList.length);
+      expect(response.length).toEqual(mockResponse.length);
     });
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
@@ -273,7 +272,7 @@ describe('ProductService', () => {
     const productId = 'portal';
 
     service.getProductChangelogs(productId).subscribe(response => {
-      expect(response).toEqual({} as ProductReleasesApiResponse);
+      expect(response).toEqual([] as ProductRelease[]);
     });
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
