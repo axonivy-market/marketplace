@@ -571,7 +571,7 @@ class GitHubServiceImplTest {
       List<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable);
 
       assertNotNull(result);
-      assertEquals(1, result.size());
+      assertEquals(1, result.size(), "Product releases should have at least 1 record.");
     }
   }
 

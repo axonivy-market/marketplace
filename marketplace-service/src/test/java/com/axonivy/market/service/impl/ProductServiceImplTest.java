@@ -827,7 +827,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId);
 
     assertNotNull(result);
-    assertEquals(0, result.size());
+    assertEquals(0, result.size(), "Product releases should be empty.");
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
@@ -845,7 +845,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId);
 
     assertNotNull(result);
-    assertEquals(0, result.size());
+    assertEquals(0, result.size(), "Product releases should be empty.");
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }

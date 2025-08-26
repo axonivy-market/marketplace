@@ -294,7 +294,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     var result = productDetailsController.findGithubPublicReleases("portal");
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).size());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).size(), "Product releases should have at least 1 record.");
   }
 
   @Test
@@ -304,7 +304,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     var result = productDetailsController.findGithubPublicReleases("portal");
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(Objects.requireNonNull(result.getBody()).isEmpty());
+    assertTrue(Objects.requireNonNull(result.getBody()).isEmpty(), "Product releases should be empty.");
   }
 
   @Test
