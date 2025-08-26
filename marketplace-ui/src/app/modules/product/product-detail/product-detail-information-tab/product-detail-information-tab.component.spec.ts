@@ -94,6 +94,22 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(component.displayExternalDocName).toBe('');
   });
 
+    describe('ngOnInit', () => {
+      it('should set displayVersion from selectedVersion', () => {
+        const versionDisplay = 'Version 10.0.0';
+        spyOn(component, 'extractVersionValue').and.returnValue(TEST_VERSION);
+        component.selectedVersion = versionDisplay;
+
+        component.ngOnInit();
+
+        expect(component.extractVersionValue).toHaveBeenCalledWith(
+          versionDisplay
+        );
+        expect(component.displayVersion).toBe(TEST_VERSION);
+      });
+
+    });
+
   it('should extract version value correctly', () => {
     const versionDisplayName = "Version 10.0.0";
     const extractedValue = component.extractVersionValue(versionDisplayName);
