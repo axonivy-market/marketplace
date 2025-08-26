@@ -263,11 +263,11 @@ describe('ProductDetailComponent', () => {
     expect(dropdown.value).toBe('description');
   });
 
-  it('should call restoreTabScroll when setActiveTab is called', () => {
-    spyOn(component, 'restoreTabScroll');
+  it('should call keepCurrentTabScroll when setActiveTab is called', () => {
+    spyOn(component, 'keepCurrentTabScroll');
     const tab = 'specifications';
     component.setActiveTab(tab);
-    expect(component.restoreTabScroll).toHaveBeenCalledWith(tab);
+    expect(component.keepCurrentTabScroll).toHaveBeenCalledWith(tab);
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
@@ -1080,7 +1080,7 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     const tabId = 'demo';
     component['scrollPositions'][tabId] = 1234;
     spyOn(window, 'scrollTo');
-    component.restoreTabScroll(tabId);
+    component.keepCurrentTabScroll(tabId);
     expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
   });
 });

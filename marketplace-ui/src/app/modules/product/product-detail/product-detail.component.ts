@@ -192,7 +192,10 @@ export class ProductDetailComponent {
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
   }
 
-  private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
+  private handleProductDetailLoad(
+    productId: string,
+    productDetail: ProductDetail
+  ): void {
     if (this.isBrowser) {
       forkJoin({
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
@@ -229,7 +232,11 @@ export class ProductDetailComponent {
   private setupMarkdownParser(sourceUrl: string): void {
     this.md
       .use(full)
-      .use(this.linkifyPullRequests, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
+      .use(
+        this.linkifyPullRequests,
+        sourceUrl,
+        GITHUB_PULL_REQUEST_NUMBER_REGEX
+      )
       .set({
         typographer: true,
         linkify: true
@@ -352,7 +359,9 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0
+      changelog:
+        this.productReleaseSafeHtmls != null &&
+        this.productReleaseSafeHtmls.length !== 0
     };
 
     return conditions[value] ?? false;
@@ -401,7 +410,7 @@ export class ProductDetailComponent {
 
     this.scrollPositions[this.activeTab] = window.scrollY;
     this.activeTab = tab;
-    this.restoreTabScroll(tab);
+    this.keepCurrentTabScroll(tab);
 
     const savedTab = {
       productId: this.productDetail().id,
@@ -411,11 +420,9 @@ export class ProductDetailComponent {
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
-  restoreTabScroll(tabId: string) {
-    if (this.isBrowser) {
-      const pos = this.scrollPositions[tabId] ?? 0;
-      window.scrollTo(0, pos);
-    }
+  keepCurrentTabScroll(tabId: string) {
+    const pos = this.scrollPositions[tabId] ?? 0;
+    window.scrollTo(0, pos);
   }
 
   onShowInfoContent(): void {
@@ -509,7 +516,8 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         );
 
-        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+        this.loadedReadmeContent[tab.value] =
+          this.renderGithubAlert(translatedContent);
       }
     });
   }
@@ -532,11 +540,17 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1'));
+    const markdownContent = this.md.render(
+      value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1')
+    );
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
+  linkifyPullRequests(
+    md: MarkdownIt,
+    sourceUrl: string,
+    prNumberRegex: RegExp
+  ) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -590,7 +604,9 @@ export class ProductDetailComponent {
   }
 
   getTabValueFromFragment(fragment: string | null): string {
-    const isValidTab = this.displayedTabsSignal().some(tab => tab.tabId === fragment);
+    const isValidTab = this.displayedTabsSignal().some(
+      tab => tab.tabId === fragment
+    );
     const tabId = fragment?.replace(TAB_PREFIX, '');
     if (isValidTab && tabId) {
       return tabId;
