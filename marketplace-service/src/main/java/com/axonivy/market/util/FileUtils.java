@@ -47,8 +47,8 @@ public class FileUtils {
     }
   }
 
-  public static void unzipArtifact(InputStream zipStream, File unzipDir) {
-    try (var zis = new ZipInputStream(zipStream)) {
+  public static void unzipArtifact(InputStream inputStream, File unzipDir) {
+    try (var zis = new ZipInputStream(inputStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
         processZipEntry(zis, entry, unzipDir);
@@ -100,9 +100,9 @@ public class FileUtils {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 
-    try (ZipInputStream zipInputStream = new ZipInputStream(file.getInputStream())) {
+    try {
       unzipArtifact(file.getInputStream(), extractDir);
-    } catch (IOException e) {
+    } catch (IOException | IllegalStateException e) {
       throw new IOException("Error unzipping file", e);
     }
   }
