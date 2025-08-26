@@ -20,6 +20,3 @@ COPY --from=build /app/package.json /app/package.json
 COPY --from=build /app/node_modules /app/node_modules
 
 EXPOSE 4000
-
-# Start the SSR server
-CMD ["node", "dist/server/server.mjs"]
