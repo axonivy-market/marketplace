@@ -101,5 +101,6 @@ $height-header: 37px;
   font-weight: 500;
   line-height: 120%;
   cursor: pointer;
-  margin-bottom: 3rem;
+  display: flex;
+  width: fit-content;
 }
