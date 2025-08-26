@@ -99,10 +99,6 @@ export class ReleasePreviewComponent {
     this.activeTab = event;
     this.scrollPositions[this.activeTab] = window.scrollY;
   }
-    keepCurrentTabScroll(tabId: string) {
-    const pos = this.scrollPositions[tabId] ?? 0;
-    window.scrollTo(0, pos);
-  }
 
   handlePreviewPage(): void {
     if (!this.selectedFile || !this.isZipFile) {
