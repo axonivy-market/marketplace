@@ -1,7 +1,7 @@
 
 import { RepoReportComponent } from './repo-report.component';
 import { GithubService, TestStep } from '../github.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs'; // Ensure RxJS is imported correctly
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -19,9 +19,11 @@ describe('RepoReportComponent', () => {
   let fixture: ComponentFixture<RepoReportComponent>;
   let githubServiceSpy: jasmine.SpyObj<GithubService>;
   let activatedRouteStub: any;
+  let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
     githubServiceSpy = jasmine.createSpyObj('GithubService', ['getTestReport']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     activatedRouteStub = {
       snapshot: {
         paramMap: {
@@ -39,6 +41,7 @@ describe('RepoReportComponent', () => {
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: Router, useValue: routerSpy },
         LanguageService
       ]
     }).compileComponents();
@@ -94,5 +97,10 @@ describe('RepoReportComponent', () => {
     component.ngOnInit();
     expect(component.report.length).toBe(0);
     expect(component.errorMessage).toBe('');
+  });
+
+  it('should navigate back to monitoring page when backToMonitorPage is called', () => {
+    component.backToMonitorPage();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/monitoring']);
   });
 });

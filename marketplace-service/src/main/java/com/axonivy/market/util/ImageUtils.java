@@ -3,8 +3,8 @@ package com.axonivy.market.util;
 import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.entity.ProductModuleContent;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.hateoas.Link;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,17 +23,18 @@ public class ImageUtils {
   private ImageUtils() {
   }
 
-  public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {
+  public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent,
+      boolean isProduction) {
     if (ObjectUtils.isEmpty(productModuleContent)) {
       return null;
     }
-    mappingImageUrl(productModuleContent.getDescription());
-    mappingImageUrl(productModuleContent.getDemo());
-    mappingImageUrl(productModuleContent.getSetup());
+    mappingImageUrl(productModuleContent.getDescription(), isProduction);
+    mappingImageUrl(productModuleContent.getDemo(), isProduction);
+    mappingImageUrl(productModuleContent.getSetup(), isProduction);
     return productModuleContent;
   }
 
-  private static void mappingImageUrl(Map<String, String> content) {
+  private static void mappingImageUrl(Map<String, String> content, boolean isProduction) {
     if (ObjectUtils.isEmpty(content)) {
       return;
     }
@@ -41,8 +42,13 @@ public class ImageUtils {
       List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
         String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
-        Link link = linkTo(methodOn(ImageController.class).findImageById(rawId)).withSelfRel();
-        value = value.replace(imageId, link.getHref());
+        String imageLink;
+        if (isProduction) {
+          imageLink = createImageUrlForProduction(rawId);
+        } else {
+          imageLink = createImageUrl(rawId);
+        }
+        value = value.replace(imageId, imageLink);
       }
       content.put(key, value);
     });
@@ -56,5 +62,19 @@ public class ImageUtils {
       result.add(foundImgTag);
     }
     return result;
+  }
+
+  public static String createImageUrl(String imageId) {
+    if (StringUtils.isBlank(imageId)) {
+      return StringUtils.EMPTY;
+    }
+    return linkTo(methodOn(ImageController.class).findImageById(imageId)).withSelfRel().getHref();
+  }
+
+  public static String createImageUrlForProduction(String imageId) {
+    if (StringUtils.isBlank(imageId)) {
+      return StringUtils.EMPTY;
+    }
+    return linkTo(methodOn(ImageController.class).findImageById(imageId)).toUriComponentsBuilder().build().getPath();
   }
 }
