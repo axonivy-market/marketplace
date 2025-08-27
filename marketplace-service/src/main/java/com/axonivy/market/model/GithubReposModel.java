@@ -66,7 +66,6 @@ public class GithubReposModel {
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
-        .language(githubRepo.getLanguage())
         .lastUpdated(githubRepo.getLastUpdated())
         .ciConclusion(githubRepo.getCiConclusion())
         .devConclusion(githubRepo.getDevConclusion())

@@ -17,10 +17,7 @@ class GithubReposModelTest {
     GithubRepo githubRepo = new GithubRepo();
     githubRepo.setName("my-awesome-repo");
     githubRepo.setHtmlUrl("https://github.com/axonivy-market/my-awesome-repo");
-    githubRepo.setLanguage("Java");
     githubRepo.setLastUpdated(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
-    githubRepo.setCiBadgeUrl("https://github.com/actions/workflows/ci.yml/badge.svg");
-    githubRepo.setDevBadgeUrl("https://github.com/actions/workflows/dev.yml/badge.svg");
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
     TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED, WorkFlowType.DEV);

@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -33,16 +32,17 @@ public class GithubRepo extends GenericIdEntity {
   private static final long serialVersionUID = 1L;
   private String name;
   private String htmlUrl;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private String language;
   private Date lastUpdated;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private String ciBadgeUrl;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private String devBadgeUrl;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private String e2eBadgeUrl;
-  @JsonIgnore
   private String ciConclusion;
-  @JsonIgnore
   private String devConclusion;
-  @JsonIgnore
   private String e2eConclusion;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -53,7 +53,6 @@ public class GithubRepo extends GenericIdEntity {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
-        .language(repo.getLanguage())
         .lastUpdated(repo.getUpdatedAt())
         .testSteps(new ArrayList<>())
         .build();

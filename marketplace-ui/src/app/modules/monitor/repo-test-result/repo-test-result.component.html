@@ -1,29 +1,28 @@
-<!-- build-column.component.html -->
-<td class="text-center">
-  @if (conclusion === 'success') {
-    <img src="/assets/images/misc/pass-badge.svg" width="72" height="72" alt="Pass badge" />
-    <span class="text-primary p-2">{{ lastUpdated | date: 'short' }}</span>
-  } @else if (conclusion === 'failure') {
-    <img src="/assets/images/misc/fail-badge.svg" width="72" height="72" alt="Fail badge" />
-    <span class="text-primary p-2">{{ lastUpdated | date: 'short' }}</span>
-  } @else {
-    <span class="text-primary">-</span>
-  }
+<td>
+  <ng-container *ngIf="badges[conclusion] as badge">
+    <img [src]="badge.src" [alt]="badge.alt" width="72" height="50" (click)="onBadgeClick(repository.name, workflow)"
+      style="cursor: pointer;" />
+    <span class="built-date text-muted px-2 align-middle">
+      {{ repository.lastUpdated | date: 'short' }}
+    </span>
+  </ng-container>
 
   <!-- Pass/Fail stats -->
-  @for (build of testResults; track build.workflow) {
-    @if (build.workflow === workflow) {
-      <div class="sub-status">
-        @if (!(build.results | isEmptyObjectPipe)) {
-          @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-            <span class="fs-5" [lang]="languageService.selectedLanguage()">
-              {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
-            </span>
-          }
-        } @else {
-          <br>
-        }
-      </div>
+  @if (mode === 'report') {
+  @for (build of repository.testResults; track build.workflow) {
+  @if (build.workflow === workflow) {
+  <div class="sub-status align-middle">
+    @if (!(build.results | isEmptyObjectPipe)) {
+    @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+    <span class="fs-5" [lang]="languageService.selectedLanguage()">
+      {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
+    </span>
     }
+    } @else {
+    <br>
+    }
+  </div>
+  }
+  }
   }
 </td>

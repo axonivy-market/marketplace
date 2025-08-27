@@ -1,12 +1,12 @@
 <div class="container">
-  <div class="header">
-    <div class="d-flex align-items-center justify-content-center">
+  <div class="row col-md-12">
+    <div class="d-flex align-items-start justify-content-start">
       <h1 [lang]="languageService.selectedLanguage()" class="title">
         {{ 'common.monitor.dashboard.title' | translate }}
       </h1>
-      <a [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+      <a class="title" [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
     </div>
-    <h3 [lang]="languageService.selectedLanguage()" class="subtitle"
+    <h3 [lang]="languageService.selectedLanguage()" class="sub-title col-10 text-secondary"
       [innerHTML]="translateService.get('common.monitor.dashboard.subtitle') | async">
     </h3>
   </div>

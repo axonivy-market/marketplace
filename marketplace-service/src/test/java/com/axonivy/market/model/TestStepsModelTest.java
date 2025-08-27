@@ -18,10 +18,7 @@ class TestStepsModelTest {
     GithubRepo repo = new GithubRepo();
     repo.setName("demo-repo");
     repo.setHtmlUrl("https://github.com/org/demo-repo");
-    repo.setLanguage("Java");
     repo.setLastUpdated(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-    repo.setCiBadgeUrl("https://badge/ci");
-    repo.setDevBadgeUrl("https://badge/dev");
 
     TestStep result = new TestStep();
     result.setName("Example name test");

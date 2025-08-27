@@ -60,7 +60,7 @@ export class MonitoringRepoComponent {
   // @Input() sortable: SortColumn = '';
   // @Input() direction: SortDirection = '';
   @Output() sort = new EventEmitter<SortEvent>();
-  mode: Record<string, string> = {
+  mode: { [key: string]: 'default' | 'report' } = {
   focused: 'default',
   standard: 'default'
 };
@@ -133,9 +133,4 @@ export class MonitoringRepoComponent {
   // 		});
   // 	}
   // }
-
-  onBadgeClick(repo: string, workflow: string) {
-    const upperWorkflow = workflow.toUpperCase();
-    this.router.navigate(['/monitoring', repo, upperWorkflow]);
-  }
 }

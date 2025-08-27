@@ -32,49 +32,55 @@
   <table class="table">
     <thead>
       <tr>
-        <th class="text-primary username-column" [lang]="languageService.selectedLanguage()" sortable="name">
-          {{ 'common.monitor.dashboard.connector' | translate }}</th>
-        <th class=" text-primary username-column" [lang]="languageService.selectedLanguage()">
-          {{ 'common.monitor.dashboard.ciLabel' | translate }}
-          <app-build-badge-tooltip buildType="CI" />
+        <th class="text-primary connector-column" [lang]="languageService.selectedLanguage()" sortable="name">
+          <h5 class="table-header">{{ 'common.monitor.dashboard.connector' | translate }}</h5>
         </th>
-        <th class="text-primary content-devLabel" [lang]="languageService.selectedLanguage()">
-          {{ 'common.monitor.dashboard.devLabel' | translate }}
-          <app-build-badge-tooltip buildType="DEV" />
+        <th class=" text-primary workflow-column" [lang]="languageService.selectedLanguage()">
+          <h5 class="table-header">{{ 'common.monitor.dashboard.ciLabel' | translate }}
+            <app-build-badge-tooltip buildType="CI" />
+          </h5>
         </th>
-        <th class="text-primary text-center rating-column" [lang]="languageService.selectedLanguage()">
-          {{ 'common.monitor.dashboard.e2eLabel' | translate }}
-          <app-build-badge-tooltip buildType="E2E" />
+        <th class="text-primary workflow-column" [lang]="languageService.selectedLanguage()">
+          <h5 class="table-header">{{ 'common.monitor.dashboard.devLabel' | translate }}
+            <app-build-badge-tooltip buildType="DEV" />
+          </h5>
         </th>
-        <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">
-          {{ 'common.monitor.dashboard.github' | translate }}</th>
+        <th class="text-primary workflow-column" [lang]="languageService.selectedLanguage()">
+          <h5 class="table-header">{{ 'common.monitor.dashboard.e2eLabel' | translate }}
+            <app-build-badge-tooltip buildType="E2E" />
+          </h5>
+        </th>
+        <th class="text-primary" [lang]="languageService.selectedLanguage()">
+          <h5 class="table-header">{{ 'common.monitor.dashboard.github' | translate }}
+          </h5>
+        </th>
       </tr>
     </thead>
     @if (displayedRepositories.length > 0) {
     <tbody>
       <tr *ngFor="let repo of displayedRepositories">
-        <td class="product-name-column">
+        <td class="align-middle">
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
-            <p>{{ repo.name }}</p>
+            <p id="product-name">{{ repo.name }}</p>
           </a>
         </td>
 
         <td>
-          <app-repo-test-result [workflow]="'CI'" [conclusion]="repo.ciConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+          <app-repo-test-result [workflow]="'CI'" [conclusion]="repo.ciConclusion" [repository]="repo"
+            [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
         <td>
-          <app-repo-test-result [workflow]="'DEV'" [conclusion]="repo.devConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+          <app-repo-test-result [workflow]="'DEV'" [conclusion]="repo.devConclusion" [repository]="repo"
+            [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
         <td>
-          <app-repo-test-result [workflow]="'E2E'" [conclusion]="repo.e2eConclusion" [lastUpdated]="repo.lastUpdated"
-            [testResults]="repo.testResults">
+          <app-repo-test-result [workflow]="'E2E'" [conclusion]="repo.e2eConclusion" [repository]="repo"
+            [mode]="mode[activeTab]">
           </app-repo-test-result>
         </td>
-        <td>
+        <td class="align-middle">
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
             <i class="fa fa-external-link" aria-hidden="true"></i>
           </a>
@@ -86,8 +92,8 @@
     <tbody>
       <tr>
         <td colspan="12" class="border-0">
-          <p class="text-primary m-0 text-center no-feedback" [lang]="languageService.selectedLanguage()">
-            {{ 'common.approval.noFeedbacks' | translate }}
+          <p class="text-primary m-0 text-center no-repositories" [lang]="languageService.selectedLanguage()">
+            {{ 'common.monitor.dashboard.noRepositories' | translate }}
           </p>
         </td>
       </tr>
@@ -95,15 +101,15 @@
     }
   </table>
 
-  <div class="d-flex justify-content-between p-2">
+  <div class="d-flex justify-content-between p-2" [lang]="languageService.selectedLanguage()">
     <ngb-pagination [collectionSize]="filteredRepositories.length" [(page)]="page" [pageSize]="pageSize"
       (pageChange)="refreshPagination()">
     </ngb-pagination>
 
-    <select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
-      <option [ngValue]="10">10 items per page</option>
-      <option [ngValue]="15">15 items per page</option>
-      <option [ngValue]="20">20 items per page</option>
+    <select class="form-select pagination" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
+      <option [ngValue]="10">{{ 'common.monitor.pagination.tenItems' | translate }}</option>
+      <option [ngValue]="15">{{ 'common.monitor.pagination.fifteenItems' | translate }}</option>
+      <option [ngValue]="20">{{ 'common.monitor.pagination.twentyItems' | translate }}</option>
     </select>
   </div>
 

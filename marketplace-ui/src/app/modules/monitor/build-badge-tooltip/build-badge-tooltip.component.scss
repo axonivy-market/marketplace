@@ -28,3 +28,7 @@
 ::ng-deep .build-info-tooltip-custom-class.bs-tooltip-bottom .tooltip-arrow::before {
   border-bottom-color: var(--bs-body-bg);
 }
+
+i.bi.bi-info-circle::before {
+  color: var(--ivy-primary-bg);
+}

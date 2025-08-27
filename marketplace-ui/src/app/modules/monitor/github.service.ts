@@ -8,9 +8,9 @@ export interface Repository {
   language: string | null;
   lastUpdated: string;
   focused: boolean;
-  ciConclusion: string | null;
-  devConclusion: string | null;
-  e2eConclusion: string | null;
+  ciConclusion: string;
+  devConclusion: string;
+  e2eConclusion: string;
   testResults: TestResult[];
 }
 

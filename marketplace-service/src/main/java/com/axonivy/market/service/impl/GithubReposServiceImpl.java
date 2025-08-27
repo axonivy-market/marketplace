@@ -78,7 +78,6 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo = githubRepoOptional.get();
         githubRepo.getTestSteps().clear();
         githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-        githubRepo.setLanguage(ghRepo.getLanguage());
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
         githubRepo = from(ghRepo);
@@ -87,7 +86,6 @@ public class GithubReposServiceImpl implements GithubReposService {
           workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
       githubRepo.getTestSteps().addAll(testSteps);
       githubRepoRepository.save(githubRepo);
-
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
@@ -95,7 +93,6 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
         updateWorkflowConclusion(dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
@@ -119,23 +116,6 @@ public class GithubReposServiceImpl implements GithubReposService {
         break;
       case E2E:
         dbRepo.setE2eConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
-        break;
-      default:
-        break;
-    }
-  }
-
-  private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
-    String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
-    switch (workflowType) {
-      case CI:
-        dbRepo.setCiBadgeUrl(runBadgeUrl);
-        break;
-      case DEV:
-        dbRepo.setDevBadgeUrl(runBadgeUrl);
-        break;
-      case E2E:
-        dbRepo.setE2eBadgeUrl(runBadgeUrl);
         break;
       default:
         break;
