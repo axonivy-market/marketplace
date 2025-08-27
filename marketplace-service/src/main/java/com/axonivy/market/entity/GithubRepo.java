@@ -33,6 +33,7 @@ public class GithubRepo extends GenericIdEntity {
   private String name;
   private String htmlUrl;
   private String language;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private Date lastUpdated;
   private Date ciLastBuilt;
   private Date devLastBuilt;
