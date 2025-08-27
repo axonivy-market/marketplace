@@ -53,27 +53,6 @@ export class MonitoringDashboardComponent implements OnInit {
   devBuild = DEV_BUILD;
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = 'focused';
-  activeTab2 = {
-  focused: {
-    default: true,
-    report: false
-  },
-  standard: {
-    default: false,
-    report: true
-  }
-};
-
-  focusedTab = {
-    default: true,
-    report: false
-  };
-
-  standardTab = {
-    default: false,
-    report: true
-  };
-
   isLoading = false;
 
   ngOnInit(): void {

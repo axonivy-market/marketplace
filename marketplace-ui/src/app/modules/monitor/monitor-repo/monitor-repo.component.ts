@@ -56,50 +56,14 @@ export class MonitoringRepoComponent {
   @Input() isStandardTab = false;
   @Input() isLoading = false;
   @Input() activeTab = 'focused';
-  @Input() activeTab2 = {
-  focused: {
-    default: true,
-    report: false
-  },
-  standard: {
-    default: false,
-    report: true
-  }
-};
-
-  @Input() focusedTab = {
-    default: true,
-    report: false
-  };
-  
-  @Input() standardTab = {
-    default: false,
-    report: true
-  };
-
   @Output() searchChange = new EventEmitter<string>();
   // @Input() sortable: SortColumn = '';
   // @Input() direction: SortDirection = '';
   @Output() sort = new EventEmitter<SortEvent>();
-  mode: { [key: string]: 'default' | 'report' } = {
+  mode: Record<string, string> = {
   focused: 'default',
   standard: 'default'
 };
-
-//   mode2: { [key: string]: {
-//     default: boolean,
-//     report: boolean
-//   }} = {
-//   focused: {
-//     default: true,
-//     report: false
-//   },
-//   standard: {
-//     default: false,
-//     report: true
-//   }
-// };
-
 
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
@@ -169,4 +133,9 @@ export class MonitoringRepoComponent {
   // 		});
   // 	}
   // }
+
+  onBadgeClick(repo: string, workflow: string) {
+    const upperWorkflow = workflow.toUpperCase();
+    this.router.navigate(['/monitoring', repo, upperWorkflow]);
+  }
 }
