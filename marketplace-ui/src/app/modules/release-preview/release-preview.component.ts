@@ -59,6 +59,7 @@ export class ReleasePreviewComponent {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   detailTabs = PRODUCT_DETAIL_TABS;
+  private scrollPositions: { [tabId: string]: number } = {};
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
@@ -96,6 +97,7 @@ export class ReleasePreviewComponent {
 
   setActiveTab(event: string): void {
     this.activeTab = event;
+    this.scrollPositions[this.activeTab] = window.scrollY;
   }
 
   handlePreviewPage(): void {
