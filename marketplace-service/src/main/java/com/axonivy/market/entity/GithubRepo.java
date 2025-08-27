@@ -33,6 +33,7 @@ public class GithubRepo extends GenericIdEntity {
   private String name;
   private String htmlUrl;
   private String language;
+  private Date lastUpdated;
   private Date ciLastBuilt;
   private Date devLastBuilt;
   private Date e2eLastBuilt;
