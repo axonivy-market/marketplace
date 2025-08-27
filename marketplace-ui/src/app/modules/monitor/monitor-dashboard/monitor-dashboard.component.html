@@ -4,9 +4,9 @@
       <h1 [lang]="languageService.selectedLanguage()" class="title">
         {{ 'common.monitor.dashboard.title' | translate }}
       </h1>
-      <a class="title" [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle"></i></a>
+      <a class="title" [href]="monitoringWikiLink" target="_blank"><i class="bi bi-info-circle info-icon ps-3"></i></a>
     </div>
-    <h3 [lang]="languageService.selectedLanguage()" class="sub-title col-10 text-secondary"
+    <h3 [lang]="languageService.selectedLanguage()" class="sub-title text-secondary"
       [innerHTML]="translateService.get('common.monitor.dashboard.subtitle') | async">
     </h3>
   </div>

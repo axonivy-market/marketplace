@@ -5,12 +5,9 @@ import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
-import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
 import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
 import {
-  CI_BUILD,
-  DEV_BUILD,
   MONITORING_WIKI_LINK
 } from '../../../shared/constants/common.constant';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
@@ -25,7 +22,6 @@ import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component"
     CommonModule,
     TranslateModule,
     BuildStatusEntriesPipe,
-    WorkflowIconPipe,
     IsEmptyObjectPipe,
     BuildBadgeTooltipComponent,
     NgbTooltipModule,
@@ -49,8 +45,6 @@ export class MonitoringDashboardComponent implements OnInit {
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
 
-  ciBuild = CI_BUILD;
-  devBuild = DEV_BUILD;
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = 'focused';
   isLoading = false;

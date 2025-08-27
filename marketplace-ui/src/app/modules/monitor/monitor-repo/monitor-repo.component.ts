@@ -4,15 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
-import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
-import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
-import {
-  CI_BUILD,
-  DEV_BUILD,
-  MONITORING_WIKI_LINK
-} from '../../../shared/constants/common.constant';
 import { NgbTooltipModule, NgbPagination, NgbPaginationModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
@@ -35,9 +27,6 @@ export type SortDirection = 'asc' | 'desc' | '';
   imports: [
     CommonModule,
     TranslateModule,
-    BuildStatusEntriesPipe,
-    WorkflowIconPipe,
-    IsEmptyObjectPipe,
     BuildBadgeTooltipComponent,
     NgbTooltipModule,
     LoadingSpinnerComponent,
@@ -46,7 +35,7 @@ export type SortDirection = 'asc' | 'desc' | '';
     NgbTypeaheadModule, NgbPaginationModule,
     ProductFilterComponent,
     RepoTestResultComponent
-],
+  ],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
@@ -61,9 +50,9 @@ export class MonitoringRepoComponent {
   // @Input() direction: SortDirection = '';
   @Output() sort = new EventEmitter<SortEvent>();
   mode: { [key: string]: 'default' | 'report' } = {
-  focused: 'default',
-  standard: 'default'
-};
+    focused: 'default',
+    standard: 'default'
+  };
 
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
@@ -72,12 +61,12 @@ export class MonitoringRepoComponent {
   platformId = inject(PLATFORM_ID);
   pageTitleService: PageTitleService = inject(PageTitleService);
 
-  ciBuild = CI_BUILD;
-  devBuild = DEV_BUILD;
   searchTextChanged = new Subject<string>();
   searchText = '';
   page = 1;
-	pageSize = 10;
+  pageSize = 10;
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
   allRepositories: Repository[] = [];
   filteredRepositories: Repository[] = [];
   displayedRepositories: Repository[] = [];
@@ -112,8 +101,35 @@ export class MonitoringRepoComponent {
   }
 
   getTestResultsForWorkflow(repo: Repository, workflow: string) {
-  return repo.testResults.find(build => build.workflow === workflow);
-}
+    return repo.testResults.find(build => build.workflow === workflow);
+  }
+
+  getMarketUrl(repoName: string): string {
+    return `https://market.axonivy.com/${encodeURIComponent(repoName)}`;
+  }
+
+  sortTable(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.displayedRepositories.sort((a, b) => {
+      const valA = a[column].toString().toLowerCase();
+      const valB = b[column].toString().toLowerCase();
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) return '';
+    return this.sortDirection === 'asc' ? '▲' : '▼';
+  }
 
   // onSort({ column, direction }: SortEvent) {
   // 	// resetting other headers
