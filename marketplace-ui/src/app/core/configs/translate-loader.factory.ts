@@ -15,7 +15,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
     @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {}
 
-  getTranslation(lang: string): Observable<any> {
+  getTranslation(lang: string) {
     const key = makeStateKey<any>(`${TRANSLATE_KEY}-${lang}`);
 
     // Check if we have cached translations in transfer state
@@ -40,7 +40,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
     );
   }
 
-  private loadTranslationsFromFileSystem(lang: string): Observable<any> {
+  private loadTranslationsFromFileSystem(lang: string) {
     try {
       const fs = require('fs');
       const path = require('path');
