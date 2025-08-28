@@ -307,7 +307,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   public CodeScanning getCodeScanningAlerts(GHRepository repo,
-      GHOrganization organization, String accessToken) {
+      GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
