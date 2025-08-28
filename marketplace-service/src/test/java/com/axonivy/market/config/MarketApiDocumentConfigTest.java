@@ -39,10 +39,10 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void buildMarketCustomHeader_ShouldReturnGroupedOpenApiWithCorrectConfiguration() {
+  void testBuildMarketCustomHeader_ShouldReturnGroupedOpenApiWithCorrectConfiguration() {
     GroupedOpenApi result = marketApiDocumentConfig.buildMarketCustomHeader();
 
-    assertNotNull(result);
+    assertNotNull(result, "");
     assertEquals("api", result.getGroup());
     assertNotNull(result.getPathsToMatch());
     assertTrue(result.getPathsToMatch().contains("/api/**"));
@@ -51,7 +51,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void customMarketHeaders_ShouldAddHeaderParametersToAllPaths() {
+  void testCustomMarketHeaders_ShouldAddHeaderParametersToAllPaths() {
     PathItem pathItem1 = createPathItemWithOperations();
     PathItem pathItem2 = createPathItemWithOperations();
 
@@ -69,7 +69,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void addHeaderParameters_ShouldAddParametersToAllNonNullOperations() {
+  void testAddHeaderParameters_ShouldAddParametersToAllNonNullOperations() {
     Operation putOperation = new Operation();
     Operation postOperation = new Operation();
     Operation patchOperation = new Operation();
@@ -98,7 +98,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void addHeaderParameters_ShouldSkipNullOperations() {
+  void testAddHeaderParameters_ShouldSkipNullOperations() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 
@@ -113,7 +113,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void addHeaderParameters_ShouldHandlePathItemWithNoOperations() {
+  void testAddHeaderParameters_ShouldHandlePathItemWithNoOperations() {
     PathItem emptyPathItem = new PathItem();
 
     when(openAPI.getPaths()).thenReturn(paths);
@@ -126,25 +126,22 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void createRequestedByHeader_ShouldCreateParameterWithCorrectProperties() {
-    // Given
+  void testCreateRequestedByHeader_ShouldCreateParameterWithCorrectProperties() {
     Operation operation = new Operation();
     pathItem.setPost(operation);
 
     when(openAPI.getPaths()).thenReturn(paths);
     when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
-    // When
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
     groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
 
-    // Then
     Parameter parameter = operation.getParameters().get(0);
     verifyParameterDetails(parameter);
   }
 
   @Test
-  void customMarketHeaders_ShouldHandleEmptyPaths() {
+  void testCustomMarketHeaders_ShouldHandleEmptyPaths() {
     when(openAPI.getPaths()).thenReturn(paths);
     when(paths.values()).thenReturn(List.of());
 
@@ -155,7 +152,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void addHeaderParameters_ShouldNotDuplicateParametersOnMultipleCalls() {
+  void testAddHeaderParameters_ShouldNotDuplicateParametersOnMultipleCalls() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 

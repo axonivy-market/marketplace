@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -180,7 +181,7 @@ public class ProductDetailsController {
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   public void syncLatestReleasesForProducts() throws IOException {
-    Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
+    Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for (String productId : productIdList) {
       this.productService.syncGitHubReleaseModels(productId, pageable);
