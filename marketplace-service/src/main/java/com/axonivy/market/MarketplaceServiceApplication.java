@@ -27,8 +27,8 @@ import java.util.List;
 @EnableJpaAuditing
 public class MarketplaceServiceApplication {
 
-  final ProductService productService;
-  final ExternalDocumentService externalDocumentService;
+  private final ProductService productService;
+  private final ExternalDocumentService externalDocumentService;
 
   public static void main(String[] args) {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
