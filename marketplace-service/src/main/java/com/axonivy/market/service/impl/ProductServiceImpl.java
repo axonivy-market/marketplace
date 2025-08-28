@@ -217,7 +217,7 @@ public class ProductServiceImpl implements ProductService {
     } else {
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
-        Image currentImage = images.get(0);
+        var currentImage = images.get(0);
         productId = currentImage.getProductId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
@@ -228,7 +228,7 @@ public class ProductServiceImpl implements ProductService {
 
   private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
-      GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+      var fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
           marketRepoBranch);
       return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
@@ -240,7 +240,7 @@ public class ProductServiceImpl implements ProductService {
   private String updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
     String productId;
     if (FileType.META == file.getType()) {
-      Product product = new Product();
+      var product = new Product();
       ProductFactory.mappingByGHContent(product, fileContent);
       mappingVendorImageFromGHContent(product, fileContent);
       transferComputedDataFromDB(product);
@@ -255,7 +255,7 @@ public class ProductServiceImpl implements ProductService {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-    Product result = productRepo.findByCriteria(searchCriteria);
+    var result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(image -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
@@ -271,8 +271,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private boolean isLastGithubCommitCovered() {
-    boolean isLastCommitCovered = false;
-    long lastCommitTime = 0L;
+    var isLastCommitCovered = false;
+    var lastCommitTime = 0L;
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
@@ -346,9 +346,9 @@ public class ProductServiceImpl implements ProductService {
 
   private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
     if (StringUtils.isNotBlank(imageName)) {
-      String imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      var imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
-        GHContent imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
         return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
             .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {
@@ -362,7 +362,7 @@ public class ProductServiceImpl implements ProductService {
     try {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         List<GHTag> gitHubTags = gitHubService.getRepositoryTags(product.getRepositoryName());
-        Date firstTagPublishedDate = getFirstTagPublishedDate(gitHubTags);
+        var firstTagPublishedDate = getFirstTagPublishedDate(gitHubTags);
         product.setFirstPublishedDate(firstTagPublishedDate);
       }
     } catch (IOException e) {
@@ -446,11 +446,11 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact,
       List<String> nonSyncReleasedVersions) {
-    Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
+    var document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
     List<String> mavenVersions = new ArrayList<>();
-    for (int i = 0; i < versionNodes.getLength(); i++) {
+    for (var i = 0; i < versionNodes.getLength(); i++) {
       mavenVersions.add(versionNodes.item(i).getTextContent());
     }
 
