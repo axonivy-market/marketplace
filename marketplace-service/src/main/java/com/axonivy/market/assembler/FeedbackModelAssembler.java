@@ -44,7 +44,11 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     }
     model.setId(feedback.getId());
     model.setUserId(githubUser.getId());
-    model.setUsername(StringUtils.isBlank(githubUser.getName()) ? githubUser.getUsername() : githubUser.getName());
+    if (StringUtils.isBlank(githubUser.getName())) {
+      model.setUsername(githubUser.getUsername());
+    } else {
+      model.setUsername(githubUser.getName());
+    }
     model.setUserAvatarUrl(githubUser.getAvatarUrl());
     model.setUserProvider(githubUser.getProvider());
     model.setProductId(feedback.getProductId());
