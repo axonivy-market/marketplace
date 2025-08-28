@@ -67,10 +67,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
-  private final RestTemplate restTemplate;
-  private final GithubUserRepository githubUserRepository;
-  private final GitHubProperty gitHubProperty;
-  private final ThreadPoolTaskScheduler taskScheduler;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
@@ -78,9 +74,12 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
   private static final Pattern GITHUB_PULL_REQUEST_NUMBER_PATTERN =
       Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
-
   private static final Pattern GITHUB_USERNAME_PATTERN =
       Pattern.compile(GITHUB_USERNAME_REGEX);
+  private final RestTemplate restTemplate;
+  private final GithubUserRepository githubUserRepository;
+  private final GitHubProperty gitHubProperty;
+  private final ThreadPoolTaskScheduler taskScheduler;
 
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
@@ -147,7 +146,7 @@ public class GitHubServiceImpl implements GitHubService {
     params.add(GitHubConstants.Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
     params.add(GitHubConstants.Json.CODE, code);
 
-    HttpHeaders headers = new HttpHeaders();
+    var headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
     ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
@@ -167,7 +166,7 @@ public class GitHubServiceImpl implements GitHubService {
   public GithubUser getAndUpdateUser(String accessToken) {
     try {
       GHMyself myself = getGitHub(accessToken).getMyself();
-      GithubUser githubUser = Optional.ofNullable(githubUserRepository.searchByGitHubId(String.valueOf(myself.getId())))
+      var githubUser = Optional.ofNullable(githubUserRepository.searchByGitHubId(String.valueOf(myself.getId())))
           .orElse(new GithubUser());
       githubUser.setGitHubId(String.valueOf(myself.getId()));
       githubUser.setName(myself.getName());
@@ -191,7 +190,7 @@ public class GitHubServiceImpl implements GitHubService {
         return;
       }
     } catch (IOException e) {
-      log.error(e.getStackTrace());
+      log.error(e);
     }
 
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
@@ -202,7 +201,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) {
     try {
-      GitHub gitHub = getGitHub(accessToken);
+      var gitHub = getGitHub(accessToken);
       GHOrganization organization = gitHub.getOrganization(orgName);
 
       List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
@@ -213,7 +212,7 @@ public class GitHubServiceImpl implements GitHubService {
           .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
               Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
     } catch (IOException e) {
-      log.error(e.getStackTrace());
+      log.error(e);
       return Collections.emptyList();
     }
   }
@@ -250,7 +249,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private ProductSecurityInfo fetchSecurityInfo(GHRepository repo, GHOrganization organization,
       String accessToken) throws IOException {
-    ProductSecurityInfo productSecurityInfo = new ProductSecurityInfo();
+    var productSecurityInfo = new ProductSecurityInfo();
     productSecurityInfo.setRepoName(repo.getName());
     productSecurityInfo.setVisibility(repo.getVisibility().toString());
     productSecurityInfo.setArchived(repo.isArchived());
@@ -274,7 +273,7 @@ public class GitHubServiceImpl implements GitHubService {
         accessToken,
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         alerts -> {
-          Dependabot dependabot = new Dependabot();
+          var dependabot = new Dependabot();
           Map<String, Integer> severityMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
             Object advisoryObj = alert.get(GitHubConstants.Json.SEVERITY_ADVISORY);
@@ -298,7 +297,7 @@ public class GitHubServiceImpl implements GitHubService {
         accessToken,
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         alerts -> {
-          SecretScanning secretScanning = new SecretScanning();
+          var secretScanning = new SecretScanning();
           secretScanning.setNumberOfAlerts(alerts.size());
           return secretScanning;
         },
