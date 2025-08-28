@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackSortOption;
@@ -52,6 +53,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
+    // Convert JSON to Map
     List<Feedback> feedbacks = results.getContent().stream()
         .map(result -> {
           Feedback feedback = Feedback.builder()
@@ -63,7 +65,7 @@ public class FeedbackServiceImpl implements FeedbackService {
               .moderatorName(result.getModeratorName())
               .reviewDate(result.getReviewDate())
               .version(result.getVersion())
-              .productNames(result.getProductNames())  // Convert JSON to Map
+              .productNames(result.getProductNames())
               .build();
 
           feedback.setId(result.getId());
@@ -78,7 +80,12 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    Pageable refinedPageable = pageable != null ? refinePagination(pageable) : PageRequest.of(0, 10);
+    Pageable refinedPageable;
+    if(pageable != null) {
+      refinedPageable = refinePagination(pageable);
+    } else {
+      refinedPageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_10);
+    }
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinedPageable);
     return new PageImpl<>(feedbacks, refinedPageable, feedbacks.size());

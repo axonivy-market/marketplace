@@ -181,7 +181,7 @@ public class ProductDetailsController {
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   public void syncLatestReleasesForProducts() throws IOException {
-    Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE, Sort.unsorted());
+    Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for (String productId : productIdList) {
       this.productService.syncGitHubReleaseModels(productId, pageable);
