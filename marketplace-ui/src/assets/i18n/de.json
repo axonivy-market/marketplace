@@ -224,6 +224,9 @@
         "github": "Github",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
+        "ciLastBuilt": "Zuletzt CI Gebaut",
+        "devLastBuilt": "Zuletzt DEV Gebaut",
+        "e2eLastBuilt": "Zuletzt E2E Gebaut",
         "pageTitle": "Überwachungs-Dashboard",
         "repo": {
           "name": "Repository-Name",

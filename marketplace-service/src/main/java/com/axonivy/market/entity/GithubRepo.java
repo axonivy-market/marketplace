@@ -34,7 +34,11 @@ public class GithubRepo extends GenericIdEntity {
   private String htmlUrl;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String language;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private Date lastUpdated;
+  private Date ciLastBuilt;
+  private Date devLastBuilt;
+  private Date e2eLastBuilt;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String ciBadgeUrl;
   @Deprecated(forRemoval = true, since = "1.17.0")
@@ -53,7 +57,6 @@ public class GithubRepo extends GenericIdEntity {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
-        .lastUpdated(repo.getUpdatedAt())
         .testSteps(new ArrayList<>())
         .build();
   }

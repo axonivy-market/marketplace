@@ -5,7 +5,9 @@ import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
   htmlUrl: string;
-  lastUpdated: string;
+  ciLastBuilt: Date;
+  devLastBuilt: Date;
+  e2eLastBuilt: Date;
   focused: boolean;
   ciConclusion: string;
   devConclusion: string;

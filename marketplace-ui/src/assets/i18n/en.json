@@ -225,6 +225,9 @@
         "github": "Github",
         "passed": "Passed",
         "failed": "Failed",
+        "ciLastBuilt": "Last CI Built",
+        "devLastBuilt": "Last DEV Built",
+        "e2eLastBuilt": "Last E2E Built",
         "pageTitle": "Monitor Dashboard",
         "repo": {
           "name": "Repository Name",

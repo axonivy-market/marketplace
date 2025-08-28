@@ -18,7 +18,9 @@ class TestStepsModelTest {
     GithubRepo repo = new GithubRepo();
     repo.setName("demo-repo");
     repo.setHtmlUrl("https://github.com/org/demo-repo");
-    repo.setLastUpdated(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+    repo.setCiLastBuilt(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+    repo.setDevLastBuilt(Date.from(Instant.parse("2024-01-02T00:00:00Z")));
+    repo.setE2eLastBuilt(Date.from(Instant.parse("2024-01-03T00:00:00Z")));
 
     TestStep result = new TestStep();
     result.setName("Example name test");
