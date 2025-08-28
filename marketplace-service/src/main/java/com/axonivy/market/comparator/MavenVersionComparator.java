@@ -14,9 +14,11 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class MavenVersionComparator {
   private static final Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
+  private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final int GREATER_THAN = 1;
   private static final int EQUAL = 0;
   private static final int LESS_THAN = -1;
+  private static final int MAIN_QUALIFIER_PARTS = 2;
 
   private MavenVersionComparator() {
   }
@@ -47,7 +49,7 @@ public class MavenVersionComparator {
   }
 
   private static String stripLeadingChars(String version) {
-    Matcher matcher = pattern.matcher(version);
+    var matcher = pattern.matcher(version);
     if (matcher.find()) {
       return matcher.group(1);
     }
@@ -55,8 +57,8 @@ public class MavenVersionComparator {
   }
 
   private static int compareMainVersion(String mainVersion, String otherMainVersion) {
-    String[] parts1 = mainVersion.split(MAIN_VERSION_REGEX);
-    String[] parts2 = otherMainVersion.split(MAIN_VERSION_REGEX);
+    String[] parts1 = MAIN_VERSION_PATTERN.split(mainVersion);
+    String[] parts2 = MAIN_VERSION_PATTERN.split(otherMainVersion);
 
     int length = Math.max(parts1.length, parts2.length);
     for (int i = 0; i < length; i++) {
@@ -70,11 +72,15 @@ public class MavenVersionComparator {
   }
 
   private static String getQualifierPart(String[] versionParts) {
-    return versionParts.length > 1 ? versionParts[1] : EMPTY;
+    if(versionParts.length > 1) {
+      return versionParts[1];
+    } else {
+      return EMPTY;
+    }
   }
 
   private static String[] createMainAndQualifierArray(String version) {
-    return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, 2);
+    return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, MAIN_QUALIFIER_PARTS);
   }
 
   private static int parseToNumber(String[] versionParts, int index) {
