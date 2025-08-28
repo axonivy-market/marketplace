@@ -13,7 +13,7 @@ import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class MavenVersionComparator {
-
+  private static final Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
   private static final int GREATER_THAN = 1;
   private static final int EQUAL = 0;
   private static final int LESS_THAN = -1;
@@ -47,7 +47,6 @@ public class MavenVersionComparator {
   }
 
   private static String stripLeadingChars(String version) {
-    Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
     Matcher matcher = pattern.matcher(version);
     if (matcher.find()) {
       return matcher.group(1);
