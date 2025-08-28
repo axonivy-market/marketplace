@@ -349,7 +349,7 @@ public class GitHubServiceImpl implements GitHubService {
     return instance;
   }
 
-  private void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
+  private static void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
     if (instance instanceof Dependabot dependabot) {
       dependabot.setStatus(status);
     } else if (instance instanceof SecretScanning secretScanning) {
@@ -362,7 +362,7 @@ public class GitHubServiceImpl implements GitHubService {
   public ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(
       String accessToken,
       String url) throws RestClientException {
-    HttpHeaders headers = new HttpHeaders();
+    var headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
