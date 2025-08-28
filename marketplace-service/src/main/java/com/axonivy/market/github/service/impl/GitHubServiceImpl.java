@@ -339,7 +339,11 @@ public class GitHubServiceImpl implements GitHubService {
     T instance = defaultInstanceSupplier.get();
     try {
       ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken, url);
-      instance = mapAlerts.apply(response.getBody() != null ? response.getBody() : List.of());
+      if (response.getBody() != null) {
+        instance = mapAlerts.apply(response.getBody());
+      } else {
+        instance = mapAlerts.apply(List.of());
+      }
       setStatus(instance, com.axonivy.market.enums.AccessLevel.ENABLED);
     } catch (HttpClientErrorException.Forbidden e) {
       setStatus(instance, com.axonivy.market.enums.AccessLevel.DISABLED);
