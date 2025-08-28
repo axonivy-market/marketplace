@@ -196,7 +196,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GitHubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    var githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
