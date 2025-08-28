@@ -49,8 +49,8 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(productId, version);
-    String unzippedFolderPath = String.join(File.separator, FileDownloadService.ROOT_STORAGE_FOR_PRODUCT_CONTENT,
+    var productModuleContent = ProductContentUtils.initProductModuleContent(productId, version);
+    var unzippedFolderPath = String.join(File.separator, FileDownloadService.ROOT_STORAGE_FOR_PRODUCT_CONTENT,
         artifact.getArtifactId());
     try {
 
@@ -73,7 +73,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       String productId, String unzippedFolderPath, String productName) throws IOException {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
-    Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
+    var productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
 
     productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
@@ -89,12 +89,12 @@ public class ProductContentServiceImpl implements ProductContentService {
           .toList();
 
       for (Path readmeFile : readmeFiles) {
-        String readmeContents = Files.readString(readmeFile);
+        var readmeContents = Files.readString(readmeFile);
         if (ProductContentUtils.hasImageDirectives(readmeContents)) {
           readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
         }
 
-        ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+        var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
 
         ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getFileName().toString(),
             readmeContentsModel);
@@ -113,9 +113,9 @@ public class ProductContentServiceImpl implements ProductContentService {
           path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
 
       for (Path imagePath : allImagePaths) {
-        Image currentImage = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
-        Optional.ofNullable(currentImage).ifPresent(image -> {
-          String imageFileName = imagePath.getFileName().toString();
+        var currentImage = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
+        Optional.ofNullable(currentImage).ifPresent((Image image) -> {
+          var imageFileName = imagePath.getFileName().toString();
           String imageIdFormat = CommonConstants.IMAGE_ID_PREFIX.concat(image.getId());
           imageUrls.put(imageFileName, imageIdFormat);
         });

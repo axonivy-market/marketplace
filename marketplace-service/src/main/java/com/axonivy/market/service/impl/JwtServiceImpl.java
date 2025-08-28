@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Component
 public class JwtServiceImpl implements JwtService {
+  private static final int TOKEN_EXPIRE_DURATION = 86400000;
 
   @Value("${jwt.secret}")
   private String secret;
@@ -28,7 +29,7 @@ public class JwtServiceImpl implements JwtService {
     claims.put("username", githubUser.getUsername());
     claims.put("accessToken", accessToken);
     return Jwts.builder().setClaims(claims).setSubject(githubUser.getId()).setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * 86400000))
+        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
         .signWith(SignatureAlgorithm.HS512, secret).compact();
   }
 
