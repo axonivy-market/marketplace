@@ -38,8 +38,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Tag(name = "External document Controller", description = "API collection to get and search for the external document")
 @AllArgsConstructor
 public class ExternalDocumentController {
-  final ExternalDocumentService externalDocumentService;
-  final GitHubService gitHubService;
+  private final ExternalDocumentService externalDocumentService;
+  private final GitHubService gitHubService;
 
   @GetMapping(BY_ID_AND_VERSION)
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(

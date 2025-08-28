@@ -101,8 +101,8 @@ public class FeedbackController {
   public ResponseEntity<FeedbackModel> findFeedback(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) {
-    Feedback feedback = feedbackService.findFeedback(id);
-    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    var feedback = feedbackService.findFeedback(id);
+    var model = feedbackModelAssembler.toModel(feedback);
     addModelLinks(model, feedback);
     return ResponseEntity.ok(model);
   }
@@ -140,8 +140,8 @@ public class FeedbackController {
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
       @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
-    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
-    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
+    var model = feedbackModelAssembler.toModel(feedback);
     addModelLinks(model, feedback);
     return ResponseEntity.ok(model);
   }
@@ -165,10 +165,10 @@ public class FeedbackController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    Claims claims = jwtService.getClaimsFromToken(token);
-    Feedback newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+    var claims = jwtService.getClaimsFromToken(token);
+    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
 
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
+    var location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
         .toUri();
 
     return ResponseEntity.created(location).build();
