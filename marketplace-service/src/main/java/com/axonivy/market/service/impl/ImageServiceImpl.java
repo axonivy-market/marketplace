@@ -74,7 +74,7 @@ public class ImageServiceImpl implements ImageService {
     byte[] imageContent = Optional.of(getImageBinary(ghContent, currentImageUrl))
         .filter(ObjectUtils::isNotEmpty).orElse(null);
 
-    Image image = new Image();
+    var image = new Image();
     image.setProductId(productId);
     image.setImageUrl(currentImageUrl);
     image.setImageData(imageContent);
@@ -91,13 +91,13 @@ public class ImageServiceImpl implements ImageService {
         assert contentStream != null;
         byte[] sourceBytes = IOUtils.toByteArray(contentStream);
 
-      Image existedImage = existingImages.stream().filter(image -> {
+      var existedImage = existingImages.stream().filter((Image image) -> {
         byte[] imageData = Optional.of(image).map(Image::getImageData).orElse(null);
         return ObjectUtils.isNotEmpty(imageData) && Arrays.equals(imageData, sourceBytes);
       }).findAny().orElse(null);
 
       if (ObjectUtils.isEmpty(existedImage)) {
-        Image image = new Image();
+        var image = new Image();
         image.setImageData(sourceBytes);
         image.setProductId(productId);
         return imageRepository.save(image);
@@ -116,7 +116,7 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public byte[] readPreviewImageByName(String imageName) {
-    Path previewPath = Paths.get(PREVIEW_DIR);
+    var previewPath = Paths.get(PREVIEW_DIR);
     if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
       log.info("#readPreviewImageByName: Preview folder not found");
     }

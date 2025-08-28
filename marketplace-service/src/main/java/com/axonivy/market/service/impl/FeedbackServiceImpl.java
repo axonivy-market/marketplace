@@ -34,11 +34,13 @@ import java.util.stream.IntStream;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
-
+  private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
+  private static final int MIN_STAR_RATING = 1;
+  private static final int MAX_STAR_RATING = 5;
+  private static final int MAX_PERCENT = 100;
   private final FeedbackRepository feedbackRepository;
   private final GithubUserRepository githubUserRepository;
   private final ProductRepository productRepository;
-  private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, GithubUserRepository githubUserRepository,
       ProductRepository productRepository) {
@@ -109,9 +111,14 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
-        .map(existingFeedback -> {
+        .map((Feedback existingFeedback) -> {
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
-          FeedbackStatus newStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
+          FeedbackStatus newStatus;
+          if(isApproved) {
+            newStatus = FeedbackStatus.APPROVED;
+          } else {
+            newStatus = FeedbackStatus.REJECTED;
+          }
           if (isApproved) {
             List<Feedback> approvedLatestFeedbacks = feedbackRepository
                 .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
@@ -126,7 +133,11 @@ public class FeedbackServiceImpl implements FeedbackService {
           existingFeedback.setFeedbackStatus(newStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
           existingFeedback.setReviewDate(new Date());
-          existingFeedback.setIsLatest(isApproved ? true : null);
+          if(isApproved) {
+            existingFeedback.setIsLatest(true);
+          } else {
+            existingFeedback.setIsLatest(null);
+          }
 
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
@@ -140,11 +151,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING)
+    var pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING)
         .stream().findFirst().orElse(null);
     List<Feedback> approvedFeedbacks = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
 
-    Feedback matchingApprovedFeedback = getMatchingApprovedFeedback(approvedFeedbacks, feedback);
+    var matchingApprovedFeedback = getMatchingApprovedFeedback(approvedFeedbacks, feedback);
     if (matchingApprovedFeedback != null) {
       if (pendingFeedback != null) {
         feedbackRepository.delete(pendingFeedback);
@@ -178,7 +189,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   private List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
     return feedbacks.stream()
-        .filter(feedback -> {
+        .filter((Feedback feedback) -> {
           if (FeedbackStatus.APPROVED == feedbackStatus) {
             return feedbackStatus == feedback.getFeedbackStatus() || feedback.getFeedbackStatus() == null;
           }
@@ -207,15 +218,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
-      return IntStream.rangeClosed(1, 5).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
+      return IntStream.rangeClosed(MIN_STAR_RATING, MAX_STAR_RATING).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
     }
 
     Map<Integer, Long> ratingCountMap = feedbacks.stream()
         .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
 
-    return IntStream.rangeClosed(1, 5).mapToObj(star -> {
+    return IntStream.rangeClosed(MIN_STAR_RATING, MAX_STAR_RATING).mapToObj(star -> {
       long count = ratingCountMap.getOrDefault(star, 0L);
-      int percent = (int) ((count * 100) / totalFeedbacks);
+      int percent = (int) ((count * MAX_PERCENT) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);
     }).toList();
   }
@@ -233,11 +244,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   private Pageable refinePagination(Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
+    var pageRequest = (PageRequest) pageable;
     if (pageable != null) {
       List<Sort.Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
-        FeedbackSortOption feedbackSortOption = FeedbackSortOption.of(sort.getProperty());
+        var feedbackSortOption = FeedbackSortOption.of(sort.getProperty());
         List<Sort.Order> order = createOrder(feedbackSortOption);
         orders.addAll(order);
       }
