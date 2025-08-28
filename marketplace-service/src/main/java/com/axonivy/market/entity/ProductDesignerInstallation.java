@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INSTALLATION;
@@ -21,7 +22,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INST
 @Builder
 @Entity
 @Table(name = PRODUCT_DESIGNER_INSTALLATION)
-public class ProductDesignerInstallation extends AuditableIdEntity implements Serializable {
+public class ProductDesignerInstallation extends AuditableIdEntity {
+  @Serial
+  private static final long serialVersionUID = 1;
 
   private String productId;
   private String designerVersion;

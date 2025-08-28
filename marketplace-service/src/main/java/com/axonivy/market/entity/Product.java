@@ -12,6 +12,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Transient;
 
+import java.io.Serial;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,8 @@ import static com.axonivy.market.constants.PostgresDBConstants.ID;
 @Entity
 @Table(name = PRODUCT)
 public class Product extends AuditableEntity<String> {
+  @Serial
+  private static final long serialVersionUID = 1;
 
   @Id
   private String id;

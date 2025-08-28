@@ -4,7 +4,6 @@ import com.axonivy.market.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.DASH_SEPARATOR;

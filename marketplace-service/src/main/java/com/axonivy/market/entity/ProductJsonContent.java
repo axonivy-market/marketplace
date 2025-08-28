@@ -13,6 +13,8 @@ import lombok.Setter;
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
 import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,6 +22,9 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
 public class ProductJsonContent extends AuditableEntity<String> {
+  @Serial
+  private static final long serialVersionUID = 1;
+
   @Id
   @JsonIgnore
   private String id;

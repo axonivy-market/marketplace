@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.*;
@@ -27,6 +28,9 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
 public class ProductModuleContent extends AuditableEntity<String> {
+  @Serial
+  private static final long serialVersionUID = 1;
+
   @Id
   private String id;
   @Schema(description = "product Id (from meta.json)", example = "portal")
