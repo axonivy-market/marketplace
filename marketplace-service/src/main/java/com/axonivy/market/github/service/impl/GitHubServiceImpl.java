@@ -57,6 +57,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -74,7 +75,13 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
-  private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
+  private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
+  private static final Pattern GITHUB_PULL_REQUEST_NUMBER_PATTERN =
+      Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
+
+  private static final Pattern GITHUB_USERNAME_PATTERN =
+      Pattern.compile(GITHUB_USERNAME_REGEX);
+
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -400,8 +407,11 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
-        productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP).replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    String withPullRequests = GITHUB_PULL_REQUEST_NUMBER_PATTERN.matcher(githubReleaseBody)
+        .replaceAll(productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
+
+    return GITHUB_USERNAME_PATTERN.matcher(withPullRequests)
+        .replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
