@@ -2,9 +2,9 @@
   <ng-container *ngIf="badges[conclusion] as badge">
     <img [src]="badge.src" [alt]="badge.alt" width="72" height="50"
       (click)="onBadgeClick(repository.name, workflow, mode)" style="cursor: pointer;" />
-    <span class="built-date text-muted px-2 align-middle">
+    <!-- <span class="built-date text-muted px-2 align-middle">
       {{ repository.lastUpdated | date: 'short' }}
-    </span>
+    </span> -->
   </ng-container>
 
   @if (mode === 'report') {

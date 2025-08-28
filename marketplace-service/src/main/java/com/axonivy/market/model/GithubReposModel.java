@@ -45,6 +45,11 @@ public class GithubReposModel {
 
   @Schema(description = "Last E2E result", example = "SUCCESS")
   private String e2eConclusion;
+  private BuildInformation ciBuild;
+
+  private BuildInformation devBuild;
+
+  private BuildInformation e2eBuild;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
@@ -75,6 +80,12 @@ public class GithubReposModel {
         .ciLastBuilt(githubRepo.getCiLastBuilt())
         .devLastBuilt(githubRepo.getDevLastBuilt())
         .e2eLastBuilt(githubRepo.getE2eLastBuilt())
+        .ciConclusion(githubRepo.getCiConclusion())
+        .devConclusion(githubRepo.getDevConclusion())
+        .e2eConclusion(githubRepo.getE2eConclusion())
+        .ciBuild(githubRepo.getCiBuild())
+        .devBuild(githubRepo.getDevBuild())
+        .e2eBuild(githubRepo.getE2eBuild())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
         .build();

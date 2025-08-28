@@ -1,6 +1,8 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.model.BuildInformation;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -48,7 +50,16 @@ public class GithubRepo extends GenericIdEntity {
   private String ciConclusion;
   private String devConclusion;
   private String e2eConclusion;
+  private String ciLastBuiltRun;
+  private String devLastBuiltRun;
+  private String e2eLastBuiltRun;
   private Boolean focused;
+  @Embedded
+  private BuildInformation ciBuild;
+  @Embedded
+  private BuildInformation devBuild;
+  @Embedded
+  private BuildInformation e2eBuild;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
