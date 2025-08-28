@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
@@ -79,7 +80,6 @@ public class GithubReposServiceImpl implements GithubReposService {
         githubRepo.getTestSteps().clear();
         githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
         githubRepo.setLanguage(ghRepo.getLanguage());
-        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       } else {
         githubRepo = from(ghRepo);
       }
@@ -96,6 +96,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
         updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
+        updateLastBuilt(run, dbRepo, workflowType);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -119,6 +120,24 @@ public class GithubReposServiceImpl implements GithubReposService {
         break;
       case E2E:
         dbRepo.setE2eBadgeUrl(runBadgeUrl);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private static void updateLastBuilt(GHWorkflowRun run, GithubRepo dbRepo, WorkFlowType workflowType)
+      throws IOException {
+    Date lastBuilt = run.getCreatedAt();
+    switch (workflowType) {
+      case CI:
+        dbRepo.setCiLastBuilt(lastBuilt);
+        break;
+      case DEV:
+        dbRepo.setDevLastBuilt(lastBuilt);
+        break;
+      case E2E:
+        dbRepo.setE2eLastBuilt(lastBuilt);
         break;
       default:
         break;

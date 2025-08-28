@@ -65,16 +65,24 @@
                 <br>
               }
             </div>
+            <p>
+              <span class="icon">📅</span>
+              <span class="last-build">
+                @if (build.workflow === 'CI') {
+                  {{ 'common.monitor.dashboard.ciLastBuilt' | translate }}:
+                  {{ repo.ciLastBuilt | date: 'medium' }}
+                } @else if (build.workflow === 'DEV') {
+                  {{ 'common.monitor.dashboard.devLastBuilt' | translate }}:
+                  {{ repo.devLastBuilt | date: 'medium' }}
+                } @else if (build.workflow === 'E2E') {
+                  {{ 'common.monitor.dashboard.e2eLastBuilt' | translate }}:
+                  {{ repo.e2eLastBuilt | date: 'medium' }}
+                }
+              </span>
+            </p>
           }
         </div>
       </div>
-      <p>
-        <span class="icon">📅</span>
-        <span class="last-build">
-          {{ 'common.monitor.dashboard.lastUpdated' | translate }}:
-          {{ repo.lastUpdated | date: 'medium' }}
-        </span>
-      </p>
     </div>
   </ng-template>
 </div>

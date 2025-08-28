@@ -225,7 +225,9 @@
         "failed": "Fehlgeschlagen",
         "mock": "Simuliert",
         "real": "Echt",
-        "lastUpdated": "Zuletzt Gebaut",
+        "ciLastBuilt": "Zuletzt CI Gebaut",
+        "devLastBuilt": "Zuletzt DEV Gebaut",
+        "e2eLastBuilt": "Zuletzt E2E Gebaut",
         "language": "Sprache",
         "pageTitle": "Überwachungs-Dashboard",
         "testCounts": {
