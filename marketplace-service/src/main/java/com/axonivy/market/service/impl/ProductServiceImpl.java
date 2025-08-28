@@ -455,9 +455,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // Check if having new released version or unreleased dev version in Maven
-    List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
-        product.getReleasedVersions() :
-        productModuleContentRepo.findVersionsByProductId(product.getId());
+    List<String> currentVersions;
+    if (ObjectUtils.isNotEmpty(product.getReleasedVersions())) {
+      currentVersions = product.getReleasedVersions();
+    } else {
+      currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
+    }
     List<String> versionChanges =
         mavenVersions.stream().filter(
             version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
@@ -468,7 +471,7 @@ public class ProductServiceImpl implements ProductService {
       return;
     }
 
-    Date lastUpdated = getLastUpdatedDate(document);
+    var lastUpdated = getLastUpdatedDate(document);
     if (ObjectUtils.isEmpty(product.getNewestPublishedDate()) || lastUpdated.after(product.getNewestPublishedDate())) {
       String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
       product.setNewestPublishedDate(lastUpdated);
