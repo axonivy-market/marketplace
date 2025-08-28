@@ -30,7 +30,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class GitHubUtils {
 
   public static long getGHCommitDate(GHCommit commit) {
-    long commitTime = 0L;
+    var commitTime = 0L;
     if (commit != null) {
       try {
         commitTime = commit.getCommitDate().getTime();
@@ -62,10 +62,12 @@ public class GitHubUtils {
   }
 
   public static int sortMetaJsonFirst(String fileName1, String fileName2) {
-    if (fileName1.endsWith(META_FILE))
+    if (fileName1.endsWith(META_FILE)) {
       return -1;
-    if (fileName2.endsWith(META_FILE))
+    }
+    if (fileName2.endsWith(META_FILE)) {
       return 1;
+    }
     return fileName1.compareTo(fileName2);
   }
 
