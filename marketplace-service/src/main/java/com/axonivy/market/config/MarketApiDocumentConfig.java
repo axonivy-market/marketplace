@@ -29,16 +29,29 @@ public class MarketApiDocumentConfig {
   }
 
   private OpenApiCustomizer customMarketHeaders() {
-    return openApi -> openApi.getPaths().values().forEach((PathItem pathItem) -> {
-      List<Operation> operations = Arrays.asList(pathItem.getPut(), pathItem.getPost(), pathItem.getPatch(),
-          pathItem.getDelete());
-      for (Operation operation : operations) {
-        if (operation != null) {
-          Parameter headerParameter = new Parameter().in(HEADER_PARAM).schema(new StringSchema())
-              .name(REQUESTED_BY).description(DEFAULT_PARAM).required(true);
-          operation.addParametersItem(headerParameter);
-        }
+    return openApi -> openApi.getPaths().values()
+        .forEach(this::addHeaderParameters);
+  }
+
+  private void addHeaderParameters(PathItem pathItem) {
+    List<Operation> operations = Arrays.asList(
+        pathItem.getPut(), pathItem.getPost(),
+        pathItem.getPatch(), pathItem.getDelete()
+    );
+
+    for (Operation operation : operations) {
+      if (operation != null) {
+        operation.addParametersItem(createRequestedByHeader());
       }
-    });
+    }
+  }
+
+  private Parameter createRequestedByHeader() {
+    return new Parameter()
+        .in(HEADER_PARAM)
+        .schema(new StringSchema())
+        .name(REQUESTED_BY)
+        .description(DEFAULT_PARAM)
+        .required(true);
   }
 }
