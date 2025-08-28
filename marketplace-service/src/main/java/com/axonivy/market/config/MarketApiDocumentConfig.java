@@ -46,7 +46,7 @@ public class MarketApiDocumentConfig {
     }
   }
 
-  private Parameter createRequestedByHeader() {
+  private static Parameter createRequestedByHeader() {
     return new Parameter()
         .in(HEADER_PARAM)
         .schema(new StringSchema())
