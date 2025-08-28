@@ -1,23 +1,47 @@
 <div class="container p-0">
   <!-- Search Bar -->
   <div class="feature-bar d-flex align-items-center justify-content-between">
-    <app-product-filter class="flex-grow-1 h-100" (searchChange)="onSearchChanged($event)" [isProductHomepage]="false">
-    </app-product-filter>
+    <app-product-filter
+      class="flex-grow-1 h-100"
+      (searchChange)="onSearchChanged($event)"
+      [isProductHomepage]="false"></app-product-filter>
 
     <!-- Mode Toggle -->
-    <div class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">
-      <div class="btn-group h-100" role="group">
-        <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'default-mode-' + tabKey"
-          autocomplete="off" [(ngModel)]="mode[tabKey]" value="default">
-        <label class="btn py-1 justify-content-between align-items-center align-content-center"
-          [for]="'default-mode-' + tabKey">{{
-          'common.monitor.dashboard.toggle.default' | translate }}</label>
+    <div
+      class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">
+      <div class="btn-group h-90 toggle-group" role="group">
+        <!-- Slider -->
+        <div
+          class="slider"
+          [class.report-active]="mode[tabKey] === 'report'"></div>
 
-        <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'report-mode-' + tabKey"
-          autocomplete="off" [(ngModel)]="mode[tabKey]" value="report">
-        <label class="btn justify-content-between align-items-center align-content-center"
-          [for]="'report-mode-' + tabKey">{{
-          'common.monitor.dashboard.toggle.report' | translate }}</label>
+        <input
+          type="radio"
+          class="btn-check"
+          [name]="'mode-' + tabKey"
+          [id]="'default-mode-' + tabKey"
+          autocomplete="off"
+          [(ngModel)]="mode[tabKey]"
+          value="default" />
+        <label
+          class="btn border-0 justify-content-between align-items-center align-content-center"
+          [for]="'default-mode-' + tabKey">
+          {{ 'common.monitor.dashboard.toggle.default' | translate }}
+        </label>
+
+        <input
+          type="radio"
+          class="btn-check"
+          [name]="'mode-' + tabKey"
+          [id]="'report-mode-' + tabKey"
+          autocomplete="off"
+          [(ngModel)]="mode[tabKey]"
+          value="report" />
+        <label
+          class="btn border-0 justify-content-between align-items-center align-content-center"
+          [for]="'report-mode-' + tabKey">
+          {{ 'common.monitor.dashboard.toggle.report' | translate }}
+        </label>
       </div>
     </div>
   </div>
@@ -25,95 +49,127 @@
   <table class="table">
     <thead>
       <tr>
-        <th class="text-primary connector-column" sortable="name" (click)="sortRepositoriesByColumn('name')">
-          <h5 class="table-header">{{ 'common.monitor.dashboard.connector' | translate }}
-            {{ getSortIcon('name') }}
+        <th
+          class="text-primary connector-column"
+          sortable="name"
+          (click)="sortRepositoriesByColumn('name')">
+          <h5 class="table-header" [ngClass]="getSortIcon('name')">
+            {{ 'common.monitor.dashboard.connector' | translate }}
           </h5>
         </th>
-        <th class=" text-primary workflow-column" (click)="sortRepositoriesByColumn('ciConclusion')">
-          <h5 class="table-header">{{ 'common.monitor.dashboard.ciLabel' | translate }}
+        <th
+          class="text-primary workflow-column"
+          (click)="sortRepositoriesByColumn('ciConclusion')">
+          <h5 class="table-header" [ngClass]="getSortIcon('ciConclusion')">
+            {{ 'common.monitor.dashboard.ciLabel' | translate }}
             <app-build-badge-tooltip buildType="CI" />
-            {{ getSortIcon('ciConclusion') }}
           </h5>
         </th>
-        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn('devConclusion')">
-          <h5 class="table-header">{{ 'common.monitor.dashboard.devLabel' | translate }}
+        <th
+          class="text-primary workflow-column"
+          (click)="sortRepositoriesByColumn('devConclusion')">
+          <h5 class="table-header" [ngClass]="getSortIcon('devConclusion')">
+            {{ 'common.monitor.dashboard.devLabel' | translate }}
             <app-build-badge-tooltip buildType="DEV" />
-            {{ getSortIcon('devConclusion') }}
           </h5>
         </th>
-        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn('e2eConclusion')">
-          <h5 class="table-header">{{ 'common.monitor.dashboard.e2eLabel' | translate }}
+        <th
+          class="text-primary workflow-column"
+          (click)="sortRepositoriesByColumn('e2eConclusion')">
+          <h5 class="table-header" [ngClass]="getSortIcon('e2eConclusion')">
+            {{ 'common.monitor.dashboard.e2eLabel' | translate }}
             <app-build-badge-tooltip buildType="E2E" />
-            {{ getSortIcon('e2eConclusion') }}
           </h5>
         </th>
         <th class="text-primary">
-          <h5 class="table-header">{{ 'common.monitor.dashboard.github' | translate }}
+          <h5 class="table-header">
+            {{ 'common.monitor.dashboard.github' | translate }}
           </h5>
         </th>
       </tr>
     </thead>
     @if (displayedRepositories.length > 0) {
-    <tbody>
-      <tr *ngFor="let repo of displayedRepositories">
-        <td class="align-middle">
-          <a id="product-name" [href]="getMarketUrl(repo.name)" target="_blank" rel="noopener noreferrer">
-            <p>{{ repo.name }}</p>
-          </a>
-        </td>
-        <td>
-          <app-repo-test-result [workflow]="'CI'" [conclusion]="repo.ciConclusion" [repository]="repo"
-            [mode]="mode[tabKey]">
-          </app-repo-test-result>
-        </td>
-        <td>
-          <app-repo-test-result [workflow]="'DEV'" [conclusion]="repo.devConclusion" [repository]="repo"
-            [mode]="mode[tabKey]">
-          </app-repo-test-result>
-        </td>
-        <td>
-          <app-repo-test-result [workflow]="'E2E'" [conclusion]="repo.e2eConclusion" [repository]="repo"
-            [mode]="mode[tabKey]">
-          </app-repo-test-result>
-        </td>
-        <td class="align-middle">
-          <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
-            <i class="fa fa-external-link" aria-hidden="true"></i>
-          </a>
-        </td>
-      </tr>
-    </tbody>
-    }
-    @else if(displayedRepositories.length == 0 && !isLoading) {
-    <tbody>
-      <tr>
-        <td colspan="12" class="border-0">
-          <p class="text-primary m-0 text-center no-repositories" [lang]="languageService.selectedLanguage()">
-            {{ 'common.monitor.dashboard.noRepositories' | translate }}
-          </p>
-        </td>
-      </tr>
-    </tbody>
+      <tbody>
+        <tr *ngFor="let repo of displayedRepositories">
+          <td class="align-middle">
+            <a
+              id="product-name"
+              [href]="getMarketUrl(repo.name)"
+              target="_blank"
+              rel="noopener noreferrer">
+              <p class="name">{{ repo.name }}</p>
+            </a>
+          </td>
+          <td>
+            <app-repo-test-result
+              [workflow]="'CI'"
+              [conclusion]="repo.ciConclusion"
+              [repository]="repo"
+              [mode]="mode[tabKey]"></app-repo-test-result>
+          </td>
+          <td>
+            <app-repo-test-result
+              [workflow]="'DEV'"
+              [conclusion]="repo.devConclusion"
+              [repository]="repo"
+              [mode]="mode[tabKey]"></app-repo-test-result>
+          </td>
+          <td>
+            <app-repo-test-result
+              [workflow]="'E2E'"
+              [conclusion]="repo.e2eConclusion"
+              [repository]="repo"
+              [mode]="mode[tabKey]"></app-repo-test-result>
+          </td>
+          <td class="align-middle">
+            <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
+              <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    } @else if (displayedRepositories.length == 0 && !isLoading) {
+      <tbody>
+        <tr>
+          <td colspan="12" class="border-0">
+            <p
+              class="text-primary m-0 text-center no-repositories"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.monitor.dashboard.noRepositories' | translate }}
+            </p>
+          </td>
+        </tr>
+      </tbody>
     }
   </table>
 
   <!-- Pagination -->
   <div class="d-flex justify-content-between p-2">
-    <ngb-pagination [collectionSize]="filteredRepositories.length" [(page)]="page" [pageSize]="pageSize"
-      (pageChange)="refreshPagination()">
-    </ngb-pagination>
+    <ngb-pagination
+      [collectionSize]="filteredRepositories.length"
+      [(page)]="page"
+      [pageSize]="pageSize"
+      (pageChange)="refreshPagination()"></ngb-pagination>
 
-    <select class="form-select pagination" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
-      <option [ngValue]="10">{{ 'common.monitor.pagination.tenItems' | translate }}</option>
-      <option [ngValue]="15">{{ 'common.monitor.pagination.fifteenItems' | translate }}</option>
-      <option [ngValue]="20">{{ 'common.monitor.pagination.twentyItems' | translate }}</option>
+    <select
+      class="form-select pagination"
+      [(ngModel)]="pageSize"
+      (ngModelChange)="refreshPagination()">
+      <option [ngValue]="10">
+        {{ 'common.monitor.pagination.tenItems' | translate }}
+      </option>
+      <option [ngValue]="15">
+        {{ 'common.monitor.pagination.fifteenItems' | translate }}
+      </option>
+      <option [ngValue]="20">
+        {{ 'common.monitor.pagination.twentyItems' | translate }}
+      </option>
     </select>
   </div>
 
   @if (isLoading) {
-  <app-loading-spinner
-    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-    [key]="LoadingComponentId.MONITORING_REPO" />
+    <app-loading-spinner
+      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      [key]="LoadingComponentId.MONITORING_REPO" />
   }
 </div>

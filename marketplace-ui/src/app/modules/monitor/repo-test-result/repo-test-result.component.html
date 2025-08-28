@@ -12,13 +12,8 @@
       @if (build.workflow === workflow) {
       <div class="sub-status align-middle">
         @if (!(build.results | isEmptyObjectPipe)) {
-        @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-        <span class="fs-5" [lang]="languageService.selectedLanguage()">
-          {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
-        </span>
-        }
-        } @else {
-        <br>
+          @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+          <span class="fs-5" [lang]="languageService.selectedLanguage()">
         }
       </div>
       }

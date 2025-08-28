@@ -125,6 +125,6 @@ export class MonitoringRepoComponent {
     if (this.sortColumn !== column) {
       return '';
     }
-    return this.sortDirection === ASCENDING ? '▲' : '▼';
+    return this.sortDirection === ASCENDING ? 'bi bi-arrow-up' : 'bi bi-arrow-down';
   }
 }

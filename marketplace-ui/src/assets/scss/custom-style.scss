@@ -103,6 +103,10 @@ p {
   --clear-search-text-button-bg-hover: #eeeeee;
   --clear-search-text-button-bg-active: #d6d6d6;
 
+  --monitoring-toggle-button-border: #96C4D4;
+  --monitoring-toggle-button-bg: #E6F1F5;
+  --monitoring-toggle-button-text: #007095;
+
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
   }
@@ -227,6 +231,10 @@ p {
 
   --clear-search-text-button-bg-hover: #262626;
   --clear-search-text-button-bg-active: #454545;
+
+  --monitoring-toggle-button-border: #7E7E7E;
+  --monitoring-toggle-button-bg: #333333;
+  --monitoring-toggle-button-text: #FAFAFA;
 
   a {
     color: #{$white};
