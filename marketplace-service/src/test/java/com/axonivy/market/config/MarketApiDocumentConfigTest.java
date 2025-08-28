@@ -39,7 +39,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testBuildMarketCustomHeader_ShouldReturnGroupedOpenApiWithCorrectConfiguration() {
+  void testBuildMarketCustomHeader_shouldReturnGroupedOpenApiWithCorrectConfiguration() {
     GroupedOpenApi result = marketApiDocumentConfig.buildMarketCustomHeader();
 
     assertNotNull(result, "");
@@ -51,7 +51,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testCustomMarketHeaders_ShouldAddHeaderParametersToAllPaths() {
+  void testCustomMarketHeaders_shouldAddHeaderParametersToAllPaths() {
     PathItem pathItem1 = createPathItemWithOperations();
     PathItem pathItem2 = createPathItemWithOperations();
 
@@ -69,7 +69,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_ShouldAddParametersToAllNonNullOperations() {
+  void testAddHeaderParameters_shouldAddParametersToAllNonNullOperations() {
     Operation putOperation = new Operation();
     Operation postOperation = new Operation();
     Operation patchOperation = new Operation();
@@ -98,7 +98,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_ShouldSkipNullOperations() {
+  void testAddHeaderParameters_shouldSkipNullOperations() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 
@@ -113,7 +113,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_ShouldHandlePathItemWithNoOperations() {
+  void testAddHeaderParameters_shouldHandlePathItemWithNoOperations() {
     PathItem emptyPathItem = new PathItem();
 
     when(openAPI.getPaths()).thenReturn(paths);
@@ -126,7 +126,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testCreateRequestedByHeader_ShouldCreateParameterWithCorrectProperties() {
+  void testCreateRequestedByHeader_shouldCreateParameterWithCorrectProperties() {
     Operation operation = new Operation();
     pathItem.setPost(operation);
 
@@ -141,7 +141,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testCustomMarketHeaders_ShouldHandleEmptyPaths() {
+  void testCustomMarketHeaders_shouldHandleEmptyPaths() {
     when(openAPI.getPaths()).thenReturn(paths);
     when(paths.values()).thenReturn(List.of());
 
@@ -152,7 +152,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_ShouldNotDuplicateParametersOnMultipleCalls() {
+  void testAddHeaderParameters_shouldNotDuplicateParametersOnMultipleCalls() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 

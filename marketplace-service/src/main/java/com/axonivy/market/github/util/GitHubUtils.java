@@ -84,7 +84,7 @@ public class GitHubUtils {
       List<GHContent> childrenFiles = file.listDirectoryContent().toList();
       findImages(childrenFiles, images);
     } catch (IOException e) {
-      log.error(e.getMessage());
+      log.error("Error finding images in directory: ", e);
     }
   }
 
