@@ -55,8 +55,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
     // Convert JSON to Map
     List<Feedback> feedbacks = results.getContent().stream()
-        .map(result -> {
-          Feedback feedback = Feedback.builder()
+        .map((FeedbackProjection result) -> {
+          var feedback = Feedback.builder()
               .userId(result.getUserId())
               .productId(result.getProductId())
               .content(result.getContent())

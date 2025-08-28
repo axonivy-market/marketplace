@@ -161,7 +161,8 @@ public class FeedbackController {
 
     // Validate the token
     if (token == null || !jwtService.validateToken(token)) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Unauthorized if token is missing or invalid
+      // Unauthorized if token is missing or invalid
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     Claims claims = jwtService.getClaimsFromToken(token);
