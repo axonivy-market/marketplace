@@ -312,7 +312,7 @@ public class GitHubServiceImpl implements GitHubService {
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         alerts -> {
-          CodeScanning codeScanning = new CodeScanning();
+          var codeScanning = new CodeScanning();
           Map<String, Integer> codeScanningMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
             Object ruleObj = alert.get(GitHubConstants.Json.RULE);
@@ -336,7 +336,7 @@ public class GitHubServiceImpl implements GitHubService {
       Function<List<Map<String, Object>>, T> mapAlerts,
       Supplier<T> defaultInstanceSupplier
   ) {
-    T instance = defaultInstanceSupplier.get();
+    var instance = defaultInstanceSupplier.get();
     try {
       ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken, url);
       if (response.getBody() != null) {
