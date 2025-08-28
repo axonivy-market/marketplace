@@ -39,7 +39,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     try {
       githubUser = githubUserService.findUser(feedback.getUserId());
     } catch (NotFoundException e) {
-      log.warn(e.getMessage());
+      log.warn(e);
       githubUser = new GithubUser();
     }
     model.setId(feedback.getId());
