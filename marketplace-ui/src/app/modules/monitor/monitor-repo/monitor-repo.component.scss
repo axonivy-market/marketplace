@@ -1,9 +1,37 @@
+.table {
+  margin-top: 2.5rem;
+}
+
+.feature-bar {
+  height: 43px;
+}
+
+.mode-button {
+  border-radius: 10px;
+  max-height: inherit;
+  padding: 0.4rem;
+}
+
+.btn-check+.btn {
+  color: #858585;
+  font-size: 1.2rem;
+}
+
+.btn-check:checked+.btn {
+  background: #E6F1F5;
+  border: 1px solid #96C4D4;
+  border-radius: 8px;
+  color: var(--ivy-link-corlor);
+}
+
 .connector-column {
-  width: 318px;
+  width: 330px;
+  cursor: pointer;
 }
 
 .workflow-column {
-  width: 300px;
+  width: 350px;
+  cursor: pointer;
 }
 
 .table-header {
@@ -13,6 +41,8 @@
 
 #product-name {
   color: var(--ivy-primary-bg);
+  text-decoration-color: var(--ivy-primary-bg);
+  text-underline-offset: 2px;
 }
 
 .pagination {

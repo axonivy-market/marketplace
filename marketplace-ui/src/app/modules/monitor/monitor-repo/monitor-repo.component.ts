@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output, PLATFORM_ID } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -11,16 +11,11 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from "../../product/product-filter/product-filter.component";
-import { Subject } from 'rxjs';
 import { RepoTestResultComponent } from "../repo-test-result/repo-test-result.component";
+import { ASCENDING, DEFAULT_MODE, DESCENDING, MARKET_BASE_URL, REPORT_MODE } from '../../../shared/constants/common.constant';
 
-export interface SortEvent {
-  column: SortColumn;
-  direction: SortDirection;
-}
+export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
-export type SortColumn = 'name' | 'rating' | 'status' | 'createdDate' | 'updatedDate' | 'moderator' | 'reviewDate';
-export type SortDirection = 'asc' | 'desc' | '';
 @Component({
   selector: 'app-monitor-repo',
   standalone: true,
@@ -44,32 +39,30 @@ export class MonitoringRepoComponent {
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
   @Input() isLoading = false;
-  @Input() activeTab = 'focused';
+  @Input() tabKey!: string;
   @Output() searchChange = new EventEmitter<string>();
-  // @Input() sortable: SortColumn = '';
-  // @Input() direction: SortDirection = '';
-  @Output() sort = new EventEmitter<SortEvent>();
-  mode: { [key: string]: 'default' | 'report' } = {
-    focused: 'default',
-    standard: 'default'
-  };
+
+  mode: Record<string, RepoMode> = {};
+  searchText = '';
+  page = 1;
+  pageSize = 10;
+  sortColumn: string = '';
+  sortDirection: typeof ASCENDING | typeof DESCENDING = ASCENDING;
+  allRepositories: Repository[] = [];
+  filteredRepositories: Repository[] = [];
+  displayedRepositories: Repository[] = [];
 
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   translateService = inject(TranslateService);
   router = inject(Router);
-  platformId = inject(PLATFORM_ID);
   pageTitleService: PageTitleService = inject(PageTitleService);
 
-  searchTextChanged = new Subject<string>();
-  searchText = '';
-  page = 1;
-  pageSize = 10;
-  sortColumn: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
-  allRepositories: Repository[] = [];
-  filteredRepositories: Repository[] = [];
-  displayedRepositories: Repository[] = [];
+  ngOnInit() {
+    if (!this.mode[this.tabKey]) {
+      this.mode[this.tabKey] = DEFAULT_MODE;
+    }
+  }
 
   ngOnChanges() {
     this.allRepositories = [...this.repositories];
@@ -105,48 +98,33 @@ export class MonitoringRepoComponent {
   }
 
   getMarketUrl(repoName: string): string {
-    return `https://market.axonivy.com/${encodeURIComponent(repoName)}`;
+    return `${MARKET_BASE_URL}${encodeURIComponent(repoName)}`;
   }
 
-  sortTable(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-
-    this.displayedRepositories.sort((a, b) => {
-      const valA = a[column].toString().toLowerCase();
-      const valB = b[column].toString().toLowerCase();
-
-      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
+  sortRepositoriesByColumn(column: keyof Repository) {
+  if (this.sortColumn === column) {
+    this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
+  } else {
+    this.sortColumn = column;
+    this.sortDirection = ASCENDING;
   }
+
+  this.filteredRepositories.sort((repo1, repo2) => {
+    const firstValue = (repo1[column] ?? '').toString().toLowerCase();
+    const secondValue = (repo2[column] ?? '').toString().toLowerCase();
+
+    if (firstValue < secondValue) return this.sortDirection === ASCENDING ? -1 : 1;
+    if (firstValue > secondValue) return this.sortDirection === ASCENDING ? 1 : -1;
+    return 0;
+  });
+
+  this.refreshPagination();
+}
 
   getSortIcon(column: string): string {
-    if (this.sortColumn !== column) return '';
-    return this.sortDirection === 'asc' ? '▲' : '▼';
+    if (this.sortColumn !== column) {
+      return '';
+    }
+    return this.sortDirection === ASCENDING ? '▲' : '▼';
   }
-
-  // onSort({ column, direction }: SortEvent) {
-  // 	// resetting other headers
-  // 	for (const header of this.headers) {
-  // 		if (header.sortable !== column) {
-  // 			header.direction = '';
-  // 		}
-  // 	}
-
-  // 	// sorting countries
-  // 	if (direction === '' || column === '') {
-  // 		this.countries = COUNTRIES;
-  // 	} else {
-  // 		this.countries = [...COUNTRIES].sort((a, b) => {
-  // 			const res = compare(a[column], b[column]);
-  // 			return direction === 'asc' ? res : -res;
-  // 		});
-  // 	}
-  // }
 }

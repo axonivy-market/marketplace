@@ -5,7 +5,6 @@ import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
   htmlUrl: string;
-  language: string | null;
   lastUpdated: string;
   focused: boolean;
   ciConclusion: string;

@@ -6,6 +6,7 @@ import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entri
 import { Repository } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Router } from '@angular/router';
+import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-repo-test-result',
@@ -17,7 +18,6 @@ import { Router } from '@angular/router';
 export class RepoTestResultComponent {
   @Input() workflow!: string;
   @Input() conclusion!: string;
-  @Input() isReportMode = false;
   @Input() repository!: Repository;
   @Input() mode!: 'default' | 'report';
   badges: Record<string, { src: string; alt: string }> = {
@@ -25,13 +25,15 @@ export class RepoTestResultComponent {
     failure: { src: '/assets/images/misc/fail-badge.svg', alt: 'Fail badge' }
   };
 
-
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
   router = inject(Router);
 
-  onBadgeClick(repo: string, workflow: string) {
+  onBadgeClick(repo: string, workflow: string, mode: string = DEFAULT_MODE) {
     const upperWorkflow = workflow.toUpperCase();
-    this.router.navigate(['/monitoring', repo, upperWorkflow]);
+    if(mode == REPORT_MODE) {
+      this.router.navigate(['/monitoring', repo, upperWorkflow]);
+    }
+
   }
 }

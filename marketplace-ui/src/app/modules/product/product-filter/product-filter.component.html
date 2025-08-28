@@ -1,9 +1,9 @@
 <div>
   @if (isProductHomepage) {
-  <p [lang]="languageService.selectedLanguage()" class="h3 mb-4">
+  <p [lang]="languageService.selectedLanguage()" class="h3">
     {{ translateService.get('common.filter.label') | async }}
   </p>
-  <div class="filter-container d-flex justify-content-between w-auto mb-4">
+  <div class="filter-container d-flex justify-content-between w-auto">
     <!-- Filter type -->
     <div class="filter-container__button d-none d-md-flex">
       @for (type of types; track $index) {
@@ -49,7 +49,7 @@
   </div>
   }
   <!-- Search -->
-  <div class="input-group">
+  <div class="input-group" [ngClass]="{'m-0' : !isProductHomepage}">
     <div class="input-group-text text-primary bg-secondary border-0">
       <i class="bi bi-search search-icon"></i>
     </div>

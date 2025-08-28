@@ -25,9 +25,8 @@
                   'text-secondary': themeService.isDarkMode(),
                   'text-dark': !themeService.isDarkMode(),
                   active: activeTab === 'focused'
-                }" data-bs-toggle="tab" data-bs-target="#focused" (click)="setActiveTab('focused')"
-              [lang]="languageService.selectedLanguage()">
-              {{ 'common.monitor.dashboard.focus.title' | translate }}
+                }" data-bs-toggle="tab" data-bs-target="#focused" (click)="setActiveTab('focused')">
+              {{ 'common.monitor.dashboard.tabTitle.focused' | translate }}
             </a>
           </li>
           <li
@@ -36,9 +35,8 @@
                   'text-secondary': themeService.isDarkMode(),
                   'text-dark': !themeService.isDarkMode(),
                   active: activeTab === 'standard'
-                }" data-bs-toggle="tab" data-bs-target="#standard" (click)="setActiveTab('standard')"
-              [lang]="languageService.selectedLanguage()">
-              {{ 'common.monitor.dashboard.standard.title' | translate }}
+                }" data-bs-toggle="tab" data-bs-target="#standard" (click)="setActiveTab('standard')">
+              {{ 'common.monitor.dashboard.tabTitle.standard' | translate }}
             </a>
           </li>
         </ul>
@@ -47,12 +45,12 @@
       <div class="tab-content col-12 default-cursor">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
           [ngClass]="{ 'show active': activeTab === 'focused' }">
-          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()"
-            [isStandardTab]="false" [activeTab]="activeTab"></app-monitor-repo>
+          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()" [isStandardTab]="false"
+            tabKey="focused"></app-monitor-repo>
         </div>
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
           [ngClass]="{ 'show active': activeTab === 'standard' }">
-          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true" [activeTab]="activeTab"></app-monitor-repo>
+          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true" tabKey="standard"></app-monitor-repo>
         </div>
       </div>
     </div>
