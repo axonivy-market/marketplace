@@ -30,10 +30,10 @@ public class MarketApiDocumentConfig {
 
   private OpenApiCustomizer customMarketHeaders() {
     return openApi -> openApi.getPaths().values()
-        .forEach(this::addHeaderParameters);
+        .forEach(MarketApiDocumentConfig::addHeaderParameters);
   }
 
-  private void addHeaderParameters(PathItem pathItem) {
+  private static void addHeaderParameters(PathItem pathItem) {
     List<Operation> operations = Arrays.asList(
         pathItem.getPut(), pathItem.getPost(),
         pathItem.getPatch(), pathItem.getDelete()
