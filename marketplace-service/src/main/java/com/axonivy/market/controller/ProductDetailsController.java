@@ -129,8 +129,10 @@ public class ProductDetailsController {
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-      @PathVariable(VERSION) String version, @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version, designerVersion);
+      @PathVariable(VERSION) String version,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,
+        designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
@@ -211,7 +213,8 @@ public class ProductDetailsController {
   @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
       description = "Return the download url of artifact from version and id")
   public ResponseEntity<StreamingResponseBody> downloadZipArtifact(
-      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, description = "Product id", example = "demos") String id,
+      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, description = "Product id",
+          example = "demos") String id,
       @PathVariable(value = VERSION) @Parameter(in = ParameterIn.PATH, description = "Release version",
           example = "10.0") String version,
       @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.PATH, description = "Artifact id", example =
@@ -230,8 +233,8 @@ public class ProductDetailsController {
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
-              methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion(), version)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+              product.getBestMatchVersion(), version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));
@@ -241,9 +244,9 @@ public class ProductDetailsController {
     ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     selfLinkWithVersion = switch (path) {
       case BEST_MATCH_BY_ID_AND_VERSION ->
-              methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case BY_ID_AND_VERSION ->
-              methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
     return linkTo(selfLinkWithVersion).withSelfRel();

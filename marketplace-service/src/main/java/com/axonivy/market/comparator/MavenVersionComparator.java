@@ -11,7 +11,7 @@ import static com.axonivy.market.constants.MavenConstants.MAIN_VERSION_REGEX;
 import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-public class MavenVersionComparator {
+public final class MavenVersionComparator {
   private static final Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final int GREATER_THAN = 1;
@@ -60,7 +60,7 @@ public class MavenVersionComparator {
     String[] parts2 = MAIN_VERSION_PATTERN.split(otherMainVersion);
 
     int length = Math.max(parts1.length, parts2.length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       int num1 = parseToNumber(parts1, i);
       int num2 = parseToNumber(parts2, i);
       if (num1 != num2) {

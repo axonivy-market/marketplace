@@ -11,7 +11,6 @@ import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -41,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -190,7 +188,7 @@ public class FeedbackController {
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
-  private void addModelLinks(FeedbackModel model, Feedback feedback){
+  private static void addModelLinks(FeedbackModel model, Feedback feedback){
     model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
   }
 }

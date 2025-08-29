@@ -28,7 +28,7 @@ public class MarketApiDocumentConfig {
         .pathsToMatch(PATH_PATTERN).build();
   }
 
-  private OpenApiCustomizer customMarketHeaders() {
+  private static OpenApiCustomizer customMarketHeaders() {
     return openApi -> openApi.getPaths().values()
         .forEach(MarketApiDocumentConfig::addHeaderParameters);
   }

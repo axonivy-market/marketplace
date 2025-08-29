@@ -59,7 +59,7 @@ public class OAuth2Controller {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
           gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
-      GithubUser githubUser = gitHubService.getAndUpdateUser(accessToken);
+      var githubUser = gitHubService.getAndUpdateUser(accessToken);
       String jwtToken = jwtService.generateToken(githubUser, accessToken);
       return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
     } catch (Oauth2ExchangeCodeException e) {
