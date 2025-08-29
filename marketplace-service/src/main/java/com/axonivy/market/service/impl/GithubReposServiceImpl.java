@@ -5,6 +5,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.BuildInformation;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -31,13 +32,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
 import static com.axonivy.market.enums.WorkFlowType.*;
-import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +78,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       if (githubRepoOptional.isPresent()) {
         githubRepo = githubRepoOptional.get();
         githubRepo.getTestSteps().clear();
+//        githubRepo.getWorkflows().clear();
         githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
       } else {
         githubRepo = from(ghRepo);
@@ -93,8 +94,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowConclusion(dbRepo, workflowType, run);
-        updateLastBuilt(run, dbRepo, workflowType);
+        updateBuildInfo(dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -107,38 +107,18 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private void updateWorkflowConclusion(GithubRepo dbRepo, WorkFlowType workflowType, GHWorkflowRun ghWorkflowRun){
-    switch (workflowType) {
-      case CI:
-        dbRepo.setCiConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
-        break;
-      case DEV:
-        dbRepo.setDevConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
-        break;
-      case E2E:
-        dbRepo.setE2eConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
-        break;
-      default:
-        break;
-    }
-  }
-
-  private static void updateLastBuilt(GHWorkflowRun run, GithubRepo dbRepo, WorkFlowType workflowType)
+  private void updateBuildInfo(GithubRepo dbRepo, WorkFlowType workflowType, GHWorkflowRun ghWorkflowRun)
       throws IOException {
-    Date lastBuilt = run.getCreatedAt();
-    switch (workflowType) {
-      case CI:
-        dbRepo.setCiLastBuilt(lastBuilt);
-        break;
-      case DEV:
-        dbRepo.setDevLastBuilt(lastBuilt);
-        break;
-      case E2E:
-        dbRepo.setE2eLastBuilt(lastBuilt);
-        break;
-      default:
-        break;
+    if (dbRepo.getWorkflows() == null) {
+      dbRepo.setWorkflows(new HashMap<>());
     }
+
+    BuildInformation buildInfo = dbRepo.getWorkflows()
+        .computeIfAbsent(WorkFlowType.valueOf(workflowType.name()), k -> new BuildInformation());
+
+    buildInfo.setLastBuilt(ghWorkflowRun.getCreatedAt());
+    buildInfo.setConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
+    buildInfo.setLastBuiltRun(ghWorkflowRun.getHtmlUrl().toString());
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,

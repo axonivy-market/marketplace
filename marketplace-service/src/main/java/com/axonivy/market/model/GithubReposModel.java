@@ -1,11 +1,13 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.enums.WorkFlowType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 
@@ -25,31 +27,29 @@ public class GithubReposModel {
   @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
   private String htmlUrl;
 
-  @Schema(description = "Main programming language used", example = "Java")
-  private String language;
-
-  @Schema(description = "Last CI built", example = "2025-07-14T10:35:00Z")
-  private Date ciLastBuilt;
-
-  @Schema(description = "Last DEV built", example = "2025-07-14T10:35:00Z")
-  private Date devLastBuilt;
-
-  @Schema(description = "Last E2E built", example = "2025-07-14T10:35:00Z")
-  private Date e2eLastBuilt;
-
-  @Schema(description = "Last CI result", example = "SUCCESS")
-  private String ciConclusion;
-
-  @Schema(description = "Last DEV result", example = "SUCCESS")
-  private String devConclusion;
-
-  @Schema(description = "Last E2E result", example = "SUCCESS")
-  private String e2eConclusion;
-  private BuildInformation ciBuild;
-
-  private BuildInformation devBuild;
-
-  private BuildInformation e2eBuild;
+  @Schema(
+      example = """
+            {
+              "CI":
+                "lastBuilt": "2025-08-28 04:25:24.000",
+                "conclusion": "success",
+                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+            },
+            {
+              "DEV":
+                "lastBuilt": "2025-08-28 04:25:24.000",
+                "conclusion": "success",
+                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+            },
+            {
+              "E2E":
+                "lastBuilt": "2025-08-28 04:25:24.000",
+                "conclusion": "success",
+                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+            }
+          """
+  )
+  private Map<WorkFlowType, BuildInformation> workflows;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
@@ -77,17 +77,9 @@ public class GithubReposModel {
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
-        .ciLastBuilt(githubRepo.getCiLastBuilt())
-        .devLastBuilt(githubRepo.getDevLastBuilt())
-        .e2eLastBuilt(githubRepo.getE2eLastBuilt())
-        .ciConclusion(githubRepo.getCiConclusion())
-        .devConclusion(githubRepo.getDevConclusion())
-        .e2eConclusion(githubRepo.getE2eConclusion())
-        .ciBuild(githubRepo.getCiBuild())
-        .devBuild(githubRepo.getDevBuild())
-        .e2eBuild(githubRepo.getE2eBuild())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
+        .workflows(githubRepo.getWorkflows())
         .build();
   }
 }

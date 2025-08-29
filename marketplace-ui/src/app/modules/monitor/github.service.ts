@@ -5,14 +5,15 @@ import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
   htmlUrl: string;
-  ciLastBuilt: Date;
-  devLastBuilt: Date;
-  e2eLastBuilt: Date;
   focused: boolean;
-  ciConclusion: string;
-  devConclusion: string;
-  e2eConclusion: string;
+  workflows: { [key: string]: BuildInformation };
   testResults: TestResult[];
+}
+
+export interface BuildInformation {
+  lastBuilt: Date;
+  conclusion: string;
+  lastBuiltRun: string;
 }
 
 export interface TestResult {

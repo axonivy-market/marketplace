@@ -12,7 +12,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from "../../product/product-filter/product-filter.component";
 import { RepoTestResultComponent } from "../repo-test-result/repo-test-result.component";
-import { ASCENDING, DEFAULT_MODE, DESCENDING, MARKET_BASE_URL, REPORT_MODE } from '../../../shared/constants/common.constant';
+import { ASCENDING, CI_BUILD, DEFAULT_MODE, DESCENDING, DEV_BUILD, E2E_BUILD, MARKET_BASE_URL, REPORT_MODE } from '../../../shared/constants/common.constant';
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
@@ -43,6 +43,7 @@ export class MonitoringRepoComponent {
   @Output() searchChange = new EventEmitter<string>();
 
   mode: Record<string, RepoMode> = {};
+  workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
   searchText = '';
   page = 1;
   pageSize = 10;
@@ -71,7 +72,6 @@ export class MonitoringRepoComponent {
 
   onSearchChanged(searchString: string) {
     this.searchText = searchString;
-    this.page = 1;
     this.applyFilter(searchString);
   }
 
@@ -93,33 +93,42 @@ export class MonitoringRepoComponent {
     this.displayedRepositories = this.filteredRepositories.slice(start, end);
   }
 
-  getTestResultsForWorkflow(repo: Repository, workflow: string) {
-    return repo.testResults.find(build => build.workflow === workflow);
-  }
-
   getMarketUrl(repoName: string): string {
     return `${MARKET_BASE_URL}${encodeURIComponent(repoName)}`;
   }
 
-  sortRepositoriesByColumn(column: keyof Repository) {
-  if (this.sortColumn === column) {
-    this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
-  } else {
-    this.sortColumn = column;
-    this.sortDirection = ASCENDING;
+  sortRepositoriesByColumn(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = ASCENDING;
+    }
+
+    this.filteredRepositories.sort((repo1, repo2) => {
+      const firstValue = this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
+      const secondValue = this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
+
+      if (firstValue < secondValue) return this.sortDirection === ASCENDING ? -1 : 1;
+      if (firstValue > secondValue) return this.sortDirection === ASCENDING ? 1 : -1;
+      return 0;
+    });
+
+    this.refreshPagination();
   }
 
-  this.filteredRepositories.sort((repo1, repo2) => {
-    const firstValue = (repo1[column] ?? '').toString().toLowerCase();
-    const secondValue = (repo2[column] ?? '').toString().toLowerCase();
-
-    if (firstValue < secondValue) return this.sortDirection === ASCENDING ? -1 : 1;
-    if (firstValue > secondValue) return this.sortDirection === ASCENDING ? 1 : -1;
-    return 0;
-  });
-
-  this.refreshPagination();
-}
+  private getColumnValue(repo: any, column: string): string | undefined {
+    switch (column) {
+      case CI_BUILD:
+        return repo.workflows[CI_BUILD]?.conclusion;
+      case DEV_BUILD:
+        return repo.workflows[DEV_BUILD]?.conclusion;
+      case E2E_BUILD:
+        return repo.workflows[E2E_BUILD]?.conclusion;
+      default:
+        return repo[column];
+    }
+  }
 
   getSortIcon(column: string): string {
     if (this.sortColumn !== column) {

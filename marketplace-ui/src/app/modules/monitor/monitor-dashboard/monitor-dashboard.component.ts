@@ -56,20 +56,20 @@ export class MonitoringDashboardComponent implements OnInit {
         'common.monitor.dashboard.pageTitle'
       );
     } else {
-      this.loading = false;
+      this.isLoading = false;
     }
   }
 
   loadRepositories(): void {
-    this.loading = true;
+    this.isLoading = true;
     this.githubService.getRepositories().subscribe({
       next: data => {
         this.repositories.set(data);
-        this.loading = false;
+        this.isLoading = false;
       },
       error: err => {
         this.error = err.message;
-        this.loading = false;
+        this.isLoading = false;
       }
     });
   }
