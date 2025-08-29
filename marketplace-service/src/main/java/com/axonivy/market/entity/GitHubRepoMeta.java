@@ -8,16 +8,24 @@ import lombok.Setter;
 
 import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @Entity
 @Table(name = GH_REPO_META)
 public class GitHubRepoMeta extends AuditableEntity<String> {
+
+  @Serial
+  private static final long serialVersionUID = 1;
+
   @Id
   private String repoURL;
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
+
+  public GitHubRepoMeta() {}
 
   @Override
   public String getId() {

@@ -23,6 +23,6 @@ public enum ErrorCode {
       "FEEDBACK_SORT_INVALID"), INTERNAL_EXCEPTION("5000", "INTERNAL_EXCEPTION"),
   GITHUB_REPOSITORY_NOT_FOUND("0202", "GITHUB_REPOSITORY_NOT_FOUND");
 
-  String code;
-  String helpText;
+  private String code;
+  private String helpText;
 }

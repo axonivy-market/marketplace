@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -27,6 +28,9 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @Entity
 @Table(name = METADATA)
 public class Metadata extends GenericEntity<String> {
+
+  @Serial
+  private static final long serialVersionUID = 1;
 
   @Id
   private String url;
