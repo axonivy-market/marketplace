@@ -5,8 +5,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serial;
+
 @MappedSuperclass
 public class AuditableIdEntity extends AuditableEntity<String> {
+
+  @Serial
+  private static final long serialVersionUID = 1;
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;

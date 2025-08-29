@@ -36,8 +36,8 @@ import java.util.stream.IntStream;
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
   private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
-  private static final int MIN_STAR_RATING = 1;
-  private static final int MAX_STAR_RATING = 5;
+  private static final int MIN_STAR = 1;
+  private static final int MAX_STAR = 5;
   private static final int MAX_PERCENT = 100;
   private final FeedbackRepository feedbackRepository;
   private final GithubUserRepository githubUserRepository;
@@ -225,13 +225,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
-      return IntStream.rangeClosed(MIN_STAR_RATING, MAX_STAR_RATING).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
+      return IntStream.rangeClosed(MIN_STAR, MAX_STAR).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
     }
 
     Map<Integer, Long> ratingCountMap = feedbacks.stream()
         .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
 
-    return IntStream.rangeClosed(MIN_STAR_RATING, MAX_STAR_RATING).mapToObj(star -> {
+    return IntStream.rangeClosed(MIN_STAR, MAX_STAR).mapToObj((int star) -> {
       long count = ratingCountMap.getOrDefault(star, 0L);
       int percent = (int) ((count * MAX_PERCENT) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);

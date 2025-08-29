@@ -88,7 +88,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
 
-  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+  private static List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
     List<GHContent> images = new ArrayList<>();
     GitHubUtils.findImages(productFolderContents, images);
     return images;

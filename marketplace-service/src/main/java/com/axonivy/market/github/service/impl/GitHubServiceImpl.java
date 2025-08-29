@@ -272,7 +272,7 @@ public class GitHubServiceImpl implements GitHubService {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        alerts -> {
+        (List<Map<String, Object>> alerts) -> {
           var dependabot = new Dependabot();
           Map<String, Integer> severityMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
@@ -296,7 +296,7 @@ public class GitHubServiceImpl implements GitHubService {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        alerts -> {
+        (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
           secretScanning.setNumberOfAlerts(alerts.size());
           return secretScanning;
@@ -310,7 +310,7 @@ public class GitHubServiceImpl implements GitHubService {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        alerts -> {
+        (List<Map<String, Object>> alerts) -> {
           var codeScanning = new CodeScanning();
           Map<String, Integer> codeScanningMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
@@ -378,7 +378,8 @@ public class GitHubServiceImpl implements GitHubService {
       PagedIterable<GHRelease> ghReleasePagedIterable,
       Pageable pageable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
-    List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
+    List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(
+        ghRelease -> !ghRelease.isDraft()).toList();
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
       for (GHRelease ghRelease : ghReleases) {
@@ -389,7 +390,8 @@ public class GitHubServiceImpl implements GitHubService {
     return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
   }
 
-  public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, String latestGitHubReleaseName) throws IOException {
+  public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product,
+      String latestGitHubReleaseName) throws IOException {
     var gitHubReleaseModel = new GitHubReleaseModel();
     String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
     gitHubReleaseModel.setBody(modifiedBody);
@@ -403,7 +405,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product,
+      Long releaseId) throws IOException {
     var ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease.getName());

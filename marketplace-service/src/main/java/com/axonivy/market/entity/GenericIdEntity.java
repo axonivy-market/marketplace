@@ -17,7 +17,9 @@ public class GenericIdEntity extends GenericEntity<String> {
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
-  public GenericIdEntity() {}
+  public GenericIdEntity() {
+    // Default constructor required by JPA
+  }
 
   @Override
   public String getId() {

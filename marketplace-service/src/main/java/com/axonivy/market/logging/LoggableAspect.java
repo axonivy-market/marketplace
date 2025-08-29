@@ -41,7 +41,7 @@ public class LoggableAspect {
     ServletRequestAttributes attributes =
         (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {
-      Method method = signature.getMethod();
+      var method = signature.getMethod();
       HttpServletRequest request = attributes.getRequest();
       Map<String, String> headersMap = extractHeaders(request, method, joinPoint);
       saveLogToDailyFile(headersMap);
@@ -70,9 +70,9 @@ public class LoggableAspect {
   // Use synchronized to prevent race condition
   private synchronized void saveLogToDailyFile(Map<String, String> headersMap) {
     try {
-      File logFile = createFile(generateFileName());
+      var logFile = createFile(generateFileName());
 
-      StringBuilder content = new StringBuilder();
+      var content = new StringBuilder();
       if (logFile.exists()) {
         content.append(new String(Files.readAllBytes(logFile.toPath())));
       }

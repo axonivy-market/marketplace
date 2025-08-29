@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -28,6 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
+  private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   public static long getGHCommitDate(GHCommit commit) {
     var commitTime = 0L;
@@ -75,7 +77,7 @@ public class GitHubUtils {
     for (GHContent file : files) {
       if (file.isDirectory()) {
         findImagesInDirectory(file, images);
-      } else if (file.getName().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)) {
+      } else if (IMAGE_EXTENSION_PATTERN.matcher(file.getName()).matches()) {
         images.add(file);
       }
     }

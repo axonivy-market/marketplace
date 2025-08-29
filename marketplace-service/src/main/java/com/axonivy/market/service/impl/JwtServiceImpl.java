@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Component
 public class JwtServiceImpl implements JwtService {
-  private static final int TOKEN_EXPIRE_DURATION = 86400000;
+  private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
 
   @Value("${jwt.secret}")
   private String secret;

@@ -25,7 +25,9 @@ public class GitHubRepoMeta extends AuditableEntity<String> {
   private Long lastChange;
   private String lastSHA1;
 
-  public GitHubRepoMeta() {}
+  public GitHubRepoMeta() {
+    // Default constructor required by JPA
+  }
 
   @Override
   public String getId() {
