@@ -156,7 +156,12 @@ public class ProductDetailsController {
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY,
           example = "ivy-demos-app.zip") String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
-    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+    HttpStatusCode statusCode;
+    if(StringUtils.isBlank(downloadUrl)) {
+      statusCode = HttpStatus.NOT_FOUND;
+    } else {
+      statusCode = HttpStatus.OK;
+    }
     return new ResponseEntity<>(downloadUrl, statusCode);
   }
 
@@ -232,7 +237,7 @@ public class ProductDetailsController {
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
-      Link link = linkTo(
+      var link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId,
               product.getBestMatchVersion(), version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
