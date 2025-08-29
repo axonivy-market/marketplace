@@ -30,7 +30,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
       HttpStatusCode status, WebRequest request) {
-    BindingResult bindingResult = ex.getBindingResult();
+    var bindingResult = ex.getBindingResult();
     List<String> errors = new ArrayList<>();
     if (bindingResult.hasErrors()) {
       for (FieldError fieldError : bindingResult.getFieldErrors()) {

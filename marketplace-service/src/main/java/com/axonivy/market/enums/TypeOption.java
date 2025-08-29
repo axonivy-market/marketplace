@@ -15,7 +15,9 @@ public enum TypeOption {
   private final String code;
 
   public static TypeOption of(String option) {
-    option = StringUtils.isBlank(option) ? option : option.trim();
+    if (!StringUtils.isBlank(option)) {
+      option = option.trim();
+    }
     for (var filter : values()) {
       if (StringUtils.equalsIgnoreCase(filter.option, option)) {
         return filter;

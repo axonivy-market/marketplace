@@ -63,12 +63,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
-          String readmeContents = new String(readmeFile.read().readAllBytes());
+          var readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
 
-          ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+          var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
 
           ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
         }

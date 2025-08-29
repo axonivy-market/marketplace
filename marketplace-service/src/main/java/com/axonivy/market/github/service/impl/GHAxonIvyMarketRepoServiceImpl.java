@@ -9,6 +9,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHCommit.File;
 import org.kohsuke.github.GHCommitQueryBuilder;
 import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
@@ -57,7 +58,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return ghContentMap;
   }
 
-  private void extractFileInDirectoryContent(GHContent content, Map<String, List<GHContent>> ghContentMap)
+  private static void extractFileInDirectoryContent(GHContent content, Map<String, List<GHContent>> ghContentMap)
       throws IOException {
     if (content != null && content.isDirectory()) {
       for (var childContent : GitHubUtils.mapPagedIteratorToList(content.listDirectoryContent())) {
@@ -101,7 +102,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         if (listFiles == null) {
           continue;
         }
-        GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
+        GitHubUtils.mapPagedIteratorToList(listFiles).forEach((File file) -> {
           String fullPathName = file.getFileName();
           if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(marketRepo)) {
             var gitHubFile = new GitHubFile();

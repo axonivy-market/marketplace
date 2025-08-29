@@ -21,11 +21,11 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
-  static final String PROJECT_VERSION = "${project.version}";
+  private static final String PROJECT_VERSION = "${project.version}";
   // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
-  static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
+  private static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
   // The arrays of all operators can appear in maven range version format
-  static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
+  private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
@@ -34,7 +34,10 @@ public class VersionFactory {
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
       var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, EMPTY);
       String[] parts = plainVersions.split(CommonConstants.COMMA);
-      return parts.length > 1 ? parts[1].trim() : parts[0].trim();
+      if(parts.length > 1) {
+        return parts[1].trim();
+      }
+      return parts[0].trim();
     }
     return defaultVersion;
   }
@@ -91,7 +94,9 @@ public class VersionFactory {
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    return CollectionUtils.isEmpty(releaseVersions) ? version : releaseVersions.stream().filter(
-        ver -> ver.startsWith(version)).findAny().orElse(version);
+    if(CollectionUtils.isEmpty(releaseVersions)) {
+      return version;
+    }
+    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(version);
   }
 }

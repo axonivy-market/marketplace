@@ -78,8 +78,13 @@ public class ProductFactory {
     product.setCost(
         StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     extractSourceUrl(product, meta);
-    List<Artifact> artifacts = CollectionUtils.isEmpty(
-        meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
+
+    List<Artifact> artifacts;
+    if (CollectionUtils.isEmpty(meta.getMavenArtifacts())) {
+      artifacts = new ArrayList<>();
+    } else {
+      artifacts = meta.getMavenArtifacts();
+    }
 
     for (Artifact artifact : artifacts) {
       artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId()));
