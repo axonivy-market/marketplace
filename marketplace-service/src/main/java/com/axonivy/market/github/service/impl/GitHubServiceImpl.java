@@ -22,10 +22,12 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -364,31 +366,42 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GitHubReleaseModel> getGitHubReleaseModels(Product product,
-      PagedIterable<GHRelease> ghReleasePagedIterable,
+  public Page<GitHubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
       Pageable pageable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
-      for (GHRelease ghRelease : ghReleases) {
-        gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
+      for (GHRelease ghRelease : getReleasesPage(ghReleases, pageable.getPageNumber(), pageable.getPageSize())) {
+        gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
+            StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
 
     return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
   }
 
-  public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, String latestGitHubReleaseName) throws IOException {
+  public List<GHRelease> getReleasesPage(List<GHRelease> ghReleases, int pageNumber, int pageSize) {
+    int start = pageNumber * pageSize;
+    int end = Math.min(start + pageSize, ghReleases.size());
+
+    if (start >= ghReleases.size()) {
+      return Collections.emptyList();
+    }
+
+    return ghReleases.subList(start, end);
+  }
+
+  public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease,  String productSourceUrl, String productId,
+      Boolean isLatestGitHubReleaseName) throws IOException {
     GitHubReleaseModel gitHubReleaseModel = new GitHubReleaseModel();
-    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
+    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
     gitHubReleaseModel.setBody(modifiedBody);
     gitHubReleaseModel.setName(ghRelease.getName());
     gitHubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
     gitHubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
-    gitHubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
-    gitHubReleaseModel.setLatestRelease(ghRelease.getName().equals(latestGitHubReleaseName));
-
+    gitHubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghRelease));
+    gitHubReleaseModel.setLatestRelease(isLatestGitHubReleaseName);
     return gitHubReleaseModel;
   }
 
@@ -396,7 +409,8 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
-    return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease.getName());
+    return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
+        StringUtils.equals(githubLatestRelease.getName(), ghRelease.getName()));
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {

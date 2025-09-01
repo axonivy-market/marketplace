@@ -566,7 +566,7 @@ class GitHubServiceImplTest {
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
       when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
       when(mockLatestRelease.getName()).thenReturn(mockVersion);
-      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
+      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct.getSourceUrl(), mockProduct.getId(), mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
       Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
 
@@ -602,7 +602,7 @@ class GitHubServiceImplTest {
       when(mockRelease.getPublished_at()).thenReturn(new Date());
       when(mockRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
+      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct.getSourceUrl(), mockProduct.getId(), mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
       GitHubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
 
@@ -641,7 +641,7 @@ class GitHubServiceImplTest {
       when(mockGhRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
 
-      GitHubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, mockLatestRelease.getName());
+      GitHubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct.getSourceUrl(), mockProduct.getId(), mockLatestRelease.getName());
 
       assertNotNull(result);
       assertEquals("v1.0.0", result.getName());

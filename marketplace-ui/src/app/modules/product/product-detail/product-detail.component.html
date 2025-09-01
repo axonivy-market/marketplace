@@ -191,7 +191,7 @@
                   } @else if (displayedTab.value === 'changelog') {
                     <div ngbAccordion>
                       @for (productReleaseSafeHtml of productReleaseSafeHtmls; track productReleaseSafeHtml.name) {
-                        <div ngbAccordionItem [collapsed]="!productReleaseSafeHtml.isLatestRelease" class="changelog-container mb-5 p-4">
+                        <div ngbAccordionItem [collapsed]="false" class="changelog-container mb-5 p-4">
                           <div ngbAccordionHeader>
                             <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
                               <h1><a class="me-4 release-name" [href]="productReleaseSafeHtml.htmlUrl" target="_blank"
@@ -208,8 +208,7 @@
                         </div>
                       }
                     </div>
-                  }
-                  @else {
+                  } @else {
                     <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
                   }
                 </div>

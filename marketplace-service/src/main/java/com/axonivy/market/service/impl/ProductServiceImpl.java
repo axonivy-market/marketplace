@@ -54,6 +54,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -700,7 +701,6 @@ public class ProductServiceImpl implements ProductService {
         .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductByIdAndRelatedData(productId);
@@ -708,12 +708,16 @@ public class ProductServiceImpl implements ProductService {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
+    PagedIterable<GHRelease> ghReleasePagedIterable =  getRepoRelease(product.getRepositoryName());
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
+  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
+  private PagedIterable<GHRelease>  getRepoRelease(String repoName) throws IOException {
+    return this.gitHubService.getRepository(repoName).listReleases();
+  }
 
-  @CachePut(value = "GithubPublicReleasesCache", key="{#productId}")
+  @CacheEvict(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
