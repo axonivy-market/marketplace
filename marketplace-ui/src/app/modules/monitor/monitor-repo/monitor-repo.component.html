@@ -64,9 +64,11 @@
     <tbody>
       <tr *ngFor="let repo of displayedRepositories">
         <td class="align-middle">
+          <p class="name">
           <a id="product-name" [href]="getMarketUrl(repo.name)" target="_blank" rel="noopener noreferrer">
-            <p class="name">{{ repo.name }}</p>
+            {{ repo.name }}
           </a>
+          </p>
         </td>
         <td *ngFor="let wf of repo.workflowInformation">
           <app-repo-test-result [workflowType]="wf.workflowType" [workflowInfo]="wf" [repository]="repo"

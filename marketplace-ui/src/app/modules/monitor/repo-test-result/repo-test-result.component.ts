@@ -29,14 +29,19 @@ export class RepoTestResultComponent {
   languageService = inject(LanguageService);
   router = inject(Router);
 
-    getConclusionKey(conclusion?: string): string {
+  getConclusionKey(conclusion?: string): string {
     return (conclusion || '').toLowerCase();
   }
 
   onBadgeClick(repo: string, workflowType: string, mode: string = DEFAULT_MODE) {
-    if(mode == REPORT_MODE) {
+    if (mode == REPORT_MODE) {
       this.router.navigate(['/monitoring', repo, workflowType]);
+      return;
     }
-// this.router.navigate(this.workflow.lastBuiltRun);
+
+    const lastBuiltUrl = this.workflowInfo?.lastBuiltRun;
+    if (lastBuiltUrl) {
+      window.open(lastBuiltUrl, '_blank');
+    }
   }
 }

@@ -77,7 +77,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     if (githubRepoOptional.isPresent()) {
       githubRepo = githubRepoOptional.get();
       githubRepo.getTestSteps().clear();
-      githubRepo.getWorkflows().clear();
+      githubRepo.getWorkflowInformation().clear();
       githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
     } else {
       githubRepo = from(ghRepo);
@@ -107,13 +107,13 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   private void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
-    WorkflowInformation workflowInformation = repo.getWorkflows().stream()
+    WorkflowInformation workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
         .findFirst()
         .orElseGet(() -> {
           WorkflowInformation newBuild = new WorkflowInformation();
           newBuild.setWorkflowType(workflowType);
-          repo.getWorkflows().add(newBuild);
+          repo.getWorkflowInformation().add(newBuild);
           return newBuild;
         });
 

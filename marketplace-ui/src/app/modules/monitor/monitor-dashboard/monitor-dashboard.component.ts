@@ -23,9 +23,6 @@ import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component"
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
-  loading = true;
-  error = '';
-  isReloading = false;
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   translateService = inject(TranslateService);
@@ -34,6 +31,9 @@ export class MonitoringDashboardComponent implements OnInit {
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
 
+  loading = true;
+  error = '';
+  isReloading = false;
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = 'focused';
   isLoading = false;
@@ -56,9 +56,9 @@ export class MonitoringDashboardComponent implements OnInit {
     this.isLoading = true;
     this.githubService.getRepositories().subscribe({
       next: data => {
+        data.sort((repo1, repo2) => repo1.name.localeCompare(repo2.name));
         this.repositories.set(data);
         this.isLoading = false;
-        console.log(data);
       },
       error: err => {
         this.error = err.message;

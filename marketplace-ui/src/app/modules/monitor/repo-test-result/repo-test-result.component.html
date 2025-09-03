@@ -1,11 +1,9 @@
-
-  @if (workflowInfo && badges[workflowInfo.conclusion]) {
-    <img [src]="badges[workflowInfo.conclusion].src"
-    [alt]="badges[workflowInfo.conclusion].alt" width="72" height="50"
-         (click)="onBadgeClick(repository.name, workflowType)" />
-    <span class="built-date text-muted px-2 align-middle">
-      {{ workflowInfo.lastBuilt | date: 'short' }}
-    </span>
+@if (workflowInfo && badges[workflowInfo.conclusion]) {
+  <img class="badge-image" [src]="badges[workflowInfo.conclusion].src" [alt]="badges[workflowInfo.conclusion].alt" width="72" height="50"
+    (click)="onBadgeClick(repository.name, workflowType)" />
+  <span class="built-date text-muted px-2 align-middle">
+    {{ workflowInfo.lastBuilt | date: 'short' }}
+  </span>
 }
 
 @if (mode === 'report') {

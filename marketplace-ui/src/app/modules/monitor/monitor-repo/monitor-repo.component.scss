@@ -1,5 +1,26 @@
 .table {
   margin-top: 2.5rem;
+  border-collapse: collapse;
+  width: auto;
+
+  th {
+    position: relative;
+    border-right: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 25%;
+      bottom: 25%;
+      right: 0;
+      width: 1px;
+      background: var(--monitoring-border-color);
+    }
+  }
+
+  th:last-child::after {
+      content: none;
+    }
 }
 
 .feature-bar {
@@ -61,15 +82,15 @@
   line-height: 140%;
 }
 
-#product-name {
-  color: var(--ivy-primary-bg);
-  text-decoration-color: var(--ivy-primary-bg);
-  text-underline-offset: 2px;
-  cursor: unset;
+.name {
+  width: fit-content;
+  cursor: pointer;
 
-  .name {
-    width: fit-content;
-    cursor: pointer;
+  #product-name {
+    color: var(--ivy-primary-bg);
+    text-decoration-color: var(--ivy-primary-bg);
+    text-underline-offset: 2px;
+    cursor: unset;
   }
 }
 

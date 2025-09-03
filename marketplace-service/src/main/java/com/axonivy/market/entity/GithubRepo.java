@@ -54,7 +54,7 @@ public class GithubRepo extends GenericIdEntity {
   private String e2eConclusion;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
-  private List<WorkflowInformation> workflows;
+  private List<WorkflowInformation> workflowInformation;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
@@ -64,7 +64,7 @@ public class GithubRepo extends GenericIdEntity {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
-        .workflows(new ArrayList<>())
+        .workflowInformation(new ArrayList<>())
         .testSteps(new ArrayList<>())
         .build();
   }

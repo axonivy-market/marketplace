@@ -106,6 +106,7 @@ p {
   --monitoring-toggle-button-border: #96C4D4;
   --monitoring-toggle-button-bg: #E6F1F5;
   --monitoring-toggle-button-text: #007095;
+  --monitoring-border-color: #E7E7E7;
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -235,6 +236,7 @@ p {
   --monitoring-toggle-button-border: #7E7E7E;
   --monitoring-toggle-button-bg: #333333;
   --monitoring-toggle-button-text: #FAFAFA;
+  --monitoring-border-color: #4F4E4E;
 
   a {
     color: #{$white};

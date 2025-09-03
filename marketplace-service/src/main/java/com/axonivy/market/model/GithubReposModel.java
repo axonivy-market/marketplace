@@ -51,7 +51,7 @@ public class GithubReposModel {
             }
           """
   )
-  private List<WorkflowInformation> workflows;
+  private List<WorkflowInformation> workflowInformation;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
@@ -81,7 +81,7 @@ public class GithubReposModel {
         .htmlUrl(githubRepo.getHtmlUrl())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
-        .workflows(githubRepo.getWorkflows())
+        .workflowInformation(githubRepo.getWorkflowInformation())
         .build();
   }
 }

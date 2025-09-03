@@ -11,7 +11,6 @@ import {
   NgbPaginationModule,
   NgbTypeaheadModule
 } from '@ng-bootstrap/ng-bootstrap';
-import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FormsModule } from '@angular/forms';
@@ -62,8 +61,8 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   searchText = '';
   page = 1;
   pageSize = 10;
-  sortColumn: string = '';
-  sortDirection: typeof ASCENDING | typeof DESCENDING = ASCENDING;
+  sortColumn = 'name';
+  sortDirection = ASCENDING;
   allRepositories: Repository[] = [];
   filteredRepositories: Repository[] = [];
   displayedRepositories: Repository[] = [];
