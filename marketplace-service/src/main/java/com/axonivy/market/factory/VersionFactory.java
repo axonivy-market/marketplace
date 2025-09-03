@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -23,7 +24,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class VersionFactory {
   private static final String PROJECT_VERSION = "${project.version}";
   // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
-  private static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
+  private static final Pattern RANGE_VERSION_PATTERN = Pattern.compile("[\\[\\]()]");
   // The arrays of all operators can appear in maven range version format
   private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
 
@@ -32,7 +33,7 @@ public class VersionFactory {
       return defaultVersion;
     }
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
-      var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, EMPTY);
+      var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
       String[] parts = plainVersions.split(CommonConstants.COMMA);
       if(parts.length > 1) {
         return parts[1].trim();
