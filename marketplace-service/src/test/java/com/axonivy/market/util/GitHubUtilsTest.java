@@ -16,12 +16,15 @@ class GitHubUtilsTest extends BaseSetup {
   @Test
   void testSortMetaJsonFirst() {
     int result = GitHubUtils.sortMetaJsonFirst(META_FILE, LOGO_FILE);
-    Assertions.assertEquals(-1, result);
+    Assertions.assertEquals(-1, result,
+        "meta.json file comes first if first argument is meta.json file");
 
     result = GitHubUtils.sortMetaJsonFirst(LOGO_FILE, META_FILE);
-    Assertions.assertEquals(1, result);
+    Assertions.assertEquals(1, result,
+        "meta.json file comes first if second argument is meta.json file");
 
     result = GitHubUtils.sortMetaJsonFirst(LOGO_FILE, LOGO_FILE);
-    Assertions.assertEquals(0, result);
+    Assertions.assertEquals(0, result,
+        "Resolve to sorting alphabetically if none are meta.json files");
   }
 }
