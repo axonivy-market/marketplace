@@ -65,12 +65,13 @@ public class OAuth2Controller {
       String jwtToken = jwtService.generateToken(githubUser, accessToken);
       return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
     } catch (Oauth2ExchangeCodeException e) {
-      log.error("Error getting authentication token: ", e);
+      log.error("Login Github failed: ", e);
       Map<String, String> errorResponse = new HashMap<>();
       errorResponse.put(CommonConstants.ERROR, e.getError());
       errorResponse.put(CommonConstants.MESSAGE, e.getErrorDescription());
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
+      log.error("Error getting authentication token: ", e);
       return new ResponseEntity<>(Map.of(CommonConstants.MESSAGE, e.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
