@@ -184,7 +184,8 @@ class MavenUtilsTest extends BaseSetup {
   @Test
   void testExtractMetaDataFromArchivedArtifacts() {
     Set<Metadata> results = MavenUtils.extractMetaDataFromArchivedArtifacts(MOCK_PRODUCT_ID, new Artifact());
-    Assertions.assertTrue(CollectionUtils.isEmpty(results));
+    Assertions.assertTrue(CollectionUtils.isEmpty(results),
+        "Metadata from archived artifacts should be empty");
     Artifact mockArtifact = getMockArtifact();
     ArchivedArtifact mockArchivedArtifact = new ArchivedArtifact();
     mockArchivedArtifact.setArtifactId("octopus-test");
@@ -230,7 +231,8 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testExtractedContentStream() throws IOException {
-    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INVALID_FILE_PATH)));
+    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INVALID_FILE_PATH)),
+        "Content stream should be null if file path is invalid");
     InputStream expectedResult = IOUtils.toInputStream(getMockSnapShotMetadataContent(), StandardCharsets.UTF_8);
     InputStream result = MavenUtils.extractedContentStream(Path.of(MOCK_SNAPSHOT_METADATA_FILE_PATH));
     Assertions.assertNotNull(result,
@@ -278,7 +280,8 @@ class MavenUtilsTest extends BaseSetup {
   @Test
   void testGetDefaultMirrorMavenRepo() {
     String result = MavenUtils.getDefaultMirrorMavenRepo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, result);
+    Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, result,
+        "Default mirror maven repo should match default ivy mirror maven base URL");
     final String ivyRepoUrl = "https://oss.sonatype.org/content/repositories/releases";
     result = MavenUtils.getDefaultMirrorMavenRepo(ivyRepoUrl);
     Assertions.assertEquals(ivyRepoUrl, result,
