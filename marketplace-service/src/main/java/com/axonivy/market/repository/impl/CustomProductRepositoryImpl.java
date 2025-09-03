@@ -91,9 +91,14 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     PageRequest pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(
-        criteriaContext.builder(),
-        searchCriteria);
+    long total;
+    if (resultList.size() < pageable.getPageSize()) {
+      total = resultList.size();
+    } else {
+      total = getTotalCount(
+          criteriaContext.builder(),
+          searchCriteria);
+    }
 
     return new PageImpl<>(resultList, pageable, total);
   }
