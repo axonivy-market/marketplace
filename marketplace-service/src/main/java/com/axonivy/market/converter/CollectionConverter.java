@@ -18,8 +18,10 @@ public abstract class CollectionConverter<T extends Collection<String>> implemen
 
   @Override
   public String convertToDatabaseColumn(T collection) {
-    return (collection != null && !collection.isEmpty()) ?
-        collection.stream().map(String::trim).collect(Collectors.joining(COMMA)) : Strings.EMPTY;
+    if(collection != null && !collection.isEmpty()) {
+      return collection.stream().map(String::trim).collect(Collectors.joining(COMMA));
+    }
+    return Strings.EMPTY;
   }
 
   @Override
