@@ -91,14 +91,15 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     PageRequest pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(criteriaContext.builder(),
+    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(
+        criteriaContext.builder(),
         searchCriteria);
 
     return new PageImpl<>(resultList, pageable, total);
   }
 
   private List<Order> sortByOrders(
-          CriteriaQueryContext<Product> criteriaContext,
+      CriteriaQueryContext<Product> criteriaContext,
       PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
@@ -117,12 +118,13 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   }
 
   private List<Order> sortByStandard(
-          CriteriaQueryContext<Product> criteriaContext, String language
+      CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
     List<Order> orders = new ArrayList<>();
     Order order = criteriaContext.builder().desc(
-            criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
+        criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER),
+            Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
@@ -136,15 +138,15 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   }
 
   private Order sortByPopularity(
-          CriteriaQueryContext<Product> criteriaContext) {
+      CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(INSTALLATION_COUNT));
   }
 
   private Order sortByAlphabet(
-          CriteriaQueryContext<Product> criteriaContext, String language
+      CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
     Expression<Object> nameValue = criteriaContext.builder().coalesce(
-            criteriaContext.builder().selectCase()
+        criteriaContext.builder().selectCase()
             .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
             .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
     );
@@ -173,7 +175,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   }
 
   private List<Product> getPagedProductsByCriteria(
-          CriteriaQueryContext<Product> criteriaContext,
+      CriteriaQueryContext<Product> criteriaContext,
       ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
     Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
     Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
