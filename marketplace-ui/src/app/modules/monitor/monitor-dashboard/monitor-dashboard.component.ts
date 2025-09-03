@@ -4,12 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
-import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
-import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
-import {
-  MONITORING_WIKI_LINK
-} from '../../../shared/constants/common.constant';
+import { MONITORING_WIKI_LINK } from '../../../shared/constants/common.constant';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -21,9 +16,6 @@ import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component"
   imports: [
     CommonModule,
     TranslateModule,
-    BuildStatusEntriesPipe,
-    IsEmptyObjectPipe,
-    BuildBadgeTooltipComponent,
     NgbTooltipModule,
     MonitoringRepoComponent
 ],
@@ -31,9 +23,6 @@ import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component"
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
-  repositories = signal<Repository[]>([]);
-  focusedRepo = computed(() => this.repositories().filter(r => r.focused));
-  standardRepo = computed(() => this.repositories().filter(r => !r.focused));
   loading = true;
   error = '';
   isReloading = false;
@@ -48,6 +37,9 @@ export class MonitoringDashboardComponent implements OnInit {
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = 'focused';
   isLoading = false;
+  repositories = signal<Repository[]>([]);
+  focusedRepo = computed(() => this.repositories().filter(r => r.focused));
+  standardRepo = computed(() => this.repositories().filter(r => !r.focused));
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -66,6 +58,7 @@ export class MonitoringDashboardComponent implements OnInit {
       next: data => {
         this.repositories.set(data);
         this.isLoading = false;
+        console.log(data);
       },
       error: err => {
         this.error = err.message;

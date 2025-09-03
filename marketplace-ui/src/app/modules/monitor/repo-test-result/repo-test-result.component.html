@@ -1,25 +1,25 @@
-<td>
-  <ng-container *ngIf="badges[conclusion] as badge">
-    <img [src]="badge.src" [alt]="badge.alt" width="72" height="50"
-      (click)="onBadgeClick(repository.name, workflow, mode)" style="cursor: pointer;" />
-    <!-- <span class="built-date text-muted px-2 align-middle">
-      {{ repository.lastUpdated | date: 'short' }}
-    </span> -->
-  </ng-container>
 
-  @if (mode === 'report') {
-    @for (build of repository.testResults; track build.workflow) {
-      @if (build.workflow === workflow) {
-        <div class="sub-status align-middle">
-          @if (!(build.results | isEmptyObjectPipe)) {
-            @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
-              <span class="fs-5" [lang]="languageService.selectedLanguage()">
-                {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
-              </span>
-            }
-          }
-        </div>
+  @if (workflowInfo && badges[workflowInfo.conclusion]) {
+    <img [src]="badges[workflowInfo.conclusion].src"
+    [alt]="badges[workflowInfo.conclusion].alt" width="72" height="50"
+         (click)="onBadgeClick(repository.name, workflowType)" />
+    <span class="built-date text-muted px-2 align-middle">
+      {{ workflowInfo.lastBuilt | date: 'short' }}
+    </span>
+}
+
+@if (mode === 'report') {
+  @for (build of repository.testResults; track build.workflow) {
+    @if (build.workflow === workflowInfo?.workflowType) {
+    <div class="sub-status align-middle">
+      @if (!(build.results | isEmptyObjectPipe)) {
+        @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+        <span class="fs-5" [lang]="languageService.selectedLanguage()">
+          {{ testStatus.label | translate }}: <b>{{ testStatus.count }}</b> {{ testStatus.icon }}
+        </span>
+        }
       }
+    </div>
     }
   }
-</td>
+}

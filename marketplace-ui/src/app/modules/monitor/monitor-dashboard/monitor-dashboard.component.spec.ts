@@ -22,36 +22,35 @@ describe('MonitoringDashboardComponent', () => {
       {
         name: 'repo1',
         htmlUrl: 'https://github.com/user/repo1',
-        language: 'TypeScript',
-        ciLastBuilt: new Date('2025-07-20T12:00:00Z'),
-        devLastBuilt: new Date('2025-07-21T12:00:00Z'),
-        e2eLastBuilt: new Date('2025-07-22T12:00:00Z'),
+        workflowInformation: [
+          { workflowType: 'CI',
+            lastBuilt: new Date('2025-07-20T12:00:00Z'),
+            conclusion: 'success',
+            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111' },
+          { workflowType: 'DEV',
+            lastBuilt: new Date('2025-07-21T12:00:00Z'),
+            conclusion: 'failure',
+            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111' },
+        ],
         focused: true,
         testResults: [
           {
             workflow: 'CI',
-            results: { PASSED: 20 },
-            badgeUrl: 'www.localhost.badge.yml'
+            results: { PASSED: 20 }
           } as TestResult
         ]
       },
       {
         name: 'repo2',
         htmlUrl: 'https://github.com/user/repo2',
-        language: 'Java',
-        ciLastBuilt: new Date('2025-07-19T12:00:00Z'),
-        devLastBuilt: new Date('2025-07-20T12:00:00Z'),
-        e2eLastBuilt: new Date('2025-07-21T12:00:00Z'),
+        workflowInformation: [],
         focused: false,
         testResults: []
       },
       {
         name: 'repo3',
         htmlUrl: 'https://github.com/user/repo3',
-        language: 'Python',
-        ciLastBuilt: new Date('2025-07-18T12:00:00Z'),
-        devLastBuilt: new Date('2025-07-19T12:00:00Z'),
-        e2eLastBuilt: new Date('2025-07-20T12:00:00Z'),
+        workflowInformation: [],
         focused: false,
         testResults: []
       }
@@ -110,32 +109,17 @@ describe('MonitoringDashboardComponent', () => {
   it('should handle error when loading repositories', () => {
     const errorMessage = 'Network error';
     githubService.getRepositories.and.returnValue(throwError(() => new Error(errorMessage)));
-    
+
     component.loadRepositories();
-    
+
     expect(component.error).toBe(errorMessage);
     expect(component.loading).toBeFalse();
-  });
-
-  it('should navigate to report page on badge click', () => {
-    const repoName = 'test-repo';
-    const workflow = 'ci';
-    
-    component.onBadgeClick(repoName, workflow);
-    
-    expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
-  });
-
-  it('should display repository cards when data is loaded', () => {
-    fixture.detectChanges();
-    const repoCards = fixture.debugElement.queryAll(By.css('.repo-card'));
-    expect(repoCards.length).toBe(mockRepositories.length);
   });
 
   it('should display loading message when loading is true', () => {
     component.loading = true;
     fixture.detectChanges();
-    
+
     const loadingElement = fixture.debugElement.query(By.css('.loading'));
     expect(loadingElement).toBeTruthy();
   });
@@ -145,7 +129,7 @@ describe('MonitoringDashboardComponent', () => {
     component.error = errorMessage;
     component.loading = false;
     fixture.detectChanges();
-    
+
     const errorElement = fixture.debugElement.query(By.css('.error'));
     expect(errorElement).toBeTruthy();
     expect(errorElement.nativeElement.textContent).toContain(errorMessage);

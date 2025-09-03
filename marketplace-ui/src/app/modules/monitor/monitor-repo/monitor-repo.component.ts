@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -49,7 +49,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
-export class MonitoringRepoComponent {
+export class MonitoringRepoComponent implements OnInit, OnChanges {
   protected LoadingComponentId = LoadingComponentId;
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
@@ -72,7 +72,6 @@ export class MonitoringRepoComponent {
   githubService = inject(GithubService);
   translateService = inject(TranslateService);
   router = inject(Router);
-  pageTitleService: PageTitleService = inject(PageTitleService);
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {

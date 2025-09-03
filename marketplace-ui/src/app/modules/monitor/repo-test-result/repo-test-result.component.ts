@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
-import { Repository } from '../github.service';
+import { Repository, WorkflowInformation } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Router } from '@angular/router';
 import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.constant';
@@ -16,8 +16,8 @@ import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.cons
   styleUrl: './repo-test-result.component.scss'
 })
 export class RepoTestResultComponent {
-  @Input() workflow!: string;
-  @Input() conclusion!: string;
+  @Input() workflowType: string = '';
+  @Input() workflowInfo?: WorkflowInformation;
   @Input() repository!: Repository;
   @Input() mode!: 'default' | 'report';
   badges: Record<string, { src: string; alt: string }> = {
@@ -29,11 +29,14 @@ export class RepoTestResultComponent {
   languageService = inject(LanguageService);
   router = inject(Router);
 
-  onBadgeClick(repo: string, workflow: string, mode: string = DEFAULT_MODE) {
-    const upperWorkflow = workflow.toUpperCase();
-    if(mode == REPORT_MODE) {
-      this.router.navigate(['/monitoring', repo, upperWorkflow]);
-    }
+    getConclusionKey(conclusion?: string): string {
+    return (conclusion || '').toLowerCase();
+  }
 
+  onBadgeClick(repo: string, workflowType: string, mode: string = DEFAULT_MODE) {
+    if(mode == REPORT_MODE) {
+      this.router.navigate(['/monitoring', repo, workflowType]);
+    }
+// this.router.navigate(this.workflow.lastBuiltRun);
   }
 }
