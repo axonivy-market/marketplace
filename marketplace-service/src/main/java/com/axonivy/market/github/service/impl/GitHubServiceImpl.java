@@ -345,8 +345,10 @@ public class GitHubServiceImpl implements GitHubService {
       }
       setStatus(instance, com.axonivy.market.enums.AccessLevel.ENABLED);
     } catch (HttpClientErrorException.Forbidden e) {
+      log.error("Access forbidden: ", e);
       setStatus(instance, com.axonivy.market.enums.AccessLevel.DISABLED);
     } catch (HttpClientErrorException.NotFound e) {
+      log.error("Alerts not found: ", e);
       setStatus(instance, com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
     }
     return instance;
