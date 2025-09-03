@@ -24,10 +24,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.*;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -366,19 +366,30 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GitHubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
-      Pageable pageable) throws IOException {
+  public Page<GitHubReleaseModel> getGitHubReleaseModels(PagedIterable<GHRelease> ghReleasePagedIterable,
+      Pageable pageable, String productId, String productRepoName, String productSourceUrl) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
-    List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
+    List<GHRelease> ghReleases = new ArrayList<>();
+    ghReleasePagedIterable.forEach(release -> {
+      if (!release.isDraft()) {
+        ghReleases.add(release);
+      }
+    });
     if (ObjectUtils.isNotEmpty(ghReleases)) {
-      String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
+      String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(productRepoName).getName();
       for (GHRelease ghRelease : getReleasesPage(ghReleases, pageable.getPageNumber(), pageable.getPageSize())) {
-        gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
+        gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, productSourceUrl, productId,
             StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
 
     return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
+  }
+
+  @Cacheable(value = "RepoRelease", key = "{#productId}")
+  @Override
+  public PagedIterable<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
+    return getRepository(repoName).listReleases();
   }
 
   public List<GHRelease> getReleasesPage(List<GHRelease> ghReleases, int pageNumber, int pageSize) {

@@ -708,13 +708,9 @@ public class ProductServiceImpl implements ProductService {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    PagedIterable<GHRelease> ghReleasePagedIterable =  getRepoRelease(product.getRepositoryName());
+    PagedIterable<GHRelease> ghReleasePagedIterable =  gitHubService.getRepoOfficialReleases(product.getRepositoryName());;
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
-  }
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
-  private PagedIterable<GHRelease>  getRepoRelease(String repoName) throws IOException {
-    return this.gitHubService.getRepository(repoName).listReleases();
   }
 
   @CacheEvict(value = "GithubPublicReleasesCache", key="{#productId}")
