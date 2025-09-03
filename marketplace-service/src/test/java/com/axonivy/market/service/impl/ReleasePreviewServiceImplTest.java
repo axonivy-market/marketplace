@@ -58,7 +58,8 @@ class ReleasePreviewServiceImplTest {
                 .updateImagesWithDownloadUrl(tempDirectory.toString(), README_CONTENT, BASE_URL);
         releasePreviewService.processReadme(tempReadmeFile, moduleContents, BASE_URL, tempDirectory.toString());
 
-        assertEquals(3, moduleContents.size());
+        assertEquals(3, moduleContents.size(),
+            "Module contents size should be 3");
         Files.deleteIfExists(tempReadmeFile);
     }
 
@@ -78,8 +79,10 @@ class ReleasePreviewServiceImplTest {
                     README_CONTENT
                     , BASE_URL);
 
-            assertNotNull(result);
-            assertTrue(result.contains(String.format(IMAGE_DOWNLOAD_URL, BASE_URL, "image1.png")));
+            assertNotNull(result,
+                "Images with download URL should not be null");
+            assertTrue(result.contains(String.format(IMAGE_DOWNLOAD_URL, BASE_URL, "image1.png")),
+                "Image download URL should follow correct syntax");
         }
         Files.deleteIfExists(tempReadmeFile);
     }
@@ -91,7 +94,8 @@ class ReleasePreviewServiceImplTest {
                     .thenThrow(new IOException("Simulated IOException"));
             assertDoesNotThrow(
                     () -> releasePreviewService.updateImagesWithDownloadUrl(tempDirectory.toString()
-                            , README_CONTENT, BASE_URL));
+                            , README_CONTENT, BASE_URL),
+                "Should not throw error if getting image directory failed");
         }
     }
 
@@ -112,7 +116,7 @@ class ReleasePreviewServiceImplTest {
                     UPDATED_README_CONTENT);
 
             ReleasePreview result = releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString());
-            assertNotNull(result);
+            assertNotNull(result, "Release preview should not be null");
         }
         Files.deleteIfExists(readmeFile);
     }
@@ -124,7 +128,7 @@ class ReleasePreviewServiceImplTest {
                     .thenReturn(Stream.empty());
 
             ReleasePreview result = releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString());
-            assertNull(result);
+            assertNull(result, "Release preview should be null");
         }
     }
 
@@ -135,9 +139,10 @@ class ReleasePreviewServiceImplTest {
                     .thenThrow(new IOException("Simulated IOException"));
 
             ReleasePreview result = releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString());
-            assertNull(result);
+            assertNull(result, "Release preview should be null");
             assertDoesNotThrow(
-                    () -> releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()));
+                    () -> releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()),
+                "Should not throw error if getting image directory failed");
         }
     }
 
@@ -150,7 +155,7 @@ class ReleasePreviewServiceImplTest {
         }
         when(releasePreviewService.extractReadme(anyString(), anyString())).thenReturn(new ReleasePreview());
         ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
-        assertNotNull(result);
+        assertNotNull(result, "Release preview should be null");
     }
 
     @Test
@@ -161,9 +166,10 @@ class ReleasePreviewServiceImplTest {
             fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenThrow(new IOException());
         }
         ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
-        assertNull(result);
+        assertNull(result, "Release preview should be null");
         assertDoesNotThrow(
-                () -> releasePreviewService.extract(mockMultipartFile, tempDirectory.toString()));
+                () -> releasePreviewService.extract(mockMultipartFile, tempDirectory.toString()),
+            "Should not throw error if unzipping file failed");
     }
 
 }
