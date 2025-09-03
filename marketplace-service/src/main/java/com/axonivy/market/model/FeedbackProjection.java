@@ -26,7 +26,7 @@ public interface FeedbackProjection {
 
   default Map<String, String> getProductNames() {
     try {
-      ObjectMapper objectMapper = new ObjectMapper();
+      var objectMapper = new ObjectMapper();
       return objectMapper.readValue(this.getProductNamesJson(), new TypeReference<>() {});
     } catch (Exception e) {
       return Map.of();
