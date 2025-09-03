@@ -151,24 +151,28 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result);
+    assertEquals(mockResultReturn, result,
+        "All products should match mock result");
 
     // Start testing by Connector
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result);
+    assertEquals(mockResultReturn, result,
+        "Connector type products should match mock result");
 
     // Start testing by Other
     // Executes
     result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(2, result.getSize());
+    assertEquals(2, result.getSize(),
+        "Number of demo type products should match number of mock demo type result");
   }
 
   @Test
   void testFindProductsInRESTClientOfDesigner() {
     productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
     verify(productRepo).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
-    assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields());
+    assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields(),
+        "Product short descriptions should match input short descriptions");
   }
 
   @Test
@@ -191,8 +195,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -201,8 +205,8 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
   @Test
@@ -221,8 +225,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -231,8 +235,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
   @Test
@@ -241,7 +245,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result);
+    assertEquals(mockResultReturn, result, "All products should match mock result");
     verify(productRepo).searchByCriteria(any(), any(Pageable.class));
 
     // Test has keyword
@@ -251,8 +255,9 @@ class ProductServiceImplTest extends BaseSetup {
             .toList()));
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
-    assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
+    assertTrue(result.hasContent(), "Result product list should not be empty");
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()),
+        "First product should match mock product name");
 
     // Test has keyword and type is connector
     when(productRepo.searchByCriteria(any(), any(Pageable.class)))
@@ -263,8 +268,9 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false,
         PAGEABLE);
-    assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
+    assertTrue(result.hasContent(), "Result connector type product list should not be empty");
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()),
+        "First product should match mock product name");
   }
 
   @Test
@@ -313,7 +319,8 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
     verify(productModuleContentRepo).save(argumentCaptorProductModuleContent.capture());
-    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getVersion());
+    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getVersion(),
+        "Product module content version should be 1.0");
   }
 
   @Test
