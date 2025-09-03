@@ -707,12 +707,9 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
-
-    List<GHRelease> ghReleasePagedIterable =
-        gitHubService.getRepoOfficialReleases(product.getRepositoryName(), productId);;
-
-    return this.gitHubService.getGitHubReleaseModels(ghReleasePagedIterable, pageable, productId,
-        product.getRepositoryName(), product.getSourceUrl());
+    List<GHRelease> ghReleases = gitHubService.getRepoOfficialReleases(product.getRepositoryName(), productId);
+    return this.gitHubService.getGitHubReleaseModels(ghReleases, pageable, productId, product.getRepositoryName(),
+        product.getSourceUrl());
   }
 
   @CacheEvict(value = "GithubPublicReleasesCache", key="{#productId}")
