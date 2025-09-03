@@ -30,7 +30,7 @@ public class MetadataReaderUtils {
 
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
       boolean isSnapShot) {
-    var'' document = getDocumentFromXMLContent(xmlData);
+    var document = getDocumentFromXMLContent(xmlData);
     try {
       LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
