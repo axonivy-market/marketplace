@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.PreviewConstants.IMAGE_DOWNLOAD_URL;
@@ -29,6 +30,8 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 @Service
 @AllArgsConstructor
 public class ReleasePreviewServiceImpl implements ReleasePreviewService {
+
+  private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   @Override
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
@@ -65,8 +68,10 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       String readmeContents, String baseUrl) {
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
-      List<Path> allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
-          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+      List<Path> allImagePaths = imagePathStream
+          .filter(Files::isRegularFile)
+          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(path.getFileName().toString().toLowerCase()).matches())
+          .toList();
 
       allImagePaths.stream()
           .filter(Objects::nonNull)
