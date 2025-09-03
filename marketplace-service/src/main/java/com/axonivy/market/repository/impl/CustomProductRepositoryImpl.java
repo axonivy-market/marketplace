@@ -36,6 +36,8 @@ import java.util.Optional;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
+import org.springframework.data.domain.Sort;
+
 @Log4j2
 @Builder
 public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
@@ -108,7 +110,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
       PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
-      pageRequest.getSort().stream().findFirst().ifPresent(order -> {
+      pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
         SortOption sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
           case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
@@ -182,7 +184,13 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   private List<Product> getPagedProductsByCriteria(
       CriteriaQueryContext<Product> criteriaContext,
       ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
-    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
+    Language language;
+    if (searchCriteria.getLanguage() != null) {
+      language = searchCriteria.getLanguage();
+    } else {
+      language = Language.EN;
+    }
+
     Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
     criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
@@ -212,7 +220,10 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     criteriaContext.query().where(searchCriteria);
 
     List<Product> results = findByCriteria(criteriaContext);
-    return results.isEmpty() ? null : results.get(0);
+    if (results.isEmpty()) {
+      return null;
+    }
+    return results.get(0);
   }
 
   @Override
@@ -254,7 +265,12 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
     List<Predicate> filters = new ArrayList<>();
-    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
+    Language language;
+    if (searchCriteria.getLanguage() != null) {
+      language = searchCriteria.getLanguage();
+    } else {
+      language = Language.EN;
+    }
     List<DocumentField> filterProperties = new ArrayList<>(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
     if (ObjectUtils.isNotEmpty(searchCriteria.getFields())) {
       filterProperties.clear();
