@@ -1,28 +1,25 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.model.BuildInformation;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import com.axonivy.market.model.WorkflowInformation;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.kohsuke.github.GHRepository;
-
-import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 
 import java.io.IOException;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 
 @Getter
 @Setter
@@ -55,10 +52,9 @@ public class GithubRepo extends GenericIdEntity {
   private String ciConclusion;
   private String devConclusion;
   private String e2eConclusion;
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
-  @JsonProperty
-  private Map<WorkFlowType, BuildInformation> workflows;
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "repository_id")
+  private List<WorkflowInformation> workflows;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
@@ -68,7 +64,7 @@ public class GithubRepo extends GenericIdEntity {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
-        .workflows(new HashMap<>())
+        .workflows(new ArrayList<>())
         .testSteps(new ArrayList<>())
         .build();
   }

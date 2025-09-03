@@ -69,10 +69,11 @@
           </a>
         </td>
         <td *ngFor="let workflow of workflowKeys">
-          <app-repo-test-result [workflow]="workflow" [conclusion]="repo.workflows[workflow].conclusion"
+          <app-repo-test-result [workflow]="workflow" [conclusion]="findWorkflowMatch(repo, workflow)?.conclusion || ''"
             [repository]="repo" [mode]="mode[tabKey]">
           </app-repo-test-result>
         </td>
+
         <td class="align-middle">
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
             <i class="fa fa-external-link" aria-hidden="true"></i>

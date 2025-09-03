@@ -5,14 +5,28 @@ import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
-import { NgbTooltipModule, NgbPagination, NgbPaginationModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbTooltipModule,
+  NgbPagination,
+  NgbPaginationModule,
+  NgbTypeaheadModule
+} from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FormsModule } from '@angular/forms';
-import { ProductFilterComponent } from "../../product/product-filter/product-filter.component";
-import { RepoTestResultComponent } from "../repo-test-result/repo-test-result.component";
-import { ASCENDING, CI_BUILD, DEFAULT_MODE, DESCENDING, DEV_BUILD, E2E_BUILD, MARKET_BASE_URL, REPORT_MODE } from '../../../shared/constants/common.constant';
+import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
+import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';
+import {
+  ASCENDING,
+  CI_BUILD,
+  DEFAULT_MODE,
+  DESCENDING,
+  DEV_BUILD,
+  E2E_BUILD,
+  MARKET_BASE_URL,
+  REPORT_MODE
+} from '../../../shared/constants/common.constant';
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
@@ -27,7 +41,8 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     LoadingSpinnerComponent,
     FormsModule,
     NgbPagination,
-    NgbTypeaheadModule, NgbPaginationModule,
+    NgbTypeaheadModule,
+    NgbPaginationModule,
     ProductFilterComponent,
     RepoTestResultComponent
   ],
@@ -99,41 +114,47 @@ export class MonitoringRepoComponent {
 
   sortRepositoriesByColumn(column: string) {
     if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
+      this.sortDirection =
+        this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
     } else {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
     }
 
     this.filteredRepositories.sort((repo1, repo2) => {
-      const firstValue = this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
-      const secondValue = this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
+      const firstValue =
+        this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
+      const secondValue =
+        this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
 
-      if (firstValue < secondValue) return this.sortDirection === ASCENDING ? -1 : 1;
-      if (firstValue > secondValue) return this.sortDirection === ASCENDING ? 1 : -1;
+      if (firstValue < secondValue)
+        return this.sortDirection === ASCENDING ? -1 : 1;
+      if (firstValue > secondValue)
+        return this.sortDirection === ASCENDING ? 1 : -1;
       return 0;
     });
 
     this.refreshPagination();
   }
 
-  private getColumnValue(repo: any, column: string): string | undefined {
-    switch (column) {
-      case CI_BUILD:
-        return repo.workflows[CI_BUILD]?.conclusion;
-      case DEV_BUILD:
-        return repo.workflows[DEV_BUILD]?.conclusion;
-      case E2E_BUILD:
-        return repo.workflows[E2E_BUILD]?.conclusion;
-      default:
-        return repo[column];
+  private getColumnValue(repo: Repository, column: string): string {
+    if (column === 'name') {
+      return repo.name;
     }
+
+    return this.findWorkflowMatch(repo, column)?.conclusion || '';
+  }
+
+  findWorkflowMatch(repo: Repository, workflow: string) {
+    return repo.workflowInformation?.find(wf => wf.workflowType === workflow);
   }
 
   getSortIcon(column: string): string {
     if (this.sortColumn !== column) {
       return '';
     }
-    return this.sortDirection === ASCENDING ? 'bi bi-arrow-up' : 'bi bi-arrow-down';
+    return this.sortDirection === ASCENDING
+      ? 'bi bi-arrow-up'
+      : 'bi bi-arrow-down';
   }
 }

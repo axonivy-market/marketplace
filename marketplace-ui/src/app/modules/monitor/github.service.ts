@@ -6,11 +6,12 @@ export interface Repository {
   name: string;
   htmlUrl: string;
   focused: boolean;
-  workflows: { [key: string]: BuildInformation };
+  workflowInformation: WorkflowInformation[];
   testResults: TestResult[];
 }
 
-export interface BuildInformation {
+export interface WorkflowInformation {
+  workflowType: 'CI' | 'DEV' | 'E2E';
   lastBuilt: Date;
   conclusion: string;
   lastBuiltRun: string;
@@ -18,7 +19,6 @@ export interface BuildInformation {
 
 export interface TestResult {
   workflow: 'CI' | 'DEV' | 'E2E';
-  badgeUrl: string;
   results: TestSummary;
 }
 

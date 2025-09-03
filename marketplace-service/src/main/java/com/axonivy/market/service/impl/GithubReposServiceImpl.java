@@ -5,8 +5,8 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.BuildInformation;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -32,12 +32,11 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
-import static com.axonivy.market.enums.WorkFlowType.*;
+import static com.axonivy.market.enums.WorkFlowType.values;
 
 @Service
 @RequiredArgsConstructor
@@ -54,8 +53,8 @@ public class GithubReposServiceImpl implements GithubReposService {
   @Override
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
-            .filter(product -> Boolean.FALSE != product.getListed()
-                    && product.getRepositoryName() != null).toList();
+        .filter(product -> Boolean.FALSE != product.getListed()
+            && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
       try {
@@ -75,18 +74,18 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
     GithubRepo githubRepo;
     var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-      if (githubRepoOptional.isPresent()) {
-        githubRepo = githubRepoOptional.get();
-        githubRepo.getTestSteps().clear();
-//        githubRepo.getWorkflows().clear();
-        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-      } else {
-        githubRepo = from(ghRepo);
-      }
-      List<TestStep> testSteps = Arrays.stream(values()).map(
-          workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
-      githubRepo.getTestSteps().addAll(testSteps);
-      githubRepoRepository.save(githubRepo);
+    if (githubRepoOptional.isPresent()) {
+      githubRepo = githubRepoOptional.get();
+      githubRepo.getTestSteps().clear();
+      githubRepo.getWorkflows().clear();
+      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+    } else {
+      githubRepo = from(ghRepo);
+    }
+    List<TestStep> testSteps = Arrays.stream(values()).map(
+        workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
+    githubRepo.getTestSteps().addAll(testSteps);
+    githubRepoRepository.save(githubRepo);
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
@@ -94,7 +93,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateBuildInfo(dbRepo, workflowType, run);
+        updateWorkflowInfo(dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -107,18 +106,20 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private void updateBuildInfo(GithubRepo dbRepo, WorkFlowType workflowType, GHWorkflowRun ghWorkflowRun)
-      throws IOException {
-    if (dbRepo.getWorkflows() == null) {
-      dbRepo.setWorkflows(new HashMap<>());
-    }
+  private void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
+    WorkflowInformation workflowInformation = repo.getWorkflows().stream()
+        .filter(workflow -> workflowType == workflow.getWorkflowType())
+        .findFirst()
+        .orElseGet(() -> {
+          WorkflowInformation newBuild = new WorkflowInformation();
+          newBuild.setWorkflowType(workflowType);
+          repo.getWorkflows().add(newBuild);
+          return newBuild;
+        });
 
-    BuildInformation buildInfo = dbRepo.getWorkflows()
-        .computeIfAbsent(WorkFlowType.valueOf(workflowType.name()), k -> new BuildInformation());
-
-    buildInfo.setLastBuilt(ghWorkflowRun.getCreatedAt());
-    buildInfo.setConclusion(String.valueOf(ghWorkflowRun.getConclusion()));
-    buildInfo.setLastBuiltRun(ghWorkflowRun.getHtmlUrl().toString());
+    workflowInformation.setLastBuilt(run.getCreatedAt());
+    workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
+    workflowInformation.setLastBuiltRun(run.getHtmlUrl().toString());
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,

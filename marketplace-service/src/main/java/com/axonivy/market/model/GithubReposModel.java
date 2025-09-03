@@ -1,13 +1,15 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.enums.WorkFlowType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 
@@ -30,26 +32,26 @@ public class GithubReposModel {
   @Schema(
       example = """
             {
-              "CI":
-                "lastBuilt": "2025-08-28 04:25:24.000",
-                "conclusion": "success",
-                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+              "workflow": "CI",
+               "lastBuilt": "2025-08-28 04:25:24.000",
+               "conclusion": "success",
+               "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             },
             {
-              "DEV":
-                "lastBuilt": "2025-08-28 04:25:24.000",
-                "conclusion": "success",
-                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+              "workflow": "DEV",
+               "lastBuilt": "2025-08-28 04:25:24.000",
+               "conclusion": "success",
+               "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             },
             {
-              "E2E":
-                "lastBuilt": "2025-08-28 04:25:24.000",
-                "conclusion": "success",
-                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
+              "workflow": "E2E",
+               "lastBuilt": "2025-08-28 04:25:24.000",
+               "conclusion": "success",
+               "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             }
           """
   )
-  private Map<WorkFlowType, BuildInformation> workflows;
+  private List<WorkflowInformation> workflows;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;
