@@ -143,7 +143,10 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private ProductDependency findProductDependencyByIds(String productId, String artifactId, String version) {
     var productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
         version);
-    return ObjectUtils.isEmpty(productDependencies) ? null : productDependencies.get(0);
+    if (ObjectUtils.isEmpty(productDependencies)) {
+      return null;
+    }
+    return productDependencies.get(0);
   }
 
   private ProductDependency initProductDependencyData(MavenArtifactVersion mavenArtifactVersion) {
@@ -218,7 +221,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private MavenArtifactVersion findDownloadURLForDependency(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(productId,
         artifactId, version);
-    var dependencyArtifact = ObjectUtils.isEmpty(mavenArtifactVersions) ? null : mavenArtifactVersions.get(0);
+    MavenArtifactVersion dependencyArtifact;
+    if (ObjectUtils.isEmpty(mavenArtifactVersions)) {
+      dependencyArtifact = null;
+    } else {
+      dependencyArtifact = mavenArtifactVersions.get(0);
+    }
     Objects.requireNonNull(dependencyArtifact, "Cannot found the dependency artifact of " + artifactId);
     ObjectUtils.requireNonEmpty(dependencyArtifact.getDownloadUrl(), "Invalid download URL for " + artifactId);
     return dependencyArtifact;

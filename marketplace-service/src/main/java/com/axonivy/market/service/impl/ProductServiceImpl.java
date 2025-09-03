@@ -188,7 +188,7 @@ public class ProductServiceImpl implements ProductService {
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
-    groupGitHubFiles.forEach((key, value) -> {
+    groupGitHubFiles.forEach((String key, List<GitHubFile> value) -> {
       for (var file : value) {
         var productId = EMPTY;
         if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
@@ -257,7 +257,7 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
     var result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(image -> {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent((Image image) -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
           imageRepo.deleteById(result.getLogoId());
         }
@@ -477,7 +477,7 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse((List<String> releasedVersion) -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -522,14 +522,16 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private String createProductArtifactId(Artifact mavenArtifact) {
-    return mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX) ? mavenArtifact.getArtifactId()
-        : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
+    if (mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX)) {
+      return mavenArtifact.getArtifactId();
+    }
+    return mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     Product product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
-    return Optional.ofNullable(product).map(productItem -> {
+    return Optional.ofNullable(product).map((Product productItem) -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
@@ -546,9 +548,13 @@ public class ProductServiceImpl implements ProductService {
         metadataRepo.findByProductId(id));
     String bestMatchVersion = VersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file
-    Product product = StringUtils.isBlank(bestMatchVersion) ? getProductByIdWithNewestReleaseVersion(id,
-        false) : productRepo.getProductByIdAndVersion(id, bestMatchVersion);
-    return Optional.ofNullable(product).map(productItem -> {
+    Product product;
+    if (StringUtils.isBlank(bestMatchVersion)) {
+      product = getProductByIdWithNewestReleaseVersion(id, false);
+    } else {
+      product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
+    }
+    return Optional.ofNullable(product).map((Product productItem) -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
@@ -624,7 +630,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
-    productRepo.findById(productId).ifPresent(foundProduct -> {
+    productRepo.findById(productId).ifPresent((Product foundProduct) -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());

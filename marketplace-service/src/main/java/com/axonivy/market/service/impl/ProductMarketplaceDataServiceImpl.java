@@ -51,6 +51,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
 
+  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
+
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
     SortOption.of(customSort.getRuleForRemainder());
@@ -103,7 +106,11 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      result = keyList.contains(productId) ? mapping.get(productId) : random.nextInt(20, 50);
+      if (keyList.contains(productId)) {
+        result = mapping.get(productId);
+      } else {
+        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
+      }
       log.info("synchronized installation count for product {} successfully", productId);
     } catch (IOException ex) {
       log.error("Could not read the marketplace-installation file to synchronize", ex);
