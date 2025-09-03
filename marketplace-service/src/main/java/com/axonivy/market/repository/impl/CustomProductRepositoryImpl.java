@@ -18,6 +18,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
@@ -35,6 +36,7 @@ import java.util.Optional;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
+@Log4j2
 @Builder
 public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
   final ProductCustomSortRepository productCustomSortRepo;
@@ -71,6 +73,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     try {
       return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
+      log.error("Cannot find product: ", e);
       return null;
     }
   }
