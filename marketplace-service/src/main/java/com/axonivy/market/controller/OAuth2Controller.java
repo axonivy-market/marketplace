@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import java.util.Map;
 import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GIT_HUB_LOGIN;
 
+@Log4j2
 @RestController
 @RequestMapping(AUTH)
 public class OAuth2Controller {
@@ -63,6 +65,7 @@ public class OAuth2Controller {
       String jwtToken = jwtService.generateToken(githubUser, accessToken);
       return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
     } catch (Oauth2ExchangeCodeException e) {
+      log.error("Error getting authentication token: ", e);
       Map<String, String> errorResponse = new HashMap<>();
       errorResponse.put(CommonConstants.ERROR, e.getError());
       errorResponse.put(CommonConstants.MESSAGE, e.getErrorDescription());
