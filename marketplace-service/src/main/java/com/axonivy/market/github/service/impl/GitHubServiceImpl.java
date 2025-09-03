@@ -366,15 +366,9 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GitHubReleaseModel> getGitHubReleaseModels(PagedIterable<GHRelease> ghReleasePagedIterable,
+  public Page<GitHubReleaseModel> getGitHubReleaseModels(List<GHRelease> ghReleases,
       Pageable pageable, String productId, String productRepoName, String productSourceUrl) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
-    List<GHRelease> ghReleases = new ArrayList<>();
-    ghReleasePagedIterable.forEach(release -> {
-      if (!release.isDraft()) {
-        ghReleases.add(release);
-      }
-    });
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(productRepoName).getName();
       for (GHRelease ghRelease : getReleasesPage(ghReleases, pageable.getPageNumber(), pageable.getPageSize())) {
@@ -382,14 +376,19 @@ public class GitHubServiceImpl implements GitHubService {
             StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
-
     return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
   }
 
   @Cacheable(value = "RepoRelease", key = "{#productId}")
   @Override
-  public PagedIterable<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
-    return getRepository(repoName).listReleases();
+  public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
+    List<GHRelease> ghReleases = new ArrayList<>();
+    getRepository(repoName).listReleases().forEach(release -> {
+      if (!release.isDraft()) {
+        ghReleases.add(release);
+      }
+    });
+    return ghReleases;
   }
 
   public List<GHRelease> getReleasesPage(List<GHRelease> ghReleases, int pageNumber, int pageSize) {

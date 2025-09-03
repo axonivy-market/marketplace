@@ -708,7 +708,7 @@ public class ProductServiceImpl implements ProductService {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    PagedIterable<GHRelease> ghReleasePagedIterable =
+    List<GHRelease> ghReleasePagedIterable =
         gitHubService.getRepoOfficialReleases(product.getRepositoryName(), productId);;
 
     return this.gitHubService.getGitHubReleaseModels(ghReleasePagedIterable, pageable, productId,
