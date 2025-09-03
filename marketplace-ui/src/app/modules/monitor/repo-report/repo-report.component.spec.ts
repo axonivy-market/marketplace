@@ -2,7 +2,7 @@
 import { RepoReportComponent } from './repo-report.component';
 import { GithubService, TestStep } from '../github.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs'; // Ensure RxJS is imported correctly
+import { of, throwError } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { By } from '@angular/platform-browser';

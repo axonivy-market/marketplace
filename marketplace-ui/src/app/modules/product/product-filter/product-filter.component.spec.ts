@@ -38,6 +38,7 @@ describe('ProductFilterComponent', () => {
     component = fixture.componentInstance;
     activatedRoute = TestBed.inject(ActivatedRoute);
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    component.isProductHomepage = true;
     fixture.detectChanges();
   });
 
@@ -252,4 +253,29 @@ describe('ProductFilterComponent', () => {
       expect(component.searchChange.emit).not.toHaveBeenCalled();
     });
   })
+
+  it('should render filter section when isProductHomepage is true', () => {
+    component.isProductHomepage = true;
+    fixture.detectChanges();
+
+    const filterContainer = fixture.debugElement.query(
+      By.css('.filter-container')
+    );
+    expect(filterContainer).toBeTruthy();
+
+    const searchGroup = fixture.debugElement.query(
+      By.css('.input-group')
+    ).nativeElement;
+    expect(searchGroup.classList).not.toContain('m-0');
+  });
+
+  it('should NOT render filter section when isProductHomepage is false', () => {
+    component.isProductHomepage = false;
+    fixture.detectChanges();
+
+    const filterContainer = fixture.debugElement.query(
+      By.css('.filter-container')
+    );
+    expect(filterContainer).toBeNull();
+  });
 });

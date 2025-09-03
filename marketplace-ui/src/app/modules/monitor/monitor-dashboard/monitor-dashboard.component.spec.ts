@@ -1,11 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
 import { GithubService, Repository, TestResult } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { delay, of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
@@ -14,7 +19,6 @@ describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
   let fixture: ComponentFixture<MonitoringDashboardComponent>;
   let githubService: jasmine.SpyObj<GithubService>;
-  let router: jasmine.SpyObj<Router>;
   let pageTitleService: jasmine.SpyObj<any>;
   let mockRepositories: Repository[];
 
@@ -28,14 +32,16 @@ describe('MonitoringDashboardComponent', () => {
             workflowType: 'CI',
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
-            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111'
+            lastBuiltRun:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
-            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111'
-          },
+            lastBuiltRun:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
+          }
         ],
         focused: true,
         testResults: [
@@ -61,9 +67,12 @@ describe('MonitoringDashboardComponent', () => {
       }
     ];
 
-    const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    const pageTitleServiceSpy = jasmine.createSpyObj(PageTitleService, ['setTitleOnLangChange']);
+    const githubServiceSpy = jasmine.createSpyObj('GithubService', [
+      'getRepositories'
+    ]);
+    const pageTitleServiceSpy = jasmine.createSpyObj(PageTitleService, [
+      'setTitleOnLangChange'
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -74,16 +83,27 @@ describe('MonitoringDashboardComponent', () => {
       ],
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
-        { provide: Router, useValue: routerSpy },
         { provide: PageTitleService, useValue: pageTitleServiceSpy },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {},
+            params: of({}),
+            queryParams: of({}),
+            data: of({})
+          }
+        },
         LanguageService,
         TranslateService
       ]
     }).compileComponents();
 
-    githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    pageTitleService = TestBed.inject(PageTitleService) as jasmine.SpyObj<PageTitleService>;
+    githubService = TestBed.inject(
+      GithubService
+    ) as jasmine.SpyObj<GithubService>;
+    pageTitleService = TestBed.inject(
+      PageTitleService
+    ) as jasmine.SpyObj<PageTitleService>;
     githubService.getRepositories.and.returnValue(of(mockRepositories));
 
     fixture = TestBed.createComponent(MonitoringDashboardComponent);
@@ -101,21 +121,41 @@ describe('MonitoringDashboardComponent', () => {
     const loadRepositoriesSpy = spyOn(component, 'loadRepositories');
     component.ngOnInit();
     expect(loadRepositoriesSpy).toHaveBeenCalled();
-    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('common.monitor.dashboard.pageTitle');
+    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
+      'common.monitor.dashboard.pageTitle'
+    );
   });
 
   it('should set loading to false on ngOnInit if not browser', () => {
     component.platformId = 'server';
-    component.loading = true;
+    component.isLoading = true;
     component.ngOnInit();
-    expect(component.loading).toBeFalse();
+    expect(component.isLoading).toBeFalse();
   });
 
   it('should load and sort repositories correctly', () => {
     const unsortedRepos = [
-      { name: 'zebra-repo', focused: false, htmlUrl: '', workflowInformation: [], testResults: [] },
-      { name: 'alpha-repo', focused: true, htmlUrl: '', workflowInformation: [], testResults: [] },
-      { name: 'beta-repo', focused: false, htmlUrl: '', workflowInformation: [], testResults: [] }
+      {
+        name: 'zebra-repo',
+        focused: false,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      },
+      {
+        name: 'alpha-repo',
+        focused: true,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      },
+      {
+        name: 'beta-repo',
+        focused: false,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      }
     ];
 
     githubService.getRepositories.and.returnValue(of(unsortedRepos));
@@ -128,14 +168,18 @@ describe('MonitoringDashboardComponent', () => {
     expect(repositories[2].name).toBe('zebra-repo');
   });
 
-  it('should set isLoading to true when starting to load repositories', () => {
+  it('should set isLoading to true when starting to load repositories', fakeAsync(() => {
     component.isLoading = false;
-    githubService.getRepositories.and.returnValue(of(mockRepositories));
+    githubService.getRepositories.and.returnValue(
+      of(mockRepositories).pipe(delay(0))
+    );
 
     component.loadRepositories();
-
     expect(component.isLoading).toBe(true);
-  });
+
+    tick();
+    expect(component.isLoading).toBe(false);
+  }));
 
   it('should set isLoading to false after successfully loading repositories', () => {
     githubService.getRepositories.and.returnValue(of(mockRepositories));
@@ -145,14 +189,17 @@ describe('MonitoringDashboardComponent', () => {
     expect(component.isLoading).toBe(false);
   });
 
-  it('should clear error when successfully loading repositories', () => {
+  it('should clear error when successfully loading repositories', fakeAsync(() => {
     component.error = 'Previous error';
     githubService.getRepositories.and.returnValue(of(mockRepositories));
 
     component.loadRepositories();
 
+    tick();
+
     expect(component.error).toBe('');
-  });
+    expect(component.isLoading).toBe(false);
+  }));
 
   it('should filter focused repositories correctly', () => {
     const focusedRepos = component.focusedRepo();
@@ -224,23 +271,18 @@ describe('MonitoringDashboardComponent', () => {
     expect(standardTab.nativeElement.classList).toContain('active');
   });
 
-  it('should handle error when loading repositories', () => {
+  it('should handle error when loading repositories', fakeAsync(() => {
     const errorMessage = 'Network error';
-    githubService.getRepositories.and.returnValue(throwError(() => new Error(errorMessage)));
+    githubService.getRepositories.and.returnValue(
+      throwError(() => new Error(errorMessage)).pipe(delay(0))
+    );
 
     component.loadRepositories();
+    tick();
 
     expect(component.error).toBe(errorMessage);
-    expect(component.loading).toBeFalse();
-  });
-
-  it('should display loading message when loading is true', () => {
-    component.loading = true;
-    fixture.detectChanges();
-
-    const loadingElement = fixture.debugElement.query(By.css('.loading'));
-    expect(loadingElement).toBeTruthy();
-  });
+    expect(component.isLoading).toBe(false);
+  }));
 
   it('should display error message when error exists', () => {
     const errorMessage = 'Test error message';

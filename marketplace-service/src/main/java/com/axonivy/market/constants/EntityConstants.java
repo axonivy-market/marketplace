@@ -19,10 +19,10 @@ public class EntityConstants {
   public static final String EXTERNAL_DOCUMENT_META = "external_document_meta";
   public static final String PRODUCT_MARKETPLACE_DATA = "product_marketplace_data";
   public static final String PRODUCT_DEPENDENCY = "product_dependency";
-  public static final String USED_BY_DEPENDENCY_ID = "used_by_dependency_id";
   public static final String ARCHIVED_ARTIFACT = "archived_artifact";
   public static final String ARTIFACT = "artifact";
   public static final String PRODUCT_ID = "product_id";
+  public static final String REPOSITORY_ID = "repository_id";
   public static final String BYTEA_TYPE = "BYTEA";
   public static final String TEXT_TYPE = "TEXT";
   public static final String PRODUCT_MODULE_CONTENT_ID = "product_module_content_id";

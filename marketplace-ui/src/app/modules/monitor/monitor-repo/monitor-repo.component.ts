@@ -1,7 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { GithubService, Repository } from '../github.service';
+import { Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
@@ -76,7 +75,6 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
 
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
-  router = inject(Router);
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {

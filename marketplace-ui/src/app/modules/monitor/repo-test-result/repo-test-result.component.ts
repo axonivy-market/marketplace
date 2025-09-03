@@ -1,12 +1,12 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
 import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
 import { Repository, WorkflowInformation } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Router } from '@angular/router';
-import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.constant';
+import { REPORT_MODE } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-repo-test-result',

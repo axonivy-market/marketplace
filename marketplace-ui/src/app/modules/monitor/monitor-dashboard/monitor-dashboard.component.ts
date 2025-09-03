@@ -1,7 +1,6 @@
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MONITORING_WIKI_LINK } from '../../../shared/constants/common.constant';
@@ -27,7 +26,6 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
-  router = inject(Router);
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
 
@@ -59,6 +57,7 @@ export class MonitoringDashboardComponent implements OnInit {
         data.sort((repo1, repo2) => repo1.name.localeCompare(repo2.name));
         this.repositories.set(data);
         this.isLoading = false;
+        this.error = '';
       },
       error: err => {
         this.error = err.message;

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
+import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 
 @Getter
 @Setter
@@ -53,11 +54,11 @@ public class GithubRepo extends GenericIdEntity {
   private String devConclusion;
   private String e2eConclusion;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "repository_id")
+  @JoinColumn(name = REPOSITORY_ID)
   private List<WorkflowInformation> workflowInformation;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "repository_id")
+  @JoinColumn(name = REPOSITORY_ID)
   private List<TestStep> testSteps;
 
   public static GithubRepo from(GHRepository repo) throws IOException {

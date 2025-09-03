@@ -1,18 +1,23 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { MonitoringRepoComponent } from './monitor-repo.component';
-import { GithubService, Repository, TestResult } from '../github.service';
+import { Repository, TestResult } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { By } from '@angular/platform-browser';
+import { ASCENDING } from '../../../shared/constants/common.constant';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
   let fixture: ComponentFixture<MonitoringRepoComponent>;
-  let githubService: jasmine.SpyObj<GithubService>;
-  let router: jasmine.SpyObj<Router>;
   let mockRepositories: Repository[];
 
   beforeEach(async () => {
@@ -25,14 +30,16 @@ describe('MonitoringRepoComponent', () => {
             workflowType: 'CI',
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
-            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111'
+            lastBuiltRun:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
-            lastBuiltRun: 'https://github.com/market/rtf-factory/actions/runs/11111'
-          },
+            lastBuiltRun:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
+          }
         ],
         focused: true,
         testResults: [
@@ -58,9 +65,6 @@ describe('MonitoringRepoComponent', () => {
       }
     ];
 
-    const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       imports: [
         MonitoringRepoComponent,
@@ -69,20 +73,28 @@ describe('MonitoringRepoComponent', () => {
         MatomoTestingModule.forRoot()
       ],
       providers: [
-        { provide: GithubService, useValue: githubServiceSpy },
-        { provide: Router, useValue: routerSpy },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {},
+            params: of({}),
+            queryParams: of({}),
+            data: of({})
+          }
+        },
         LanguageService,
         TranslateService
       ]
     }).compileComponents();
 
-    githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-
-    githubService.getRepositories.and.returnValue(of(mockRepositories));
-
     fixture = TestBed.createComponent(MonitoringRepoComponent);
     component = fixture.componentInstance;
+
+    component.tabKey = 'focused';
+    component.repositories = [...mockRepositories];
+    component.ngOnChanges();
+    component.refreshPagination();
+
     fixture.detectChanges();
   });
 
@@ -90,5 +102,98 @@ describe('MonitoringRepoComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should initialize mode to default for given tabKey', () => {
+    component.ngOnInit();
+    expect(component.mode['focused']).toBe('default');
+  });
 
+  it('should filter repositories when search changes', () => {
+    component.onSearchChanged('repo1');
+    expect(component.filteredRepositories.length).toBe(1);
+    expect(component.filteredRepositories[0].name).toBe('repo1');
+
+    component.onSearchChanged('asanaaaa');
+    expect(component.filteredRepositories.length).toBe(0);
+  });
+
+  it('should calculate pagination correctly', () => {
+    component.pageSize = 2;
+    component.refreshPagination();
+    expect(component.displayedRepositories.length).toBe(2);
+    component.page = 2;
+    component.refreshPagination();
+    expect(component.displayedRepositories.length).toBe(1);
+  });
+
+  it('should sort repositories by name ascending/descending', () => {
+    component.sortColumn = component.COLUMN_NAME;
+    component.sortDirection = ASCENDING;
+    // Descending
+    component.sortRepositoriesByColumn(component.COLUMN_NAME);
+    expect(component.filteredRepositories.map(r => r.name)).toEqual([
+      'repo3', 'repo2', 'repo1' ]);
+
+    // Ascending
+    component.sortRepositoriesByColumn(component.COLUMN_NAME);
+    expect(component.filteredRepositories.map(r => r.name)).toEqual([
+      'repo1', 'repo2', 'repo3' ]);
+  });
+
+  it('should return correct market URL', () => {
+    const url = component.getMarketUrl('repo1');
+    expect(url).toContain(encodeURIComponent('repo1'));
+  });
+
+  it('should return correct workflow match', () => {
+    const repo = mockRepositories[0];
+    const match = component.findWorkflowMatch(repo, 'CI');
+    expect(match).toBeTruthy();
+    expect(match!.workflowType).toBe('CI');
+
+    const noMatch = component.findWorkflowMatch(repo, 'E2E');
+    expect(noMatch).toBeUndefined();
+  });
+
+  it('should toggle mode via ngModel binding', fakeAsync(() => {
+    component.mode['focused'] = 'default';
+    fixture.detectChanges();
+    const reportRadio = fixture.debugElement.query(
+      By.css('#report-mode-focused')
+    ).nativeElement as HTMLInputElement;
+
+    reportRadio.click();
+    fixture.detectChanges();
+    tick();
+    expect(component.mode['focused']).toBe('report');
+  }));
+
+  it('should display repository links correctly in template', () => {
+    const repoLinks = fixture.debugElement.queryAll(By.css('#product-name'));
+
+    expect(repoLinks.length).toBe(3);
+    expect(repoLinks[0].nativeElement.textContent.trim()).toBe('repo1');
+    expect(repoLinks[1].nativeElement.textContent.trim()).toBe('repo2');
+    expect(repoLinks[2].nativeElement.textContent.trim()).toBe('repo3');
+  });
+
+  it('should show no-repositories message when filtered list is empty', () => {
+    component.onSearchChanged('asanaaaa');
+    fixture.detectChanges();
+    const noRepositoriesMessage = fixture.debugElement.query(
+      By.css('.no-repositories')
+    );
+    expect(noRepositoriesMessage).toBeTruthy();
+    expect(noRepositoriesMessage.nativeElement.textContent).toContain(
+      'common.monitor.dashboard.noRepositories'
+    );
+  });
+
+  it('should update sort icons correctly', () => {
+    const header = fixture.debugElement.query(By.css('th h5.table-header'));
+    expect(header.nativeElement.className).toContain('bi-arrow-up');
+
+    component.sortRepositoriesByColumn(component.COLUMN_NAME);
+    fixture.detectChanges();
+    expect(header.nativeElement.className).toContain('bi-arrow-down');
+  });
 });
