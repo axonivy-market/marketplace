@@ -33,7 +33,7 @@ public class CustomProductDesignerInstallationRepositoryImpl extends BaseReposit
     List<ProductDesignerInstallation> existsDesignerInstallation = findByCriteria(criteriaQueryContext);
 
     if (ObjectUtils.isEmpty(existsDesignerInstallation)) {
-      ProductDesignerInstallation installation = new ProductDesignerInstallation();
+      var installation = new ProductDesignerInstallation();
       installation.setProductId(productId);
       installation.setDesignerVersion(designerVersion);
       installation.setInstallationCount(1);

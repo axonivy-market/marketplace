@@ -56,7 +56,7 @@ public class ImageUtils {
 
   private static List<String> extractAllImageIds(String content) {
     List<String> result = new ArrayList<>();
-    Matcher matcher = PATTERN.matcher(content);
+    var matcher = PATTERN.matcher(content);
     while (matcher.find()) {
       var foundImgTag = matcher.group();
       result.add(foundImgTag);

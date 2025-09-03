@@ -76,8 +76,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       allImagePaths.stream()
           .filter(Objects::nonNull)
           .forEach(imagePath -> {
-            String imageFileName = imagePath.getFileName().toString();
-            String downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
+            var imageFileName = imagePath.getFileName().toString();
+            var downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
             imageUrls.put(imageFileName, downloadURLFormat);
           });
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
@@ -89,11 +89,11 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
       String baseUrl, String location) throws IOException {
-    String readmeContents = Files.readString(readmeFile);
+    var readmeContents = Files.readString(readmeFile);
     if (ProductContentUtils.hasImageDirectives(readmeContents)) {
       readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
     }
-    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
     ProductContentUtils.mappingDescriptionSetupAndDemo(
         moduleContents,
         readmeFile.getFileName().toString(),

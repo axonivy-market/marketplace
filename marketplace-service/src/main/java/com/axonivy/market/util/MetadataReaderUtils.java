@@ -30,7 +30,7 @@ public class MetadataReaderUtils {
 
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
       boolean isSnapShot) {
-    Document document = getDocumentFromXMLContent(xmlData);
+    var'' document = getDocumentFromXMLContent(xmlData);
     try {
       LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
@@ -60,7 +60,7 @@ public class MetadataReaderUtils {
     metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
     metadata.setRelease(getElementValue(document, MavenConstants.LATEST_RELEASE_TAG));
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
-    for (int i = 0; i < versionNodes.getLength(); i++) {
+    for (var i = 0; i < versionNodes.getLength(); i++) {
       metadata.getVersions().add(versionNodes.item(i).getTextContent());
     }
   }
@@ -74,7 +74,7 @@ public class MetadataReaderUtils {
   }
 
   public static String getElementValue(Document doc, String tagName) {
-    NodeList nodeList = doc.getElementsByTagName(tagName);
+    var nodeList = doc.getElementsByTagName(tagName);
     if (nodeList.getLength() > 0) {
       return nodeList.item(0).getTextContent();
     }
@@ -86,14 +86,14 @@ public class MetadataReaderUtils {
     String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
         mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
     var metadataContent = HttpFetchingUtils.getFileAsString(snapShotMetadataUrl);
-    Document document = getDocumentFromXMLContent(metadataContent);
+    var document = getDocumentFromXMLContent(metadataContent);
     return getElementValue(document, MavenConstants.VALUE_TAG);
   }
 
   public static Document getDocumentFromXMLContent(String xmlData) {
     Document document = null;
     try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
     } catch (Exception e) {

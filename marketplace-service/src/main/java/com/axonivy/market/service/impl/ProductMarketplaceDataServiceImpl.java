@@ -58,7 +58,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
     SortOption.of(customSort.getRuleForRemainder());
 
-    ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
+    var productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
     productCustomSortRepo.deleteAll();
     productMarketplaceDataRepo.resetCustomOrderForAllProducts();
     productCustomSortRepo.save(productCustomSort);
@@ -71,7 +71,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     int descendingOrder = orderedListOfProducts.size();
     for (String productId : orderedListOfProducts) {
       validateProductExists(productId);
-      ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+      var productMarketplaceData = getProductMarketplaceData(productId);
 
       productMarketplaceData.setCustomOrder(descendingOrder--);
       productEntries.add(productMarketplaceData);
@@ -82,7 +82,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public int updateInstallationCountForProduct(String productId, String designerVersion) {
     validateProductExists(productId);
-    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+    var productMarketplaceData = getProductMarketplaceData(productId);
 
     log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
@@ -99,9 +99,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
     log.info("synchronizing installation count for product {}", productId);
-    int result = 0;
+    var result = 0;
     try {
-      String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
+      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
@@ -120,7 +120,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public int updateProductInstallationCount(String id) {
-    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(id);
+    var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
       return productMarketplaceDataRepo.updateInitialCount(id,
           getInstallationCountFromFileOrInitializeRandomly(id));

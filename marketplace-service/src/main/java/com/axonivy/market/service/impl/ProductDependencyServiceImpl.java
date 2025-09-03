@@ -70,7 +70,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
    */
   @Override
   public synchronized int syncIARDependenciesForProducts(Boolean resetSync, String productId) {
-    int totalSyncedProductIds = 0;
+    var totalSyncedProductIds = 0;
     if (StringUtils.isNotBlank(productId)) {
       totalSyncedProductIds += syncByMavenArtifactVersions(productId, resetSync);
     } else {
@@ -84,7 +84,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private int syncByMavenArtifactVersions(String id, Boolean resetSync) {
     cleanUpProductDependencyIfNeeded(id, resetSync);
 
-    int totalSyncedProductIds = 0;
+    var totalSyncedProductIds = 0;
     for (var artifact : getIARMavenArtifactVersionsByProductId(id)) {
       String productId = artifact.getProductId();
       String artifactId = artifact.getId().getArtifactId();
@@ -93,7 +93,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         deleteProductDependencies(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
             productId, artifactId, version));
       }
-      ProductDependency productDependency = findProductDependencyByIds(productId, artifactId, version);
+      var productDependency = findProductDependencyByIds(productId, artifactId, version);
       if (productDependency == null) { // Is missing artifacts ?
         productDependency = initProductDependencyData(artifact);
         totalSyncedProductIds = createNewProductDependencyForArtifact(artifact, productDependency,
@@ -166,7 +166,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       return;
     }
     log.info("Collect IAR dependencies for requested artifact {}", artifact.getId().getArtifactId());
-    int totalDependencyLevels = 0;
+    var totalDependencyLevels = 0;
     collectMavenDependenciesForArtifact(artifact.getId().getProductVersion(), mavenDependency.getDependencies(),
         dependencyModels, totalDependencyLevels);
   }
@@ -180,7 +180,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
       // Find Metadata configuration of dependency
-      Metadata dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
+      var dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
       // Find dependency in ProductDependency table, create a new one if not exist
@@ -235,7 +235,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private List<Dependency> extractMavenPOMDependencies(String downloadUrl)
       throws IOException, XmlPullParserException, NullPointerException, HttpClientErrorException {
     byte[] location = downloadPOMFileFromMaven(downloadUrl);
-    Model mavelModel = convertPomToModel(location);
+    var mavelModel = convertPomToModel(location);
     return mavelModel.getDependencies().stream()
         .filter(dependency -> DEFAULT_PRODUCT_TYPE.equals(dependency.getType()))
         .toList();

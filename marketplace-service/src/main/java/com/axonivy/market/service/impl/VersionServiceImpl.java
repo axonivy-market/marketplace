@@ -79,7 +79,7 @@ public class VersionServiceImpl implements VersionService {
       String designerVersion) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent =
+      var productJsonContent =
           productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
@@ -103,10 +103,10 @@ public class VersionServiceImpl implements VersionService {
       return Collections.emptyList();
     }
     for (String version : VersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-      Link link = linkTo(
+      var link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
               designerVersion)).withSelfRel();
-      VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
       versionAndUrlList.add(versionAndUrlModel);
     }
     return versionAndUrlList;

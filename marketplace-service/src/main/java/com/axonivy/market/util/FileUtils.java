@@ -32,8 +32,8 @@ public class FileUtils {
   private static final String ENTRY_OUTSIDE_TARGET_DIR = "entry is outside the target dir";
 
   public static File createFile(String fileName) throws IOException {
-    File file = new File(fileName);
-    File parentDir = file.getParentFile();
+    var file = new File(fileName);
+    var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
       throw new IOException("Failed to create file: " + file.getAbsolutePath());
@@ -42,7 +42,7 @@ public class FileUtils {
   }
 
   public static void writeToFile(File file, String content) throws IOException {
-    try (FileWriter writer = new FileWriter(file, false)) {
+    try (var writer = new FileWriter(file, false)) {
       writer.write(content);
     }
   }

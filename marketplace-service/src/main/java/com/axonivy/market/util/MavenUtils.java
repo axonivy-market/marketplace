@@ -56,7 +56,7 @@ public class MavenUtils {
   }
 
   public static Artifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
-    Artifact artifact = new Artifact();
+    var artifact = new Artifact();
     artifact.setRepoUrl(repoUrl);
     artifact.setIsDependency(isDependency);
     artifact.setGroupId(getTextValueFromNodeAndPath(node, ProductJsonConstants.GROUP_ID));
@@ -78,13 +78,13 @@ public class MavenUtils {
     }
     JsonNode dependenciesNode = dataNode.path(nodeName);
     for (JsonNode dependencyNode : dependenciesNode) {
-      Artifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
+      var artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
       artifacts.add(artifact);
     }
   }
 
   public static List<Artifact> convertProductJsonToMavenProductInfo(Path folderPath) throws IOException {
-    Path productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
+    var productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
 
     if (!(Files.exists(productJsonPath) && Files.isRegularFile(productJsonPath))) {
       log.warn("product.json file not found in the folder: {}", folderPath);
@@ -157,7 +157,7 @@ public class MavenUtils {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
     String repoUrl = StringUtils.defaultIfBlank(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
-    ArchivedArtifact archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(version,
+    var archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(version,
         artifact.getArchivedArtifacts());
 
     if (Objects.nonNull(archivedArtifactBestMatchVersion)) {
@@ -175,7 +175,7 @@ public class MavenUtils {
     if (StringUtils.isBlank(version)) {
       version = baseVersion;
     }
-    String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
+    var artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
 

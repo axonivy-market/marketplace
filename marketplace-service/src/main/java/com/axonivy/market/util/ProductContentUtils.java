@@ -53,8 +53,8 @@ public class ProductContentUtils {
 
   public static String getReadmeFileLocale(String readmeFile) {
     String result = StringUtils.EMPTY;
-    Pattern pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
-    Matcher matcher = pattern.matcher(readmeFile);
+    var pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
+    var matcher = pattern.matcher(readmeFile);
     if (matcher.find()) {
       result = matcher.group(1);
     }
@@ -91,7 +91,7 @@ public class ProductContentUtils {
       }
     }
 
-    ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+    var readmeContentsModel = new ReadmeContentsModel();
     readmeContentsModel.setDescription(description.trim());
     readmeContentsModel.setDemo(demo.trim());
     readmeContentsModel.setSetup(setup.trim());
@@ -100,8 +100,8 @@ public class ProductContentUtils {
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
-    Pattern pattern = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-    Matcher matcher = pattern.matcher(readmeContents);
+    var pattern = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
+    var matcher = pattern.matcher(readmeContents);
     return matcher.find();
   }
 
@@ -120,7 +120,7 @@ public class ProductContentUtils {
   }
 
   public static ProductModuleContent initProductModuleContent(String productId, String version) {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
+    var productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(productId);
     productModuleContent.setVersion(version);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
@@ -128,7 +128,7 @@ public class ProductContentUtils {
   }
 
   public static void updateProductModule(ProductModuleContent productModuleContent, List<Artifact> artifacts) {
-    Artifact artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
+    var artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
     if (Objects.nonNull(artifact)) {
       productModuleContent.setIsDependency(Boolean.TRUE);
       productModuleContent.setGroupId(artifact.getGroupId());
@@ -152,7 +152,7 @@ public class ProductContentUtils {
    */
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
+      var imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imagePattern,
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
