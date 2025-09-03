@@ -32,6 +32,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
 
+  private static final int TOKEN_LAST_SEGMENT = 1;
+  private static final int TOKEN_SECOND_LAST_SEGMENT = 2;
+
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -129,7 +132,8 @@ public class ProductFactory {
     var tokensLength = tokens.length;
     var repositoryPath = sourceUrl;
     if (tokensLength > 1) {
-      repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
+      repositoryPath = String.join(SLASH, tokens[tokensLength - TOKEN_SECOND_LAST_SEGMENT],
+          tokens[tokensLength - TOKEN_LAST_SEGMENT]);
     }
     product.setRepositoryName(repositoryPath);
     product.setSourceUrl(sourceUrl);
