@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -45,6 +46,8 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ImageService imageService;
   private final ProductDependencyRepository productDependencyRepository;
   private final ProductMarketplaceDataService productMarketplaceDataService;
+  public static final Pattern IMAGE_EXTENSION_PATTERN =
+      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
@@ -109,8 +112,12 @@ public class ProductContentServiceImpl implements ProductContentService {
       String readmeContents) {
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
-      List<Path> allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
-          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+      List<Path> allImagePaths = imagePathStream
+          .filter(Files::isRegularFile)
+          .filter(path -> IMAGE_EXTENSION_PATTERN
+              .matcher(path.getFileName().toString().toLowerCase())
+              .matches())
+          .toList();
 
       for (Path imagePath : allImagePaths) {
         var currentImage = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
@@ -141,7 +148,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   public void buildArtifactZipStreamFromUrls(String productId, List<String> urls, OutputStream out) {
     FileUtils.buildArtifactStreamFromArtifactUrls(urls, out);
     if (ObjectUtils.isNotEmpty(urls)) {
-    productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
+      productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
     }
   }
 }

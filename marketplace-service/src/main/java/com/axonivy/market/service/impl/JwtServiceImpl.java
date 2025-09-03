@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Log4j2
 @Component
 public class JwtServiceImpl implements JwtService {
   private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
@@ -38,6 +40,7 @@ public class JwtServiceImpl implements JwtService {
       getClaimsJws(token);
       return true;
     } catch (Exception e) {
+      log.error("Error validating token: ", e);
       return false;
     }
   }
