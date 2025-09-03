@@ -11,7 +11,8 @@ import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
 
 @Builder
-public class CustomProductModuleContentRepositoryImpl extends BaseRepository<ProductModuleContent> implements CustomProductModuleContentRepository {
+public class CustomProductModuleContentRepositoryImpl extends BaseRepository<ProductModuleContent>
+    implements CustomProductModuleContentRepository {
 
   @Override
   public List<String> findVersionsByProductId(String id) {
