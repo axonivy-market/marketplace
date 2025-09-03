@@ -10,7 +10,8 @@ import lombok.Builder;
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData> implements CustomProductMarketplaceDataRepository {
+public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData>
+    implements CustomProductMarketplaceDataRepository {
 
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
           UPDATE product_marketplace_data  
