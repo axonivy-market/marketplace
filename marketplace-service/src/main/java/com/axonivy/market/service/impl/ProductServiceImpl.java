@@ -257,13 +257,14 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
     var result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent((Image image) -> {
-        if (StringUtils.isNotBlank(result.getLogoId())) {
-          imageRepo.deleteById(result.getLogoId());
-        }
-        result.setLogoId(image.getId());
-        productRepo.save(result);
-      });
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(
+          (Image image) -> {
+            if (StringUtils.isNotBlank(result.getLogoId())) {
+              imageRepo.deleteById(result.getLogoId());
+            }
+            result.setLogoId(image.getId());
+            productRepo.save(result);
+          });
       return result.getId();
     }
     log.info("There is no product to update the logo with path {}", parentPath);
@@ -339,7 +340,8 @@ public class ProductServiceImpl implements ProductService {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
-        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+        product.setVendorImageDarkMode(
+            mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
       }
     }
   }
@@ -709,7 +711,7 @@ public class ProductServiceImpl implements ProductService {
         .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
+  @Cacheable(value = "GithubPublicReleasesCache", key = "{#productId}")
   @Override
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductByIdAndRelatedData(productId);
@@ -717,19 +719,21 @@ public class ProductServiceImpl implements ProductService {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
+    PagedIterable<GHRelease> ghReleasePagedIterable = this.gitHubService.getRepository(
+        product.getRepositoryName()).listReleases();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
 
-  @CachePut(value = "GithubPublicReleasesCache", key="{#productId}")
+  @CachePut(value = "GithubPublicReleasesCache", key = "{#productId}")
   @Override
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
   }
 
   @Override
-  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
+      Long releaseId) throws IOException {
     Product product = productRepo.findProductByIdAndRelatedData(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
