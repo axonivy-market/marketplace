@@ -3,7 +3,6 @@ package com.axonivy.market.github.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

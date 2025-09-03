@@ -59,6 +59,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -77,6 +78,8 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
+  private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
+  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX);
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -383,7 +386,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();
-    getRepository(repoName).listReleases().forEach(release -> {
+    getRepository(repoName).listReleases().forEach((GHRelease release) -> {
       if (!release.isDraft()) {
         ghReleases.add(release);
       }
@@ -393,12 +396,10 @@ public class GitHubServiceImpl implements GitHubService {
 
   public List<GHRelease> getReleasesPage(List<GHRelease> ghReleases, int pageNumber, int pageSize) {
     int start = pageNumber * pageSize;
-    int end = Math.min(start + pageSize, ghReleases.size());
-
     if (start >= ghReleases.size()) {
       return Collections.emptyList();
     }
-
+    int end = Math.min(start + pageSize, ghReleases.size());
     return ghReleases.subList(start, end);
   }
 
@@ -424,8 +425,11 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    return StringUtils.defaultString(githubReleaseBody).replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
-        productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP).replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    String body = StringUtils.defaultString(githubReleaseBody);
+    body = GITHUB_PULL_REQUEST_PATTERN.matcher(body).replaceAll(
+        productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    body = GITHUB_USERNAME_PATTERN.matcher(body).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    return body;
   }
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
