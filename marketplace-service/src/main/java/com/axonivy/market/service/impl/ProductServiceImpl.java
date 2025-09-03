@@ -712,7 +712,7 @@ public class ProductServiceImpl implements ProductService {
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = "GithubPublicReleasesCache", key="{#productId}")
+  @CacheEvict(value = "RepoRelease", key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);

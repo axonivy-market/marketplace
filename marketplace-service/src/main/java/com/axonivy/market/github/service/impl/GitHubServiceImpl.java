@@ -424,7 +424,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
+    return StringUtils.defaultString(githubReleaseBody).replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP).replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 
