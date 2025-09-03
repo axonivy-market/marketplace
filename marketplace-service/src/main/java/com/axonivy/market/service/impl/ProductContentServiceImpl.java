@@ -41,13 +41,14 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
+
+  public static final Pattern IMAGE_EXTENSION_PATTERN =
+      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
   private final ProductDependencyRepository productDependencyRepository;
   private final ProductMarketplaceDataService productMarketplaceDataService;
-  public static final Pattern IMAGE_EXTENSION_PATTERN =
-      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,

@@ -40,6 +40,9 @@ import java.util.Map;
 @Log4j2
 @RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
+  
+  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -50,9 +53,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
-
-  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
-  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
