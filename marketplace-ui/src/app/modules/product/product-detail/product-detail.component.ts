@@ -12,6 +12,7 @@ import {
   Inject,
   PLATFORM_ID,
   Signal,
+  ViewChild,
   WritableSignal,
   computed,
   inject,
@@ -26,6 +27,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
+  DEFAULT_CHANGELOG_PAGEABLE,
   DEFAULT_IMAGE_URL,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
   OG_TITLE_KEY,
@@ -156,6 +158,7 @@ export class ProductDetailComponent {
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
   isBrowser: boolean;
   meta = inject(Meta);
+  @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   private scrollPositions: { [tabId: string]: number } = {};
 
@@ -199,7 +202,7 @@ export class ProductDetailComponent {
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        changelogs: this.productService.getProductChangelogs(productId)
+        changelogs: this.productService.getProductChangelogs(productId, DEFAULT_CHANGELOG_PAGEABLE)
       }).subscribe(res => {
         this.setupMarkdownParser(productDetail.sourceUrl);
 
@@ -594,6 +597,8 @@ export class ProductDetailComponent {
     }
     return PRODUCT_DETAIL_TABS[0].value;
   }
+
+  
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => {

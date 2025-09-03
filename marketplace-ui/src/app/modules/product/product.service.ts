@@ -11,6 +11,7 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { Pageable } from '../../shared/models/apis/pageable.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -111,10 +112,12 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string): Observable<ProductReleasesApiResponse> {
+  getProductChangelogs(productId: string, pageable: Pageable): Observable<ProductReleasesApiResponse> {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
-
-    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) }).pipe(
+    let requestParams = new HttpParams()
+      .set(RequestParam.PAGE, `${pageable.page}`)
+      .set(RequestParam.SIZE, `${pageable.size}`);
+    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true), params: requestParams }).pipe(
       catchError(() => {
         const productReleasesApiResponse = {} as ProductReleasesApiResponse;
         return of(productReleasesApiResponse);

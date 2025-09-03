@@ -216,9 +216,15 @@ export const DEFAULT_PAGEABLE: Pageable = {
   page: 0,
   size: 20
 };
+
 export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
   page: 0,
   size: 40
+};
+
+export const DEFAULT_CHANGELOG_PAGEABLE: Pageable = {
+  page: 0,
+  size: 5
 };
 
 export const VERSION = {
