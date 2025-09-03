@@ -253,8 +253,8 @@
       },
       "pagination": {
         "tenItems": "10 items per page",
-        "fifteenItems": "15 items per page",
-        "twentyItems": "20 items per page"
+        "twentyItems": "20 items per page",
+        "all": "All"
       }
     }
   }

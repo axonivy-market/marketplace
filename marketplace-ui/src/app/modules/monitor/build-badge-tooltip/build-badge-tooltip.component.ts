@@ -59,4 +59,8 @@ export class BuildBadgeTooltipComponent implements OnInit {
         break;
     }
   }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
+  }
 }

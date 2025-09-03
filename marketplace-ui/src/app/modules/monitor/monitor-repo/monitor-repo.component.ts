@@ -24,10 +24,12 @@ import {
   DEV_BUILD,
   E2E_BUILD,
   MARKET_BASE_URL,
+  NAME_COLUMN,
   REPORT_MODE
 } from '../../../shared/constants/common.constant';
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
+
 
 @Component({
   selector: 'app-monitor-repo',
@@ -49,6 +51,11 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   styleUrl: './monitor-repo.component.scss'
 })
 export class MonitoringRepoComponent implements OnInit, OnChanges {
+  readonly COLUMN_NAME = NAME_COLUMN;
+  readonly COLUMN_CI = CI_BUILD;
+  readonly COLUMN_DEV = DEV_BUILD;
+  readonly COLUMN_E2E = E2E_BUILD;
+
   protected LoadingComponentId = LoadingComponentId;
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
@@ -61,14 +68,13 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   searchText = '';
   page = 1;
   pageSize = 10;
-  sortColumn = 'name';
+  sortColumn = this.COLUMN_NAME;
   sortDirection = ASCENDING;
   allRepositories: Repository[] = [];
   filteredRepositories: Repository[] = [];
   displayedRepositories: Repository[] = [];
 
   languageService = inject(LanguageService);
-  githubService = inject(GithubService);
   translateService = inject(TranslateService);
   router = inject(Router);
 
@@ -120,14 +126,14 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     }
 
     this.filteredRepositories.sort((repo1, repo2) => {
-      const firstValue =
+      const repo1ColumnValue =
         this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
-      const secondValue =
+      const repo2ColumnValue =
         this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
 
-      if (firstValue < secondValue)
+      if (repo1ColumnValue < repo2ColumnValue)
         return this.sortDirection === ASCENDING ? -1 : 1;
-      if (firstValue > secondValue)
+      if (repo1ColumnValue > repo2ColumnValue)
         return this.sortDirection === ASCENDING ? 1 : -1;
       return 0;
     });
@@ -136,7 +142,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   }
 
   private getColumnValue(repo: Repository, column: string): string {
-    if (column === 'name') {
+    if (column === this.COLUMN_NAME) {
       return repo.name;
     }
 

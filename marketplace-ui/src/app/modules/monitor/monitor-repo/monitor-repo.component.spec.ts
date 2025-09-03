@@ -6,8 +6,9 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
-describe('MonitoringDashboardComponent', () => {
+describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
   let fixture: ComponentFixture<MonitoringRepoComponent>;
   let githubService: jasmine.SpyObj<GithubService>;
@@ -64,7 +65,8 @@ describe('MonitoringDashboardComponent', () => {
       imports: [
         MonitoringRepoComponent,
         HttpClientTestingModule,
-        TranslateModule.forRoot()
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot()
       ],
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },

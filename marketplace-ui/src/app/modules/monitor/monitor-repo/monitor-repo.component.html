@@ -30,25 +30,25 @@
   <table class="table">
     <thead>
       <tr>
-        <th class="text-primary connector-column" sortable="name" (click)="sortRepositoriesByColumn('name')">
-          <h5 class="table-header" [ngClass]="getSortIcon('name')">
+        <th class="text-primary connector-column" (click)="sortRepositoriesByColumn(COLUMN_NAME)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_NAME)">
             {{ 'common.monitor.dashboard.connector' | translate }}
           </h5>
         </th>
-        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn('CI')">
-          <h5 class="table-header" [ngClass]="getSortIcon('CI')">
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_CI)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_CI)">
             {{ 'common.monitor.dashboard.ciLabel' | translate }}
             <app-build-badge-tooltip buildType="CI" />
           </h5>
         </th>
-        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn('DEV')">
-          <h5 class="table-header" [ngClass]="getSortIcon('DEV')">
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_DEV)">
             {{ 'common.monitor.dashboard.devLabel' | translate }}
             <app-build-badge-tooltip buildType="DEV" />
           </h5>
         </th>
-        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn('E2E')">
-          <h5 class="table-header" [ngClass]="getSortIcon('E2E')">
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_E2E)">
             {{ 'common.monitor.dashboard.e2eLabel' | translate }}
             <app-build-badge-tooltip buildType="E2E" />
           </h5>
@@ -70,8 +70,8 @@
           </a>
           </p>
         </td>
-        <td *ngFor="let wf of repo.workflowInformation">
-          <app-repo-test-result [workflowType]="wf.workflowType" [workflowInfo]="wf" [repository]="repo"
+        <td *ngFor="let workflowType of workflowKeys">
+          <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)" [repository]="repo"
             [mode]="mode[tabKey]"></app-repo-test-result>
         </td>
         <td class="align-middle">
@@ -103,11 +103,11 @@
       <option [ngValue]="10">
         {{ 'common.monitor.pagination.tenItems' | translate }}
       </option>
-      <option [ngValue]="15">
-        {{ 'common.monitor.pagination.fifteenItems' | translate }}
-      </option>
       <option [ngValue]="20">
         {{ 'common.monitor.pagination.twentyItems' | translate }}
+      </option>
+      <option [ngValue]="filteredRepositories.length">
+        {{ 'common.monitor.pagination.all' | translate }}
       </option>
     </select>
   </div>

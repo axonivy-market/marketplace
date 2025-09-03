@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RepoTestResultComponent } from './repo-test-result.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
-describe('BuildBadgeTooltipComponent', () => {
+describe('RepoTestResultComponent', () => {
   let component: RepoTestResultComponent;
   let fixture: ComponentFixture<RepoTestResultComponent>;
   let mockTranslateService: jasmine.SpyObj<TranslateService>;
@@ -15,7 +16,7 @@ describe('BuildBadgeTooltipComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [RepoTestResultComponent],
+      imports: [RepoTestResultComponent, MatomoTestingModule.forRoot()],
       providers: [{ provide: TranslateService, useValue: mockTranslateService }]
     }).compileComponents();
 
@@ -37,9 +38,9 @@ describe('BuildBadgeTooltipComponent', () => {
     const repoName = 'test-repo';
     const workflow = 'ci';
 
-    component.onBadgeClick(repoName, workflow);
+    component.onBadgeClick(repoName, workflow, 'report');
 
-    expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
+    expect(router.navigate).toHaveBeenCalledWith(['/monitoring', repoName, 'CI']);
   });
 
 });

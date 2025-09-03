@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BuildBadgeTooltipComponent } from './build-badge-tooltip.component';
 import { TranslateService } from '@ngx-translate/core';
 import { CI_BUILD, DEV_BUILD, E2E_BUILD } from '../../../shared/constants/common.constant';
+import { Subject } from 'rxjs';
 
 describe('BuildBadgeTooltipComponent', () => {
   let component: BuildBadgeTooltipComponent;
@@ -9,9 +10,10 @@ describe('BuildBadgeTooltipComponent', () => {
   let mockTranslateService: jasmine.SpyObj<TranslateService>;
 
   beforeEach(async () => {
-    mockTranslateService = jasmine.createSpyObj('TranslateService', [
-      'instant'
-    ]);
+    const langChangeSubject = new Subject<any>();
+    mockTranslateService = jasmine.createSpyObj('TranslateService', ['instant'], {
+      onLangChange: langChangeSubject.asObservable()
+    });
 
     await TestBed.configureTestingModule({
       imports: [BuildBadgeTooltipComponent],
@@ -28,13 +30,17 @@ describe('BuildBadgeTooltipComponent', () => {
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should call constructToolTipContent on ngOnInit', () => {
     spyOn(component, 'constructToolTipContent');
+
     component.ngOnInit();
+
     expect(component.constructToolTipContent).toHaveBeenCalled();
+    expect(component.langSub).toBeDefined();
   });
 
   it('should set tooltipContent for CI build type', () => {

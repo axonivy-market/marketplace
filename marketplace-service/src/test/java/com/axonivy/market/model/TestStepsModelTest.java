@@ -6,8 +6,6 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,9 +16,6 @@ class TestStepsModelTest {
     GithubRepo repo = new GithubRepo();
     repo.setName("demo-repo");
     repo.setHtmlUrl("https://github.com/org/demo-repo");
-    repo.setCiLastBuilt(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-    repo.setDevLastBuilt(Date.from(Instant.parse("2024-01-02T00:00:00Z")));
-    repo.setE2eLastBuilt(Date.from(Instant.parse("2024-01-03T00:00:00Z")));
 
     TestStep result = new TestStep();
     result.setName("Example name test");
@@ -34,8 +29,6 @@ class TestStepsModelTest {
             "Expected the name to match the repo name");
     assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
         "Expected the HTML URL to match the repo URL");
-    assertEquals("Java", model.getLanguage(),
-            "Expected the language to match the repo language");
 
     assertNotNull(model.getTestResults(),
             "Expected test results to be initialized");

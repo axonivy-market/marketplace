@@ -348,6 +348,7 @@ export const DATA_THEME_ICON = 'data-theme-icon';
 export const DATA_LANGUAGE = 'data-language';
 
 // Monitoring constants
+export const NAME_COLUMN = 'name';
 export const CI_BUILD = 'CI';
 export const DEV_BUILD = 'DEV';
 export const E2E_BUILD = 'E2E';

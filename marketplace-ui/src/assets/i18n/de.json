@@ -251,9 +251,9 @@
         "e2e": "Überprüft, dass unser Code mit der echten API funktioniert und bestätigt, dass der Endpunkt aktiv und korrekt ist."
       },
       "pagination": {
-        "tenItems": "10 Elemente pro Seite",
-        "fifteenItems": "15 Elemente pro Seite",
-        "twentyItems": "20 Elemente pro Seite"
+        "tenItems": "10 pro Seite",
+        "twentyItems": "20 pro Seite",
+        "all": "Alle"
       }
     }
   }

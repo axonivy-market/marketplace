@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IsEmptyObjectPipe } from '../../../shared/pipes/is-empty-object.pipe';
@@ -11,7 +11,7 @@ import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.cons
 @Component({
   selector: 'app-repo-test-result',
   standalone: true,
-  imports: [CommonModule, TranslateModule, IsEmptyObjectPipe, BuildStatusEntriesPipe],
+  imports: [CommonModule, TranslateModule, IsEmptyObjectPipe, BuildStatusEntriesPipe, NgOptimizedImage],
   templateUrl: './repo-test-result.component.html',
   styleUrl: './repo-test-result.component.scss'
 })
@@ -33,15 +33,14 @@ export class RepoTestResultComponent {
     return (conclusion || '').toLowerCase();
   }
 
-  onBadgeClick(repo: string, workflowType: string, mode: string = DEFAULT_MODE) {
+  onBadgeClick(repo: string, workflowType: string, mode: string) {
     if (mode == REPORT_MODE) {
       this.router.navigate(['/monitoring', repo, workflowType]);
-      return;
-    }
-
-    const lastBuiltUrl = this.workflowInfo?.lastBuiltRun;
-    if (lastBuiltUrl) {
-      window.open(lastBuiltUrl, '_blank');
+    } else {
+      const lastBuiltUrl = this.workflowInfo?.lastBuiltRun;
+      if (lastBuiltUrl) {
+        window.open(lastBuiltUrl, '_blank');
+      }
     }
   }
 }

@@ -19,8 +19,13 @@
   }
 
   th:last-child::after {
-      content: none;
-    }
+    content: none;
+  }
+
+  td {
+    line-height: 40px;
+    vertical-align: middle;
+  }
 }
 
 .feature-bar {
