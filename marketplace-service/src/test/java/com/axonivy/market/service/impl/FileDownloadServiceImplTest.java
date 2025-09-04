@@ -44,7 +44,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
     var result = fileDownloadService.downloadAndUnzipFile("", new DownloadOption(false, "", false));
-    assertTrue(result.isEmpty());
+    assertTrue(result.isEmpty(), "Expected the result to be empty when downloading with an empty URL");
   }
 
   @Test
@@ -68,7 +68,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
       mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
 
       var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, new DownloadOption(false, "", false));
-      assertFalse(result.isEmpty());
+      assertFalse(result.isEmpty(), "Expected the result to contain files after unzipping");
       mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
     }
   }
@@ -77,11 +77,11 @@ class FileDownloadServiceImplTest extends BaseSetup {
   void testSupportFunctions() throws IOException {
     var mockFile = fileDownloadService.createFolder("unzip");
     var grantedPath = fileDownloadService.grantNecessaryPermissionsFor(mockFile.toString());
-    assertNotNull(grantedPath);
+    assertNotNull(grantedPath, "Expected grantedPath to be non-null after setting permissions");
 
     var mockZipFile = new File("src/test/resources/mock-doc.zip");
     var totalSizeArchive = fileDownloadService.unzipFile(mockZipFile.getPath(), mockFile.toString());
-    assertTrue(totalSizeArchive > 0);
+    assertTrue(totalSizeArchive > 0, "Expected totalSizeArchive to be greater than 0 after unzipping the file");
   }
 
   @Test
@@ -95,7 +95,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
       Path resultPath = fileDownloadService.createFolder(location);
 
       mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
-      assertEquals(mockPath, resultPath);
+      assertEquals(mockPath, resultPath, "Expected the created folder path to match the requested path");
     }
   }
 
@@ -111,7 +111,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
       Path resultPath = fileDownloadService.createFolder(location);
 
       mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
-      assertEquals(mockPath, resultPath);
+      assertEquals(mockPath, resultPath, "Expected the returned path to match the requested path even if creation fails");
     }
   }
 
@@ -136,7 +136,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testUnzipFile() throws IOException {
     int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_DIR_LOCATION);
-    assertEquals(7, result);
+    assertEquals(7, result, "Expected the unzip operation to extract exactly 7 files");
     fileDownloadService.deleteDirectory(Paths.get(EXTRACTED_DIR_LOCATION));
   }
 
@@ -160,7 +160,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
           .thenReturn(mockTempPath);
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
-      assertEquals(EXTRACT_DIR_LOCATION, result);
+      assertEquals(EXTRACT_DIR_LOCATION, result, "Expected the downloadAndUnzipFile method to return the extract directory location");
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(mockTempPath, mockFileContent), times(1));
       verify(spyService).unzipFile(mockTempPath.toString(), EXTRACT_DIR_LOCATION);
@@ -185,7 +185,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
           .thenReturn(mockTempPath);
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
-      assertEquals(EXTRACT_DIR_LOCATION, result);
+      assertEquals(EXTRACT_DIR_LOCATION, result, "Expected the downloadAndUnzipFile method to return the extract directory even if file content is null");
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
     }
