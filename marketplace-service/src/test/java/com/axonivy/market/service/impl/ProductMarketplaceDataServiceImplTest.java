@@ -105,10 +105,17 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
 
-    NotFoundException exception = assertThrows(NotFoundException.class,
-        () -> productMarketplaceDataService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode(),
-        "Should throw product not found exception when no product is found");
+    NotFoundException exception = assertThrows(
+        NotFoundException.class,
+        () -> productMarketplaceDataService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts),
+        "Expected NotFoundException when product is not found"
+    );
+
+    assertEquals(
+        ErrorCode.PRODUCT_NOT_FOUND.getCode(),
+        exception.getCode(),
+        "Exception code should indicate PRODUCT_NOT_FOUND"
+    );
   }
 
   @Test
