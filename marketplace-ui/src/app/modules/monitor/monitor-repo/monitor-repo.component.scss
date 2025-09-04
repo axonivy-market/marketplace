@@ -21,11 +21,6 @@
   th:last-child::after {
     content: none;
   }
-
-  td {
-    line-height: 40px;
-    vertical-align: middle;
-  }
 }
 
 .feature-bar {
@@ -99,8 +94,14 @@
   }
 }
 
+td.no-workflow {
+  height: 6rem !important;
+  vertical-align: middle;
+}
+
 .pagination {
   width: 16rem !important;
+  cursor: pointer;
 }
 
 ::ng-deep .pagination a {

@@ -13,7 +13,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { By } from '@angular/platform-browser';
-import { ASCENDING } from '../../../shared/constants/common.constant';
+import { ASCENDING, DEFAULT_MODE, FOCUSED_TAB, REPORT_MODE } from '../../../shared/constants/common.constant';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
@@ -23,21 +23,22 @@ describe('MonitoringRepoComponent', () => {
   beforeEach(async () => {
     mockRepositories = [
       {
-        name: 'repo1',
+        repoName: 'repo1',
+        productId: 'id1',
         htmlUrl: 'https://github.com/user/repo1',
         workflowInformation: [
           {
             workflowType: 'CI',
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
-            lastBuiltRun:
+            lastBuiltRunUrl:
               'https://github.com/market/rtf-factory/actions/runs/11111'
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
-            lastBuiltRun:
+            lastBuiltRunUrl:
               'https://github.com/market/rtf-factory/actions/runs/11111'
           }
         ],
@@ -50,14 +51,16 @@ describe('MonitoringRepoComponent', () => {
         ]
       },
       {
-        name: 'repo2',
+        repoName: 'repo2',
+        productId: 'id2',
         htmlUrl: 'https://github.com/user/repo2',
         workflowInformation: [],
         focused: false,
         testResults: []
       },
       {
-        name: 'repo3',
+        repoName: 'repo3',
+        productId: 'id3',
         htmlUrl: 'https://github.com/user/repo3',
         workflowInformation: [],
         focused: false,
@@ -90,7 +93,7 @@ describe('MonitoringRepoComponent', () => {
     fixture = TestBed.createComponent(MonitoringRepoComponent);
     component = fixture.componentInstance;
 
-    component.tabKey = 'focused';
+    component.tabKey = FOCUSED_TAB;
     component.repositories = [...mockRepositories];
     component.ngOnChanges();
     component.refreshPagination();
@@ -104,13 +107,13 @@ describe('MonitoringRepoComponent', () => {
 
   it('should initialize mode to default for given tabKey', () => {
     component.ngOnInit();
-    expect(component.mode['focused']).toBe('default');
+    expect(component.mode[FOCUSED_TAB]).toBe(DEFAULT_MODE);
   });
 
   it('should filter repositories when search changes', () => {
     component.onSearchChanged('repo1');
     expect(component.filteredRepositories.length).toBe(1);
-    expect(component.filteredRepositories[0].name).toBe('repo1');
+    expect(component.filteredRepositories[0].repoName).toBe('repo1');
 
     component.onSearchChanged('asanaaaa');
     expect(component.filteredRepositories.length).toBe(0);
@@ -130,12 +133,12 @@ describe('MonitoringRepoComponent', () => {
     component.sortDirection = ASCENDING;
     // Descending
     component.sortRepositoriesByColumn(component.COLUMN_NAME);
-    expect(component.filteredRepositories.map(r => r.name)).toEqual([
+    expect(component.filteredRepositories.map(r => r.repoName)).toEqual([
       'repo3', 'repo2', 'repo1' ]);
 
     // Ascending
     component.sortRepositoriesByColumn(component.COLUMN_NAME);
-    expect(component.filteredRepositories.map(r => r.name)).toEqual([
+    expect(component.filteredRepositories.map(r => r.repoName)).toEqual([
       'repo1', 'repo2', 'repo3' ]);
   });
 
@@ -155,7 +158,7 @@ describe('MonitoringRepoComponent', () => {
   });
 
   it('should toggle mode via ngModel binding', fakeAsync(() => {
-    component.mode['focused'] = 'default';
+    component.mode[FOCUSED_TAB] = DEFAULT_MODE;
     fixture.detectChanges();
     const reportRadio = fixture.debugElement.query(
       By.css('#report-mode-focused')
@@ -164,7 +167,7 @@ describe('MonitoringRepoComponent', () => {
     reportRadio.click();
     fixture.detectChanges();
     tick();
-    expect(component.mode['focused']).toBe('report');
+    expect(component.mode[FOCUSED_TAB]).toBe(REPORT_MODE);
   }));
 
   it('should display repository links correctly in template', () => {

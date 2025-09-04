@@ -1,12 +1,12 @@
 @if (workflowInfo && badges[workflowInfo.conclusion]) {
   <img class="badge-image" [ngSrc]="badges[workflowInfo.conclusion].src" [alt]="badges[workflowInfo.conclusion].alt" width="72" height="50"
-    (click)="onBadgeClick(repository.name, workflowType, mode)" />
+    (click)="onBadgeClick(repository.repoName, workflowType, mode)" />
   <span class="built-date text-muted px-2 align-middle">
     {{ workflowInfo.lastBuilt | date: 'short' }}
   </span>
 }
 
-@if (mode === 'report') {
+@if (mode === REPORT) {
   @for (build of repository.testResults; track build.workflow) {
     @if (build.workflow === workflowInfo?.workflowType) {
     <div class="sub-status align-middle">

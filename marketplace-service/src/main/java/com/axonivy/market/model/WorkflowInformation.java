@@ -33,5 +33,5 @@ public class WorkflowInformation extends GenericIdEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "UTC")
   private Date lastBuilt;
   private String conclusion;
-  private String lastBuiltRun;
+  private String lastBuiltRunUrl;
 }

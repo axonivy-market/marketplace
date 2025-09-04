@@ -74,7 +74,7 @@ class GithubReposServiceImplTest {
     when(ghRepo.getFullName()).thenReturn("owner/demo");
 
     dbRepo = GithubRepo.builder()
-        .name("demo")
+        .productId("demo")
         .htmlUrl("https://old-url")
         .workflowInformation(new ArrayList<>())
         .testSteps(new ArrayList<>())
@@ -88,7 +88,7 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
         "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
@@ -101,7 +101,7 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
         "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
@@ -117,7 +117,7 @@ class GithubReposServiceImplTest {
     doThrow(new DataAccessException("DB error") {
     }).when(githubRepoRepository).save(any());
 
-    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo),
+    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
         "Should throw DataAccessException");
   }
 
@@ -263,7 +263,7 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductWithNullRepo() {
-    assertDoesNotThrow(() -> service.processProduct(null),
+    assertDoesNotThrow(() -> service.processProduct(null, dbRepo.getProductId()),
         "Should handle null repository gracefully");
 
     verifyNoInteractions(githubRepoRepository);
@@ -288,16 +288,16 @@ class GithubReposServiceImplTest {
   @Test
   void testProcessExistingRepo() throws Exception {
     GithubRepo existingRepo = new GithubRepo();
-    existingRepo.setName("demo");
+    existingRepo.setProductId("demo");
     existingRepo.setWorkflowInformation(new ArrayList<>());
     existingRepo.getWorkflowInformation().add(new WorkflowInformation());
     existingRepo.setTestSteps(new ArrayList<>());
     existingRepo.getTestSteps().add(new TestStep());
 
-    when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(Optional.of(existingRepo));
+    when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(existingRepo);
     doReturn(List.of()).when(serviceSpy).processWorkflowWithFallback(any(), any(), any());
 
-    serviceSpy.processProduct(ghRepo);
+    serviceSpy.processProduct(ghRepo, dbRepo.getProductId());
 
     assertEquals(ghRepo.getHtmlUrl().toString(), existingRepo.getHtmlUrl(),
         "HTML URL should be updated");
@@ -343,7 +343,7 @@ class GithubReposServiceImplTest {
     assertEquals(WorkFlowType.CI, info.getWorkflowType());
     assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
     assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
-    assertEquals("http://example.com/workflow", info.getLastBuiltRun());
+    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl());
   }
 
 
@@ -366,6 +366,6 @@ class GithubReposServiceImplTest {
     assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
     WorkflowInformation info = repo.getWorkflowInformation().get(0);
     assertEquals("success", info.getConclusion());
-    assertEquals("http://example.com/workflow", info.getLastBuiltRun());
+    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl());
   }
 }

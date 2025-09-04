@@ -32,27 +32,20 @@ import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 public class GithubRepo extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
+  @Deprecated(forRemoval = true, since = "1.17.0")
   private String name;
+  private String productId;
   private String htmlUrl;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String language;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private Date lastUpdated;
   @Deprecated(forRemoval = true, since = "1.17.0")
-  private Date ciLastBuilt;
-  @Deprecated(forRemoval = true, since = "1.17.0")
-  private Date devLastBuilt;
-  @Deprecated(forRemoval = true, since = "1.17.0")
-  private Date e2eLastBuilt;
-  @Deprecated(forRemoval = true, since = "1.17.0")
   private String ciBadgeUrl;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String devBadgeUrl;
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String e2eBadgeUrl;
-  private String ciConclusion;
-  private String devConclusion;
-  private String e2eConclusion;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = REPOSITORY_ID)
   private List<WorkflowInformation> workflowInformation;
@@ -61,9 +54,9 @@ public class GithubRepo extends GenericIdEntity {
   @JoinColumn(name = REPOSITORY_ID)
   private List<TestStep> testSteps;
 
-  public static GithubRepo from(GHRepository repo) throws IOException {
+  public static GithubRepo from(GHRepository repo, String productId) throws IOException {
     return GithubRepo.builder()
-        .name(repo.getName())
+        .productId(productId)
         .htmlUrl(repo.getHtmlUrl().toString())
         .workflowInformation(new ArrayList<>())
         .testSteps(new ArrayList<>())

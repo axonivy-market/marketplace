@@ -40,7 +40,6 @@ describe('BuildBadgeTooltipComponent', () => {
     component.ngOnInit();
 
     expect(component.constructToolTipContent).toHaveBeenCalled();
-    expect(component.langSub).toBeDefined();
   });
 
   it('should set tooltipContent for CI build type', () => {

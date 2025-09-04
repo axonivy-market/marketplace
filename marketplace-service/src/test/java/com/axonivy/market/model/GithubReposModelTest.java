@@ -15,7 +15,7 @@ class GithubReposModelTest {
   @Test
   void testFromWithValidGithubRepo() {
     GithubRepo githubRepo = new GithubRepo();
-    githubRepo.setName("my-awesome-repo");
+    githubRepo.setProductId("my-awesome-repo");
     githubRepo.setHtmlUrl("https://github.com/axonivy-market/my-awesome-repo");
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
@@ -30,7 +30,7 @@ class GithubReposModelTest {
 
     GithubReposModel model = GithubReposModel.from(githubRepo);
 
-    assertEquals("my-awesome-repo", model.getName(), "Repository name should match");
+    assertEquals("my-awesome-repo", model.getProductId(), "Product Id should match");
     assertEquals("https://github.com/axonivy-market/my-awesome-repo", model.getHtmlUrl(), "HTML URL should match");
 
     List<TestResults> testResults = model.getTestResults();

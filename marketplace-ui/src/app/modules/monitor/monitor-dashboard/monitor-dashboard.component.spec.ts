@@ -14,6 +14,7 @@ import { delay, of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { FOCUSED_TAB, STANDARD_TAB } from '../../../shared/constants/common.constant';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
@@ -25,21 +26,22 @@ describe('MonitoringDashboardComponent', () => {
   beforeEach(async () => {
     mockRepositories = [
       {
-        name: 'repo1',
+        repoName: 'repo1',
+        productId: 'id1',
         htmlUrl: 'https://github.com/user/repo1',
         workflowInformation: [
           {
             workflowType: 'CI',
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
-            lastBuiltRun:
+            lastBuiltRunUrl:
               'https://github.com/market/rtf-factory/actions/runs/11111'
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
-            lastBuiltRun:
+            lastBuiltRunUrl:
               'https://github.com/market/rtf-factory/actions/runs/11111'
           }
         ],
@@ -52,14 +54,16 @@ describe('MonitoringDashboardComponent', () => {
         ]
       },
       {
-        name: 'repo2',
+        repoName: 'repo2',
+        productId: 'id2',
         htmlUrl: 'https://github.com/user/repo2',
         workflowInformation: [],
         focused: false,
         testResults: []
       },
       {
-        name: 'repo3',
+        repoName: 'repo3',
+        productId: 'id3',
         htmlUrl: 'https://github.com/user/repo3',
         workflowInformation: [],
         focused: false,
@@ -136,21 +140,24 @@ describe('MonitoringDashboardComponent', () => {
   it('should load and sort repositories correctly', () => {
     const unsortedRepos = [
       {
-        name: 'zebra-repo',
+        repoName: 'zebra-repo',
+        productId: 'zebra',
         focused: false,
         htmlUrl: '',
         workflowInformation: [],
         testResults: []
       },
       {
-        name: 'alpha-repo',
+        repoName: 'alpha-repo',
+        productId: 'alpha',
         focused: true,
         htmlUrl: '',
         workflowInformation: [],
         testResults: []
       },
       {
-        name: 'beta-repo',
+        repoName: 'beta-repo',
+        productId: 'beta',
         focused: false,
         htmlUrl: '',
         workflowInformation: [],
@@ -163,9 +170,9 @@ describe('MonitoringDashboardComponent', () => {
     component.loadRepositories();
 
     const repositories = component.repositories();
-    expect(repositories[0].name).toBe('alpha-repo');
-    expect(repositories[1].name).toBe('beta-repo');
-    expect(repositories[2].name).toBe('zebra-repo');
+    expect(repositories[0].repoName).toBe('alpha-repo');
+    expect(repositories[1].repoName).toBe('beta-repo');
+    expect(repositories[2].repoName).toBe('zebra-repo');
   });
 
   it('should set isLoading to true when starting to load repositories', fakeAsync(() => {
@@ -205,7 +212,7 @@ describe('MonitoringDashboardComponent', () => {
     const focusedRepos = component.focusedRepo();
 
     expect(focusedRepos.length).toBe(1);
-    expect(focusedRepos[0].name).toBe('repo1');
+    expect(focusedRepos[0].repoName).toBe('repo1');
     expect(focusedRepos[0].focused).toBe(true);
   });
 
@@ -217,20 +224,20 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should initialize with focused tab as active', () => {
-    expect(component.activeTab).toBe('focused');
+    expect(component.activeTab).toBe(FOCUSED_TAB);
   });
 
   it('should set active tab to standard', () => {
-    component.setActiveTab('standard');
+    component.setActiveTab(STANDARD_TAB);
 
-    expect(component.activeTab).toBe('standard');
+    expect(component.activeTab).toBe(STANDARD_TAB);
   });
 
   it('should set active tab to focused', () => {
-    component.activeTab = 'standard';
-    component.setActiveTab('focused');
+    component.activeTab = STANDARD_TAB;
+    component.setActiveTab(FOCUSED_TAB);
 
-    expect(component.activeTab).toBe('focused');
+    expect(component.activeTab).toBe(FOCUSED_TAB);
   });
 
   it('should handle invalid tab name', () => {
@@ -261,7 +268,7 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should switch tab classes when activeTab changes', () => {
-    component.setActiveTab('standard');
+    component.setActiveTab(STANDARD_TAB);
     fixture.detectChanges();
 
     const focusedTab = fixture.debugElement.query(By.css('#focused-tab'));
@@ -287,7 +294,7 @@ describe('MonitoringDashboardComponent', () => {
   it('should display error message when error exists', () => {
     const errorMessage = 'Test error message';
     component.error = errorMessage;
-    component.loading = false;
+    component.isLoading = false;
     fixture.detectChanges();
 
     const errorElement = fixture.debugElement.query(By.css('.error'));

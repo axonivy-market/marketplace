@@ -7,13 +7,13 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestResultsUtils {
@@ -43,15 +43,12 @@ public class TestResultsUtils {
 
   private static List<TestResults> mapCountsToResults(Map<String, Integer> counts, GithubRepo githubRepo) {
     List<TestResults> results = new ArrayList<>();
-    if (StringUtils.isNotBlank(githubRepo.getCiConclusion())) {
-      results.add(buildInitialTestResults(WorkFlowType.CI));
-    }
-    if (StringUtils.isNotBlank(githubRepo.getDevConclusion())) {
-      results.add(buildInitialTestResults(WorkFlowType.DEV));
-    }
-    if (StringUtils.isNotBlank(githubRepo.getE2eConclusion())) {
-      results.add(buildInitialTestResults(WorkFlowType.E2E));
-    }
+    Optional.ofNullable(githubRepo.getWorkflowInformation())
+        .orElse(Collections.emptyList())
+        .stream()
+        .filter(info -> info.getWorkflowType() != null)
+        .forEach(info -> results.add(buildInitialTestResults(info.getWorkflowType())));
+
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
       var workflowType = WorkFlowType.valueOf(parts[0]);

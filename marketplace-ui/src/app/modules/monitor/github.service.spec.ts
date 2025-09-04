@@ -5,7 +5,8 @@ import { API_URI } from '../../shared/constants/api.constant';
 
 const mockRepos: Repository[] = [
   {
-    name: 'repo1',
+    repoName: 'repo1',
+    productId: 'id1',
     htmlUrl: 'https://github.com/user/repo1',
     workflowInformation:[],
     focused: true,

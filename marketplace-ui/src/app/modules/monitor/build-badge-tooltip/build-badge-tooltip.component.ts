@@ -8,7 +8,7 @@ import {
   E2E_BUILD,
   MONITORING_WIKI_LINK
 } from '../../../shared/constants/common.constant';
-import { Subscription } from 'rxjs';
+import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-build-badge-tooltip',
@@ -26,15 +26,11 @@ export class BuildBadgeTooltipComponent implements OnInit {
   e2eTooltipPath = 'common.monitor.buildTooltip.e2e';
 
   translateService = inject(TranslateService);
-  langSub?: Subscription;
 
   ngOnInit() {
-    this.constructToolTipContent();
-
-    // Update tooltip content whenever the language changes
-    this.langSub = this.translateService.onLangChange.subscribe(() => {
-      this.constructToolTipContent();
-    });
+    this.translateService.onLangChange
+      .pipe(startWith(null))
+      .subscribe(() => this.constructToolTipContent());
   }
 
   constructToolTipContent() {
@@ -58,9 +54,5 @@ export class BuildBadgeTooltipComponent implements OnInit {
       default:
         break;
     }
-  }
-
-  ngOnDestroy(): void {
-    this.langSub?.unsubscribe();
   }
 }

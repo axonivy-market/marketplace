@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
@@ -60,7 +62,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       try {
         log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
-        processProduct(repository);
+        processProduct(repository, product.getId());
       } catch (IOException | GHException | DataAccessException e) {
         log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
       }
@@ -68,20 +70,18 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo, String productId) throws IOException {
     if (ghRepo == null) {
       return;
     }
-    GithubRepo githubRepo;
-    var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-    if (githubRepoOptional.isPresent()) {
-      githubRepo = githubRepoOptional.get();
-      githubRepo.getTestSteps().clear();
-      githubRepo.getWorkflowInformation().clear();
-      githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-    } else {
-      githubRepo = from(ghRepo);
-    }
+    GithubRepo githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
+        .map(repo -> {
+          repo.getTestSteps().clear();
+          repo.getWorkflowInformation().clear();
+          repo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+          repo.setProductId(productId);
+          return repo;
+        }).orElse(from(ghRepo, productId));
     List<TestStep> testSteps = Arrays.stream(values()).map(
         workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
@@ -111,15 +111,15 @@ public class GithubReposServiceImpl implements GithubReposService {
         .filter(workflow -> workflowType == workflow.getWorkflowType())
         .findFirst()
         .orElseGet(() -> {
-          WorkflowInformation newBuild = new WorkflowInformation();
-          newBuild.setWorkflowType(workflowType);
-          repo.getWorkflowInformation().add(newBuild);
-          return newBuild;
+          WorkflowInformation newWorkflowInfo = new WorkflowInformation();
+          newWorkflowInfo.setWorkflowType(workflowType);
+          repo.getWorkflowInformation().add(newWorkflowInfo);
+          return newWorkflowInfo;
         });
 
     workflowInformation.setLastBuilt(run.getCreatedAt());
     workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
-    workflowInformation.setLastBuiltRun(run.getHtmlUrl().toString());
+    workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,

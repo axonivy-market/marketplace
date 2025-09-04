@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.GithubRepo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.util.List;
 
@@ -22,8 +25,12 @@ import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 public class GithubReposModel {
 
   @EqualsAndHashCode.Include
-  @Schema(description = "Repository name", example = "my-awesome-repo")
-  private String name;
+  @Schema(description = "Repository name", example = "a-trust-connector")
+  private String repoName;
+
+  @EqualsAndHashCode.Include
+  @Schema(description = "Product id", example = "a-trust")
+  private String productId;
 
   @EqualsAndHashCode.Include
   @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
@@ -77,11 +84,20 @@ public class GithubReposModel {
   public static GithubReposModel from(GithubRepo githubRepo) {
     List<TestResults> testResults = processTestResults(githubRepo);
     return GithubReposModel.builder()
-        .name(githubRepo.getName())
+        .productId(githubRepo.getProductId())
+        .repoName(getRepoName(githubRepo.getHtmlUrl()))
         .htmlUrl(githubRepo.getHtmlUrl())
         .focused(githubRepo.getFocused())
         .testResults(testResults)
         .workflowInformation(githubRepo.getWorkflowInformation())
         .build();
+  }
+
+  private static String getRepoName(String htmlUrl) {
+    if (StringUtils.isBlank(htmlUrl)) {
+      return Strings.EMPTY;
+    }
+    String[] parts = htmlUrl.split(CommonConstants.SLASH);
+    return parts[parts.length - 1];
   }
 }

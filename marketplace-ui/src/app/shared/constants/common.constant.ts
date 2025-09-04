@@ -357,5 +357,8 @@ export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wi
 export const ASCENDING = 'asc';
 export const DESCENDING = 'desc';
 
+export const FOCUSED_TAB = 'focused';
+export const STANDARD_TAB = 'standard';
+
 export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.kohsuke.github.GHRepository;
 
 import java.util.ArrayList;
 import java.util.List;

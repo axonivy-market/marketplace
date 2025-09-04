@@ -3,7 +3,7 @@ import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MONITORING_WIKI_LINK } from '../../../shared/constants/common.constant';
+import { FOCUSED_TAB, MONITORING_WIKI_LINK, STANDARD_TAB } from '../../../shared/constants/common.constant';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -25,6 +25,9 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
+  readonly FOCUSED_TAB = FOCUSED_TAB;
+  readonly STANDARD_TAB = STANDARD_TAB;
+
   protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
@@ -35,7 +38,7 @@ export class MonitoringDashboardComponent implements OnInit {
 
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
-  activeTab = 'focused';
+  activeTab = FOCUSED_TAB;
   isLoading = false;
   repositories = signal<Repository[]>([]);
   focusedRepo = computed(() => this.repositories().filter(r => r.focused));
@@ -56,7 +59,7 @@ export class MonitoringDashboardComponent implements OnInit {
     this.isLoading = true;
     this.githubService.getRepositories().subscribe({
       next: data => {
-        data.sort((repo1, repo2) => repo1.name.localeCompare(repo2.name));
+        data.sort((repo1, repo2) => repo1.repoName.localeCompare(repo2.repoName));
         this.repositories.set(data);
         this.isLoading = false;
         this.error = '';

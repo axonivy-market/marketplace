@@ -19,14 +19,14 @@ describe('RepoTestResultComponent', () => {
       'instant', 'get'
     ]);
     mockRepository = {
-    name: 'test-repo',
+    repoName: 'test-repo',
     htmlUrl: 'https://github.com/user/test-repo',
     workflowInformation: [
       {
         workflowType: 'CI',
         lastBuilt: new Date('2025-08-01T12:00:00Z'),
         conclusion: 'success',
-        lastBuiltRun: 'https://github.com/user/test-repo/actions/runs/123'
+        lastBuiltRunUrl: 'https://github.com/user/test-repo/actions/runs/123'
       }
     ],
     testResults: [
@@ -89,7 +89,7 @@ describe('RepoTestResultComponent', () => {
 
   it('should open new tab on badge click in default mode', () => {
     spyOn(window, 'open');
-    component.onBadgeClick(mockRepository.name, 'CI', 'default');
+    component.onBadgeClick(mockRepository.repoName, 'CI', 'default');
     expect(window.open).toHaveBeenCalledWith(
       'https://github.com/user/test-repo/actions/runs/123',
       '_blank'
@@ -98,7 +98,7 @@ describe('RepoTestResultComponent', () => {
 
   it('should navigate to report page on badge click in report mode', () => {
     component.mode = 'report';
-    component.onBadgeClick(mockRepository.name, 'CI', 'report');
+    component.onBadgeClick(mockRepository.repoName, 'CI', 'report');
     expect(router.navigate).toHaveBeenCalledWith(['/monitoring', 'test-repo', 'CI']);
   });
 

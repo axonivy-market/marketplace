@@ -14,19 +14,24 @@ class TestStepsModelTest {
   @Test
   void testFromGithubRepo() {
     GithubRepo repo = new GithubRepo();
-    repo.setName("demo-repo");
+    repo.setProductId("demo-repo");
     repo.setHtmlUrl("https://github.com/org/demo-repo");
 
     TestStep result = new TestStep();
     result.setName("Example name test");
     result.setStatus(TestStatus.PASSED);
     result.setType(WorkFlowType.CI);
-    repo.setTestSteps(List.of(result));
+
+    TestStep result2 = new TestStep();
+    result2.setName("Example name test");
+    result2.setStatus(TestStatus.FAILED);
+    result2.setType(WorkFlowType.DEV);
+    repo.setTestSteps(List.of(result, result2));
 
     GithubReposModel model = GithubReposModel.from(repo);
 
-    assertEquals("demo-repo", model.getName(),
-            "Expected the name to match the repo name");
+    assertEquals("demo-repo", model.getProductId(),
+            "Expected product Id should match");
     assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
         "Expected the HTML URL to match the repo URL");
 

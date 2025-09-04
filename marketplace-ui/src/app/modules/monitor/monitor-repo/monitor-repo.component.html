@@ -65,14 +65,15 @@
       <tr *ngFor="let repo of displayedRepositories">
         <td class="align-middle">
           <p class="name">
-          <a id="product-name" [href]="getMarketUrl(repo.name)" target="_blank" rel="noopener noreferrer">
-            {{ repo.name }}
+          <a id="product-name" [href]="getMarketUrl(repo.productId)" target="_blank" rel="noopener noreferrer">
+            {{ repo.repoName }}
           </a>
           </p>
         </td>
-        <td *ngFor="let workflowType of workflowKeys">
-          <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)" [repository]="repo"
-            [mode]="mode[tabKey]"></app-repo-test-result>
+        <td *ngFor="let workflowType of workflowKeys"
+          [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
+          <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)"
+            [repository]="repo" [mode]="mode[tabKey]"></app-repo-test-result>
         </td>
         <td class="align-middle">
           <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">

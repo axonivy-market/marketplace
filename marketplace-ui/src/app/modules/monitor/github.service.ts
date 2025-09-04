@@ -5,7 +5,8 @@ import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 export interface Repository {
-  name: string;
+  repoName: string;
+  productId: string;
   htmlUrl: string;
   focused: boolean;
   workflowInformation: WorkflowInformation[];
@@ -16,7 +17,7 @@ export interface WorkflowInformation {
   workflowType: 'CI' | 'DEV' | 'E2E';
   lastBuilt: Date;
   conclusion: string;
-  lastBuiltRun: string;
+  lastBuiltRunUrl: string;
 }
 
 export interface TestResult {

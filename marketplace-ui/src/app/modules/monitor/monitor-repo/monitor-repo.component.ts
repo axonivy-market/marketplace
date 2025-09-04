@@ -89,7 +89,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   applyFilter(search: string) {
     if (search && search.trim().length > 0) {
       this.filteredRepositories = this.allRepositories.filter(repo =>
-        repo.name.toLowerCase().includes(search.toLowerCase())
+        repo.repoName.toLowerCase().includes(search.toLowerCase())
       );
     } else {
       this.filteredRepositories = [...this.allRepositories];
@@ -104,8 +104,8 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     this.displayedRepositories = this.filteredRepositories.slice(start, end);
   }
 
-  getMarketUrl(repoName: string): string {
-    return `${MARKET_BASE_URL}${encodeURIComponent(repoName)}`;
+  getMarketUrl(productId: string): string {
+    return `${MARKET_BASE_URL}${encodeURIComponent(productId)}`;
   }
 
   sortRepositoriesByColumn(column: string) {
@@ -135,7 +135,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
 
   private getColumnValue(repo: Repository, column: string): string {
     if (column === this.COLUMN_NAME) {
-      return repo.name;
+      return repo.repoName;
     }
 
     return this.findWorkflowMatch(repo, column)?.conclusion || '';

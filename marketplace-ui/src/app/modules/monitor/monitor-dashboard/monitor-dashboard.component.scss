@@ -24,6 +24,11 @@ $rowHeight: 37px;
   }
 }
 
+.sub-title {
+  white-space: normal;
+  word-break: keep-all;
+}
+
 ::ng-deep .sub-title a {
   color: var(--ivy-primary-bg);
 }
