@@ -72,7 +72,6 @@ import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -590,7 +589,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateNewLogoFromGitHub_removeOldLogo() throws IOException {
+  void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
     var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -624,7 +623,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateNewLogoFromGitHub_ModifyLogo() throws IOException {
+  void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
     var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -679,7 +678,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncProductsAsUpdateMetaJSONFromGitHub_AddVendorLogo() throws IOException {
+  void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
     var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());

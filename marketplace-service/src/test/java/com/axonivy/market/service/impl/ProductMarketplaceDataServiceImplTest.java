@@ -79,8 +79,10 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     verify(productMarketplaceDataRepo).saveAll(productListArgumentCaptor.capture());
 
     List<ProductMarketplaceData> capturedProducts = productListArgumentCaptor.getValue();
-    assertEquals(1, capturedProducts.size());
-    assertEquals(1, capturedProducts.get(0).getCustomOrder());
+    assertEquals(1, capturedProducts.size(),
+        "Product list size should be 1");
+    assertEquals(1, capturedProducts.get(0).getCustomOrder(),
+        "Product list custom order should be 1");
   }
 
   @Test
@@ -91,19 +93,22 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     List<ProductMarketplaceData> refinedProducts =
         productMarketplaceDataService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts);
 
-    assertEquals(1, refinedProducts.size());
-    assertEquals(1, refinedProducts.get(0).getCustomOrder());
+    assertEquals(1, refinedProducts.size(),
+        "Product list size should be 1");
+    assertEquals(1, refinedProducts.get(0).getCustomOrder(),
+        "Product list custom order should be 1");
     verify(productMarketplaceDataRepo).findById(SAMPLE_PRODUCT_ID);
   }
 
   @Test
-  void testRefineOrderedListOfProductsInCustomSort_ProductNotFound() {
+  void testRefineOrderedListOfProductsInCustomSortProductNotFound() {
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
         () -> productMarketplaceDataService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode(),
+        "Should throw product not found exception when no product is found");
   }
 
   @Test
@@ -118,7 +123,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     int result = productMarketplaceDataService.updateProductInstallationCount(SAMPLE_PRODUCT_ID);
 
-    assertEquals(10, result);
+    assertEquals(10, result,
+        "Installation count should match 10 when not synchronized");
     verify(productMarketplaceDataRepo).updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt());
   }
 
@@ -135,10 +141,10 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     int result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID,
         MOCK_RELEASED_VERSION);
-    assertEquals(4, result);
+    assertEquals(4, result, "Installation count should match 4");
 
     result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID, StringUtils.EMPTY);
-    assertEquals(4, result);
+    assertEquals(4, result, "Installation count should match 4");
   }
 
   @Test
@@ -150,7 +156,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
         mockProductMarketplaceData.getId());
 
-    assertTrue(installationCount >= 20 && installationCount <= 50);
+    assertTrue(installationCount >= 20 && installationCount <= 50,
+        "Installation count should be more than 20 and less than 50");
   }
 
   @Test
@@ -162,7 +169,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
         mockProductMarketplaceData.getId());
 
-    assertEquals(40, installationCount);
+    assertEquals(40, installationCount,
+        "Installation count should match 40 from file");
   }
 
   @Test
@@ -172,7 +180,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
     OutputStream result = productMarketplaceDataService.buildArtifactStreamFromResource(MOCK_DOWNLOAD_URL,
         getMockResource(), new ByteArrayOutputStream());
-    assertNotNull(result);
+    assertNotNull(result, "Artifact stream should not be null with existed artifact");
   }
 
   @Test
