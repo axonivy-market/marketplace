@@ -64,7 +64,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testUpdateImagesWithDownloadUrl_Success() throws IOException {
+    void testUpdateImagesWithDownloadUrlSuccess() throws IOException {
         Path tempReadmeFile = Files.createTempFile("README", ".md");
         Files.writeString(tempReadmeFile, README_CONTENT);
         String parentPath = tempReadmeFile.getParent().toString();
@@ -88,7 +88,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testUpdateImagesWithDownloadUrl_IOException() {
+    void testUpdateImagesWithDownloadUrlIOException() {
         try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.walk(tempDirectory))
                     .thenThrow(new IOException("Simulated IOException"));
@@ -100,7 +100,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testExtractReadme_Success() throws IOException {
+    void testExtractReadmeSuccess() throws IOException {
         String parentPath = tempDirectory.getParent().toString();
         Path readmeFile = FileUtils.createFile(parentPath + "/README.md").toPath();
         Files.writeString(readmeFile, README_CONTENT);
@@ -122,7 +122,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testExtractREADME_NoReadmeFiles() {
+    void testExtractREADMENoReadmeFiles() {
         try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.walk(tempDirectory))
                     .thenReturn(Stream.empty());
@@ -133,7 +133,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testExtractReadme_IOException() {
+    void testExtractReadmeIOException() {
         try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.walk(tempDirectory))
                     .thenThrow(new IOException("Simulated IOException"));
@@ -147,7 +147,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testExtract_Success() {
+    void testExtractSuccess() {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "mockFileName",
                 "application/zip", "test".getBytes());
         try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
@@ -159,7 +159,7 @@ class ReleasePreviewServiceImplTest {
     }
 
     @Test
-    void testExtract_IOException() {
+    void testExtractIOException() {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "mockFileName",
                 "application/zip", "test".getBytes());
         try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {

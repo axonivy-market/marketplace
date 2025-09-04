@@ -106,17 +106,6 @@ public class VersionUtils {
     return version;
   }
 
-  public static String getOldestVersions(List<String> versions) {
-    String result = StringUtils.EMPTY;
-    if (!CollectionUtils.isEmpty(versions)) {
-      List<String> releasedVersions = versions.stream().map(
-              version -> version.replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-          .distinct().sorted(new LatestVersionComparator()).toList();
-      return CollectionUtils.lastElement(releasedVersions);
-    }
-    return result;
-  }
-
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
       Set<String> syncTags) {
     if (ObjectUtils.isNotEmpty(syncTags)) {

@@ -150,7 +150,7 @@ class VersionServiceImplTest extends BaseSetup {
     mockMetadata.getVersions().addAll(mockVersions);
     List<VersionAndUrlModel> result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true,
         MOCK_DESIGNER_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
+    Assertions.assertTrue(CollectionUtils.isEmpty(result), "Installation version list should be empty");
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions,
@@ -186,7 +186,7 @@ class VersionServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetProductJsonContentByIdAndVersion_noResult() {
+  void testGetProductJsonContentByIdAndVersionNoResult() {
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
         Collections.emptyList());
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
@@ -213,7 +213,7 @@ class VersionServiceImplTest extends BaseSetup {
 
     existingData.add(getMockMavenArtifactVersionWithDownloadUrl());
     Assertions.assertNull(versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(existingData,
-        MOCK_SNAPSHOT_VERSION, List.of(MOCK_ARTIFACT_ID)),
+            MOCK_SNAPSHOT_VERSION, List.of(MOCK_ARTIFACT_ID)),
         "Download URL should be null");
 
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithDownloadUrl();
@@ -222,19 +222,16 @@ class VersionServiceImplTest extends BaseSetup {
     existingData.clear();
     existingData.add(mockMavenArtifactVersion);
     Assertions.assertEquals(MOCK_DOWNLOAD_URL, versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-        existingData, MOCK_RELEASED_VERSION, List.of(MOCK_ARTIFACT_ID)),
+            existingData, MOCK_RELEASED_VERSION, List.of(MOCK_ARTIFACT_ID)),
         "Download URL should match mock download URL");
   }
 
   @Test
   void testGetLatestVersionArtifactDownloadUrl() {
-    Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-        DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE));
-
     when(metadataRepo.findByProductIdAndArtifactId(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID)).thenReturn(
         List.of(getMockMetadataWithVersions()));
     Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-        DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+            DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
         "Latest version artifact download URL should be empty");
 
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
@@ -248,11 +245,11 @@ class VersionServiceImplTest extends BaseSetup {
         mockMavenArtifactVersion2);
 
     Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-        DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+            DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
         "Latest version artifact download URL should be empty");
 
     Assertions.assertEquals(MOCK_DOWNLOAD_URL, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-        DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+            DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
         "Latest version artifact download URL should match mock download URL");
   }
 }

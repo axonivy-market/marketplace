@@ -35,11 +35,9 @@ public class TestStepUtils {
     var matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
     if (matcher.find()) {
       String testName = matcher.group(TEST_NAME_INDEX).trim();
-      var testTypeString = matcher.group(TEST_TYPE_INDEX);
       return createTestStep(testName, TestStatus.PASSED, workflowType);
     } else if (matcherFailed.find()) {
       String testName = matcherFailed.group(TEST_NAME_INDEX).trim();
-      var testTypeString = matcherFailed.group(TEST_TYPE_INDEX);
       return createTestStep(testName, TestStatus.FAILED, workflowType);
     }
     return null;
