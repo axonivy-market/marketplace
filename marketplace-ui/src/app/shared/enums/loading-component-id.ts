@@ -6,5 +6,5 @@ export enum LoadingComponentId {
   SECURITY_MONITOR = 'security-monitor',
   FEEDBACK_APPROVAL = 'feedback-approval',
   RELEASE_PREVIEW = 'release-preview',
-  MONITORING_REPO = 'monitoring-repo'
+  MONITORING_DASHBOARD = 'monitoring-repo'
 }

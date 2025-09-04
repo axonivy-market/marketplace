@@ -8,6 +8,8 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component";
+import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -16,12 +18,14 @@ import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component"
     CommonModule,
     TranslateModule,
     NgbTooltipModule,
-    MonitoringRepoComponent
+    MonitoringRepoComponent,
+    LoadingSpinnerComponent
 ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
+  protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   translateService = inject(TranslateService);
@@ -29,9 +33,7 @@ export class MonitoringDashboardComponent implements OnInit {
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
 
-  loading = true;
   error = '';
-  isReloading = false;
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = 'focused';
   isLoading = false;

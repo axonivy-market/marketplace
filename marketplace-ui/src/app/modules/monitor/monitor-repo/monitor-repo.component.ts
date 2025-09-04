@@ -10,8 +10,6 @@ import {
   NgbPaginationModule,
   NgbTypeaheadModule
 } from '@ng-bootstrap/ng-bootstrap';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
 import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';
@@ -29,7 +27,6 @@ import {
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
-
 @Component({
   selector: 'app-monitor-repo',
   standalone: true,
@@ -38,7 +35,6 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     TranslateModule,
     BuildBadgeTooltipComponent,
     NgbTooltipModule,
-    LoadingSpinnerComponent,
     FormsModule,
     NgbPagination,
     NgbTypeaheadModule,
@@ -55,10 +51,8 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
 
-  protected LoadingComponentId = LoadingComponentId;
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
-  @Input() isLoading = false;
   @Input() tabKey!: string;
   @Output() searchChange = new EventEmitter<string>();
 

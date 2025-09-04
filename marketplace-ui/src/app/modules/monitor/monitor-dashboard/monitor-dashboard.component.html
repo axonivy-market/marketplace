@@ -45,7 +45,7 @@
       <div class="tab-content col-12 default-cursor">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
           [ngClass]="{ 'show active': activeTab === 'focused' }">
-          <app-monitor-repo [isLoading]="isLoading" [repositories]="focusedRepo()" [isStandardTab]="false"
+          <app-monitor-repo [repositories]="focusedRepo()" [isStandardTab]="false"
             tabKey="focused"></app-monitor-repo>
         </div>
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
@@ -55,4 +55,11 @@
       </div>
     </div>
   </div>
+
+
+  @if (isLoading) {
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.MONITORING_DASHBOARD" />
+  }
 </div>

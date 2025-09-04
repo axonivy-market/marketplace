@@ -1,7 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
+import { LoadingComponent } from '../../core/interceptors/api.interceptor';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 export interface Repository {
   name: string;
   htmlUrl: string;
@@ -41,7 +43,12 @@ export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
   getRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD);
+    return this.http.get<Repository[]>(`${API_URI.MONITOR_DASHBOARD}`, {
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.MONITORING_DASHBOARD
+      )
+    });
   }
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {

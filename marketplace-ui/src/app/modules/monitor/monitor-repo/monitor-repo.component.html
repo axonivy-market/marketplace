@@ -81,7 +81,7 @@
         </td>
       </tr>
     </tbody>
-    } @else if (displayedRepositories.length == 0 && !isLoading) {
+    } @else if (displayedRepositories.length == 0) {
     <tbody>
       <tr>
         <td colspan="12" class="border-0">
@@ -111,10 +111,4 @@
       </option>
     </select>
   </div>
-
-  @if (isLoading) {
-  <app-loading-spinner
-    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-    [key]="LoadingComponentId.MONITORING_REPO" />
-  }
 </div>
