@@ -99,23 +99,25 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackProjection.getUpdatedAt()).thenReturn(new Date());
     when(feedbackProjection.getProductNames()).thenReturn(Map.of("en", "Product Name"));
 
-
     Page<FeedbackProjection> projectionPage = new PageImpl<>(List.of(feedbackProjection), pageable, 1);
     when(feedbackRepository.findFeedbackWithProductNames(pageable)).thenReturn(projectionPage);
 
     Page<Feedback> result = feedbackService.findAllFeedbacks(pageable);
 
-    assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals(1, result.getContent().size());
-    assertEquals("user1", result.getContent().get(0).getUserId());
-    assertEquals("product1", result.getContent().get(0).getProductId());
-    assertEquals("Great product!", result.getContent().get(0).getContent());
-    assertEquals(5, result.getContent().get(0).getRating());
-    assertEquals(FeedbackStatus.APPROVED, result.getContent().get(0).getFeedbackStatus());
-    assertEquals("moderator", result.getContent().get(0).getModeratorName());
-    assertEquals(1, result.getContent().get(0).getVersion());
-    assertEquals("Product Name", result.getContent().get(0).getProductNames().get("en"));
+    assertNotNull(result, "Resulting page of feedbacks should not be null");
+    assertEquals(1, result.getTotalElements(), "Total elements in page should be 1");
+    assertEquals(1, result.getContent().size(), "Content list size should be 1");
+
+    Feedback feedback = result.getContent().get(0);
+
+    assertEquals("user1", feedback.getUserId(), "Feedback userId should match mocked value");
+    assertEquals("product1", feedback.getProductId(), "Feedback productId should match mocked value");
+    assertEquals("Great product!", feedback.getContent(), "Feedback content should match mocked value");
+    assertEquals(5, feedback.getRating(), "Feedback rating should match mocked value");
+    assertEquals(FeedbackStatus.APPROVED, feedback.getFeedbackStatus(), "Feedback status should match mocked value");
+    assertEquals("moderator", feedback.getModeratorName(), "Moderator name should match mocked value");
+    assertEquals(1, feedback.getVersion(), "Feedback version should match mocked value");
+    assertEquals("Product Name", feedback.getProductNames().get("en"), "Product name in English should match mocked value");
 
     verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }
@@ -128,9 +130,9 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Page<Feedback> result = feedbackService.findAllFeedbacks(pageable);
 
-    assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
-    assertTrue(result.getContent().isEmpty());
+    assertNotNull(result, "Resulting page should not be null even when repository returns empty");
+    assertEquals(0, result.getTotalElements(), "Total elements in page should be 0 for empty result");
+    assertTrue(result.getContent().isEmpty(), "Content list should be empty for empty result");
 
     verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }
@@ -148,24 +150,29 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
 
-    assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals(feedbackList, result.getContent());
+    assertNotNull(result, "Resulting page should not be null");
+    assertEquals(1, result.getTotalElements(), "Total elements in page should match the number of feedbacks returned");
+    assertEquals(feedbackList, result.getContent(), "Content of the page should match the mocked feedback list");
+
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
         productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
   }
 
   @Test
-  void testFindFeedbacks_ProductNotFound() {
+  void testFindFeedbacksProductNotFound() {
     String productId = "product1";
     Pageable pageable = PageRequest.of(0, 10);
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
-        () -> feedbackService.findFeedbacks(productId, pageable));
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
+        () -> feedbackService.findFeedbacks(productId, pageable),
+        "Expected NotFoundException when product is not found");
+
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate PRODUCT_NOT_FOUND");
+
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(0)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
         productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
@@ -178,19 +185,23 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
 
     Feedback result = feedbackService.findFeedback(feedbackId);
-    assertNotNull(result);
-    assertEquals(feedbackId, result.getId());
+    assertNotNull(result, "Returned feedback should not be null");
+    assertEquals(feedbackId, result.getId(), "Feedback ID should match the requested ID");
     verify(feedbackRepository, times(1)).findById(feedbackId);
   }
 
   @Test
-  void testFindFeedback_NotFound() {
+  void testFindFeedbackNotFound() {
     String feedbackId = "1";
 
     when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.empty());
 
-    NotFoundException exception = assertThrows(NotFoundException.class, () -> feedbackService.findFeedback(feedbackId));
-    assertEquals(ErrorCode.FEEDBACK_NOT_FOUND.getCode(), exception.getCode());
+    NotFoundException exception = assertThrows(NotFoundException.class,
+        () -> feedbackService.findFeedback(feedbackId),
+        "Expected NotFoundException when feedback is not found");
+
+    assertEquals(ErrorCode.FEEDBACK_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate FEEDBACK_NOT_FOUND");
     verify(feedbackRepository, times(1)).findById(feedbackId);
   }
 
@@ -204,9 +215,11 @@ class FeedbackServiceImplTest extends BaseSetup {
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(feedback));
 
     var result = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    assertNotNull(result);
-    assertEquals(userId, result.get(0).getUserId());
-    assertEquals(productId, result.get(0).getProductId());
+
+    assertNotNull(result, "Returned feedback list should not be null");
+    assertEquals(userId, result.get(0).getUserId(), "Feedback userId should match the requested userId");
+    assertEquals(productId, result.get(0).getProductId(), "Feedback productId should match the requested productId");
+
     verify(githubUserRepository, times(1)).findById(userId);
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(1))
@@ -214,7 +227,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testFindFeedbackByUserIdAndProductId_NoContent() {
+  void testFindFeedbackByUserIdAndProductIdNoContent() {
     String productId = "product1";
     userId = "";
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
@@ -222,26 +235,33 @@ class FeedbackServiceImplTest extends BaseSetup {
         List.of(FeedbackStatus.REJECTED))).thenReturn(null);
 
     NoContentException exception = assertThrows(NoContentException.class,
-        () -> feedbackService.findFeedbackByUserIdAndProductId(userId, productId));
-    assertEquals(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT.getCode(), exception.getCode());
+        () -> feedbackService.findFeedbackByUserIdAndProductId(userId, productId),
+        "Expected NoContentException when no feedback exists for the given user and product");
+
+    assertEquals(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT.getCode(), exception.getCode(),
+        "Exception code should indicate NO_FEEDBACK_OF_USER_FOR_PRODUCT");
+
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(1))
         .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, userId, List.of(FeedbackStatus.REJECTED));
   }
 
   @Test
-  void testFindFeedbackByUserIdAndProductId_NotFound() {
+  void testFindFeedbackByUserIdAndProductIdNotFound() {
     userId = "notFoundUser";
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
     NotFoundException exception = assertThrows(NotFoundException.class,
-        () -> feedbackService.findFeedbackByUserIdAndProductId(userId, "product"));
-    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+        () -> feedbackService.findFeedbackByUserIdAndProductId(userId, "product"),
+        "Expected NotFoundException when user is not found");
+
+    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate USER_NOT_FOUND");
     verify(githubUserRepository, times(1)).findById(userId);
   }
 
   @Test
-  void testUpdateFeedbackWithNewStatus_Approved() {
+  void testUpdateFeedbackWithNewStatusApproved() {
     String feedbackId = "1";
     int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
@@ -253,18 +273,18 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel);
 
-    assertNotNull(result);
-    assertEquals(feedbackId, result.getId());
-    assertEquals(FeedbackStatus.APPROVED, result.getFeedbackStatus());
-    assertEquals(approvalModel.getModeratorName(), result.getModeratorName());
-    assertNotNull(result.getReviewDate());
+    assertNotNull(result, "Updated feedback should not be null");
+    assertEquals(feedbackId, result.getId(), "Feedback ID should match the requested ID");
+    assertEquals(FeedbackStatus.APPROVED, result.getFeedbackStatus(), "Feedback status should be updated to APPROVED");
+    assertEquals(approvalModel.getModeratorName(), result.getModeratorName(), "Moderator name should match the approval model");
+    assertNotNull(result.getReviewDate(), "Review date should be set when feedback is approved");
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
   @Test
-  void testUpdateFeedbackWithNewStatus_Rejected() {
+  void testUpdateFeedbackWithNewStatusRejected() {
     String feedbackId = "1";
     int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
@@ -276,18 +296,18 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel);
 
-    assertNotNull(result);
-    assertEquals(feedbackId, result.getId());
-    assertEquals(FeedbackStatus.REJECTED, result.getFeedbackStatus());
-    assertEquals(approvalModel.getModeratorName(), result.getModeratorName());
-    assertNotNull(result.getReviewDate());
+    assertNotNull(result, "Updated feedback should not be null");
+    assertEquals(feedbackId, result.getId(), "Feedback ID should match the requested ID");
+    assertEquals(FeedbackStatus.REJECTED, result.getFeedbackStatus(), "Feedback status should be updated to REJECTED");
+    assertEquals(approvalModel.getModeratorName(), result.getModeratorName(), "Moderator name should match the approval model");
+    assertNotNull(result.getReviewDate(), "Review date should be set when feedback is rejected");
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
   @Test
-  void testUpsertFeedback_Insert() throws NotFoundException {
+  void testUpsertFeedbackInsert() throws NotFoundException {
     String productId = "product1";
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
@@ -297,11 +317,12 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
-    assertNotNull(result);
-    assertEquals(feedbackModel.getUserId(), result.getUserId());
-    assertEquals(feedbackModel.getProductId(), result.getProductId());
-    assertEquals(feedbackModel.getRating(), result.getRating());
-    assertEquals(feedbackModel.getContent(), result.getContent());
+    assertNotNull(result, "Upserted feedback should not be null");
+    assertEquals(feedbackModel.getUserId(), result.getUserId(), "Feedback userId should match the request");
+    assertEquals(feedbackModel.getProductId(), result.getProductId(), "Feedback productId should match the request");
+    assertEquals(feedbackModel.getRating(), result.getRating(), "Feedback rating should match the request");
+    assertEquals(feedbackModel.getContent(), result.getContent(), "Feedback content should match the request");
+
     verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
         userId, List.of(FeedbackStatus.REJECTED));
@@ -309,7 +330,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpsertFeedback_Update() throws NotFoundException {
+  void testUpsertFeedbackUpdate() throws NotFoundException {
     String productId = "product1";
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
@@ -318,12 +339,14 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
-    assertNotNull(result);
-    assertEquals(feedbackModel.getUserId(), result.getUserId());
-    assertEquals(feedbackModel.getProductId(), result.getProductId());
-    assertEquals(feedbackModel.getRating(), result.getRating());
-    assertEquals(feedbackModel.getContent(), result.getContent());
-    assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
+
+    assertNotNull(result, "Upserted feedback should not be null");
+    assertEquals(feedbackModel.getUserId(), result.getUserId(), "Feedback userId should match the request");
+    assertEquals(feedbackModel.getProductId(), result.getProductId(), "Feedback productId should match the request");
+    assertEquals(feedbackModel.getRating(), result.getRating(), "Feedback rating should match the request");
+    assertEquals(feedbackModel.getContent(), result.getContent(), "Feedback content should match the request");
+    assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus(), "Feedback status should be set to PENDING for updated feedback");
+
     verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
         userId, List.of(FeedbackStatus.REJECTED));
@@ -357,8 +380,8 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
-    assertNotNull(result);
-    assertEquals(existingApproved, result);
+    assertNotNull(result, "Returned feedback should not be null");
+    assertEquals(existingApproved, result, "Returned feedback should match the existing approved feedback");
 
     verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1))
@@ -386,10 +409,10 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
-    assertNotNull(result);
-    assertEquals(feedbackModelRequest.getRating(), result.getRating());
-    assertEquals(feedbackModelRequest.getContent(), result.getContent());
-    assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
+    assertNotNull(result, "Upserted feedback should not be null");
+    assertEquals(feedbackModelRequest.getRating(), result.getRating(), "Feedback rating should match the request");
+    assertEquals(feedbackModelRequest.getContent(), result.getContent(), "Feedback content should match the request");
+    assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus(), "Feedback status should be PENDING for new feedback");
 
     verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
@@ -406,10 +429,12 @@ class FeedbackServiceImplTest extends BaseSetup {
         Pageable.unpaged())).thenReturn(feedbacks);
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
-    assertNotNull(ratings);
-    assertEquals(5, ratings.size());
-    assertEquals(1, ratings.get(4).getCommentNumber());
-    assertEquals(100, ratings.get(4).getPercent());
+
+    assertNotNull(ratings, "Ratings list should not be null");
+    assertEquals(5, ratings.size(), "Ratings list should contain 5 elements for 1–5 stars");
+    assertEquals(1, ratings.get(4).getCommentNumber(), "Comment number for 5-star rating should be 1");
+    assertEquals(100, ratings.get(4).getPercent(), "Percentage for 5-star rating should be 100");
+
     verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
         productId, feedbackStatuses, Pageable.unpaged());
   }
@@ -423,11 +448,13 @@ class FeedbackServiceImplTest extends BaseSetup {
         Collections.emptyList());
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
-    assertNotNull(ratings);
-    assertEquals(5, ratings.size());
+
+    assertNotNull(ratings, "Ratings list should not be null even when there are no feedbacks");
+    assertEquals(5, ratings.size(), "Ratings list should always contain 5 elements for 1–5 stars");
+
     for (ProductRating rating : ratings) {
-      assertEquals(0, rating.getCommentNumber());
-      assertEquals(0, rating.getPercent());
+      assertEquals(0, rating.getCommentNumber(), "Comment number should be 0 when there are no feedbacks");
+      assertEquals(0, rating.getPercent(), "Percentage should be 0 when there are no feedbacks");
     }
     verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
         anyString(), anyList(), any());
@@ -439,7 +466,8 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
 
-    assertDoesNotThrow(() -> feedbackService.validateProductExists(productId));
+    assertDoesNotThrow(() -> feedbackService.validateProductExists(productId),
+        "validateProductExists should not throw an exception when the product exists");
     verify(productRepository, times(1)).findById(productId);
   }
 
@@ -450,8 +478,11 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
-        () -> feedbackService.validateProductExists(productId));
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
+        () -> feedbackService.validateProductExists(productId),
+        "Expected NotFoundException when product does not exist");
+
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate PRODUCT_NOT_FOUND");
     verify(productRepository, times(1)).findById(productId);
   }
 
@@ -459,7 +490,8 @@ class FeedbackServiceImplTest extends BaseSetup {
   void testValidateUserExists() {
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
 
-    assertDoesNotThrow(() -> feedbackService.validateUserExists(userId));
+    assertDoesNotThrow(() -> feedbackService.validateUserExists(userId),
+        "validateUserExists should not throw an exception when the user exists");
     verify(githubUserRepository, times(1)).findById(userId);
   }
 
@@ -468,8 +500,11 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
-        () -> feedbackService.validateUserExists(userId));
-    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+        () -> feedbackService.validateUserExists(userId),
+        "Expected NotFoundException when the user does not exist");
+
+    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate USER_NOT_FOUND");
     verify(githubUserRepository, times(1)).findById(userId);
   }
 }

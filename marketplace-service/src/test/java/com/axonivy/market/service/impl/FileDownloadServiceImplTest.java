@@ -85,7 +85,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void createFolder() {
+  void testCreateFolder() {
     String location = "testFolder";
     Path mockPath = Paths.get(location);
 
@@ -116,7 +116,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void deleteDirectory_shouldDeleteAllFilesAndDirectories() {
+  void deleteDirectoryShouldDeleteAllFilesAndDirectories() {
     // Arrange
     Path mockPath = Mockito.mock(Path.class);
     Path file1 = Mockito.mock(Path.class);

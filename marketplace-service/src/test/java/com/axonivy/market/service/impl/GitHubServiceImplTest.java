@@ -525,7 +525,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetDependabotAlerts_NotFound() {
+  void testGetDependabotAlertsNotFound() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
@@ -549,7 +549,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetDependabotAlerts_Disabled() {
+  void testGetDependabotAlertsDisabled() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
