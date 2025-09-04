@@ -145,7 +145,7 @@ class MetadataServiceImplTest extends BaseSetup {
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setVersions(Set.of(MOCK_RELEASED_VERSION));
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    
+
     metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
 
     Assertions.assertEquals(1, getProductArtifacts(mockMavenArtifactVersion).size(),
