@@ -4,10 +4,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 
 @MappedSuperclass
+@NoArgsConstructor
 public class GenericIdEntity extends GenericEntity<String> {
 
   @Serial
@@ -16,10 +18,6 @@ public class GenericIdEntity extends GenericEntity<String> {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
-
-  public GenericIdEntity() {
-    // Default constructor required by JPA
-  }
 
   @Override
   public String getId() {

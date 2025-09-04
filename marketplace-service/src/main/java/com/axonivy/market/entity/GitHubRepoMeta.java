@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
@@ -13,6 +14,7 @@ import java.io.Serial;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = GH_REPO_META)
 public class GitHubRepoMeta extends AuditableEntity<String> {
 
@@ -24,10 +26,6 @@ public class GitHubRepoMeta extends AuditableEntity<String> {
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
-
-  public GitHubRepoMeta() {
-    // Default constructor required by JPA
-  }
 
   @Override
   public String getId() {
