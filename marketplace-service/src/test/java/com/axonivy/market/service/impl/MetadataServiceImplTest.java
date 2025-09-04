@@ -77,18 +77,23 @@ class MetadataServiceImplTest extends BaseSetup {
     metadataService.updateMavenArtifactVersionWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
 
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL, mockMavenArtifactVersion.get(0).getDownloadUrl());
-    Assertions.assertEquals(1, mockMavenArtifactVersion.size());
-    Assertions.assertTrue(mockMavenArtifactVersion.get(0).getId().isAdditionalVersion());
+    Assertions.assertEquals(MOCK_DOWNLOAD_URL, mockMavenArtifactVersion.get(0).getDownloadUrl(),
+        "Maven artifact download URL should match expected mock URL after update");
+    Assertions.assertEquals(1, mockMavenArtifactVersion.size(),
+        "Maven artifact version list size should match 1 after update");
+    Assertions.assertTrue(mockMavenArtifactVersion.get(0).getId().isAdditionalVersion(),
+        "Maven artifact ID should be additional version after update");
 
     // Simulate add one new duplicated artifact to the same version in additional list
     metadataService.updateMavenArtifactVersionWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
-    Assertions.assertEquals(1, mockMavenArtifactVersion.size());
+    Assertions.assertEquals(1, mockMavenArtifactVersion.size(),
+        "Maven artifact version list size should still match 1 after adding new duplicated artifact to the same version in additional list");
 
     List<MavenArtifactVersion> productArtifacts = getProductArtifacts(mockMavenArtifactVersion);
 
-    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
+    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts),
+        "Maven artifact version list size should still match 1 after adding new duplicated artifact to the same version in additional list");
 
     // Simulate add one new non-duplicated artifact to the same version in additional list
     mockMetadata.setArtifactId(MOCK_DEMO_ARTIFACT_ID);
@@ -97,18 +102,22 @@ class MetadataServiceImplTest extends BaseSetup {
 
     List<MavenArtifactVersion> additionalArtifacts = getAdditionalProductArtifacts(mockMavenArtifactVersion);
 
-    Assertions.assertEquals(2, additionalArtifacts.size());
+    Assertions.assertEquals(2, additionalArtifacts.size(),
+        "Maven artifact version list size should match 2 after adding new artifact to the same version in " +
+            "additional list");
 
     productArtifacts = getProductArtifacts(mockMavenArtifactVersion);
 
-    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
+    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts),
+        "Product artifact list should be empty");
 
     mockMetadata.setProductArtifact(true);
     metadataService.updateMavenArtifactVersionWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION, mockMetadata);
 
     productArtifacts = getProductArtifacts(mockMavenArtifactVersion);
 
-    Assertions.assertEquals(1, productArtifacts.size());
+    Assertions.assertEquals(1, productArtifacts.size(),
+        "Product artifact list size should match 1");
   }
 
   @Test
@@ -126,7 +135,8 @@ class MetadataServiceImplTest extends BaseSetup {
 
       metadataService.updateMavenArtifactVersionForNonReleaseDevVersion(mockMavenArtifactVersion, mockMetadata,
           MOCK_SNAPSHOT_VERSION);
-      Assertions.assertEquals(1, mockMavenArtifactVersion.size());
+      Assertions.assertEquals(1, mockMavenArtifactVersion.size(),
+          "Maven artifact version list size should be 1 after update for non release dev version");
     }
   }
 
@@ -135,16 +145,20 @@ class MetadataServiceImplTest extends BaseSetup {
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setVersions(Set.of(MOCK_RELEASED_VERSION));
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    
     metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
 
-    Assertions.assertEquals(1, getProductArtifacts(mockMavenArtifactVersion).size());
-    Assertions.assertTrue(CollectionUtils.isEmpty(getAdditionalProductArtifacts(mockMavenArtifactVersion)));
+    Assertions.assertEquals(1, getProductArtifacts(mockMavenArtifactVersion).size(),
+        "Expected exactly one product artifact when only released version exists in metadata");
+    Assertions.assertTrue(CollectionUtils.isEmpty(getAdditionalProductArtifacts(mockMavenArtifactVersion)),
+        "Expected no additional product artifacts when only released version exists in metadata");
 
     String snapshotVersion = "2.0.0-SNAPSHOT";
     mockMetadata.setVersions(Set.of(snapshotVersion, MOCK_RELEASED_VERSION));
+
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion)).thenReturn(
-          mockMetadata);
+      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion))
+          .thenReturn(mockMetadata);
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(
               mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null),
@@ -154,11 +168,14 @@ class MetadataServiceImplTest extends BaseSetup {
           );
 
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
-      Assertions.assertEquals(2, getProductArtifacts(mockMavenArtifactVersion).size());
-      Assertions.assertTrue(CollectionUtils.isEmpty(getAdditionalProductArtifacts(mockMavenArtifactVersion)));
+      Assertions.assertEquals(2, getProductArtifacts(mockMavenArtifactVersion).size(),
+          "Expected two product artifacts (released + snapshot) after adding snapshot version");
+      Assertions.assertTrue(CollectionUtils.isEmpty(getAdditionalProductArtifacts(mockMavenArtifactVersion)),
+          "Expected no additional product artifacts after first snapshot update");
 
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
-      Assertions.assertEquals(2, getAdditionalProductArtifacts(mockMavenArtifactVersion).size());
+      Assertions.assertEquals(2, getAdditionalProductArtifacts(mockMavenArtifactVersion).size(),
+          "Expected two additional product artifacts to be created after second snapshot update");
     }
   }
 
@@ -169,15 +186,23 @@ class MetadataServiceImplTest extends BaseSetup {
     mockMetadata.setUrl(MOCK_MAVEN_URL);
     Set<Metadata> mockMetadataSet = Set.of(mockMetadata);
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+
     metadataService.updateMavenArtifactVersionData(mockMetadataSet, MOCK_PRODUCT_ID);
-    Assertions.assertEquals(0, getProductArtifacts(mockMavenArtifactVersion).size());
-    Assertions.assertEquals(0, getAdditionalProductArtifacts(mockMavenArtifactVersion).size());
+
+    Assertions.assertEquals(0, getProductArtifacts(mockMavenArtifactVersion).size(),
+        "Expected no product artifacts when metadata contains no versions");
+    Assertions.assertEquals(0, getAdditionalProductArtifacts(mockMavenArtifactVersion).size(),
+        "Expected no additional product artifacts when metadata contains no versions");
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      when(fileDownloadService.getFileAsString(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
+      when(fileDownloadService.getFileAsString(MOCK_MAVEN_URL))
+          .thenReturn(getMockMetadataContent());
+
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
-          .thenReturn(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
-              mockMavenArtifactVersion(MOCK_RELEASED_VERSION,null));
+          .thenReturn(
+              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null),
+              mockMavenArtifactVersion(MOCK_RELEASED_VERSION, null)
+          );
 
       ArgumentCaptor<List<MavenArtifactVersion>> captor = ArgumentCaptor.forClass(List.class);
 
@@ -185,8 +210,11 @@ class MetadataServiceImplTest extends BaseSetup {
 
       verify(mavenArtifactVersionRepo, times(2)).saveAll(captor.capture());
       List<MavenArtifactVersion> savedArtifactVersion = captor.getValue();
-      assertNotNull(savedArtifactVersion);
-      Assertions.assertEquals(2, getProductArtifacts(savedArtifactVersion).size());
+
+      assertNotNull(savedArtifactVersion,
+          "Expected saved artifact versions list to be initialized after update");
+      Assertions.assertEquals(2, getProductArtifacts(savedArtifactVersion).size(),
+          "Expected two product artifacts (snapshot + released) to be saved from metadata");
     }
   }
 
