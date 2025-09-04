@@ -193,7 +193,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testReadPreviewImageByName_NotFoundDirectory() {
+  void testReadPreviewImageByNameNotFoundDirectory() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
 
@@ -206,7 +206,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
-  void testReadPreviewImageByName_NotFoundImage() {
+  void testReadPreviewImageByNameNotFoundImage() {
     Path imagePath = Path.of(IMAGE_NAME);
 
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
@@ -226,7 +226,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
-  void testReadPreviewImageByName_IOException() {
+  void testReadPreviewImageByNameIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
 
       mockedFiles.when(() -> Files.exists(any())).thenReturn(true);
