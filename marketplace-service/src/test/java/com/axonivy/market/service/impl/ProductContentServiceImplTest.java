@@ -90,7 +90,8 @@ class ProductContentServiceImplTest extends BaseSetup {
       String expectedResult = readmeContent.replace("images/slash-command.png",
           MOCK_IMAGE_ID_FORMAT_1).replace("images/create-slash-command.png",
           MOCK_IMAGE_ID_FORMAT_2);
-      assertEquals(expectedResult, result);
+      assertEquals(expectedResult, result,
+          "Updated images' download URLs should match expected URLs");
     }
   }
 
