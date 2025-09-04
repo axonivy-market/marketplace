@@ -6,6 +6,7 @@ import {
 } from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
@@ -114,7 +115,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })
-export class ProductDetailComponent {
+export class ProductDetailComponent implements AfterViewInit {
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -169,7 +170,9 @@ export class ProductDetailComponent {
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
   isBrowser: boolean;
   meta = inject(Meta);
-  @ViewChild('observer', { static: true }) observerElement!: ElementRef;
+  @ViewChild('changlogObserver', { static: false })
+  observerElement!: ElementRef;
+  private changelogIntersectionObserver?: IntersectionObserver;
 
   private scrollPositions: { [tabId: string]: number } = {};
 
@@ -207,6 +210,12 @@ export class ProductDetailComponent {
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
   }
 
+  ngAfterViewInit(): void {
+    if (this.isBrowser) {
+      this.setupIntersectionObserver();
+    }
+  }
+
   private handleProductDetailLoad(
     productId: string,
     productDetail: ProductDetail
@@ -231,7 +240,6 @@ export class ProductDetailComponent {
           this.changeLogLinks = res.changelogs._links;
           this.changeLogPages = res.changelogs.page;
           this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
-          console.warn(this.productReleaseSafeHtmls().length);
         }
 
         this.handleProductDetail(productDetail);
@@ -307,6 +315,9 @@ export class ProductDetailComponent {
   }
 
   setupIntersectionObserver() {
+    if (!this.observerElement || this.changelogIntersectionObserver) {
+      return;
+    }
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -318,6 +329,14 @@ export class ProductDetailComponent {
     }, options);
 
     observer.observe(this.observerElement.nativeElement);
+  }
+
+  onTabChanged(tabValue: string) {
+    // this.activeTab = tabValue;
+    console.warn('Tab changed to:', tabValue);
+    if (tabValue === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver());
+    }
   }
 
   private loadChangelogs(): void {
@@ -433,9 +452,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog:
-        this.productReleaseSafeHtmls != null &&
-        this.productReleaseSafeHtmls.length !== 0
+      changelog: this.productReleaseSafeHtmls().length !== 0
     };
 
     return conditions[value] ?? false;

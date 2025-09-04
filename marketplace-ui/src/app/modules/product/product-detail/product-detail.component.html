@@ -181,7 +181,8 @@
                   [class.active]="activeTab === displayedTab.value"
                   [id]="displayedTab.value"
                   role="tabpanel"
-                  [attr.aria-labelledby]="displayedTab.value + '-tab'">
+                  [attr.aria-labelledby]="displayedTab.value + '-tab'"
+                  (click)="onTabChanged(displayedTab.value)">
                   @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"
@@ -208,7 +209,7 @@
                         </div>
                       }
                     </div>
-                      <div #observer class="observer"></div>
+                    <div #changelogObserver class="changlogObserver"></div>
                   } @else {
                     <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
                   }
@@ -217,7 +218,6 @@
             </div>
           }
         </div>
-
         <!-- Side information Tab -->
         <div
           class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3 default-cursor">
