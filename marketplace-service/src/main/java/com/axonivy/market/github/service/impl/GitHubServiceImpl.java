@@ -379,7 +379,7 @@ public class GitHubServiceImpl implements GitHubService {
             StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
-    return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
+    return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
   }
 
   @Cacheable(value = "RepoRelease", key = "{#productId}")

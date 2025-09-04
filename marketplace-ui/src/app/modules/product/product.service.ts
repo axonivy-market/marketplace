@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
-import { Criteria } from '../../shared/models/criteria.model';
+import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ForwardingError, LoadingComponent } from '../../core/interceptors/api.interceptor';
@@ -11,7 +11,6 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
-import { Pageable } from '../../shared/models/apis/pageable.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -112,16 +111,29 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string, pageable: Pageable): Observable<ProductReleasesApiResponse> {
-    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
-    let requestParams = new HttpParams()
-      .set(RequestParam.PAGE, `${pageable.page}`)
-      .set(RequestParam.SIZE, `${pageable.size}`);
-    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true), params: requestParams }).pipe(
-      catchError(() => {
-        const productReleasesApiResponse = {} as ProductReleasesApiResponse;
-        return of(productReleasesApiResponse);
+  getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {
+    let requestParams = new HttpParams();
+    let url = '';
+    if (criteria.nextPageHref) {
+      url = criteria.nextPageHref;
+    } else {
+      url = `${API_URI.PRODUCT_DETAILS}/${criteria.productId}/releases`;
+      if (criteria.pageable) {
+        requestParams = requestParams
+          .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+          .set(RequestParam.SIZE, `${criteria.pageable.size}`);
+      }
+    }
+    return this.httpClient
+      .get<ProductReleasesApiResponse>(url, {
+        context: new HttpContext().set(ForwardingError, true),
+        params: requestParams
       })
-    );
+      .pipe(
+        catchError(() => {
+          const productReleasesApiResponse = {} as ProductReleasesApiResponse;
+          return of(productReleasesApiResponse);
+        })
+      );
   }
 }
