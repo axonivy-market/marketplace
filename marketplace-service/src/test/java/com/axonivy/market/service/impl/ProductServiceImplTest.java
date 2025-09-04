@@ -294,8 +294,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
-    assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
-        .isEqualTo(mockReadmeProductContent().getId());
+    assertEquals(argumentCaptorProductModuleContents.getValue().get(0).getId(), mockReadmeProductContent().getId(),
+        "Product module contents ID should match mock readme product module content ID");
   }
 
   @Test
@@ -338,13 +338,13 @@ class ProductServiceImplTest extends BaseSetup {
 
       verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
       verify(productRepo).save(argumentCaptor.capture());
-      assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
-          .isEqualTo(mockReadmeProductContent().getId());
+      assertEquals(argumentCaptorProductModuleContents.getValue().get(0).getId(), mockReadmeProductContent().getId(),
+          "Product module contents ID should match mock readme product module content ID");
     }
   }
 
   @Test
-  void testSyncProductsSecondTime_andThereIsNoDuplicatedValueInReleasedVersion() {
+  void testSyncProductsSecondTimeAndThereIsNoDuplicatedValueInReleasedVersion() {
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
          MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT",
@@ -359,7 +359,8 @@ class ProductServiceImplTest extends BaseSetup {
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
       verify(productRepo).save(argumentCaptor.capture());
-      assertThat(argumentCaptor.getValue().getReleasedVersions()).isEqualTo(mockVersions);
+      assertEquals(argumentCaptor.getValue().getReleasedVersions(), mockVersions,
+          "Product released versions should match mock readme product versions");
     }
   }
 
@@ -396,8 +397,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data list from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data list from Market repo should be empty if there is nothing to sync");
   }
 
   @Test
@@ -416,7 +417,8 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncLatestDataFromMarketRepo(false);
     verify(productRepo).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
+    assertNull(argumentCaptor.getValue().getProductModuleContent(),
+        "Product module content should be null");
   }
 
   @Test
@@ -429,7 +431,7 @@ class ProductServiceImplTest extends BaseSetup {
         mockResultReturn);
 
     var result = productService.findProducts(type, keyword, language, false, simplePageable);
-    assertEquals(result, mockResultReturn);
+    assertEquals(result, mockResultReturn, "Product list from search query should match mock product list");
     verify(productRepo).searchByCriteria(any(), any(Pageable.class));
   }
 
@@ -439,7 +441,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertNull(result);
+    assertNull(result, "Product should be null");
   }
 
   @Test
@@ -452,22 +454,27 @@ class ProductServiceImplTest extends BaseSetup {
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0+", result.getCompatibilityRange());
+    assertEquals("10.0+", result.getCompatibilityRange(),
+        "Product compatibility range should match 10.0+");
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+    assertEquals("10.0 - 11.3+", result.getCompatibilityRange(),
+        "Product compatibility range should match 10.0 - 11.3+");
 
     product.setDeprecated(true);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0 - 11.3", result.getCompatibilityRange());
+    assertEquals("10.0 - 11.3", result.getCompatibilityRange(),
+        "Product compatibility range should match 10.0 - 11.3");
 
     product.setDeprecated(false);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0 - 12.0+", result.getCompatibilityRange());
+    assertEquals("10.0 - 12.0+", result.getCompatibilityRange(),
+        "Product compatibility range should match 10.0 - 12.0");
 
     product.setDeprecated(true);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0 - 12.0", result.getCompatibilityRange());
+    assertEquals("10.0 - 12.0", result.getCompatibilityRange(),
+        "Product compatibility range should match 10.0 - 12.0");
     verify(versionService, atLeastOnce()).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
     verify(versionService, never()).getInstallableVersions(MOCK_PRODUCT_ID, true, null);
   }
@@ -478,7 +485,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = getMockProduct();
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-        MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
           mockMavenArtifactVersions);
       when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
@@ -489,14 +496,16 @@ class ProductServiceImplTest extends BaseSetup {
           .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
 
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-      assertEquals(mockProduct, result);
+      assertEquals(mockProduct, result,
+          "Product with newest release version should match mock product");
 
       when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(VersionUtils.getVersionsToDisplay(any(),any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      result  = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-      assertEquals(mockProduct, result);
+      when(VersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
+      assertEquals(mockProduct, result,
+          "Product with newest release version should match mock product");
     }
   }
 
@@ -510,7 +519,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
 
     Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-    assertEquals(mockProduct, result);
+    assertEquals(mockProduct, result,
+        "Product with newest release version and empty artifact should match mock product");
   }
 
   @Test
@@ -521,7 +531,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(mockProduct, result);
+    assertEquals(mockProduct, result,
+        "Result product should match mock product");
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
@@ -536,7 +547,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
         mockProductMarketplaceData.getInstallationCount());
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-    assertEquals(mockProduct, result);
+    assertEquals(mockProduct, result,
+        "Found best match product version should match mock product");
   }
 
   private void mockMarketRepoMetaStatus() {
@@ -593,8 +605,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -607,8 +619,8 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepo).deleteById(anyString());
     verify(imageRepo).deleteAllByProductId(anyString());
     verify(imageRepo).findByImageUrlEndsWithIgnoreCase(anyString());
-    assertNotNull(result);
-    assertFalse(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertFalse(result.isEmpty(), "Latest data from Market repo should not be empty");
   }
 
   @Test
@@ -629,8 +641,8 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
 
-    assertNotNull(result);
-    assertFalse(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertFalse(result.isEmpty(), "Latest data from Market repo should not be empty");
     verify(productRepo).deleteById(anyString());
     verify(imageRepo).deleteAllByProductId(anyString());
   }
@@ -644,8 +656,10 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
-    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false));
-    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, true));
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false),
+        "Sync one product should be successful when not overriding Market item path");
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, true),
+        "Sync one product should be successful when overriding Market item path");
   }
 
   private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
@@ -660,7 +674,8 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testSyncOneProductFailed() {
     when(marketRepoService.getMarketItemByPath(anyString())).thenThrow(new MockitoException("Sync a product failed!"));
-    assertFalse(productService.syncOneProduct(StringUtils.EMPTY, StringUtils.EMPTY, true));
+    assertFalse(productService.syncOneProduct(StringUtils.EMPTY, StringUtils.EMPTY, true),
+        "Sync one product should be failed");
   }
 
   @Test
@@ -683,8 +698,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo(false);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
   @Test
@@ -700,7 +715,8 @@ class ProductServiceImplTest extends BaseSetup {
     GHTag ghTagVersionTwo = new GHTag();
     List<GHTag> tags = Arrays.asList(ghTagVersionOne, ghTagVersionTwo);
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful");
   }
 
   @Test
@@ -710,19 +726,22 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
     mockProduct.setFirstPublishedDate(new Date());
     when(productRepo.findAll()).thenReturn(List.of(mockProduct));
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful");
   }
 
   @Test
   void testSyncFirstPublishedDateWithFindingAllProductsFailed() {
     when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be failed");
   }
 
   @Test
   void testSyncFirstPublishedDateForNoProduct() {
     when(productRepo.findAll()).thenReturn(new ArrayList<>());
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful with no product synced");
   }
 
   @Test
@@ -735,7 +754,8 @@ class ProductServiceImplTest extends BaseSetup {
         new IOException("Mocked IOException"));
     when(productRepo.save(mockProduct)).thenThrow(
         new MockitoException("Mocked IOException"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be failed");
   }
 
   @Test
@@ -757,7 +777,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghTagVersionTwo.getCommit()).thenReturn(commitOfTagVersionTwo);
     when(commitOfTagVersionTwo.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful");
   }
 
   @Test
@@ -775,7 +796,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghCommit.getCommitDate()).thenThrow(
         new IOException("get commit date of tag commit failed!"));
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful with getting commit date of tag commit failed");
 
     GHTag ghTag2 = mock(GHTag.class);
     List<GHTag> secondTags = Arrays.asList(ghTag, ghTag2);
@@ -783,7 +805,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghTag2.getCommit()).thenReturn(ghCommit2);
     when(ghCommit2.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(secondTags);
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be successful with getting commit date of tag commit");
   }
 
   @Test
@@ -798,9 +821,10 @@ class ProductServiceImplTest extends BaseSetup {
     when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
         .thenReturn(new GitHubReleaseModel());
 
-    GitHubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId, mockReleaseId);
+    GitHubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId,
+        mockReleaseId);
 
-    assertNotNull(result);
+    assertNotNull(result, "Github release model should not be null");
     verify(gitHubService).getGitHubReleaseModelByProductIdAndReleaseId(any(Product.class), anyLong());
   }
 
@@ -827,7 +851,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
-    assertNotNull(result);
+    assertNotNull(result, "Github release models should not be null");
     verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
   }
 
@@ -843,8 +867,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
-    assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
+    assertNotNull(result, "Github release model list should not be null");
+    assertEquals(0, result.getTotalElements(), "Github release model list should be empty when source url is blank");
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
@@ -861,8 +885,9 @@ class ProductServiceImplTest extends BaseSetup {
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
-    assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
+    assertNotNull(result, "Github release model list should not be null");
+    assertEquals(0, result.getTotalElements(),
+        "Github release model list should be empty when repository is blank");
     verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
@@ -873,7 +898,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.findAll()).thenReturn(products);
 
     List<String> result = productService.getProductIdList();
-    assertEquals(products.size(), result.size());
+    assertEquals(products.size(), result.size(),
+        "Github release model list size should match total products size");
   }
 
   @Test
