@@ -20,7 +20,7 @@ class AppControllerTest {
   @Test
   void testRoot() {
     var response = appController.root();
-    
+
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK for the root endpoint.");
     assertTrue(response.hasBody(),

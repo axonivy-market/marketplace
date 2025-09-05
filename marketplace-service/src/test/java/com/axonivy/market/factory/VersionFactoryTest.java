@@ -38,19 +38,26 @@ class VersionFactoryTest  extends BaseSetup {
   }
   @Test
   void testGetFromMetadata() {
-    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.LATEST.getCode()));
-    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.DEV.getCode()));
+    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.LATEST.getCode()),
+        "Should return empty string when metadata list is empty for LATEST version.");
+    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.DEV.getCode()),
+        "Should return empty string when metadata list is empty for DEV version.");
 
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
-        DevelopmentVersion.LATEST.getCode()));
+            DevelopmentVersion.LATEST.getCode()),
+        "Should return the latest released version from metadata for LATEST version.");
     assertEquals(MOCK_SPRINT_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
-        DevelopmentVersion.DEV.getCode()));
+            DevelopmentVersion.DEV.getCode()),
+        "Should return the sprint released version from metadata for DEV version.");
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
-        "10-dev"));
+            "10-dev"),
+        "Should return the correct released version from metadata for version '10-dev'.");
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
-        "10"));
+            "10"),
+        "Should return the correct released version from metadata for version '10'.");
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
-        "10.0"));
+            "10.0"),
+        "Should return the correct released version from metadata for version '10.0'.");
   }
 
   @Test
