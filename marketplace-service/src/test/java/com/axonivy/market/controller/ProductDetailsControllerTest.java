@@ -70,13 +70,16 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID, false);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(result, mockExpectedResult);
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
+    assertEquals(mockExpectedResult, result,
+        "ResponseEntity should match the expected result");
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID, false);
     verify(detailModelAssembler).toModel(mockProduct());
-    assertTrue(result.hasBody());
-    assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId());
+    assertTrue(result.hasBody(), "Response should have body");
+    assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId(),
+        "Product ID in response body should match expected ID");
   }
 
 
@@ -91,8 +94,10 @@ class ProductDetailsControllerTest extends BaseSetup {
     ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
         DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(result, mockExpectedResult);
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
+    assertEquals(mockExpectedResult, result,
+        "ResponseEntity should match the expected result");
 
     verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
     verify(detailModelAssembler, times(1)).toModel(mockProduct());
@@ -109,8 +114,10 @@ class ProductDetailsControllerTest extends BaseSetup {
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
         DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(result, mockExpectedResult);
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
+    assertEquals(mockExpectedResult, result,
+        "ResponseEntity should match the expected result");
 
     verify(productService, times(1)).fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
   }
@@ -123,7 +130,8 @@ class ProductDetailsControllerTest extends BaseSetup {
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
         WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
 
     verify(productService, times(1)).fetchProductDetailByIdAndVersion(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
@@ -136,7 +144,8 @@ class ProductDetailsControllerTest extends BaseSetup {
     ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
         WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
 
     verify(productService, times(1)).fetchBestMatchProductDetail(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
@@ -149,7 +158,8 @@ class ProductDetailsControllerTest extends BaseSetup {
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(
         WRONG_PRODUCT_ID, false);
 
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
 
     verify(productService, times(1)).fetchProductDetail(WRONG_PRODUCT_ID, false);
   }
@@ -162,9 +172,12 @@ class ProductDetailsControllerTest extends BaseSetup {
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).size());
-    assertEquals(models, result.getBody());
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).size(),
+        "Expected response body size to be 1");
+    assertEquals(models, result.getBody(),
+        "Expected response body to match the mocked models list");
   }
 
   @Test
@@ -174,13 +187,18 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     var result = productDetailsController.findVersionsForDesigner("google-maps-connector", StringUtils.EMPTY, true);
 
-    assertEquals(2, Objects.requireNonNull(result.getBody()).size());
-    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
+    assertEquals(2, Objects.requireNonNull(result.getBody()).size(),
+        "Expected response body size to be 2");
+    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion(),
+        "Expected first version to be 10.0.21");
     assertEquals("/api/product-details/portal/10.0.21/json",
-        Objects.requireNonNull(result.getBody()).get(0).getUrl());
-    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1).getVersion());
+        Objects.requireNonNull(result.getBody()).get(0).getUrl(),
+        "Expected first URL to be /api/product-details/portal/10.0.21/json");
+    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1).getVersion(),
+        "Expected second version to be 10.0.22");
     assertEquals("/api/product-details/portal/10.0.22/json",
-        Objects.requireNonNull(result.getBody()).get(1).getUrl());
+        Objects.requireNonNull(result.getBody()).get(1).getUrl(),
+        "Expected second URL to be /api/product-details/portal/10.0.22/json");
   }
 
   @Test
@@ -194,7 +212,8 @@ class ProductDetailsControllerTest extends BaseSetup {
     var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
         MOCK_DESIGNER_VERSION);
 
-    assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
+    assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result,
+        "Expected ResponseEntity with provided map and HTTP 200 OK");
   }
 
   private Product mockProduct() {
@@ -266,11 +285,13 @@ class ProductDetailsControllerTest extends BaseSetup {
     when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
         anyString())).thenReturn(StringUtils.EMPTY);
     var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+        "Expected HTTP 404 NOT_FOUND when no download URL is returned");
     when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
         anyString())).thenReturn(mockDownloadUrl);
     response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP 200 OK when a valid download URL is returned");
   }
 
   @Test
@@ -282,8 +303,9 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     var result = productDetailsController.findGithubPublicReleaseByProductIdAndReleaseId("portal", 1L);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(githubReleaseModel, result.getBody());
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertEquals(githubReleaseModel, result.getBody(),
+        "Expected response body to be the GitHubReleaseModel");
   }
 
   @Test
@@ -307,8 +329,9 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty(),
+        "Expected response body to contain 1 GitHubReleaseModel");
   }
 
   @Test
@@ -339,9 +362,9 @@ class ProductDetailsControllerTest extends BaseSetup {
           MOCK_RELEASED_VERSION)).thenReturn(List.of(MOCK_DOWNLOAD_URL));
       var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
           MOCK_DEMO_ARTIFACT_ID);
-      assertNotNull(result);
-      assertNotNull(result.getBody());
-      assertEquals(HttpStatus.OK, result.getStatusCode());
+      assertNotNull(result, "Expected non-null ResponseEntity");
+      assertNotNull(result.getBody(), "Expected non-null response body");
+      assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
     }
   }
 }
