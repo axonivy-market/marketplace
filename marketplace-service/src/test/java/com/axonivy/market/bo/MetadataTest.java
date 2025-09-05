@@ -10,12 +10,11 @@ class MetadataTest {
     Metadata meta =
         Metadata.builder().url("https://maven.axonivy.com/com/axonivy/utils/octopus/maven-metadata.xml").build();
 
-    Assertions.assertNotEquals(null, meta);
-    Assertions.assertNotEquals(new Object(), meta);
-    Assertions.assertEquals(meta, meta);
+    Assertions.assertNotNull(meta, "Metadata object should not be equal to null.");
+    Assertions.assertNotEquals(new Object(), meta, "Metadata object should not be equal to a different object type.");
 
     Metadata sameMeta =
         Metadata.builder().url("https://maven.axonivy.com/com/axonivy/utils/octopus/maven-metadata.xml").build();
-    Assertions.assertEquals(sameMeta, meta);
+    Assertions.assertEquals(sameMeta, meta, "Metadata objects with the same URL should be equal.");
   }
 }

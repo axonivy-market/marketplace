@@ -10,13 +10,15 @@ class ArtifactTest {
     Artifact artifact = new Artifact();
     artifact.setGroupId("com.axonivy.com");
     artifact.setArtifactId("octopus-demo");
-    Assertions.assertNotEquals(null, artifact);
-    Assertions.assertNotEquals(new Object(), artifact);
-    Assertions.assertEquals(artifact, artifact);
+
+    Assertions.assertNotNull(artifact, "Artifact object should not be null.");
+    Assertions.assertNotEquals(new Object(), artifact, "Artifact should not be equal to an object of a different type.");
+
 
     Artifact sameArtifact = new Artifact();
     sameArtifact.setGroupId("com.axonivy.com");
     sameArtifact.setArtifactId("octopus-demo");
-    Assertions.assertEquals(sameArtifact, artifact);
+
+    Assertions.assertEquals(sameArtifact, artifact, "Artifacts with the same groupId and artifactId should be equal.");
   }
 }
