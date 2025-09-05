@@ -116,7 +116,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void deleteDirectoryShouldDeleteAllFilesAndDirectories() {
+  void testDeleteDirectoryShouldDeleteAllFilesAndDirectories() {
     // Arrange
     Path mockPath = Mockito.mock(Path.class);
     Path file1 = Mockito.mock(Path.class);

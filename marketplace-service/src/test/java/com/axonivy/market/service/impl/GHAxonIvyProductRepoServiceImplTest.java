@@ -146,7 +146,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testExtractReadMeFileFromContents_ImageFromRootFolder() {
+  void testExtractReadMeFileFromContentsImageFromRootFolder() {
     String readmeContentWithImageFolder = """
         #Product-name
         Test README
@@ -176,7 +176,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testExtractReadMeFileFromContents_ImageFromChildFolder() throws IOException {
+  void testExtractReadMeFileFromContentsImageFromChildFolder() throws IOException {
     String readmeContentWithImageFolder = """
         #Product-name
         Test README

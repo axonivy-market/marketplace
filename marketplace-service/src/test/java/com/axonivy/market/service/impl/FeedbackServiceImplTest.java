@@ -123,7 +123,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testFindAllFeedbacks_EmptyResult() {
+  void testFindAllFeedbacksEmptyResult() {
     Pageable pageable = PageRequest.of(0, 20);
     Page<FeedbackProjection> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
     when(feedbackRepository.findFeedbackWithProductNames(pageable)).thenReturn(emptyPage);
@@ -354,7 +354,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpsertFeedback_MatchingApprovedFeedback() throws NotFoundException {
+  void testUpsertFeedbackMatchingApprovedFeedback() throws NotFoundException {
     String productId = "product1";
 
     Feedback existingApproved = new Feedback();
@@ -391,7 +391,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpsertFeedback_NoMatchingFeedback() throws NotFoundException {
+  void testUpsertFeedbackNoMatchingFeedback() throws NotFoundException {
     String productId = "product1";
 
     Feedback existingApproved = new Feedback();
@@ -440,7 +440,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetProductRatingById_NoFeedbacks() {
+  void testGetProductRatingByIdNoFeedbacks() {
     String productId = "product1";
 
     when(feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(anyString(), anyList(),
@@ -472,7 +472,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testValidateProductExists_NotFound() {
+  void testValidateProductExistsNotFound() {
     String productId = "product1";
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
@@ -496,7 +496,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testValidateUserExists_NotFound() {
+  void testValidateUserExistsNotFound() {
     when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
