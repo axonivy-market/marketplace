@@ -33,7 +33,7 @@ class SecurityMonitorControllerTest {
   private SecurityMonitorController securityMonitorController;
 
   @Test
-  void test_getGitHubMarketplaceSecurity() {
+  void testGetGitHubMarketplaceSecurity() {
     String mockToken = "Bearer sample-token";
     ProductSecurityInfo product1 = new ProductSecurityInfo("product1", false, "public", true, new Date(), "abc123",
         null, null, null);
@@ -57,7 +57,7 @@ class SecurityMonitorControllerTest {
   }
 
   @Test
-  void test_getGitHubMarketplaceSecurity_shouldReturnUnauthorized_whenInvalidToken() {
+  void test_getGitHubMarketplaceSecurityShouldReturnUnauthorizedWhenInvalidToken() {
     String invalidToken = "Bearer invalid-token";
 
     doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),

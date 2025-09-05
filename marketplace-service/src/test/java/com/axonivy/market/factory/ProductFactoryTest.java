@@ -6,6 +6,9 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -17,8 +20,6 @@ import java.io.InputStream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,7 @@ class ProductFactoryTest extends BaseSetup {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
     result = ProductFactory.mappingByGHContent(product, mockContent);
-    assertNotEquals(null, result, "Mapping with valid GHContent should not return null.");
+    assertNotNull(result, "Mapping with valid GHContent should not return null.");
     assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()),
         "The English name should be correctly mapped from the GHContent.");
     assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()),
@@ -93,7 +94,7 @@ class ProductFactoryTest extends BaseSetup {
     persistedData.setLogoId(SAMPLE_LOGO_ID);
 
     ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
-    
+
     assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory(),
         "Market directory should be transferred correctly from persisted data to product.");
     assertEquals(SAMPLE_LOGO_ID, product.getLogoId(),
