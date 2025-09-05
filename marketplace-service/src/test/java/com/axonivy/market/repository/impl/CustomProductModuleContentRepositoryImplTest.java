@@ -36,7 +36,7 @@ class CustomProductModuleContentRepositoryImplTest extends BaseSetup {
   CustomProductModuleContentRepositoryImpl repository;
 
   @Test
-  void findVersionsByProductId() {
+  void testFindVersionsByProductId() {
     TypedQuery<String> query = mock(TypedQuery.class);
     CriteriaBuilder cb = mock(CriteriaBuilder.class);
     CriteriaQuery<String> cq = mock(CriteriaQuery.class);

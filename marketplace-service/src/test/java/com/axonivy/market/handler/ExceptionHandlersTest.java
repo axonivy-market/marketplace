@@ -39,49 +39,58 @@ class ExceptionHandlersTest {
 
     var responseEntity = exceptionHandlers.handleMissingServletRequestParameter(missingHeaderException);
 
-    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST");
     Message errorMessage = (Message) responseEntity.getBody();
-    assertEquals(errorMessageText, errorMessage.getMessageDetails());
+    assertEquals(errorMessageText, errorMessage.getMessageDetails(),
+        "Expected error message details to be " + errorMessageText);
   }
 
   @Test
   void testHandleNotFoundException() {
     var notFoundException = mock(NotFoundException.class);
     var responseEntity = exceptionHandlers.handleNotFoundException(notFoundException);
-    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode(),
+        "Expected HTTP 404 NOT_FOUND");
   }
 
   @Test
   void testHandleNoContentException() {
     var noContentException = mock(NoContentException.class);
     var responseEntity = exceptionHandlers.handleNoContentException(noContentException);
-    assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode(),
+        "Expected HTTP 204 NO_CONTENT");
   }
 
   @Test
   void testHandleInvalidException() {
     var invalidParamException = mock(InvalidParamException.class);
     var responseEntity = exceptionHandlers.handleInvalidException(invalidParamException);
-    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST");
   }
 
   @Test
   void testHandleOauth2ExchangeCodeException() {
     var oauth2ExchangeCodeException = mock(Oauth2ExchangeCodeException.class);
     var responseEntity = exceptionHandlers.handleOauth2ExchangeCodeException(oauth2ExchangeCodeException);
-    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST");
   }
 
   @Test
   void testHandleUnauthorizedException() {
     var unauthorizedException = mock(UnauthorizedException.class);
     var responseEntity = exceptionHandlers.handleUnauthorizedException(unauthorizedException);
-    assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode(),
+        "Expected HTTP 401 UNAUTHORIZED");
   }
+
   @Test
   void testHandleConstraintViolation() {
     var invalidUrlException = mock(ConstraintViolationException.class);
     var responseEntity = exceptionHandlers.handleConstraintViolation(invalidUrlException);
-    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode(), "Url not found or invalid");
+    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode(),
+        "Url not found or invalid");
   }
 }

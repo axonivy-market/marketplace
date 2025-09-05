@@ -98,7 +98,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   }
 
   @Test
-  void testReleasedVersionsById_WhenResultIsNull() {
+  void testReleasedVersionsByIdWhenResultIsNull() {
     mockProduct = new Product();
     mockProduct.setId(MOCK_PRODUCT_ID);
 

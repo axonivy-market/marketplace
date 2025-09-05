@@ -32,10 +32,15 @@ class ProductDesignerInstallationControllerTest {
     ResponseEntity<List<DesignerInstallation>> result =
         productDesignerInstallationController.getProductDesignerInstallationByProductId(
         "portal");
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
-    Assertions.assertEquals(DESIGNER_VERSION, result.getBody().get(0).getDesignerVersion());
-    Assertions.assertEquals(5, result.getBody().get(0).getNumberOfDownloads());
-    Assertions.assertEquals(models, result.getBody());
+    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected HTTP 200 OK");
+    Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size(),
+        "Expected response body size to be 1");
+    Assertions.assertEquals(DESIGNER_VERSION, result.getBody().get(0).getDesignerVersion(),
+        "Expected designer version to be " + DESIGNER_VERSION);
+    Assertions.assertEquals(5, result.getBody().get(0).getNumberOfDownloads(),
+        "Expected number of downloads to be 5");
+    Assertions.assertEquals(models, result.getBody(),
+        "Expected response body to match the mocked models list");
   }
 }
