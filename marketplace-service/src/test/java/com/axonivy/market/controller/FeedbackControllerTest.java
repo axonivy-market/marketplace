@@ -83,9 +83,13 @@ class FeedbackControllerTest extends BaseSetup {
     when(service.findFeedbacks(any(), any())).thenReturn(mockFeedbacks);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
     var result = feedbackController.findFeedbacks(PRODUCT_ID_SAMPLE, pageable);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when no feedbacks are found.");
+    assertTrue(result.hasBody(),
+        "Response should still contain a body even when no feedbacks are found.");
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Response body content size should be 0 when no feedbacks are found.");
   }
 
   @Test
@@ -101,10 +105,15 @@ class FeedbackControllerTest extends BaseSetup {
     var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
     var result = feedbackController.findFeedbacks(PRODUCT_ID_SAMPLE, pageable);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
-    assertEquals(USER_NAME_SAMPLE, result.getBody().getContent().iterator().next().getUsername());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when feedbacks exist.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body when feedbacks exist.");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Response body content size should match the number of feedbacks returned.");
+    assertEquals(USER_NAME_SAMPLE, result.getBody().getContent().iterator().next().getUsername(),
+        "The username in the feedback model should match the expected GitHub username.");
   }
 
   @Test
@@ -114,9 +123,13 @@ class FeedbackControllerTest extends BaseSetup {
     when(service.findFeedback(FEEDBACK_ID_SAMPLE)).thenReturn(mockFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var result = feedbackController.findFeedback(FEEDBACK_ID_SAMPLE);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when feedback is found.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body when feedback is found.");
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername(),
+        "The username in the feedback should match the expected GitHub username.");
   }
 
   @Test
@@ -126,9 +139,13 @@ class FeedbackControllerTest extends BaseSetup {
     when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(List.of(mockFeedback));
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var result = feedbackController.findFeedbackByUserIdAndProductId(USER_ID_SAMPLE, PRODUCT_ID_SAMPLE);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).get(0).getUsername());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when feedbacks for a specific user and product are found.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body when feedbacks for a specific user and product are found.");
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).get(0).getUsername(),
+        "The username of the feedback should match the expected GitHub username.");
   }
 
   @Test
@@ -147,10 +164,14 @@ class FeedbackControllerTest extends BaseSetup {
 
     var result = feedbackController.findAllFeedbacks(authHeader, pageable);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
-    assertEquals(FEEDBACK_ID_SAMPLE, result.getBody().getContent().iterator().next().getId());
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when all feedbacks are retrieved.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body when all feedbacks are retrieved.");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "The number of feedbacks in the response body should match the expected count.");
+    assertEquals(FEEDBACK_ID_SAMPLE, result.getBody().getContent().iterator().next().getId(),
+        "The feedback ID in the response should match the expected feedback ID.");
   }
 
   @Test
@@ -164,9 +185,12 @@ class FeedbackControllerTest extends BaseSetup {
 
     var result = feedbackController.findAllFeedbacks(authHeader, pageable);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when no feedbacks are found.");
+    assertTrue(result.hasBody(),
+        "Response should still contain a body even when no feedbacks are found.");
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Response body content size should be 0 when no feedbacks are found.");
   }
 
   @Test
@@ -186,10 +210,14 @@ class FeedbackControllerTest extends BaseSetup {
 
     var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(FEEDBACK_ID_SAMPLE, Objects.requireNonNull(result.getBody()).getId());
-    assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus());
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when feedback status is successfully updated.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body after updating feedback status.");
+    assertEquals(FEEDBACK_ID_SAMPLE, Objects.requireNonNull(result.getBody()).getId(),
+        "The feedback ID in the response should match the updated feedback ID.");
+    assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus(),
+        "The feedback status should be APPROVED after updating.");
   }
 
   @Test
@@ -204,8 +232,11 @@ class FeedbackControllerTest extends BaseSetup {
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
     var result = feedbackController.createFeedback(mockFeedbackModel, "Bearer " + TOKEN_SAMPLE);
-    assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    assertTrue(Objects.requireNonNull(result.getHeaders().getLocation()).toString().contains(mockFeedback.getId()));
+
+    assertEquals(HttpStatus.CREATED, result.getStatusCode(),
+        "Response status should be 201 CREATED when a new feedback is successfully created.");
+    assertTrue(Objects.requireNonNull(result.getHeaders().getLocation()).toString().contains(mockFeedback.getId()),
+        "The Location header should contain the ID of the newly created feedback.");
   }
 
   private Feedback createFeedbackMock() {

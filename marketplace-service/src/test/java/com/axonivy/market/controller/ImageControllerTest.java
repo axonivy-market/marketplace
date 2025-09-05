@@ -34,7 +34,7 @@ class ImageControllerTest {
 
     ResponseEntity<byte[]> result = imageController.findImageById("66e2b14868f2f95b2f95549a");
 
-    assertEquals(expectedResult, result);
+    assertEquals(expectedResult, result,
+        "ResponseEntity should match the expected result, including image data, headers, and status");
   }
-
 }
