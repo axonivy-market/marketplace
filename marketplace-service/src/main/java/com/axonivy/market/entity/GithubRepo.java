@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.constants.GitHubConstants.Repository;
 import com.axonivy.market.model.WorkflowInformation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHRepository;
 
 import java.io.IOException;
@@ -73,8 +75,8 @@ public class GithubRepo extends GenericIdEntity {
   }
 
   private static final Map<String, String> PREFIX_TO_PRODUCT = Map.of(
-      "msgraph", "msgraph",
-      "doc-factory", "doc-factory",
-      "demo-projects", ""
+      Repository.MSGRAPH_CONNECTOR, Repository.MSGRAPH_CONNECTOR,
+      Repository.DOC_FACTORY, Repository.DOC_FACTORY,
+      Repository.DEMO_PROJECTS, Strings.EMPTY
   );
 }
