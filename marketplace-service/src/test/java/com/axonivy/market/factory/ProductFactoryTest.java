@@ -29,17 +29,22 @@ class ProductFactoryTest extends BaseSetup {
     Product product = new Product();
     GHContent mockContent = mock(GHContent.class);
     var result = ProductFactory.mappingByGHContent(product, null);
-    assertEquals(product, result);
+
+    assertEquals(product, result, "Mapping with null GHContent should return the original product.");
+
     when(mockContent.getName()).thenReturn(META_FILE);
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
     result = ProductFactory.mappingByGHContent(product, mockContent);
-    assertNotEquals(null, result);
-    assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()));
-    assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()));
-    Assertions.assertTrue(result.getDeprecated());
-    Assertions.assertFalse(CollectionUtils.isEmpty(result.getArtifacts()));
-    Assertions.assertFalse(result.getArtifacts().get(0).isInvalidArtifact());
+    assertNotEquals(null, result, "Mapping with valid GHContent should not return null.");
+    assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()),
+        "The English name should be correctly mapped from the GHContent.");
+    assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()),
+        "The German name should be correctly mapped from the GHContent.");
+    Assertions.assertTrue(result.getDeprecated(), "The product should be marked as deprecated.");
+    Assertions.assertFalse(CollectionUtils.isEmpty(result.getArtifacts()), "Product artifacts should not be empty.");
+    Assertions.assertFalse(result.getArtifacts().get(0).isInvalidArtifact(),
+        "The first artifact should be valid.");
   }
 
   @Test
@@ -48,11 +53,11 @@ class ProductFactoryTest extends BaseSetup {
     GHContent content = mock(GHContent.class);
     when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     var result = ProductFactory.mappingByGHContent(product, content);
-    assertNotEquals(null, result);
+    assertNotEquals(null, result, "Mapping with a logo file should not return null.");
 
     when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     result = ProductFactory.mappingByGHContent(product, content);
-    assertNotEquals(null, result);
+    assertNotEquals(null, result, "Mapping with the logo file a second time should still not return null.");
   }
 
   @Test
@@ -60,20 +65,24 @@ class ProductFactoryTest extends BaseSetup {
     Product product = new Product();
     Meta meta = new Meta();
     ProductFactory.extractSourceUrl(product, meta);
-    Assertions.assertNull(product.getRepositoryName());
-    Assertions.assertNull(product.getSourceUrl());
+    Assertions.assertNull(product.getRepositoryName(), "Repository name should be null when source URL is not set.");
+    Assertions.assertNull(product.getSourceUrl(), "Source URL should be null when meta source URL is not set.");
 
     String sourceUrl = "https://github.com/axonivy-market/alfresco-connector";
     meta.setSourceUrl(sourceUrl);
     ProductFactory.extractSourceUrl(product, meta);
-    Assertions.assertEquals("axonivy-market/alfresco-connector", product.getRepositoryName());
-    Assertions.assertEquals(sourceUrl, product.getSourceUrl());
+    Assertions.assertEquals("axonivy-market/alfresco-connector", product.getRepositoryName(),
+        "Repository name should be extracted correctly from a full GitHub URL.");
+    Assertions.assertEquals(sourceUrl, product.getSourceUrl(),
+        "Source URL should match the meta source URL.");
 
     sourceUrl = "portal";
     meta.setSourceUrl(sourceUrl);
     ProductFactory.extractSourceUrl(product, meta);
-    Assertions.assertEquals(sourceUrl, product.getRepositoryName());
-    Assertions.assertEquals(sourceUrl, product.getSourceUrl());
+    Assertions.assertEquals(sourceUrl, product.getRepositoryName(),
+        "Repository name should match the source URL if it is not a full GitHub URL.");
+    Assertions.assertEquals(sourceUrl, product.getSourceUrl(),
+        "Source URL should match the meta source URL when it is a simple string.");
   }
 
   @Test
@@ -84,7 +93,10 @@ class ProductFactoryTest extends BaseSetup {
     persistedData.setLogoId(SAMPLE_LOGO_ID);
 
     ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
-    assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory());
-    assertEquals(SAMPLE_LOGO_ID, product.getLogoId());
+    
+    assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory(),
+        "Market directory should be transferred correctly from persisted data to product.");
+    assertEquals(SAMPLE_LOGO_ID, product.getLogoId(),
+        "Logo ID should be transferred correctly from persisted data to product.");
   }
 }
