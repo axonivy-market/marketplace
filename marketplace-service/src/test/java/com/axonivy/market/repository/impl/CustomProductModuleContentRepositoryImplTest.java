@@ -59,7 +59,7 @@ class CustomProductModuleContentRepositoryImplTest extends BaseSetup {
 
     List<String> result = repository.findVersionsByProductId(MOCK_PRODUCT_ID);
 
-    assertNotNull(result);
-    assertEquals(1, result.size());
+    assertNotNull(result, "Expected result list to be non-null");
+    assertEquals(1, result.size(), "Expected result list to contain exactly 1 version");
   }
 }

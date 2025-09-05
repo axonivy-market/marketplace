@@ -49,8 +49,11 @@ class SecurityMonitorControllerTest {
 
     ResponseEntity<Object> actualResponse = securityMonitorController.getGitHubMarketplaceSecurity(mockToken);
 
-    assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
-    assertEquals(expectedResponse.getBody(), actualResponse.getBody());
+    assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode(),
+        "HTTP status codes do not match. Expected " + expectedResponse.getStatusCode() +
+            " but got " + actualResponse.getStatusCode());
+    assertEquals(expectedResponse.getBody(), actualResponse.getBody(),
+        "Response body does not match expected security info list.");
   }
 
   @Test
@@ -62,8 +65,10 @@ class SecurityMonitorControllerTest {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> securityMonitorController.getGitHubMarketplaceSecurity(invalidToken));
+        () -> securityMonitorController.getGitHubMarketplaceSecurity(invalidToken),
+        "Expected UnauthorizedException to be thrown when token is invalid, but no exception was thrown.");
 
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
+        "UnauthorizedException message does not match expected help text.");
   }
 }

@@ -66,8 +66,11 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
 
     Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-    assertEquals(mockProduct, actualProduct);
-    assertThat(actualProduct.getProductModuleContent()).usingRecursiveComparison().isEqualTo(getMockProductModuleContent());
+    assertEquals(mockProduct, actualProduct, "Expected the returned product to match the mocked product");
+    assertThat(actualProduct.getProductModuleContent())
+        .as("Expected product module content to match the mocked content")
+        .usingRecursiveComparison()
+        .isEqualTo(getMockProductModuleContent());
     verify(contentRepo).findByVersionAndProductId(anyString(),anyString());
   }
 
@@ -90,7 +93,8 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     when(query.getSingleResult()).thenReturn(mockProduct);
 
     List<String> actualReleasedVersions = repo.getReleasedVersionsById(MOCK_PRODUCT_ID);
-    assertEquals(mockProduct.getReleasedVersions(), actualReleasedVersions);
+    assertEquals(mockProduct.getReleasedVersions(), actualReleasedVersions,
+        "Expected released versions returned from repository to match the product’s released versions");
   }
 
   @Test
@@ -110,6 +114,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     when(query.getSingleResult()).thenReturn(mockProduct);
 
     List<String> results = repo.getReleasedVersionsById(MOCK_PRODUCT_ID);
-    assertEquals(0, results.size());
+    assertEquals(0, results.size(),
+        "Expected released versions list to be empty when the product has no released versions");
   }
 }
