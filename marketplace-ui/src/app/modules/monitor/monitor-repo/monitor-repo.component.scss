@@ -92,6 +92,10 @@
     text-underline-offset: 2px;
     cursor: unset;
   }
+
+  .no-link {
+    cursor: default;
+  }
 }
 
 td.no-workflow {

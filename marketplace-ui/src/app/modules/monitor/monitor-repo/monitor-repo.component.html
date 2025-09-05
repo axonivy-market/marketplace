@@ -65,9 +65,13 @@
       <tr *ngFor="let repo of displayedRepositories">
         <td class="align-middle">
           <p class="name">
-          <a id="product-name" [href]="getMarketUrl(repo.productId)" target="_blank" rel="noopener noreferrer">
-            {{ repo.repoName }}
-          </a>
+            <a *ngIf="repo.productId; else noLink" id="product-name" [href]="getMarketUrl(repo.productId)"
+              target="_blank" rel="noopener noreferrer">
+              {{ repo.repoName }}
+            </a>
+            <ng-template #noLink>
+              <span class="no-link">{{ repo.repoName }}</span>
+            </ng-template>
           </p>
         </td>
         <td *ngFor="let workflowType of workflowKeys"

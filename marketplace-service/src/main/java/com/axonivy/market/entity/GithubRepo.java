@@ -18,6 +18,7 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
@@ -56,10 +57,24 @@ public class GithubRepo extends GenericIdEntity {
 
   public static GithubRepo from(GHRepository repo, String productId) throws IOException {
     return GithubRepo.builder()
-        .productId(productId)
+        .productId(getProductId(repo.getName(), productId))
         .htmlUrl(repo.getHtmlUrl().toString())
         .workflowInformation(new ArrayList<>())
         .testSteps(new ArrayList<>())
         .build();
   }
+
+  private static String getProductId(String repoName, String productId) {
+    return PREFIX_TO_PRODUCT.entrySet().stream()
+        .filter(e -> repoName.startsWith(e.getKey()))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(productId);
+  }
+
+  private static final Map<String, String> PREFIX_TO_PRODUCT = Map.of(
+      "msgraph", "msgraph",
+      "doc-factory", "doc-factory",
+      "demo-projects", ""
+  );
 }
