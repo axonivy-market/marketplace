@@ -27,10 +27,11 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
   @Value("${market.limited.request-paths}")
   private List<String> requestPaths;
-  private final Map<String, Bucket> clientBuckets  = new ConcurrentHashMap<>();
+  private final Map<String, Bucket> clientBuckets;
 
   public LimitCallingConfig() {
     super();
+    this.clientBuckets = new ConcurrentHashMap<>();
   }
 
   @Override
