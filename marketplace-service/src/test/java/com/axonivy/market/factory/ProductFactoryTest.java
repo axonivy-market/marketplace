@@ -54,11 +54,11 @@ class ProductFactoryTest extends BaseSetup {
     GHContent content = mock(GHContent.class);
     when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     var result = ProductFactory.mappingByGHContent(product, content);
-    assertNotEquals(null, result, "Mapping with a logo file should not return null.");
+    assertNotNull(result, "Mapping with a logo file should not return null.");
 
     when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     result = ProductFactory.mappingByGHContent(product, content);
-    assertNotEquals(null, result, "Mapping with the logo file a second time should still not return null.");
+    assertNotNull(result, "Mapping with the logo file a second time should still not return null.");
   }
 
   @Test

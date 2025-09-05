@@ -39,19 +39,19 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testBuildMarketCustomHeader_shouldReturnGroupedOpenApiWithCorrectConfiguration() {
+  void testBuildMarketCustomHeaderShouldReturnGroupedOpenApiWithCorrectConfiguration() {
     GroupedOpenApi result = marketApiDocumentConfig.buildMarketCustomHeader();
 
-    assertNotNull(result, "");
-    assertEquals("api", result.getGroup());
-    assertNotNull(result.getPathsToMatch());
-    assertTrue(result.getPathsToMatch().contains("/api/**"));
-    assertNotNull(result.getOpenApiCustomizers());
-    assertFalse(result.getOpenApiCustomizers().isEmpty());
+    assertNotNull(result, "GroupedOpenApi should not be null.");
+    assertEquals("api", result.getGroup(), "The API group name should be 'api'.");
+    assertNotNull(result.getPathsToMatch(), "Paths to match should not be null.");
+    assertTrue(result.getPathsToMatch().contains("/api/**"), "Paths to match should include '/api/**'.");
+    assertNotNull(result.getOpenApiCustomizers(), "OpenApiCustomizers should not be null.");
+    assertFalse(result.getOpenApiCustomizers().isEmpty(), "OpenApiCustomizers should not be empty.");
   }
 
   @Test
-  void testCustomMarketHeaders_shouldAddHeaderParametersToAllPaths() {
+  void testCustomMarketHeadersShouldAddHeaderParametersToAllPaths() {
     PathItem pathItem1 = createPathItemWithOperations();
     PathItem pathItem2 = createPathItemWithOperations();
 
@@ -69,7 +69,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_shouldAddParametersToAllNonNullOperations() {
+  void testAddHeaderParametersShouldAddParametersToAllNonNullOperations() {
     Operation putOperation = new Operation();
     Operation postOperation = new Operation();
     Operation patchOperation = new Operation();
@@ -86,10 +86,14 @@ class MarketApiDocumentConfigTest {
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
     groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
 
-    assertEquals(1, putOperation.getParameters().size());
-    assertEquals(1, postOperation.getParameters().size());
-    assertEquals(1, patchOperation.getParameters().size());
-    assertEquals(1, deleteOperation.getParameters().size());
+    assertEquals(1, putOperation.getParameters().size(),
+        "PUT operation should have exactly one header parameter added.");
+    assertEquals(1, postOperation.getParameters().size(),
+        "POST operation should have exactly one header parameter added.");
+    assertEquals(1, patchOperation.getParameters().size(),
+        "PATCH operation should have exactly one header parameter added.");
+    assertEquals(1, deleteOperation.getParameters().size(),
+        "DELETE operation should have exactly one header parameter added.");
 
     verifyParameterDetails(putOperation.getParameters().get(0));
     verifyParameterDetails(postOperation.getParameters().get(0));
@@ -98,7 +102,7 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testAddHeaderParameters_shouldSkipNullOperations() {
+  void testAddHeaderParametersShouldSkipNullOperations() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 
@@ -108,25 +112,28 @@ class MarketApiDocumentConfigTest {
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
     groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
 
-    assertEquals(1, postOperation.getParameters().size());
+    assertEquals(1, postOperation.getParameters().size(),
+        "POST operation should have exactly one header parameter added.");
     verifyParameterDetails(postOperation.getParameters().get(0));
   }
 
   @Test
-  void testAddHeaderParameters_shouldHandlePathItemWithNoOperations() {
+  void testAddHeaderParametersShouldHandlePathItemWithNoOperations() {
     PathItem emptyPathItem = new PathItem();
 
     when(openAPI.getPaths()).thenReturn(paths);
     when(paths.values()).thenReturn(Arrays.asList(emptyPathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    assertDoesNotThrow(() ->
-        groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI)
+
+    assertDoesNotThrow(
+        () -> groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI),
+        "Customizing OpenAPI should not throw an exception even if the PathItem has no operations."
     );
   }
 
   @Test
-  void testCreateRequestedByHeader_shouldCreateParameterWithCorrectProperties() {
+  void testCreateRequestedByHeaderShouldCreateParameterWithCorrectProperties() {
     Operation operation = new Operation();
     pathItem.setPost(operation);
 
@@ -141,18 +148,20 @@ class MarketApiDocumentConfigTest {
   }
 
   @Test
-  void testCustomMarketHeaders_shouldHandleEmptyPaths() {
+  void testCustomMarketHeadersShouldHandleEmptyPaths() {
     when(openAPI.getPaths()).thenReturn(paths);
     when(paths.values()).thenReturn(List.of());
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    assertDoesNotThrow(() ->
-        groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI)
+
+    assertDoesNotThrow(
+        () -> groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI),
+        "Customizing OpenAPI should not throw an exception when there are no paths."
     );
   }
 
   @Test
-  void testAddHeaderParameters_shouldNotDuplicateParametersOnMultipleCalls() {
+  void testAddHeaderParametersShouldNotDuplicateParametersOnMultipleCalls() {
     Operation postOperation = new Operation();
     pathItem.setPost(postOperation);
 
@@ -164,7 +173,8 @@ class MarketApiDocumentConfigTest {
     groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
     groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
 
-    assertEquals(2, postOperation.getParameters().size());
+    assertEquals(2, postOperation.getParameters().size(),
+        "POST operation should have exactly two parameters after two customizer calls, without unintended duplicates.");
   }
 
   private PathItem createPathItemWithOperations() {

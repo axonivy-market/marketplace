@@ -24,7 +24,7 @@ class ImageControllerTest {
   private ImageController imageController;
 
   @Test
-  void test_getImageFromId() {
+  void testGetImageFromId() {
     byte[] mockImageData = "image data".getBytes();
     when(imageService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
 

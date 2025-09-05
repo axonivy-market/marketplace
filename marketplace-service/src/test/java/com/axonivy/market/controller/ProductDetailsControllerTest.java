@@ -181,7 +181,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void findProductVersionsById() {
+  void testFindVersionsForDesignerById() {
     when(versionService.getInstallableVersions("google-maps-connector", true, StringUtils.EMPTY))
         .thenReturn(mockVersionAndUrlModels());
 
@@ -202,7 +202,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void findProductJsonContentByIdAndVersion() throws IOException {
+  void testFindProductJsonContentByIdAndVersion() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     Map<String, Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
     when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
@@ -317,8 +317,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when GitHub public releases are retrieved.");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Response body should contain exactly one GitHub release model as expected.");
   }
 
   @Test
@@ -347,10 +349,11 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifact_NotFound() {
+  void testDownloadZipArtifactNotFound() {
     var result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION,
         MOCK_DEMO_ARTIFACT_ID);
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Response status should be 404 NOT FOUND when the requested zip artifact does not exist.");
   }
 
   @Test

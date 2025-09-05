@@ -44,7 +44,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_Success() throws Exception {
+  void testGitHubLoginSuccess() throws Exception {
     String accessToken = "sampleAccessToken";
     GithubUser githubUser = createUserMock();
     String jwtToken = "sampleJwtToken";
@@ -62,7 +62,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_Oauth2ExchangeCodeException() throws Exception {
+  void testGitHubLoginOauth2ExchangeCodeException() throws Exception {
     when(gitHubService.getAccessToken(any(), any())).thenThrow(
         new Oauth2ExchangeCodeException("invalid_grant", "Invalid authorization code"));
 
@@ -80,7 +80,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_GeneralException() throws Exception {
+  void testGitHubLoginGeneralException() throws Exception {
     when(gitHubService.getAccessToken(any(), any())).thenThrow(new RuntimeException("Unexpected error"));
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
@@ -97,14 +97,16 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_EmptyAuthorizationCode() {
+  void testGitHubLoginEmptyAuthorizationCode() {
     oauth2AuthorizationCode.setCode(null);
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Response status should be 400 BAD REQUEST when authorization code is empty.");
     Map<String, String> body = (Map<String, String>) response.getBody();
-    assertTrue(body.containsKey(CommonConstants.MESSAGE));
+    assertTrue(body.containsKey(CommonConstants.MESSAGE),
+        "Response body should contain a 'message' key indicating the error.");
   }
 
   private GithubUser createUserMock() {

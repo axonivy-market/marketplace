@@ -39,9 +39,13 @@ class ExternalDocumentControllerTest {
   void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
     var result = externalDocumentController.findExternalDocument("portal", "10.0");
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertTrue(ObjectUtils.isNotEmpty(result.getBody()));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Response status should be 200 OK when an external document is found.");
+    assertTrue(result.hasBody(),
+        "Response should contain a body when an external document is found.");
+    assertTrue(ObjectUtils.isNotEmpty(result.getBody()),
+        "Response body should not be empty when an external document is found.");
   }
 
   @Test
