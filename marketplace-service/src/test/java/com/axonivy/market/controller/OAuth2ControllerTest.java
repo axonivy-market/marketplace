@@ -55,8 +55,10 @@ class OAuth2ControllerTest {
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
-    assertEquals(200, response.getStatusCode().value());
-    assertEquals(Map.of("token", jwtToken), response.getBody());
+    assertEquals(200, response.getStatusCode().value(),
+        "Response status should be 200 OK when GitHub login succeeds");
+    assertEquals(Map.of("token", jwtToken), response.getBody(),
+        "Response body should contain the generated JWT token");
   }
 
   @Test
@@ -66,10 +68,15 @@ class OAuth2ControllerTest {
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Response status should be 400 BAD_REQUEST when OAuth2 exchange fails");
+
     Map<String, String> body = (Map<String, String>) response.getBody();
-    assertEquals("invalid_grant", body.get(CommonConstants.ERROR));
-    assertEquals("Invalid authorization code", body.get(CommonConstants.MESSAGE));
+
+    assertEquals("invalid_grant", body.get(CommonConstants.ERROR),
+        "Response body should contain the correct error code from the exception");
+    assertEquals("Invalid authorization code", body.get(CommonConstants.MESSAGE),
+        "Response body should contain the correct error message from the exception");
   }
 
   @Test
@@ -78,10 +85,15 @@ class OAuth2ControllerTest {
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Response status should be 400 BAD_REQUEST when a general exception occurs");
+
     Map<String, String> body = (Map<String, String>) response.getBody();
-    assertTrue(body.containsKey(CommonConstants.MESSAGE));
-    assertEquals("Unexpected error", body.get(CommonConstants.MESSAGE));
+
+    assertTrue(body.containsKey(CommonConstants.MESSAGE),
+        "Response body should contain a 'message' key when an exception occurs");
+    assertEquals("Unexpected error", body.get(CommonConstants.MESSAGE),
+        "Response body should include the exception message");
   }
 
   @Test
