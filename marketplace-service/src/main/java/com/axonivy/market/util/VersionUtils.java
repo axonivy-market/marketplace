@@ -33,6 +33,7 @@ public class VersionUtils {
   public static final int MAIN_VERSION_LENGTH_1 = 1;
   public static final int MAIN_VERSION_LENGTH_2 = 2;
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
+  private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
 
   public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
     Stream<String> versionStream = versions.stream();
@@ -68,7 +69,7 @@ public class VersionUtils {
     } else if (isSnapshotVersion(version)) {
       bugfixVersion = getBugfixVersion(version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
     } else {
-      bugfixVersion = getBugfixVersion(version.split(SPRINT_RELEASE_POSTFIX)[0]);
+      bugfixVersion = getBugfixVersion(SPRINT_RELEASE_PATTERN.split(version)[0]);
     }
     return versions.stream().noneMatch(
         currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
@@ -99,9 +100,10 @@ public class VersionUtils {
     if (isSnapshotVersion(version)) {
       version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
     } else if (isSprintVersion(version)) {
-      version = version.split(SPRINT_RELEASE_POSTFIX)[0];
+      version = SPRINT_RELEASE_PATTERN.split(version)[0];
     }
-    String[] segments = version.split(MAIN_VERSION_REGEX);
+    String[] segments = MAIN_VERSION_PATTERN.split(version);
+
     if (segments.length >= 3) {
       segments[2] = segments[2].split(CommonConstants.DASH_SEPARATOR)[0];
       return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR + segments[2];
