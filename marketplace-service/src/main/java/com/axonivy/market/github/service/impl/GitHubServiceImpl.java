@@ -308,16 +308,12 @@ public class GitHubServiceImpl implements GitHubService {
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var codeScanning = new CodeScanning();
-          Map<String, Integer> codeScanningMap = new HashMap<>();
-          for (Map<String, Object> alert : alerts) {
-            Object ruleObj = alert.get(GitHubConstants.Json.RULE);
-            if (ruleObj instanceof Map<?, ?> rule) {
-              String severity = (String) rule.get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL);
-              if (severity != null) {
-                codeScanningMap.put(severity, codeScanningMap.getOrDefault(severity, 0) + 1);
-              }
-            }
-          }
+          Map<String, Integer> codeScanningMap = alerts.stream()
+              .map(alert -> alert.get(GitHubConstants.Json.RULE))
+              .filter(ruleObj -> ruleObj instanceof Map<?, ?>)
+              .map(ruleObj -> (String) ((Map<?, ?>) ruleObj).get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL))
+              .filter(Objects::nonNull)
+              .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
           codeScanning.setAlerts(codeScanningMap);
           return codeScanning;
         },
