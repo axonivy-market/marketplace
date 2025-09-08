@@ -33,14 +33,18 @@ public class VersionFactory {
       return defaultVersion;
     }
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
-      var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
-      String[] parts = plainVersions.split(CommonConstants.COMMA);
-      if(parts.length > 1) {
-        return parts[1].trim();
-      }
-      return parts[0].trim();
+      return extractVersionFromRange(mavenVersion);
     }
     return defaultVersion;
+  }
+
+  private static String extractVersionFromRange(String mavenVersion) {
+    var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
+    String[] parts = plainVersions.split(CommonConstants.COMMA);
+    if(parts.length > 1) {
+      return parts[1].trim();
+    }
+    return parts[0].trim();
   }
 
   public static String get(List<String> versions, String requestedVersion) {
