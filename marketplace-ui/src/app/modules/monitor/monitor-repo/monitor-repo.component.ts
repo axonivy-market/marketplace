@@ -154,21 +154,16 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   }
 
   private compareColumnValues(repo1ColumnValue: string, repo2ColumnValue: string, sortDirection: string): number {
-    const isAscendingDirection = sortDirection === ASCENDING;
-    if (repo1ColumnValue < repo2ColumnValue) {
-      if (isAscendingDirection) {
-        return -1;
-      } else {
-        return 1;
-      }
-    } else if (repo1ColumnValue > repo2ColumnValue) {
-      if (isAscendingDirection) {
-        return 1;
-      } else {
-        return -1;
-      }
-    } else {
+    const columnValueComparison = repo1ColumnValue.localeCompare(repo2ColumnValue);
+    if (columnValueComparison === 0) {
       return 0;
+    }
+
+    const isAscendingDirection = sortDirection === ASCENDING;
+    if (isAscendingDirection) {
+      return columnValueComparison;
+    } else {
+      return -columnValueComparison;
     }
   }
 
