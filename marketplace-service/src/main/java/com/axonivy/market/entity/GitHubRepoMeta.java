@@ -16,7 +16,7 @@ import java.io.Serial;
 @Entity
 @NoArgsConstructor
 @Table(name = GH_REPO_META)
-public class GitHubRepoMeta extends AuditableEntity<String> {
+public class GitHubRepoMeta extends AbstractAuditableEntity<String> {
 
   @Serial
   private static final long serialVersionUID = 1;

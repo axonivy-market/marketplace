@@ -202,12 +202,13 @@ class MarketApiDocumentConfigTest {
   }
 
   private void verifyParameterDetails(Parameter parameter) {
-    assertNotNull(parameter);
-    assertEquals("header", parameter.getIn());
-    assertEquals(REQUESTED_BY, parameter.getName());
-    assertEquals("ivy", parameter.getDescription());
-    assertTrue(parameter.getRequired());
-    assertNotNull(parameter.getSchema());
-    assertInstanceOf(StringSchema.class, parameter.getSchema());
+    assertNotNull(parameter, "Parameter should not be null");
+    assertEquals("header", parameter.getIn(), "Parameter 'in' value should be 'header'");
+    assertEquals(REQUESTED_BY, parameter.getName(), "Parameter name should match REQUESTED_BY");
+    assertEquals("ivy", parameter.getDescription(), "Parameter description should be 'ivy'");
+    assertTrue(parameter.getRequired(), "Parameter should be marked as required");
+    assertNotNull(parameter.getSchema(), "Parameter schema should not be null");
+    assertInstanceOf(StringSchema.class, parameter.getSchema(),
+        "Parameter schema should be an instance of StringSchema");
   }
 }

@@ -27,7 +27,7 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @Builder
 @Entity
 @Table(name = METADATA)
-public class Metadata extends GenericEntity<String> {
+public class Metadata extends AbstractGenericEntity<String> {
 
   @Serial
   private static final long serialVersionUID = 1;

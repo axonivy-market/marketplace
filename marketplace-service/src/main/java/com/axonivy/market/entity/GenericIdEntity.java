@@ -10,7 +10,7 @@ import java.io.Serial;
 
 @MappedSuperclass
 @NoArgsConstructor
-public class GenericIdEntity extends GenericEntity<String> {
+public class GenericIdEntity extends AbstractGenericEntity<String> {
 
   @Serial
   private static final long serialVersionUID = 1;

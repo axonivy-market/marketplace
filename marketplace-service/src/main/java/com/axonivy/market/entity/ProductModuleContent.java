@@ -27,7 +27,7 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Builder
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
-public class ProductModuleContent extends AuditableEntity<String> {
+public class ProductModuleContent extends AbstractAuditableEntity<String> {
   @Serial
   private static final long serialVersionUID = 1;
 

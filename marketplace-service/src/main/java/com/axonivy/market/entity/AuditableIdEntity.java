@@ -8,7 +8,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.io.Serial;
 
 @MappedSuperclass
-public class AuditableIdEntity extends AuditableEntity<String> {
+public class AuditableIdEntity extends AbstractAuditableEntity<String> {
 
   @Serial
   private static final long serialVersionUID = 1;

@@ -21,7 +21,7 @@ import java.io.Serial;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-public class ProductJsonContent extends AuditableEntity<String> {
+public class ProductJsonContent extends AbstractAuditableEntity<String> {
   @Serial
   private static final long serialVersionUID = 1;
 

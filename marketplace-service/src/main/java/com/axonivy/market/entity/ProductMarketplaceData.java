@@ -20,7 +20,7 @@ import java.io.Serial;
 @AllArgsConstructor
 @Entity
 @Table(name = PRODUCT_MARKETPLACE_DATA)
-public class ProductMarketplaceData extends GenericEntity<String> {
+public class ProductMarketplaceData extends AbstractGenericEntity<String> {
   @Serial
   private static final long serialVersionUID = 1;
 

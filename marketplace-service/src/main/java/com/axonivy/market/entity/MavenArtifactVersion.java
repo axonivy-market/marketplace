@@ -23,7 +23,7 @@ import java.io.Serial;
 @Builder
 @Entity
 @Table(name = MAVEN_ARTIFACT_VERSION)
-public class MavenArtifactVersion extends AuditableEntity<MavenArtifactKey> {
+public class MavenArtifactVersion extends AbstractAuditableEntity<MavenArtifactKey> {
 
   @Serial
   private static final long serialVersionUID = 1;
