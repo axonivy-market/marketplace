@@ -7,7 +7,6 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +63,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
-          var readmeContents = new String(readmeFile.read().readAllBytes());
+          var readmeContents = new String(readmeFile.read().readAllBytes(), StandardCharsets.UTF_8);
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
