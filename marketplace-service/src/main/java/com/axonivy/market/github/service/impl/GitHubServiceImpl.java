@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -273,16 +274,12 @@ public class GitHubServiceImpl implements GitHubService {
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var dependabot = new Dependabot();
-          Map<String, Integer> severityMap = new HashMap<>();
-          for (Map<String, Object> alert : alerts) {
-            Object advisoryObj = alert.get(GitHubConstants.Json.SEVERITY_ADVISORY);
-            if (advisoryObj instanceof Map<?, ?> securityAdvisory) {
-              String severity = (String) securityAdvisory.get(GitHubConstants.Json.SEVERITY);
-              if (severity != null) {
-                severityMap.put(severity, severityMap.getOrDefault(severity, 0) + 1);
-              }
-            }
-          }
+          Map<String, Integer> severityMap = alerts.stream()
+              .map(alert -> alert.get(GitHubConstants.Json.SEVERITY_ADVISORY))
+              .filter(advisoryObj -> advisoryObj instanceof Map<?, ?>)
+              .map(advisoryObj -> (String) ((Map<?, ?>) advisoryObj).get(GitHubConstants.Json.SEVERITY))
+              .filter(Objects::nonNull)
+              .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
           dependabot.setAlerts(severityMap);
           return dependabot;
         },
