@@ -40,4 +40,27 @@ class GithubReposModelTest {
     assertTrue(model.getFocused(), "Focused flag should map correctly");
     assertEquals(1, model.getWorkflowInformation().size(), "Workflow info should map correctly");
   }
+
+  @Test
+  void testFromParsesRepoNameFromHtmlUrl() {
+    GithubRepo githubRepo = new GithubRepo();
+    githubRepo.setProductId("some-product");
+    githubRepo.setFocused(false);
+
+    githubRepo.setHtmlUrl("https://github.com/market/my-awesome-repo");
+    GithubReposModel model = GithubReposModel.from(githubRepo);
+    assertEquals("my-awesome-repo", model.getRepoName(), "Repo name should be extracted from last URL segment");
+
+    githubRepo.setHtmlUrl("just-a-repo");
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("just-a-repo", model.getRepoName(), "Plain string should be returned as-is");
+
+    githubRepo.setHtmlUrl("");
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("", model.getRepoName(), "Blank URL should return empty string");
+
+    githubRepo.setHtmlUrl(null);
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("", model.getRepoName(), "Null URL should return empty string");
+  }
 }

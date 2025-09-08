@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.constants.GitHubConstants.Repository;
 import com.axonivy.market.model.WorkflowInformation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -12,7 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHRepository;
 
 import java.io.IOException;
@@ -20,7 +18,6 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
@@ -59,24 +56,10 @@ public class GithubRepo extends GenericIdEntity {
 
   public static GithubRepo from(GHRepository repo, String productId) throws IOException {
     return GithubRepo.builder()
-        .productId(getProductId(repo.getName(), productId))
+        .productId(productId)
         .htmlUrl(repo.getHtmlUrl().toString())
         .workflowInformation(new ArrayList<>())
         .testSteps(new ArrayList<>())
         .build();
   }
-
-  private static String getProductId(String repoName, String productId) {
-    return PREFIX_TO_PRODUCT.entrySet().stream()
-        .filter(e -> repoName.startsWith(e.getKey()))
-        .map(Map.Entry::getValue)
-        .findFirst()
-        .orElse(productId);
-  }
-
-  private static final Map<String, String> PREFIX_TO_PRODUCT = Map.of(
-      Repository.MSGRAPH_CONNECTOR, Repository.MSGRAPH_CONNECTOR,
-      Repository.DOC_FACTORY, Repository.DOC_FACTORY,
-      Repository.DEMO_PROJECTS, Strings.EMPTY
-  );
 }

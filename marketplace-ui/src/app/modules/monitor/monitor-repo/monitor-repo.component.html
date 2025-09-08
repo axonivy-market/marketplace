@@ -101,7 +101,7 @@
 
   <!-- Pagination -->
   <div class="d-flex justify-content-between p-2">
-    <ngb-pagination [collectionSize]="filteredRepositories.length" [(page)]="page" [pageSize]="pageSize"
+    <ngb-pagination [collectionSize]="getCollectionSize()" [(page)]="page" [pageSize]="getPageSize()"
       (pageChange)="refreshPagination()"></ngb-pagination>
 
     <select class="form-select pagination" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
@@ -111,7 +111,7 @@
       <option [ngValue]="20">
         {{ 'common.monitor.pagination.twentyItems' | translate }}
       </option>
-      <option [ngValue]="filteredRepositories.length">
+      <option [ngValue]="-1">
         {{ 'common.monitor.pagination.all' | translate }}
       </option>
     </select>

@@ -128,6 +128,32 @@ describe('MonitoringRepoComponent', () => {
     expect(component.displayedRepositories.length).toBe(1);
   });
 
+  it('should return correct page size for normal and "all"', () => {
+    component.pageSize = 2;
+    expect(component.getPageSize()).toBe(2);
+
+    component.pageSize = -1;
+    component.filteredRepositories = mockRepositories;
+    expect(component.getPageSize()).toBe(3);
+
+    component.filteredRepositories = [];
+    expect(component.getPageSize()).toBe(1);
+  });
+
+  it('should return collection size correctly', () => {
+    component.filteredRepositories = mockRepositories.slice(0, 2);
+    expect(component.getCollectionSize()).toBe(2);
+  });
+
+  it('should show all repositories when pageSize = -1', () => {
+    component.pageSize = -1;
+    component.filteredRepositories = [...mockRepositories];
+    component.refreshPagination();
+    expect(component.displayedRepositories.length).toBe(
+      mockRepositories.length
+    );
+  });
+
   it('should sort repositories by name ascending/descending', () => {
     component.sortColumn = component.COLUMN_NAME;
     component.sortDirection = ASCENDING;

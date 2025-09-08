@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
@@ -29,11 +31,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
@@ -69,23 +71,34 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
   }
 
+
   @Transactional
   public synchronized void processProduct(GHRepository ghRepo, String productId) throws IOException {
     if (ghRepo == null) {
       return;
     }
+
+    String resolvedProductId = getProductId(ghRepo.getName(), productId);
     GithubRepo githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
         .map(repo -> {
           repo.getTestSteps().clear();
           repo.getWorkflowInformation().clear();
           repo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-          repo.setProductId(productId);
+          repo.setProductId(resolvedProductId);
           return repo;
-        }).orElse(from(ghRepo, productId));
+        }).orElse(from(ghRepo, resolvedProductId));
     List<TestStep> testSteps = Arrays.stream(values()).map(
         workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
     githubRepoRepository.save(githubRepo);
+  }
+
+  private static String getProductId(String repoName, String productId) {
+    return REPO_NAME_TO_PRODUCT_ID.entrySet().stream()
+        .filter(e -> repoName.startsWith(e.getKey()))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(productId);
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
@@ -168,4 +181,10 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
     githubRepoRepository.updateFocusedRepoByName(repos);
   }
+
+  private static final Map<String, String> REPO_NAME_TO_PRODUCT_ID = Map.of(
+      GitHubConstants.Repository.MSGRAPH_CONNECTOR, GitHubConstants.Repository.MSGRAPH_CONNECTOR,
+      GitHubConstants.Repository.DOC_FACTORY, GitHubConstants.Repository.DOC_FACTORY,
+      GitHubConstants.Repository.DEMO_PROJECTS, Strings.EMPTY
+  );
 }

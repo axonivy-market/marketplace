@@ -98,10 +98,24 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     this.refreshPagination();
   }
 
+  getPageSize(): number {
+    return this.pageSize === -1
+      ? this.filteredRepositories.length || 1
+      : this.pageSize;
+  }
+
+  getCollectionSize(): number {
+    return this.filteredRepositories.length;
+  }
+
   refreshPagination() {
-    const start = (this.page - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.displayedRepositories = this.filteredRepositories.slice(start, end);
+    if (this.pageSize === -1) {
+      this.displayedRepositories = [...this.filteredRepositories];
+    } else {
+      const start = (this.page - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      this.displayedRepositories = this.filteredRepositories.slice(start, end);
+    }
   }
 
   getMarketUrl(productId: string): string {
