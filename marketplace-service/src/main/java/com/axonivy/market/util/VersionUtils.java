@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +30,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  public static final int MAIN_VERSION_LENGTH_1 = 1;
+  public static final int MAIN_VERSION_LENGTH_2 = 2;
+  private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
 
   public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
     Stream<String> versionStream = versions.stream();
@@ -118,11 +122,11 @@ public class VersionUtils {
   }
 
   public static boolean isMajorVersion(String version) {
-    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 1 && isReleasedVersion(version);
+    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == MAIN_VERSION_LENGTH_1 && isReleasedVersion(version);
   }
 
   public static boolean isMinorVersion(String version) {
-    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
+    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == MAIN_VERSION_LENGTH_2 && isReleasedVersion(version);
   }
 
   public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
@@ -160,8 +164,10 @@ public class VersionUtils {
     }
     String maxVersion = splitVersion(versions.get(0)).concat(versionRangeSuffix);
     String minVersion = splitVersion(versions.get(versions.size() - 1));
-    return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
-        minVersion.concat(versionRangeSuffix) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+    if (VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion))) {
+      return minVersion.concat(versionRangeSuffix);
+    }
+    return String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
   }
 
   private static String splitVersion(String version) {
