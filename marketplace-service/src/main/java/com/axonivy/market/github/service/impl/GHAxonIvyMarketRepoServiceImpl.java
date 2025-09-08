@@ -102,23 +102,26 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         if (listFiles == null) {
           continue;
         }
-        GitHubUtils.mapPagedIteratorToList(listFiles).forEach((File file) -> {
-          String fullPathName = file.getFileName();
-          if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(marketRepo)) {
-            var gitHubFile = new GitHubFile();
-            gitHubFile.setFileName(fullPathName);
-            gitHubFile.setPath(file.getRawUrl().getPath());
-            gitHubFile.setStatus(FileStatus.of(file.getStatus()));
-            gitHubFile.setType(FileType.of(fullPathName));
-            gitHubFile.setPreviousFilename(file.getPreviousFilename());
-            gitHubFileMap.put(fullPathName, gitHubFile);
-          }
-        });
+        GitHubUtils.mapPagedIteratorToList(listFiles).
+            forEach((File file) -> addGitHubFileToMap(file, marketRepo, gitHubFileMap));
       }
     } catch (Exception e) {
       log.error("Cannot get GH compare: ", e);
     }
     return new ArrayList<>(gitHubFileMap.values());
+  }
+
+  private void addGitHubFileToMap(File file, String marketRepo, Map<String, GitHubFile> gitHubFileMap) {
+    String fullPathName = file.getFileName();
+    if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(marketRepo)) {
+      var gitHubFile = new GitHubFile();
+      gitHubFile.setFileName(fullPathName);
+      gitHubFile.setPath(file.getRawUrl().getPath());
+      gitHubFile.setStatus(FileStatus.of(file.getStatus()));
+      gitHubFile.setType(FileType.of(fullPathName));
+      gitHubFile.setPreviousFilename(file.getPreviousFilename());
+      gitHubFileMap.put(fullPathName, gitHubFile);
+    }
   }
 
   private GHOrganization getOrganization() throws IOException {
