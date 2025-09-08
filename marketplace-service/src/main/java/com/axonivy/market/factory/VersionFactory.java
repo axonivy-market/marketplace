@@ -82,20 +82,25 @@ public class VersionFactory {
       return releasedVersions.stream().min(new LatestVersionComparator()).orElse(EMPTY);
     }
 
-    // Get latest dev version from specific version
+    // Handle all other cases
+    String result;
     if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
-      requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
-      return findVersionStartWith(artifactVersions, requestedVersion);
+      // Get latest dev version from specific version
+      String cleanedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
+      result = findVersionStartWith(artifactVersions, cleanedVersion);
+    } else {
+      String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
+
+      // Return latest version of specific version if can not find latest release of that version
+      if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(requestedVersion))
+          && !CollectionUtils.containsInstance(releasedVersions, matchVersion)) {
+        result = findVersionStartWith(artifactVersions, requestedVersion);
+      } else {
+        result = matchVersion;
+      }
     }
 
-    String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
-
-    // Return latest version of specific version if can not fnd latest release of that version
-    if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(
-        requestedVersion)) && !CollectionUtils.containsInstance(releasedVersions, matchVersion)) {
-      return findVersionStartWith(artifactVersions, requestedVersion);
-    }
-    return matchVersion;
+    return result;
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
