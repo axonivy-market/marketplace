@@ -18,7 +18,7 @@ import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.cons
 export class RepoTestResultComponent {
   readonly DEFAULT = DEFAULT_MODE;
   readonly REPORT = REPORT_MODE;
-  @Input() workflowType: string = '';
+  @Input() workflowType = '';
   @Input() workflowInfo?: WorkflowInformation;
   @Input() repository!: Repository;
   @Input() mode!: typeof DEFAULT_MODE | typeof REPORT_MODE;
@@ -32,11 +32,11 @@ export class RepoTestResultComponent {
   router = inject(Router);
 
   getConclusionKey(conclusion?: string): string {
-    return (conclusion || '').toLowerCase();
+    return (conclusion ?? '').toLowerCase();
   }
 
   onBadgeClick(repo: string, workflowType: string, mode: string) {
-    if (mode == REPORT_MODE) {
+    if (mode === REPORT_MODE) {
       this.router.navigate(['/monitoring', repo, workflowType]);
     } else {
       const lastBuiltUrl = this.workflowInfo?.lastBuiltRunUrl;

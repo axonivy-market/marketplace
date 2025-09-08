@@ -331,7 +331,7 @@ class GithubReposServiceImplTest {
     when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
 
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
-    when(gitHubService.getExportTestArtifact(run)).thenReturn(null); // No artifact
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
 
     GithubRepo repo = new GithubRepo();
     repo.setWorkflowInformation(new ArrayList<>());
@@ -340,12 +340,11 @@ class GithubReposServiceImplTest {
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should create new workflow info");
     WorkflowInformation info = repo.getWorkflowInformation().get(0);
-    assertEquals(WorkFlowType.CI, info.getWorkflowType());
+    assertEquals(WorkFlowType.CI, info.getWorkflowType(), "Should have CI workflow type as expected");
     assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
     assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
-    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl());
+    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
-
 
   @Test
   void testUpdateWorkflowInfoUpdatesExistingEntry() throws Exception {
@@ -365,7 +364,7 @@ class GithubReposServiceImplTest {
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
     WorkflowInformation info = repo.getWorkflowInformation().get(0);
-    assertEquals("success", info.getConclusion());
-    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl());
+    assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
+    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
 }

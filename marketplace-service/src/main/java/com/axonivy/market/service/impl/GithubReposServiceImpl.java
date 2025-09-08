@@ -53,6 +53,11 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
+  private static final Map<String, String> REPO_NAME_TO_PRODUCT_ID = Map.of(
+      GitHubConstants.Repository.MSGRAPH_CONNECTOR, GitHubConstants.Repository.MSGRAPH_CONNECTOR,
+      GitHubConstants.Repository.DOC_FACTORY, GitHubConstants.Repository.DOC_FACTORY,
+      GitHubConstants.Repository.DEMO_PROJECTS, Strings.EMPTY
+  );
 
   @Override
   public void loadAndStoreTestReports() {
@@ -79,7 +84,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
 
     String resolvedProductId = getProductId(ghRepo.getName(), productId);
-    GithubRepo githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
+    var githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
         .map(repo -> {
           repo.getTestSteps().clear();
           repo.getWorkflowInformation().clear();
@@ -119,12 +124,12 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
-    WorkflowInformation workflowInformation = repo.getWorkflowInformation().stream()
+  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
+    var workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
         .findFirst()
         .orElseGet(() -> {
-          WorkflowInformation newWorkflowInfo = new WorkflowInformation();
+          var newWorkflowInfo = new WorkflowInformation();
           newWorkflowInfo.setWorkflowType(workflowType);
           repo.getWorkflowInformation().add(newWorkflowInfo);
           return newWorkflowInfo;
@@ -181,10 +186,4 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
     githubRepoRepository.updateFocusedRepoByName(repos);
   }
-
-  private static final Map<String, String> REPO_NAME_TO_PRODUCT_ID = Map.of(
-      GitHubConstants.Repository.MSGRAPH_CONNECTOR, GitHubConstants.Repository.MSGRAPH_CONNECTOR,
-      GitHubConstants.Repository.DOC_FACTORY, GitHubConstants.Repository.DOC_FACTORY,
-      GitHubConstants.Repository.DEMO_PROJECTS, Strings.EMPTY
-  );
 }

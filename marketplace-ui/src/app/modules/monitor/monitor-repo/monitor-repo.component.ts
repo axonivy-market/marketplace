@@ -137,11 +137,13 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
       const repo2ColumnValue =
         this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
 
-      if (repo1ColumnValue < repo2ColumnValue)
+      if (repo1ColumnValue < repo2ColumnValue) {
         return this.sortDirection === ASCENDING ? -1 : 1;
-      if (repo1ColumnValue > repo2ColumnValue)
+      } else if (repo1ColumnValue > repo2ColumnValue) {
         return this.sortDirection === ASCENDING ? 1 : -1;
-      return 0;
+      } else {
+        return 0;
+      }
     });
 
     this.refreshPagination();
@@ -152,7 +154,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
       return repo.repoName;
     }
 
-    return this.findWorkflowMatch(repo, column)?.conclusion || '';
+    return this.findWorkflowMatch(repo, column)?.conclusion ?? '';
   }
 
   findWorkflowMatch(repo: Repository, workflow: string) {
@@ -163,8 +165,11 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     if (this.sortColumn !== column) {
       return '';
     }
-    return this.sortDirection === ASCENDING
-      ? 'bi bi-arrow-up'
-      : 'bi bi-arrow-down';
+
+    if (this.sortDirection === ASCENDING) {
+      return 'bi bi-arrow-up';
+    } else {
+      return 'bi bi-arrow-down';
+    }
   }
 }
