@@ -108,16 +108,16 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(1, result.getTotalElements(), "Total elements in page should be 1");
     assertEquals(1, result.getContent().size(), "Content list size should be 1");
 
-    Feedback feedback = result.getContent().get(0);
+    Feedback firstFeedback = result.getContent().get(0);
 
-    assertEquals("user1", feedback.getUserId(), "Feedback userId should match mocked value");
-    assertEquals("product1", feedback.getProductId(), "Feedback productId should match mocked value");
-    assertEquals("Great product!", feedback.getContent(), "Feedback content should match mocked value");
-    assertEquals(5, feedback.getRating(), "Feedback rating should match mocked value");
-    assertEquals(FeedbackStatus.APPROVED, feedback.getFeedbackStatus(), "Feedback status should match mocked value");
-    assertEquals("moderator", feedback.getModeratorName(), "Moderator name should match mocked value");
-    assertEquals(1, feedback.getVersion(), "Feedback version should match mocked value");
-    assertEquals("Product Name", feedback.getProductNames().get("en"), "Product name in English should match mocked value");
+    assertEquals("user1", firstFeedback.getUserId(), "Feedback userId should match mocked value");
+    assertEquals("product1", firstFeedback.getProductId(), "Feedback productId should match mocked value");
+    assertEquals("Great product!", firstFeedback.getContent(), "Feedback content should match mocked value");
+    assertEquals(5, firstFeedback.getRating(), "Feedback rating should match mocked value");
+    assertEquals(FeedbackStatus.APPROVED, firstFeedback.getFeedbackStatus(), "Feedback status should match mocked value");
+    assertEquals("moderator", firstFeedback.getModeratorName(), "Moderator name should match mocked value");
+    assertEquals(1, firstFeedback.getVersion(), "Feedback version should match mocked value");
+    assertEquals("Product Name", firstFeedback.getProductNames().get("en"), "Product name in English should match mocked value");
 
     verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }

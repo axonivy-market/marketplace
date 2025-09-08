@@ -188,16 +188,20 @@ class MarketApiDocumentConfigTest {
 
   private void verifyHeadersAddedToAllOperations(PathItem pathItem) {
     if (pathItem.getPut() != null) {
-      assertEquals(1, pathItem.getPut().getParameters().size());
+      assertEquals(1, pathItem.getPut().getParameters().size(),
+          "PUT operation should have exactly 1 header parameter");
     }
     if (pathItem.getPost() != null) {
-      assertEquals(1, pathItem.getPost().getParameters().size());
+      assertEquals(1, pathItem.getPost().getParameters().size(),
+          "POST operation should have exactly 1 header parameter");
     }
     if (pathItem.getPatch() != null) {
-      assertEquals(1, pathItem.getPatch().getParameters().size());
+      assertEquals(1, pathItem.getPatch().getParameters().size(),
+          "PATCH operation should have exactly 1 header parameter");
     }
     if (pathItem.getDelete() != null) {
-      assertEquals(1, pathItem.getDelete().getParameters().size());
+      assertEquals(1, pathItem.getDelete().getParameters().size(),
+          "DELETE operation should have exactly 1 header parameter");
     }
   }
 

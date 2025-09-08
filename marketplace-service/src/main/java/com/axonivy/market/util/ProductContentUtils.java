@@ -33,6 +33,10 @@ public class ProductContentUtils {
   public static final String SETUP = "setup";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s(\\s+\"[^\"]+\")?\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
+  public static final Pattern README_FILE_LOCALE_PATTERN =
+      Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
+  public static final Pattern IMAGE_EXTENSION_PATTERN =
+    Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   private ProductContentUtils() {
   }
@@ -53,8 +57,7 @@ public class ProductContentUtils {
 
   public static String getReadmeFileLocale(String readmeFile) {
     String result = StringUtils.EMPTY;
-    var pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
-    var matcher = pattern.matcher(readmeFile);
+    var matcher = README_FILE_LOCALE_PATTERN.matcher(readmeFile);
     if (matcher.find()) {
       result = matcher.group(1);
     }
@@ -100,8 +103,7 @@ public class ProductContentUtils {
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
-    var pattern = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-    var matcher = pattern.matcher(readmeContents);
+    var matcher = IMAGE_EXTENSION_PATTERN.matcher(readmeContents);
     return matcher.find();
   }
 

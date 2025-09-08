@@ -57,7 +57,7 @@ class SecurityMonitorControllerTest {
   }
 
   @Test
-  void test_getGitHubMarketplaceSecurityShouldReturnUnauthorizedWhenInvalidToken() {
+  void testGetGitHubMarketplaceSecurityShouldReturnUnauthorizedWhenInvalidToken() {
     String invalidToken = "Bearer invalid-token";
 
     doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),

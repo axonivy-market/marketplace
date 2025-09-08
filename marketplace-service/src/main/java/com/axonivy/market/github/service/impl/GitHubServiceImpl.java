@@ -69,7 +69,12 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
+
+  // GitHub usernames are strictly ASCII (a-z, A-Z, 0-9, -).
+  // Sonar rule "S5867: Character classes should be Unicode-aware" is not applicable here.
+  @SuppressWarnings("squid:S5867")
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
+
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
   private static final Pattern GITHUB_PULL_REQUEST_NUMBER_PATTERN =

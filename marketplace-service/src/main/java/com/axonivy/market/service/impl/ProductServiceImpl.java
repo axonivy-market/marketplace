@@ -172,6 +172,13 @@ public class ProductServiceImpl implements ProductService {
     marketRepoMeta = null;
   }
 
+  private String resolveProductId(GitHubFile file, String key) {
+    if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
+      return modifyProductMetaOrLogo(file, key);
+    }
+    return removeProductAndImage(file);
+  }
+
   private List<String> updateLatestChangeToProductsFromGithubRepo() {
     Set<String> syncedProductIds = new HashSet<>();
     var fromSHA1 = marketRepoMeta.getLastSHA1();
@@ -189,16 +196,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     groupGitHubFiles.forEach((String key, List<GitHubFile> value) -> {
-      for (var file : value) {
-        var productId = EMPTY;
-        if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
-          productId = modifyProductMetaOrLogo(file, key);
-        } else {
-          productId = removeProductAndImage(file);
-        }
-        syncedProductIds.add(productId);
-      }
+      value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)));
     });
+
     return syncedProductIds.stream().toList();
   }
 
