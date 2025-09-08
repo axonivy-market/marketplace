@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MavenConstants.TEST_ARTIFACTID;
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
@@ -40,6 +41,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 @AllArgsConstructor
 public class VersionServiceImpl implements VersionService {
+  private static final Pattern MAIN_VERSION_PATTERN =
+      Pattern.compile(MavenConstants.MAIN_VERSION_REGEX);
 
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductMarketplaceDataService productMarketplaceDataService;
@@ -113,7 +116,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
-    String[] artifactParts = StringUtils.defaultString(artifact).split(MavenConstants.MAIN_VERSION_REGEX);
+    String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
     if (artifactParts.length < 1) {
       return StringUtils.EMPTY;
     }

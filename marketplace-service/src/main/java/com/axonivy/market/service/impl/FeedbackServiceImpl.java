@@ -129,29 +129,41 @@ public class FeedbackServiceImpl implements FeedbackService {
             newStatus = FeedbackStatus.REJECTED;
           }
           if (isApproved) {
-            List<Feedback> approvedLatestFeedbacks = feedbackRepository
-                .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
-                    feedbackApproval.getUserId(), List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
+            unsetCurrentLatestFeedback(feedbackApproval);
+          }
 
-            if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
-              Feedback currentLatest = approvedLatestFeedbacks.get(0);
-              currentLatest.setIsLatest(null);
-              feedbackRepository.save(currentLatest);
-            }
-          }
-          existingFeedback.setFeedbackStatus(newStatus);
-          existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
-          existingFeedback.setReviewDate(new Date());
-          if (isApproved) {
-            existingFeedback.setIsLatest(true);
-          } else {
-            existingFeedback.setIsLatest(null);
-          }
+          applyUpdatesToFeedback(existingFeedback, feedbackApproval, newStatus, isApproved);
 
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
             String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         ));
+  }
+
+  private void applyUpdatesToFeedback(Feedback existingFeedback, FeedbackApprovalModel feedbackApproval, FeedbackStatus newStatus,
+      boolean isApproved) {
+    existingFeedback.setFeedbackStatus(newStatus);
+    existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
+    existingFeedback.setReviewDate(new Date());
+    if (isApproved) {
+      existingFeedback.setIsLatest(true);
+    } else {
+      existingFeedback.setIsLatest(null);
+    }
+  }
+
+  private void unsetCurrentLatestFeedback(FeedbackApprovalModel feedbackApproval) {
+    List<Feedback> approvedLatestFeedbacks = feedbackRepository
+        .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(
+            feedbackApproval.getProductId(),
+            feedbackApproval.getUserId(),
+            List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
+
+    if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
+      Feedback currentLatest = approvedLatestFeedbacks.get(0);
+      currentLatest.setIsLatest(null);
+      feedbackRepository.save(currentLatest);
+    }
   }
 
   @Override

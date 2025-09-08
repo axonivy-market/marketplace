@@ -267,22 +267,43 @@ public class GitHubServiceImpl implements GitHubService {
     return productSecurityInfo;
   }
 
+  private Map<String, Integer> countAlertsBySeverity(List<Map<String, Object>> alerts,
+      String advisoryKey,
+      String severityKey) {
+    return alerts.stream()
+        .map(alert -> alert.get(advisoryKey))
+        .filter(Map.class::isInstance)
+        .map(obj -> (String) ((Map<?, ?>) obj).get(severityKey))
+        .filter(Objects::nonNull)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
+  }
+
+  private Dependabot mapToDependabot(List<Map<String, Object>> alerts) {
+    var dependabot = new Dependabot();
+    dependabot.setAlerts(countAlertsBySeverity(
+        alerts,
+        GitHubConstants.Json.SEVERITY_ADVISORY,
+        GitHubConstants.Json.SEVERITY
+    ));
+    return dependabot;
+  }
+
+  private CodeScanning mapToCodeScanning(List<Map<String, Object>> alerts) {
+    var codeScanning = new CodeScanning();
+    codeScanning.setAlerts(countAlertsBySeverity(
+        alerts,
+        GitHubConstants.Json.RULE,
+        GitHubConstants.Json.SECURITY_SEVERITY_LEVEL
+    ));
+    return codeScanning;
+  }
+
   public Dependabot getDependabotAlerts(GHRepository repo, GHOrganization organization,
       String accessToken) {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        (List<Map<String, Object>> alerts) -> {
-          var dependabot = new Dependabot();
-          Map<String, Integer> severityMap = alerts.stream()
-              .map(alert -> alert.get(GitHubConstants.Json.SEVERITY_ADVISORY))
-              .filter(advisoryObj -> advisoryObj instanceof Map<?, ?>)
-              .map(advisoryObj -> (String) ((Map<?, ?>) advisoryObj).get(GitHubConstants.Json.SEVERITY))
-              .filter(Objects::nonNull)
-              .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
-          dependabot.setAlerts(severityMap);
-          return dependabot;
-        },
+        this::mapToDependabot,
         Dependabot::new
     );
   }
@@ -306,17 +327,7 @@ public class GitHubServiceImpl implements GitHubService {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        (List<Map<String, Object>> alerts) -> {
-          var codeScanning = new CodeScanning();
-          Map<String, Integer> codeScanningMap = alerts.stream()
-              .map(alert -> alert.get(GitHubConstants.Json.RULE))
-              .filter(ruleObj -> ruleObj instanceof Map<?, ?>)
-              .map(ruleObj -> (String) ((Map<?, ?>) ruleObj).get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL))
-              .filter(Objects::nonNull)
-              .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
-          codeScanning.setAlerts(codeScanningMap);
-          return codeScanning;
-        },
+        this::mapToCodeScanning,
         CodeScanning::new
     );
   }
