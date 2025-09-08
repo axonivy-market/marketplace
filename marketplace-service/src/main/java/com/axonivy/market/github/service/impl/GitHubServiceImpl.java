@@ -233,13 +233,7 @@ public class GitHubServiceImpl implements GitHubService {
       return false;
     }
 
-    for (GHTeam team : hashSetTeam) {
-      if (teamName.equals(team.getName())) {
-        return true;
-      }
-    }
-
-    return false;
+    return hashSetTeam.stream().anyMatch((GHTeam team) -> teamName.equals(team.getName()));
   }
 
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,
