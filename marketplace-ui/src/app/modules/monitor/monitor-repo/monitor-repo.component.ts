@@ -99,9 +99,11 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   }
 
   getPageSize(): number {
-    return this.pageSize === -1
-      ? this.filteredRepositories.length || 1
-      : this.pageSize;
+    if (this.pageSize === -1) {
+      return this.filteredRepositories.length || 1;
+    } else {
+      return this.pageSize;
+    }
   }
 
   getCollectionSize(): number {
@@ -124,8 +126,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
 
   sortRepositoriesByColumn(column: string) {
     if (this.sortColumn === column) {
-      this.sortDirection =
-        this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
+      this.toggleSortDirection();
     } else {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
@@ -137,16 +138,38 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
       const repo2ColumnValue =
         this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
 
-      if (repo1ColumnValue < repo2ColumnValue) {
-        return this.sortDirection === ASCENDING ? -1 : 1;
-      } else if (repo1ColumnValue > repo2ColumnValue) {
-        return this.sortDirection === ASCENDING ? 1 : -1;
-      } else {
-        return 0;
-      }
+      return this.compareColumnValues(repo1ColumnValue, repo2ColumnValue, this.sortDirection);
+
     });
 
     this.refreshPagination();
+  }
+
+  private toggleSortDirection() {
+    if (this.sortDirection === ASCENDING) {
+      this.sortDirection = DESCENDING;
+    } else {
+      this.sortDirection = ASCENDING;
+    }
+  }
+
+  private compareColumnValues(repo1ColumnValue: string, repo2ColumnValue: string, sortDirection: string): number {
+    const isAscendingDirection = sortDirection === ASCENDING;
+    if (repo1ColumnValue < repo2ColumnValue) {
+      if (isAscendingDirection) {
+        return -1;
+      } else {
+        return 1;
+      }
+    } else if (repo1ColumnValue > repo2ColumnValue) {
+      if (isAscendingDirection) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return 0;
+    }
   }
 
   private getColumnValue(repo: Repository, column: string): string {

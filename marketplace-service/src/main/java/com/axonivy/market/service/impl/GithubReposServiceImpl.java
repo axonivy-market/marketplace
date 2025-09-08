@@ -48,16 +48,16 @@ import static com.axonivy.market.enums.WorkFlowType.values;
 public class GithubReposServiceImpl implements GithubReposService {
 
   private static final String REPORT_FILE_NAME = "test_report.json";
-
-  private final GithubRepoRepository githubRepoRepository;
-  private final TestStepsService testStepsService;
-  private final GitHubService gitHubService;
-  private final ProductRepository productRepository;
   private static final Map<String, String> REPO_NAME_TO_PRODUCT_ID = Map.of(
       GitHubConstants.Repository.MSGRAPH_CONNECTOR, GitHubConstants.Repository.MSGRAPH_CONNECTOR,
       GitHubConstants.Repository.DOC_FACTORY, GitHubConstants.Repository.DOC_FACTORY,
       GitHubConstants.Repository.DEMO_PROJECTS, Strings.EMPTY
   );
+
+  private final GithubRepoRepository githubRepoRepository;
+  private final TestStepsService testStepsService;
+  private final GitHubService gitHubService;
+  private final ProductRepository productRepository;
 
   @Override
   public void loadAndStoreTestReports() {
@@ -76,7 +76,6 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
   }
 
-
   @Transactional
   public synchronized void processProduct(GHRepository ghRepo, String productId) throws IOException {
     if (ghRepo == null) {
@@ -85,7 +84,7 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     String resolvedProductId = getProductId(ghRepo.getName(), productId);
     var githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
-        .map(repo -> {
+        .map((GithubRepo repo) -> {
           repo.getTestSteps().clear();
           repo.getWorkflowInformation().clear();
           repo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
@@ -124,7 +123,8 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
+  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType,
+      GHWorkflowRun run) throws IOException {
     var workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
         .findFirst()
@@ -150,7 +150,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       JsonNode testData = findTestReportJson(unzipDir.toFile());
       return testStepsService.createTestSteps(testData, workflowType);
     } catch (IOException e) {
-      log.error("IO error processing artifact for repo: {}", dbRepo.getName(), e);
+      log.error("IO error processing artifact for repo: {}", dbRepo.getProductId(), e);
     } finally {
       try {
         FileUtils.clearDirectory(unzipDir);

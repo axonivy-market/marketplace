@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ import static org.mockito.Mockito.*;
 
 class GithubReposServiceImplTest {
 
-  private static final String BADGE_URL = "https://github.com/test/demo";
+  private static final String URL_EXAMPLE = "https://github.com/test/demo";
   @InjectMocks
   GithubReposServiceImpl service;
 
@@ -69,7 +68,7 @@ class GithubReposServiceImplTest {
 
     ghRepo = mock(GHRepository.class);
     when(ghRepo.getName()).thenReturn("demo");
-    when(ghRepo.getHtmlUrl()).thenReturn(new URI(BADGE_URL).toURL());
+    when(ghRepo.getHtmlUrl()).thenReturn(new URI(URL_EXAMPLE).toURL());
     when(ghRepo.getUpdatedAt()).thenReturn(new Date());
     when(ghRepo.getFullName()).thenReturn("owner/demo");
 
@@ -117,7 +116,8 @@ class GithubReposServiceImplTest {
     doThrow(new DataAccessException("DB error") {
     }).when(githubRepoRepository).save(any());
 
-    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
+    String productId = dbRepo.getProductId();
+    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo, productId),
         "Should throw DataAccessException");
   }
 
@@ -175,7 +175,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(ghRepo, CI.getFileName())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
     when(gitHubService.downloadArtifactZip(artifact)).thenReturn(getZipWithTestReport());
-    when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
 
     when(serviceSpy.findTestReportJson(any())).thenReturn(jsonNode);
     when(testStepsService.createTestSteps(any(), eq(WorkFlowType.CI)))
@@ -277,7 +277,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
     when(gitHubService.downloadArtifactZip(artifact)).thenThrow(new IOException("Download failed"));
-    when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
 
     List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
@@ -312,7 +312,7 @@ class GithubReposServiceImplTest {
   @Test
   void testUpdateWorkflowInfoForAllWorkflowTypes() throws Exception {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
-    when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
 
     for (WorkFlowType type : WorkFlowType.values()) {
@@ -328,7 +328,7 @@ class GithubReposServiceImplTest {
   void testUpdateWorkflowInfoCreatesNewEntry() throws Exception {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
     when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
-    when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
 
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
@@ -343,14 +343,14 @@ class GithubReposServiceImplTest {
     assertEquals(WorkFlowType.CI, info.getWorkflowType(), "Should have CI workflow type as expected");
     assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
     assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
-    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl(), "Result should return a build run url");
+    assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
 
   @Test
   void testUpdateWorkflowInfoUpdatesExistingEntry() throws Exception {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
     when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
-    when(run.getHtmlUrl()).thenReturn(new URL("http://example.com/workflow"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
 
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
@@ -365,6 +365,6 @@ class GithubReposServiceImplTest {
     assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
     WorkflowInformation info = repo.getWorkflowInformation().get(0);
     assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
-    assertEquals("http://example.com/workflow", info.getLastBuiltRunUrl(), "Result should return a build run url");
+    assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
 }

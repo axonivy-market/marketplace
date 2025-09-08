@@ -42,12 +42,14 @@ public class TestResultsUtils {
   }
 
   private static List<TestResults> mapCountsToResults(Map<String, Integer> counts, GithubRepo githubRepo) {
-    List<TestResults> results = new ArrayList<>();
-    Optional.ofNullable(githubRepo.getWorkflowInformation())
-        .orElse(Collections.emptyList())
-        .stream()
-        .filter(info -> info.getWorkflowType() != null)
-        .forEach(info -> results.add(buildInitialTestResults(info.getWorkflowType())));
+    List<TestResults> results = new ArrayList<>(
+        Optional.ofNullable(githubRepo.getWorkflowInformation())
+            .orElse(Collections.emptyList())
+            .stream()
+            .filter(info -> info.getWorkflowType() != null)
+            .map(info -> buildInitialTestResults(info.getWorkflowType()))
+            .toList()
+    );
 
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
