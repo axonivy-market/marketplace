@@ -53,35 +53,37 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
-    // Convert JSON to Map
     List<Feedback> feedbacks = results.getContent().stream()
-        .map((FeedbackProjection result) -> {
-          var feedback = Feedback.builder()
-              .userId(result.getUserId())
-              .productId(result.getProductId())
-              .content(result.getContent())
-              .rating(result.getRating())
-              .feedbackStatus(result.getFeedbackStatus())
-              .moderatorName(result.getModeratorName())
-              .reviewDate(result.getReviewDate())
-              .version(result.getVersion())
-              .productNames(result.getProductNames())
-              .build();
-
-          feedback.setId(result.getId());
-          feedback.setCreatedAt(result.getCreatedAt());
-          feedback.setUpdatedAt(result.getUpdatedAt());
-
-          return feedback;
-        }).toList();
+        .map(this::mapToFeedback)
+        .toList();
     return new PageImpl<>(feedbacks, pageable, results.getTotalElements());
+  }
+
+  private Feedback mapToFeedback(FeedbackProjection feedbackProjection) {
+    var feedback = Feedback.builder()
+        .userId(feedbackProjection.getUserId())
+        .productId(feedbackProjection.getProductId())
+        .content(feedbackProjection.getContent())
+        .rating(feedbackProjection.getRating())
+        .feedbackStatus(feedbackProjection.getFeedbackStatus())
+        .moderatorName(feedbackProjection.getModeratorName())
+        .reviewDate(feedbackProjection.getReviewDate())
+        .version(feedbackProjection.getVersion())
+        .productNames(feedbackProjection.getProductNames())
+        .build();
+
+    feedback.setId(feedbackProjection.getId());
+    feedback.setCreatedAt(feedbackProjection.getCreatedAt());
+    feedback.setUpdatedAt(feedbackProjection.getUpdatedAt());
+
+    return feedback;
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
     Pageable refinedPageable;
-    if(pageable != null) {
+    if (pageable != null) {
       refinedPageable = refinePagination(pageable);
     } else {
       refinedPageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_10);
@@ -121,7 +123,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         .map((Feedback existingFeedback) -> {
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
           FeedbackStatus newStatus;
-          if(isApproved) {
+          if (isApproved) {
             newStatus = FeedbackStatus.APPROVED;
           } else {
             newStatus = FeedbackStatus.REJECTED;
@@ -140,7 +142,7 @@ public class FeedbackServiceImpl implements FeedbackService {
           existingFeedback.setFeedbackStatus(newStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
           existingFeedback.setReviewDate(new Date());
-          if(isApproved) {
+          if (isApproved) {
             existingFeedback.setIsLatest(true);
           } else {
             existingFeedback.setIsLatest(null);
