@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -70,7 +71,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
           .filter(Files::isRegularFile)
-          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(path.getFileName().toString().toLowerCase()).matches())
+          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(path.getFileName().toString().toLowerCase(Locale.getDefault())).matches())
           .toList();
 
       allImagePaths.stream()

@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -116,7 +117,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       List<Path> allImagePaths = imagePathStream
           .filter(Files::isRegularFile)
           .filter(path -> IMAGE_EXTENSION_PATTERN
-              .matcher(path.getFileName().toString().toLowerCase())
+              .matcher(path.getFileName().toString().toLowerCase(Locale.getDefault()))
               .matches())
           .toList();
 

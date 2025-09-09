@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 
 @Service
@@ -41,7 +42,7 @@ public class MetadataServiceImpl implements MetadataService {
     artifactModelsInVersions.add(model);
   }
 
-  public void updateMavenArtifactVersionData(Collection<Metadata> metadataSet, String productId) {
+  public void updateMavenArtifactVersionData(Iterable<Metadata> metadataSet, String productId) {
     List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {
