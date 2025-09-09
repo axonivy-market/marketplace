@@ -40,7 +40,8 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
         "Expected response help code " + response.getBody().getHelpCode() +
             " to match " + ErrorCode.SUCCESSFUL.getCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"));
+    assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"),
+        "Response body message details should contain 'Custom product sort order added successfully'");
   }
 
   @Test

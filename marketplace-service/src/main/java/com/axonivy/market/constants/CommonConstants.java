@@ -28,4 +28,7 @@ public class CommonConstants {
   public static final String PROD_ENV = "production";
   public static final int PAGE_SIZE_10 = 10;
   public static final int PAGE_SIZE_20 = 20;
+  public static final int ONE = 1;
+  public static final int TWO = 2;
+  public static final int THREE = 3;
 }

@@ -54,12 +54,12 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
     List<Feedback> feedbacks = results.getContent().stream()
-        .map(this::mapToFeedback)
+        .map(FeedbackServiceImpl::mapToFeedback)
         .toList();
     return new PageImpl<>(feedbacks, pageable, results.getTotalElements());
   }
 
-  private Feedback mapToFeedback(FeedbackProjection feedbackProjection) {
+  private static Feedback mapToFeedback(FeedbackProjection feedbackProjection) {
     var feedback = Feedback.builder()
         .userId(feedbackProjection.getUserId())
         .productId(feedbackProjection.getProductId())
@@ -140,7 +140,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         ));
   }
 
-  private void applyUpdatesToFeedback(Feedback existingFeedback, FeedbackApprovalModel feedbackApproval, FeedbackStatus newStatus,
+  private static void applyUpdatesToFeedback(Feedback existingFeedback, FeedbackApprovalModel feedbackApproval,
+      FeedbackStatus newStatus,
       boolean isApproved) {
     existingFeedback.setFeedbackStatus(newStatus);
     existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
@@ -199,7 +200,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private Feedback getMatchingApprovedFeedback(List<Feedback> approvedFeedbacks, FeedbackModelRequest feedback) {
+  private static Feedback getMatchingApprovedFeedback(List<Feedback> approvedFeedbacks, FeedbackModelRequest feedback) {
     return approvedFeedbacks.stream()
         .filter(existing ->
             existing.getContent().trim().equalsIgnoreCase(feedback.getContent().trim()) &&
@@ -208,7 +209,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         .orElse(null);
   }
 
-  private List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
+  private static List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
     return feedbacks.stream()
         .filter((Feedback feedback) -> {
           if (FeedbackStatus.APPROVED == feedbackStatus) {

@@ -21,8 +21,9 @@ public interface FeedbackProjection {
   Date getCreatedAt();
   Date getUpdatedAt();
 
+  // Retrieve as JSON String
   @JsonProperty("productNames")
-  String getProductNamesJson(); // Retrieve as JSON String
+  String getProductNamesJson();
 
   default Map<String, String> getProductNames() {
     try {

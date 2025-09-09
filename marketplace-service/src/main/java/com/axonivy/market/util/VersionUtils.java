@@ -30,8 +30,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-  public static final int MAIN_VERSION_LENGTH_1 = 1;
-  public static final int MAIN_VERSION_LENGTH_2 = 2;
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
 
@@ -104,9 +102,9 @@ public class VersionUtils {
     }
     String[] segments = MAIN_VERSION_PATTERN.split(version);
 
-    if (segments.length >= 3) {
-      segments[2] = segments[2].split(CommonConstants.DASH_SEPARATOR)[0];
-      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR + segments[2];
+    if (segments.length >= THREE) {
+      segments[TWO] = segments[TWO].split(CommonConstants.DASH_SEPARATOR)[0];
+      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[ONE] + CommonConstants.DOT_SEPARATOR + segments[TWO];
     }
     return version;
   }
@@ -124,11 +122,13 @@ public class VersionUtils {
   }
 
   public static boolean isMajorVersion(String version) {
-    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == MAIN_VERSION_LENGTH_1 && isReleasedVersion(version);
+    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == ONE &&
+        isReleasedVersion(version);
   }
 
   public static boolean isMinorVersion(String version) {
-    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == MAIN_VERSION_LENGTH_2 && isReleasedVersion(version);
+    return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == TWO &&
+        isReleasedVersion(version);
   }
 
   public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {

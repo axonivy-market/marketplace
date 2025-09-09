@@ -195,9 +195,9 @@ public class ProductServiceImpl implements ProductService {
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
-    groupGitHubFiles.forEach((String key, List<GitHubFile> value) -> {
-      value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)));
-    });
+    groupGitHubFiles.forEach((String key, List<GitHubFile> value) ->
+      value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)))
+    );
 
     return syncedProductIds.stream().toList();
   }
@@ -498,7 +498,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private Date getLastUpdatedDate(Document document) {
+  private static Date getLastUpdatedDate(Document document) {
     var lastUpdatedFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
     var newestPublishedDate =
         LocalDateTime.parse(Objects.requireNonNull(MetadataReaderUtils.getElementValue(document,
@@ -523,7 +523,7 @@ public class ProductServiceImpl implements ProductService {
         version, url, mavenArtifact, productName);
   }
 
-  private String createProductArtifactId(Artifact mavenArtifact) {
+  private static String createProductArtifactId(Artifact mavenArtifact) {
     if (mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX)) {
       return mavenArtifact.getArtifactId();
     }

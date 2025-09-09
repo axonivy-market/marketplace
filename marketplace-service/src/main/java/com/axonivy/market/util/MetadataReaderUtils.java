@@ -66,10 +66,19 @@ public class MetadataReaderUtils {
   }
 
   private static LocalDateTime getLastUpdatedTimeFromDocument(Document document, boolean isSnapShot) {
-    String textValue = isSnapShot ? Objects.requireNonNull(getElementValue(document,
-        MavenConstants.SNAPSHOT_LAST_UPDATED_TAG)) : Objects.requireNonNull(getElementValue(document,
+    String textValue;
+    DateTimeFormatter lastUpdatedFormatter;
+
+    if (isSnapShot) {
+      textValue = Objects.requireNonNull(getElementValue(document,
+        MavenConstants.SNAPSHOT_LAST_UPDATED_TAG));
+      lastUpdatedFormatter = SNAPSHOT_DATE_TIME_FORMATTER;
+    } else {
+      textValue = Objects.requireNonNull(getElementValue(document,
         MavenConstants.LAST_UPDATED_TAG));
-    DateTimeFormatter lastUpdatedFormatter = isSnapShot ? SNAPSHOT_DATE_TIME_FORMATTER : DATE_TIME_FORMATTER;
+      lastUpdatedFormatter = DATE_TIME_FORMATTER;
+    }
+
     return LocalDateTime.parse(textValue, lastUpdatedFormatter);
   }
 

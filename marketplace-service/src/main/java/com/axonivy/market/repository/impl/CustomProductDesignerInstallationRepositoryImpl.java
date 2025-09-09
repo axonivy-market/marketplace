@@ -1,9 +1,8 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductDesignerInstallation;
-import com.axonivy.market.repository.BaseRepository;
+import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductDesignerInstallationRepository;
-import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -12,7 +11,7 @@ import java.util.List;
 import static com.axonivy.market.constants.PostgresDBConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
 
-public class CustomProductDesignerInstallationRepositoryImpl extends BaseRepository<ProductDesignerInstallation>
+public class CustomProductDesignerInstallationRepositoryImpl extends AbstractBaseRepository<ProductDesignerInstallation>
     implements CustomProductDesignerInstallationRepository {
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION = """
       UPDATE product_designer_installation 

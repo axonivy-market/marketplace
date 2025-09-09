@@ -42,7 +42,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
-  private static final int THRESHOLD_SIZE = 1000000000;
+  private static final int THRESHOLD_SIZE = 1_000_000_000;
   private static final String IAR = "iar";
   private static final int URL_PATHS_TO_GET = 3;
   private static final int BUFFER_SIZE = 4096;
@@ -143,7 +143,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return isDataExistedInFolder;
   }
 
-  private Path createTempFile() throws IOException {
+  private static Path createTempFile() throws IOException {
     Path tempZipPath;
     var tempFileName = UUID.randomUUID().toString();
     if (SystemUtils.IS_OS_UNIX) {

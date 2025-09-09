@@ -99,12 +99,13 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getInstallableVersions(String productId,
       Boolean isShowDevVersion, String designerVersion) {
-    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
         VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }
+
+    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     for (String version : VersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
       var link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
@@ -122,13 +123,11 @@ public class VersionServiceImpl implements VersionService {
     }
 
     String artifactId = artifactParts[0];
-    String fileType = artifactParts[artifactParts.length - 1];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(metadataList)) {
       return StringUtils.EMPTY;
     }
 
-    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
@@ -139,10 +138,12 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
 
+    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
         artifactModels, targetVersion, modelArtifactIds);
 
+    String fileType = artifactParts[artifactParts.length - 1];
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
@@ -161,5 +162,4 @@ public class VersionServiceImpl implements VersionService {
         .map(MavenArtifactVersion::getDownloadUrl)
         .orElse(null);
   }
-
 }

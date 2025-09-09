@@ -10,7 +10,7 @@ import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.repository.BaseRepository;
+import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -40,9 +40,9 @@ import org.springframework.data.domain.Sort;
 
 @Log4j2
 @Builder
-public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
-  final ProductCustomSortRepository productCustomSortRepo;
-  final ProductModuleContentRepository contentRepository;
+public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product> implements CustomProductRepository {
+  private final ProductCustomSortRepository productCustomSortRepo;
+  private final ProductModuleContentRepository contentRepository;
 
   public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
       ProductModuleContentRepository contentRepository) {
@@ -120,7 +120,9 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
         }
       });
     }
-    orders.add(sortById(criteriaContext)); // Always sort by ID as a fallback
+
+    // Always sort by ID as a fallback
+    orders.add(sortById(criteriaContext));
     return orders;
   }
 
@@ -144,12 +146,12 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return orders;
   }
 
-  private Order sortByPopularity(
+  private static Order sortByPopularity(
       CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(INSTALLATION_COUNT));
   }
 
-  private Order sortByAlphabet(
+  private static Order sortByAlphabet(
       CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
     Expression<Object> nameValue = criteriaContext.builder().coalesce(
@@ -162,11 +164,11 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return criteriaContext.builder().asc(nameValue);
   }
 
-  private Order sortById(CriteriaQueryContext<Product> criteriaContext) {
+  private static Order sortById(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().asc(criteriaContext.root().get(ID));
   }
 
-  private Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
+  private static Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(
         criteriaContext.builder().coalesce(criteriaContext.root().get(FIRST_PUBLISHED_DATE),
             criteriaContext.builder().literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
@@ -299,7 +301,9 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
         filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
     }
-    return cb.or(filters.toArray(new Predicate[0])); // Return OR condition for broader match
+
+    // Return OR condition for broader match
+    return cb.or(filters.toArray(new Predicate[0]));
   }
 
   @Override

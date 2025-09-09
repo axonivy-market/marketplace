@@ -13,11 +13,10 @@ import java.util.List;
 
 @Getter
 @Component
-public abstract class BaseRepository<T> {
+public abstract class AbstractBaseRepository<T> {
+  private EntityManager entityManager;
 
   protected abstract Class<T> getType();
-
-  private EntityManager entityManager;
 
   @Autowired
   public void setEntityManager(EntityManager entityManager) {

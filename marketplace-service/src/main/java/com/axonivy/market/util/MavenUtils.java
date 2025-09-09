@@ -67,7 +67,10 @@ public class MavenUtils {
   }
 
   private static String getTextValueFromNodeAndPath(JsonNode node, String path) {
-    return Objects.isNull(node.path(path)) ? StringUtils.EMPTY : node.path(path).asText();
+    if (Objects.isNull(node.path(path))) {
+      return StringUtils.EMPTY;
+    }
+    return node.path(path).asText();
   }
 
   public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<Artifact> artifacts,
@@ -219,8 +222,17 @@ public class MavenUtils {
       ArchivedArtifact archivedArtifact) {
     String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
         convertArtifactIdToName(artifact.getArtifactId()));
-    String artifactId = Objects.isNull(archivedArtifact) ? artifact.getArtifactId() : archivedArtifact.getArtifactId();
-    String groupId = Objects.isNull(archivedArtifact) ? artifact.getGroupId() : archivedArtifact.getGroupId();
+    String artifactId;
+    String groupId;
+
+    if (Objects.isNull(archivedArtifact)) {
+      artifactId = artifact.getArtifactId();
+      groupId = artifact.getGroupId();
+    } else {
+      artifactId = archivedArtifact.getArtifactId();
+      groupId = archivedArtifact.getGroupId();
+    }
+
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     String repoUrl = StringUtils.defaultIfEmpty(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
@@ -274,7 +286,7 @@ public class MavenUtils {
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifacts)) {
-      artifacts.forEach(artifact -> {
+      artifacts.forEach((Artifact artifact) -> {
         String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
             artifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
@@ -287,7 +299,7 @@ public class MavenUtils {
   public static Set<Metadata> extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
-      artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
+      artifact.getArchivedArtifacts().forEach((ArchivedArtifact archivedArtifact) -> {
         String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
             archivedArtifact.getGroupId(), archivedArtifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl, archivedArtifact));

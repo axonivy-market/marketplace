@@ -42,12 +42,12 @@ import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_
 @AllArgsConstructor
 @Service
 public class ProductDependencyServiceImpl implements ProductDependencyService {
-  static final int SAFE_THRESHOLD = 11;
-  final ProductRepository productRepository;
-  final ProductDependencyRepository productDependencyRepository;
-  final FileDownloadService fileDownloadService;
-  final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  final MetadataRepository metadataRepository;
+  private static final int SAFE_THRESHOLD = 11;
+  private final ProductRepository productRepository;
+  private final ProductDependencyRepository productDependencyRepository;
+  private final FileDownloadService fileDownloadService;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  private final MetadataRepository metadataRepository;
 
   private static Model convertPomToModel(byte[] data) throws IOException, XmlPullParserException, NullPointerException {
     try (var inputStream = new ByteArrayInputStream(data)) {
@@ -94,7 +94,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
             productId, artifactId, version));
       }
       var productDependency = findProductDependencyByIds(productId, artifactId, version);
-      if (productDependency == null) { // Is missing artifacts ?
+
+      // Check if artifacts are missing
+      if (productDependency == null) {
         productDependency = initProductDependencyData(artifact);
         totalSyncedProductIds = createNewProductDependencyForArtifact(artifact, productDependency,
             totalSyncedProductIds, productId, version);
@@ -149,7 +151,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     return productDependencies.get(0);
   }
 
-  private ProductDependency initProductDependencyData(MavenArtifactVersion mavenArtifactVersion) {
+  private static ProductDependency initProductDependencyData(MavenArtifactVersion mavenArtifactVersion) {
     return ProductDependency.builder().productId(mavenArtifactVersion.getProductId())
         .artifactId(mavenArtifactVersion.getId().getArtifactId())
         .version(mavenArtifactVersion.getId().getProductVersion())

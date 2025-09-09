@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
@@ -78,19 +77,19 @@ public class ProductContentUtils {
       description = removeFirstLine(parts[0]);
     }
 
-    if (parts.length == 2) {
+    if (parts.length == CommonConstants.TWO) {
       if (demoIndex != -1) {
-        demo = parts[1];
+        demo = parts[CommonConstants.ONE];
       } else {
-        setup = parts[1];
+        setup = parts[CommonConstants.ONE];
       }
     } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
       if (demoIndex < setupIndex) {
-        demo = parts[1];
-        setup = parts[2];
+        demo = parts[CommonConstants.ONE];
+        setup = parts[CommonConstants.TWO];
       } else {
-        setup = parts[1];
-        demo = parts[2];
+        setup = parts[CommonConstants.ONE];
+        demo = parts[CommonConstants.TWO];
       }
     }
 
@@ -113,7 +112,11 @@ public class ProductContentUtils {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      result = index != StringUtils.INDEX_NOT_FOUND ? text.substring(index + 1).trim() : Strings.EMPTY;
+      if (index != StringUtils.INDEX_NOT_FOUND) {
+        result = text.substring(index + 1).trim();
+      } else {
+        result = Strings.EMPTY;
+      }
     } else {
       result = text;
     }

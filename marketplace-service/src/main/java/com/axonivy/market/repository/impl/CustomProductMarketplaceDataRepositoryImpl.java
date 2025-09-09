@@ -1,16 +1,15 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductMarketplaceData;
-import com.axonivy.market.repository.BaseRepository;
+import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
-import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData>
+public class CustomProductMarketplaceDataRepositoryImpl extends AbstractBaseRepository<ProductMarketplaceData>
     implements CustomProductMarketplaceDataRepository {
 
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """

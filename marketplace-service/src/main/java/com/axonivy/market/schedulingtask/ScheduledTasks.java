@@ -25,11 +25,11 @@ public class ScheduledTasks {
       ".products-release-notes-cron}";
   private static final String SCHEDULING_TASK_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
 
-  final ProductRepository productRepo;
-  final ProductService productService;
-  final ProductDetailsController productDetailsController;
-  final ExternalDocumentService externalDocumentService;
-  final ProductDependencyService productDependencyService;
+  private final ProductRepository productRepo;
+  private final ProductService productService;
+  private final ProductDetailsController productDetailsController;
+  private final ExternalDocumentService externalDocumentService;
+  private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
