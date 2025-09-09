@@ -203,8 +203,8 @@
                             </button>
                           </div>
                           <h5 class="release-published-date">{{productReleaseSafeHtml.publishedAt | date: "MMM dd, yyyy"}}</h5>
-                          <div ngbAccordionCollapse>
-                            <div ngbAccordionBody class="ps-0 changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
+                          <div ngbAccordionCollapse class="release-content">
+                            <div ngbAccordionBody class="p-0 changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
                           </div>
                         </div>
                       }
