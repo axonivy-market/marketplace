@@ -66,7 +66,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(Collection<String> orderedListOfProducts) {
+  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(
+      Collection<String> orderedListOfProducts) {
     List<ProductMarketplaceData> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
@@ -146,7 +147,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
         version);
-    if(CollectionUtils.isEmpty(mavenArtifactVersions)) {
+    if (CollectionUtils.isEmpty(mavenArtifactVersions)) {
       return null;
     }
     String downloadUrl = mavenArtifactVersions.get(0).getDownloadUrl();

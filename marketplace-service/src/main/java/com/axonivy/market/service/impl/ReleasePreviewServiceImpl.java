@@ -75,7 +75,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
       allImagePaths.stream()
           .filter(Objects::nonNull)
-          .forEach(imagePath -> {
+          .forEach((Path imagePath) -> {
             var imageFileName = imagePath.getFileName().toString();
             var downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
             imageUrls.put(imageFileName, downloadURLFormat);

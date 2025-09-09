@@ -131,7 +131,7 @@ public class ProductContentServiceImpl implements ProductContentService {
 
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
     } catch (Exception e) {
-      log.error(e.getMessage());
+      log.error(e);
     }
     return readmeContents;
   }

@@ -149,7 +149,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     existingFeedback.setFeedbackStatus(newStatus);
     existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
     existingFeedback.setReviewDate(new Date());
-    existingFeedback.setIsLatest(isApproved ? true : null);
+    if (isApproved) {
+      existingFeedback.setIsLatest(true);
+    } else {
+      existingFeedback.setIsLatest(null);
+    }
   }
 
   @Override

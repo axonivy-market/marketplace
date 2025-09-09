@@ -174,11 +174,13 @@ class ProductServiceImplTest extends BaseSetup {
         "Product short descriptions should match input short descriptions");
   }
 
+  // Using a random UUID in test; no dedicated constant/ID needed
+  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -198,7 +200,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new meta
-    mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     mockGithubFile.setStatus(FileStatus.REMOVED);
@@ -208,11 +210,13 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
+  // Using a random UUID in test; no dedicated constant/ID needed
+  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -228,7 +232,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
-    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString()); // NOSONAR
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 
@@ -588,11 +592,13 @@ class ProductServiceImplTest extends BaseSetup {
     return productModuleContent;
   }
 
+  // Using a random UUID in test; no dedicated constant/ID needed
+  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -608,7 +614,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
-    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString()); // NOSONAR
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     when(imageRepo.findByImageUrlEndsWithIgnoreCase(anyString())).thenReturn(List.of(getMockImage()));
@@ -622,11 +628,13 @@ class ProductServiceImplTest extends BaseSetup {
     assertFalse(result.isEmpty(), "Latest data from Market repo should not be empty");
   }
 
+  // Using a random UUID in test; no dedicated constant/ID needed
+  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -677,11 +685,13 @@ class ProductServiceImplTest extends BaseSetup {
         "Sync one product should be failed");
   }
 
+  // Using a random UUID in test; no dedicated constant/ID needed
+  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
