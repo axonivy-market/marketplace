@@ -121,18 +121,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         .map((Feedback existingFeedback) -> {
-          boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
-          FeedbackStatus newStatus;
-          if (isApproved) {
-            newStatus = FeedbackStatus.APPROVED;
-          } else {
-            newStatus = FeedbackStatus.REJECTED;
-          }
-          if (isApproved) {
-            unsetCurrentLatestFeedback(feedbackApproval);
-          }
-
-          applyUpdatesToFeedback(existingFeedback, feedbackApproval, newStatus, isApproved);
+          applyUpdatesToFeedback(feedbackApproval, existingFeedback);
 
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
@@ -140,31 +129,27 @@ public class FeedbackServiceImpl implements FeedbackService {
         ));
   }
 
-  private static void applyUpdatesToFeedback(Feedback existingFeedback, FeedbackApprovalModel feedbackApproval,
-      FeedbackStatus newStatus,
-      boolean isApproved) {
+  private void applyUpdatesToFeedback(FeedbackApprovalModel feedbackApproval, Feedback existingFeedback) {
+    boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
+    FeedbackStatus newStatus;
+    if (isApproved) {
+      newStatus = FeedbackStatus.APPROVED;
+      List<Feedback> approvedLatestFeedbacks = feedbackRepository
+          .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
+              feedbackApproval.getUserId(), List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
+
+      if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
+        Feedback currentLatest = approvedLatestFeedbacks.get(0);
+        currentLatest.setIsLatest(null);
+        feedbackRepository.save(currentLatest);
+      }
+    } else {
+      newStatus = FeedbackStatus.REJECTED;
+    }
     existingFeedback.setFeedbackStatus(newStatus);
     existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
     existingFeedback.setReviewDate(new Date());
-    if (isApproved) {
-      existingFeedback.setIsLatest(true);
-    } else {
-      existingFeedback.setIsLatest(null);
-    }
-  }
-
-  private void unsetCurrentLatestFeedback(FeedbackApprovalModel feedbackApproval) {
-    List<Feedback> approvedLatestFeedbacks = feedbackRepository
-        .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(
-            feedbackApproval.getProductId(),
-            feedbackApproval.getUserId(),
-            List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
-
-    if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
-      var currentLatest = approvedLatestFeedbacks.get(0);
-      currentLatest.setIsLatest(null);
-      feedbackRepository.save(currentLatest);
-    }
+    existingFeedback.setIsLatest(isApproved ? true : null);
   }
 
   @Override
