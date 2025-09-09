@@ -77,19 +77,19 @@ public class ProductContentUtils {
       description = removeFirstLine(parts[0]);
     }
 
-    if (parts.length == CommonConstants.TWO) {
+    if (parts.length == 2) {
       if (demoIndex != -1) {
-        demo = parts[CommonConstants.ONE];
+        demo = parts[1];
       } else {
-        setup = parts[CommonConstants.ONE];
+        setup = parts[1];
       }
     } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
       if (demoIndex < setupIndex) {
-        demo = parts[CommonConstants.ONE];
-        setup = parts[CommonConstants.TWO];
+        demo = parts[1];
+        setup = parts[2];
       } else {
-        setup = parts[CommonConstants.ONE];
-        demo = parts[CommonConstants.TWO];
+        setup = parts[1];
+        demo = parts[2];
       }
     }
 
