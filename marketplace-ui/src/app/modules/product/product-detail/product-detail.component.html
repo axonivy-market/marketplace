@@ -119,7 +119,7 @@
                       class="nav-link tab-title border-0 bg-transparent"
                       [class.active]="activeTab === displayedTab.value"
                       [id]="displayedTab.tabId"
-                      (click)="setActiveTab(displayedTab.value)"
+                      (click)="onTabChange(displayedTab.value)"
                       role="tab"
                       [ngClass]="{
                         'text-secondary': themeService.isDarkMode(),
@@ -182,7 +182,7 @@
                   [id]="displayedTab.value"
                   role="tabpanel"
                   [attr.aria-labelledby]="displayedTab.value + '-tab'"
-                  (click)="onTabChanged(displayedTab.value)">
+                  (click)="onTabChange(displayedTab.value)">
                   @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"

@@ -266,18 +266,18 @@ describe('ProductDetailComponent', () => {
   it('should call keepCurrentTabScroll when setActiveTab is called', () => {
     spyOn(component, 'keepCurrentTabScroll');
     const tab = 'specifications';
-    component.setActiveTab(tab);
+    component.onTabChange(tab);
     expect(component.keepCurrentTabScroll).toHaveBeenCalledWith(tab);
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
     const event = { value: 'description' };
-    spyOn(component, 'setActiveTab');
+    spyOn(component, 'onTabChange');
     spyOn(component, 'updateDropdownSelection');
 
     component.onTabChange(event.value);
 
-    expect(component.setActiveTab).toHaveBeenCalledWith('description');
+    expect(component.onTabChange).toHaveBeenCalledWith('description');
   });
 
   it('should not display information when product detail is empty', () => {
@@ -660,10 +660,10 @@ describe('ProductDetailComponent', () => {
 
   it('should return false for changelog when productReleaseSafeHtmls is empty', () => {
     const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
+      ...MOCK_PRODUCT_MODULE_CONTENT
     };
 
-    component.productReleaseSafeHtmls = [];
+    component.productReleaseSafeHtmls = signal([]);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('changelog')).toBeFalse();
@@ -829,7 +829,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT
     };
     component.productModuleContent.set(mockContent);
-    component.productReleaseSafeHtmls = [];
+    component.productReleaseSafeHtmls = signal([]);
 
     expect(component.displayedTabsSignal().length).toBe(0);
   });
@@ -888,9 +888,9 @@ describe('ProductDetailComponent', () => {
     rateConnectorEmptyText = fixture.debugElement.query(
       By.css('.rate-empty-text')
     );
-    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain(
-      'common.feedback.noFeedbackForUtilityLabel'
-    ); 
+    expect(
+      rateConnectorEmptyText.childNodes[0].nativeNode.textContent
+    ).toContain('common.feedback.noFeedbackForUtilityLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {
@@ -923,13 +923,17 @@ describe('ProductDetailComponent', () => {
   it('should process README content correctly with different values per tab', () => {
     languageService.selectedLanguage.and.returnValue(Language.EN);
 
-    spyOn(component, 'getProductModuleContentValue').and.callFake((tab) => {
+    spyOn(component, 'getProductModuleContentValue').and.callFake(tab => {
       const key = tab.value as keyof ProductModuleContent;
       return MOCK_PRODUCT_DETAIL.productModuleContent[key] as { en: string };
     });
 
-    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake((content) => `${content}`);
-    spyOn(component, 'renderGithubAlert').and.callFake((content: string) => `${content}` as SafeHtml);
+    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake(
+      content => `${content}`
+    );
+    spyOn(component, 'renderGithubAlert').and.callFake(
+      (content: string) => `${content}` as SafeHtml
+    );
 
     component.getReadmeContent();
 
@@ -951,34 +955,40 @@ describe('ProductDetailComponent', () => {
 
     component.getReadmeContent();
 
-    expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(PRODUCT_DETAIL_TABS.length);
+    expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(
+      PRODUCT_DETAIL_TABS.length
+    );
     expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
-it('should close the dropdown when clicking outside', fakeAsync(() => {
-  component.isDropdownOpen.set(true);
-  fixture.detectChanges();
-  tick();
+  it('should close the dropdown when clicking outside', fakeAsync(() => {
+    component.isDropdownOpen.set(true);
+    fixture.detectChanges();
+    tick();
 
-  const outsideElement = document.createElement('div');
-  document.body.appendChild(outsideElement);
-  outsideElement.click();
+    const outsideElement = document.createElement('div');
+    document.body.appendChild(outsideElement);
+    outsideElement.click();
 
-  fixture.detectChanges();
-  tick();
+    fixture.detectChanges();
+    tick();
 
-  expect(component.isDropdownOpen()).toBeFalse();
+    expect(component.isDropdownOpen()).toBeFalse();
 
-  document.body.removeChild(outsideElement);
-}));
-
+    document.body.removeChild(outsideElement);
+  }));
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX);
+    component.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
 
-    const inputText = 'Check out this PR: https://github.com/source-repo/pull/123';
+    const inputText =
+      'Check out this PR: https://github.com/source-repo/pull/123';
     const expectedOutput = 'Check out this PR: #123';
     const result = md.renderInline(inputText);
 
@@ -988,15 +998,20 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
   it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX);
+    component.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
 
-    const inputText = 'Check out this PR: https://github.com/source-repo/compare/123';
-    const expectedOutput = 'Check out this PR: https://github.com/source-repo/compare/123';
+    const inputText =
+      'Check out this PR: https://github.com/source-repo/compare/123';
+    const expectedOutput =
+      'Check out this PR: https://github.com/source-repo/compare/123';
     const result = md.renderInline(inputText);
 
     expect(result).toContain(expectedOutput);
   });
-
 
   it('should render changelog content with safe HTML', () => {
     const mockReleases = [
@@ -1006,7 +1021,7 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
         publishedAt: '2023-01-01',
         htmlUrl: 'https://github.com/axonivy-market/portal/releases/tag/1.0.0',
         latestRelease: true
-      },
+      }
     ];
     const expectedSafeHtml = '<p>Initial release</p>';
     sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(expectedSafeHtml);
@@ -1048,16 +1063,16 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     });
   });
 
-  it('should navigate to home page when click back to button regardless history',() => {
+  it('should navigate to home page when click back to button regardless history', () => {
     mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
     mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
-    mockHistoryService.lastSearchText.and.returnValue("");
-    component.setActiveTab("description");
-    component.setActiveTab("demo")
-    component.setActiveTab("setup")
+    mockHistoryService.lastSearchText.and.returnValue('');
+    component.onTabChange('description');
+    component.onTabChange('demo');
+    component.onTabChange('setup');
     component.onClickingBackToHomepageButton();
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
-  })
+  });
 
   it('should get tab value from fragment', () => {
     const tabValue = component.getTabValueFromFragment('tab-description');
@@ -1070,9 +1085,9 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
   });
 
   it('should call setActiveTab with correct tab value from fragment', () => {
-    spyOn(component, 'setActiveTab');
+    spyOn(component, 'onTabChange');
     component.navigateToProductDetailsWithTabFragment();
-    expect(component.setActiveTab).toHaveBeenCalledWith('description');
+    expect(component.onTabChange).toHaveBeenCalledWith('description');
   });
 
   it('should restore scroll position for a tab', () => {

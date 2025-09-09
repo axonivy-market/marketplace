@@ -170,7 +170,7 @@ export class ProductDetailComponent implements AfterViewInit {
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
   isBrowser: boolean;
   meta = inject(Meta);
-  @ViewChild('changlogObserver', { static: false })
+  @ViewChild('changelogObserver', { static: false })
   observerElement!: ElementRef;
   private changelogIntersectionObserver?: IntersectionObserver;
 
@@ -331,14 +331,6 @@ export class ProductDetailComponent implements AfterViewInit {
     observer.observe(this.observerElement.nativeElement);
   }
 
-  onTabChanged(tabValue: string) {
-    // this.activeTab = tabValue;
-    console.warn('Tab changed to:', tabValue);
-    if (tabValue === 'changelog') {
-      setTimeout(() => this.setupIntersectionObserver());
-    }
-  }
-
   private loadChangelogs(): void {
     const sub = this.productService
       .getProductChangelogs(this.criteria)
@@ -475,24 +467,7 @@ export class ProductDetailComponent implements AfterViewInit {
       });
   }
 
-  onTabChange(event: string): void {
-    this.setActiveTab(event);
-  }
-
-  getSelectedTabLabel(): string {
-    return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
-  }
-
-  updateDropdownSelection(): void {
-    const dropdown = document.getElementById(
-      'tab-group-dropdown'
-    ) as HTMLSelectElement;
-    if (dropdown) {
-      dropdown.value = this.activeTab;
-    }
-  }
-
-  setActiveTab(tab: string): void {
+  onTabChange(tab: string): void {
     this.router.navigate([], {
       fragment: TAB_PREFIX + tab,
       queryParamsHandling: 'preserve',
@@ -508,6 +483,22 @@ export class ProductDetailComponent implements AfterViewInit {
     };
 
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+    if (tab === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver());
+    }
+  }
+
+  getSelectedTabLabel(): string {
+    return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
+  }
+
+  updateDropdownSelection(): void {
+    const dropdown = document.getElementById(
+      'tab-group-dropdown'
+    ) as HTMLSelectElement;
+    if (dropdown) {
+      dropdown.value = this.activeTab;
+    }
   }
 
   keepCurrentTabScroll(tabId: string) {
@@ -688,7 +679,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
         const tabValue = this.getTabValueFromFragment(fragment);
-        this.setActiveTab(tabValue);
+        this.onTabChange(tabValue);
       })
     );
   }
