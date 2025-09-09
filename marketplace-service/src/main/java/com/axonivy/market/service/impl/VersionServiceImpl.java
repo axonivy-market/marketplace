@@ -133,7 +133,7 @@ public class VersionServiceImpl implements VersionService {
 
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
     List<MavenArtifactVersion> artifactModels = mavenArtifactVersionRepo.findByProductId(productId);
-    
+
     if (StringUtils.isBlank(targetVersion) || ObjectUtils.isEmpty(artifactModels)) {
       return StringUtils.EMPTY;
     }

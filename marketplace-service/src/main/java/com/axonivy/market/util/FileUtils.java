@@ -1,7 +1,5 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.MarketException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +38,7 @@ public class FileUtils {
     var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
-      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
-          "Failed to create file: " + file.getAbsolutePath());
+      throw new IOException("Failed to create file: " + file.getAbsolutePath());
     }
     return file;
   }
@@ -108,16 +105,13 @@ public class FileUtils {
     try {
       unzipArtifact(file.getInputStream(), extractDir);
     } catch (IOException | IllegalStateException e) {
-      log.error(e.getMessage());
-      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
-          "Error unzipping file");
+      throw new IOException("Error unzipping file", e);
     }
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {
     if (file != null && !file.mkdirs() && !file.isDirectory()) {
-      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
-          "Failed to create directory: " + file);
+      throw new IOException("Failed to create directory: " + file);
     }
   }
 
