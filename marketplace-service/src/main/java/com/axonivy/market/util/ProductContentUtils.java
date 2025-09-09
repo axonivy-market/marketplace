@@ -69,6 +69,9 @@ public class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   @SuppressWarnings("java:S109")
+  // Using literal 1 and 2 here is intentional:
+  // static analysis tools can precisely reason about array bounds with literals,
+  // while constants would obscure the checks and may trigger false index-out-of-bounds warnings.
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
     String[] parts =  DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
