@@ -65,20 +65,26 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
-          var readmeContents = new String(readmeFile.read().readAllBytes(), StandardCharsets.UTF_8);
-          if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
-          }
-
-          var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-
-          ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
+          mapDescriptionSetupAndDemoToProductModuleContent(product, contents, readmeFile, moduleContents);
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
     } catch (Exception e) {
       log.error("Cannot get README file's content {}", e.getMessage());
     }
+  }
+
+  private void mapDescriptionSetupAndDemoToProductModuleContent(Product product, List<GHContent> contents,
+      GHContent readmeFile,
+      Map<String, Map<String, String>> moduleContents) throws IOException {
+    var readmeContents = new String(readmeFile.read().readAllBytes(), StandardCharsets.UTF_8);
+    if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+      readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
+    }
+
+    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+
+    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
   }
 
   public String updateImagesWithDownloadUrl(String productId, List<GHContent> contents, String readmeContents) {

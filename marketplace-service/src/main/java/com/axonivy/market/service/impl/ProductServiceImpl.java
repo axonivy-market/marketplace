@@ -681,14 +681,7 @@ public class ProductServiceImpl implements ProductService {
       List<Product> products = productRepo.findAll();
       if (!CollectionUtils.isEmpty(products)) {
         for (Product product : products) {
-          if (product.getFirstPublishedDate() == null) {
-            log.info("sync FirstPublishedDate of product {} is starting ...", product.getId());
-            updateFirstPublishedDate(product);
-            productRepo.save(product);
-            log.info("Sync FirstPublishedDate of product {} is finished!", product.getId());
-          } else {
-            log.info("FirstPublishedDate of product {} is existing!", product.getId());
-          }
+          updateFirstPublishedDateOfProduct(product);
         }
       }
       log.info("sync FirstPublishedDate of all products is finished!");
@@ -696,6 +689,17 @@ public class ProductServiceImpl implements ProductService {
     } catch (Exception e) {
       log.error(e.getStackTrace());
       return false;
+    }
+  }
+
+  private void updateFirstPublishedDateOfProduct(Product product) {
+    if (product.getFirstPublishedDate() == null) {
+      log.info("sync FirstPublishedDate of product {} is starting ...", product.getId());
+      updateFirstPublishedDate(product);
+      productRepo.save(product);
+      log.info("Sync FirstPublishedDate of product {} is finished!", product.getId());
+    } else {
+      log.info("FirstPublishedDate of product {} is existing!", product.getId());
     }
   }
 
