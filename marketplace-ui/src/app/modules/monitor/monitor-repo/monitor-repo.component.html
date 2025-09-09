@@ -100,7 +100,7 @@
   </table>
 
   <!-- Pagination -->
-  <div class="d-flex justify-content-between p-2">
+  <div class="d-flex justify-content-between p-2" *ngIf="getCollectionSize() > 0">
     <ngb-pagination [collectionSize]="getCollectionSize()" [(page)]="page" [pageSize]="getPageSize()"
       (pageChange)="refreshPagination()"></ngb-pagination>
 
