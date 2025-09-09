@@ -76,6 +76,7 @@ public class ExternalDocumentController {
     log.info("Extracted productId: {}", productId);
     if (productId != null) {
       String bestVersion = externalDocumentService.findBestMatchVersion(productId, versionFromPath);
+
       log.info("Best matched version: {}", bestVersion);
 
       // Replace the old version with the best matched version
