@@ -6,8 +6,6 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,29 +14,26 @@ class TestStepsModelTest {
   @Test
   void testFromGithubRepo() {
     GithubRepo repo = new GithubRepo();
-    repo.setName("demo-repo");
+    repo.setProductId("demo-repo");
     repo.setHtmlUrl("https://github.com/org/demo-repo");
-    repo.setLanguage("Java");
-    repo.setCiLastBuilt(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-    repo.setDevLastBuilt(Date.from(Instant.parse("2024-01-02T00:00:00Z")));
-    repo.setE2eLastBuilt(Date.from(Instant.parse("2024-01-03T00:00:00Z")));
-    repo.setCiBadgeUrl("https://badge/ci");
-    repo.setDevBadgeUrl("https://badge/dev");
 
     TestStep result = new TestStep();
     result.setName("Example name test");
     result.setStatus(TestStatus.PASSED);
     result.setType(WorkFlowType.CI);
-    repo.setTestSteps(List.of(result));
+
+    TestStep result2 = new TestStep();
+    result2.setName("Example name test");
+    result2.setStatus(TestStatus.FAILED);
+    result2.setType(WorkFlowType.DEV);
+    repo.setTestSteps(List.of(result, result2));
 
     GithubReposModel model = GithubReposModel.from(repo);
 
-    assertEquals("demo-repo", model.getName(),
-            "Expected the name to match the repo name");
+    assertEquals("demo-repo", model.getProductId(),
+            "Expected product Id should match");
     assertEquals("https://github.com/org/demo-repo", model.getHtmlUrl(),
         "Expected the HTML URL to match the repo URL");
-    assertEquals("Java", model.getLanguage(),
-            "Expected the language to match the repo language");
 
     assertNotNull(model.getTestResults(),
             "Expected test results to be initialized");

@@ -34,4 +34,11 @@ public class GitHubConstants {
     public static final String REPO_CODE_SCANNING_ALERTS_OPEN =
         BASE_URL + "/repos/%s/%s/code-scanning/alerts?state=open";
   }
+
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  public static class Repository {
+    public static final String MSGRAPH_CONNECTOR = "msgraph";
+    public static final String DOC_FACTORY = "doc-factory";
+    public static final String DEMO_PROJECTS = "demo-projects";
+  }
 }
