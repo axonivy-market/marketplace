@@ -38,7 +38,8 @@ public class FileUtils {
     var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
-      throw new IOException("Failed to create file: " + file.getAbsolutePath());
+      log.error("Failed to create file: {}", file.getAbsolutePath());
+      return null;
     }
     return file;
   }

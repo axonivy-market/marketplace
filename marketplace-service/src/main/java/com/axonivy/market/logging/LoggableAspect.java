@@ -71,6 +71,10 @@ public class LoggableAspect {
   private synchronized void saveLogToDailyFile(Map<String, String> headersMap) {
     try {
       var logFile = createFile(generateFileName());
+      if (logFile == null) {
+        log.error("Error writing log to file");
+        return;
+      }
 
       var content = new StringBuilder();
       if (logFile.exists()) {

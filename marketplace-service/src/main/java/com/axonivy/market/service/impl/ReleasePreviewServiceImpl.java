@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
 import com.axonivy.market.util.FileUtils;
