@@ -172,7 +172,7 @@ export class ProductDetailComponent implements AfterViewInit {
   meta = inject(Meta);
   @ViewChild('changelogObserver', { static: false })
   observerElement!: ElementRef;
-  private changelogIntersectionObserver?: IntersectionObserver;
+  private readonly changelogIntersectionObserver?: IntersectionObserver;
 
   private scrollPositions: { [tabId: string]: number } = {};
 

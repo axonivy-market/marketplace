@@ -210,6 +210,7 @@
                       }
                     </div>
                     <div #changelogObserver class="changlogObserver"></div>
+                    <app-loading-spinner [key]="LoadingComponentId.PRODUCT_CHANGELOG"/>
                   } @else {
                     <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
                   }

@@ -91,7 +91,7 @@ export class ProductService {
 
   sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    return this.httpClient.put<number>(url, null );
+    return this.httpClient.put<number>(url, null);
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
@@ -126,7 +126,9 @@ export class ProductService {
     }
     return this.httpClient
       .get<ProductReleasesApiResponse>(url, {
-        context: new HttpContext().set(ForwardingError, true),
+        context: new HttpContext()
+          .set(ForwardingError, true)
+          .set(LoadingComponent, LoadingComponentId.PRODUCT_CHANGELOG),
         params: requestParams
       })
       .pipe(
