@@ -36,7 +36,7 @@ public class ProductContentUtils {
   public static final Pattern README_FILE_LOCALE_PATTERN =
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
-    Pattern.compile(CommonConstants.IMAGE_EXTENSION);
+      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
   public static final Pattern DEMO_SETUP_PATTERN =
       Pattern.compile(DEMO_SETUP_TITLE);
 
@@ -68,10 +68,10 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  @SuppressWarnings("java:S109")
   // Using literal 1 and 2 here is intentional:
   // static analysis tools can precisely reason about array bounds with literals,
   // while constants would obscure the checks and may trigger false index-out-of-bounds warnings.
+  @SuppressWarnings("java:S109")
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
     String[] parts =  DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);

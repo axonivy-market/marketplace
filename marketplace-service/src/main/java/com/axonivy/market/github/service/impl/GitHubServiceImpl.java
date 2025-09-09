@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -278,7 +277,7 @@ public class GitHubServiceImpl implements GitHubService {
         .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
   }
 
-  private Dependabot mapToDependabot(List<Map<String, Object>> alerts) {
+  private static Dependabot mapToDependabot(List<Map<String, Object>> alerts) {
     var dependabot = new Dependabot();
     dependabot.setAlerts(countAlertsBySeverity(
         alerts,
@@ -288,7 +287,7 @@ public class GitHubServiceImpl implements GitHubService {
     return dependabot;
   }
 
-  private CodeScanning mapToCodeScanning(List<Map<String, Object>> alerts) {
+  private static CodeScanning mapToCodeScanning(List<Map<String, Object>> alerts) {
     var codeScanning = new CodeScanning();
     codeScanning.setAlerts(countAlertsBySeverity(
         alerts,
@@ -298,18 +297,18 @@ public class GitHubServiceImpl implements GitHubService {
     return codeScanning;
   }
 
-  public Dependabot getDependabotAlerts(GHRepository repo, GHOrganization organization,
+  public Dependabot getDependabotAlerts(GHRepository repo, GHPerson organization,
       String accessToken) {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        this::mapToDependabot,
+        GitHubServiceImpl::mapToDependabot,
         Dependabot::new
     );
   }
 
   public SecretScanning getNumberOfSecretScanningAlerts(GHRepository repo,
-      GHOrganization organization, String accessToken) {
+      GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
@@ -327,7 +326,7 @@ public class GitHubServiceImpl implements GitHubService {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        this::mapToCodeScanning,
+        GitHubServiceImpl::mapToCodeScanning,
         CodeScanning::new
     );
   }

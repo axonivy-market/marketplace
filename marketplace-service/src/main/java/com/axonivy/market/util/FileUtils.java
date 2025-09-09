@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.MarketException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +16,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -36,7 +40,8 @@ public class FileUtils {
     var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
-      throw new IOException("Failed to create file: " + file.getAbsolutePath());
+      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+          "Failed to create file: " + file.getAbsolutePath());
     }
     return file;
   }
@@ -103,13 +108,16 @@ public class FileUtils {
     try {
       unzipArtifact(file.getInputStream(), extractDir);
     } catch (IOException | IllegalStateException e) {
-      throw new IOException("Error unzipping file", e);
+      log.error(e.getMessage());
+      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+          "Error unzipping file");
     }
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {
     if (file != null && !file.mkdirs() && !file.isDirectory()) {
-      throw new IOException("Failed to create directory: " + file);
+      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+          "Failed to create directory: " + file);
     }
   }
 

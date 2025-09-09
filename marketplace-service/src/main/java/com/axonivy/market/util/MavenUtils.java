@@ -51,6 +51,7 @@ public class MavenUtils {
     try {
       return extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
+      log.error(e);
       log.error("Can not get maven artifacts from Product.json of {}", productJson);
       return new ArrayList<>();
     }
