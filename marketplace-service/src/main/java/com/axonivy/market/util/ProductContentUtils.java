@@ -11,6 +11,7 @@ import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,7 @@ public class ProductContentUtils {
     return productModuleContent;
   }
 
-  public static void updateProductModule(ProductModuleContent productModuleContent, List<Artifact> artifacts) {
+  public static void updateProductModule(ProductModuleContent productModuleContent, Collection<Artifact> artifacts) {
     var artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
     if (Objects.nonNull(artifact)) {
       productModuleContent.setIsDependency(Boolean.TRUE);

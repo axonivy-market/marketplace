@@ -116,7 +116,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return new ArrayList<>(gitHubFileMap.values());
   }
 
-  private void addGitHubFileToMap(File file, String marketRepo, Map<String, GitHubFile> gitHubFileMap) {
+  private static void addGitHubFileToMap(File file, String marketRepo, Map<String, GitHubFile> gitHubFileMap) {
     String fullPathName = file.getFileName();
     if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(marketRepo)) {
       var gitHubFile = new GitHubFile();

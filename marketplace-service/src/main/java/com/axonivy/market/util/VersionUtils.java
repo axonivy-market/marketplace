@@ -147,7 +147,7 @@ public class VersionUtils {
     return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 
-  public static List<String> extractAllVersions(List<MavenArtifactVersion> existingMavenArtifactVersion,
+  public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
       boolean isShowDevVersion) {
     Set<String> versions = existingMavenArtifactVersion.stream()
         .map(MavenArtifactVersion::getId)

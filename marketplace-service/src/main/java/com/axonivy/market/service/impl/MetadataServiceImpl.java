@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,14 +34,14 @@ public class MetadataServiceImpl implements MetadataService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final FileDownloadService fileDownloadService;
 
-  public void updateMavenArtifactVersionWithModel(List<MavenArtifactVersion> artifactModelsInVersions,
+  public void updateMavenArtifactVersionWithModel(Collection<MavenArtifactVersion> artifactModelsInVersions,
       String version, Metadata metadata) {
     var model = MavenUtils.buildMavenArtifactVersionFromMetadata(version, metadata);
     artifactModelsInVersions.removeIf(artifactVersion -> artifactVersion.getId().equals(model.getId()));
     artifactModelsInVersions.add(model);
   }
 
-  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {
+  public void updateMavenArtifactVersionData(Collection<Metadata> metadataSet, String productId) {
     List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {

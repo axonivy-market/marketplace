@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts) {
+  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(Collection<String> orderedListOfProducts) {
     List<ProductMarketplaceData> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();

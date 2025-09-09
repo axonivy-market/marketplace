@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -152,8 +153,8 @@ public class VersionServiceImpl implements VersionService {
     return downloadUrl;
   }
 
-  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(List<MavenArtifactVersion> existingData,
-      String version, List<String> artifactsIds) {
+  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(Collection<MavenArtifactVersion> existingData,
+      String version, Collection<String> artifactsIds) {
     return existingData.stream()
         .filter(
             artifact -> version.equals(artifact.getId().getProductVersion()) &&

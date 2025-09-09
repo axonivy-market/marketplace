@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
+  public static String getFromMetadata(Collection<Metadata> metadataList, String requestedVersion) {
     var version = DevelopmentVersion.of(requestedVersion);
 
     // Get latest dev version from metadata

@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +74,8 @@ public class MavenUtils {
     return node.path(path).asText();
   }
 
-  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<Artifact> artifacts,
+  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency,
+      Collection<Artifact> artifacts,
       String repoUrl) {
     String nodeName = ProductJsonConstants.PROJECTS;
     if (isDependency) {

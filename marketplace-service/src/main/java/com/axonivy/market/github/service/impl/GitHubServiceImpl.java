@@ -267,7 +267,7 @@ public class GitHubServiceImpl implements GitHubService {
     return productSecurityInfo;
   }
 
-  private Map<String, Integer> countAlertsBySeverity(List<Map<String, Object>> alerts,
+  private static Map<String, Integer> countAlertsBySeverity(List<Map<String, Object>> alerts,
       String advisoryKey,
       String severityKey) {
     return alerts.stream()
