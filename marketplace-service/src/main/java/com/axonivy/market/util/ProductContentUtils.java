@@ -36,6 +36,8 @@ public class ProductContentUtils {
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
     Pattern.compile(CommonConstants.IMAGE_EXTENSION);
+  public static final Pattern DEMO_SETUP_PATTERN =
+      Pattern.compile(DEMO_SETUP_TITLE);
 
   private ProductContentUtils() {
   }
@@ -65,8 +67,9 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
+  @SuppressWarnings("java:S109")
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
+    String[] parts =  DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
     String description = Strings.EMPTY;

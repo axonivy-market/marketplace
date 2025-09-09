@@ -178,7 +178,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -198,7 +198,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new meta
-    mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     mockGithubFile.setStatus(FileStatus.REMOVED);
@@ -212,7 +212,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -228,7 +228,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
-    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString()); // NOSONAR
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 
@@ -592,7 +592,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -608,7 +608,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
 
     // Start testing by deleting new logo
-    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString()); // NOSONAR
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     when(imageRepo.findByImageUrlEndsWithIgnoreCase(anyString())).thenReturn(List.of(getMockImage()));
@@ -626,7 +626,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
@@ -681,7 +681,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
-    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString()); // NOSONAR
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 

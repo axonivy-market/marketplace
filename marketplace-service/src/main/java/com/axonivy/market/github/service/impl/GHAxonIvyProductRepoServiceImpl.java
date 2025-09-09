@@ -31,7 +31,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private final GitHubService gitHubService;
   private final ImageService imageService;
 
-  @SuppressWarnings("java:S3306")
+  @SuppressWarnings("java:S3749")
   private GHOrganization organization;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService) {

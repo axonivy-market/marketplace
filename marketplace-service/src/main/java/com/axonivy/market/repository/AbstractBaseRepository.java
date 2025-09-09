@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Component
 public abstract class AbstractBaseRepository<T> {
-  @SuppressWarnings("java:S3306")
+  @SuppressWarnings("java:S3749")
   private EntityManager entityManager;
 
   protected abstract Class<T> getType();

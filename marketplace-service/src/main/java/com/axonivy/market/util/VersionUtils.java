@@ -83,7 +83,7 @@ public class VersionUtils {
   }
 
   public static boolean isValidFormatReleasedVersion(String version) {
-    return StringUtils.isNumeric(version.split(MAIN_VERSION_REGEX)[0]);
+    return StringUtils.isNumeric(MAIN_VERSION_PATTERN.split(version)[0]);
   }
 
   public static boolean isReleasedVersion(String version) {
@@ -104,7 +104,8 @@ public class VersionUtils {
 
     if (segments.length >= THREE) {
       segments[TWO] = segments[TWO].split(CommonConstants.DASH_SEPARATOR)[0];
-      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[ONE] + CommonConstants.DOT_SEPARATOR + segments[TWO];
+      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[ONE] +
+          CommonConstants.DOT_SEPARATOR + segments[TWO];
     }
     return version;
   }

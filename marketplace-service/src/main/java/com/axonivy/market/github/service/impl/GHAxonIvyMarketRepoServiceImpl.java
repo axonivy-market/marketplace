@@ -35,10 +35,10 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
   private final GitHubService gitHubService;
 
-  @SuppressWarnings("java:S3306")
+  @SuppressWarnings("java:S3749")
   private GHOrganization organization;
 
-  @SuppressWarnings("java:S3306")
+  @SuppressWarnings("java:S3749")
   private GHRepository repository;
 
   @Value("${market.github.market.branch}")

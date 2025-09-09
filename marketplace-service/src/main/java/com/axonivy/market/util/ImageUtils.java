@@ -37,21 +37,27 @@ public class ImageUtils {
     if (ObjectUtils.isEmpty(content)) {
       return;
     }
-    content.forEach((key, value) -> {
+    content.forEach((String key, String value) -> {
       List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
-        String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
-        String imageLink;
-        if (isProduction) {
-          imageLink = createImageUrlForProduction(rawId);
-        } else {
-          imageLink = createImageUrl(rawId);
-        }
-        value = value.replace(imageId, imageLink);
+        value = replaceImageIdWithImageLink(isProduction, value, imageId);
       }
       content.put(key, value);
     });
   }
+
+  private static String replaceImageIdWithImageLink(boolean isProduction, String value, String imageId) {
+    String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
+    String imageLink;
+    if (isProduction) {
+      imageLink = createImageUrlForProduction(rawId);
+    } else {
+      imageLink = createImageUrl(rawId);
+    }
+    value = value.replace(imageId, imageLink);
+    return value;
+  }
+
 
   private static List<String> extractAllImageIds(String content) {
     List<String> result = new ArrayList<>();
