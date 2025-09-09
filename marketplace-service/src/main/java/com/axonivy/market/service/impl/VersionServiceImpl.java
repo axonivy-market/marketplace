@@ -119,27 +119,27 @@ public class VersionServiceImpl implements VersionService {
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
     String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
+
     if (artifactParts.length < 1) {
       return StringUtils.EMPTY;
     }
 
     String artifactId = artifactParts[0];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+
     if (CollectionUtils.isEmpty(metadataList)) {
       return StringUtils.EMPTY;
     }
 
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
-    if (StringUtils.isBlank(targetVersion)) {
-      return StringUtils.EMPTY;
-    }
-
     List<MavenArtifactVersion> artifactModels = mavenArtifactVersionRepo.findByProductId(productId);
-    if (ObjectUtils.isEmpty(artifactModels)) {
+    
+    if (StringUtils.isBlank(targetVersion) || ObjectUtils.isEmpty(artifactModels)) {
       return StringUtils.EMPTY;
     }
 
     List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
+
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
         artifactModels, targetVersion, modelArtifactIds);
@@ -148,8 +148,9 @@ public class VersionServiceImpl implements VersionService {
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
-      downloadUrl = StringUtils.EMPTY;
+      return StringUtils.EMPTY;
     }
+
     return downloadUrl;
   }
 
