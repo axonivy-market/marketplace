@@ -19,26 +19,19 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.DirectoryConstants.CACHE_DIR;
+import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static com.axonivy.market.util.DocPathUtils.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -52,6 +45,7 @@ public class ExternalDocumentController {
   final ExternalDocumentService externalDocumentService;
   final GitHubService gitHubService;
 
+  private static final String UPDATE_PATH_FORMAT = "/%s/%s/%s%s";
 
   @GetMapping(BY_ID_AND_VERSION)
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(
@@ -72,30 +66,23 @@ public class ExternalDocumentController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(DOCUMENT_BEST_MATCH)
-  public ResponseEntity<Void> redirectToBestVersion(@PathVariable String path) {
-    log.info("Redirect request for external document: {}", path);
-    String versionFromPath = extractVersion(path);
-    String productId = extractProductId(path);
-    log.info("Extracted version: {}", versionFromPath);
-    log.info("Extracted productId: {}", productId);
-    if (productId != null && versionFromPath != null) {
-      String bestVersion = externalDocumentService.findBestMatchVersion(productId, versionFromPath);
-
-      log.info("Best matched version: {}", bestVersion);
-
+  @GetMapping(value = DOCUMENT_BEST_MATCH)
+  public ResponseEntity<Void> redirectToBestVersion(@PathVariable String id, @PathVariable String artifactId,
+                                                    @PathVariable String version, @PathVariable String path) {
+    ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
+    if (id != null && artifactId != null && version != null && path != null) {
+      String bestMatchVersion = externalDocumentService.findBestMatchVersion(id, version);
       // Replace the old version with the best matched version
-      String updatedPath = updateVersionInPath(path, bestVersion, versionFromPath);
-      Path filePath = Paths.get("data/market-cache", updatedPath);
-      log.info("Redirect to the file path: {}", filePath.toString());
+      String updatedPath = String.format(UPDATE_PATH_FORMAT, id, artifactId, bestMatchVersion, path);
+      Path filePath = Paths.get(DATA_CACHE_DIR, updatedPath);
+
       if (!Files.exists(filePath)) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return response.location(URI.create(ERROR_PAGE_404)).build();
       }
 
-      URI redirectUri = URI.create("/market-cache" + updatedPath);
-      return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
+      return response.location(URI.create(SLASH + CACHE_DIR + updatedPath)).build();
     }
-    return ResponseEntity.notFound().build();
+    return response.location(URI.create(ERROR_PAGE_404)).build();
   }
 
   @PutMapping(SYNC)
