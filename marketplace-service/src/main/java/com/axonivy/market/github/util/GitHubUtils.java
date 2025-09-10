@@ -102,9 +102,13 @@ public class GitHubUtils {
   }
 
   public static InputStream extractedContentStream(GHContent content) {
+    if (content == null) {
+      log.warn("Can not read the current content because it is null");
+      return null;
+    }
     try {
       return content.read();
-    } catch (IOException | NullPointerException e) {
+    } catch (IOException e) {
       log.warn("Can not read the current content: {}", e.getMessage());
       return null;
     }
