@@ -1,4 +1,3 @@
-
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { GithubService, Repository, TestStep } from './github.service';
@@ -6,10 +5,10 @@ import { API_URI } from '../../shared/constants/api.constant';
 
 const mockRepos: Repository[] = [
   {
-    name: 'repo1',
+    repoName: 'repo1',
+    productId: 'id1',
     htmlUrl: 'https://github.com/user/repo1',
-    language: 'TypeScript',
-    lastUpdated: '2025-07-20T12:00:00Z',
+    workflowInformation:[],
     focused: true,
     testResults: []
   }

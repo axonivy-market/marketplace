@@ -7,13 +7,13 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestResultsUtils {
@@ -23,18 +23,7 @@ public class TestResultsUtils {
       return Collections.emptyList();
     }
     Map<String, Integer> groupedCounts = countGroupedResults(githubRepo);
-    List<TestResults> testResults = mapCountsToResults(groupedCounts, githubRepo);
-    testResults.forEach(results -> updateBadgeUrl(results, githubRepo));
-    return testResults;
-  }
-
-  private static void updateBadgeUrl(TestResults results, GithubRepo githubRepo) {
-    String badgeUrl = switch (results.getWorkflow()) {
-      case CI -> githubRepo.getCiBadgeUrl();
-      case DEV -> githubRepo.getDevBadgeUrl();
-      case E2E -> githubRepo.getE2eBadgeUrl();
-    };
-    results.setBadgeUrl(badgeUrl);
+    return mapCountsToResults(groupedCounts, githubRepo);
   }
 
   private static Map<String, Integer> countGroupedResults(GithubRepo githubRepo) {
@@ -53,16 +42,15 @@ public class TestResultsUtils {
   }
 
   private static List<TestResults> mapCountsToResults(Map<String, Integer> counts, GithubRepo githubRepo) {
-    List<TestResults> results = new ArrayList<>();
-    if (StringUtils.isNotBlank(githubRepo.getCiBadgeUrl())) {
-      results.add(buildInitialTestResults(WorkFlowType.CI));
-    }
-    if (StringUtils.isNotBlank(githubRepo.getDevBadgeUrl())) {
-      results.add(buildInitialTestResults(WorkFlowType.DEV));
-    }
-    if (StringUtils.isNotBlank(githubRepo.getE2eBadgeUrl())) {
-      results.add(buildInitialTestResults(WorkFlowType.E2E));
-    }
+    List<TestResults> results = new ArrayList<>(
+        Optional.ofNullable(githubRepo.getWorkflowInformation())
+            .orElse(Collections.emptyList())
+            .stream()
+            .filter(info -> info.getWorkflowType() != null)
+            .map(info -> buildInitialTestResults(info.getWorkflowType()))
+            .toList()
+    );
+
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
       var workflowType = WorkFlowType.valueOf(parts[0]);

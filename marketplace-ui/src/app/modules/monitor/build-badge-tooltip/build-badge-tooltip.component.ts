@@ -8,6 +8,7 @@ import {
   E2E_BUILD,
   MONITORING_WIKI_LINK
 } from '../../../shared/constants/common.constant';
+import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-build-badge-tooltip',
@@ -27,7 +28,9 @@ export class BuildBadgeTooltipComponent implements OnInit {
   translateService = inject(TranslateService);
 
   ngOnInit() {
-    this.constructToolTipContent();
+    this.translateService.onLangChange
+      .pipe(startWith(null))
+      .subscribe(() => this.constructToolTipContent());
   }
 
   constructToolTipContent() {

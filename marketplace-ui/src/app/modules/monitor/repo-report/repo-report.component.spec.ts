@@ -2,11 +2,12 @@
 import { RepoReportComponent } from './repo-report.component';
 import { GithubService, TestStep } from '../github.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs'; // Ensure RxJS is imported correctly
+import { of, throwError } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
 const mockTestSteps: TestStep[] = [
   { name: 'Step 1', status: 'PASSED', type: 'unit' },
@@ -37,7 +38,7 @@ describe('RepoReportComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [RepoReportComponent, TranslateModule.forRoot()],
+      imports: [RepoReportComponent, TranslateModule.forRoot(), MatomoTestingModule.forRoot()],
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
