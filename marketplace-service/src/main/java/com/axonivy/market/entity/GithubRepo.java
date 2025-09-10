@@ -11,7 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHObject;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -54,7 +54,7 @@ public class GithubRepo extends GenericIdEntity {
   @JoinColumn(name = REPOSITORY_ID)
   private List<TestStep> testSteps;
 
-  public static GithubRepo from(GHRepository repo, String productId) throws IOException {
+  public static GithubRepo from(GHObject repo, String productId) throws IOException {
     return GithubRepo.builder()
         .productId(productId)
         .htmlUrl(repo.getHtmlUrl().toString())
