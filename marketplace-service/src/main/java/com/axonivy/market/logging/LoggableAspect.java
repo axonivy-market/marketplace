@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -71,10 +70,6 @@ public class LoggableAspect {
   private synchronized void saveLogToDailyFile(Map<String, String> headersMap) {
     try {
       var logFile = createFile(generateFileName());
-      if (logFile == null) {
-        log.error("Error writing log to file");
-        return;
-      }
 
       var content = new StringBuilder();
       if (logFile.exists()) {

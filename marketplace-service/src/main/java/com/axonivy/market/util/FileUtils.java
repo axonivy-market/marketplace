@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,11 +14,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -39,8 +36,7 @@ public class FileUtils {
     var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
-      log.error("Failed to create file: {}", file.getAbsolutePath());
-      return null;
+      throw new IOException("Failed to create file: " + file.getAbsolutePath());
     }
     return file;
   }
@@ -100,7 +96,7 @@ public class FileUtils {
   }
 
   // Common method to extract .zip file
-  public static void unzip(InputStreamSource file, String location) throws IOException {
+  public static void unzip(MultipartFile file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 

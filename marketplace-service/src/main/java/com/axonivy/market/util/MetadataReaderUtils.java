@@ -108,7 +108,7 @@ public class MetadataReaderUtils {
       var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-    } catch (ParserConfigurationException | SAXException | IOException e) {
+    } catch (Exception e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
     return document;

@@ -117,6 +117,15 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
+//  private String checkMetadataList(String[] artifactParts, String productId) {
+//    String artifactId = artifactParts[0];
+//    List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+//
+//    if (CollectionUtils.isEmpty(metadataList)) {
+//      return StringUtils.EMPTY;
+//    }
+//  }
+
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
     String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
 
