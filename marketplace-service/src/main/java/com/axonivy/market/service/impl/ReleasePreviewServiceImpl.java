@@ -37,7 +37,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
       FileUtils.unzip(file, PREVIEW_DIR);
-    } catch (IOException e){
+    } catch (IOException e) {
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
       return null;
     }
@@ -70,7 +70,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
           .filter(Files::isRegularFile)
-          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(path.getFileName().toString().toLowerCase(Locale.getDefault())).matches())
+          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(
+              path.getFileName().toString().toLowerCase(Locale.getDefault())).matches())
           .toList();
 
       allImagePaths.stream()
