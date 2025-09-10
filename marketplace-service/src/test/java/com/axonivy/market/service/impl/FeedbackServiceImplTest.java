@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -93,7 +94,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackProjection.getRating()).thenReturn(5);
     when(feedbackProjection.getFeedbackStatus()).thenReturn(FeedbackStatus.APPROVED);
     when(feedbackProjection.getModeratorName()).thenReturn("moderator");
-    when(feedbackProjection.getReviewDate()).thenReturn(new Date());
+    when(feedbackProjection.getReviewDate()).thenReturn(LocalDateTime.now());
     when(feedbackProjection.getVersion()).thenReturn(1);
     when(feedbackProjection.getCreatedAt()).thenReturn(new Date());
     when(feedbackProjection.getUpdatedAt()).thenReturn(new Date());

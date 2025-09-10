@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -148,7 +149,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     existingFeedback.setFeedbackStatus(newStatus);
     existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
-    existingFeedback.setReviewDate(new Date());
+    existingFeedback.setReviewDate(LocalDateTime.now());
     if (isApproved) {
       existingFeedback.setIsLatest(true);
     } else {

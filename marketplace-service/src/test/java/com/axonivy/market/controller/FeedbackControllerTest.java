@@ -29,6 +29,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -248,7 +249,7 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedback.setRating(5);
     mockFeedback.setFeedbackStatus(FeedbackStatus.APPROVED);
     mockFeedback.setModeratorName("Admin");
-    mockFeedback.setReviewDate(new Date());
+    mockFeedback.setReviewDate(LocalDateTime.now());
     return mockFeedback;
   }
 

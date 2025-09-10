@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public interface FeedbackProjection {
   Integer getRating();
   FeedbackStatus getFeedbackStatus();
   String getModeratorName();
-  Date getReviewDate();
+  LocalDateTime getReviewDate();
   Integer getVersion();
   Date getCreatedAt();
   Date getUpdatedAt();

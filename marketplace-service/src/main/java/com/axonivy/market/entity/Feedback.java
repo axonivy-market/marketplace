@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class Feedback extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private FeedbackStatus feedbackStatus;
   private String moderatorName;
-  private Date reviewDate;
+  private LocalDateTime reviewDate;
   @Version
   private Integer version;
   private Boolean isLatest;
