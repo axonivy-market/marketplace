@@ -106,9 +106,13 @@ public class MavenUtils {
   }
 
   public static InputStream extractedContentStream(Path filePath) {
+    if (filePath == null) {
+      log.warn("Invalid file path");
+      return null;
+    }
     try {
       return Files.newInputStream(filePath);
-    } catch (IOException | NullPointerException e) {
+    } catch (IOException e) {
       log.warn("Cannot read the current file: {}", e.getMessage());
       return null;
     }

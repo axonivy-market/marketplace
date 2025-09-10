@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -96,7 +97,7 @@ public class FileUtils {
   }
 
   // Common method to extract .zip file
-  public static void unzip(MultipartFile file, String location) throws IOException {
+  public static void unzip(InputStreamSource file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 

@@ -7,12 +7,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -103,12 +103,16 @@ public class MetadataReaderUtils {
   }
 
   public static Document getDocumentFromXMLContent(String xmlData) {
+    if (StringUtils.isBlank(xmlData)) {
+      log.error("Metadata Reader: cannot read the metadata because xml data is null");
+      return null;
+    }
     Document document = null;
     try {
       var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-    } catch (Exception e) {
+    } catch (ParserConfigurationException | IOException | SAXException e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
     return document;
