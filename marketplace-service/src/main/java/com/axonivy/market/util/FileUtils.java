@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,20 +100,20 @@ public class FileUtils {
   }
 
   // Common method to extract .zip file
-  public static void unzip(MultipartFile file, String location) throws IOException {
+  public static void unzip(InputStreamSource file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 
     try {
       unzipArtifact(file.getInputStream(), extractDir);
     } catch (IOException | IllegalStateException e) {
-      log.error("Error unzipping file", e);
+      throw new IOException("Error unzipping file", e);
     }
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {
     if (file != null && !file.mkdirs() && !file.isDirectory()) {
-      log.error("Failed to create directory: {}", file);
+      throw new IOException("Failed to create directory: " + file);
     }
   }
 

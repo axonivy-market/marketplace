@@ -10,9 +10,12 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -105,7 +108,7 @@ public class MetadataReaderUtils {
       var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-    } catch (Exception e) {
+    } catch (ParserConfigurationException | SAXException | IOException e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
     return document;

@@ -15,7 +15,7 @@ import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-public class ImageUtils {
+public final class ImageUtils {
   public static final String IMAGE_ID_FORMAT_PATTERN = "imageId-\\w+";
   private static final Pattern PATTERN = Pattern.compile(IMAGE_ID_FORMAT_PATTERN);
 

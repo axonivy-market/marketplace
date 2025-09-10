@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -283,7 +284,8 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
           .anyMatch(excludeField -> excludeField.name().equals(field.name())));
     }
 
-    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(searchCriteria.getKeyword().toLowerCase());
+    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(
+        searchCriteria.getKeyword().toLowerCase(Locale.getDefault()));
     for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
         // Correctly join the Map<String, String> names collection
@@ -292,7 +294,7 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
         Path<String> languageKey = namesJoin.key();
         Path<String> nameValue = namesJoin.value();
         // Filter by language key
-        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
+        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase(Locale.getDefault()));
         // Apply keyword search on product names (value)
         Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
         // Combine conditions
