@@ -13,7 +13,6 @@ import org.apache.logging.log4j.util.Strings;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,7 +20,7 @@ import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
-public class ProductContentUtils {
+public final class ProductContentUtils {
   /*
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
    * Match exactly Demo or Setup

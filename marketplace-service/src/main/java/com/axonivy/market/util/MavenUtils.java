@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -251,8 +252,9 @@ public class MavenUtils {
       return StringUtils.EMPTY;
     }
     return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
-            .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-            .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
+        .map(part -> part.substring(0, 1).toUpperCase(Locale.getDefault()) + part.substring(1).toLowerCase(
+            Locale.getDefault()))
+        .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
@@ -332,7 +334,7 @@ public class MavenUtils {
   }
 
   public static final String getDefaultMirrorMavenRepo(String repoUrl) {
-    if(StringUtils.isBlank(repoUrl) || StringUtils.equals(DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
       return DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;
