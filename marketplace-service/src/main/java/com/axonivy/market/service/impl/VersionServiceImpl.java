@@ -117,49 +117,39 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
-//  private String checkMetadataList(String[] artifactParts, String productId) {
-//    String artifactId = artifactParts[0];
-//    List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
-//
-//    if (CollectionUtils.isEmpty(metadataList)) {
-//      return StringUtils.EMPTY;
-//    }
-//  }
-
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
-    String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
-
+    String[] artifactParts = StringUtils.defaultString(artifact).split(MavenConstants.MAIN_VERSION_REGEX);
     if (artifactParts.length < 1) {
       return StringUtils.EMPTY;
     }
 
     String artifactId = artifactParts[0];
+    String fileType = artifactParts[artifactParts.length - 1];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
-
     if (CollectionUtils.isEmpty(metadataList)) {
       return StringUtils.EMPTY;
     }
 
+    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
-    List<MavenArtifactVersion> artifactModels = mavenArtifactVersionRepo.findByProductId(productId);
-
-    if (StringUtils.isBlank(targetVersion) || ObjectUtils.isEmpty(artifactModels)) {
+    if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
 
-    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
+    List<MavenArtifactVersion> artifactModels = mavenArtifactVersionRepo.findByProductId(productId);
+    if (ObjectUtils.isEmpty(artifactModels)) {
+      return StringUtils.EMPTY;
+    }
 
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
         artifactModels, targetVersion, modelArtifactIds);
 
-    String fileType = artifactParts[artifactParts.length - 1];
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
-      return StringUtils.EMPTY;
+      downloadUrl = StringUtils.EMPTY;
     }
-
     return downloadUrl;
   }
 
