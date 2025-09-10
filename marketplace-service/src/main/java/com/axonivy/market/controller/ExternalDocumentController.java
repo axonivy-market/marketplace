@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,6 +86,11 @@ public class ExternalDocumentController {
 
       // Replace the old version with the best matched version
       String updatedPath = updateVersionInPath(path, bestVersion, versionFromPath);
+      Path filePath = Paths.get("data/market-cache", updatedPath);
+      log.info("Redirect to the file path: {}", filePath.toString());
+      if (!Files.exists(filePath)) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      }
 
       URI redirectUri = URI.create("/market-cache" + updatedPath);
       return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
