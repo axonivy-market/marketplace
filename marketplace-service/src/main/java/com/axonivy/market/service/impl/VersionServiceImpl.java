@@ -92,7 +92,7 @@ public class VersionServiceImpl implements VersionService {
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
       productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     } catch (JsonProcessingException jsonProcessingException) {
-      log.error(jsonProcessingException.getMessage());
+      log.error(jsonProcessingException);
     }
     return result;
   }

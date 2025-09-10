@@ -106,13 +106,13 @@ public class FileUtils {
     try {
       unzipArtifact(file.getInputStream(), extractDir);
     } catch (IOException | IllegalStateException e) {
-      throw new IOException("Error unzipping file", e);
+      log.error("Error unzipping file", e);
     }
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {
     if (file != null && !file.mkdirs() && !file.isDirectory()) {
-      throw new IOException("Failed to create directory: " + file);
+      log.error("Failed to create directory: {}", file);
     }
   }
 

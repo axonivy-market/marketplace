@@ -624,7 +624,7 @@ public class ProductServiceImpl implements ProductService {
         return true;
       }
     } catch (Exception e) {
-      log.error(e.getStackTrace());
+      log.error(e);
     }
     return false;
   }
@@ -687,7 +687,7 @@ public class ProductServiceImpl implements ProductService {
       log.info("sync FirstPublishedDate of all products is finished!");
       return true;
     } catch (Exception e) {
-      log.error(e.getStackTrace());
+      log.error(e);
       return false;
     }
   }
