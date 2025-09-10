@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
@@ -31,8 +32,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.util.DocPathUtils.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -45,8 +48,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ExternalDocumentController {
   final ExternalDocumentService externalDocumentService;
   final GitHubService gitHubService;
-  private static final Pattern PATH_PATTERN =
-          Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
+
 
   @GetMapping(BY_ID_AND_VERSION)
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(
@@ -67,51 +69,25 @@ public class ExternalDocumentController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping("/latest/{*path}")
+  @GetMapping(DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@PathVariable String path) {
     log.info("Redirect request for external document: {}", path);
     String versionFromPath = extractVersion(path);
     String productId = extractProductId(path);
     log.info("Extracted version: {}", versionFromPath);
     log.info("Extracted productId: {}", productId);
-    if (productId != null) {
+    if (productId != null && versionFromPath != null) {
       String bestVersion = externalDocumentService.findBestMatchVersion(productId, versionFromPath);
 
       log.info("Best matched version: {}", bestVersion);
 
       // Replace the old version with the best matched version
-      String updatedPath = path.replaceFirst("/" + Pattern.quote(versionFromPath) + "/", "/" + bestVersion + "/");
+      String updatedPath = updateVersionInPath(path, bestVersion, versionFromPath);
 
       URI redirectUri = URI.create("/market-cache" + updatedPath);
       return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
     }
     return ResponseEntity.notFound().build();
-  }
-
-  /**
-   * Extract the productId from a path like:
-   * /portal/portal-guide/13.11/ew
-   * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png
-   */
-  public String extractProductId(String path) {
-    Matcher matcher = PATH_PATTERN.matcher(path);
-    if (matcher.matches()) {
-      return matcher.group(1); // productId
-    }
-    return null;
-  }
-
-  /**
-   * Extract the version from a path like:
-   * /portal/portal-guide/13.11/ew
-   * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png
-   */
-  public String extractVersion(String path) {
-    Matcher matcher = PATH_PATTERN.matcher(path);
-    if (matcher.matches()) {
-      return matcher.group(3); // version
-    }
-    return null;
   }
 
   @PutMapping(SYNC)
