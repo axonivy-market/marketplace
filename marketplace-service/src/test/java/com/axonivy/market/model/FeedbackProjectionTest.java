@@ -55,19 +55,19 @@ public class FeedbackProjectionTest {
   }
 
   @Test
-  void testGetProductNames_validJson() {
+  void testGetProductNamesWithValidJson() {
     String json = "{\"p1\":\"Product One\",\"p2\":\"Product Two\"}";
     FeedbackProjection projection = new TestFeedbackProjection(json);
 
     Map<String, String> result = projection.getProductNames();
 
-    assertEquals(2, result.size());
-    assertEquals("Product One", result.get("p1"));
-    assertEquals("Product Two", result.get("p2"));
+    assertEquals(2, result.size(), "Expected map to contain 2 entries for valid JSON");
+    assertEquals("Product One", result.get("p1"), "Expected 'p1' key to map to 'Product One'");
+    assertEquals("Product Two", result.get("p2"), "Expected 'p2' key to map to 'Product Two'");
   }
 
   @Test
-  void testGetProductNames_invalidJson_returnsEmptyMap() {
+  void testGetProductNamesWithInvalidJsonReturnsEmptyMap() {
     String invalidJson = "{not valid json}";
     FeedbackProjection projection = new TestFeedbackProjection(invalidJson);
 
@@ -77,7 +77,7 @@ public class FeedbackProjectionTest {
   }
 
   @Test
-  void testGetProductNames_nullJson_returnsEmptyMap() {
+  void testGetProductNamesWithNullJsonReturnsEmptyMap() {
     FeedbackProjection projection = new TestFeedbackProjection(null);
 
     Map<String, String> result = projection.getProductNames();
