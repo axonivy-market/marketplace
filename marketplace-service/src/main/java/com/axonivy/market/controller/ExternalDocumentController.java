@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
@@ -24,12 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.CACHE_DIR;
-import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static com.axonivy.market.util.DocPathUtils.*;
@@ -69,34 +66,26 @@ public class ExternalDocumentController {
 
   @GetMapping(DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
-       ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
+    log.info("#redirectToBestVersion Redirect to best match version for path: {}", path);
+
+    ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
     String version = extractVersion(path);
     String productId = extractProductId(path);
-    log.info("Request to redirect to best match version for productId: {}, version: {}, path: {}",
-        productId, version, path);
+
     if (productId != null && version != null && path != null) {
       String bestMatchVersion = externalDocumentService.findBestMatchVersion(productId, version);
       // Replace the old version with the best matched version
       String updatedPath = updateVersionInPath(path, bestMatchVersion, version);
-      log.info("Best match version: {}, updatedPath: {}", bestMatchVersion, updatedPath);
-      Path baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
-      Path relativePath = Paths.get(updatedPath).normalize();
-      if (relativePath.isAbsolute()) {
-        relativePath = Paths.get(updatedPath.substring(1)).normalize();
-      }
-      Path resolvedPath = baseDir.resolve(relativePath).normalize();
-      if (!resolvedPath.startsWith(baseDir)) {
-        log.warn("Path traversal attempt detected: {}", updatedPath);
-        return response.location(URI.create(ERROR_PAGE_404)).build();
-      }
+      Path resolvedPath = resolveDocPath(updatedPath);
 
-      if (!Files.exists(resolvedPath)) {
-        log.warn("File not found: {}", resolvedPath);
+      if (resolvedPath == null || !Files.exists(resolvedPath)) {
+        log.warn("#redirectToBestVersionThe Document is not exist, redirect to 404.");
         return response.location(URI.create(ERROR_PAGE_404)).build();
       }
 
       return response.location(URI.create(SLASH + CACHE_DIR + updatedPath)).build();
     }
+    log.warn("#redirectToBestVersionThe Path is invalid {}, redirect to 404.", path);
     return response.location(URI.create(ERROR_PAGE_404)).build();
   }
 

@@ -1,9 +1,12 @@
 package com.axonivy.market.util;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 
 public class DocPathUtils {
 
@@ -39,6 +42,24 @@ public class DocPathUtils {
     public static String updateVersionInPath(String path, String bestMatch, String version) {
         // Replace the old version with the best matched version
         return SLASH + path.replaceFirst(SLASH + Pattern.quote(version) + SLASH, SLASH + bestMatch + SLASH);
+    }
+
+    /**
+     * Normalize the given path to prevent path traversal attacks.
+     * Ensures the resulting path is within the DATA_CACHE_DIR.
+     * Returns null if the path is invalid or attempts to traverse outside the base directory.
+     */
+    public static Path resolveDocPath(String path) {
+        Path baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
+        Path relativePath = Paths.get(path).normalize();
+        if (relativePath.isAbsolute()) {
+            relativePath = Paths.get(path.substring(1)).normalize();
+        }
+        Path resolvedPath = baseDir.resolve(relativePath).normalize();
+        if (!resolvedPath.startsWith(baseDir)) {
+            return null;
+        }
+        return resolvedPath;
     }
 
 }
