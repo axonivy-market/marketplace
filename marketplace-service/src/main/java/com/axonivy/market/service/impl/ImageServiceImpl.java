@@ -40,6 +40,7 @@ public class ImageServiceImpl implements ImageService {
       InputStream contentStream = ghContent.read();
       return IOUtils.toByteArray(contentStream);
     } catch (Exception exception) {
+      log.error(exception);
       log.error("Cannot get content of product image {} ", ghContent.getName());
       return getImageByDownloadUrl(downloadUrl);
     }
@@ -49,6 +50,7 @@ public class ImageServiceImpl implements ImageService {
     try {
       return fileDownloadService.downloadFile(downloadUrl);
     } catch (Exception exception) {
+      log.error(exception);
       log.error("Cannot download the image from the url: {} with error {}", downloadUrl, exception.getMessage());
       return new byte[0];
     }
