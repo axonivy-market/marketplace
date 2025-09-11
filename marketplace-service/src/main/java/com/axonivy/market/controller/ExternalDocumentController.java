@@ -32,6 +32,7 @@ import static com.axonivy.market.constants.DirectoryConstants.CACHE_DIR;
 import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.util.DocPathUtils.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -66,17 +67,18 @@ public class ExternalDocumentController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(value = DOCUMENT_BEST_MATCH)
-  public ResponseEntity<Void> redirectToBestVersion(@PathVariable String id, @PathVariable String artifactId,
-                                                    @PathVariable String version, @PathVariable String path) {
-    log.info("Redirect request for document with id: {}, artifactId: {}, version: {}, path: {}"
-            , id, artifactId, version, path);
-    ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
-    if (id != null && artifactId != null && version != null && path != null) {
-      String bestMatchVersion = externalDocumentService.findBestMatchVersion(id, version);
+  @GetMapping(DOCUMENT_BEST_MATCH)
+  public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
+       ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
+    String version = extractVersion(path);
+    String productId = extractProductId(path);
+    log.info("Request to redirect to best match version for productId: {}, version: {}, path: {}",
+        productId, version, path);
+    if (productId != null && version != null && path != null) {
+      String bestMatchVersion = externalDocumentService.findBestMatchVersion(productId, version);
       // Replace the old version with the best matched version
-      String updatedPath = String.format(UPDATE_PATH_FORMAT, id, artifactId, bestMatchVersion, path);
-
+      String updatedPath = updateVersionInPath(path, bestMatchVersion, version);
+      log.info("Best match version: {}, updatedPath: {}", bestMatchVersion, updatedPath);
       Path baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
       Path relativePath = Paths.get(updatedPath).normalize();
       if (relativePath.isAbsolute()) {
