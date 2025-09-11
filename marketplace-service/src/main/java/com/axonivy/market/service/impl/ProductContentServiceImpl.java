@@ -58,7 +58,6 @@ public class ProductContentServiceImpl implements ProductContentService {
     var unzippedFolderPath = String.join(File.separator, FileDownloadService.ROOT_STORAGE_FOR_PRODUCT_CONTENT,
         artifact.getArtifactId());
     try {
-
       unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
           .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
@@ -67,9 +66,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
     } finally {
-      if (StringUtils.isNotBlank(unzippedFolderPath)) {
-        fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
-      }
+      fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
     }
     return productModuleContent;
   }

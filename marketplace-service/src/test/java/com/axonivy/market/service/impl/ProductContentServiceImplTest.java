@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;
@@ -12,6 +13,7 @@ import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -126,5 +128,85 @@ class ProductContentServiceImplTest extends BaseSetup {
       assertTrue(out.size() >0, "The output should not be empty byte array");
       verify(productMarketplaceDataService).updateInstallationCountForProduct(MOCK_PRODUCT_ID, null);
     }
+  }
+
+  @Test
+  void testGetReadmeAndProductContentsFromVersionSuccess() throws Exception {
+    String productId = MOCK_PRODUCT_ID;
+    String version = MOCK_RELEASED_VERSION;
+    String url = "http://mock.url/file.zip";
+    Artifact artifact = new Artifact();
+    artifact.setArtifactId("artifact-123");
+
+    String unzippedPath = "unzipped/folder/path";
+
+    when(fileDownloadService.downloadAndUnzipFile(eq(url), any(DownloadOption.class)))
+        .thenReturn(unzippedPath);
+
+    try (MockedStatic<ProductContentUtils> utilsMock = mockStatic(ProductContentUtils.class)) {
+      ProductModuleContent mockModuleContent = new ProductModuleContent();
+      utilsMock.when(() -> ProductContentUtils.initProductModuleContent(productId, version))
+          .thenReturn(mockModuleContent);
+
+      ProductModuleContent result = productContentService.getReadmeAndProductContentsFromVersion(
+          productId, version, url, artifact, MOCK_PRODUCT_NAME);
+
+      assertNotNull(result, "ProductModuleContent should not be null on success");
+      verify(fileDownloadService).downloadAndUnzipFile(eq(url), any(DownloadOption.class));
+      verify(fileDownloadService).deleteDirectory(Path.of(unzippedPath));
+    }
+  }
+
+  @Test
+  void testGetReadmeAndProductContentsFromVersionExceptionCase() throws Exception {
+    String url = "http://mock.url/file.zip";
+    Artifact artifact = new Artifact();
+    artifact.setArtifactId("artifact-123");
+
+    when(fileDownloadService.downloadAndUnzipFile(eq(url), any(DownloadOption.class)))
+        .thenThrow(new IOException("mock failure"));
+
+    ProductModuleContent result = productContentService.getReadmeAndProductContentsFromVersion(
+        MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, url, artifact, MOCK_PRODUCT_NAME);
+
+    assertNull(result, "Should return null when exception occurs during processing");
+    verify(fileDownloadService).deleteDirectory(any(Path.class));
+  }
+
+  @Test
+  void testGetReadmeAndProductContentsFromVersionAlwaysDeletesDirectoryOnSuccess() throws Exception {
+    String url = "http://mock.url/file.zip";
+    Artifact artifact = new Artifact();
+    artifact.setArtifactId("artifact-123");
+
+    String unzippedPath = "unzipped/folder/path";
+
+    when(fileDownloadService.downloadAndUnzipFile(eq(url), any(DownloadOption.class)))
+        .thenReturn(unzippedPath);
+
+    try (MockedStatic<ProductContentUtils> utilsMock = mockStatic(ProductContentUtils.class)) {
+      utilsMock.when(() -> ProductContentUtils.initProductModuleContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION))
+          .thenReturn(new ProductModuleContent());
+
+      productContentService.getReadmeAndProductContentsFromVersion(
+          MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, url, artifact, MOCK_PRODUCT_NAME);
+
+      verify(fileDownloadService).deleteDirectory(Path.of(unzippedPath));
+    }
+  }
+
+  @Test
+  void testGetReadmeAndProductContentsFromVersionFinallyAlwaysDeletes() throws Exception {
+    String url = "http://mock.url/file.zip";
+    Artifact artifact = new Artifact();
+    artifact.setArtifactId("artifact-123");
+
+    when(fileDownloadService.downloadAndUnzipFile(eq(url), any(DownloadOption.class)))
+        .thenThrow(new IOException("mock failure"));
+
+    productContentService.getReadmeAndProductContentsFromVersion(
+        MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, url, artifact, MOCK_PRODUCT_NAME);
+
+    verify(fileDownloadService).deleteDirectory(any(Path.class));
   }
 }
