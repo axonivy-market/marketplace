@@ -38,11 +38,12 @@ public class FeedbackSortOptionTest {
 
   @Test
   void testOfInvalidOptionThrowsException() {
-    InvalidParamException ex = assertThrows(
+    InvalidParamException exception = assertThrows(
         InvalidParamException.class,
-        () -> FeedbackSortOption.of("invalid")
+        () -> FeedbackSortOption.of("invalid"),
+        "Expected InvalidParamException to be thrown if sort option is invalid"
     );
-    assertTrue(ex.getMessage().contains("FeedbackSortOption: invalid"),
+    assertTrue(exception.getMessage().contains("FeedbackSortOption: invalid"),
         "Expected exception message to contain the invalid option");
   }
 
