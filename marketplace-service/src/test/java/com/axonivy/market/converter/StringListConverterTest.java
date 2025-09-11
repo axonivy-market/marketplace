@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class StringListConverterTest {
+class StringListConverterTest {
   private final StringListConverter converter = new StringListConverter();
 
   @Test

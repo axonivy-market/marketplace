@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class StringSetConverterTest {
+class StringSetConverterTest {
   private final StringSetConverter converter = new StringSetConverter();
 
   @Test

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MetadataTest {
+class MetadataTest {
   @Test
   void testEqualsAndHashCodeSameUrl() {
     Metadata m1 = Metadata.builder().url("url-1").build();
