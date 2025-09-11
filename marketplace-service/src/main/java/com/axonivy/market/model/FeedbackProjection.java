@@ -11,15 +11,25 @@ import java.util.Map;
 
 public interface FeedbackProjection {
   String getId();
+
   String getUserId();
+
   String getProductId();
+
   String getContent();
+
   Integer getRating();
+
   FeedbackStatus getFeedbackStatus();
+
   String getModeratorName();
+
   LocalDateTime getReviewDate();
+
   Integer getVersion();
+
   Date getCreatedAt();
+
   Date getUpdatedAt();
 
   // Retrieve as JSON String
@@ -29,7 +39,8 @@ public interface FeedbackProjection {
   default Map<String, String> getProductNames() {
     try {
       var objectMapper = new ObjectMapper();
-      return objectMapper.readValue(this.getProductNamesJson(), new TypeReference<>() {});
+      return objectMapper.readValue(this.getProductNamesJson(), new TypeReference<>() {
+      });
     } catch (Exception e) {
       return Map.of();
     }
