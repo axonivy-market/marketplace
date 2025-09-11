@@ -14,17 +14,16 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.RequestMappingConstants.ERROR_PAGE_404;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -81,18 +80,18 @@ class ExternalDocumentControllerTest {
 
           ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
 
-          assertTrue(response.getStatusCode().is3xxRedirection());
+          assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
           assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-                  .contains(SAMPLE_REDIRECT_PATH));
+                  .contains(SAMPLE_REDIRECT_PATH), "Should redirect to the correct path");
       }
   }
 
   @Test
   void testRedirectToBestVersionWithInvalidPath() {
       ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
-      assertTrue(response.getStatusCode().is3xxRedirection());
+      assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
       assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-          .contains(ERROR_PAGE_404));
+          .contains(ERROR_PAGE_404), "Should redirect to 404");
   }
 
   @Test

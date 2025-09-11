@@ -2,27 +2,28 @@ package com.axonivy.market.util;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 
-public class DocPathUtils {
+public final class DocPathUtils {
+    private static final Pattern PATH_PATTERN =
+            Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
+    private static final int VERSION_INDEX = 1;
+    private static final int PRODUCT_ID_INDEX = 3;
 
     private DocPathUtils() {
     }
 
-    private static final Pattern PATH_PATTERN =
-            Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
     /**
      * Extract the productId from a path like:
      * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> portal
      */
     public static String extractProductId(String path) {
-        Matcher matcher = PATH_PATTERN.matcher(path);
+        var matcher = PATH_PATTERN.matcher(path);
         if (matcher.matches()) {
-            return matcher.group(1);
+            return matcher.group(VERSION_INDEX);
         }
         return null;
     }
@@ -32,9 +33,9 @@ public class DocPathUtils {
      * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> 13.1.1
      */
     public static String extractVersion(String path) {
-        Matcher matcher = PATH_PATTERN.matcher(path);
+        var matcher = PATH_PATTERN.matcher(path);
         if (matcher.matches()) {
-            return matcher.group(3);
+            return matcher.group(PRODUCT_ID_INDEX);
         }
         return null;
     }
@@ -50,16 +51,15 @@ public class DocPathUtils {
      * Returns null if the path is invalid or attempts to traverse outside the base directory.
      */
     public static Path resolveDocPath(String path) {
-        Path baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
-        Path relativePath = Paths.get(path).normalize();
+        var baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
+        var relativePath = Paths.get(path).normalize();
         if (relativePath.isAbsolute()) {
             relativePath = Paths.get(path.substring(1)).normalize();
         }
-        Path resolvedPath = baseDir.resolve(relativePath).normalize();
+        var resolvedPath = baseDir.resolve(relativePath).normalize();
         if (!resolvedPath.startsWith(baseDir)) {
             return null;
         }
         return resolvedPath;
     }
-
 }

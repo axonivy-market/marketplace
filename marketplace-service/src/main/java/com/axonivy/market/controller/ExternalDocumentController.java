@@ -43,8 +43,6 @@ public class ExternalDocumentController {
   final ExternalDocumentService externalDocumentService;
   final GitHubService gitHubService;
 
-  private static final String UPDATE_PATH_FORMAT = "/%s/%s/%s%s";
-
   @GetMapping(BY_ID_AND_VERSION)
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
@@ -76,7 +74,7 @@ public class ExternalDocumentController {
       String bestMatchVersion = externalDocumentService.findBestMatchVersion(productId, version);
       // Replace the old version with the best matched version
       String updatedPath = updateVersionInPath(path, bestMatchVersion, version);
-      Path resolvedPath = resolveDocPath(updatedPath);
+      var resolvedPath = resolveDocPath(updatedPath);
 
       if (resolvedPath == null || !Files.exists(resolvedPath)) {
         log.warn("#redirectToBestVersionThe Document is not exist, redirect to 404.");

@@ -11,41 +11,41 @@ class DocPathUtilsTest {
     private static final String SAMPLE_PATH = "/portal/portal-guide/13.1.1/doc/_images/dashboard1.png";
 
     @Test
-    void extractProductId_validPath_returnsPortal() {
+    void testExtractProductIdSuccess() {
         assertEquals("portal", DocPathUtils.extractProductId(SAMPLE_PATH));
     }
 
     @Test
-    void extractVersion_validPath_returnsVersion() {
+    void testExtractVersionSuccess() {
         assertEquals("13.1.1", DocPathUtils.extractVersion(SAMPLE_PATH));
     }
 
     @Test
-    void extractProductId_invalidPath_returnsNull() {
-        assertNull(DocPathUtils.extractProductId("/invalidpath"));
+    void testExtractProductIdWithInvalidPath() {
+        assertNull(DocPathUtils.extractProductId("/invalidPath"), "Should return null");
     }
 
     @Test
-    void extractVersion_invalidPath_returnsNull() {
-        assertNull(DocPathUtils.extractVersion("/invalidpath"));
+    void testExtractVersionWithInvalidPath() {
+        assertNull(DocPathUtils.extractVersion("/invalidPath"), "Should return null");
     }
 
     @Test
-    void updateVersionInPath_replacesCorrectly() {
+    void testUpdateVersionInPathSuccess() {
         String updated = DocPathUtils.updateVersionInPath(SAMPLE_PATH, "15.0", "13.1.1");
         assertTrue(updated.contains("/15.0/"));
         assertFalse(updated.contains("/13.1.1/"));
     }
 
     @Test
-    void resolveDocPath_validPath_resolvesInsideBaseDir() {
+    void testResolveDocPathSuccess() {
         Path resolved = DocPathUtils.resolveDocPath("portal/portal-guide/13.1.1/doc/_images/dashboard1.png");
         assertNotNull(resolved);
         assertTrue(resolved.toString().contains("portal-guide"));
     }
 
     @Test
-    void resolveDocPath_absoluteTraversalAttempt_returnsNull() {
+    void testResolveDocPathFailed() {
         Path resolved = DocPathUtils.resolveDocPath("/../../etc/passwd");
         assertNull(resolved);
     }
