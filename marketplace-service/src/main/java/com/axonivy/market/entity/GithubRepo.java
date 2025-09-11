@@ -32,18 +32,42 @@ import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 public class GithubRepo extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String name;
   private String productId;
   private String htmlUrl;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String language;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private Date lastUpdated;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String ciBadgeUrl;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String devBadgeUrl;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   private String e2eBadgeUrl;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
