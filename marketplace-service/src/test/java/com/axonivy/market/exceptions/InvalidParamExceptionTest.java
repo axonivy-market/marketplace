@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InvalidParamExceptionTest {
+class InvalidParamExceptionTest {
   @Test
   void testConstructorWithCodeAndMessage() {
     ErrorCode code = ErrorCode.PRODUCT_SORT_INVALID;

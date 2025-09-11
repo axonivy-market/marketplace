@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.springframework.http.HttpMethod;
 
-public class MarketHeaderInterceptorTest {
+class MarketHeaderInterceptorTest {
   private MarketHeaderInterceptor interceptor;
   private HttpServletRequest request;
   private HttpServletResponse response;

@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FeedbackProjectionTest {
+class FeedbackProjectionTest {
   static class TestFeedbackProjection implements FeedbackProjection {
     private final String productNamesJson;
 

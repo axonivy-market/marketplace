@@ -12,8 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class AbstractCollectionConverterTest {
-  // Concrete subclass for testing with List<String>
+class AbstractCollectionConverterTest {
   static class ListStringConverter extends AbstractCollectionConverter<List<String>> {
     @Override
     protected List<String> createCollection(Collection<String> elements) {

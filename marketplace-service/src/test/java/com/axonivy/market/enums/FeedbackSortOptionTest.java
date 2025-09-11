@@ -9,7 +9,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
-public class FeedbackSortOptionTest {
+class FeedbackSortOptionTest {
   @Test
   void testOfValidOptions() {
     assertEquals(FeedbackSortOption.NEWEST, FeedbackSortOption.of("newest"),

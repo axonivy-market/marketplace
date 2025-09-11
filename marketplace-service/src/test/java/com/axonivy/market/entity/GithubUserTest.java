@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GithubUserTest {
+class GithubUserTest {
   @Test
   void testEqualsSameObject() {
     GithubUser user1 = new GithubUser();
@@ -21,7 +21,7 @@ public class GithubUserTest {
     GithubUser user = new GithubUser();
     user.setId("1");
 
-    assertNotEquals(null, user, "Equals should return false when comparing with null");
+    assertNotNull(user, "Equals should return false when comparing with null");
   }
 
   @Test
