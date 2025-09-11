@@ -69,14 +69,27 @@ public class ExternalDocumentController {
   @GetMapping(value = DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@PathVariable String id, @PathVariable String artifactId,
                                                     @PathVariable String version, @PathVariable String path) {
+    log.info("Redirect request for document with id: {}, artifactId: {}, version: {}, path: {}"
+            , id, artifactId, version, path);
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
     if (id != null && artifactId != null && version != null && path != null) {
       String bestMatchVersion = externalDocumentService.findBestMatchVersion(id, version);
       // Replace the old version with the best matched version
       String updatedPath = String.format(UPDATE_PATH_FORMAT, id, artifactId, bestMatchVersion, path);
-      Path filePath = Paths.get(DATA_CACHE_DIR, updatedPath);
 
-      if (!Files.exists(filePath)) {
+      Path baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
+      Path relativePath = Paths.get(updatedPath).normalize();
+      if (relativePath.isAbsolute()) {
+        relativePath = Paths.get(updatedPath.substring(1)).normalize();
+      }
+      Path resolvedPath = baseDir.resolve(relativePath).normalize();
+      if (!resolvedPath.startsWith(baseDir)) {
+        log.warn("Path traversal attempt detected: {}", updatedPath);
+        return response.location(URI.create(ERROR_PAGE_404)).build();
+      }
+
+      if (!Files.exists(resolvedPath)) {
+        log.warn("File not found: {}", resolvedPath);
         return response.location(URI.create(ERROR_PAGE_404)).build();
       }
 
