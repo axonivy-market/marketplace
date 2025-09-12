@@ -112,7 +112,7 @@ export class FeedbackApprovalComponent {
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
+      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }

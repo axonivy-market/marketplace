@@ -125,7 +125,7 @@ describe('FeedbackApprovalComponent', () => {
     component.token = 'mockToken';
     component.fetchFeedbacks();
     tick();
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.UNAUTHORIZED_ACCESS);
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
     expect(component.isAuthenticated).toBeFalse();
     expect(sessionStorage.removeItem).toHaveBeenCalledWith(
       FEEDBACK_APPROVAL_SESSION_TOKEN

@@ -79,7 +79,7 @@ export class SecurityMonitorComponent {
       .subscribe({
         next: data => this.handleSuccess(data),
         error: (err: HttpErrorResponse) => this.handleError(err)
-    });
+      });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
@@ -91,11 +91,10 @@ export class SecurityMonitorComponent {
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
+      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
-
     this.isAuthenticated = false;
     this.clearSessionData();
   }
