@@ -79,7 +79,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(cloneReq).pipe(
-    catchError(error => handleHttpError(error)),
+    catchError(error => handleHttpError(router,error)),
     tap(event => {
       if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
         transferState.set(key, event.body);
@@ -101,7 +101,7 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
 }
 
 function handleHttpError(
-  this: any,
+  router: Router,
   error: HttpErrorResponse
 ): Observable<never> {
   if (error.status === UNAUTHORIZED) {
@@ -109,9 +109,9 @@ function handleHttpError(
   }
 
   if (ERROR_CODES.includes(error.status)) {
-    this.router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
+    router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
   } else {
-    this.router.navigate([ERROR_PAGE_PATH]);
+    router.navigate([ERROR_PAGE_PATH]);
   }
   return EMPTY;
 }
