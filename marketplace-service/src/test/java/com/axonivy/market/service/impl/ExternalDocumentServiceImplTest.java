@@ -145,7 +145,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
       String result = service.findBestMatchVersion(productId, version);
 
-      assertEquals(version, result);
+      assertEquals(version, result, "Should return the matched version");
       mockedVersionFactory.verify(() -> VersionFactory.get(Collections.singletonList(version), version));
     }
 
