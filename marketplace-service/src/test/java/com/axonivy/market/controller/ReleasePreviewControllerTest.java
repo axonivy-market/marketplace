@@ -30,7 +30,7 @@ class ReleasePreviewControllerTest {
   private ReleasePreviewController controller;
 
   private MultipartFile testFile;
-  private final String MOCK_BASE_URL = "http://localhost:8080";
+  private final String TEST__BASE_URL = "http://localhost:8080";
 
   @BeforeEach
   void setUp() {
@@ -51,9 +51,9 @@ class ReleasePreviewControllerTest {
 
       mockedStatic.when(ServletUriComponentsBuilder::fromCurrentContextPath).thenReturn(mockServletBuilder);
       when(mockServletBuilder.build()).thenReturn(mockUriComponents);
-      when(mockUriComponents.toUriString()).thenReturn(MOCK_BASE_URL);
+      when(mockUriComponents.toUriString()).thenReturn(TEST__BASE_URL);
 
-      when(mockPreviewService.extract(testFile, MOCK_BASE_URL)).thenReturn(mockReleasePreview);
+      when(mockPreviewService.extract(testFile, TEST__BASE_URL)).thenReturn(mockReleasePreview);
 
       ResponseEntity<Object> response = controller.extractZipFile(testFile);
 
@@ -62,7 +62,7 @@ class ReleasePreviewControllerTest {
           "Response status should be OK when preview is successfully extracted");
       assertSame(mockReleasePreview, response.getBody(),
           "Response body should contain the extracted ReleasePreview object");
-      verify(mockPreviewService, times(1)).extract(testFile, MOCK_BASE_URL);
+      verify(mockPreviewService, times(1)).extract(testFile, TEST__BASE_URL);
     }
   }
 
@@ -74,9 +74,9 @@ class ReleasePreviewControllerTest {
 
       mockedStatic.when(ServletUriComponentsBuilder::fromCurrentContextPath).thenReturn(mockServletBuilder);
       when(mockServletBuilder.build()).thenReturn(mockUriComponents);
-      when(mockUriComponents.toUriString()).thenReturn(MOCK_BASE_URL);
+      when(mockUriComponents.toUriString()).thenReturn(TEST__BASE_URL);
 
-      when(mockPreviewService.extract(testFile, MOCK_BASE_URL)).thenReturn(null);
+      when(mockPreviewService.extract(testFile, TEST__BASE_URL)).thenReturn(null);
 
       ResponseEntity<Object> response = controller.extractZipFile(testFile);
 
@@ -85,7 +85,7 @@ class ReleasePreviewControllerTest {
           "Response status should be NO_CONTENT when preview is successfully extracted and is null");
       assertNull(response.getBody(),
           "Response body should be null when preview is not extracted");
-      verify(mockPreviewService, times(1)).extract(testFile, MOCK_BASE_URL);
+      verify(mockPreviewService, times(1)).extract(testFile, TEST__BASE_URL);
     }
   }
 }

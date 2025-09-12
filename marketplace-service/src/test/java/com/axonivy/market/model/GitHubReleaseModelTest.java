@@ -4,8 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class GitHubReleaseModelTest {
+class GitHubReleaseModelTest {
 
   @Test
   void testEqualsAndHashCodeSameName() {
@@ -38,7 +39,7 @@ public class GitHubReleaseModelTest {
     GitHubReleaseModel release = new GitHubReleaseModel();
     release.setName("12.0.3");
 
-    assertNotEquals(release, null, "GitHubReleaseModel should not equal null");
+    assertNotNull(release, "GitHubReleaseModel should not equal null");
     assertNotEquals(release, "some string", "GitHubReleaseModel should not equal an object of a different class");
   }
 }

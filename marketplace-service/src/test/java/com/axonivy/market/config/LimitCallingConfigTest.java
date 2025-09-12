@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-public class LimitCallingConfigTest {
+class LimitCallingConfigTest {
   private LimitCallingConfig filter;
 
   private HttpServletRequest request;

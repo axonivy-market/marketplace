@@ -24,7 +24,9 @@ class StringListConverterTest {
         .isInstanceOf(ArrayList.class);
 
     result.add("four");
-    assertThat(result).contains("four");
-    assertThat(input).doesNotContain("four");
+    assertThat(result)
+        .as("Result should contain four and is a different collection from the original input")
+        .contains("four");
+    assertThat(input).as("Original input should not contain four").doesNotContain("four");
   }
 }

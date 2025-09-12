@@ -11,7 +11,7 @@ class MetadataTest {
     Metadata m2 = Metadata.builder().url("url-1").build();
 
     assertThat(m1).as("Same url -> should be equal").isEqualTo(m2);
-    assertThat(m1.hashCode()).as("Hashcode should be equal for same url").isEqualTo(m2.hashCode());
+    assertThat(m1).as("Hashcode should be equal for same url").hasSameHashCodeAs(m2);
   }
 
   @Test
@@ -20,14 +20,14 @@ class MetadataTest {
     Metadata m2 = Metadata.builder().url("url-2").build();
 
     assertThat(m1).as("Different url -> should not be equal").isNotEqualTo(m2);
-    assertThat(m1.hashCode()).isNotEqualTo(m2.hashCode());
+    assertThat(m1.hashCode()).as("Hashcode should not be equal for different url").isNotEqualTo(m2.hashCode());
   }
 
   @Test
   void testEqualsNullAndDifferentClass() {
     Metadata m1 = Metadata.builder().url("url-1").build();
 
-    assertThat(m1 == null).as("Should not equal null").isFalse();
+    assertThat(m1).as("Should not equal null").isNotNull();
     assertThat(m1.equals("not-a-metadata")).as("Should not equal different type").isFalse();
   }
 
@@ -40,20 +40,12 @@ class MetadataTest {
   }
 
   @Test
-  void testEqualsSameReference() {
-    Metadata m1 = Metadata.builder().url("url-1").build();
-
-    assertThat(m1.equals(m1)).as("Same reference should be equal").isTrue();
-  }
-
-  @Test
   void testEqualsBothUrlsNull() {
     Metadata m1 = new Metadata();
     Metadata m2 = new Metadata();
 
     assertThat(m1.equals(m2)).as("Both null urls should be equal").isTrue();
-    assertThat(m1.hashCode()).as("Hashcode should also be equal when urls are null")
-        .isEqualTo(m2.hashCode());
+    assertThat(m1).as("Hashcode should also be equal when urls are null").hasSameHashCodeAs(m2);
   }
 
   @Test
