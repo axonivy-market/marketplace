@@ -36,10 +36,13 @@ class GitHubReleaseModelTest {
 
   @Test
   void testEqualsWithNullAndDifferentClass() {
-    GitHubReleaseModel release = new GitHubReleaseModel();
-    release.setName("12.0.3");
+    GitHubReleaseModel release1 = new GitHubReleaseModel();
+    GitHubReleaseModel release2 = null;
+    var release3 = "string";
+    release1.setName("12.0.3");
 
-    assertNotNull(release, "GitHubReleaseModel should not equal null");
-    assertNotEquals("some string", release, "GitHubReleaseModel should not equal an object of a different class");
+    assertNotEquals(release1, release2, "GitHubReleaseModel should not equal null");
+    assertNotEquals(release1, release3,
+        "GitHubReleaseModel should not equal an object of a different class");
   }
 }

@@ -27,11 +27,12 @@ class ArtifactTest {
 
   @Test
   void testEqualsWithDifferentClass() {
-    Artifact artifact = new Artifact();
-    artifact.setGroupId("com.axonivy");
-    artifact.setArtifactId("test-artifact");
+    Artifact artifact1 = new Artifact();
+    var artifact2 = "string";
+    artifact1.setGroupId("com.axonivy");
+    artifact1.setArtifactId("test-artifact");
 
-    assertNotEquals("some string", artifact,
+    assertNotEquals(artifact1, artifact2,
         "Artifact should not be equal to an object of another class");
   }
 

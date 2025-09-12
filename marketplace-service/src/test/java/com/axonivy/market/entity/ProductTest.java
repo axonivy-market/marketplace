@@ -18,10 +18,11 @@ class ProductTest {
 
   @Test
   void testEqualsWithDifferentClass() {
-    Product product = new Product();
-    product.setId("p1");
+    Product product1 = new Product();
+    var product2 = "string";
+    product1.setId("p1");
 
-    assertNotEquals("string", product, "Product should not be equal to object of another class");
+    assertNotEquals(product1, product2, "Product should not be equal to object of another class");
   }
 
   @Test

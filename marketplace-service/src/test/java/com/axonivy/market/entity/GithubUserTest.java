@@ -22,15 +22,16 @@ class GithubUserTest {
     GithubUser user2 = null;
     user1.setId("1");
 
-    assertNotEquals(user2, user1, "Equals should return false when comparing with null");
+    assertNotEquals(user1, user2, "Equals should return false when comparing with null");
   }
 
   @Test
   void testEqualsDifferentClass() {
-    GithubUser user = new GithubUser();
-    user.setId("1");
+    GithubUser user1 = new GithubUser();
+    var user2 = "string";
+    user1.setId("1");
 
-    assertNotEquals("random string", user,
+    assertNotEquals(user1, user2,
         "Equals should return false when comparing with different class");
   }
 

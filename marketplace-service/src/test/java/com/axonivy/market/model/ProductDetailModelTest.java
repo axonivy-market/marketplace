@@ -11,10 +11,11 @@ class ProductDetailModelTest {
   void testEqualsWithNullAndDifferentClass() {
     ProductDetailModel model1 = new ProductDetailModel();
     ProductDetailModel model2 = null;
+    var model3 = "string";
     model1.setId("p1");
 
-    assertNotEquals(model2, model1, "Model should not equal null");
-    assertNotEquals("string", model1, "Model should not equal object of another class");
+    assertNotEquals(model1, model2, "Model should not equal null");
+    assertNotEquals(model1, model3, "Model should not equal object of another class");
   }
 
   @Test
@@ -88,7 +89,6 @@ class ProductDetailModelTest {
     assertEquals("10.0+", model.getCompatibilityRange(), "Compatibility range should be copied");
     assertTrue(model.isMavenDropins(), "MavenDropins should be copied");
 
-    // vendor image URLs (mocked transformation)
     assertNotNull(model.getVendorImage(), "Vendor image should be set for non-production");
     assertNotNull(model.getVendorImageDarkMode(), "Vendor dark image should be set for non-production");
   }

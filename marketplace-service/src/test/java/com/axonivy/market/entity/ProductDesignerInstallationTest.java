@@ -26,16 +26,18 @@ class ProductDesignerInstallationTest {
 
   @Test
   void testEqualsNullObjectReturnsFalse() {
-    var installation = new ProductDesignerInstallation("p7", "v7", 70);
+    ProductDesignerInstallation installation1 = new ProductDesignerInstallation("p7", "v7", 70);
+    ProductDesignerInstallation installation2 = null;
 
-    assertNotNull(installation, "Expected equals(null) to return false");
+    assertNotEquals(installation1, installation2, "Expected equals(null) to return false");
   }
 
   @Test
   void testEqualsDifferentClassReturnsFalse() {
     var installation = new ProductDesignerInstallation("p8", "v8", 80);
+    var string = "string";
 
-    assertNotEquals("random string", installation,
+    assertNotEquals(installation, string,
         "Expected equals with different class to return false");
   }
 }
