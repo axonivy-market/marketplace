@@ -34,10 +34,11 @@ class MetadataTest {
 
   @Test
   void testEqualsNullAndDifferentClass() {
-    Metadata m = Metadata.builder().url("url-1").build();
+    Metadata m1 = Metadata.builder().url("url-1").build();
+    Metadata m2 = null;
 
-    assertNotEquals(m, null, "Different object type should equal");
-    assertNotEquals(m, "string", "Should not equal different type");
+    assertNotEquals(m2, m1, "Different object type should equal");
+    assertNotEquals("string", m1, "Should not equal different type");
   }
 
   @Test
@@ -45,7 +46,7 @@ class MetadataTest {
     Metadata metadata = new Metadata();
     metadata.setId("id-123");
 
-    assertEquals(metadata.getId(), "id-123", "getId should return url");
+    assertEquals("id-123", metadata.getId(), "getId should return url");
   }
 
   @Test

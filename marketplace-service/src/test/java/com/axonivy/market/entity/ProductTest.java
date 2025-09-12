@@ -21,7 +21,7 @@ class ProductTest {
     Product product = new Product();
     product.setId("p1");
 
-    assertNotEquals(product, "string", "Product should not be equal to object of another class");
+    assertNotEquals("string", product, "Product should not be equal to object of another class");
   }
 
   @Test

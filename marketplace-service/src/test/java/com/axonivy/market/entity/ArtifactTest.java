@@ -31,7 +31,7 @@ class ArtifactTest {
     artifact.setGroupId("com.axonivy");
     artifact.setArtifactId("test-artifact");
 
-    assertNotEquals(artifact, "some string",
+    assertNotEquals("some string", artifact,
         "Artifact should not be equal to an object of another class");
   }
 

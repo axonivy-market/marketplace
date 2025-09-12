@@ -17,11 +17,12 @@ class GithubUserTest {
   }
 
   @Test
-  void testEqualsWithNull() {
+  void testEqualsWithNullObject() {
     GithubUser user1 = new GithubUser();
+    GithubUser user2 = null;
     user1.setId("1");
 
-    assertNotEquals(user1, null, "Equals should return false when comparing with null");
+    assertNotEquals(user2, user1, "Equals should return false when comparing with null");
   }
 
   @Test
@@ -29,7 +30,7 @@ class GithubUserTest {
     GithubUser user = new GithubUser();
     user.setId("1");
 
-    assertNotEquals(user, "random string",
+    assertNotEquals("random string", user,
         "Equals should return false when comparing with different class");
   }
 

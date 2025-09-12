@@ -40,6 +40,6 @@ class GitHubReleaseModelTest {
     release.setName("12.0.3");
 
     assertNotNull(release, "GitHubReleaseModel should not equal null");
-    assertNotEquals(release, "some string", "GitHubReleaseModel should not equal an object of a different class");
+    assertNotEquals("some string", release, "GitHubReleaseModel should not equal an object of a different class");
   }
 }

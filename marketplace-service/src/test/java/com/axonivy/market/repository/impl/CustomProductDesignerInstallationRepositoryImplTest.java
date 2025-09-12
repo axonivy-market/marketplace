@@ -2,7 +2,6 @@ package com.axonivy.market.repository.impl;
 
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.config.LimitCallingConfig;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -11,7 +10,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -58,7 +56,6 @@ class CustomProductDesignerInstallationRepositoryImplTest extends BaseSetup {
   void testIncreaseInstallationCountWhenNoExistingInstallationCreatesNew() {
     var repo = Mockito.spy(new TestableCustomProductDesignerInstallationRepositoryImpl());
 
-    EntityManager em = mock(EntityManager.class);
     TypedQuery<ProductDesignerInstallation> query = mock(TypedQuery.class);
     CriteriaBuilder cb = mock(CriteriaBuilder.class);
     CriteriaQuery<ProductDesignerInstallation> cq = mock(CriteriaQuery.class);

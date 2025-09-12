@@ -10,10 +10,11 @@ class ProductDetailModelTest {
   @Test
   void testEqualsWithNullAndDifferentClass() {
     ProductDetailModel model1 = new ProductDetailModel();
+    ProductDetailModel model2 = null;
     model1.setId("p1");
 
-    assertNotEquals(model1, null, "Model should not equal null");
-    assertNotEquals(model1, "string", "Model should not equal object of another class");
+    assertNotEquals(model2, model1, "Model should not equal null");
+    assertNotEquals("string", model1, "Model should not equal object of another class");
   }
 
   @Test

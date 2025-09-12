@@ -30,7 +30,7 @@ class ReleasePreviewControllerTest {
   private ReleasePreviewController controller;
 
   private MultipartFile testFile;
-  private final String TEST_BASE_URL = "http://localhost:8080";
+  private static final String TEST_BASE_URL = "http://localhost:8080";
 
   @BeforeEach
   void setUp() {

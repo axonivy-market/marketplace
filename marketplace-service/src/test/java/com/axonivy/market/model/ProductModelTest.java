@@ -26,15 +26,16 @@ class ProductModelTest {
     ProductModel model2 = new ProductModel();
     model2.setId("amazon-comprehend");
 
-    assertNotEquals(model1, model2, "Models with different ids should not be equal");
+    assertNotEquals(model2, model1, "Models with different ids should not be equal");
   }
 
   @Test
   void testEqualsNullAndDifferentClass() {
-    ProductModel model = new ProductModel();
-    model.setId("jira-connector");
+    ProductModel model1 = new ProductModel();
+    ProductModel model2 = null;
+    model1.setId("jira-connector");
 
-    assertNotEquals(model, null, "Model should not be equal to null");
-    assertNotEquals(model, "random-string", "Model should not be equal to different class type");
+    assertNotEquals(model2, model1, "Model should not be equal to null");
+    assertNotEquals("random-string", model1, "Model should not be equal to different class type");
   }
 }

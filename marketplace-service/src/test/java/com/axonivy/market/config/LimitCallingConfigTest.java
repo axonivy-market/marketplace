@@ -89,7 +89,7 @@ class LimitCallingConfigTest {
 
   @Test
   void testShouldReturnFirstIpWhenXForwardedForHasMultipleIps() {
-    HttpServletRequest request = mock(HttpServletRequest.class);
+//    HttpServletRequest request = mock(HttpServletRequest.class);
     when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.45, 10.0.0.1, proxy");
     when(request.getRemoteAddr()).thenReturn("192.168.0.5");
 
