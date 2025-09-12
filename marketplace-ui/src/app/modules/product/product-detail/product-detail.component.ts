@@ -315,7 +315,12 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   setupIntersectionObserver() {
-    if (!this.observerElement || this.changelogIntersectionObserver) {
+    if (
+      !this.observerElement ||
+      this.changelogIntersectionObserver ||
+      !this.isBrowser ||
+      typeof IntersectionObserver === 'undefined'
+    ) {
       return;
     }
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
