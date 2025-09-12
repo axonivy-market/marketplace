@@ -57,7 +57,7 @@ class ExternalDocumentControllerTest {
   }
 
   @Test
-  void testRedirectToBestVersion() {
+  void testRedirectToBestVersionSuccess() {
       // arrange
       String requestedVersion = "13.1.1";
       String bestMatchVersion = "15.0";
@@ -93,6 +93,36 @@ class ExternalDocumentControllerTest {
       assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
           .contains(ERROR_PAGE_404), "Should redirect to 404");
   }
+
+    @Test
+    void testRedirectToBestVersionWithNoResource() {
+        // arrange
+        String requestedVersion = "13.1.1";
+        String bestMatchVersion = "15.0";
+        Path mockResolvedPath = Path.of(SAMPLE_PATH);
+        when(service.findBestMatchVersion("portal", requestedVersion))
+                .thenReturn(bestMatchVersion);
+
+        try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
+             MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+
+            utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
+                    .thenReturn(requestedVersion);
+            utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
+                    .thenReturn("portal");
+            utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
+                    .thenReturn(SAMPLE_PATH);
+            utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
+                    .thenReturn(mockResolvedPath);
+            filesMock.when(() -> Files.exists(mockResolvedPath)).thenReturn(false);
+
+            ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
+
+            assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
+            assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
+                    .contains(ERROR_PAGE_404), "Should redirect to 404");
+        }
+    }
 
   @Test
   void testSyncDocumentForProduct() {
