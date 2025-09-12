@@ -31,9 +31,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionHandlersTest {
@@ -47,7 +45,7 @@ class ExceptionHandlersTest {
   }
 
   @Test
-  void handleMethodArgumentNotValidWithFieldErrorsReflection() throws Exception {
+  void testHandleMethodArgumentNotValidWithFieldErrorsReflection() throws Exception {
     FieldError fieldError = new FieldError("objectName", "field1", "Field1 is invalid");
     BindingResult bindingResult = mock(BindingResult.class);
     when(bindingResult.hasErrors()).thenReturn(true);

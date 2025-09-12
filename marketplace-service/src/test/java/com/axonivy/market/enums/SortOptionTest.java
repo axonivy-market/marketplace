@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.data.domain.Sort;
 
-public class SortOptionTest {
+class SortOptionTest {
   @Test
   void testOfValidOptions() {
     assertEquals(SortOption.POPULARITY, SortOption.of("popularity"),

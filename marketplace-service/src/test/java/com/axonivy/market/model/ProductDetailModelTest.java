@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ProductDetailModelTest {
+class ProductDetailModelTest {
 
   @Test
   void testEqualsWithNullAndDifferentClass() {
     ProductDetailModel model1 = new ProductDetailModel();
-    ProductDetailModel model2 = null;
     model1.setId("p1");
 
     assertNotEquals(model1, null, "Model should not equal null");
@@ -18,7 +17,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testEquals_sameId() {
+  void testEqualsSameId() {
     ProductDetailModel m1 = new ProductDetailModel();
     m1.setId("p1");
     ProductDetailModel m2 = new ProductDetailModel();
@@ -29,7 +28,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testEquals_differentId() {
+  void testEqualsDifferentId() {
     ProductDetailModel m1 = new ProductDetailModel();
     m1.setId("p1");
     ProductDetailModel m2 = new ProductDetailModel();
@@ -41,7 +40,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testEquals_bothNullIds() {
+  void testEqualsBothNullIds() {
     ProductDetailModel m1 = new ProductDetailModel();
     ProductDetailModel m2 = new ProductDetailModel();
 
@@ -51,7 +50,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testCreateDetailResource_nonProduction() {
+  void testCreateDetailResourceNonProduction() {
     Product product = new Product();
     product.setVendor("Vendor");
     product.setVendorUrl("http://vendor.com");
@@ -94,7 +93,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testCreateDetailResource_production() {
+  void testCreateDetailResourceProduction() {
     Product product = new Product();
     product.setVendorImage("vendor.png");
     product.setVendorImageDarkMode("vendor-dark.png");
@@ -107,7 +106,7 @@ public class ProductDetailModelTest {
   }
 
   @Test
-  void testCreateModel_delegatesCorrectly() {
+  void testCreateModelDelegatesCorrectly() {
     Product product = new Product();
     product.setId("p1");
     product.setVendor("Vendor");
