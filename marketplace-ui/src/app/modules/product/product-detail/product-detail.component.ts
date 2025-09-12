@@ -22,7 +22,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subscription, throwError } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -136,7 +136,6 @@ export class ProductDetailComponent implements AfterViewInit {
   criteria: ChangeLogCriteria = {
     pageable: DEFAULT_CHANGELOG_PAGEABLE,
     productId: '',
-    nextPageHref: undefined
   };
   changeLogLinks!: Link;
   changeLogPages!: Page;
@@ -336,7 +335,7 @@ export class ProductDetailComponent implements AfterViewInit {
     observer.observe(this.observerElement.nativeElement);
   }
 
-  private loadChangelogs(): void {
+  loadChangelogs(): void {
     const sub = this.productService
       .getProductChangelogs(this.criteria)
       .subscribe({
@@ -358,9 +357,7 @@ export class ProductDetailComponent implements AfterViewInit {
           this.changeLogPages = response.page;
           this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
         },
-        error: err => {
-          console.error('Failed to load changelogs', err);
-        }
+        error: error => throwError(() => error)
       });
 
     this.subscriptions.push(sub);

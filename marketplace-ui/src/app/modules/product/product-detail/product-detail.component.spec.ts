@@ -13,14 +13,14 @@ import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCT_DETAIL,
   MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS,
-  MOCK_FEEDBACK_API_RESPONSE,
+  MOCK_FEEDBACK_API_RESPONSE
 } from '../../../shared/mocks/mock-data';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
@@ -39,7 +39,10 @@ import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-respon
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
 import MarkdownIt from 'markdown-it';
-import { GITHUB_PULL_REQUEST_NUMBER_REGEX, PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import {
+  GITHUB_PULL_REQUEST_NUMBER_REGEX,
+  PRODUCT_DETAIL_TABS
+} from '../../../shared/constants/common.constant';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
@@ -101,7 +104,10 @@ describe('ProductDetailComponent', () => {
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken', 'redirectToGitHub']);
+    mockAuthService = jasmine.createSpyObj('AuthService', [
+      'getToken',
+      'redirectToGitHub'
+    ]);
     mockAppModalService = jasmine.createSpyObj('AppModalService', [
       'openAddFeedbackDialog'
     ]);
@@ -1097,5 +1103,204 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'scrollTo');
     component.keepCurrentTabScroll(tabId);
     expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
+  });
+
+  describe('loadChangelogs', () => {
+    let productService: jasmine.SpyObj<ProductService>;
+
+    beforeEach(() => {
+      productService = jasmine.createSpyObj('ProductService', [
+        'getProductChangelogs'
+      ]);
+    });
+
+    it('should load and append new changelogs successfully', () => {
+      // Arrange
+      const mockResponse = {
+        _embedded: {
+          gitHubReleaseModelList: [
+            {
+              name: '12.0.4',
+              body: '## New Features\r\n- Feature A\r\n- Feature B',
+              publishedAt: '2025-01-21T10:19:19.000+00:00',
+              htmlUrl:
+                'https://github.com/axonivy-market/portal/releases/tag/12.0.4',
+              latestRelease: false
+            }
+          ]
+        },
+        _links: {
+          self: {
+            href: 'http://localhost:8080/api/product-details/portal/releases?page=1&size=20'
+          },
+          next: {
+            href: 'http://localhost:8080/api/product-details/portal/releases?page=2&size=20'
+          }
+        },
+        page: {
+          size: 20,
+          totalElements: 2,
+          totalPages: 2,
+          number: 1
+        }
+      };
+
+      const existingChangelogs = [
+        {
+          name: '12.0.3',
+          body: sanitizerSpy.bypassSecurityTrustHtml('<p>Previous release</p>'),
+          publishedAt: '2025-01-20T10:19:19.000+00:00',
+          htmlUrl:
+            'https://github.com/axonivy-market/portal/releases/tag/12.0.3',
+          isLatestRelease: true
+        }
+      ];
+
+      component.productReleaseSafeHtmls.set(existingChangelogs);
+      component.productService = productService;
+      productService.getProductChangelogs.and.returnValue(
+        of(mockResponse as any)
+      );
+      spyOn(component, 'renderChangelogContent').and.returnValue([
+        {
+          name: '12.0.4',
+          body: sanitizerSpy.bypassSecurityTrustHtml(
+            '<p>New release content</p>'
+          ),
+          publishedAt: '2025-01-21T10:19:19.000+00:00',
+          htmlUrl:
+            'https://github.com/axonivy-market/portal/releases/tag/12.0.4',
+          isLatestRelease: false
+        }
+      ]);
+
+      // Act
+      component.loadChangelogs();
+
+      // Assert
+      expect(productService.getProductChangelogs).toHaveBeenCalledWith(
+        component.criteria
+      );
+      expect(component.renderChangelogContent).toHaveBeenCalledWith(
+        mockResponse._embedded.gitHubReleaseModelList
+      );
+      expect(component.productReleaseSafeHtmls().length).toBe(2);
+      expect(component.changeLogLinks).toEqual(mockResponse._links);
+      expect(component.changeLogPages).toEqual(mockResponse.page);
+      expect(component.criteria.nextPageHref).toBe(
+        mockResponse._links.next.href
+      );
+    });
+
+    it('should handle empty response', () => {
+      // Arrange
+      component.productService = productService;
+      productService.getProductChangelogs.and.returnValue(of(null as any));
+
+      const initialChangelogs = component.productReleaseSafeHtmls();
+
+      // Act
+      component.loadChangelogs();
+
+      // Assert
+      expect(productService.getProductChangelogs).toHaveBeenCalledWith(
+        component.criteria
+      );
+      expect(component.productReleaseSafeHtmls()).toEqual(initialChangelogs);
+    });
+
+    it('should handle response with empty changelog list', () => {
+      // Arrange
+      const mockResponse = {
+        _embedded: {
+          gitHubReleaseModelList: []
+        },
+        _links: {
+          self: {
+            href: 'http://localhost:8080/api/product-details/portal/releases?page=0&size=20'
+          }
+        },
+        page: {
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+          number: 0
+        }
+      };
+
+      component.productService = productService;
+      productService.getProductChangelogs.and.returnValue(
+        of(mockResponse as any)
+      );
+
+      const initialChangelogs = component.productReleaseSafeHtmls();
+
+      // Act
+      component.loadChangelogs();
+
+      // Assert
+      expect(productService.getProductChangelogs).toHaveBeenCalledWith(
+        component.criteria
+      );
+      expect(component.productReleaseSafeHtmls()).toEqual(initialChangelogs);
+      expect(component.changeLogLinks).toEqual(mockResponse._links);
+      expect(component.changeLogPages).toEqual(mockResponse.page);
+      expect(component.criteria.nextPageHref).toBeUndefined();
+    });
+
+    it('should handle response with missing _embedded property', () => {
+      // Arrange
+      const mockResponse = {
+        _links: {
+          self: {
+            href: 'http://localhost:8080/api/product-details/portal/releases?page=0&size=20'
+          }
+        },
+        page: {
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+          number: 0
+        }
+      };
+
+      component.productService = productService;
+      productService.getProductChangelogs.and.returnValue(
+        of(mockResponse as any)
+      );
+
+      const initialChangelogs = component.productReleaseSafeHtmls();
+
+      // Act
+      component.loadChangelogs();
+
+      // Assert
+      expect(productService.getProductChangelogs).toHaveBeenCalledWith(
+        component.criteria
+      );
+      expect(component.productReleaseSafeHtmls()).toEqual(initialChangelogs);
+      expect(component.changeLogLinks).toEqual(mockResponse._links);
+      expect(component.changeLogPages).toEqual(mockResponse.page);
+      expect(component.criteria.nextPageHref).toBeUndefined();
+    });
+
+    it('should handle error response', () => {
+      // Arrange
+      const errorResponse = new Error('Network error');
+      component.productService = productService;
+      productService.getProductChangelogs.and.returnValue(
+        new Observable((subscriber: any) => {
+          subscriber.error(errorResponse);
+        })
+      );
+
+      spyOn(console, 'error'); // Prevent error logging in test output
+
+      // Act & Assert
+      expect(() => component.loadChangelogs()).not.toThrow();
+      expect(productService.getProductChangelogs).toHaveBeenCalledWith(
+        component.criteria
+      );
+    });
   });
 });
