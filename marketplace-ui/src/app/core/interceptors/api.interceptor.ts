@@ -100,7 +100,7 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
   return headers.append(REQUEST_BY, IVY);
 }
 
-function handleHttpError(
+export function handleHttpError(
   router: Router,
   error: HttpErrorResponse
 ): Observable<never> {
