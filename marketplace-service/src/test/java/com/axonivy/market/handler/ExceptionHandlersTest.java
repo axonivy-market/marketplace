@@ -14,11 +14,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.request.WebRequest;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionHandlersTest {
@@ -29,6 +44,72 @@ class ExceptionHandlersTest {
   @BeforeEach
   public void setUp() {
     exceptionHandlers = new ExceptionHandlers();
+  }
+
+  @Test
+  void handleMethodArgumentNotValidWithFieldErrorsReflection() throws Exception {
+    FieldError fieldError = new FieldError("objectName", "field1", "Field1 is invalid");
+    BindingResult bindingResult = mock(BindingResult.class);
+    when(bindingResult.hasErrors()).thenReturn(true);
+    when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+
+    MethodArgumentNotValidException ex = new MethodArgumentNotValidException(
+        new MethodParameter(this.getClass().getDeclaredMethods()[0], -1),
+        bindingResult
+    );
+
+    ExceptionHandlers handlers = new ExceptionHandlers();
+
+    // Use reflection to access the protected method
+    Method method = ExceptionHandlers.class.getDeclaredMethod(
+        "handleMethodArgumentNotValid",
+        MethodArgumentNotValidException.class, HttpHeaders.class, HttpStatusCode.class, WebRequest.class);
+    method.setAccessible(true);
+
+    @SuppressWarnings("unchecked")
+    ResponseEntity<Object> response = (ResponseEntity<Object>) method.invoke(
+        handlers, ex, new HttpHeaders(), HttpStatus.BAD_REQUEST, mock(WebRequest.class));
+
+    assertNotNull(response, "ResponseEntity should not be null");
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Response status should be BAD_REQUEST");
+    assertInstanceOf(Message.class, response.getBody(), "Response body should be a Message object");
+    Message msg = (Message) response.getBody();
+    assertTrue(msg.getMessageDetails().contains("Field1 is invalid"),
+        "Message details should include the field error");
+  }
+
+  @Test
+  void testHandleMethodArgumentNotValidElseBranch() throws NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException {
+    BindingResult bindingResult = mock(BindingResult.class);
+
+    MethodArgumentNotValidException ex = new MethodArgumentNotValidException(
+        new MethodParameter(this.getClass().getDeclaredMethods()[0], -1),
+        bindingResult
+    );
+
+    when(bindingResult.hasErrors()).thenReturn(false);
+
+    ExceptionHandlers handlers = new ExceptionHandlers();
+
+    // Use reflection to access the protected method
+    Method method = ExceptionHandlers.class.getDeclaredMethod(
+        "handleMethodArgumentNotValid",
+        MethodArgumentNotValidException.class, HttpHeaders.class, HttpStatusCode.class, WebRequest.class);
+    method.setAccessible(true);
+
+    @SuppressWarnings("unchecked")
+    ResponseEntity<Object> response = (ResponseEntity<Object>) method.invoke(
+        handlers, ex, new HttpHeaders(), HttpStatus.BAD_REQUEST, mock(WebRequest.class));
+
+    assertNotNull(response, "ResponseEntity should not be null");
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Response status should be BAD_REQUEST");
+    assertInstanceOf(Message.class, response.getBody(), "Response body should be a Message object");
+    Message msg = (Message) response.getBody();
+    assertTrue(msg.getMessageDetails().contains(ex.getMessage()),
+        "Message details should include the field error");
   }
 
   @Test
