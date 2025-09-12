@@ -51,6 +51,8 @@ export class ReleasePreviewComponent {
   isZipFile = false;
   isUploaded = false;
   shouldShowHint = false;
+  isDragging = false;
+  file: File | null = null;
   readmeContent: WritableSignal<ReleasePreviewData> = signal(
     {} as ReleasePreviewData
   );
@@ -73,18 +75,58 @@ export class ReleasePreviewComponent {
     this.pageTitleService.setTitleOnLangChange('common.preview.pageTitle');
   }
 
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+
+    if (event.dataTransfer?.files.length) {
+      const droppedFile = event.dataTransfer.files[0];
+      this.setSelectedFile(droppedFile);
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
-      this.selectedFile = file;
-
-      // Check if the selected file is a ZIP file
-      this.isZipFile =
-        file.type === 'application/zip' ||
-        (file.name.endsWith('.zip') && file.size < maxFileSize);
+      this.setSelectedFile(input.files[0]);
     }
+  }
+
+  private setSelectedFile(file: File) {
+    const maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const isZip = file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    const withinSize = file.size < maxFileSize;
+    if (isZip && withinSize) {
+      const replacing = !!this.selectedFile && this.selectedFile !== file;
+      this.selectedFile = file;
+      this.isZipFile = true;
+      if (replacing) {
+        // Reset previously parsed content so user knows they need to resubmit
+        this.isUploaded = false;
+        this.readmeContent.set({} as ReleasePreviewData);
+      }
+    } else {
+      this.selectedFile = null;
+      this.isZipFile = false;
+      // Basic feedback; ideally replace with a toast/snackbar service
+      alert(`File must be a .zip and under ${MAX_FILE_SIZE_MB}MB.`);
+    }
+  }
+
+  removeFile() {
+    this.selectedFile = null;
+    this.isZipFile = false;
+    this.isUploaded = false;
   }
 
   toggleHint() {
