@@ -271,7 +271,10 @@ describe('ProductService', () => {
       );
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/releases`
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
@@ -288,7 +291,10 @@ describe('ProductService', () => {
       expect(response).toEqual({} as ProductReleasesApiResponse);
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/releases`
+    );
     expect(req.request.method).toBe('GET');
 
     req.flush(null, {
