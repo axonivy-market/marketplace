@@ -1,6 +1,5 @@
 package com.axonivy.market.repository.impl;
 
-
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import jakarta.persistence.EntityManager;
