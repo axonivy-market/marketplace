@@ -127,7 +127,6 @@ export class ProductService {
     return this.httpClient
       .get<ProductReleasesApiResponse>(url, {
         context: new HttpContext()
-          .set(ForwardingError, true)
           .set(LoadingComponent, LoadingComponentId.PRODUCT_CHANGELOG),
         params: requestParams
       })
