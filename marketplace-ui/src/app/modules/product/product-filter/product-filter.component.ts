@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -23,6 +23,7 @@ import { HistoryService } from '../../../core/services/history/history.service';
   styleUrl: './product-filter.component.scss'
 })
 export class ProductFilterComponent {
+  @Input() isProductHomepage = false;
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();

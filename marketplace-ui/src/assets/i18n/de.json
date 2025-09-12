@@ -214,63 +214,46 @@
     },
     "monitor": {
       "dashboard": {
-        "title": "GitHub Repository Überwachung",
-        "subtitle": "Bleiben Sie über die axonivy-market-Repositories informiert – die Repository-Daten werden automatisch stündlich aktualisiert.",
-        "loading": "Repositories werden geladen...",
+        "title": "Axon Ivy Market – Monitoring",
+        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">auf GitHub verfügbar</a>.",
         "noRepositories": "Keine Repositories gefunden.",
-        "errorLoading": "Fehler beim Laden der Repositories",
-        "ciLabel": "CI Build",
-        "devLabel": "DEV Build",
+        "connector": "Konnektor",
+        "ciLabel": "CI-Build",
+        "devLabel": "DEV-Build",
+        "e2eLabel": "E2E-Build",
+        "github": "Github",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
-        "mock": "Simuliert",
-        "real": "Echt",
         "ciLastBuilt": "Zuletzt CI Gebaut",
         "devLastBuilt": "Zuletzt DEV Gebaut",
         "e2eLastBuilt": "Zuletzt E2E Gebaut",
-        "language": "Sprache",
         "pageTitle": "Überwachungs-Dashboard",
-        "testCounts": {
-          "title": "Testergebnisse",
-          "mock": "Simuliert: ",
-          "real": "Echt: ",
-          "total": "Gesamttests: "
-        },
         "repo": {
           "name": "Repository-Name",
           "language": "Sprache",
           "url": "Repository-URL",
           "workflow": "Workflow von"
         },
-        "actions": {
-          "viewDetails": "Details anzeigen",
-          "refresh": "Aktualisieren"
-        },
-        "status": {
-          "active": "Aktiv",
-          "inactive": "Inaktiv"
-        },
-        "summaryCard": {
-          "title": "Zusammenfassung",
-          "totalRepos": "Gesamtzahl der Repositories",
-          "totalPassed": "Bestandene Tests insgesamt",
-          "totalFailed": "Fehlgeschlagene Tests insgesamt",
-          "lastSync": "Letzte Synchronisation"
-        },
-        "filterLabel": "Repositories filtern",
         "noReport": "Es gibt keinen Testbericht in diesem Workflow.",
         "skipped": "Übersprungen",
-        "focus": {
-          "title": "Fokussierte Markterweiterung"
+        "tabTitle": {
+          "focused": "Fokussierte Markterweiterung",
+          "standard": "Standard Markterweiterung"
         },
-        "standard": {
-          "title": "Standard Markterweiterung"
+        "toggle": {
+          "default": "Standardmodus",
+          "report": "Berichtsmodus"
         }
       },
       "buildTooltip": {
-        "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
-        "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build).",
-        "e2e": "Validates our code works with the real API and confirms the endpoint is active and correct."
+        "ci": "Verwendet eine feste Ivy-Version, um zu überprüfen, dass der Connector mit der offiziellen Veröffentlichung funktioniert.",
+        "dev": "Prüft, ob der Connector mit der neuesten Ivy-API (Nightly Build) kompatibel ist.",
+        "e2e": "Überprüft, dass unser Code mit der echten API funktioniert und bestätigt, dass der Endpunkt aktiv und korrekt ist."
+      },
+      "pagination": {
+        "tenItems": "10 pro Seite",
+        "twentyItems": "20 pro Seite",
+        "all": "Alle"
       }
     }
   }

@@ -1,11 +1,13 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
@@ -31,13 +34,13 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
-import static com.axonivy.market.enums.WorkFlowType.*;
-import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
+import static com.axonivy.market.enums.WorkFlowType.values;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,11 @@ import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 public class GithubReposServiceImpl implements GithubReposService {
 
   private static final String REPORT_FILE_NAME = "test_report.json";
+  private static final Map<String, String> REPO_NAME_TO_PRODUCT_ID = Map.of(
+      GitHubConstants.Repository.MSGRAPH_CONNECTOR, GitHubConstants.Repository.MSGRAPH_CONNECTOR,
+      GitHubConstants.Repository.DOC_FACTORY, GitHubConstants.Repository.DOC_FACTORY,
+      GitHubConstants.Repository.DEMO_PROJECTS, Strings.EMPTY
+  );
 
   private final GithubRepoRepository githubRepoRepository;
   private final TestStepsService testStepsService;
@@ -54,14 +62,14 @@ public class GithubReposServiceImpl implements GithubReposService {
   @Override
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
-            .filter(product -> Boolean.FALSE != product.getListed()
-                    && product.getRepositoryName() != null).toList();
+        .filter(product -> Boolean.FALSE != product.getListed()
+            && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
       try {
         log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
-        processProduct(repository);
+        processProduct(repository, product.getId());
       } catch (IOException | GHException | DataAccessException e) {
         log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
       }
@@ -69,25 +77,32 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Transactional
-  public synchronized void processProduct(GHRepository ghRepo) throws IOException {
+  public synchronized void processProduct(GHRepository ghRepo, String productId) throws IOException {
     if (ghRepo == null) {
       return;
     }
-    GithubRepo githubRepo;
-    var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
-      if (githubRepoOptional.isPresent()) {
-        githubRepo = githubRepoOptional.get();
-        githubRepo.getTestSteps().clear();
-        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-        githubRepo.setLanguage(ghRepo.getLanguage());
-      } else {
-        githubRepo = from(ghRepo);
-      }
-      List<TestStep> testSteps = Arrays.stream(values()).map(
-          workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
-      githubRepo.getTestSteps().addAll(testSteps);
-      githubRepoRepository.save(githubRepo);
 
+    String resolvedProductId = getProductId(ghRepo.getName(), productId);
+    var githubRepo = Optional.ofNullable(githubRepoRepository.findByName(ghRepo.getName()))
+        .map((GithubRepo repo) -> {
+          repo.getTestSteps().clear();
+          repo.getWorkflowInformation().clear();
+          repo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+          repo.setProductId(resolvedProductId);
+          return repo;
+        }).orElse(from(ghRepo, resolvedProductId));
+    List<TestStep> testSteps = Arrays.stream(values()).map(
+        workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
+    githubRepo.getTestSteps().addAll(testSteps);
+    githubRepoRepository.save(githubRepo);
+  }
+
+  private static String getProductId(String repoName, String productId) {
+    return REPO_NAME_TO_PRODUCT_ID.entrySet().stream()
+        .filter(e -> repoName.startsWith(e.getKey()))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(productId);
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
@@ -95,8 +110,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
-        updateLastBuilt(run, dbRepo, workflowType);
+        updateWorkflowInfo(dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -109,39 +123,21 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
-    String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
-    switch (workflowType) {
-      case CI:
-        dbRepo.setCiBadgeUrl(runBadgeUrl);
-        break;
-      case DEV:
-        dbRepo.setDevBadgeUrl(runBadgeUrl);
-        break;
-      case E2E:
-        dbRepo.setE2eBadgeUrl(runBadgeUrl);
-        break;
-      default:
-        break;
-    }
-  }
+  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType,
+      GHWorkflowRun run) throws IOException {
+    var workflowInformation = repo.getWorkflowInformation().stream()
+        .filter(workflow -> workflowType == workflow.getWorkflowType())
+        .findFirst()
+        .orElseGet(() -> {
+          var newWorkflowInfo = new WorkflowInformation();
+          newWorkflowInfo.setWorkflowType(workflowType);
+          repo.getWorkflowInformation().add(newWorkflowInfo);
+          return newWorkflowInfo;
+        });
 
-  private static void updateLastBuilt(GHWorkflowRun run, GithubRepo dbRepo, WorkFlowType workflowType)
-      throws IOException {
-    Date lastBuilt = run.getCreatedAt();
-    switch (workflowType) {
-      case CI:
-        dbRepo.setCiLastBuilt(lastBuilt);
-        break;
-      case DEV:
-        dbRepo.setDevLastBuilt(lastBuilt);
-        break;
-      case E2E:
-        dbRepo.setE2eLastBuilt(lastBuilt);
-        break;
-      default:
-        break;
-    }
+    workflowInformation.setLastBuilt(run.getCreatedAt());
+    workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
+    workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
@@ -154,7 +150,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       JsonNode testData = findTestReportJson(unzipDir.toFile());
       return testStepsService.createTestSteps(testData, workflowType);
     } catch (IOException e) {
-      log.error("IO error processing artifact for repo: {}", dbRepo.getName(), e);
+      log.error("IO error processing artifact for repo: {}", dbRepo.getProductId(), e);
     } finally {
       try {
         FileUtils.clearDirectory(unzipDir);

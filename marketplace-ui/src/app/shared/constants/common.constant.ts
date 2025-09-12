@@ -6,6 +6,8 @@ import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
 
+export const MARKET_BASE_URL = 'https://market.axonivy.com/';
+
 export const NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.news',
@@ -333,7 +335,6 @@ export const OG_IMAGE_KEY = 'og:image';
 export const OG_IMAGE_TYPE_KEY = 'og:image:type';
 export const OG_IMAGE_PNG_TYPE = 'image/png';
 
-
 // Google constants
 export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID = 'googleCSEScript';
 export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
@@ -351,8 +352,19 @@ export const DARK_ICON_CLASS = 'bi-sun';
 export const DATA_THEME = 'data-bs-theme';
 export const DATA_THEME_ICON = 'data-theme-icon';
 export const DATA_LANGUAGE = 'data-language';
+
 // Monitoring constants
+export const NAME_COLUMN = 'name';
 export const CI_BUILD = 'CI';
 export const DEV_BUILD = 'DEV';
 export const E2E_BUILD = 'E2E';
 export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wiki/c5-Monitoring';
+
+export const ASCENDING = 'asc';
+export const DESCENDING = 'desc';
+
+export const FOCUSED_TAB = 'focused';
+export const STANDARD_TAB = 'standard';
+
+export const DEFAULT_MODE = 'default';
+export const REPORT_MODE = 'report';

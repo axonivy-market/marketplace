@@ -15,33 +15,52 @@ class GithubReposModelTest {
   @Test
   void testFromWithValidGithubRepo() {
     GithubRepo githubRepo = new GithubRepo();
-    githubRepo.setName("my-awesome-repo");
+    githubRepo.setProductId("my-awesome-repo");
     githubRepo.setHtmlUrl("https://github.com/axonivy-market/my-awesome-repo");
-    githubRepo.setLanguage("Java");
-    githubRepo.setCiLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
-    githubRepo.setDevLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
-    githubRepo.setE2eLastBuilt(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"));
-    githubRepo.setCiBadgeUrl("https://github.com/actions/workflows/ci.yml/badge.svg");
-    githubRepo.setDevBadgeUrl("https://github.com/actions/workflows/dev.yml/badge.svg");
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
     TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED, WorkFlowType.DEV);
     githubRepo.setTestSteps(List.of(step1, step2, step3));
 
+    WorkflowInformation ciInfo = new WorkflowInformation();
+    ciInfo.setWorkflowType(WorkFlowType.CI);
+    githubRepo.setWorkflowInformation(List.of(ciInfo));
+
+    githubRepo.setFocused(true);
+
     GithubReposModel model = GithubReposModel.from(githubRepo);
 
-    assertEquals("my-awesome-repo", model.getName(), "Repository name should match");
+    assertEquals("my-awesome-repo", model.getProductId(), "Product Id should match");
     assertEquals("https://github.com/axonivy-market/my-awesome-repo", model.getHtmlUrl(), "HTML URL should match");
-    assertEquals("Java", model.getLanguage(), "Language should match");
-    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getCiLastBuilt(),
-        "Last updated timestamp should match");
-    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getDevLastBuilt(),
-        "Last updated timestamp should match");
-    assertEquals(java.sql.Timestamp.valueOf("2025-07-14 10:35:00"), model.getE2eLastBuilt(),
-        "Last updated timestamp should match");
 
     List<TestResults> testResults = model.getTestResults();
     assertNotNull(testResults, "Test results should not be null");
     assertFalse(testResults.isEmpty(), "Test results should not be empty");
+
+    assertTrue(model.getFocused(), "Focused flag should map correctly");
+    assertEquals(1, model.getWorkflowInformation().size(), "Workflow info should map correctly");
+  }
+
+  @Test
+  void testFromParsesRepoNameFromHtmlUrl() {
+    GithubRepo githubRepo = new GithubRepo();
+    githubRepo.setProductId("some-product");
+    githubRepo.setFocused(false);
+
+    githubRepo.setHtmlUrl("https://github.com/market/my-awesome-repo");
+    GithubReposModel model = GithubReposModel.from(githubRepo);
+    assertEquals("my-awesome-repo", model.getRepoName(), "Repo name should be extracted from last URL segment");
+
+    githubRepo.setHtmlUrl("just-a-repo");
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("just-a-repo", model.getRepoName(), "Plain string should be returned as-is");
+
+    githubRepo.setHtmlUrl("");
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("", model.getRepoName(), "Blank URL should return empty string");
+
+    githubRepo.setHtmlUrl(null);
+    model = GithubReposModel.from(githubRepo);
+    assertEquals("", model.getRepoName(), "Null URL should return empty string");
   }
 }

@@ -1,21 +1,27 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
+import { LoadingComponent } from '../../core/interceptors/api.interceptor';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 export interface Repository {
-  name: string;
+  repoName: string;
+  productId: string;
   htmlUrl: string;
-  language: string | null;
-  ciLastBuilt: Date;
-  devLastBuilt: Date;
-  e2eLastBuilt: Date;
   focused: boolean;
+  workflowInformation: WorkflowInformation[];
   testResults: TestResult[];
+}
+
+export interface WorkflowInformation {
+  workflowType: 'CI' | 'DEV' | 'E2E';
+  lastBuilt: Date;
+  conclusion: string;
+  lastBuiltRunUrl: string;
 }
 
 export interface TestResult {
   workflow: 'CI' | 'DEV' | 'E2E';
-  badgeUrl: string;
   results: TestSummary;
 }
 
@@ -38,7 +44,12 @@ export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
   getRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD);
+    return this.http.get<Repository[]>(`${API_URI.MONITOR_DASHBOARD}`, {
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.MONITORING_DASHBOARD
+      )
+    });
   }
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {
