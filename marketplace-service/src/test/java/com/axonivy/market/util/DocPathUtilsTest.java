@@ -42,7 +42,7 @@ class DocPathUtilsTest {
     @Test
     void testResolveDocPathSuccess() {
         Path resolved = DocPathUtils.resolveDocPath("portal/portal-guide/13.1.1/doc/_images/dashboard1.png");
-        assertNotNull(resolved);
+        assertNotNull(resolved, "Resolved path should not be null");
         assertTrue(resolved.toString().contains("portal-guide"), "Resolved path should contain 'portal-guide'");
     }
 
