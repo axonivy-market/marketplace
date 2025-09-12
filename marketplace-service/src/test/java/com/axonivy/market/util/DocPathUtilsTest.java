@@ -12,12 +12,14 @@ class DocPathUtilsTest {
 
     @Test
     void testExtractProductIdSuccess() {
-        assertEquals("portal", DocPathUtils.extractProductId(SAMPLE_PATH));
+        assertEquals("portal", DocPathUtils.extractProductId(SAMPLE_PATH),
+                "Should extract productId correctly");
     }
 
     @Test
     void testExtractVersionSuccess() {
-        assertEquals("13.1.1", DocPathUtils.extractVersion(SAMPLE_PATH));
+        assertEquals("13.1.1", DocPathUtils.extractVersion(SAMPLE_PATH),
+                "Should extract version correctly");
     }
 
     @Test
@@ -33,21 +35,21 @@ class DocPathUtilsTest {
     @Test
     void testUpdateVersionInPathSuccess() {
         String updated = DocPathUtils.updateVersionInPath(SAMPLE_PATH, "15.0", "13.1.1");
-        assertTrue(updated.contains("/15.0/"));
-        assertFalse(updated.contains("/13.1.1/"));
+        assertTrue(updated.contains("/15.0/"), "Updated path should contain new version");
+        assertFalse(updated.contains("/13.1.1/"), "Updated path should not contain old version");
     }
 
     @Test
     void testResolveDocPathSuccess() {
         Path resolved = DocPathUtils.resolveDocPath("portal/portal-guide/13.1.1/doc/_images/dashboard1.png");
         assertNotNull(resolved);
-        assertTrue(resolved.toString().contains("portal-guide"));
+        assertTrue(resolved.toString().contains("portal-guide"), "Resolved path should contain 'portal-guide'");
     }
 
     @Test
     void testResolveDocPathFailed() {
         Path resolved = DocPathUtils.resolveDocPath("/../../etc/passwd");
-        assertNull(resolved);
+        assertNull(resolved, "Path traversal should return null");
     }
 
 }
