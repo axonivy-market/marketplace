@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
@@ -16,6 +17,7 @@ import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,6 +53,9 @@ class ProductContentServiceImplTest extends BaseSetup {
   private FileDownloadService fileDownloadService;
   @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
+
+  @TempDir
+  Path tempDir;
 
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
@@ -104,11 +110,14 @@ class ProductContentServiceImplTest extends BaseSetup {
     dep1.setDownloadUrl(MOCK_DOWNLOAD_URL);
     dep2.setDownloadUrl(MOCK_DUMP_DOWNLOAD_URL);
     dep1.setDependencies(Set.of(dep2));
-    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION)).thenReturn(List.of(dep1));
-    List<String> result = productContentService.getDependencyUrls(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION)).thenReturn(List.of(dep1));
+    List<String> result = productContentService.getDependencyUrls(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION);
     assertEquals(2, result.size(), "Size of result should equal size of download url from dependency");
     assertTrue(result.contains(MOCK_DOWNLOAD_URL), "List of dependency url should include parent artifact");
-    verify(productDependencyRepository).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+    verify(productDependencyRepository).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -125,7 +134,7 @@ class ProductContentServiceImplTest extends BaseSetup {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       productContentService.buildArtifactZipStreamFromUrls(MOCK_PRODUCT_ID, urls, out);
 
-      assertTrue(out.size() >0, "The output should not be empty byte array");
+      assertTrue(out.size() > 0, "The output should not be empty byte array");
       verify(productMarketplaceDataService).updateInstallationCountForProduct(MOCK_PRODUCT_ID, null);
     }
   }
@@ -208,5 +217,60 @@ class ProductContentServiceImplTest extends BaseSetup {
         MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, url, artifact, MOCK_PRODUCT_NAME);
 
     verify(fileDownloadService).deleteDirectory(any(Path.class));
+  }
+
+  @Test
+  void testExtractReadMeFileWithoutImages() throws Exception {
+    Path readme = tempDir.resolve("README.md");
+    Files.writeString(readme, "## Title\nSome content without images");
+
+    ProductModuleContent moduleContent = new ProductModuleContent();
+
+    Method method = ProductContentServiceImpl.class
+        .getDeclaredMethod("extractReadMeFileFromContents",
+            String.class, String.class, ProductModuleContent.class);
+    method.setAccessible(true);
+
+    method.invoke(productContentService, "product1", tempDir.toString(), moduleContent);
+
+    try (MockedStatic<ProductContentUtils> mocked = mockStatic(ProductContentUtils.class)) {
+      mocked.when(() -> ProductContentUtils.hasImageDirectives(any()))
+          .thenReturn(false);
+      ReadmeContentsModel dummyModel = mock(ReadmeContentsModel.class);
+      mocked.when(() -> ProductContentUtils.getExtractedPartsOfReadme(any()))
+          .thenReturn(dummyModel);
+
+      method.invoke(productContentService, "product1", tempDir.toString(), moduleContent);
+
+      mocked.verify(() -> ProductContentUtils.updateProductModuleTabContents(
+          eq(moduleContent), any()), times(1));
+    }
+  }
+
+  @Test
+  void testExtractReadMeFileWithImages(@TempDir Path tempDir) throws Exception {
+    Path readme = tempDir.resolve("README.md");
+    Files.writeString(readme, "![image](test.png)");
+
+    ProductModuleContent moduleContent = new ProductModuleContent();
+
+    Method method = ProductContentServiceImpl.class
+        .getDeclaredMethod("extractReadMeFileFromContents",
+            String.class, String.class, ProductModuleContent.class);
+    method.setAccessible(true);
+
+    try (MockedStatic<ProductContentUtils> mocked = mockStatic(ProductContentUtils.class)) {
+      mocked.when(() -> ProductContentUtils.hasImageDirectives(any()))
+          .thenReturn(true);
+
+      ReadmeContentsModel dummyModel = mock(ReadmeContentsModel.class);
+      mocked.when(() -> ProductContentUtils.getExtractedPartsOfReadme(any()))
+          .thenReturn(dummyModel);
+
+      method.invoke(productContentService, "product1", tempDir.toString(), moduleContent);
+
+      mocked.verify(() -> ProductContentUtils.updateProductModuleTabContents(eq(moduleContent), any()),
+          times(1));
+    }
   }
 }
