@@ -533,7 +533,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetGitHubReleaseModelsWithOficialReleases() throws IOException, URISyntaxException {
+  void testGetGitHubReleaseModelsWithOfficialReleases() throws IOException, URISyntaxException {
     try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
       Link mockLink = mock(Link.class);
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
@@ -758,7 +758,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleases_EmptyReleases() throws IOException {
+  void testGetRepoOfficialReleasesWithEmptyReleases() throws IOException {
     // Arrange
     String repoName = "test-org/empty-repo";
     String productId = "test-product-id";
@@ -782,7 +782,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleases_RepositoryNotFound() throws IOException {
+  void testGetRepoOfficialReleasesWithRepositoryNotFound() throws IOException {
     String repoName = "test-org/non-existent-repo";
     String productId = "test-product-id";
 
@@ -793,7 +793,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleases_IOExceptionThrown() throws IOException {
+  void testGetRepoOfficialReleasesWithIOExceptionThrown() throws IOException {
     String repoName = "test-org/error-repo";
     String productId = "test-product-id";
 
@@ -806,7 +806,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleases_MixedReleaseTypes() throws IOException {
+  void testGetRepoOfficialReleasesWithMixedReleaseTypes() throws IOException {
     String repoName = "test-org/mixed-repo";
     String productId = "test-product-id";
 
