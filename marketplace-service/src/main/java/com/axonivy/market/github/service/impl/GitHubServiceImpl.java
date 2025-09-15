@@ -78,8 +78,6 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
-  private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
-  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX);
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -406,7 +404,7 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease,  String productSourceUrl, String productId,
       Boolean isLatestGitHubReleaseName) throws IOException {
     GitHubReleaseModel gitHubReleaseModel = new GitHubReleaseModel();
-    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
+    var modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
     gitHubReleaseModel.setBody(modifiedBody);
     gitHubReleaseModel.setName(ghRelease.getName());
     gitHubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
@@ -426,9 +424,10 @@ public class GitHubServiceImpl implements GitHubService {
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
     String body = StringUtils.defaultString(githubReleaseBody);
-    body = GITHUB_PULL_REQUEST_PATTERN.matcher(body).replaceAll(
+    body = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX).matcher(body).replaceAll(
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
-    body = GITHUB_USERNAME_PATTERN.matcher(body).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    body = Pattern.compile(GITHUB_USERNAME_REGEX).matcher(body).replaceAll(
+        GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
     return body;
   }
 

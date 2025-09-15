@@ -41,6 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -754,5 +755,97 @@ class GitHubServiceImplTest {
     GHRepository result = gitHubService.getRepository("error/repo");
 
     assertNull(result, "Expected null result when IOException is thrown");
+  }
+
+  @Test
+  void testGetRepoOfficialReleases_EmptyReleases() throws IOException {
+    // Arrange
+    String repoName = "test-org/empty-repo";
+    String productId = "test-product-id";
+
+    GHRepository mockRepository = mock(GHRepository.class);
+    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+
+    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
+    doAnswer(invocation -> null).when(mockPagedIterable).forEach(any());
+
+    // Act
+    List<GHRelease> result = gitHubService.getRepoOfficialReleases(repoName, productId);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Should return empty list when no releases exist");
+
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+    verify(mockRepository).listReleases();
+  }
+
+  @Test
+  void testGetRepoOfficialReleases_RepositoryNotFound() throws IOException {
+    String repoName = "test-org/non-existent-repo";
+    String productId = "test-product-id";
+
+    assertThrows(NullPointerException.class, () -> gitHubService.getRepoOfficialReleases(repoName, productId),
+        "Should throw NullPointerException when repository is not found");
+
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+  }
+
+  @Test
+  void testGetRepoOfficialReleases_IOExceptionThrown() throws IOException {
+    String repoName = "test-org/error-repo";
+    String productId = "test-product-id";
+
+    when(gitHubService.getRepository(repoName)).thenThrow(new IOException("Network error"));
+
+    assertThrows(IOException.class, () -> gitHubService.getRepoOfficialReleases(repoName, productId),
+        "Should propagate IOException when repository access fails");
+
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+  }
+
+  @Test
+  void testGetRepoOfficialReleases_MixedReleaseTypes() throws IOException {
+    String repoName = "test-org/mixed-repo";
+    String productId = "test-product-id";
+
+    GHRepository mockRepository = mock(GHRepository.class);
+    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+
+    GHRelease officialRelease1 = mock(GHRelease.class);
+    GHRelease draftRelease1 = mock(GHRelease.class);
+    GHRelease officialRelease2 = mock(GHRelease.class);
+    GHRelease draftRelease2 = mock(GHRelease.class);
+    GHRelease officialRelease3 = mock(GHRelease.class);
+
+    when(officialRelease1.isDraft()).thenReturn(false);
+    when(draftRelease1.isDraft()).thenReturn(true);
+    when(officialRelease2.isDraft()).thenReturn(false);
+    when(draftRelease2.isDraft()).thenReturn(true);
+    when(officialRelease3.isDraft()).thenReturn(false);
+
+    List<GHRelease> allReleases = Arrays.asList(officialRelease1, draftRelease1, officialRelease2, draftRelease2,
+        officialRelease3);
+
+    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
+    doAnswer(invocation -> {
+      Consumer<GHRelease> consumer = invocation.getArgument(0);
+      allReleases.forEach(consumer);
+      return null;
+    }).when(mockPagedIterable).forEach(any());
+
+    List<GHRelease> result = gitHubService.getRepoOfficialReleases(repoName, productId);
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals(3, result.size(), "Should return only the 3 official (non-draft) releases");
+    assertTrue(result.contains(officialRelease1), "Should contain first official release");
+    assertTrue(result.contains(officialRelease2), "Should contain second official release");
+    assertTrue(result.contains(officialRelease3), "Should contain third official release");
+    assertFalse(result.contains(draftRelease1), "Should not contain first draft release");
+    assertFalse(result.contains(draftRelease2), "Should not contain second draft release");
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+    verify(mockRepository).listReleases();
   }
 }

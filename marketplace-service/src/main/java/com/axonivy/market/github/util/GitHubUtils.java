@@ -10,7 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRelease;
+import org.kohsuke.github.GHObject;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.hateoas.Link;
 
@@ -104,7 +104,7 @@ public class GitHubUtils {
     }
   }
 
-  public static Link createSelfLinkForGithubReleaseModel(String productId, GHRelease ghRelease) throws IOException {
+  public static Link createSelfLinkForGithubReleaseModel(String productId, GHObject ghRelease) throws IOException {
     return linkTo(
         methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(productId,
             ghRelease.getId())).withSelfRel();
