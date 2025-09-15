@@ -10,6 +10,7 @@
       "pageTitle": "Release Preview",
       "title": "Product Release Preview",
       "description": "Preview your product's details",
+      "dragDropText": "Drag & Drop your .zip file here or Click to select",
       "buttonLabel": "Upload",
       "noTabs": "Seems like there's a problem with your Zip file.",
       "hint": "Only .zip file is allowed and file size should be smaller than 20MB.",

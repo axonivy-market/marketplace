@@ -118,8 +118,6 @@ export class ReleasePreviewComponent {
     } else {
       this.selectedFile = null;
       this.isZipFile = false;
-      // Basic feedback; ideally replace with a toast/snackbar service
-      alert(`File must be a .zip and under ${MAX_FILE_SIZE_MB}MB.`);
     }
   }
 

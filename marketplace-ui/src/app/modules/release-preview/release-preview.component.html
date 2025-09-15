@@ -10,31 +10,39 @@
   <div class="container mt-5">
     <form (submit)="onSubmit()">
       <div class="form-group">
-  <button type="button" class="drag-drop-area" (click)="fileInput.click()" [class.dragging]="isDragging" aria-label="Upload .zip file"
-       (dragover)="onDragOver($event)"
-       (dragleave)="onDragLeave($event)"
-       (drop)="onDrop($event)"
-       (keydown)="($event.key === 'Enter' || $event.key === ' ') && fileInput.click()">
-          <input #fileInput
-                 type="file"
-                 id="file-input"
-                 (change)="onFileSelected($event)"
-                 accept=".zip"
-                 hidden />
-          <ng-container *ngIf="!selectedFile; else fileInfo">
-            <p class="upload-instructions m-0" [lang]="languageService.selectedLanguage()">
-              {{ 'common.preview.dragDropText' | translate: { max: 20 } }}
+        <button
+          type="button"
+          class="drag-drop-area"
+          (click)="fileInput.click()"
+          [class.dragging]="isDragging"
+          aria-label="Upload .zip file"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (keydown)="
+            ($event.key === 'Enter' || $event.key === ' ') && fileInput.click()
+          ">
+          <input
+            #fileInput
+            type="file"
+            id="file-input"
+            (change)="onFileSelected($event)"
+            accept=".zip"
+            hidden />
+          <ng-container *ngIf="!selectedFile">
+            <p
+              class="text-muted m-0"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.preview.dragDropText' | translate }}
             </p>
-            <small class="text-muted" [lang]="languageService.selectedLanguage()">{{ 'common.preview.onlyZip' | translate }}</small>
           </ng-container>
           <ng-template #fileInfo>
             <div class="selected-file d-flex align-items-center gap-2">
               <span class="file-name flex-grow-1" [title]="selectedFile?.name">{{ selectedFile?.name }}</span>
               <span class="badge bg-secondary-subtle text-dark fw-normal" *ngIf="selectedFile as f">{{ (f.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
-              <small class="text-muted w-100 text-start" [lang]="languageService.selectedLanguage()">{{ 'common.preview.replaceHint' | translate }}</small>
             </div>
           </ng-template>
-  </button>
+        </button>
         <small [lang]="languageService.selectedLanguage()" class="hint-text">
           {{ translateService.get('common.preview.hint') | async }}
         </small>
@@ -144,4 +152,3 @@
     containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
     [key]="LoadingComponentId.RELEASE_PREVIEW" />
 </div>
-
