@@ -273,4 +273,21 @@ class ProductContentServiceImplTest extends BaseSetup {
           times(1));
     }
   }
+
+  @Test
+  void testUpdateImagesWithDownloadUrlWhenFilesWalkThrowsException() throws IOException {
+    String readmeContent = getMockReadmeContent();
+
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+      Path downloadLocation = Paths.get(EXTRACT_DIR_LOCATION);
+
+      when(Files.walk(downloadLocation)).thenThrow(new IOException());
+
+      String result = productContentService.updateImagesWithDownloadUrl(MOCK_PRODUCT_ID, EXTRACT_DIR_LOCATION,
+          readmeContent);
+
+      assertEquals(readmeContent, result,
+          "Should return original readme content when Files.walk throws exception");
+    }
+  }
 }
