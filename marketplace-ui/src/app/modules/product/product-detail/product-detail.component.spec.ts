@@ -47,7 +47,7 @@ import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe'
 import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
-import { signal } from '@angular/core';
+import { signal, ElementRef } from '@angular/core';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -1301,6 +1301,304 @@ describe('ProductDetailComponent', () => {
       expect(productService.getProductChangelogs).toHaveBeenCalledWith(
         component.criteria
       );
+    });
+  });
+
+  describe('setupIntersectionObserver', () => {
+    let mockObserver: jasmine.SpyObj<IntersectionObserver>;
+    let mockObserverElement: jasmine.SpyObj<ElementRef>;
+    let originalIntersectionObserver: any;
+
+    beforeEach(() => {
+      mockObserver = jasmine.createSpyObj('IntersectionObserver', ['observe']);
+      mockObserverElement = jasmine.createSpyObj('ElementRef', [], {
+        nativeElement: document.createElement('div')
+      });
+
+      // Store original IntersectionObserver and mock it
+      originalIntersectionObserver = (window as any).IntersectionObserver;
+      (window as any).IntersectionObserver = function (
+        callback: IntersectionObserverCallback,
+        options?: IntersectionObserverInit
+      ) {
+        // Store the callback for testing
+        (window as any).IntersectionObserver._lastCallback = callback;
+        return mockObserver;
+      };
+      spyOn(window as any, 'IntersectionObserver').and.callThrough();
+    });
+
+    afterEach(() => {
+      // Restore original IntersectionObserver
+      (window as any).IntersectionObserver = originalIntersectionObserver;
+    });
+
+    it('should return early if observerElement is not available', () => {
+      // Arrange
+      component.observerElement = undefined as any;
+      component.isBrowser = true;
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Assert
+      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+    });
+
+    it('should return early if changelogIntersectionObserver already exists', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      (component as any).changelogIntersectionObserver = mockObserver;
+      component.isBrowser = true;
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Assert
+      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+    });
+
+    it('should return early if not in browser environment', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = false;
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Assert
+      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+    });
+
+    it('should return early if IntersectionObserver is not supported', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (window as any).IntersectionObserver = undefined;
+
+      // Act & Assert - In this case we can't check if it was called since it's undefined
+      // The test passes if no error is thrown
+      expect(() => component.setupIntersectionObserver()).not.toThrow();
+    });
+
+    it('should create IntersectionObserver with correct options and observe element', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+      ((window as any).IntersectionObserver as jasmine.Spy).and.returnValue(
+        mockObserver
+      );
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Assert
+      expect((window as any).IntersectionObserver).toHaveBeenCalledWith(
+        jasmine.any(Function),
+        { root: null, rootMargin: '10px', threshold: 0.1 }
+      );
+      expect(mockObserver.observe).toHaveBeenCalledWith(
+        mockObserverElement.nativeElement
+      );
+    });
+
+    it('should call loadChangelogs when entry is intersecting and has more changelogs', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
+      spyOn(component, 'loadChangelogs');
+
+      component.changeLogLinks = { next: { href: 'next-page-url' } } as any;
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Get the stored callback
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+
+      // Simulate intersection
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: true,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0.5,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+
+      observerCallback(mockEntries, mockObserver);
+
+      // Assert
+      expect(component.hasMoreChangelogs).toHaveBeenCalled();
+      expect(component.criteria.nextPageHref).toBe('next-page-url');
+      expect(component.loadChangelogs).toHaveBeenCalled();
+    });
+
+    it('should not call loadChangelogs when entry is intersecting but has no more changelogs', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(false);
+      spyOn(component, 'loadChangelogs');
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Get the stored callback
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+
+      // Simulate intersection
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: true,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0.5,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+
+      observerCallback(mockEntries, mockObserver);
+
+      // Assert
+      expect(component.hasMoreChangelogs).toHaveBeenCalled();
+      expect(component.loadChangelogs).not.toHaveBeenCalled();
+    });
+
+    it('should not call loadChangelogs when entry is not intersecting', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
+      spyOn(component, 'loadChangelogs');
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Get the stored callback
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+
+      // Simulate non-intersection
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: false,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+
+      observerCallback(mockEntries, mockObserver);
+
+      // Assert
+      expect(component.hasMoreChangelogs).not.toHaveBeenCalled();
+      expect(component.loadChangelogs).not.toHaveBeenCalled();
+    });
+
+    it('should handle multiple entries in intersection callback', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
+      spyOn(component, 'loadChangelogs');
+
+      component.changeLogLinks = { next: { href: 'next-page-url' } } as any;
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Get the stored callback
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+
+      // Simulate multiple entries with both intersecting (to trigger hasMoreChangelogs twice)
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: true,
+          target: document.createElement('div'),
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0.3,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        },
+        {
+          isIntersecting: true,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0.5,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+
+      observerCallback(mockEntries, mockObserver);
+
+      // Assert
+      expect(component.hasMoreChangelogs).toHaveBeenCalledTimes(2);
+      expect(component.loadChangelogs).toHaveBeenCalledTimes(2);
+    });
+
+    it('should set nextPageHref correctly when intersection occurs', () => {
+      // Arrange
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      (component as any).changelogIntersectionObserver = undefined;
+
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
+      spyOn(component, 'loadChangelogs');
+
+      const expectedHref = 'http://example.com/next-page';
+      component.changeLogLinks = { next: { href: expectedHref } } as any;
+      component.criteria.nextPageHref = 'initial-href';
+
+      // Act
+      component.setupIntersectionObserver();
+
+      // Get the stored callback
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+
+      // Simulate intersection
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: true,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0.5,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+
+      observerCallback(mockEntries, mockObserver);
+
+      // Assert
+      expect(component.criteria.nextPageHref).toBe(expectedHref);
+      expect(component.loadChangelogs).toHaveBeenCalled();
     });
   });
 });
