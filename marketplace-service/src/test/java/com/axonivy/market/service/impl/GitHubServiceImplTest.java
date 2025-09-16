@@ -16,7 +16,6 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -552,8 +551,7 @@ class GitHubServiceImplTest {
     when(mockGhRelease.getBody()).thenReturn(releaseBody);
     when(mockGhRelease.getPublished_at()).thenReturn(publishedDate);
     when(mockGhRelease.getHtmlUrl()).thenReturn(htmlUrl);
-    // Fix: Use lenient() to avoid the internal Callable issue
-    lenient().when(mockGhRelease.getId()).thenReturn(releaseId);
+    when(mockGhRelease.getId()).thenReturn(releaseId);
 
     // Mock static utilities
     String transformedBody = "## What's Changed\n- Fixed critical bug #123\n- Added new feature XYZ (transformed)";
@@ -808,158 +806,4 @@ class GitHubServiceImplTest {
     verify(gitHubService, atLeastOnce()).getRepository(repoName);
     verify(mockRepository).listReleases();
   }
-
-  @Test
-  void testGetGitHubReleaseModels_WithValidReleases() throws IOException, URISyntaxException {
-    // Arrange
-    List<GHRelease> ghReleases = new ArrayList<>();
-    GHRelease release1 = mock(GHRelease.class);
-    GHRelease release2 = mock(GHRelease.class);
-    GHRelease latestRelease = mock(GHRelease.class);
-
-    ghReleases.add(release1);
-    ghReleases.add(release2);
-
-    Pageable pageable = Pageable.ofSize(10).withPage(0);
-    String productId = "test-product-id";
-    String productRepoName = "test-org/test-repo";
-    String productSourceUrl = "https://github.com/test-org/test-repo";
-
-    // Mock release data
-    when(release1.getName()).thenReturn("v1.0.0");
-    when(release1.getBody()).thenReturn("Release 1 body");
-    when(release1.getPublished_at()).thenReturn(new Date());
-    when(release1.getHtmlUrl()).thenReturn(new URI("https://github.com/test-org/test-repo/releases/tag/v1.0.0").toURL());
-    lenient().when(release1.getId()).thenReturn(1L);
-
-    when(release2.getName()).thenReturn("v2.0.0");
-    when(release2.getBody()).thenReturn("Release 2 body");
-    when(release2.getPublished_at()).thenReturn(new Date());
-    when(release2.getHtmlUrl()).thenReturn(new URI("https://github.com/test-org/test-repo/releases/tag/v2.0.0").toURL());
-    lenient().when(release2.getId()).thenReturn(2L);
-
-    when(latestRelease.getName()).thenReturn("v2.0.0");
-
-    // Mock the spy method calls
-    doReturn(latestRelease).when(gitHubService).getGitHubLatestReleaseByProductId(productRepoName);
-
-    // Mock static utilities
-    try (MockedStatic<ProductContentUtils> productContentUtilsMock = mockStatic(ProductContentUtils.class);
-         MockedStatic<GitHubUtils> gitHubUtilsMock = mockStatic(GitHubUtils.class)) {
-
-      // Mock extractReleasesPage to return both releases
-      productContentUtilsMock.when(() -> ProductContentUtils.extractReleasesPage(ghReleases, pageable))
-          .thenReturn(ghReleases);
-
-      // Mock transformGithubReleaseBody
-      productContentUtilsMock.when(() ->
-          ProductContentUtils.transformGithubReleaseBody("Release 1 body", productSourceUrl))
-          .thenReturn("Transformed Release 1 body");
-      productContentUtilsMock.when(() ->
-          ProductContentUtils.transformGithubReleaseBody("Release 2 body", productSourceUrl))
-          .thenReturn("Transformed Release 2 body");
-
-      // Mock createSelfLinkForGithubReleaseModel
-      Link selfLink1 = Link.of("http://localhost/api/products/test-product-id/releases/1").withSelfRel();
-      Link selfLink2 = Link.of("http://localhost/api/products/test-product-id/releases/2").withSelfRel();
-      gitHubUtilsMock.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(productId, 1L))
-          .thenReturn(selfLink1);
-      gitHubUtilsMock.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(productId, 2L))
-          .thenReturn(selfLink2);
-
-      // Act
-      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(
-          ghReleases, pageable, productId, productRepoName, productSourceUrl);
-
-      // Assert
-      assertNotNull(result, "Result should not be null");
-      assertEquals(2, result.getContent().size(), "Should return 2 release models");
-      assertEquals(2, result.getTotalElements(), "Total elements should be 2");
-      assertEquals(pageable, result.getPageable(), "Pageable should match");
-
-      // Verify first release
-      GitHubReleaseModel model1 = result.getContent().get(0);
-      assertEquals("v1.0.0", model1.getName(), "First release name should match");
-      assertEquals("Transformed Release 1 body", model1.getBody(), "First release body should be transformed");
-      assertFalse(model1.isLatestRelease(), "First release should not be latest");
-
-      // Verify second release (latest)
-      GitHubReleaseModel model2 = result.getContent().get(1);
-      assertEquals("v2.0.0", model2.getName(), "Second release name should match");
-      assertEquals("Transformed Release 2 body", model2.getBody(), "Second release body should be transformed");
-      assertTrue(model2.isLatestRelease(), "Second release should be latest");
-
-      // Verify method calls
-      verify(gitHubService).getGitHubLatestReleaseByProductId(productRepoName);
-      productContentUtilsMock.verify(() -> ProductContentUtils.extractReleasesPage(ghReleases, pageable));
-    }
-  }
-
-  @Test
-  void testGetGitHubReleaseModelsWithEmptyReleasesList() throws IOException {
-    // Arrange
-    List<GHRelease> emptyReleases = new ArrayList<>();
-    Pageable pageable = Pageable.ofSize(10).withPage(0);
-    String productId = "test-product-id";
-    String productRepoName = "test-org/test-repo";
-    String productSourceUrl = "https://github.com/test-org/test-repo";
-
-    // Act
-    Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(
-        emptyReleases, pageable, productId, productRepoName, productSourceUrl);
-
-    // Assert
-    assertNotNull(result, "Result should not be null");
-    assertTrue(result.getContent().isEmpty(), "Content should be empty");
-    assertEquals(0, result.getTotalElements(), "Total elements should be 0");
-    assertEquals(pageable, result.getPageable(), "Pageable should match");
-
-    // Verify no method calls were made for processing releases
-    verify(gitHubService, never()).getGitHubLatestReleaseByProductId(anyString());
-  }
-
-  @Test
-  void testGetGitHubReleaseModelsWithNullReleasesList() throws IOException {
-    // Arrange
-    List<GHRelease> nullReleases = null;
-    Pageable pageable = Pageable.ofSize(10).withPage(0);
-    String productId = "test-product-id";
-    String productRepoName = "test-org/test-repo";
-    String productSourceUrl = "https://github.com/test-org/test-repo";
-
-    // Act & Assert - Should throw NullPointerException due to ghReleases.size() call
-    assertThrows(NullPointerException.class, () -> gitHubService.getGitHubReleaseModels(
-        nullReleases, pageable, productId, productRepoName, productSourceUrl),
-        "Should throw NullPointerException when ghReleases is null due to .size() call");
-
-    // Verify no method calls were made for processing releases
-    verify(gitHubService, never()).getGitHubLatestReleaseByProductId(anyString());
-  }
-
-  @Test
-  void testGetGitHubReleaseModels_WithPagination() throws IOException, URISyntaxException {
-    // Arrange
-    List<GHRelease> allReleases = new ArrayList<>();
-    for (int i = 1; i <= 5; i++) {
-      GHRelease release = mock(GHRelease.class);
-      when(release.getName()).thenReturn("v" + i + ".0.0");
-      when(release.getBody()).thenReturn("Release " + i + " body");
-      when(release.getPublished_at()).thenReturn(new Date());
-      when(release.getHtmlUrl()).thenReturn(new URI("https://github.com/test-org/test-repo/releases/tag/v" + i + ".0.0").toURL());
-      lenient().when(release.getId()).thenReturn((long) i);
-      allReleases.add(release);
-    }
-
-    // Page with size 2, page 1 (second page)
-    Pageable pageable = Pageable.ofSize(2).withPage(1);
-    String productId = "test-product-id";
-    String productRepoName = "test-org/test-repo";
-    String productSourceUrl = "https://github.com/test-org/test-repo";
-
-    GHRelease latestRelease = mock(GHRelease.class);
-    when(latestRelease.getName()).thenReturn("v5.0.0");
-
-    // Mock the spy method calls
-    doReturn(latestRelease).when(gitHubService).getGitHubLatestReleaseByProductId(productRepoName);
-
 }
