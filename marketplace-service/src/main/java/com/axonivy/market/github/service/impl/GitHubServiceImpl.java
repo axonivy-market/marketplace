@@ -62,6 +62,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -382,7 +383,7 @@ public class GitHubServiceImpl implements GitHubService {
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
   }
 
-  @Cacheable(value = "RepoRelease", key = "{#productId}")
+  @Cacheable(value = REPO_RELEASES, key = "{#productId}")
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();
@@ -411,7 +412,7 @@ public class GitHubServiceImpl implements GitHubService {
     gitHubReleaseModel.setName(ghRelease.getName());
     gitHubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
     gitHubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
-    gitHubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghRelease));
+    gitHubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghRelease.getId()));
     gitHubReleaseModel.setLatestRelease(isLatestGitHubReleaseName);
     return gitHubReleaseModel;
   }

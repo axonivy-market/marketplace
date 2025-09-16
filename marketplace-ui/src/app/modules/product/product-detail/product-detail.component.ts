@@ -135,7 +135,7 @@ export class ProductDetailComponent implements AfterViewInit {
   subscriptions: Subscription[] = [];
   criteria: ChangeLogCriteria = {
     pageable: DEFAULT_CHANGELOG_PAGEABLE,
-    productId: '',
+    productId: ''
   };
   changeLogLinks!: Link;
   changeLogPages!: Page;
@@ -469,7 +469,7 @@ export class ProductDetailComponent implements AfterViewInit {
       });
   }
 
-  onTabChange(tab: string): void {
+  setActiveTab(tab: string): void {
     this.router.navigate([], {
       fragment: TAB_PREFIX + tab,
       queryParamsHandling: 'preserve',
@@ -681,7 +681,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
         const tabValue = this.getTabValueFromFragment(fragment);
-        this.onTabChange(tabValue);
+        this.setActiveTab(tabValue);
       })
     );
   }

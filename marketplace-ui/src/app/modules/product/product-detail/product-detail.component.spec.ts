@@ -272,18 +272,18 @@ describe('ProductDetailComponent', () => {
   it('should call keepCurrentTabScroll when setActiveTab is called', () => {
     spyOn(component, 'keepCurrentTabScroll');
     const tab = 'specifications';
-    component.onTabChange(tab);
+    component.setActiveTab(tab);
     expect(component.keepCurrentTabScroll).toHaveBeenCalledWith(tab);
   });
 
-  it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
+  it('should call setActiveTab and updateDropdownSelection on setActiveTab', () => {
     const event = { value: 'description' };
-    spyOn(component, 'onTabChange');
+    spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
-    component.onTabChange(event.value);
+    component.setActiveTab(event.value);
 
-    expect(component.onTabChange).toHaveBeenCalledWith('description');
+    expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });
 
   it('should not display information when product detail is empty', () => {
@@ -901,7 +901,7 @@ describe('ProductDetailComponent', () => {
 
   it('maven tab should not display when product module content is missing', () => {
     const event = { value: 'dependency' };
-    component.onTabChange(event.value);
+    component.setActiveTab(event.value);
     fixture.detectChanges();
     let mavenTab = fixture.debugElement.query(
       By.css('app-product-detail-maven-content')
@@ -1073,9 +1073,9 @@ describe('ProductDetailComponent', () => {
     mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
     mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
     mockHistoryService.lastSearchText.and.returnValue('');
-    component.onTabChange('description');
-    component.onTabChange('demo');
-    component.onTabChange('setup');
+    component.setActiveTab('description');
+    component.setActiveTab('demo');
+    component.setActiveTab('setup');
     component.onClickingBackToHomepageButton();
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
   });
@@ -1091,9 +1091,9 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab with correct tab value from fragment', () => {
-    spyOn(component, 'onTabChange');
+    spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
-    expect(component.onTabChange).toHaveBeenCalledWith('description');
+    expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });
 
   it('should restore scroll position for a tab', () => {

@@ -119,7 +119,7 @@
                       class="nav-link tab-title border-0 bg-transparent"
                       [class.active]="activeTab === displayedTab.value"
                       [id]="displayedTab.tabId"
-                      (click)="onTabChange(displayedTab.value)"
+                      (click)="setActiveTab(displayedTab.value)"
                       role="tab"
                       [ngClass]="{
                         'text-secondary': themeService.isDarkMode(),
@@ -143,7 +143,7 @@
                       [selectedItem]="getSelectedTabLabel() | translate"
                       buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                       (itemSelected)="
-                        onTabChange($event.value)
+                        setActiveTab($event.value)
                       "></app-common-dropdown>
                   </div>
 
@@ -182,7 +182,7 @@
                   [id]="displayedTab.value"
                   role="tabpanel"
                   [attr.aria-labelledby]="displayedTab.value + '-tab'"
-                  (click)="onTabChange(displayedTab.value)">
+                  (click)="setActiveTab(displayedTab.value)">
                   @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"

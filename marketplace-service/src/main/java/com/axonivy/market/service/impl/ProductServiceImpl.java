@@ -70,6 +70,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
@@ -709,7 +710,7 @@ public class ProductServiceImpl implements ProductService {
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = "RepoRelease", key="{#productId}")
+  @CacheEvict(value = REPO_RELEASES, key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
