@@ -84,7 +84,62 @@ describe('ReleasePreviewComponent', () => {
 
     component.onFileSelected(event);
 
+    expect(component.selectedFile).toBeNull();
+    expect(component.isZipFile).toBeFalse();
+  });
+
+  it('should replace existing file and reset uploaded state', () => {
+    const first = new File(['one'], 'one.zip', { type: 'application/zip' });
+    const second = new File(['two'], 'two.zip', { type: 'application/zip' });
+
+    component.onFileSelected({ target: { files: [first] } } as unknown as Event);
+    component.isUploaded = true;
+
+    component.onFileSelected({ target: { files: [second] } } as unknown as Event);
+    expect(component.selectedFile).toEqual(second);
+    expect(component.isUploaded).toBeFalse();
+  });
+
+  it('should remove file when removeFile called', () => {
+    const mockFile = new File(['content'], 'test.zip', { type: 'application/zip' });
+    component.onFileSelected({ target: { files: [mockFile] } } as unknown as Event);
+    component.removeFile();
+
+    expect(component.selectedFile).toBeNull();
+    expect(component.isZipFile).toBeFalse();
+  });
+
+  it('should handle drag over and leave toggling isDragging', () => {
+    const dragEventOver = new DragEvent('dragover');
+    component.onDragOver(dragEventOver);
+    expect(component.isDragging).toBeTrue();
+
+    const dragEventLeave = new DragEvent('dragleave');
+    component.onDragLeave(dragEventLeave);
+    expect(component.isDragging).toBeFalse();
+  });
+
+  it('should accept dropped zip file', () => {
+    const mockFile = new File(['zip'], 'drop.zip', { type: 'application/zip' });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(mockFile);
+
+    const dropEvent = new DragEvent('drop', { dataTransfer });
+    component.onDrop(dropEvent);
+
     expect(component.selectedFile).toEqual(mockFile);
+    expect(component.isZipFile).toBeTrue();
+  });
+
+  it('should reject dropped non-zip file', () => {
+    const mockFile = new File(['nope'], 'nope.txt', { type: 'text/plain' });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(mockFile);
+
+    const dropEvent = new DragEvent('drop', { dataTransfer });
+    component.onDrop(dropEvent);
+
+    expect(component.selectedFile).toBeNull();
     expect(component.isZipFile).toBeFalse();
   });
 
