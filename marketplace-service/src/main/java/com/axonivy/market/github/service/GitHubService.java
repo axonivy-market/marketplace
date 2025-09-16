@@ -54,7 +54,7 @@ public interface GitHubService {
 
   List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException;
 
-  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
+  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, long releaseId) throws IOException;
 
   GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException;
 

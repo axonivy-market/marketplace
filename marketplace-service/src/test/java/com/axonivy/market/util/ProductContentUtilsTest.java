@@ -200,4 +200,16 @@ class ProductContentUtilsTest extends BaseSetup {
     assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
         productModuleContent.getDemo().get(Language.EN.getValue())));
   }
+
+  @Test
+  void testTransformGithubReleaseBody() {
+    String githubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+    String productSourceUrl = "http://example.com";
+
+    String result = ProductContentUtils.transformGithubReleaseBody(githubReleaseBody, productSourceUrl);
+
+    assertNotNull(result);
+    assertTrue(result.contains("http://example.com/pull/123"));
+    assertTrue(result.contains("https://github.com/johndoe"));
+  }
 }

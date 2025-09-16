@@ -20,6 +20,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,13 +70,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-  private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
-  private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
-  private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
-  private static final String GITHUB_MAIN_LINK = "https://github.com/";
-  private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
-  private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
-  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX);
+
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -375,7 +370,7 @@ public class GitHubServiceImpl implements GitHubService {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(productRepoName).getName();
-      for (GHRelease ghRelease : getReleasesPage(ghReleases, pageable.getPageNumber(), pageable.getPageSize())) {
+      for (GHRelease ghRelease : ProductContentUtils.extractReleasesPage(ghReleases, pageable)) {
         gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, productSourceUrl, productId,
             StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
@@ -395,19 +390,10 @@ public class GitHubServiceImpl implements GitHubService {
     return ghReleases;
   }
 
-  public List<GHRelease> getReleasesPage(List<GHRelease> ghReleases, int pageNumber, int pageSize) {
-    int start = pageNumber * pageSize;
-    if (start >= ghReleases.size()) {
-      return Collections.emptyList();
-    }
-    int end = Math.min(start + pageSize, ghReleases.size());
-    return ghReleases.subList(start, end);
-  }
-
   public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease,  String productSourceUrl, String productId,
       Boolean isLatestGitHubReleaseName) throws IOException {
     GitHubReleaseModel gitHubReleaseModel = new GitHubReleaseModel();
-    var modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
+    var modifiedBody = ProductContentUtils.transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
     gitHubReleaseModel.setBody(modifiedBody);
     gitHubReleaseModel.setName(ghRelease.getName());
     gitHubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
@@ -418,19 +404,11 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
         StringUtils.equals(githubLatestRelease.getName(), ghRelease.getName()));
-  }
-
-  public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    var body = StringUtils.defaultString(githubReleaseBody);
-    body = GITHUB_PULL_REQUEST_PATTERN.matcher(body).replaceAll(
-        productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
-    body = GITHUB_USERNAME_PATTERN.matcher(body).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
-    return body;
   }
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
