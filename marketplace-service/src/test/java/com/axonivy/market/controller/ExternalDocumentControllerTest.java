@@ -37,6 +37,11 @@ class ExternalDocumentControllerTest {
   private static final String SAMPLE_REDIRECT_PATH =
           "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
 
+  private static final String VERSION = "13.1.1";
+  private static final String BEST_MATCH_VERSION = "15.0";
+  private static final Path RESOLVE_PATH = Path.of(SAMPLE_PATH);
+  private static final String PORTAL = "portal";
+
   @Mock
   private GitHubService gitHubService;
 
@@ -50,33 +55,29 @@ class ExternalDocumentControllerTest {
   @Test
   void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
-    var result = externalDocumentController.findExternalDocument("portal", "10.0");
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertTrue(ObjectUtils.isNotEmpty(result.getBody()));
+    var result = externalDocumentController.findExternalDocument(PORTAL, VERSION);
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Should be ok");
+    assertTrue(result.hasBody(), "Should have body");
+    assertTrue(ObjectUtils.isNotEmpty(result.getBody()), "Body should not be empty");
   }
 
   @Test
   void testRedirectToBestVersionSuccess() {
-      // arrange
-      String requestedVersion = "13.1.1";
-      String bestMatchVersion = "15.0";
-      Path mockResolvedPath = Path.of(SAMPLE_PATH);
-      when(service.findBestMatchVersion("portal", requestedVersion))
-              .thenReturn(bestMatchVersion);
+      when(service.findBestMatchVersion(PORTAL, VERSION))
+              .thenReturn(BEST_MATCH_VERSION);
 
       try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
            MockedStatic<Files> filesMock = mockStatic(Files.class)) {
 
           utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                  .thenReturn(requestedVersion);
+                  .thenReturn(VERSION);
           utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
-                  .thenReturn("portal");
+                  .thenReturn(PORTAL);
           utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
                   .thenReturn(SAMPLE_PATH);
           utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
-                  .thenReturn(mockResolvedPath);
-          filesMock.when(() -> Files.exists(mockResolvedPath)).thenReturn(true);
+                  .thenReturn(RESOLVE_PATH);
+          filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(true);
 
           ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
 
@@ -96,25 +97,22 @@ class ExternalDocumentControllerTest {
 
     @Test
     void testRedirectToBestVersionWithNoResource() {
-        // arrange
-        String requestedVersion = "13.1.1";
-        String bestMatchVersion = "15.0";
-        Path mockResolvedPath = Path.of(SAMPLE_PATH);
-        when(service.findBestMatchVersion("portal", requestedVersion))
-                .thenReturn(bestMatchVersion);
+
+        when(service.findBestMatchVersion(PORTAL, VERSION))
+                .thenReturn(BEST_MATCH_VERSION);
 
         try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
              MockedStatic<Files> filesMock = mockStatic(Files.class)) {
 
             utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                    .thenReturn(requestedVersion);
+                    .thenReturn(VERSION);
             utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
-                    .thenReturn("portal");
+                    .thenReturn(PORTAL);
             utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
                     .thenReturn(SAMPLE_PATH);
             utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
-                    .thenReturn(mockResolvedPath);
-            filesMock.when(() -> Files.exists(mockResolvedPath)).thenReturn(false);
+                    .thenReturn(RESOLVE_PATH);
+            filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(false);
 
             ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
 
