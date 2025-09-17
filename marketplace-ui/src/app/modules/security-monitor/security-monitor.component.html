@@ -89,7 +89,7 @@
       <h3>Please enter your token to access the security page.</h3>
       <div>
         <input type="password" [(ngModel)]="token" placeholder="Enter your token" />
-        <button (click)="onSubmit()">
+        <button  class="btn-primary" (click)="onSubmit()" [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
           Proceed
         </button>
         @if (errorMessage) {
