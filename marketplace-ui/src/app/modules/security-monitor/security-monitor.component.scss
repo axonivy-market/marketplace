@@ -174,7 +174,6 @@
 .token-input-container button {
   padding: 10px 20px;
   font-size: 1.3rem;
-  background-color: #4CAF50;
   color: var(--ivy-text-primary-color);
   border: none;
   border-radius: 4px;
@@ -182,10 +181,6 @@
   transition: background-color 0.3s ease;
   margin-left: 10px;
   width: 100px;
-}
-
-.token-input-container button:hover {
-  background-color: #45a049;
 }
 
 .error-message {

@@ -14,6 +14,7 @@ import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITO
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-security-monitor',
@@ -24,6 +25,7 @@ import { PageTitleService } from '../../shared/services/page-title.service';
   encapsulation: ViewEncapsulation.Emulated
 })
 export class SecurityMonitorComponent {
+  themeService = inject(ThemeService);
   isAuthenticated = false;
   token = '';
   errorMessage = '';
