@@ -9,13 +9,19 @@ import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHRelease;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class ProductContentUtilsTest extends BaseSetup {
@@ -212,4 +218,104 @@ class ProductContentUtilsTest extends BaseSetup {
     assertTrue(result.contains("http://example.com/pull/123"));
     assertTrue(result.contains("https://github.com/johndoe"));
   }
+
+  @Test
+  void testExtractReleasesPage_normalPagination() {
+    List<GHRelease> releases = createMockReleases(10);
+    Pageable pageable = PageRequest.of(0, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(3, result.size());
+    assertEquals(releases.get(0), result.get(0));
+    assertEquals(releases.get(1), result.get(1));
+    assertEquals(releases.get(2), result.get(2));
+  }
+
+  @Test
+  void testExtractReleasesPage_secondPage() {
+    List<GHRelease> releases = createMockReleases(10);
+    Pageable pageable = PageRequest.of(1, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(3, result.size());
+    assertEquals(releases.get(3), result.get(0));
+    assertEquals(releases.get(4), result.get(1));
+    assertEquals(releases.get(5), result.get(2));
+  }
+
+  @Test
+  void testExtractReleasesPage_lastPagePartial() {
+    List<GHRelease> releases = createMockReleases(8);
+    Pageable pageable = PageRequest.of(2, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(2, result.size());
+    assertEquals(releases.get(6), result.get(0));
+    assertEquals(releases.get(7), result.get(1));
+  }
+
+  @Test
+  void testExtractReleasesPage_startBeyondList() {
+    List<GHRelease> releases = createMockReleases(5);
+    Pageable pageable = PageRequest.of(3, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testExtractReleasesPage_emptyList() {
+    List<GHRelease> releases = Collections.emptyList();
+    Pageable pageable = PageRequest.of(0, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testExtractReleasesPage_exactPageSize() {
+    List<GHRelease> releases = createMockReleases(3);
+    Pageable pageable = PageRequest.of(0, 3);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(3, result.size());
+    assertEquals(releases, result);
+  }
+
+  @Test
+  void testExtractReleasesPage_singleItemPage() {
+    List<GHRelease> releases = createMockReleases(5);
+    Pageable pageable = PageRequest.of(2, 1);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(1, result.size());
+    assertEquals(releases.get(2), result.get(0));
+  }
+
+  @Test
+  void testExtractReleasesPage_largePage() {
+    List<GHRelease> releases = createMockReleases(5);
+    Pageable pageable = PageRequest.of(0, 10);
+
+    List<GHRelease> result = ProductContentUtils.extractReleasesPage(releases, pageable);
+
+    assertEquals(5, result.size());
+    assertEquals(releases, result);
+  }
+
+  private List<GHRelease> createMockReleases(int count) {
+    List<GHRelease> releases = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      releases.add(mock(GHRelease.class));
+    }
+    return releases;
+  }
 }
+

@@ -404,7 +404,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product,
+      long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
