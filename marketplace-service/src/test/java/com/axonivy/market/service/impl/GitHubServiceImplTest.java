@@ -16,6 +16,7 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -805,5 +806,39 @@ class GitHubServiceImplTest {
     assertFalse(result.contains(draftRelease2), "Should not contain second draft release");
     verify(gitHubService, atLeastOnce()).getRepository(repoName);
     verify(mockRepository).listReleases();
+  }
+
+  @Test
+  void testGetGitHubReleaseModels() throws IOException {
+    List<GHRelease> allReleases = Arrays.asList(
+      mock(GHRelease.class),
+      mock(GHRelease.class),
+      mock(GHRelease.class)
+    );
+    List<GHRelease> pagedReleases = Arrays.asList(allReleases.get(0), allReleases.get(1));
+    Pageable pageable = mock(Pageable.class);
+    String productId = "prod-1";
+    String productRepoName = "repo-1";
+    String productSourceUrl = "http://source.url";
+    GHRelease latestRelease = mock(GHRelease.class);
+    when(latestRelease.getName()).thenReturn("latest-release");
+    try (MockedStatic<ProductContentUtils> utilsMock = Mockito.mockStatic(ProductContentUtils.class)) {
+      utilsMock.when(() -> ProductContentUtils.extractReleasesPage(allReleases, pageable)).thenReturn(pagedReleases);
+      doReturn(latestRelease).when(gitHubService).getGitHubLatestReleaseByProductId(productRepoName);
+      when(pagedReleases.get(0).getName()).thenReturn("release-1");
+      when(pagedReleases.get(1).getName()).thenReturn("latest-release");
+      GitHubReleaseModel model1 = new GitHubReleaseModel();
+      model1.setName("release-1");
+      GitHubReleaseModel model2 = new GitHubReleaseModel();
+      model2.setName("latest-release");
+      doReturn(model1).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId, false);
+      doReturn(model2).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId, true);
+      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(allReleases, pageable, productId, productRepoName, productSourceUrl);
+      assertEquals(2, result.getContent().size(), "Should return two models for the paged releases");
+      assertEquals("release-1", result.getContent().get(0).getName(), "First model name should match first release");
+      assertEquals("latest-release", result.getContent().get(1).getName(), "Second model name should match latest release");
+      verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId, false);
+      verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId, true);
+    }
   }
 }
