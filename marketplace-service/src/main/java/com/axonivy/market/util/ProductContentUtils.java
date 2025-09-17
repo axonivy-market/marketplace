@@ -38,7 +38,7 @@ public class ProductContentUtils {
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
-  private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
+  private static final String GITHUB_USERNAME_REGEX = "@([\\p{Alnum}\\-]+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
