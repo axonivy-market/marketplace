@@ -42,7 +42,8 @@ public class ProductContentUtils {
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
-  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX, Pattern.UNICODE_CHARACTER_CLASS);
+  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
+      Pattern.UNICODE_CHARACTER_CLASS);
 
   private ProductContentUtils() {
   }
