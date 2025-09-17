@@ -5,7 +5,8 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal
+  signal,
+  OnInit
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -43,7 +44,7 @@ const MAX_FILE_SIZE_MB = 20;
   styleUrls: ['./release-preview.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class ReleasePreviewComponent {
+export class ReleasePreviewComponent implements OnInit {
   protected LoadingComponentId = LoadingComponentId;
   selectedFile: File | null = null;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -119,6 +120,10 @@ export class ReleasePreviewComponent {
       this.selectedFile = null;
       this.isZipFile = false;
     }
+  }
+
+  fileSizeInMB(bytes: number): string {
+    return (bytes / 1024 / 1024).toFixed(2);
   }
 
   removeFile() {
