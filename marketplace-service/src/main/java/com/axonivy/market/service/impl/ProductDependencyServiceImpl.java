@@ -189,6 +189,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyProductId, dependencyArtifactId,
           dependencyVersion);
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
+
+      // Save the dependency to database if it's new (doesn't have an ID yet)
+      if (dependency.getId() == null) {
+        dependency = productDependencyRepository.save(dependency);
+      }
+
       productDependencies.add(dependency);
       // Check does dependency artifact has IAR lib, e.g: portal
       List<Dependency> dependenciesOfParent = extractMavenPOMDependencies(dependencyArtifact.getDownloadUrl());

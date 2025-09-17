@@ -115,6 +115,13 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         .thenReturn(List.of(
             mockMavenArtifactVersion(MOCK_VERSION, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_DOWNLOAD_POM_DEPENDENCY_URL)));
 
+    when(productDependencyRepository.save(any(ProductDependency.class)))
+        .thenAnswer(invocation -> {
+          ProductDependency dependency = invocation.getArgument(0);
+          dependency.setId(String.valueOf(1L));
+          return dependency;
+        });
+
     // Mock for dependency artifact
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_DEPENDENCY_URL))
         .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
