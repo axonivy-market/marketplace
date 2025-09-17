@@ -29,7 +29,7 @@ pipeline {
       steps {
         script {
           sh '''
-            mvn clean install --file ./marketplace-service/pom.xml -Dskiptest=true
+            mvn clean install --file ./marketplace-service/pom.xml -DskipTest=true
           '''
         }
       }
