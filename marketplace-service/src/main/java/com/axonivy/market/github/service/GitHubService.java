@@ -17,7 +17,6 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedIterable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -50,10 +49,12 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-  Page<GitHubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
-      Pageable pageable) throws IOException;
+  Page<GitHubReleaseModel> getGitHubReleaseModels(List<GHRelease> ghReleases,
+      Pageable pageable, String productId, String productRepoName, String productSourceUrl) throws IOException;
 
-  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
+  List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException;
+
+  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, long releaseId) throws IOException;
 
   GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException;
 

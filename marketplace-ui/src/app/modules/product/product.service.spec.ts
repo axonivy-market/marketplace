@@ -10,10 +10,10 @@ import {
   MOCK_PRODUCT_DETAIL,
   MOCK_PRODUCT_RELEASES,
 } from '../../shared/mocks/mock-data';
-import { Criteria } from '../../shared/models/criteria.model';
+import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
-import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
+import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
@@ -259,12 +259,22 @@ describe('ProductService', () => {
     const productId = 'portal';
     const mockResponse: ProductReleasesApiResponse = MOCK_PRODUCT_RELEASES;
 
-    service.getProductChangelogs(productId).subscribe(response => {
+    const changelogCriteria: ChangeLogCriteria = {
+      productId: productId,
+      pageable: DEFAULT_CHANGELOG_PAGEABLE
+    };
+
+    service.getProductChangelogs(changelogCriteria).subscribe(response => {
       let productReleaseModelList = response._embedded.gitHubReleaseModelList;
-      expect(productReleaseModelList.length).toEqual(mockResponse._embedded.gitHubReleaseModelList.length);
+      expect(productReleaseModelList.length).toEqual(
+        mockResponse._embedded.gitHubReleaseModelList.length
+      );
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/releases`
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
@@ -272,11 +282,19 @@ describe('ProductService', () => {
   it('getProductChangelogs should handle error and return empty response', () => {
     const productId = 'portal';
 
-    service.getProductChangelogs(productId).subscribe(response => {
+    const changelogCriteria: ChangeLogCriteria = {
+      productId: productId,
+      pageable: DEFAULT_CHANGELOG_PAGEABLE
+    };
+
+    service.getProductChangelogs(changelogCriteria).subscribe(response => {
       expect(response).toEqual({} as ProductReleasesApiResponse);
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/releases`
+    );
     expect(req.request.method).toBe('GET');
 
     req.flush(null, {
