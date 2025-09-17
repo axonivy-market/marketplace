@@ -334,12 +334,14 @@ describe('FeedbackApprovalComponent', () => {
   it('should call handleError when fetchUserInfo fails', fakeAsync(() => {
     const errorResponse = new HttpErrorResponse({
       status: 500,
-      statusText: 'Internal Server Error',
+      statusText: 'Internal Server Error'
     });
 
     spyOn(component as any, 'handleError');
 
-    authServiceMock.getUserInfo.and.returnValue(throwError(() => errorResponse));
+    authServiceMock.getUserInfo.and.returnValue(
+      throwError(() => errorResponse)
+    );
 
     component.token = 'test-token';
     component.fetchUserInfo();
@@ -348,4 +350,25 @@ describe('FeedbackApprovalComponent', () => {
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
     expect(component.moderatorName).toBeUndefined(); // ✅ Matches actual behavior
   }));
+
+  it('should set errorMessage and stop loading if not authenticated', () => {
+    component.isAuthenticated = false;
+    spyOn(component, 'fetchUserInfo').and.callFake(() => {});
+
+    component.fetchFeedbacks();
+
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
+    expect(component.isLoading).toBeFalse();
+    expect(productFeedbackServiceMock.findProductFeedbacks).not.toHaveBeenCalled();
+  });
+
+  it('should call handleMissingToken and not fetchFeedbacks when token is missing', () => {
+    component.token = '';
+    spyOn(component, 'fetchFeedbacks');
+
+    component.onSubmit();
+
+    expect(component.fetchFeedbacks).not.toHaveBeenCalled();
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.TOKEN_REQUIRED);
+  });
 });
