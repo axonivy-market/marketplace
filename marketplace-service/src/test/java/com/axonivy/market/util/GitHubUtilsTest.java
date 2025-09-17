@@ -20,13 +20,13 @@ class GitHubUtilsTest extends BaseSetup {
   @Test
   void testSortMetaJsonFirst() {
     int result = GitHubUtils.sortMetaJsonFirst(META_FILE, LOGO_FILE);
-    Assertions.assertEquals(-1, result);
+    Assertions.assertEquals(-1, result, "Meta file should come before logo file in sort order");
 
     result = GitHubUtils.sortMetaJsonFirst(LOGO_FILE, META_FILE);
-    Assertions.assertEquals(1, result);
+    Assertions.assertEquals(1, result, "Logo file should come after meta file in sort order");
 
     result = GitHubUtils.sortMetaJsonFirst(LOGO_FILE, LOGO_FILE);
-    Assertions.assertEquals(0, result);
+    Assertions.assertEquals(0, result, "Same files should have equal sort order");
   }
 
   @Test
@@ -36,70 +36,70 @@ class GitHubUtilsTest extends BaseSetup {
 
     Link result = GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghReleaseId);
 
-    assertNotNull(result);
-    assertEquals("self", result.getRel().value());
+    assertNotNull(result, "Link should not be null");
+    assertEquals("self", result.getRel().value(), "Link should have 'self' relation type");
     String href = result.getHref();
-    assertNotNull(href);
-    assertTrue(href.contains(productId));
-    assertTrue(href.contains(String.valueOf(ghReleaseId)));
+    assertNotNull(href, "Link href should not be null");
+    assertTrue(href.contains(productId), "Link href should contain the product ID: " + productId);
+    assertTrue(href.contains(String.valueOf(ghReleaseId)), "Link href should contain the release ID: " + ghReleaseId);
   }
 
   @Test
-  void testCreateSelfLinkForGithubReleaseModel_withSpecialCharacters() throws IOException {
+  void testCreateSelfLinkForGithubReleaseModelWithSpecialCharacters() throws IOException {
     String productId = "test-product-with-special-chars";
     long ghReleaseId = 98765L;
 
     Link result = GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghReleaseId);
 
-    assertNotNull(result);
-    assertEquals("self", result.getRel().value());
+    assertNotNull(result, "Link should not be null for product ID with special characters");
+    assertEquals("self", result.getRel().value(), "Link should have 'self' relation type for product ID with special characters");
     String href = result.getHref();
-    assertNotNull(href);
-    assertTrue(href.contains(productId));
-    assertTrue(href.contains(String.valueOf(ghReleaseId)));
+    assertNotNull(href, "Link href should not be null for product ID with special characters");
+    assertTrue(href.contains(productId), "Link href should contain the product ID with special characters: " + productId);
+    assertTrue(href.contains(String.valueOf(ghReleaseId)), "Link href should contain the release ID: " + ghReleaseId);
   }
 
   @Test
-  void testCreateSelfLinkForGithubReleaseModel_withZeroReleaseId() throws IOException {
+  void testCreateSelfLinkForGithubReleaseModelWithZeroReleaseId() throws IOException {
     String productId = "test-product";
     long ghReleaseId = 0L;
 
     Link result = GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghReleaseId);
 
-    assertNotNull(result);
-    assertEquals("self", result.getRel().value());
+    assertNotNull(result, "Link should not be null for zero release ID");
+    assertEquals("self", result.getRel().value(), "Link should have 'self' relation type for zero release ID");
     String href = result.getHref();
-    assertNotNull(href);
-    assertTrue(href.contains(productId));
-    assertTrue(href.contains("0"));
+    assertNotNull(href, "Link href should not be null for zero release ID");
+    assertTrue(href.contains(productId), "Link href should contain the product ID: " + productId);
+    assertTrue(href.contains("0"), "Link href should contain zero release ID");
   }
 
   @Test
-  void testCreateSelfLinkForGithubReleaseModel_withLargeReleaseId() throws IOException {
+  void testCreateSelfLinkForGithubReleaseModelWithLargeReleaseId() throws IOException {
     String productId = "test-product";
     long ghReleaseId = Long.MAX_VALUE;
 
     Link result = GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghReleaseId);
 
-    assertNotNull(result);
-    assertEquals("self", result.getRel().value());
+    assertNotNull(result, "Link should not be null for maximum release ID");
+    assertEquals("self", result.getRel().value(), "Link should have 'self' relation type for maximum release ID");
     String href = result.getHref();
-    assertNotNull(href);
-    assertTrue(href.contains(productId));
-    assertTrue(href.contains(String.valueOf(Long.MAX_VALUE)));
+    assertNotNull(href, "Link href should not be null for maximum release ID");
+    assertTrue(href.contains(productId), "Link href should contain the product ID: " + productId);
+    assertTrue(href.contains(String.valueOf(Long.MAX_VALUE)), "Link href should contain the maximum release ID: " + Long.MAX_VALUE);
   }
 
   @Test
-  void testCreateSelfLinkForGithubReleaseModel_withEmptyProductId() throws IOException {
+  void testCreateSelfLinkForGithubReleaseModelWithEmptyProductId() throws IOException {
     String productId = "";
     long ghReleaseId = 12345L;
 
     Link result = GitHubUtils.createSelfLinkForGithubReleaseModel(productId, ghReleaseId);
 
-    assertNotNull(result);
-    assertEquals("self", result.getRel().value());
+    assertNotNull(result, "Link should not be null for empty product ID");
+    assertEquals("self", result.getRel().value(), "Link should have 'self' relation type for empty product ID");
     String href = result.getHref();
-    assertNotNull(href);
-    assertTrue(href.contains(String.valueOf(ghReleaseId)));
+    assertNotNull(href, "Link href should not be null for empty product ID");
+    assertTrue(href.contains(String.valueOf(ghReleaseId)), "Link href should contain the release ID: " + ghReleaseId);
   }
 }
