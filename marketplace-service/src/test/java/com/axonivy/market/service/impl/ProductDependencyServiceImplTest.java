@@ -91,7 +91,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncWithNewDependency_ShouldSaveDependency() throws IOException {
+  void testSyncWithNewDependencyShouldSaveDependency() throws IOException {
     // Test case: dependency.getId() == null (new dependency that needs to be saved)
     prepareTestData(MOCK_PRODUCT_ID);
 
@@ -110,7 +110,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncWithExistingDependency_ShouldNotSaveExistingDependency() throws IOException {
+  void testSyncWithExistingDependencyShouldNotSaveExistingDependency() throws IOException {
     // Test case: dependency.getId() != null (existing dependency that should not be saved again)
     prepareTestData(MOCK_PRODUCT_ID);
 
