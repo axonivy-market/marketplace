@@ -48,7 +48,7 @@ class GitHubServiceImplTest {
   @Mock
   private GitHubProperty gitHubProperty;
 
-  @MockV
+  @Mock
   RestTemplate restTemplate;
 
   @Mock
