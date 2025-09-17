@@ -11,4 +11,6 @@ public interface ExternalDocumentService {
   List<Product> findAllProductsHaveDocument();
 
   ExternalDocumentMeta findExternalDocument(String productId, String version);
+
+  String findBestMatchVersion(String productId, String version);
 }

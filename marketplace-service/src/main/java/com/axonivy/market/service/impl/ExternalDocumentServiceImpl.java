@@ -102,6 +102,16 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .findAny().orElse(null);
   }
 
+  public String findBestMatchVersion(String productId, String version) {
+    var product = productRepo.findById(productId);
+    if (product.isEmpty()) {
+      return null;
+    }
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
+    return VersionFactory.get(docMetaVersion, version);
+  }
+
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions) {
     List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
