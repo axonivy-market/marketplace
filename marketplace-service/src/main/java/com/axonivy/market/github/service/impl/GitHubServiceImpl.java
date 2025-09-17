@@ -381,11 +381,14 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();
-    getRepository(repoName).listReleases().forEach((GHRelease release) -> {
-      if (!release.isDraft()) {
-        ghReleases.add(release);
-      }
-    });
+    var ghRepo = getRepository(repoName);
+    if (null != ghRepo) {
+      ghRepo.listReleases().forEach((GHRelease release) -> {
+        if (!release.isDraft()) {
+          ghReleases.add(release);
+        }
+      });
+    }
     return ghReleases;
   }
 

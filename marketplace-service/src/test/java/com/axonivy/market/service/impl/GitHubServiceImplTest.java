@@ -668,17 +668,6 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleasesWithRepositoryNotFound() throws IOException {
-    String repoName = "test-org/non-existent-repo";
-    String productId = "test-product-id";
-
-    assertThrows(NullPointerException.class, () -> gitHubService.getRepoOfficialReleases(repoName, productId),
-        "Should throw NullPointerException when repository is not found");
-
-    verify(gitHubService, atLeastOnce()).getRepository(repoName);
-  }
-
-  @Test
   void testGetRepoOfficialReleasesWithIOExceptionThrown() throws IOException {
     String repoName = "test-org/error-repo";
     String productId = "test-product-id";
