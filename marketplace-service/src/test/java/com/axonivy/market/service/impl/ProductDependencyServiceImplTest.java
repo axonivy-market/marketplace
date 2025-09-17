@@ -26,7 +26,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDependencyServiceImplTest extends BaseSetup {
@@ -88,6 +88,52 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
     assertEquals(1, totalSynced, "Expected 1 product was synced but service returned nothing");
+  }
+
+  @Test
+  void testSyncWithNewDependency_ShouldSaveDependency() throws IOException {
+    // Test case: dependency.getId() == null (new dependency that needs to be saved)
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    verify(productDependencyRepository, atLeast(1)).save(any(ProductDependency.class));
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
+  }
+
+  @Test
+  void testSyncWithExistingDependency_ShouldNotSaveExistingDependency() throws IOException {
+    // Test case: dependency.getId() != null (existing dependency that should not be saved again)
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    var existingDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
+        .version(MOCK_VERSION)
+        .downloadUrl(MOCK_DOWNLOAD_POM_DEPENDENCY_URL)
+        .build();
+    existingDependency.setId("existing-123");
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of(existingDependency));
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    verify(productDependencyRepository, times(1)).save(any(ProductDependency.class));
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
   }
 
   private void prepareTestData(String mockProductId) throws IOException {
