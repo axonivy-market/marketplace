@@ -2,9 +2,12 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -16,9 +19,11 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.repository.GithubUserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -65,6 +70,9 @@ class GitHubServiceImplTest {
 
   @Mock
   private GHTeam ghTeam;
+
+  @Mock
+  private GithubUserRepository githubUserRepository;
 
   @Spy
   @InjectMocks
@@ -832,5 +840,54 @@ class GitHubServiceImplTest {
     GHRepository result = gitHubService.getRepository("error/repo");
 
     assertNull(result, "Expected null result when IOException is thrown");
+  }
+
+  @Test
+  void getAndUpdateUser_ShouldUpdateAndReturnUser_WhenUserExists() throws Exception {
+    String accessToken = "token";
+    // Use anonymous class as a fake
+    GHMyself myself = new GHMyself() {
+      @Override public long getId() { return 123L; } // or String getId() { return "123"; }
+      @Override public String getName() { return "Test User"; }
+      @Override public String getLogin() { return "testuser"; }
+      @Override public String getAvatarUrl() { return "avatar_url"; }
+    };
+    GitHub gitHub = mock(GitHub.class);
+    when(gitHub.getMyself()).thenReturn(myself);
+    doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
+
+    GithubUser existingUser = new GithubUser();
+    existingUser.setGitHubId("123");
+    when(githubUserRepository.searchByGitHubId("123")).thenReturn(existingUser);
+
+    GithubUser result = gitHubService.getAndUpdateUser(accessToken);
+
+    assertNotNull(result, "Returned GithubUser should not be null");
+    assertEquals("123", result.getGitHubId(), "GitHubId should be set correctly");
+    assertEquals("Test User", result.getName(), "Name should be updated from GHMyself");
+    assertEquals("testuser", result.getUsername(), "Username should be updated from GHMyself");
+    assertEquals("avatar_url", result.getAvatarUrl(), "Avatar URL should be updated from GHMyself");
+    assertEquals(GitHubConstants.GITHUB_PROVIDER_NAME, result.getProvider(), "Provider should be set to 'github'");
+
+    ArgumentCaptor<GithubUser> captor = ArgumentCaptor.forClass(GithubUser.class);
+    verify(githubUserRepository, times(1)).save(captor.capture());
+    assertEquals(result, captor.getValue(), "Saved user should match returned user");
+  }
+
+  @Test
+  void testGetAndUpdateUser_ThrowsNotFoundException_OnIOException() throws Exception {
+    // given
+    String accessToken = "token";
+    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHub.getMyself()).thenThrow(new IOException("GitHub API down"));
+
+    // when + then
+    NotFoundException ex = assertThrows(NotFoundException.class,
+        () -> gitHubService.getAndUpdateUser(accessToken),
+        "IOException should be translated into NotFoundException");
+
+    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+            "user details from GitHub", ex.getMessage(),
+        "Error message should be meaningful");
   }
 }
