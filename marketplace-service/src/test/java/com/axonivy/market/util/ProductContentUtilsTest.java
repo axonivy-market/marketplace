@@ -125,7 +125,7 @@ class ProductContentUtilsTest extends BaseSetup {
   void testGetExtractedPartsOfReadmeAtCorrectHeadings() {
     String readmeContents = getMockReadmeContent();
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    assertTrue(readmeContentsModel.getDescription().startsWith("Axon Ivy's mattermost connector"), "Description should start with expected content");
+    assertTrue(readmeContentsModel.getDescription().startsWith("Axon Ivy’s mattermost connector"), "Description should start with expected content");
     assertTrue(readmeContentsModel.getDemo().startsWith("### Demo sample"), "Demo section should start with '### Demo sample'");
     assertTrue(readmeContentsModel.getSetup().startsWith("### Setup guideline"), "Setup section should start with '### Setup guideline'");
   }
