@@ -1,10 +1,17 @@
-import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
+import {
+  HttpHeaders,
+  HttpContextToken,
+  HttpInterceptorFn,
+  HttpResponse,
+  HttpStatusCode,
+  HttpErrorResponse
+} from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
-import { catchError, EMPTY, finalize, of, tap } from 'rxjs';
+import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
+import { ERROR_CODES, ERROR_PAGE_PATH, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 
@@ -72,14 +79,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(cloneReq).pipe(
-    catchError(error => {
-      if (ERROR_CODES.includes(error.status)) {
-        router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
-      } else {
-        router.navigate([ERROR_PAGE_PATH]);
-      }
-      return EMPTY;
-    }),
+    catchError(error => handleHttpError(router,error)),
     tap(event => {
       if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
         transferState.set(key, event.body);
@@ -98,4 +98,20 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
     return headers;
   }
   return headers.append(REQUEST_BY, IVY);
+}
+
+export function handleHttpError(
+  router: Router,
+  error: HttpErrorResponse
+): Observable<never> {
+  if (error.status === UNAUTHORIZED) {
+    return throwError(() => error);
+  }
+
+  if (ERROR_CODES.includes(error.status)) {
+    router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
+  } else {
+    router.navigate([ERROR_PAGE_PATH]);
+  }
+  return EMPTY;
 }

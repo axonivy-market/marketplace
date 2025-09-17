@@ -22,7 +22,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
@@ -74,25 +74,39 @@ export class FeedbackApprovalComponent {
   }
 
   fetchUserInfo(): void {
-    this.authService.getUserInfo(this.token).subscribe({
-      next: () => {
-        this.authService.getDisplayNameFromAccessToken(this.token).subscribe(name => this.moderatorName = name);
+    this.authService.getUserInfo(this.token).pipe(
+      switchMap(() => this.authService.getDisplayNameFromAccessToken(this.token))
+    ).subscribe({
+      next: name => {
+        this.isAuthenticated = !!name;
       },
-      error: err => {
-        this.handleError(err);
-      }
+      error: err => this.handleError(err)
     });
   }
 
   onSubmit(): void {
     this.errorMessage = '';
+    if (!this.token) {
+      this.handleMissingToken();
+      return;
+    }
     this.fetchFeedbacks();
+  }
+
+  private handleMissingToken(): void {
+    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
+    this.isAuthenticated = false;
   }
 
   fetchFeedbacks(): void {
     this.isLoading = true;
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
     this.fetchUserInfo();
+    if (!this.isAuthenticated) {
+      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+      this.isLoading = false;
+      return;
+    }
     this.productFeedbackService
       .findProductFeedbacks()
       .pipe(
@@ -112,11 +126,10 @@ export class FeedbackApprovalComponent {
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
+      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
-
     this.isAuthenticated = false;
     sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
   }

@@ -45,6 +45,13 @@ public class VersionFactory {
         .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1)).toList();
     // Redirect to the newest version for special keywords
     var version = DevelopmentVersion.of(requestedVersion);
+
+    // Get latest released version if requested version is 'latest'
+    if (version == DevelopmentVersion.LATEST) {
+      return sortedVersions.stream().filter(VersionUtils::isReleasedVersion)
+              .findFirst().orElse(null);
+    }
+
     if (version != null) {
       return sortedVersions.get(0);
     }

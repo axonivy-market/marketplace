@@ -289,6 +289,7 @@ export const ERROR_MESSAGES = {
   TOKEN_REQUIRED: 'Token is required',
   UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',
+  INVALID_TOKEN: 'The token is invalid, please try again.',
 };
 
 export const TIME_UNITS = [

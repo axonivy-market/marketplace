@@ -8,5 +8,6 @@ public class DirectoryConstants {
   public static final String DATA_DIR = "data";
   public static final String WORK_DIR = "work";
   public static final String CACHE_DIR = "market-cache";
+  public static final String DATA_CACHE_DIR = DATA_DIR + "/" + CACHE_DIR;
   public static final String GITHUB_REPO_DIR = "data/work/github";
 }

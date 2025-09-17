@@ -22,6 +22,7 @@ public class RequestMappingConstants {
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";
+  public static final String DOCUMENT_BEST_MATCH = "/best-match";
   public static final String VERSIONS_BY_ID = "/{id}/versions";
   public static final String PRODUCT_BY_ID = "/product/{id}";
   public static final String PRODUCT_RATING_BY_ID = "/product/{id}/rating";
@@ -50,4 +51,5 @@ public class RequestMappingConstants {
   public static final String REPO = "repo";
   public static final String WORKFLOW = "workflow";
   public static final String FOCUSED = "focus";
+  public static final String ERROR_PAGE_404 = "/error-page/404";
 }

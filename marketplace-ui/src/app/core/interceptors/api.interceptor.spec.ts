@@ -1,15 +1,30 @@
-import { HttpClient, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+  provideHttpClient,
+  withInterceptors
+} from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 import { ProductComponent } from '../../modules/product/product.component';
-import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../../shared/constants/common.constant';
-import { apiInterceptor } from './api.interceptor';
+import {
+  DESIGNER_SESSION_STORAGE_VARIABLE,
+  ERROR_CODES,
+  ERROR_PAGE_PATH,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
+import { apiInterceptor, handleHttpError } from './api.interceptor';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
 describe('AuthInterceptor', () => {
+  let mockRouter: jasmine.SpyObj<Router>;
   let productComponent: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let httpClient: HttpClient;
@@ -18,7 +33,7 @@ describe('AuthInterceptor', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        ProductComponent, 
+        ProductComponent,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
@@ -67,6 +82,44 @@ describe('AuthInterceptor', () => {
       error(e) {
         expect(e.status).not.toBe(200);
       }
+    });
+  });
+
+  describe('handleHttpError', () => {
+    beforeEach(() => {
+      mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    });
+
+    it('should throw error if status is UNAUTHORIZED', done => {
+      const error = new HttpErrorResponse({ status: UNAUTHORIZED });
+
+      handleHttpError(mockRouter, error).subscribe({
+        error: (err: HttpErrorResponse) => {
+          expect(err).toBe(error);
+          expect(mockRouter.navigate).not.toHaveBeenCalled();
+          done();
+        }
+      });
+    });
+
+    it('should navigate to specific error page if status is in ERROR_CODES', () => {
+      const error = new HttpErrorResponse({ status: ERROR_CODES[0] });
+
+      const result = handleHttpError(mockRouter, error);
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith([
+        `${ERROR_PAGE_PATH}/${error.status}`
+      ]);
+      expect(result).toBe(EMPTY);
+    });
+
+    it('should navigate to generic error page if status not in ERROR_CODES', () => {
+      const error = new HttpErrorResponse({ status: 418 });
+
+      const result = handleHttpError(mockRouter, error);
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
+      expect(result).toBe(EMPTY);
     });
   });
 });
