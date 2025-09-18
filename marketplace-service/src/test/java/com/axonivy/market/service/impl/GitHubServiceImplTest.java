@@ -843,16 +843,15 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void getAndUpdateUser_ShouldUpdateAndReturnUser_WhenUserExists() throws Exception {
+  void getAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
     String accessToken = "token";
     // Use anonymous class as a fake
     GHMyself myself = new GHMyself() {
-      @Override public long getId() { return 123L; } // or String getId() { return "123"; }
+      @Override public long getId() { return 123L; }
       @Override public String getName() { return "Test User"; }
       @Override public String getLogin() { return "testuser"; }
       @Override public String getAvatarUrl() { return "avatar_url"; }
     };
-    GitHub gitHub = mock(GitHub.class);
     when(gitHub.getMyself()).thenReturn(myself);
     doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
 
@@ -875,7 +874,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetAndUpdateUser_ThrowsNotFoundException_OnIOException() throws Exception {
+  void testGetAndUpdateUserThrowsNotFoundExceptionOnIOException() throws Exception {
     // given
     String accessToken = "token";
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
