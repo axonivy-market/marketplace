@@ -35,6 +35,9 @@ class VersionFactoryTest  extends BaseSetup {
 
     resolvedVersion = VersionFactory.get(mockVersions, "dev");
     assertEquals("11.4.0-m1", resolvedVersion, "Should return highest dev release of that minor release");
+
+    resolvedVersion = VersionFactory.get(mockVersions, "latest");
+    assertEquals("10.0.0", resolvedVersion, "Should return highest official release");
   }
   @Test
   void testGetFromMetadata() {

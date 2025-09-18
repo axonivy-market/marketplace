@@ -10,9 +10,13 @@ import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.kohsuke.github.GHRelease;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +36,14 @@ public final class ProductContentUtils {
   public static final String SETUP = "setup";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s(\\s+\"[^\"]+\")?\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
+  private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
+  private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
+  private static final String GITHUB_USERNAME_REGEX = "@([\\p{Alnum}\\-]+)";
+  private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
+  private static final String GITHUB_MAIN_LINK = "https://github.com/";
+  private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
+  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
+      Pattern.UNICODE_CHARACTER_CLASS);
   public static final Pattern README_FILE_LOCALE_PATTERN =
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
@@ -65,7 +77,8 @@ public final class ProductContentUtils {
     return result;
   }
 
-
+  // Cover some cases including when demo and setup parts switch positions or
+  // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
     String[] parts = DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
@@ -176,5 +189,22 @@ public final class ProductContentUtils {
         readmeContentsModel.getDescription());
     moduleContents.computeIfAbsent(SETUP, key -> new HashMap<>()).put(locale, readmeContentsModel.getSetup());
     moduleContents.computeIfAbsent(DEMO, key -> new HashMap<>()).put(locale, readmeContentsModel.getDemo());
+  }
+
+  public static List<GHRelease> extractReleasesPage(List<GHRelease> ghReleases, Pageable pageable) {
+    int start = pageable.getPageNumber() * pageable.getPageSize();
+    if (start >= ghReleases.size()) {
+      return Collections.emptyList();
+    }
+    int end = Math.min(start + pageable.getPageSize(), ghReleases.size());
+    return ghReleases.subList(start, end);
+  }
+
+  public static String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
+    var body = StringUtils.defaultString(githubReleaseBody);
+    body = GITHUB_PULL_REQUEST_PATTERN.matcher(body).replaceAll(
+        productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    body = GITHUB_USERNAME_PATTERN.matcher(body).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    return body;
   }
 }

@@ -23,7 +23,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -101,6 +100,16 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String resolvedVersion = VersionFactory.get(docMetaVersion, version);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
         .findAny().orElse(null);
+  }
+
+  public String findBestMatchVersion(String productId, String version) {
+    var product = productRepo.findById(productId);
+    if (product.isEmpty()) {
+      return null;
+    }
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
+    return VersionFactory.get(docMetaVersion, version);
   }
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,

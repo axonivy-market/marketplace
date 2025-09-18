@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
@@ -52,10 +53,8 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -715,21 +714,18 @@ public class ProductServiceImpl implements ProductService {
         .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key = "{#productId}")
   @Override
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
-
-    PagedIterable<GHRelease> ghReleasePagedIterable = this.gitHubService.getRepository(
-        product.getRepositoryName()).listReleases();
-
-    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
+    List<GHRelease> ghReleases = gitHubService.getRepoOfficialReleases(product.getRepositoryName(), productId);
+    return this.gitHubService.getGitHubReleaseModels(ghReleases, pageable, productId, product.getRepositoryName(),
+        product.getSourceUrl());
   }
 
-  @CachePut(value = "GithubPublicReleasesCache", key = "{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);

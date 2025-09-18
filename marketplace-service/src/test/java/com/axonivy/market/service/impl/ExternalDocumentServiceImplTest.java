@@ -4,17 +4,20 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,6 +130,27 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     result = service.findAllProductsHaveDocument();
     assertNotNull(result, "Expected the result not to be null when repository returns a product");
     assertEquals(PORTAL, result.get(0).getId(), "Expected the first product ID to be PORTAL");
+  }
+
+  @Test
+  void testFindBestMatchVersion() {
+    String productId = "product1";
+    String version = "3.0.0";
+
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
+            ExternalDocumentMeta.builder().version(version).build()));
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(Collections.singletonList(version), version)).thenReturn(version);
+
+      String result = service.findBestMatchVersion(productId, version);
+
+      assertEquals(version, result, "Should return the matched version");
+      mockedVersionFactory.verify(() -> VersionFactory.get(Collections.singletonList(version), version));
+    }
+
+    verify(productRepository).findById(productId);
+    verify(externalDocumentMetaRepository).findByProductId(productId);
   }
 
   @Test

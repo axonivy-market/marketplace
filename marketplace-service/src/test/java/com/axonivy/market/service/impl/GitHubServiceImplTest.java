@@ -20,6 +20,7 @@ import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -46,6 +47,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -602,139 +604,13 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetGitHubReleaseModelsWithMixedReleases() throws IOException, URISyntaxException {
-    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
-      Link mockLink = mock(Link.class);
-      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
-
-      Product mockProduct = mock(Product.class);
-      GHRepository mockRepository = mock(GHRepository.class);
-      PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
-      GHRelease mockLatestRelease = mock(GHRelease.class);
-
-      String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
-      String mockProductSourceUrl = "http://example.com";
-      String mockVersion = "v1.0.0";
-      String mockRepositoryName = "axonivy-market/portal";
-      URL mockHtmlUrl1 = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
-
-      when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
-      when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-      when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
-
-      Pageable mockPageable = mock(Pageable.class);
-      GHRelease mockRelease1 = mock(GHRelease.class);
-      GHRelease mockRelease2 = mock(GHRelease.class);
-
-      when(mockRelease1.isDraft()).thenReturn(false);
-      when(mockRelease2.isDraft()).thenReturn(true);
-      when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);
-      when(mockRelease1.getName()).thenReturn(mockVersion);
-      when(mockRelease1.getPublished_at()).thenReturn(new Date());
-      when(mockRelease1.getHtmlUrl()).thenReturn(mockHtmlUrl1);
-      when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-      when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
-      when(mockLatestRelease.getName()).thenReturn(mockVersion);
-      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
-
-      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
-
-      assertNotNull(result, "Expected non-null Page of GitHubReleaseModel");
-      assertEquals(
-          1,
-          result.getTotalElements(),
-          "Expected only 1 release element because drafts should be excluded"
-      );
-    }
-  }
-
-  @Test
-  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException, URISyntaxException {
-    try (MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
-      Link mockLink = mock(Link.class);
-      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
-
-      String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
-      String mockProductSourceUrl = "http://example.com";
-      String mockRepositoryName = "axonivy-market/portal";
-      URL mockHtmlUrl = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
-      String mockVersion = "v1.0.0";
-
-      Product mockProduct = mock(Product.class);
-      GHRepository mockRepository = mock(GHRepository.class);
-      GHRelease mockRelease = mock(GHRelease.class);
-      GHRelease mockLatestRelease = mock(GHRelease.class);
-
-      when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
-      when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-      when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
-      when(mockRepository.getRelease(1L)).thenReturn(mockRelease);
-      when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
-      when(mockRelease.getName()).thenReturn(mockVersion);
-      when(mockRelease.getPublished_at()).thenReturn(new Date());
-      when(mockRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
-      when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
-
-      GitHubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
-
-      assertNotNull(result, "Expected non-null GitHubReleaseModel when fetching by product ID and release ID");
-      verify(gitHubService, atLeastOnce()).getRepository(mockRepositoryName);
-      verify(mockRepository).getRelease(1L);
-    }
-  }
-
-  @Test
-  void testTransformGithubReleaseBody() {
-    String githubReleaseBody = "This is a release body with PR #123 and user @johndoe";
-    String productSourceUrl = "http://example.com";
-
-    String result = gitHubService.transformGithubReleaseBody(githubReleaseBody, productSourceUrl);
-
-    assertNotNull(result, "Expected transformed release body to be non-null");
-    assertTrue(result.contains("http://example.com/pull/123"),
-        "Expected transformed release body to contain the correct pull request link");
-    assertTrue(result.contains("https://github.com/johndoe"),
-        "Expected transformed release body to contain the correct GitHub user link");
-  }
-
-  @Test
-  void testToGitHubReleaseModel() throws IOException, URISyntaxException {
-    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
-      Link mockLink = mock(Link.class);
-      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
-
-      GHRelease mockGhRelease = mock(GHRelease.class);
-      GHRelease mockLatestRelease = mock(GHRelease.class);
-      Product mockProduct = mock(Product.class);
-      URL mockHtmlUrl = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
-
-      when(mockGhRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
-      when(mockGhRelease.getName()).thenReturn("v1.0.0");
-      when(mockGhRelease.getPublished_at()).thenReturn(new Date());
-      when(mockGhRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
-      when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
-
-      GitHubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, mockLatestRelease.getName());
-
-      assertNotNull(result, "Expected non-null GitHubReleaseModel after transformation");
-      assertEquals("v1.0.0", result.getName(), "Expected GitHubReleaseModel name to match the release name");
-      assertTrue(result.getBody().contains("http://example.com"),
-          "Expected transformed release body to include the product source URL");
-    }
-  }
-
-  @Test
   void testGetGitHubReleaseModelsWithMEmptyReleases() throws IOException {
     Product mockProduct = mock(Product.class);
-    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
     Pageable mockPageable = mock(Pageable.class);
 
-    when(mockPagedIterable.toList()).thenReturn(Collections.emptyList());
 
-    Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+    Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(Collections.emptyList(), mockPageable,
+        mockProduct.getId(), mockProduct.getRepositoryName(), mockProduct.getSourceUrl());
 
     assertNotNull(result, "Expected non-null Page of GitHubReleaseModel even when there are no releases");
     assertTrue(result.isEmpty(), "Expected Page to be empty when there are no GitHub releases");
@@ -843,14 +719,140 @@ class GitHubServiceImplTest {
   }
 
   @Test
+  void testGetRepoOfficialReleasesWithEmptyReleases() throws IOException {
+    // Arrange
+    String repoName = "test-org/empty-repo";
+    String productId = "test-product-id";
+
+    GHRepository mockRepository = mock(GHRepository.class);
+    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+
+    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
+    doAnswer(invocation -> null).when(mockPagedIterable).forEach(any());
+
+    // Act
+    List<GHRelease> result = gitHubService.getRepoOfficialReleases(repoName, productId);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Should return empty list when no releases exist");
+
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+    verify(mockRepository).listReleases();
+  }
+
+  @Test
+  void testGetRepoOfficialReleasesWithIOExceptionThrown() throws IOException {
+    String repoName = "test-org/error-repo";
+    String productId = "test-product-id";
+
+    when(gitHubService.getRepository(repoName)).thenThrow(new IOException("Network error"));
+
+    assertThrows(IOException.class, () -> gitHubService.getRepoOfficialReleases(repoName, productId),
+        "Should propagate IOException when repository access fails");
+
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+  }
+
+  @Test
+  void testGetRepoOfficialReleasesWithMixedReleaseTypes() throws IOException {
+    String repoName = "test-org/mixed-repo";
+    String productId = "test-product-id";
+
+    GHRepository mockRepository = mock(GHRepository.class);
+    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+
+    GHRelease officialRelease1 = mock(GHRelease.class);
+    GHRelease draftRelease1 = mock(GHRelease.class);
+    GHRelease officialRelease2 = mock(GHRelease.class);
+    GHRelease draftRelease2 = mock(GHRelease.class);
+    GHRelease officialRelease3 = mock(GHRelease.class);
+
+    when(officialRelease1.isDraft()).thenReturn(false);
+    when(draftRelease1.isDraft()).thenReturn(true);
+    when(officialRelease2.isDraft()).thenReturn(false);
+    when(draftRelease2.isDraft()).thenReturn(true);
+    when(officialRelease3.isDraft()).thenReturn(false);
+
+    List<GHRelease> allReleases = Arrays.asList(officialRelease1, draftRelease1, officialRelease2, draftRelease2,
+        officialRelease3);
+
+    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
+    doAnswer(invocation -> {
+      Consumer<GHRelease> consumer = invocation.getArgument(0);
+      allReleases.forEach(consumer);
+      return null;
+    }).when(mockPagedIterable).forEach(any());
+
+    List<GHRelease> result = gitHubService.getRepoOfficialReleases(repoName, productId);
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals(3, result.size(), "Should return only the 3 official (non-draft) releases");
+    assertTrue(result.contains(officialRelease1), "Should contain first official release");
+    assertTrue(result.contains(officialRelease2), "Should contain second official release");
+    assertTrue(result.contains(officialRelease3), "Should contain third official release");
+    assertFalse(result.contains(draftRelease1), "Should not contain first draft release");
+    assertFalse(result.contains(draftRelease2), "Should not contain second draft release");
+    verify(gitHubService, atLeastOnce()).getRepository(repoName);
+    verify(mockRepository).listReleases();
+  }
+
+  @Test
+  void testGetGitHubReleaseModels() throws IOException {
+    List<GHRelease> allReleases = Arrays.asList(
+        mock(GHRelease.class),
+        mock(GHRelease.class),
+        mock(GHRelease.class)
+    );
+    List<GHRelease> pagedReleases = Arrays.asList(allReleases.get(0), allReleases.get(1));
+    Pageable pageable = mock(Pageable.class);
+    String productId = "prod-1";
+    String productRepoName = "repo-1";
+    String productSourceUrl = "http://source.url";
+    GHRelease latestRelease = mock(GHRelease.class);
+    when(latestRelease.getName()).thenReturn("latest-release");
+    try (MockedStatic<ProductContentUtils> utilsMock = Mockito.mockStatic(ProductContentUtils.class)) {
+      utilsMock.when(() -> ProductContentUtils.extractReleasesPage(allReleases, pageable)).thenReturn(pagedReleases);
+      doReturn(latestRelease).when(gitHubService).getGitHubLatestReleaseByProductId(productRepoName);
+      when(pagedReleases.get(0).getName()).thenReturn("release-1");
+      when(pagedReleases.get(1).getName()).thenReturn("latest-release");
+      GitHubReleaseModel model1 = new GitHubReleaseModel();
+      model1.setName("release-1");
+      GitHubReleaseModel model2 = new GitHubReleaseModel();
+      model2.setName("latest-release");
+      doReturn(model1).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId,
+          false);
+      doReturn(model2).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId,
+          true);
+      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(allReleases, pageable, productId,
+          productRepoName, productSourceUrl);
+      assertEquals(2, result.getContent().size(), "Should return two models for the paged releases");
+      assertEquals("release-1", result.getContent().get(0).getName(), "First model name should match first release");
+      assertEquals("latest-release", result.getContent().get(1).getName(),
+          "Second model name should match latest release");
+      verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId, false);
+      verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId, true);
+    }
+  }
+
+  @Test
   void testGetAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
     String accessToken = "token";
     // Use anonymous class as a fake
     GHMyself myself = new GHMyself() {
-      @Override public long getId() { return 123L; }
-      @Override public String getName() { return "Test User"; }
-      @Override public String getLogin() { return "testuser"; }
-      @Override public String getAvatarUrl() { return "avatar_url"; }
+      @Override
+      public long getId() {return 123L;}
+
+      @Override
+      public String getName() {return "Test User";}
+
+      @Override
+      public String getLogin() {return "testuser";}
+
+      @Override
+      public String getAvatarUrl() {return "avatar_url";}
     };
     when(gitHub.getMyself()).thenReturn(myself);
     doReturn(gitHub).when(gitHubService).getGitHub(accessToken);

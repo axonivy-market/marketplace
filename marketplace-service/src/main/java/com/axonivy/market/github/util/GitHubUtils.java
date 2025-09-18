@@ -3,7 +3,6 @@ package com.axonivy.market.github.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -114,9 +113,9 @@ public class GitHubUtils {
     }
   }
 
-  public static Link createSelfLinkForGithubReleaseModel(Product product, GHObject ghRelease) throws IOException {
+  public static Link createSelfLinkForGithubReleaseModel(String productId, long ghReleaseId) throws IOException {
     return linkTo(
-        methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
-            ghRelease.getId())).withSelfRel();
+        methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(productId,
+            ghReleaseId)).withSelfRel();
   }
 }
