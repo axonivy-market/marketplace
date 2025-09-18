@@ -28,6 +28,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -173,6 +174,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     if (totalDependencyLevels > SAFE_THRESHOLD) {
       throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(), ErrorCode.INTERNAL_EXCEPTION.getHelpText());
     }
+    List<ProductDependency> newDependency = new ArrayList<>();
     for (var dependencyModel : dependencyModels) {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
@@ -192,7 +194,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
       // Save the dependency to database if it's new (doesn't have an ID yet)
       if (dependency.getId() == null) {
-        dependency = productDependencyRepository.save(dependency);
+        newDependency.add(dependency);
       }
 
       productDependencies.add(dependency);
@@ -202,6 +204,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
         totalDependencyLevels++;
         collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
+      }
+
+      if(!newDependency.isEmpty())
+      {
+        List<ProductDependency> saved =  productDependencyRepository.saveAll(newDependency);
+        productDependencies.addAll(saved);
       }
     }
   }

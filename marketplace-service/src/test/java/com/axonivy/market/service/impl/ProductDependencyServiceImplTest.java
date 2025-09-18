@@ -136,6 +136,32 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     assertTrue(totalSynced > 0, "Expected at least one product was synced");
   }
 
+  @Test
+  void testSyncWithBatchSaveOfNewDependencies() throws IOException {
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    // Simulate no existing dependencies, so new ones will be created
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    // Mock saveAll to assign IDs
+    when(productDependencyRepository.saveAll(anyList()))
+        .thenAnswer(invocation -> {
+          List<ProductDependency> deps = invocation.getArgument(0);
+          deps.forEach(dep -> dep.setId("batch-" + dep.getArtifactId()));
+          return deps;
+        });
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    // Verify batch save was called
+    verify(productDependencyRepository, atLeastOnce()).saveAll(anyList());
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
+  }
   private void prepareTestData(String mockProductId) throws IOException {
     List<MavenArtifactVersion> mavenArtifactVersionMockList = new ArrayList<>();
     var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
