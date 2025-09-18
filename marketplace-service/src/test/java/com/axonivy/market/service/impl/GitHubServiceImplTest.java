@@ -843,7 +843,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void getAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
+  void testGetAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
     String accessToken = "token";
     // Use anonymous class as a fake
     GHMyself myself = new GHMyself() {

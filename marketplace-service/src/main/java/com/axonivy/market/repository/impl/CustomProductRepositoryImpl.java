@@ -184,7 +184,7 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
   private List<Product> getPagedProductsByCriteria(
       CriteriaQueryContext<Product> criteriaContext,
       ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
-    Language language = Language.EN;
+    var language = Language.EN;
     if (searchCriteria.getLanguage() != null) {
       language = searchCriteria.getLanguage();
     }
@@ -263,7 +263,7 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
   private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
     List<Predicate> filters = new ArrayList<>();
-    Language language = Language.EN;
+    var language = Language.EN;
     if (searchCriteria.getLanguage() != null) {
       language = searchCriteria.getLanguage();
     }
