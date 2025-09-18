@@ -81,7 +81,7 @@ class ImageServiceImplTest extends BaseSetup {
     when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
 
     byte[] mockResult = "content".getBytes();
-    when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
+    when(content.read()).thenThrow(new IOException("Unrecognized encoding"));
     when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn(mockResult);
 
     imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
