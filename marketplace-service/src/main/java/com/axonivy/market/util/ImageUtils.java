@@ -47,7 +47,7 @@ public final class ImageUtils {
   }
 
   private static String replaceImageIdWithImageLink(boolean isProduction, String value, String imageId) {
-    String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
+    var rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
     String imageLink;
     if (isProduction) {
       imageLink = createImageUrlForProduction(rawId);

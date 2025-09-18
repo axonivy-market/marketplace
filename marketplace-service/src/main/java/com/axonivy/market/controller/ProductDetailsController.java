@@ -157,7 +157,7 @@ public class ProductDetailsController {
           example = "ivy-demos-app.zip") String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
     HttpStatusCode statusCode;
-    if(StringUtils.isBlank(downloadUrl)) {
+    if (StringUtils.isBlank(downloadUrl)) {
       statusCode = HttpStatus.NOT_FOUND;
     } else {
       statusCode = HttpStatus.OK;

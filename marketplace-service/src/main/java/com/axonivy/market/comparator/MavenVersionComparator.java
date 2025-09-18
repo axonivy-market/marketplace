@@ -12,7 +12,7 @@ import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public final class MavenVersionComparator {
-  private static final Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
+  private static final Pattern DIGIT_REGEX_PATTERN = Pattern.compile(CommonConstants.DIGIT_REGEX);
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final int GREATER_THAN = 1;
   private static final int EQUAL = 0;
@@ -46,10 +46,8 @@ public final class MavenVersionComparator {
     return result;
   }
 
-//  private static
-
   private static String stripLeadingChars(String version) {
-    var matcher = pattern.matcher(version);
+    var matcher = DIGIT_REGEX_PATTERN.matcher(version);
     if (matcher.find()) {
       return matcher.group(1);
     }
@@ -72,7 +70,7 @@ public final class MavenVersionComparator {
   }
 
   private static String getQualifierPart(String[] versionParts) {
-    if(versionParts.length > 1) {
+    if (versionParts.length > 1 && versionParts[1] != null) {
       return versionParts[1];
     } else {
       return EMPTY;

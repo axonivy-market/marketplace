@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHObject;
-import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.hateoas.Link;
 
@@ -20,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -78,7 +78,7 @@ public class GitHubUtils {
     for (GHContent file : files) {
       if (file.isDirectory()) {
         findImagesInDirectory(file, images);
-      } else if (IMAGE_EXTENSION_PATTERN.matcher(file.getName()).matches()) {
+      } else if (IMAGE_EXTENSION_PATTERN.matcher(file.getName().toLowerCase(Locale.getDefault())).matches()) {
         images.add(file);
       }
     }

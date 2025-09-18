@@ -43,7 +43,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
     boolean isRequestPathMatched = requestPaths.stream().anyMatch(apiPath::contains);
     if (isRequestPathMatched) {
-      var bucket = clientBuckets .computeIfAbsent(clientIp, this::createNewBucket);
+      var bucket = clientBuckets.computeIfAbsent(clientIp, this::createNewBucket);
 
       if (bucket.tryConsume(1)) {
         log.warn("Request allowed for IP: {}. Remaining tokens: {}", clientIp, bucket.getAvailableTokens());

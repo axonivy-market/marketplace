@@ -66,7 +66,9 @@ public class ProductContentServiceImpl implements ProductContentService {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
     } finally {
-      fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
+      if (StringUtils.isNotBlank(unzippedFolderPath)) {
+        fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
+      }
     }
     return productModuleContent;
   }
@@ -128,7 +130,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       }
 
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error(e);
     }
     return readmeContents;

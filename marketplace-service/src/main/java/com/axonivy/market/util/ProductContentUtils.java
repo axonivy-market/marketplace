@@ -65,12 +65,7 @@ public final class ProductContentUtils {
     return result;
   }
 
-  // Cover some cases including when demo and setup parts switch positions or
-  // missing one of them
-  // Using literal 1 and 2 here is intentional:
-  // static analysis tools can precisely reason about array bounds with literals,
-  // while constants would obscure the checks and may trigger false index-out-of-bounds warnings.
-  @SuppressWarnings("java:S109")
+
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
     String[] parts =  DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
@@ -79,23 +74,23 @@ public final class ProductContentUtils {
     String setup = Strings.EMPTY;
     String demo = Strings.EMPTY;
 
-    if (parts.length > 0) {
-      description = removeFirstLine(parts[0]);
+    if (parts.length > CommonConstants.ZERO) {
+      description = removeFirstLine(parts[CommonConstants.ZERO]);
     }
 
-    if (parts.length == 2) {
+    if (parts.length == CommonConstants.TWO) {
       if (demoIndex != -1) {
-        demo = parts[1];
+        demo = parts[CommonConstants.ONE];
       } else {
-        setup = parts[1];
+        setup = parts[CommonConstants.ONE];
       }
-    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
+    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > CommonConstants.TWO) {
       if (demoIndex < setupIndex) {
-        demo = parts[1];
-        setup = parts[2];
+        demo = parts[CommonConstants.ONE];
+        setup = parts[CommonConstants.TWO];
       } else {
-        setup = parts[1];
-        demo = parts[2];
+        setup = parts[CommonConstants.ONE];
+        demo = parts[CommonConstants.TWO];
       }
     }
 

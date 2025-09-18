@@ -223,10 +223,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private MavenArtifactVersion findDownloadURLForDependency(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(productId,
         artifactId, version);
-    MavenArtifactVersion dependencyArtifact;
-    if (ObjectUtils.isEmpty(mavenArtifactVersions)) {
-      dependencyArtifact = null;
-    } else {
+    MavenArtifactVersion dependencyArtifact = null;
+    if (!ObjectUtils.isEmpty(mavenArtifactVersions)) {
       dependencyArtifact = mavenArtifactVersions.get(0);
     }
     Objects.requireNonNull(dependencyArtifact, "Cannot found the dependency artifact of " + artifactId);

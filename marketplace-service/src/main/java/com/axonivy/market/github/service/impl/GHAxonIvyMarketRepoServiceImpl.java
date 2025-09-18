@@ -57,7 +57,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Cannot fetch GHContent: ", e);
     }
     return ghContentMap;
@@ -110,7 +110,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         GitHubUtils.mapPagedIteratorToList(listFiles).
             forEach((File file) -> addGitHubFileToMap(file, marketRepo, gitHubFileMap));
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Cannot get GH compare: ", e);
     }
     return new ArrayList<>(gitHubFileMap.values());
@@ -154,7 +154,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     try {
       ghContent = gitHubService.getDirectoryContent(getRepository(),
           itemPath, marketRepoBranch);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Cannot fetch GHContent: ", e);
     }
     return ghContent;

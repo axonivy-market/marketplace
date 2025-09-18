@@ -83,12 +83,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    Pageable refinedPageable;
+    Pageable refinedPageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_10);
     if (pageable != null) {
       refinedPageable = refinePagination(pageable);
-    } else {
-      refinedPageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_10);
     }
+
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinedPageable);
     return new PageImpl<>(feedbacks, refinedPageable, feedbacks.size());
@@ -132,7 +131,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   private void applyUpdatesToFeedback(FeedbackApprovalModel feedbackApproval, Feedback existingFeedback) {
     boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
-    FeedbackStatus newStatus;
+    var newStatus = FeedbackStatus.REJECTED;
     if (isApproved) {
       newStatus = FeedbackStatus.APPROVED;
       List<Feedback> approvedLatestFeedbacks = feedbackRepository
@@ -144,8 +143,6 @@ public class FeedbackServiceImpl implements FeedbackService {
         currentLatest.setIsLatest(null);
         feedbackRepository.save(currentLatest);
       }
-    } else {
-      newStatus = FeedbackStatus.REJECTED;
     }
     existingFeedback.setFeedbackStatus(newStatus);
     existingFeedback.setModeratorName(feedbackApproval.getModeratorName());

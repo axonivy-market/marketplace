@@ -61,6 +61,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static com.axonivy.market.enums.AccessLevel.ENABLED;
+import static com.axonivy.market.enums.AccessLevel.DISABLED;
+import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
 
 @Log4j2
 @Service
@@ -345,13 +348,13 @@ public class GitHubServiceImpl implements GitHubService {
       } else {
         instance = mapAlerts.apply(List.of());
       }
-      setStatus(instance, com.axonivy.market.enums.AccessLevel.ENABLED);
+      setStatus(instance, ENABLED);
     } catch (HttpClientErrorException.Forbidden e) {
       log.error("Access forbidden: ", e);
-      setStatus(instance, com.axonivy.market.enums.AccessLevel.DISABLED);
+      setStatus(instance, DISABLED);
     } catch (HttpClientErrorException.NotFound e) {
       log.error("Alerts not found: ", e);
-      setStatus(instance, com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
+      setStatus(instance, NO_PERMISSION);
     }
     return instance;
   }
@@ -416,8 +419,8 @@ public class GitHubServiceImpl implements GitHubService {
     return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease.getName());
   }
 
-  public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    String withPullRequests = GITHUB_PULL_REQUEST_NUMBER_PATTERN.matcher(githubReleaseBody)
+  public String transformGithubReleaseBody(String gitHubReleaseBody, String productSourceUrl) {
+    String withPullRequests = GITHUB_PULL_REQUEST_NUMBER_PATTERN.matcher(gitHubReleaseBody)
         .replaceAll(productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP);
 
     return GITHUB_USERNAME_PATTERN.matcher(withPullRequests)

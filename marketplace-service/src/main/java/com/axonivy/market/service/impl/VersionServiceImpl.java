@@ -4,7 +4,6 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -20,7 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 

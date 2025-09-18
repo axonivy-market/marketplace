@@ -52,8 +52,8 @@ public class MavenUtils {
     try {
       return extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
-      log.error(e);
       log.error("Can not get maven artifacts from Product.json of {}", productJson);
+      log.error(e);
       return new ArrayList<>();
     }
   }
@@ -113,7 +113,8 @@ public class MavenUtils {
     try {
       return Files.newInputStream(filePath);
     } catch (IOException e) {
-      log.warn("Cannot read the current file: {}", e.getMessage());
+      log.error("Cannot read the current file: {}", e.getMessage());
+      log.error(e);
       return null;
     }
   }
@@ -159,8 +160,8 @@ public class MavenUtils {
     try (InputStream contentStream = extractedContentStream(filePath)) {
       return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
     } catch (Exception e) {
-      log.error(e);
       log.error("Cannot extract product.json file {}", filePath);
+      log.error(e);
       return null;
     }
   }

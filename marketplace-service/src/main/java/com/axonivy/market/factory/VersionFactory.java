@@ -27,7 +27,7 @@ public class VersionFactory {
   // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
   private static final Pattern RANGE_VERSION_PATTERN = Pattern.compile("[\\[\\]()]");
   // The arrays of all operators can appear in maven range version format
-  private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
+  private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[]{"(", "]", "[", ")"};
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
@@ -42,7 +42,7 @@ public class VersionFactory {
   private static String extractVersionFromRange(String mavenVersion) {
     var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
     String[] parts = plainVersions.split(CommonConstants.COMMA);
-    if(parts.length > 1) {
+    if (parts.length > CommonConstants.ONE) {
       return parts[1].trim();
     }
     return parts[0].trim();
@@ -83,12 +83,11 @@ public class VersionFactory {
       return releasedVersions.stream().min(new LatestVersionComparator()).orElse(EMPTY);
     }
 
-    // Handle all other cases
     String result;
     if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
       // Get latest dev version from specific version
-      String cleanedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
-      result = findVersionStartWith(artifactVersions, cleanedVersion);
+      String latestDevVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
+      result = findVersionStartWith(artifactVersions, latestDevVersion);
     } else {
       String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
 
@@ -105,7 +104,7 @@ public class VersionFactory {
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    if(CollectionUtils.isEmpty(releaseVersions)) {
+    if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
     }
     return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(version);

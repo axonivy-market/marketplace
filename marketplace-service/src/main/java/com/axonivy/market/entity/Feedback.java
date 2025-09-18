@@ -48,7 +48,7 @@ public class Feedback extends AuditableIdEntity {
   private Boolean isLatest;
 
   public void setContent(String content) {
-    if(content != null) {
+    if (content != null) {
       this.content = content.trim();
     } else {
       this.content = null;

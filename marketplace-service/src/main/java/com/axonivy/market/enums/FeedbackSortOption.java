@@ -25,7 +25,7 @@ public enum FeedbackSortOption {
   private final List<Sort.Direction> directions;
 
   public static FeedbackSortOption of(String option) {
-    if (!StringUtils.isBlank(option)) {
+    if (StringUtils.isNotBlank(option)) {
       option = option.trim();
     }
     for (var feedbackSortOption : values()) {

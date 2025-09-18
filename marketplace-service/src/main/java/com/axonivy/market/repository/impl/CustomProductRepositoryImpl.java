@@ -94,13 +94,10 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
     var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    long total;
-    if (resultList.size() < pageable.getPageSize()) {
-      total = resultList.size();
-    } else {
-      total = getTotalCount(
-          criteriaContext.builder(),
-          searchCriteria);
+
+    long total = resultList.size();
+    if (resultList.size() >= pageable.getPageSize()) {
+      total = getTotalCount(criteriaContext.builder(), searchCriteria);
     }
 
     return new PageImpl<>(resultList, pageable, total);
@@ -187,11 +184,9 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
   private List<Product> getPagedProductsByCriteria(
       CriteriaQueryContext<Product> criteriaContext,
       ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
-    Language language;
+    Language language = Language.EN;
     if (searchCriteria.getLanguage() != null) {
       language = searchCriteria.getLanguage();
-    } else {
-      language = Language.EN;
     }
 
     var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
@@ -268,12 +263,11 @@ public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product>
   private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
     List<Predicate> filters = new ArrayList<>();
-    Language language;
+    Language language = Language.EN;
     if (searchCriteria.getLanguage() != null) {
       language = searchCriteria.getLanguage();
-    } else {
-      language = Language.EN;
     }
+
     List<DocumentField> filterProperties = new ArrayList<>(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
     if (ObjectUtils.isNotEmpty(searchCriteria.getFields())) {
       filterProperties.clear();
