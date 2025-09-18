@@ -43,9 +43,9 @@ public class VersionFactory {
     var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
     String[] parts = plainVersions.split(CommonConstants.COMMA);
     if (parts.length > CommonConstants.ONE) {
-      return parts[1].trim();
+      return parts[CommonConstants.ONE].trim();
     }
-    return parts[0].trim();
+    return parts[CommonConstants.ZERO].trim();
   }
 
   public static String get(List<String> versions, String requestedVersion) {
