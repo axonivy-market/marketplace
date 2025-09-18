@@ -37,7 +37,7 @@ public class GitHubUtils {
     if (commit != null) {
       try {
         commitTime = commit.getCommitDate().getTime();
-      } catch (Exception e) {
+      } catch (IOException e) {
         log.error("Check last commit failed", e);
       }
     }

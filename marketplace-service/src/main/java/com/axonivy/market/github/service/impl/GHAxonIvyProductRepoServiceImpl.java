@@ -69,7 +69,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Cannot get README file's content {}", e.getMessage());
     }
   }

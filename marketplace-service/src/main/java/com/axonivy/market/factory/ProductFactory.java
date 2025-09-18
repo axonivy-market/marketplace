@@ -55,7 +55,7 @@ public class ProductFactory {
     Meta meta;
     try {
       meta = jsonDecode(ghContent);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Mapping from Meta file by GHContent failed", e);
       return product;
     }
