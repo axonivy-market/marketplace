@@ -278,7 +278,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsFirstTime() throws IOException {
-    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1WithCommitDate(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
     when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
@@ -303,7 +303,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsFirstTimeWithOutSourceUrl() throws IOException {
-    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1WithCommitDate(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
 
@@ -405,8 +405,8 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncNullProductModuleContent() {
-    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+  void testSyncNullProductModuleContent() throws IOException {
+    var mockCommit = mockGHCommitHasSHA1WithCommitDate(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
 
@@ -566,6 +566,13 @@ class ProductServiceImplTest extends BaseSetup {
   private GHCommit mockGHCommitHasSHA1(String sha1) {
     var mockCommit = mock(GHCommit.class);
     when(mockCommit.getSHA1()).thenReturn(sha1);
+    return mockCommit;
+  }
+
+  private GHCommit mockGHCommitHasSHA1WithCommitDate(String sha1) throws IOException {
+    var mockCommit = mock(GHCommit.class);
+    when(mockCommit.getSHA1()).thenReturn(sha1);
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
     return mockCommit;
   }
 
