@@ -232,13 +232,10 @@ public class MavenUtils {
       ArchivedArtifact archivedArtifact) {
     String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
         convertArtifactIdToName(artifact.getArtifactId()));
-    String artifactId;
-    String groupId;
 
-    if (Objects.isNull(archivedArtifact)) {
-      artifactId = artifact.getArtifactId();
-      groupId = artifact.getGroupId();
-    } else {
+    var artifactId = artifact.getArtifactId();
+    var groupId = artifact.getGroupId();
+    if (Objects.nonNull(archivedArtifact)) {
       artifactId = archivedArtifact.getArtifactId();
       groupId = archivedArtifact.getGroupId();
     }

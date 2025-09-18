@@ -67,7 +67,7 @@ public final class ProductContentUtils {
 
 
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    String[] parts =  DEMO_SETUP_PATTERN.split(readmeContents);
+    String[] parts = DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
     String description = Strings.EMPTY;

@@ -1,5 +1,5 @@
 import { TranslateLoader } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Injectable, Inject, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -15,7 +15,7 @@ export class TranslateUniversalLoader implements TranslateLoader {
     @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {}
 
-  getTranslation(lang: string) {
+  getTranslation(lang: string): Observable<Object> {
     const key = makeStateKey<Object>(`${TRANSLATE_KEY}-${lang}`);
 
     // Check if we have cached translations in transfer state
