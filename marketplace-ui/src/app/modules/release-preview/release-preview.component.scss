@@ -231,3 +231,46 @@ button:disabled {
 .dropdown-tab {
   margin-top: 10px;
 }
+
+.drag-drop-area {
+  border: 2px dashed var(--ivy-border-color);
+  background: var(--ivy-surface-color);
+  border-radius: 8px;
+  padding: 7.8rem;
+  cursor: pointer;
+  flex-direction: column;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  position: relative;
+  transition: border-color .25s ease, background-color .25s ease, color .25s ease;
+}
+
+.drag-drop-area.has-file {
+  padding: calc(7.8rem / 3.5);
+}
+
+.drag-drop-area.has-error {
+  border-color: var(--release-preview-error-color);
+}
+
+.drag-drop-area .error-message {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--release-preview-error-color);
+  word-break: break-word;
+}
+
+.drag-drop-area.dragging {
+  border-color: var(--active-tab-indicator-color);
+  background: rgba(13, 110, 253, 0.06);
+  color: var(--ivy-text-primary-color);
+}
+
+.drag-drop-area:focus-visible {
+  outline: 3px solid var(--active-tab-indicator-color, #0d6efd);
+  outline-offset: 2px;
+}
+
+.selected-file {
+  font-size: 1.4rem;
+}
