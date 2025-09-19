@@ -28,21 +28,27 @@ public final class MavenVersionComparator {
     String[] versionParts = createMainAndQualifierArray(version);
     String[] otherVersionParts = createMainAndQualifierArray(otherVersion);
 
-    int result = compareMainVersion(versionParts[0], otherVersionParts[0]);
-
-    if (result == EQUAL) {
-      String qualifier1 = getQualifierPart(versionParts);
-      String qualifier2 = getQualifierPart(otherVersionParts);
-
-      if (qualifier1.isEmpty() && !qualifier2.isEmpty()) {
-        result = GREATER_THAN;
-      } else if (!qualifier1.isEmpty() && qualifier2.isEmpty()) {
-        result = LESS_THAN;
-      } else {
-        result = compareQualifier(qualifier1, qualifier2);
-      }
+    // Compare main version parts
+    int mainComparison = compareMainVersion(versionParts[0], otherVersionParts[0]);
+    if (mainComparison != EQUAL) {
+      return mainComparison;
     }
+    return compareByQualifierPresence(versionParts, otherVersionParts);
+  }
 
+  private static int compareByQualifierPresence(String[] versionParts, String[] otherVersionParts) {
+    int result;
+    // Compare qualifiers
+    String qualifier1 = getQualifierPart(versionParts);
+    String qualifier2 = getQualifierPart(otherVersionParts);
+    // Consider versions without a qualifier higher than those with qualifiers
+    if (qualifier1.isEmpty() && !qualifier2.isEmpty()) {
+      result = GREATER_THAN;
+    } else if (!qualifier1.isEmpty() && qualifier2.isEmpty()) {
+      result = LESS_THAN;
+    } else {
+      result = compareQualifier(qualifier1, qualifier2);
+    }
     return result;
   }
 

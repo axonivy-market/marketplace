@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
@@ -10,11 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -27,6 +30,9 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest extends BaseSetup {
@@ -111,7 +117,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
       Path resultPath = fileDownloadService.createFolder(location);
 
       mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
-      assertEquals(mockPath, resultPath, "Expected the returned path to match the requested path even if creation fails");
+      assertEquals(mockPath, resultPath,
+          "Expected the returned path to match the requested path even if creation fails");
     }
   }
 
@@ -160,7 +167,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
           .thenReturn(mockTempPath);
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
-      assertEquals(EXTRACT_DIR_LOCATION, result, "Expected the downloadAndUnzipFile method to return the extract directory location");
+      assertEquals(EXTRACT_DIR_LOCATION, result,
+          "Expected the downloadAndUnzipFile method to return the extract directory location");
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(mockTempPath, mockFileContent), times(1));
       verify(spyService).unzipFile(mockTempPath.toString(), EXTRACT_DIR_LOCATION);
@@ -185,7 +193,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
           .thenReturn(mockTempPath);
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
-      assertEquals(EXTRACT_DIR_LOCATION, result, "Expected the downloadAndUnzipFile method to return the extract directory even if file content is null");
+      assertEquals(EXTRACT_DIR_LOCATION, result,
+          "Expected the downloadAndUnzipFile method to return the extract directory even if file content is null");
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
     }
@@ -231,5 +240,126 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
     assertNull(result, "Result should come from the rest template");
     verify(restTemplate, times(2)).exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
+  }
+
+  @Test
+  void testDownloadFileShouldReturnBytesWhenRestTemplateSucceeds() {
+    String url = "http://example.com/file.zip";
+    byte[] expectedBytes = "test-data".getBytes();
+
+    when(restTemplate.getForObject(url, byte[].class)).thenReturn(expectedBytes);
+
+    byte[] result = fileDownloadService.downloadFile(url);
+
+    assertEquals(expectedBytes, result, "Expected the same byte array returned from RestTemplate");
+    verify(restTemplate).getForObject(url, byte[].class);
+  }
+
+  @Test
+  void testDownloadFileShouldReturnEmptyArrayWhenRestTemplateThrowsException() {
+    String url = "http://example.com/file.zip";
+    when(restTemplate.getForObject(url, byte[].class)).thenThrow(new RestClientException("boom"));
+
+    byte[] result = fileDownloadService.downloadFile(url);
+
+    assertThat(result).as("Expected an empty array when RestTemplate throws an exception").isEmpty();
+    verify(restTemplate).getForObject(url, byte[].class);
+  }
+
+  @Test
+  void getFileAsStringShouldReturnContentWhenRestTemplateSucceeds() {
+    // given
+    String url = "http://example.com/file.txt";
+    String expected = "Hello World";
+    when(restTemplate.getForObject(url, String.class)).thenReturn(expected);
+
+    // when
+    String result = fileDownloadService.getFileAsString(url);
+
+    // then
+    assertThat(result)
+        .as("Expected the same content returned by RestTemplate")
+        .isEqualTo(expected);
+
+    verify(restTemplate).getForObject(url, String.class);
+  }
+
+  @Test
+  void getFileAsStringShouldReturnEmptyWhenRestTemplateThrowsException() {
+    String url = "http://example.com/error.txt";
+    when(restTemplate.getForObject(url, String.class))
+        .thenThrow(new RestClientException("boom"));
+
+    String result = fileDownloadService.getFileAsString(url);
+
+    assertThat(result)
+        .as("Expected empty string when RestTemplate throws exception")
+        .isEmpty();
+
+    verify(restTemplate).getForObject(url, String.class);
+  }
+
+  @Test
+  void fetchUrlResourceShouldReturnResponseEntityWhenRestTemplateSucceeds() {
+    String url = "http://example.com/resource";
+    Resource resource = mock(Resource.class);
+    ResponseEntity<Resource> expected = ResponseEntity.ok(resource);
+
+    when(restTemplate.exchange(url, HttpMethod.GET, null, Resource.class))
+        .thenReturn(expected);
+
+    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
+
+    assertThat(result)
+        .as("Expected ResponseEntity returned from RestTemplate.exchange")
+        .isEqualTo(expected);
+
+    verify(restTemplate).exchange(url, HttpMethod.GET, null, Resource.class);
+  }
+
+  @Test
+  void fetchUrlResourceShouldReturnNullWhenRestTemplateThrowsException() {
+    String url = "http://example.com/error";
+    when(restTemplate.exchange(url, HttpMethod.GET, null, Resource.class))
+        .thenThrow(new RestClientException("boom"));
+
+    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
+
+    assertThat(result)
+        .as("Expected null when RestTemplate.exchange throws RestClientException")
+        .isNull();
+
+    verify(restTemplate).exchange(url, HttpMethod.GET, null, Resource.class);
+  }
+
+  @Test
+  void testDownloadAndUnzipFileSuccessfullyWithDownloadOptionAndShouldGrantPermissionTrue() throws IOException {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    byte[] mockFileContent = "mock zip content".getBytes();
+    doReturn(mockFileContent).when(spyService).downloadFile(DOWNLOAD_URL);
+    doReturn(100).when(spyService).unzipFile(any(String.class), any(String.class));
+
+    DownloadOption option = DownloadOption.builder()
+        .isForced(false)
+        .workingDirectory(EXTRACT_DIR_LOCATION)
+        .shouldGrantPermission(true)
+        .build();
+
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+      Path mockTempPath = Paths.get(ZIP_FILE_PATH);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class), any()))
+          .thenReturn(mockTempPath);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class)))
+          .thenReturn(mockTempPath);
+
+      String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
+      assertEquals(EXTRACT_DIR_LOCATION, result,
+          "Expected the downloadAndUnzipFile method to return the extract directory location");
+      verify(spyService).downloadFile(DOWNLOAD_URL);
+      mockedFiles.verify(() -> Files.write(mockTempPath, mockFileContent), times(1));
+      verify(spyService).unzipFile(mockTempPath.toString(), EXTRACT_DIR_LOCATION);
+      mockedFiles.verify(() -> Files.delete(mockTempPath), times(1));
+      verify(spyService).grantNecessaryPermissionsFor(EXTRACT_DIR_LOCATION);
+    }
   }
 }
