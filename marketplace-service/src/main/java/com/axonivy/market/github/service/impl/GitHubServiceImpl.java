@@ -107,7 +107,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHRepository getRepository(String repositoryPath) throws IOException {
+  public GHRepository getRepository(String repositoryPath){
     try {
       return getGitHub().getRepository(repositoryPath);
     } catch (GHFileNotFoundException e) {

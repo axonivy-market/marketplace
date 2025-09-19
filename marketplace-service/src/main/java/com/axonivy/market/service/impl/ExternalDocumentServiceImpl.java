@@ -1,24 +1,26 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.config.MarketplaceConfig;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
+import com.axonivy.market.model.DocumentLanguageResponse;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
@@ -27,15 +29,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-import com.axonivy.market.config.MarketplaceConfig;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -43,12 +48,14 @@ import com.axonivy.market.config.MarketplaceConfig;
 public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
+  private static final String DOC_URL_PATTERN_WITH_HOST = "%s%sindex.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
   private final ProductRepository productRepo;
   private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   private final FileDownloadService fileDownloadService;
   private final ArtifactRepository artifactRepo;
   private final MarketplaceConfig marketplaceConfig;
+  private static final List<String> DOC_VERSIONS = List.of("10.0", "12.0", "13.2", "dev");
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
@@ -101,6 +108,46 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .findAny().orElse(null);
   }
 
+  @Override
+  public DocumentLanguageResponse findDocVersionsAndLanguages(String productId, String version, String language, String host) {
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    if (docMetas.isEmpty()) {
+      return null;
+    }
+    List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
+    List<DocumentLanguageResponse.DocumentVersion> documentVersions = new ArrayList<>();
+    List<DocumentLanguageResponse.DocumentLanguage> documentLanguages = new ArrayList<>();
+    String bestMatchVersionForLanguage = VersionFactory.get(docMetaVersion, version);
+    for (String docVersion : DOC_VERSIONS) {
+      String bestMatchVersion = VersionFactory.get(docMetaVersion, docVersion);
+      if (bestMatchVersion == null) {
+        break;
+      }
+      for (ExternalDocumentMeta meta : docMetas) {
+        String finalLanguage = meta.getRelativeLink().contains(DocumentLanguage.JAPANESE.getCode())
+                ? DocumentLanguage.JAPANESE.getCode()
+                : DocumentLanguage.ENGLISH.getCode();
+        if (!StringUtils.equals(meta.getVersion(), bestMatchVersion)) {
+          break;
+        }
+        String url = String.format(DOC_URL_PATTERN_WITH_HOST, host, meta.getRelativeLink().replaceAll("index.html$", ""));
+        documentVersions.add(DocumentLanguageResponse.DocumentVersion.builder()
+                .version(docVersion)
+                .url(url)
+                .build());
+        if (bestMatchVersionForLanguage.equals(bestMatchVersion)) {
+
+          String languageUrl = url.replaceAll(host + "/" + bestMatchVersionForLanguage + "/", "/" + finalLanguage + "/");
+          documentLanguages.add(DocumentLanguageResponse.DocumentLanguage.builder()
+                  .language(finalLanguage)
+                  .url(languageUrl)
+                  .build());
+        }
+      }
+    }
+    return DocumentLanguageResponse.builder().versions(documentVersions).languages(documentLanguages).build();
+  }
+
   public String findBestMatchVersion(String productId, String version) {
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
@@ -121,8 +168,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
+    Map<String, String> latestSupportedDocVersions = DOC_VERSIONS.stream().filter(v -> !v.contains("dev"))
+            .collect(Collectors.toMap(
+                    version -> VersionFactory.get(releasedVersions, version),
+                    version -> version
+            ));
+    log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
     for (String version : missingVersions) {
-      var externalDocumentMeta = createDocumentMeta(productId, artifact, version, isResetSync);
+      var externalDocumentMeta = createDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions);
       if (externalDocumentMeta != null) {
         externalDocumentMetaRepo.save(externalDocumentMeta);
       }
@@ -151,7 +204,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private ExternalDocumentMeta createDocumentMeta(String productId, Artifact artifact, String version,
-      boolean isResetSync) {
+      boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
@@ -159,7 +212,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isBlank(location) || !doesDocExistInShareFolder(location)) {
       return null;
     }
-
+    if (latestSupportedDocVersions.containsKey(version)) {
+      log.info("The latest supported doc version was downloaded and unzipped to share folder - {}", location);
+      updateLatestFolder(Paths.get(location), latestSupportedDocVersions.get(version));
+    }
     // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
@@ -212,5 +268,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       log.error("Exception during unzip", e);
     }
     return EMPTY;
+  }
+
+  private void updateLatestFolder(Path versionFolder, String majorVersion) {
+    Path parent = versionFolder.getParent().getParent();
+    Path majorFolder = parent.resolve(majorVersion);
+    log.info("Update the latest doc folder {} to point to {}", majorFolder, versionFolder);
+    FileUtils.duplicateFolder(versionFolder, majorFolder);
   }
 }

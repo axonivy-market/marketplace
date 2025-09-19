@@ -114,7 +114,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     Path tempZipPath = createTempFile();
     byte[] fileContent = downloadFile(url);
     if (fileContent == null || fileContent.length == 0) {
-      log.warn("Downloaded file is empty or null from URL: {}", url);
+      log.warn("Cannot download file or file is empty from url: {}", url);
       return null;
     }
     Files.write(tempZipPath, fileContent);

@@ -177,4 +177,20 @@ public class FileUtils {
       zipOut.closeEntry();
     }
   }
+
+  public static void duplicateFolder(Path oldPath, Path newPath) {
+    try {
+      if (Files.exists(newPath)) {
+        clearDirectory(newPath);
+      }
+      org.apache.commons.io.FileUtils.copyDirectory(oldPath.toFile(), newPath.toFile());
+
+      log.info("Updated latest folder {} → {}", oldPath.getFileName(), newPath.getFileName());
+    } catch (IOException e) {
+      log.error("Cannot duplicate latest folder {} → {}", oldPath.getFileName(), newPath.getFileName(), e);
+    }
+
+  }
+
+
 }
