@@ -250,6 +250,7 @@ button:disabled {
 }
 
 .drag-drop-area.has-error {
+  background-color: #DC35450D;
   border-color: var(--release-preview-error-color);
 }
 

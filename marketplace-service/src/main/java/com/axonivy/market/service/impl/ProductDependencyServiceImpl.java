@@ -207,8 +207,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       }
 
       if(!newDependencies.isEmpty()) {
-        List<ProductDependency> savedList =  productDependencyRepository.saveAll(newDependencies);
-        productDependencies.addAll(savedList);
+        List<ProductDependency> persistedDependencies = productDependencyRepository.saveAll(newDependencies);
+        productDependencies.addAll(persistedDependencies);
       }
     }
   }
