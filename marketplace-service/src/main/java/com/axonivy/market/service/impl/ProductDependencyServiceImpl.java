@@ -28,6 +28,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -173,6 +174,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     if (totalDependencyLevels > SAFE_THRESHOLD) {
       throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(), ErrorCode.INTERNAL_EXCEPTION.getHelpText());
     }
+    List<ProductDependency> newDependencies = new ArrayList<>();
     for (var dependencyModel : dependencyModels) {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
@@ -189,6 +191,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyProductId, dependencyArtifactId,
           dependencyVersion);
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
+
+      // Save the dependency to database if it's new (doesn't have an ID yet)
+      if (dependency.getId() == null) {
+        newDependencies.add(dependency);
+      }
+
       productDependencies.add(dependency);
       // Check does dependency artifact has IAR lib, e.g: portal
       List<Dependency> dependenciesOfParent = extractMavenPOMDependencies(dependencyArtifact.getDownloadUrl());
@@ -196,6 +204,11 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
         totalDependencyLevels++;
         collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
+      }
+
+      if(!newDependencies.isEmpty()) {
+        List<ProductDependency> persistedDependencies = productDependencyRepository.saveAll(newDependencies);
+        productDependencies.addAll(persistedDependencies);
       }
     }
   }
