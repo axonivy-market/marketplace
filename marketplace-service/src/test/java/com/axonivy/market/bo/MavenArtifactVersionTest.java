@@ -1,12 +1,11 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.bo;
 
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.key.MavenArtifactKey;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
-
-import org.junit.jupiter.api.Test;
 
 class MavenArtifactVersionTest {
   @Test

@@ -1,12 +1,13 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.bo;
 
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.FeedbackStatus;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDateTime;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class FeedbackTest {
   @Test
