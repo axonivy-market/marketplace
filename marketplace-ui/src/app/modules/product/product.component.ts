@@ -60,7 +60,6 @@ const SEARCH_DEBOUNCE_TIME = 500;
 export class ProductComponent implements AfterViewInit, OnDestroy {
   protected LoadingComponentId = LoadingComponentId;
   products: WritableSignal<Product[]> = signal([]);
-  productDetail!: ProductDetail;
   subscriptions: Subscription[] = [];
   searchTextChanged = new Subject<string>();
   loadingService = inject(LoadingService);
@@ -230,6 +229,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   setupIntersectionObserver() {
+    if (!this.isBrowser || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {

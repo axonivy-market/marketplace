@@ -10,15 +10,61 @@
   <div class="container mt-5">
     <form (submit)="onSubmit()">
       <div class="form-group">
-        <input
-          type="file"
-          id="file-input"
-          (change)="onFileSelected($event)"
-          accept=".zip"
-          class="form-control" />
-        <small [lang]="languageService.selectedLanguage()" class="hint-text">
-          {{ translateService.get('common.preview.hint') | async }}
-        </small>
+        <button
+          type="button"
+          class="drag-drop-area d-flex w-100 gap-1 justify-content-center align-items-center text-muted"
+          [class.has-file]="selectedFile"
+          [class.has-error]="errorMessage"
+          (click)="fileInput.click()"
+          [class.dragging]="isDragging"
+          [attr.aria-label]="'common.preview.buttonHint' | translate"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (keydown)="
+            ($event.key === 'Enter' || $event.key === ' ') && fileInput.click()
+          ">
+          <input
+            #fileInput
+            type="file"
+            id="file-input"
+            (change)="onFileSelected($event)"
+            accept=".zip"
+            hidden />
+          <ng-container *ngIf="!selectedFile && !errorMessage; else fileInfo">
+            <p
+              class="text-muted m-0"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.preview.dragDropText' | translate }}
+            </p>
+            <small
+              class="text-muted hint-text"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.preview.onlyZip' | translate: { max: 20 } }}
+            </small>
+          </ng-container>
+          <ng-template #fileInfo>
+            <div
+              *ngIf="errorMessage && !selectedFile"
+              class="error-message w-100"
+              [lang]="languageService.selectedLanguage()">
+              {{ errorMessage | translate: { max: 20 } }}
+            </div>
+            <div
+              *ngIf="selectedFile"
+              class="selected-file d-flex align-items-center gap-2 w-100">
+              <span class="file-name flex-grow-1" [title]="selectedFile.name">
+                {{ selectedFile.name }}
+              </span>
+              <span
+                class="badge text-secondary fw-normal"
+                *ngIf="selectedFile as file">
+                {{ fileSizeInMB(file.size) }}
+                {{ 'common.preview.fileSizeUnit' | translate }}
+              </span>
+            </div>
+          </ng-template>
+        </button>
         <small [lang]="languageService.selectedLanguage()" class="hint-text">
           <a
             href="javascript:void(0)"

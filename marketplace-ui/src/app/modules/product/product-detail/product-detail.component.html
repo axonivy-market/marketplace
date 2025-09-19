@@ -143,7 +143,7 @@
                       [selectedItem]="getSelectedTabLabel() | translate"
                       buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                       (itemSelected)="
-                        onTabChange($event.value)
+                        setActiveTab($event.value)
                       "></app-common-dropdown>
                   </div>
 
@@ -181,7 +181,8 @@
                   [class.active]="activeTab === displayedTab.value"
                   [id]="displayedTab.value"
                   role="tabpanel"
-                  [attr.aria-labelledby]="displayedTab.value + '-tab'">
+                  [attr.aria-labelledby]="displayedTab.value + '-tab'"
+                  (click)="setActiveTab(displayedTab.value)">
                   @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"
@@ -190,8 +191,8 @@
                       "></app-product-detail-maven-content>
                   } @else if (displayedTab.value === 'changelog') {
                     <div ngbAccordion>
-                      @for (productReleaseSafeHtml of productReleaseSafeHtmls; track productReleaseSafeHtml.name) {
-                        <div ngbAccordionItem [collapsed]="!productReleaseSafeHtml.isLatestRelease" class="changelog-container mb-5 p-4">
+                      @for (productReleaseSafeHtml of productReleaseSafeHtmls(); track productReleaseSafeHtml.name) {
+                        <div ngbAccordionItem [collapsed]="false" class="changelog-container mb-5 p-4">
                           <div ngbAccordionHeader>
                             <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
                               <h1><a class="me-4 release-name" [href]="productReleaseSafeHtml.htmlUrl" target="_blank"
@@ -202,14 +203,15 @@
                             </button>
                           </div>
                           <h5 class="release-published-date">{{productReleaseSafeHtml.publishedAt | date: "MMM dd, yyyy"}}</h5>
-                          <div ngbAccordionCollapse>
-                            <div ngbAccordionBody class="ps-0 changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
+                          <div ngbAccordionCollapse class="release-content">
+                            <div ngbAccordionBody class="p-0 changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
                           </div>
                         </div>
                       }
                     </div>
-                  }
-                  @else {
+                    <div #changelogObserver class="changlogObserver"></div>
+                    <app-loading-spinner [key]="LoadingComponentId.PRODUCT_CHANGELOG"/>
+                  } @else {
                     <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
                   }
                 </div>
@@ -217,7 +219,6 @@
             </div>
           }
         </div>
-
         <!-- Side information Tab -->
         <div
           class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3 default-cursor">
