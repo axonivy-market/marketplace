@@ -14,6 +14,7 @@
           type="button"
           class="drag-drop-area d-flex w-100 gap-1 justify-content-center align-items-center text-muted"
           [class.has-file]="selectedFile"
+          [class.has-error]="errorMessage"
           (click)="fileInput.click()"
           [class.dragging]="isDragging"
           [attr.aria-label]="'common.preview.buttonHint' | translate"
@@ -30,7 +31,7 @@
             (change)="onFileSelected($event)"
             accept=".zip"
             hidden />
-          <ng-container *ngIf="!selectedFile; else fileInfo">
+          <ng-container *ngIf="!selectedFile && !errorMessage; else fileInfo">
             <p
               class="text-muted m-0"
               [lang]="languageService.selectedLanguage()">
@@ -39,16 +40,24 @@
             <small
               class="text-muted hint-text"
               [lang]="languageService.selectedLanguage()">
-              {{ 'common.preview.onlyZip' | translate }}
+              {{ 'common.preview.onlyZip' | translate: { max: 20 } }}
             </small>
           </ng-container>
           <ng-template #fileInfo>
-            <div class="selected-file d-flex align-items-center gap-2 w-100">
-              <span class="file-name flex-grow-1" [title]="selectedFile?.name">
-                {{ selectedFile?.name }}
+            <div
+              *ngIf="errorMessage && !selectedFile"
+              class="error-message w-100"
+              [lang]="languageService.selectedLanguage()">
+              {{ errorMessage | translate: { max: 20 } }}
+            </div>
+            <div
+              *ngIf="selectedFile"
+              class="selected-file d-flex align-items-center gap-2 w-100">
+              <span class="file-name flex-grow-1" [title]="selectedFile.name">
+                {{ selectedFile.name }}
               </span>
               <span
-                class="badge bg-secondary-subtle text-dark fw-normal"
+                class="badge text-secondary fw-normal"
                 *ngIf="selectedFile as file">
                 {{ fileSizeInMB(file.size) }}
                 {{ 'common.preview.fileSizeUnit' | translate }}

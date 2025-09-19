@@ -249,6 +249,17 @@ button:disabled {
   padding: calc(7.8rem / 3.5);
 }
 
+.drag-drop-area.has-error {
+  border-color: var(--release-preview-error-color);
+}
+
+.drag-drop-area .error-message {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--release-preview-error-color);
+  word-break: break-word;
+}
+
 .drag-drop-area.dragging {
   border-color: var(--active-tab-indicator-color);
   background: rgba(13, 110, 253, 0.06);

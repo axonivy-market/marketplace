@@ -54,6 +54,7 @@ export class ReleasePreviewComponent implements OnInit {
   shouldShowHint = false;
   isDragging = false;
   file: File | null = null;
+  errorMessage: string | null = null;
   readmeContent: WritableSignal<ReleasePreviewData> = signal(
     {} as ReleasePreviewData
   );
@@ -103,7 +104,7 @@ export class ReleasePreviewComponent implements OnInit {
     }
   }
 
-  private setSelectedFile(file: File) {
+  setSelectedFile(file: File) {
     const maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
     const isZip = file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
     const withinSize = file.size < maxFileSize;
@@ -111,14 +112,22 @@ export class ReleasePreviewComponent implements OnInit {
       const replacing = !!this.selectedFile && this.selectedFile !== file;
       this.selectedFile = file;
       this.isZipFile = true;
+      this.errorMessage = null;
       if (replacing) {
-        // Reset previously parsed content so user knows they need to resubmit
         this.isUploaded = false;
         this.readmeContent.set({} as ReleasePreviewData);
       }
     } else {
       this.selectedFile = null;
       this.isZipFile = false;
+
+      if (!isZip) {
+        this.errorMessage = 'common.preview.errors.invalidZip';
+      } else if (!withinSize) {
+        this.errorMessage = 'common.preview.errors.tooLarge';
+      } else {
+        this.errorMessage = 'common.preview.errors.seemsProblem';
+      }
     }
   }
 

@@ -214,4 +214,66 @@ describe('ReleasePreviewComponent', () => {
     const result = component.renderReadmeContent(value);
     expect(result).toBe(mockedRenderedHtml);
   });
+
+  it('should clear errorMessage for a valid zip within size', () => {
+    const validZip: Partial<File> = {
+      name: 'valid.zip',
+      type: 'application/zip',
+      size: 5 * 1024 * 1024
+    };
+    component.setSelectedFile(validZip as File);
+
+    expect(component.errorMessage).toBeNull();
+    expect(component.selectedFile?.name).toBe('valid.zip');
+    expect(component.isZipFile).toBeTrue();
+  });
+
+  it('should set invalidZip error for non-zip file', () => {
+    const invalidType: Partial<File> = {
+      name: 'note.txt',
+      type: 'text/plain',
+      size: 10 * 1024
+    };
+    component.setSelectedFile(invalidType as File);
+
+    expect(component.errorMessage).toBe('common.preview.errors.invalidZip');
+    expect(component.selectedFile).toBeNull();
+    expect(component.isZipFile).toBeFalse();
+  });
+
+  it('should set tooLarge error for oversize zip file', () => {
+    const oversizeZip: Partial<File> = {
+      name: 'huge.zip',
+      type: 'application/zip',
+      size: 21 * 1024 * 1024
+    };
+    component.setSelectedFile(oversizeZip as File);
+
+    expect(component.errorMessage).toBe('common.preview.errors.tooLarge');
+    expect(component.selectedFile).toBeNull();
+    expect(component.isZipFile).toBeFalse();
+  });
+
+  it('should clear previous error when a new valid zip is selected', () => {
+    const invalidType: Partial<File> = {
+      name: 'bad.txt',
+      type: 'text/plain',
+      size: 100
+    };
+    component.setSelectedFile(invalidType as File);
+
+    expect(component.errorMessage).toBe('common.preview.errors.invalidZip');
+
+    const validZip: Partial<File> = {
+      name: 'fixed.zip',
+      type: 'application/zip',
+      size: 1 * 1024 * 1024
+    };
+    component.setSelectedFile(validZip as File);
+
+    expect(component.errorMessage).toBeNull();
+    expect(component.selectedFile?.name).toBe('fixed.zip');
+    expect(component.isZipFile).toBeTrue();
+  });
+
 });

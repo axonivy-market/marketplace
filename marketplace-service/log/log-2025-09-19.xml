@@ -1,0 +1,58 @@
+<Logs>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 11:59:37</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 12:00:03</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 12:01:28</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 12:01:30</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 12:01:44</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 13:30:06</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 13:30:23</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+  <LogEntry>
+    <X-Requested-By>marketplace-website</X-Requested-By>
+    <arguments>id: idp-connector</arguments>
+    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.findInstallationCount(java.lang.String)</method>
+    <timestamp>2025-09-19 13:30:48</timestamp>
+    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36</user-agent>
+  </LogEntry>
+</Logs>
