@@ -206,8 +206,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
       }
 
-      if(!newDependency.isEmpty())
-      {
+      if(!newDependency.isEmpty()) {
         List<ProductDependency> saved =  productDependencyRepository.saveAll(newDependency);
         productDependencies.addAll(saved);
       }
