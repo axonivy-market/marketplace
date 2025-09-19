@@ -174,7 +174,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     if (totalDependencyLevels > SAFE_THRESHOLD) {
       throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(), ErrorCode.INTERNAL_EXCEPTION.getHelpText());
     }
-    List<ProductDependency> newDependency = new ArrayList<>();
+    List<ProductDependency> newDependencies = new ArrayList<>();
     for (var dependencyModel : dependencyModels) {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
@@ -194,7 +194,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
       // Save the dependency to database if it's new (doesn't have an ID yet)
       if (dependency.getId() == null) {
-        newDependency.add(dependency);
+        newDependencies.add(dependency);
       }
 
       productDependencies.add(dependency);
@@ -206,9 +206,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
       }
 
-      if(!newDependency.isEmpty()) {
-        List<ProductDependency> saved =  productDependencyRepository.saveAll(newDependency);
-        productDependencies.addAll(saved);
+      if(!newDependencies.isEmpty()) {
+        List<ProductDependency> savedList =  productDependencyRepository.saveAll(newDependencies);
+        productDependencies.addAll(savedList);
       }
     }
   }
