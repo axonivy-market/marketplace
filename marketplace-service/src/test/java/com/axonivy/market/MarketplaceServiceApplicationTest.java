@@ -33,7 +33,7 @@ class MarketplaceServiceApplicationTest {
   }
 
   @Test
-  void testSyncProductData_WhenNothingUpdated() {
+  void testSyncProductDataWhenNothingUpdated() {
     when(productService.syncLatestDataFromMarketRepo(false)).thenReturn(List.of());
 
     List<String> result = invokeSyncProductData();
@@ -46,7 +46,7 @@ class MarketplaceServiceApplicationTest {
   }
 
   @Test
-  void testSyncProductData_WhenProductsUpdated() {
+  void testSyncProductDataWhenProductsUpdated() {
     List<String> products = List.of("p1", "p2");
     when(productService.syncLatestDataFromMarketRepo(false)).thenReturn(products);
 
@@ -60,13 +60,13 @@ class MarketplaceServiceApplicationTest {
   }
 
   @Test
-  void testSyncExternalDocumentData_WhenNoProductIds() {
+  void testSyncExternalDocumentDataWhenNoProductIds() {
     invokeSyncExternalDocumentData(List.of());
     verifyNoInteractions(externalDocumentService);
   }
 
   @Test
-  void testSyncExternalDocumentData_WhenProductsExist() {
+  void testSyncExternalDocumentDataWhenProductsExist() {
     List<String> productIds = List.of("p1", "p2");
 
     invokeSyncExternalDocumentData(productIds);
@@ -81,7 +81,7 @@ class MarketplaceServiceApplicationTest {
   }
 
   @Test
-  void testStartInitializeSystem_CallsBothSyncMethods() {
+  void testStartInitializeSystemCallsBothSyncMethods() {
     List<String> productIds = List.of("p1", "p2");
     when(productService.syncLatestDataFromMarketRepo(false)).thenReturn(productIds);
 

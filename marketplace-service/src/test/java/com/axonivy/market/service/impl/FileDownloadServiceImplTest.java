@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -267,16 +265,13 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void getFileAsStringShouldReturnContentWhenRestTemplateSucceeds() {
-    // given
+  void testGetFileAsStringShouldReturnContentWhenRestTemplateSucceeds() {
     String url = "http://example.com/file.txt";
     String expected = "Hello World";
     when(restTemplate.getForObject(url, String.class)).thenReturn(expected);
 
-    // when
     String result = fileDownloadService.getFileAsString(url);
 
-    // then
     assertThat(result)
         .as("Expected the same content returned by RestTemplate")
         .isEqualTo(expected);
@@ -285,7 +280,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void getFileAsStringShouldReturnEmptyWhenRestTemplateThrowsException() {
+  void testGetFileAsStringShouldReturnEmptyWhenRestTemplateThrowsException() {
     String url = "http://example.com/error.txt";
     when(restTemplate.getForObject(url, String.class))
         .thenThrow(new RestClientException("boom"));
@@ -300,7 +295,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void fetchUrlResourceShouldReturnResponseEntityWhenRestTemplateSucceeds() {
+  void testFetchUrlResourceShouldReturnResponseEntityWhenRestTemplateSucceeds() {
     String url = "http://example.com/resource";
     Resource resource = mock(Resource.class);
     ResponseEntity<Resource> expected = ResponseEntity.ok(resource);
@@ -318,7 +313,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void fetchUrlResourceShouldReturnNullWhenRestTemplateThrowsException() {
+  void testFetchUrlResourceShouldReturnNullWhenRestTemplateThrowsException() {
     String url = "http://example.com/error";
     when(restTemplate.exchange(url, HttpMethod.GET, null, Resource.class))
         .thenThrow(new RestClientException("boom"));
