@@ -401,7 +401,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, String productSourceUrl, String productId,
       Boolean isLatestGitHubReleaseName) throws IOException {
-    GitHubReleaseModel gitHubReleaseModel = new GitHubReleaseModel();
+    var gitHubReleaseModel = new GitHubReleaseModel();
     var modifiedBody = ProductContentUtils.transformGithubReleaseBody(ghRelease.getBody(), productSourceUrl);
     gitHubReleaseModel.setBody(modifiedBody);
     gitHubReleaseModel.setName(ghRelease.getName());
@@ -415,7 +415,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product,
       long releaseId) throws IOException {
-    GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
+    var ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
         StringUtils.equals(githubLatestRelease.getName(), ghRelease.getName()));

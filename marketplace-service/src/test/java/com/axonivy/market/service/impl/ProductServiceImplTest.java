@@ -850,22 +850,18 @@ class ProductServiceImplTest extends BaseSetup {
     String mockRepositoryName = "axonivy-market/portal";
     String mockProductSourceUrl = "axonivy-market/portal";
     Pageable mockPageable = mock(Pageable.class);
-    GHRepository mockRepository = mock(GHRepository.class);
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
     mockProduct.setSourceUrl(mockProductSourceUrl);
 
     when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
-
-    PagedIterable<GHRelease> mockGhReleasePagedIterable = mock(PagedIterable.class);
-
     when(gitHubService.getGitHubReleaseModels(anyList(), any(Pageable.class), anyString(), anyString(),
         anyString())).thenReturn(Page.empty());
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
-    assertNotNull(result);
+    assertNotNull(result, "Github release model should not be null");
     verify(gitHubService).getGitHubReleaseModels(anyList(), any(Pageable.class), anyString(), anyString(), anyString());
   }
 

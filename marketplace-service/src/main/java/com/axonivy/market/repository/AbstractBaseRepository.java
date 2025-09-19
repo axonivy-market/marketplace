@@ -14,8 +14,6 @@ import java.util.List;
 @Getter
 @Component
 public abstract class AbstractBaseRepository<T> {
-  // This is an abstract class, there is no constructor so we cannot initialize this field in constructor
-  @SuppressWarnings("java:S3749")
   private EntityManager entityManager;
 
   protected abstract Class<T> getType();

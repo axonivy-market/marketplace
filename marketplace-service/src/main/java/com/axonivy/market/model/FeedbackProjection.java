@@ -2,9 +2,14 @@ package com.axonivy.market.model;
 
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
@@ -41,7 +46,7 @@ public interface FeedbackProjection {
       var objectMapper = new ObjectMapper();
       return objectMapper.readValue(this.getProductNamesJson(), new TypeReference<>() {
       });
-    } catch (Exception e) {
+    } catch (IOException e) {
       return Map.of();
     }
   }

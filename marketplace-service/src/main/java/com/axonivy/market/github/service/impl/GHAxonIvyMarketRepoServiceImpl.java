@@ -34,11 +34,7 @@ import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKETPLACE_R
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
   private final GitHubService gitHubService;
-
-  @SuppressWarnings("java:S3749")
   private GHOrganization organization;
-
-  @SuppressWarnings("java:S3749")
   private GHRepository repository;
 
   @Value("${market.github.market.branch}")
