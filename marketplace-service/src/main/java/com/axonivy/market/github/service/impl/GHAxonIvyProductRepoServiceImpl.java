@@ -30,8 +30,6 @@ import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private final GitHubService gitHubService;
   private final ImageService imageService;
-
-  @SuppressWarnings("java:S3749")
   private GHOrganization organization;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService) {
