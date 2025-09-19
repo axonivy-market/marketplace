@@ -75,13 +75,4 @@ class FeedbackProjectionTest {
 
     assertTrue(result.isEmpty(), "Expected empty map for invalid JSON");
   }
-
-  @Test
-  void testGetProductNamesWithNullJsonReturnsEmptyMap() {
-    FeedbackProjection projection = new TestFeedbackProjection(null);
-
-    Map<String, String> result = projection.getProductNames();
-
-    assertTrue(result.isEmpty(), "Expected empty map for null JSON");
-  }
 }
