@@ -46,8 +46,6 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     return new ResponseEntity<>(errorMessage, status);
   }
 
-  //We should keep MissingHeaderException type here to make it specific
-  @SuppressWarnings("java:S3242")
   @ExceptionHandler(MissingHeaderException.class)
   public ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
     var errorMessage = new Message();
