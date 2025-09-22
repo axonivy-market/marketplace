@@ -16,7 +16,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public final class ImageUtils {
-  public static final String IMAGE_ID_FORMAT_REGEX = "imageId-[A-Za-z0-9_]+";
+  public static final String IMAGE_ID_FORMAT_REGEX = "imageId-\\w+";
   private static final Pattern IMAGE_ID_FORMAT_PATTERN = Pattern.compile(IMAGE_ID_FORMAT_REGEX,
       Pattern.UNICODE_CHARACTER_CLASS);
 
