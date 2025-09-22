@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
-import { Criteria } from '../../shared/models/criteria.model';
+import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ForwardingError, LoadingComponent } from '../../core/interceptors/api.interceptor';
@@ -91,7 +91,7 @@ export class ProductService {
 
   sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    return this.httpClient.put<number>(url, null );
+    return this.httpClient.put<number>(url, null);
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
@@ -111,14 +111,30 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string): Observable<ProductReleasesApiResponse> {
-    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
-
-    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) }).pipe(
-      catchError(() => {
-        const productReleasesApiResponse = {} as ProductReleasesApiResponse;
-        return of(productReleasesApiResponse);
+  getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {
+    let requestParams = new HttpParams();
+    let url = '';
+    if (criteria.nextPageHref) {
+      url = criteria.nextPageHref;
+    } else {
+      url = `${API_URI.PRODUCT_DETAILS}/${criteria.productId}/releases`;
+      if (criteria.pageable) {
+        requestParams = requestParams
+          .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+          .set(RequestParam.SIZE, `${criteria.pageable.size}`);
+      }
+    }
+    return this.httpClient
+      .get<ProductReleasesApiResponse>(url, {
+        context: new HttpContext()
+          .set(LoadingComponent, LoadingComponentId.PRODUCT_CHANGELOG),
+        params: requestParams
       })
-    );
+      .pipe(
+        catchError(() => {
+          const productReleasesApiResponse = {} as ProductReleasesApiResponse;
+          return of(productReleasesApiResponse);
+        })
+      );
   }
 }

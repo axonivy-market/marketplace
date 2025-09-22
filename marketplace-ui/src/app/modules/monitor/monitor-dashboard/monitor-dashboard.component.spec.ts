@@ -1,79 +1,113 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
 import { GithubService, Repository, TestResult } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { delay, of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { PageTitleService } from '../../../shared/services/page-title.service';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { FOCUSED_TAB, STANDARD_TAB } from '../../../shared/constants/common.constant';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
   let fixture: ComponentFixture<MonitoringDashboardComponent>;
   let githubService: jasmine.SpyObj<GithubService>;
-  let router: jasmine.SpyObj<Router>;
   let pageTitleService: jasmine.SpyObj<any>;
   let mockRepositories: Repository[];
 
   beforeEach(async () => {
     mockRepositories = [
       {
-        name: 'repo1',
+        repoName: 'repo1',
+        productId: 'id1',
         htmlUrl: 'https://github.com/user/repo1',
-        language: 'TypeScript',
-        lastUpdated: '2025-07-20T12:00:00Z',
+        workflowInformation: [
+          {
+            workflowType: 'CI',
+            lastBuilt: new Date('2025-07-20T12:00:00Z'),
+            conclusion: 'success',
+            lastBuiltRunUrl:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
+          },
+          {
+            workflowType: 'DEV',
+            lastBuilt: new Date('2025-07-21T12:00:00Z'),
+            conclusion: 'failure',
+            lastBuiltRunUrl:
+              'https://github.com/market/rtf-factory/actions/runs/11111'
+          }
+        ],
         focused: true,
         testResults: [
           {
             workflow: 'CI',
-            results: { PASSED: 20 },
-            badgeUrl: 'www.localhost.badge.yml'
+            results: { PASSED: 20 }
           } as TestResult
         ]
       },
       {
-        name: 'repo2',
+        repoName: 'repo2',
+        productId: 'id2',
         htmlUrl: 'https://github.com/user/repo2',
-        language: 'Java',
-        lastUpdated: '2025-07-19T12:00:00Z',
+        workflowInformation: [],
         focused: false,
         testResults: []
       },
       {
-        name: 'repo3',
+        repoName: 'repo3',
+        productId: 'id3',
         htmlUrl: 'https://github.com/user/repo3',
-        language: 'Python',
-        lastUpdated: '2025-07-18T12:00:00Z',
+        workflowInformation: [],
         focused: false,
         testResults: []
       }
     ];
 
-    const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    const pageTitleServiceSpy = jasmine.createSpyObj(PageTitleService, ['setTitleOnLangChange']);
+    const githubServiceSpy = jasmine.createSpyObj('GithubService', [
+      'getRepositories'
+    ]);
+    const pageTitleServiceSpy = jasmine.createSpyObj(PageTitleService, [
+      'setTitleOnLangChange'
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [
         MonitoringDashboardComponent,
         HttpClientTestingModule,
-        TranslateModule.forRoot()
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot()
       ],
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
-        { provide: Router, useValue: routerSpy },
         { provide: PageTitleService, useValue: pageTitleServiceSpy },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {},
+            params: of({}),
+            queryParams: of({}),
+            data: of({})
+          }
+        },
         LanguageService,
         TranslateService
       ]
     }).compileComponents();
 
-    githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    pageTitleService = TestBed.inject(PageTitleService) as jasmine.SpyObj<PageTitleService>;
-
+    githubService = TestBed.inject(
+      GithubService
+    ) as jasmine.SpyObj<GithubService>;
+    pageTitleService = TestBed.inject(
+      PageTitleService
+    ) as jasmine.SpyObj<PageTitleService>;
     githubService.getRepositories.and.returnValue(of(mockRepositories));
 
     fixture = TestBed.createComponent(MonitoringDashboardComponent);
@@ -91,55 +125,178 @@ describe('MonitoringDashboardComponent', () => {
     const loadRepositoriesSpy = spyOn(component, 'loadRepositories');
     component.ngOnInit();
     expect(loadRepositoriesSpy).toHaveBeenCalled();
-    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('common.monitor.dashboard.pageTitle');
+    expect(pageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
+      'common.monitor.dashboard.pageTitle'
+    );
   });
 
   it('should set loading to false on ngOnInit if not browser', () => {
     component.platformId = 'server';
-    component.loading = true;
+    component.isLoading = true;
     component.ngOnInit();
-    expect(component.loading).toBeFalse();
+    expect(component.isLoading).toBeFalse();
   });
 
-  it('should handle error when loading repositories', () => {
-    const errorMessage = 'Network error';
-    githubService.getRepositories.and.returnValue(throwError(() => new Error(errorMessage)));
-    
+  it('should load and sort repositories correctly', () => {
+    const unsortedRepos = [
+      {
+        repoName: 'zebra-repo',
+        productId: 'zebra',
+        focused: false,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      },
+      {
+        repoName: 'alpha-repo',
+        productId: 'alpha',
+        focused: true,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      },
+      {
+        repoName: 'beta-repo',
+        productId: 'beta',
+        focused: false,
+        htmlUrl: '',
+        workflowInformation: [],
+        testResults: []
+      }
+    ];
+
+    githubService.getRepositories.and.returnValue(of(unsortedRepos));
+
     component.loadRepositories();
-    
+
+    const repositories = component.repositories();
+    expect(repositories[0].repoName).toBe('alpha-repo');
+    expect(repositories[1].repoName).toBe('beta-repo');
+    expect(repositories[2].repoName).toBe('zebra-repo');
+  });
+
+  it('should set isLoading to true when starting to load repositories', fakeAsync(() => {
+    component.isLoading = false;
+    githubService.getRepositories.and.returnValue(
+      of(mockRepositories).pipe(delay(0))
+    );
+
+    component.loadRepositories();
+    expect(component.isLoading).toBe(true);
+
+    tick();
+    expect(component.isLoading).toBe(false);
+  }));
+
+  it('should set isLoading to false after successfully loading repositories', () => {
+    githubService.getRepositories.and.returnValue(of(mockRepositories));
+
+    component.loadRepositories();
+
+    expect(component.isLoading).toBe(false);
+  });
+
+  it('should clear error when successfully loading repositories', fakeAsync(() => {
+    component.error = 'Previous error';
+    githubService.getRepositories.and.returnValue(of(mockRepositories));
+
+    component.loadRepositories();
+
+    tick();
+
+    expect(component.error).toBe('');
+    expect(component.isLoading).toBe(false);
+  }));
+
+  it('should filter focused repositories correctly', () => {
+    const focusedRepos = component.focusedRepo();
+
+    expect(focusedRepos.length).toBe(1);
+    expect(focusedRepos[0].repoName).toBe('repo1');
+    expect(focusedRepos[0].focused).toBe(true);
+  });
+
+  it('should filter standard (non-focused) repositories correctly', () => {
+    const standardRepos = component.standardRepo();
+
+    expect(standardRepos.length).toBe(2);
+    expect(standardRepos.every(repo => !repo.focused)).toBe(true);
+  });
+
+  it('should initialize with focused tab as active', () => {
+    expect(component.activeTab).toBe(FOCUSED_TAB);
+  });
+
+  it('should set active tab to standard', () => {
+    component.setActiveTab(STANDARD_TAB);
+
+    expect(component.activeTab).toBe(STANDARD_TAB);
+  });
+
+  it('should set active tab to focused', () => {
+    component.activeTab = STANDARD_TAB;
+    component.setActiveTab(FOCUSED_TAB);
+
+    expect(component.activeTab).toBe(FOCUSED_TAB);
+  });
+
+  it('should handle invalid tab name', () => {
+    component.setActiveTab('invalid-tab');
+
+    expect(component.activeTab).toBe('invalid-tab');
+  });
+
+  it('should render title with correct translation key', () => {
+    const titleElement = fixture.debugElement.query(By.css('h1.title'));
+    expect(titleElement).toBeTruthy();
+  });
+
+  it('should render monitoring wiki link with correct href', () => {
+    const wikiLink = fixture.debugElement.query(By.css('a[target="_blank"]'));
+    expect(wikiLink).toBeTruthy();
+    expect(wikiLink.nativeElement.href).toBe(component.monitoringWikiLink);
+  });
+
+  it('should render both tab navigation items', () => {
+    const tabItems = fixture.debugElement.queryAll(By.css('.nav-item'));
+    expect(tabItems.length).toBe(2);
+  });
+
+  it('should have focused tab active by default', () => {
+    const focusedTab = fixture.debugElement.query(By.css('#focused-tab'));
+    expect(focusedTab.nativeElement.classList).toContain('active');
+  });
+
+  it('should switch tab classes when activeTab changes', () => {
+    component.setActiveTab(STANDARD_TAB);
+    fixture.detectChanges();
+
+    const focusedTab = fixture.debugElement.query(By.css('#focused-tab'));
+    const standardTab = fixture.debugElement.query(By.css('#standard-tab'));
+
+    expect(focusedTab.nativeElement.classList).not.toContain('active');
+    expect(standardTab.nativeElement.classList).toContain('active');
+  });
+
+  it('should handle error when loading repositories', fakeAsync(() => {
+    const errorMessage = 'Network error';
+    githubService.getRepositories.and.returnValue(
+      throwError(() => new Error(errorMessage)).pipe(delay(0))
+    );
+
+    component.loadRepositories();
+    tick();
+
     expect(component.error).toBe(errorMessage);
-    expect(component.loading).toBeFalse();
-  });
-
-  it('should navigate to report page on badge click', () => {
-    const repoName = 'test-repo';
-    const workflow = 'ci';
-    
-    component.onBadgeClick(repoName, workflow);
-    
-    expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
-  });
-
-  it('should display repository cards when data is loaded', () => {
-    fixture.detectChanges();
-    const repoCards = fixture.debugElement.queryAll(By.css('.repo-card'));
-    expect(repoCards.length).toBe(mockRepositories.length);
-  });
-
-  it('should display loading message when loading is true', () => {
-    component.loading = true;
-    fixture.detectChanges();
-    
-    const loadingElement = fixture.debugElement.query(By.css('.loading'));
-    expect(loadingElement).toBeTruthy();
-  });
+    expect(component.isLoading).toBe(false);
+  }));
 
   it('should display error message when error exists', () => {
     const errorMessage = 'Test error message';
     component.error = errorMessage;
-    component.loading = false;
+    component.isLoading = false;
     fixture.detectChanges();
-    
+
     const errorElement = fixture.debugElement.query(By.css('.error'));
     expect(errorElement).toBeTruthy();
     expect(errorElement.nativeElement.textContent).toContain(errorMessage);

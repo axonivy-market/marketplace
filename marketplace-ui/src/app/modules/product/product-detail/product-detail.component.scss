@@ -15,6 +15,8 @@
 
 .link-to-main {
   height: 43px;
+  display: flex;
+  width: fit-content;
 }
 
 .connector-title-container {
@@ -64,7 +66,7 @@
   a {
     color: var(--ivy-primary-bg);
   }
-  
+
   border: solid 1px gray;
   border-radius: 1rem;
 
@@ -80,6 +82,10 @@
         text-decoration: underline;
       }
     }
+  }
+
+  .release-content {
+    margin-bottom: -1.5rem;
   }
 
   .changelog-content {

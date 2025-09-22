@@ -13,6 +13,8 @@ $ivyLatestReleaseColor: #3fb950;
 $ivyApproveButtonColor: #47c46b;
 $ivyRejectButtonColor: #e5151c;
 
+$ivyReleasePreviewErrorColor: #dc3545;
+
 
 // Light
 $ivyPrimaryColorLight: #007095;
@@ -102,6 +104,13 @@ p {
 
   --clear-search-text-button-bg-hover: #eeeeee;
   --clear-search-text-button-bg-active: #d6d6d6;
+
+  --monitoring-toggle-button-border: #96C4D4;
+  --monitoring-toggle-button-bg: #E6F1F5;
+  --monitoring-toggle-button-text: #007095;
+  --monitoring-border-color: #E7E7E7;
+
+  --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -227,6 +236,13 @@ p {
 
   --clear-search-text-button-bg-hover: #262626;
   --clear-search-text-button-bg-active: #454545;
+
+  --monitoring-toggle-button-border: #7E7E7E;
+  --monitoring-toggle-button-bg: #333333;
+  --monitoring-toggle-button-text: #FAFAFA;
+  --monitoring-border-color: #4F4E4E;
+
+  --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
 
   a {
     color: #{$white};

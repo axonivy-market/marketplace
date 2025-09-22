@@ -6,6 +6,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.*;
 
 class GithubReposServiceImplTest {
 
-  private static final String BADGE_URL = "https://github.com/test/demo";
+  private static final String URL_EXAMPLE = "https://github.com/test/demo";
   @InjectMocks
   GithubReposServiceImpl service;
 
@@ -67,16 +68,16 @@ class GithubReposServiceImplTest {
 
     ghRepo = mock(GHRepository.class);
     when(ghRepo.getName()).thenReturn("demo");
-    when(ghRepo.getHtmlUrl()).thenReturn(new URI(BADGE_URL).toURL());
-    when(ghRepo.getLanguage()).thenReturn("Java");
+    when(ghRepo.getHtmlUrl()).thenReturn(new URI(URL_EXAMPLE).toURL());
     when(ghRepo.getUpdatedAt()).thenReturn(new Date());
     when(ghRepo.getFullName()).thenReturn("owner/demo");
 
     dbRepo = GithubRepo.builder()
-            .name("demo")
-            .htmlUrl("https://old-url")
-            .testSteps(new ArrayList<>())
-            .build();
+        .productId("demo")
+        .htmlUrl("https://old-url")
+        .workflowInformation(new ArrayList<>())
+        .testSteps(new ArrayList<>())
+        .build();
   }
 
   @Test
@@ -86,7 +87,7 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
         "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
@@ -99,7 +100,7 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
         "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
@@ -110,13 +111,14 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
 
     doReturn(List.of(new TestStep())).when(serviceSpy)
-            .processWorkflowWithFallback(any(), any(), any());
+        .processWorkflowWithFallback(any(), any(), any());
 
     doThrow(new DataAccessException("DB error") {
     }).when(githubRepoRepository).save(any());
 
-    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo),
-            "Should throw DataAccessException");
+    String productId = dbRepo.getProductId();
+    assertThrows(DataAccessException.class, () -> serviceSpy.processProduct(ghRepo, productId),
+        "Should throw DataAccessException");
   }
 
   @Test
@@ -147,7 +149,7 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
     assertDoesNotThrow(() -> serviceSpy.loadAndStoreTestReports(),
-            "Should not throw an exception even if GitHub service fails");
+        "Should not throw an exception even if GitHub service fails");
     verify(githubRepoRepository).save(any());
   }
 
@@ -173,6 +175,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(ghRepo, CI.getFileName())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
     when(gitHubService.downloadArtifactZip(artifact)).thenReturn(getZipWithTestReport());
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
 
     when(serviceSpy.findTestReportJson(any())).thenReturn(jsonNode);
     when(testStepsService.createTestSteps(any(), eq(WorkFlowType.CI)))
@@ -256,5 +259,112 @@ class GithubReposServiceImplTest {
     service.updateFocusedRepo(updates);
 
     verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
+  }
+
+  @Test
+  void testProcessProductWithNullRepo() {
+    assertDoesNotThrow(() -> service.processProduct(null, dbRepo.getProductId()),
+        "Should handle null repository gracefully");
+
+    verifyNoInteractions(githubRepoRepository);
+  }
+
+  @Test
+  void testProcessArtifactWithIOException() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+    GHArtifact artifact = mock(GHArtifact.class);
+
+    when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
+    when(gitHubService.downloadArtifactZip(artifact)).thenThrow(new IOException("Download failed"));
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
+
+    assertTrue(result.isEmpty(), "Should return empty list when IO exception occurs");
+    verify(gitHubService).getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName());
+  }
+
+  @Test
+  void testProcessExistingRepo() throws Exception {
+    GithubRepo existingRepo = new GithubRepo();
+    existingRepo.setProductId("demo");
+    existingRepo.setWorkflowInformation(new ArrayList<>());
+    existingRepo.getWorkflowInformation().add(new WorkflowInformation());
+    existingRepo.setTestSteps(new ArrayList<>());
+    existingRepo.getTestSteps().add(new TestStep());
+
+    when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(existingRepo);
+    doReturn(List.of()).when(serviceSpy).processWorkflowWithFallback(any(), any(), any());
+
+    serviceSpy.processProduct(ghRepo, dbRepo.getProductId());
+
+    assertEquals(ghRepo.getHtmlUrl().toString(), existingRepo.getHtmlUrl(),
+        "HTML URL should be updated");
+    assertTrue(existingRepo.getWorkflowInformation().isEmpty(),
+        "Workflow information should be cleared before processing");
+    assertTrue(existingRepo.getTestSteps().isEmpty(),
+        "Test steps should be cleared before processing");
+
+    verify(githubRepoRepository).save(existingRepo);
+  }
+
+  @Test
+  void testUpdateWorkflowInfoForAllWorkflowTypes() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+    when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
+
+    for (WorkFlowType type : WorkFlowType.values()) {
+      service.processWorkflowWithFallback(ghRepo, dbRepo, type);
+    }
+
+    assertEquals(WorkFlowType.values().length, dbRepo.getWorkflowInformation().size(),
+        "Should have one WorkflowInformation entry per workflow type"
+    );
+  }
+
+  @Test
+  void testUpdateWorkflowInfoCreatesNewEntry() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+    when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+
+    when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
+
+    GithubRepo repo = new GithubRepo();
+    repo.setWorkflowInformation(new ArrayList<>());
+
+    service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
+
+    assertEquals(1, repo.getWorkflowInformation().size(), "Should create new workflow info");
+    WorkflowInformation info = repo.getWorkflowInformation().get(0);
+    assertEquals(WorkFlowType.CI, info.getWorkflowType(), "Should have CI workflow type as expected");
+    assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
+    assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
+    assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
+  }
+
+  @Test
+  void testUpdateWorkflowInfoUpdatesExistingEntry() throws Exception {
+    GHWorkflowRun run = mock(GHWorkflowRun.class);
+    when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
+    when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+
+    when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
+
+    GithubRepo repo = new GithubRepo();
+    WorkflowInformation existing = new WorkflowInformation();
+    existing.setWorkflowType(WorkFlowType.CI);
+    repo.setWorkflowInformation(new ArrayList<>(List.of(existing)));
+
+    service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
+
+    assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
+    WorkflowInformation info = repo.getWorkflowInformation().get(0);
+    assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
+    assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
 }

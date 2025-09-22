@@ -1,0 +1,119 @@
+<div class="container p-0">
+  <!-- Search Bar -->
+  <div class="feature-bar d-flex align-items-center justify-content-between">
+    <app-product-filter class="flex-grow-1 h-100" (searchChange)="onSearchChanged($event)"
+      [isProductHomepage]="false"></app-product-filter>
+
+    <!-- Mode Toggle -->
+    <div class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">
+      <div class="btn-group h-90 toggle-group" role="group">
+        <!-- Slider -->
+        <div class="slider" [class.report-active]="mode[tabKey] === 'report'"></div>
+
+        <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'default-mode-' + tabKey"
+          autocomplete="off" [(ngModel)]="mode[tabKey]" value="default" />
+        <label class="btn border-0 justify-content-between align-items-center align-content-center"
+          [for]="'default-mode-' + tabKey">
+          {{ 'common.monitor.dashboard.toggle.default' | translate }}
+        </label>
+
+        <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'report-mode-' + tabKey"
+          autocomplete="off" [(ngModel)]="mode[tabKey]" value="report" />
+        <label class="btn border-0 justify-content-between align-items-center align-content-center"
+          [for]="'report-mode-' + tabKey">
+          {{ 'common.monitor.dashboard.toggle.report' | translate }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary connector-column" (click)="sortRepositoriesByColumn(COLUMN_NAME)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_NAME)">
+            {{ 'common.monitor.dashboard.connector' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_CI)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_CI)">
+            {{ 'common.monitor.dashboard.ciLabel' | translate }}
+            <app-build-badge-tooltip buildType="CI" />
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_DEV)">
+            {{ 'common.monitor.dashboard.devLabel' | translate }}
+            <app-build-badge-tooltip buildType="DEV" />
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
+          <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_E2E)">
+            {{ 'common.monitor.dashboard.e2eLabel' | translate }}
+            <app-build-badge-tooltip buildType="E2E" />
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.monitor.dashboard.github' | translate }}
+          </h5>
+        </th>
+      </tr>
+    </thead>
+    @if (displayedRepositories.length > 0) {
+    <tbody>
+      <tr *ngFor="let repo of displayedRepositories">
+        <td class="align-middle">
+          <p class="name">
+            <a *ngIf="repo.productId; else noLink" id="product-name" [href]="getMarketUrl(repo.productId)"
+              target="_blank" rel="noopener noreferrer">
+              {{ repo.repoName }}
+            </a>
+            <ng-template #noLink>
+              <span class="no-link">{{ repo.repoName }}</span>
+            </ng-template>
+          </p>
+        </td>
+        <td *ngFor="let workflowType of workflowKeys"
+          [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
+          <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)"
+            [repository]="repo" [mode]="mode[tabKey]"></app-repo-test-result>
+        </td>
+        <td class="align-middle">
+          <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+        </td>
+      </tr>
+    </tbody>
+    } @else if (displayedRepositories.length == 0) {
+    <tbody>
+      <tr>
+        <td colspan="12" class="border-0">
+          <p class="text-primary m-0 text-center no-repositories" [lang]="languageService.selectedLanguage()">
+            {{ 'common.monitor.dashboard.noRepositories' | translate }}
+          </p>
+        </td>
+      </tr>
+    </tbody>
+    }
+  </table>
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-between p-2" *ngIf="getCollectionSize() > 0">
+    <ngb-pagination [collectionSize]="getCollectionSize()" [(page)]="page" [pageSize]="getPageSize()"
+      (pageChange)="refreshPagination()"></ngb-pagination>
+
+    <select class="form-select pagination" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
+      <option [ngValue]="10">
+        {{ 'common.monitor.pagination.tenItems' | translate }}
+      </option>
+      <option [ngValue]="20">
+        {{ 'common.monitor.pagination.twentyItems' | translate }}
+      </option>
+      <option [ngValue]="-1">
+        {{ 'common.monitor.pagination.all' | translate }}
+      </option>
+    </select>
+  </div>
+</div>

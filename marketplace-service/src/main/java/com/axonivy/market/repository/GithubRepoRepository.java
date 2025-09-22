@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface GithubRepoRepository extends JpaRepository<GithubRepo, String> {
-  Optional<GithubRepo> findByName(String name);
+  GithubRepo findByName(String name);
 
   @Modifying
   @Transactional

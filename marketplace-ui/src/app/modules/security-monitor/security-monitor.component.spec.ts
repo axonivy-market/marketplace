@@ -8,7 +8,7 @@ import { By } from '@angular/platform-browser';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { TIME_UNITS } from '../../shared/constants/common.constant';
+import { ERROR_MESSAGES, TIME_UNITS } from '../../shared/constants/common.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
 
 describe('SecurityMonitorComponent', () => {
@@ -92,7 +92,7 @@ describe('SecurityMonitorComponent', () => {
 
     fixture.detectChanges();
 
-    expect(component.errorMessage).toBe('Unauthorized access.');
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
   });
 
   it('should handle generic error correctly', () => {

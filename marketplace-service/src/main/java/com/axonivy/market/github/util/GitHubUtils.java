@@ -3,7 +3,6 @@ package com.axonivy.market.github.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.hateoas.Link;
 
@@ -105,9 +103,9 @@ public class GitHubUtils {
     }
   }
 
-  public static Link createSelfLinkForGithubReleaseModel(Product product, GHRelease ghRelease) throws IOException {
+  public static Link createSelfLinkForGithubReleaseModel(String productId, long ghReleaseId) throws IOException {
     return linkTo(
-        methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
-            ghRelease.getId())).withSelfRel();
+        methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(productId,
+            ghReleaseId)).withSelfRel();
   }
 }

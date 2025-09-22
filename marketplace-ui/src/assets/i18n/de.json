@@ -9,11 +9,19 @@
       "pageTitle": "Veröffentlichungsvorschau",
       "title": "Vorschau auf die Produktfreigabe",
       "description": "Vorschau der Beschreibung Ihres Produkts",
+      "dragDropText": "Hierher ziehen & ablegen oder zum Auswählen klicken",
+      "onlyZip": "Nur .zip-Dateien bis {{max}}MB werden unterstützt",
       "buttonLabel": "Hochladen",
-      "hint": "Es sind nur .zip-Dateien erlaubt und die Dateigröße sollte kleiner als 20 MB sein.",
+      "buttonHint": "Bitte laden Sie eine gültige Zip-Datei mit einer README.md-Datei hoch.",
+      "fileSizeUnit": "MB",
       "noTabs": "Es scheint ein Problem mit Ihrer Zip-Datei zu geben.",
       "link": "So erstellen Sie eine gültige README.",
-      "hintContent": "<p> Befolgen Sie die README-Vorlage strikt. Stellen Sie Folgendes sicher. </p></br> <code># Name Ihres Produkts </br></br> Hallo, dies ist unser Connector. </br></br>## Demo </br></br> Hier sollten Sie die Demo-Inhalte zeigen. </br></br>## Setup </br></br> Dieser Abschnitt sollte zeigen, wie Sie Ihr Produkt herunterladen und einrichten, .. </br></br> ```</br> @variables.yaml@</br> ``` </code> <div> <ul> <li>Falls Sie Variablen in die README-Datei einfügen möchten, platzieren Sie sie wie in der oben angegebenen Vorlage und deklarieren Sie eine Datei mit dem Namen <code>variables.yaml</code></li> <li><b>SETUP AND DEMO</b> Diese Überschriften sollten immer auf Englisch sein, unabhängig von der Sprache.</li> <li> Stellen Sie sicher, dass <b>SETUP AND DEMO</b> den vordefinierten Überschriften und der Struktur der Vorlage folgen. </li> <li> Bilder sollten das folgende Format verwenden <code>![image-name](image-directory.png)</code> </li> </ul>"
+      "hintContent": "<p> Befolgen Sie die README-Vorlage strikt. Stellen Sie Folgendes sicher. </p></br> <code># Name Ihres Produkts </br></br> Hallo, dies ist unser Connector. </br></br>## Demo </br></br> Hier sollten Sie die Demo-Inhalte zeigen. </br></br>## Setup </br></br> Dieser Abschnitt sollte zeigen, wie Sie Ihr Produkt herunterladen und einrichten, .. </br></br> ```</br> @variables.yaml@</br> ``` </code> <div> <ul> <li>Falls Sie Variablen in die README-Datei einfügen möchten, platzieren Sie sie wie in der oben angegebenen Vorlage und deklarieren Sie eine Datei mit dem Namen <code>variables.yaml</code></li> <li><b>SETUP AND DEMO</b> Diese Überschriften sollten immer auf Englisch sein, unabhängig von der Sprache.</li> <li> Stellen Sie sicher, dass <b>SETUP AND DEMO</b> den vordefinierten Überschriften und der Struktur der Vorlage folgen. </li> <li> Bilder sollten das folgende Format verwenden <code>![image-name](image-directory.png)</code> </li> </ul>",
+      "errors": {
+        "invalidZip": "Ungültige Datei. Bitte laden Sie eine .zip-Datei hoch.",
+        "tooLarge": "Datei ist zu groß. Die maximale erlaubte Größe beträgt {{max}}MB.",
+        "seemsProblem": "Es gibt ein Problem mit Ihrer Datei. Bitte versuchen Sie es erneut."
+      }
     },
     "nav": {
       "news": "News",
@@ -214,61 +222,46 @@
     },
     "monitor": {
       "dashboard": {
-        "title": "GitHub Repository Überwachung",
-        "subtitle": "Bleiben Sie über die axonivy-market-Repositories informiert – die Repository-Daten werden automatisch stündlich aktualisiert.",
-        "loading": "Repositories werden geladen...",
+        "title": "Axon Ivy Market – Monitoring",
+        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">auf GitHub verfügbar</a>.",
         "noRepositories": "Keine Repositories gefunden.",
-        "errorLoading": "Fehler beim Laden der Repositories",
-        "ciLabel": "CI Build",
-        "devLabel": "DEV Build",
+        "connector": "Konnektor",
+        "ciLabel": "CI-Build",
+        "devLabel": "DEV-Build",
+        "e2eLabel": "E2E-Build",
+        "github": "Github",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
-        "mock": "Simuliert",
-        "real": "Echt",
-        "lastUpdated": "Zuletzt Gebaut",
-        "language": "Sprache",
+        "ciLastBuilt": "Zuletzt CI Gebaut",
+        "devLastBuilt": "Zuletzt DEV Gebaut",
+        "e2eLastBuilt": "Zuletzt E2E Gebaut",
         "pageTitle": "Überwachungs-Dashboard",
-        "testCounts": {
-          "title": "Testergebnisse",
-          "mock": "Simuliert: ",
-          "real": "Echt: ",
-          "total": "Gesamttests: "
-        },
         "repo": {
           "name": "Repository-Name",
           "language": "Sprache",
           "url": "Repository-URL",
           "workflow": "Workflow von"
         },
-        "actions": {
-          "viewDetails": "Details anzeigen",
-          "refresh": "Aktualisieren"
-        },
-        "status": {
-          "active": "Aktiv",
-          "inactive": "Inaktiv"
-        },
-        "summaryCard": {
-          "title": "Zusammenfassung",
-          "totalRepos": "Gesamtzahl der Repositories",
-          "totalPassed": "Bestandene Tests insgesamt",
-          "totalFailed": "Fehlgeschlagene Tests insgesamt",
-          "lastSync": "Letzte Synchronisation"
-        },
-        "filterLabel": "Repositories filtern",
         "noReport": "Es gibt keinen Testbericht in diesem Workflow.",
         "skipped": "Übersprungen",
-        "focus": {
-          "title": "Fokussierte Markterweiterung"
+        "tabTitle": {
+          "focused": "Fokussierte Markterweiterung",
+          "standard": "Standard Markterweiterung"
         },
-        "standard": {
-          "title": "Standard Markterweiterung"
+        "toggle": {
+          "default": "Standardmodus",
+          "report": "Berichtsmodus"
         }
       },
       "buildTooltip": {
-        "ci": "Uses a fixed Ivy version to verify that the connector works with the official release.",
-        "dev": "Validates whether the connector is compatible with the latest Ivy API (nightly build).",
-        "e2e": "Validates our code works with the real API and confirms the endpoint is active and correct."
+        "ci": "Verwendet eine feste Ivy-Version, um zu überprüfen, dass der Connector mit der offiziellen Veröffentlichung funktioniert.",
+        "dev": "Prüft, ob der Connector mit der neuesten Ivy-API (Nightly Build) kompatibel ist.",
+        "e2e": "Überprüft, dass unser Code mit der echten API funktioniert und bestätigt, dass der Endpunkt aktiv und korrekt ist."
+      },
+      "pagination": {
+        "tenItems": "10 pro Seite",
+        "twentyItems": "20 pro Seite",
+        "all": "Alle"
       }
     }
   }

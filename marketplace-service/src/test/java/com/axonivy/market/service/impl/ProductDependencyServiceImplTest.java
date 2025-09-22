@@ -26,7 +26,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDependencyServiceImplTest extends BaseSetup {
@@ -90,6 +90,78 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     assertEquals(1, totalSynced, "Expected 1 product was synced but service returned nothing");
   }
 
+  @Test
+  void testSyncWithNewDependencyShouldSaveDependency() throws IOException {
+    // Test case: dependency.getId() == null (new dependency that needs to be saved)
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    verify(productDependencyRepository, atLeast(1)).save(any(ProductDependency.class));
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
+  }
+
+  @Test
+  void testSyncWithExistingDependencyShouldNotSaveExistingDependency() throws IOException {
+    // Test case: dependency.getId() != null (existing dependency that should not be saved again)
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    var existingDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
+        .version(MOCK_VERSION)
+        .downloadUrl(MOCK_DOWNLOAD_POM_DEPENDENCY_URL)
+        .build();
+    existingDependency.setId("existing-123");
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of(existingDependency));
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    verify(productDependencyRepository, times(1)).save(any(ProductDependency.class));
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
+  }
+
+  @Test
+  void testSyncWithBatchSaveOfNewDependencies() throws IOException {
+    prepareTestData(MOCK_PRODUCT_ID);
+
+    // Simulate no existing dependencies, so new ones will be created
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    // Mock saveAll to assign IDs
+    when(productDependencyRepository.saveAll(anyList()))
+        .thenAnswer(invocation -> {
+          List<ProductDependency> deps = invocation.getArgument(0);
+          deps.forEach(dep -> dep.setId("batch-" + dep.getArtifactId()));
+          return deps;
+        });
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
+
+    // Verify batch save was called
+    verify(productDependencyRepository, atLeastOnce()).saveAll(anyList());
+    assertTrue(totalSynced > 0, "Expected at least one product was synced");
+  }
   private void prepareTestData(String mockProductId) throws IOException {
     List<MavenArtifactVersion> mavenArtifactVersionMockList = new ArrayList<>();
     var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
@@ -114,6 +186,13 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
         .thenReturn(List.of(
             mockMavenArtifactVersion(MOCK_VERSION, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_DOWNLOAD_POM_DEPENDENCY_URL)));
+
+    when(productDependencyRepository.save(any(ProductDependency.class)))
+        .thenAnswer(invocation -> {
+          ProductDependency dependency = invocation.getArgument(0);
+          dependency.setId(String.valueOf(1L));
+          return dependency;
+        });
 
     // Mock for dependency artifact
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_DEPENDENCY_URL))

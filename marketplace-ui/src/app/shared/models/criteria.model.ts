@@ -12,3 +12,9 @@ export interface Criteria {
   nextPageHref?: string;
   pageable: Pageable;
 }
+
+export interface ChangeLogCriteria {
+  pageable?: Pageable;
+  productId?: string;
+  nextPageHref?: string;
+}

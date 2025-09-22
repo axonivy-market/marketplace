@@ -5,5 +5,7 @@ export enum LoadingComponentId {
   DETAIL_PAGE = 'detail-page',
   SECURITY_MONITOR = 'security-monitor',
   FEEDBACK_APPROVAL = 'feedback-approval',
-  RELEASE_PREVIEW = 'release-preview'
+  RELEASE_PREVIEW = 'release-preview',
+  PRODUCT_CHANGELOG = 'product-changelog',
+  MONITORING_DASHBOARD = 'monitoring-repo'
 }

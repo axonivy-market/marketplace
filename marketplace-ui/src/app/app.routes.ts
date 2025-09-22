@@ -47,7 +47,7 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'report/:repo/:workflow',
+    path: 'monitoring/:repo/:workflow',
     loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
 

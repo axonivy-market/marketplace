@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.kohsuke.github.GHRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +18,6 @@ import static com.axonivy.market.entity.TestStep.createTestStep;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestStepUtils {
-
-  private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
   private static final String PATTERN_TEST_CASE = "^✅\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
   private static final String PATTERN_TEST_CASE_FAILED = "^❌\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
   private static final int TEST_TYPE_INDEX = 2;
@@ -35,16 +32,13 @@ public class TestStepUtils {
     var matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
     if (matcher.find()) {
       String testName = matcher.group(TEST_NAME_INDEX).trim();
-      var testTypeString = matcher.group(TEST_TYPE_INDEX);
       return createTestStep(testName, TestStatus.PASSED, workflowType);
     } else if (matcherFailed.find()) {
       String testName = matcherFailed.group(TEST_NAME_INDEX).trim();
-      var testTypeString = matcherFailed.group(TEST_TYPE_INDEX);
       return createTestStep(testName, TestStatus.FAILED, workflowType);
     }
     return null;
   }
-
 
   public static List<TestStep> parseTestSteps(JsonNode testData, WorkFlowType workflowType) {
     List<TestStep> steps = new ArrayList<>();
@@ -58,9 +52,5 @@ public class TestStepUtils {
       }
     }
     return steps;
-  }
-
-  public static String buildBadgeUrl(GHRepository repo, String workflowFileName) {
-    return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
   }
 }
