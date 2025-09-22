@@ -83,6 +83,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
       GHCommitQueryBuilder commitBuilder = createQueryCommitsBuilder(lastCommitTime);
       return GitHubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
     } catch (Exception e) {
+      // Runtime exception
       log.error("Cannot query GHCommit: ", e);
     }
     return null;
