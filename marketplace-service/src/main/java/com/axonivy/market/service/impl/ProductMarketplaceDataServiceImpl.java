@@ -75,7 +75,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       validateProductExists(productId);
       var productMarketplaceData = getProductMarketplaceData(productId);
 
-      productMarketplaceData.setCustomOrder(descendingOrder--);
+      int currentOrder = descendingOrder;
+      descendingOrder--;
+      productMarketplaceData.setCustomOrder(currentOrder);
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
