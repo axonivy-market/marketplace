@@ -17,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -73,7 +74,7 @@ public class LoggableAspect {
 
       var content = new StringBuilder();
       if (logFile.exists()) {
-        content.append(new String(Files.readAllBytes(logFile.toPath())));
+        content.append(Files.readString(logFile.toPath(), StandardCharsets.UTF_8));
       }
       if (content.isEmpty()) {
         content.append(LoggingConstants.LOG_START);

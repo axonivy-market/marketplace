@@ -16,8 +16,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public final class ImageUtils {
-  public static final String IMAGE_ID_FORMAT_PATTERN = "imageId-\\w+";
-  private static final Pattern PATTERN = Pattern.compile(IMAGE_ID_FORMAT_PATTERN);
+  public static final String IMAGE_ID_FORMAT_REGEX = "imageId-[A-Za-z0-9_]+";
+  private static final Pattern IMAGE_ID_FORMAT_PATTERN = Pattern.compile(IMAGE_ID_FORMAT_REGEX,
+      Pattern.UNICODE_CHARACTER_CLASS);
 
   private ImageUtils() {
   }
@@ -61,7 +62,7 @@ public final class ImageUtils {
 
   private static List<String> extractAllImageIds(String content) {
     List<String> result = new ArrayList<>();
-    var matcher = PATTERN.matcher(content);
+    var matcher = IMAGE_ID_FORMAT_PATTERN.matcher(content);
     while (matcher.find()) {
       var foundImgTag = matcher.group();
       result.add(foundImgTag);

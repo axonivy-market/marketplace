@@ -47,7 +47,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(MissingHeaderException.class)
-  public ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
+  public ResponseEntity<Object> handleMissingServletRequestParameter(Throwable missingHeaderException) {
     var errorMessage = new Message();
     errorMessage.setMessageDetails(missingHeaderException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
