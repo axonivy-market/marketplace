@@ -65,7 +65,7 @@
             </div>
           } @else {
             <div class="link--left" [class]="ivyFooterLink.containerStyleClass">
-              <a [lang]="languageService.selectedLanguage()" class="nav-link policy-link text-secondary h5-text" aria-current="page" [href]="ivyFooterLink.link" target="_blank">
+              <a [lang]="languageService.selectedLanguage()" class="nav-link policy-link text-secondary h5-text" aria-current="page" [href]="ivyFooterLink.link | translate" target="_blank">
                 {{ ivyFooterLink.label | translate }}
               </a>
             </div>

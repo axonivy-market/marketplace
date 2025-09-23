@@ -87,7 +87,9 @@
       "download": "Download",
       "ivyCompanyInfo": "Axon Ivy Inc.",
       "privacyPolicy": "Privacy Policy",
-      "termsOfService": "Terms of Service"
+      "termsOfService": "Terms of Service",
+      "legalNotice": "Legal Notice",
+      "legalNoticeUrl": "https://www.axonivy.com/legal-notice"
     },
     "product": {
       "detail": {
