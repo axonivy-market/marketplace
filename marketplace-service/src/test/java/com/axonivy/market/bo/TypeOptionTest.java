@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TypeOptionTest {
   @Test
-  void shouldReturnConnectorsForValidInput() {
+  void testShouldReturnConnectorsForValidInput() {
     String input = "connectors";
     TypeOption result = TypeOption.of(input);
 
@@ -19,7 +19,7 @@ public class TypeOptionTest {
   }
 
   @Test
-  void shouldReturnALLIgnoringCase() {
+  void testShouldReturnALLIgnoringCase() {
     String input = "ALL";
     TypeOption result = TypeOption.of(input);
 
@@ -28,7 +28,7 @@ public class TypeOptionTest {
   }
 
   @Test
-  void shouldThrowExceptionForNull() {
+  void testShouldThrowExceptionForNull() {
     Exception ex = assertThrows(InvalidParamException.class,
         () -> TypeOption.of(null),
         "Expected TypeOption.of(null) to throw InvalidParamException");
@@ -37,7 +37,7 @@ public class TypeOptionTest {
   }
 
   @Test
-  void shouldThrowExceptionForUnknownOption() {
+  void testShouldThrowExceptionForUnknownOption() {
     String input = "foo";
     Exception ex = assertThrows(InvalidParamException.class,
         () -> TypeOption.of(input),
