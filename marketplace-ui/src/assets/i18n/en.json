@@ -48,7 +48,8 @@
         "connector": "Connectors",
         "util": "Utilities",
         "demos": "Demos",
-        "solution": "Solutions"
+        "solution": "Solutions",
+        "test": "Test"
       }
     },
     "error": {
