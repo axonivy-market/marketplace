@@ -34,6 +34,12 @@ services:
     expose:
       - 4000
 
+  clamav:
+    container_name: clamav
+    image: mkodockx/docker-clamav:latest
+    restart: always
+    ports:
+      - "3310:3310"
   service:
     container_name: marketplace-service
     restart: always
@@ -68,6 +74,8 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - 8080
+    depends_on:
+      - clamav
 
 volumes:
   marketcache:

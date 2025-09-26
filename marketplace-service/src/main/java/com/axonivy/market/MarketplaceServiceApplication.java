@@ -34,12 +34,13 @@ public class MarketplaceServiceApplication {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
   }
 
-  @Async
-  @EventListener(ApplicationStartedEvent.class)
-  public void startInitializeSystem() {
-    List<String> productIds = syncProductData();
-    syncExternalDocumentData(productIds);
-  }
+//  @Async
+//  @EventListener(ApplicationStartedEvent.class)
+//  public void startInitializeSystem() {
+//    List<String> productIds = syncProductData();
+//    syncExternalDocumentData(productIds);
+//  }
+  
 
   private List<String> syncProductData() {
     var watch = new StopWatch();
