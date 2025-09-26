@@ -82,11 +82,9 @@ public class ProductFactory {
         StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     extractSourceUrl(product, meta);
 
-    List<Artifact> artifacts;
+    List<Artifact> artifacts = meta.getMavenArtifacts();
     if (CollectionUtils.isEmpty(meta.getMavenArtifacts())) {
       artifacts = new ArrayList<>();
-    } else {
-      artifacts = meta.getMavenArtifacts();
     }
 
     for (Artifact artifact : artifacts) {
