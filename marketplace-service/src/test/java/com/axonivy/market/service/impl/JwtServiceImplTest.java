@@ -37,13 +37,13 @@ class JwtServiceImplTest extends BaseSetup {
 
     String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
-    assertNotNull(token);
-    assertFalse(token.isEmpty());
+    assertNotNull(token, "Generated token should not be null for a valid GitHub user");
+    assertFalse(token.isEmpty(), "Generated token should not be empty");
 
     Claims claims = jwtService.getClaimsFromToken(token);
-    assertEquals("123", claims.getSubject());
-    assertEquals("John Doe", claims.get("name"));
-    assertEquals("johndoe", claims.get("username"));
+    assertEquals("123", claims.getSubject(), "JWT subject should match the GitHub user ID");
+    assertEquals("John Doe", claims.get("name"), "JWT claim 'name' should match the GitHub user name");
+    assertEquals("johndoe", claims.get("username"), "JWT claim 'username' should match the GitHub user username");
   }
 
   @Test
@@ -54,10 +54,12 @@ class JwtServiceImplTest extends BaseSetup {
     githubUser.setUsername("johndoe");
 
     String validToken = jwtService.generateToken(githubUser, ACCESS_TOKEN);
-    assertTrue(jwtService.validateToken(validToken));
+    assertTrue(jwtService.validateToken(validToken),
+        "A token generated for a valid GitHub user should be recognized as valid");
 
     String invalidToken = "invalid.token.here";
-    assertFalse(jwtService.validateToken(invalidToken));
+    assertFalse(jwtService.validateToken(invalidToken),
+        "A malformed or random token should be recognized as invalid");
   }
 
   @Test
@@ -70,10 +72,13 @@ class JwtServiceImplTest extends BaseSetup {
     String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
     Claims claims = jwtService.getClaimsFromToken(token);
-    assertNotNull(claims);
-    assertEquals("123", claims.getSubject());
-    assertEquals("John Doe", claims.get("name"));
-    assertEquals("johndoe", claims.get("username"));
+    assertNotNull(claims, "Extracted claims should not be null for a valid token");
+    assertEquals("123", claims.getSubject(),
+        "JWT subject should match the GitHub user ID set in the token");
+    assertEquals("John Doe", claims.get("name"),
+        "JWT claim 'name' should match the GitHub user's name");
+    assertEquals("johndoe", claims.get("username"),
+        "JWT claim 'username' should match the GitHub user's username");
   }
 
   @Test
@@ -86,9 +91,10 @@ class JwtServiceImplTest extends BaseSetup {
     String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
     Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
-    assertNotNull(claimsJws);
-    assertNotNull(claimsJws.getBody());
-    assertEquals("123", claimsJws.getBody().getSubject());
+    assertNotNull(claimsJws, "getClaimsJws should return a non-null JWS object for a valid token");
+    assertNotNull(claimsJws.getBody(), "JWS body (claims) should not be null for a valid token");
+    assertEquals("123", claimsJws.getBody().getSubject(),
+        "JWS subject should match the GitHub user ID encoded in the token");
   }
 }
 

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -208,7 +209,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, downloadOption);
     } catch (HttpClientErrorException e) {
       log.error("Cannot download doc", e);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Exception during unzip", e);
     }
     return EMPTY;

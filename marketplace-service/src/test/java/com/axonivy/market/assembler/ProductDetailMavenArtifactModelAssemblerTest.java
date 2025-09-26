@@ -32,8 +32,7 @@ class ProductDetailModelAssemblerTest {
   @Test
   void testToModel() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct);
-    Assertions.assertEquals(ID, model.getId());
-    Assertions.assertTrue(model.getLinks().isEmpty());
+    Assertions.assertEquals(ID, model.getId(), "The model ID should match the expected product ID.");
+    Assertions.assertTrue(model.getLinks().isEmpty(), "The model links should be empty.");
   }
-
 }

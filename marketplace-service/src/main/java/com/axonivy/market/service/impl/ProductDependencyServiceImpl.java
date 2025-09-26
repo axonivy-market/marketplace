@@ -43,12 +43,12 @@ import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_
 @AllArgsConstructor
 @Service
 public class ProductDependencyServiceImpl implements ProductDependencyService {
-  static final int SAFE_THRESHOLD = 11;
-  final ProductRepository productRepository;
-  final ProductDependencyRepository productDependencyRepository;
-  final FileDownloadService fileDownloadService;
-  final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  final MetadataRepository metadataRepository;
+  private static final int SAFE_THRESHOLD = 11;
+  private final ProductRepository productRepository;
+  private final ProductDependencyRepository productDependencyRepository;
+  private final FileDownloadService fileDownloadService;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  private final MetadataRepository metadataRepository;
 
   private static Model convertPomToModel(byte[] data) throws IOException, XmlPullParserException, NullPointerException {
     try (var inputStream = new ByteArrayInputStream(data)) {
@@ -71,7 +71,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
    */
   @Override
   public synchronized int syncIARDependenciesForProducts(Boolean resetSync, String productId) {
-    int totalSyncedProductIds = 0;
+    var totalSyncedProductIds = 0;
     if (StringUtils.isNotBlank(productId)) {
       totalSyncedProductIds += syncByMavenArtifactVersions(productId, resetSync);
     } else {
@@ -85,7 +85,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private int syncByMavenArtifactVersions(String id, Boolean resetSync) {
     cleanUpProductDependencyIfNeeded(id, resetSync);
 
-    int totalSyncedProductIds = 0;
+    var totalSyncedProductIds = 0;
     for (var artifact : getIARMavenArtifactVersionsByProductId(id)) {
       String productId = artifact.getProductId();
       String artifactId = artifact.getId().getArtifactId();
@@ -94,8 +94,10 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         deleteProductDependencies(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
             productId, artifactId, version));
       }
-      ProductDependency productDependency = findProductDependencyByIds(productId, artifactId, version);
-      if (productDependency == null) { // Is missing artifacts ?
+      var productDependency = findProductDependencyByIds(productId, artifactId, version);
+
+      // Check if artifacts are missing
+      if (productDependency == null) {
         productDependency = initProductDependencyData(artifact);
         totalSyncedProductIds = createNewProductDependencyForArtifact(artifact, productDependency,
             totalSyncedProductIds, productId, version);
@@ -144,10 +146,13 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private ProductDependency findProductDependencyByIds(String productId, String artifactId, String version) {
     var productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
         version);
-    return ObjectUtils.isEmpty(productDependencies) ? null : productDependencies.get(0);
+    if (ObjectUtils.isEmpty(productDependencies)) {
+      return null;
+    }
+    return productDependencies.get(0);
   }
 
-  private ProductDependency initProductDependencyData(MavenArtifactVersion mavenArtifactVersion) {
+  private static ProductDependency initProductDependencyData(MavenArtifactVersion mavenArtifactVersion) {
     return ProductDependency.builder().productId(mavenArtifactVersion.getProductId())
         .artifactId(mavenArtifactVersion.getId().getArtifactId())
         .version(mavenArtifactVersion.getId().getProductVersion())
@@ -164,7 +169,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       return;
     }
     log.info("Collect IAR dependencies for requested artifact {}", artifact.getId().getArtifactId());
-    int totalDependencyLevels = 0;
+    var totalDependencyLevels = 0;
     collectMavenDependenciesForArtifact(artifact.getId().getProductVersion(), mavenDependency.getDependencies(),
         dependencyModels, totalDependencyLevels);
   }
@@ -179,7 +184,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
       // Find Metadata configuration of dependency
-      Metadata dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
+      var dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
       // Find dependency in ProductDependency table, create a new one if not exist
@@ -231,7 +236,10 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private MavenArtifactVersion findDownloadURLForDependency(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(productId,
         artifactId, version);
-    var dependencyArtifact = ObjectUtils.isEmpty(mavenArtifactVersions) ? null : mavenArtifactVersions.get(0);
+    MavenArtifactVersion dependencyArtifact = null;
+    if (!ObjectUtils.isEmpty(mavenArtifactVersions)) {
+      dependencyArtifact = mavenArtifactVersions.get(0);
+    }
     Objects.requireNonNull(dependencyArtifact, "Cannot found the dependency artifact of " + artifactId);
     ObjectUtils.requireNonEmpty(dependencyArtifact.getDownloadUrl(), "Invalid download URL for " + artifactId);
     return dependencyArtifact;
@@ -240,7 +248,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private List<Dependency> extractMavenPOMDependencies(String downloadUrl)
       throws IOException, XmlPullParserException, NullPointerException, HttpClientErrorException {
     byte[] location = downloadPOMFileFromMaven(downloadUrl);
-    Model mavelModel = convertPomToModel(location);
+    var mavelModel = convertPomToModel(location);
     return mavelModel.getDependencies().stream()
         .filter(dependency -> DEFAULT_PRODUCT_TYPE.equals(dependency.getType()))
         .toList();

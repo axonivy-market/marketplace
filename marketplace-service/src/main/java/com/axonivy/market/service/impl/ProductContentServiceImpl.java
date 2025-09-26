@@ -32,14 +32,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
+
+  public static final Pattern IMAGE_EXTENSION_PATTERN =
+      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
@@ -49,11 +54,10 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(productId, version);
-    String unzippedFolderPath = String.join(File.separator, FileDownloadService.ROOT_STORAGE_FOR_PRODUCT_CONTENT,
+    var productModuleContent = ProductContentUtils.initProductModuleContent(productId, version);
+    var unzippedFolderPath = String.join(File.separator, FileDownloadService.ROOT_STORAGE_FOR_PRODUCT_CONTENT,
         artifact.getArtifactId());
     try {
-
       unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
           .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
@@ -73,7 +77,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       String productId, String unzippedFolderPath, String productName) throws IOException {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
-    Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
+    var productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
 
     productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
@@ -89,12 +93,12 @@ public class ProductContentServiceImpl implements ProductContentService {
           .toList();
 
       for (Path readmeFile : readmeFiles) {
-        String readmeContents = Files.readString(readmeFile);
+        var readmeContents = Files.readString(readmeFile);
         if (ProductContentUtils.hasImageDirectives(readmeContents)) {
           readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
         }
 
-        ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+        var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
 
         ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getFileName().toString(),
             readmeContentsModel);
@@ -109,21 +113,25 @@ public class ProductContentServiceImpl implements ProductContentService {
       String readmeContents) {
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
-      List<Path> allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
-          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+      List<Path> allImagePaths = imagePathStream
+          .filter(Files::isRegularFile)
+          .filter(path -> IMAGE_EXTENSION_PATTERN
+              .matcher(path.getFileName().toString().toLowerCase(Locale.getDefault()))
+              .matches())
+          .toList();
 
       for (Path imagePath : allImagePaths) {
-        Image currentImage = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
-        Optional.ofNullable(currentImage).ifPresent(image -> {
-          String imageFileName = imagePath.getFileName().toString();
+        var currentImage = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
+        Optional.ofNullable(currentImage).ifPresent((Image image) -> {
+          var imageFileName = imagePath.getFileName().toString();
           String imageIdFormat = CommonConstants.IMAGE_ID_PREFIX.concat(image.getId());
           imageUrls.put(imageFileName, imageIdFormat);
         });
       }
 
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-    } catch (Exception e) {
-      log.error(e.getMessage());
+    } catch (IOException e) {
+      log.error(e);
     }
     return readmeContents;
   }
@@ -141,7 +149,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   public void buildArtifactZipStreamFromUrls(String productId, List<String> urls, OutputStream out) {
     FileUtils.buildArtifactStreamFromArtifactUrls(urls, out);
     if (ObjectUtils.isNotEmpty(urls)) {
-    productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
+      productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
     }
   }
 }

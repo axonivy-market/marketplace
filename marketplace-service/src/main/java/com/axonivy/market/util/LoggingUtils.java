@@ -43,7 +43,7 @@ public class LoggingUtils {
   }
 
   public static String buildLogEntry(Map<String, String> headersMap) {
-    StringBuilder logEntry = new StringBuilder();
+    var logEntry = new StringBuilder();
     Map<String, String> map = new TreeMap<>(headersMap);
     logEntry.append(LoggingConstants.ENTRY_START);
     map.forEach((key, value) -> logEntry.append(String.format(LoggingConstants.ENTRY_FORMAT, key, value, key)));
