@@ -1,12 +1,9 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.enums.DocumentLanguage;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_META;
 
@@ -25,4 +22,5 @@ public class ExternalDocumentMeta extends AuditableIdEntity {
   private String version;
   private String storageDirectory;
   private String relativeLink;
+  private DocumentLanguage language;
 }

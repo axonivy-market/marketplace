@@ -33,14 +33,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
+import static com.axonivy.market.constants.DirectoryConstants.ZIP_EXTENSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class FileDownloadServiceImpl implements FileDownloadService {
-  private static final String DOC_DIR = "doc";
-  private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
   private static final String IAR = "iar";
