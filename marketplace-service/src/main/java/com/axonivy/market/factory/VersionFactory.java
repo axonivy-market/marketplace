@@ -11,10 +11,8 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -26,6 +24,8 @@ public class VersionFactory {
   static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
   // The arrays of all operators can appear in maven range version format
   static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
+
+  public static final List<String> DOC_VERSIONS = List.of("10.0", "12.0", "13.2", "dev");
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
@@ -61,6 +61,16 @@ public class VersionFactory {
       requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
     }
     return findVersionStartWith(sortedVersions, requestedVersion);
+  }
+
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion) {
+    String bestMatchVersion = get(versions, requestedVersion);
+    Map<String, String> latestSupportedDocVersions = DOC_VERSIONS.stream().filter(v -> !v.contains("dev"))
+            .collect(Collectors.toMap(
+                    version -> get(versions, version),
+                    version -> version
+            ));
+    return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
   }
 
   public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {

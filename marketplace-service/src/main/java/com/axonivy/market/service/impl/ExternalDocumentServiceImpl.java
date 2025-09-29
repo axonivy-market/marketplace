@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
+import static com.axonivy.market.factory.VersionFactory.DOC_VERSIONS;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -51,7 +52,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private final FileDownloadService fileDownloadService;
   private final ArtifactRepository artifactRepo;
   private final MarketplaceConfig marketplaceConfig;
-  private static final List<String> DOC_VERSIONS = List.of("10.0", "12.0", "13.2", "dev");
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
@@ -97,9 +97,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (product.isEmpty()) {
       return null;
     }
-    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    String resolvedVersion = VersionFactory.get(docMetaVersion, version);
+    String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
         .findAny().orElse(null);
   }
@@ -110,6 +110,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
             externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, DOC_VERSIONS);
 
     DocumentLanguage selectedLanguage = DocumentLanguage.fromCode(language);
+    String bestMatchVersion = findBestMatchVersion(productId, version);
 
     // === Versions ===
     List<DocumentLanguageResponse.DocumentVersion> documentVersions = docMetas.stream()
@@ -134,7 +135,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
 // === Languages === (filter by selected version, but use language from ExternalDocumentMeta)
     List<DocumentLanguageResponse.DocumentLanguage> documentLanguages = docMetas.stream()
-            .filter(meta -> meta.getVersion().equals(version))
+            .filter(meta -> meta.getVersion().equals(bestMatchVersion))
             .filter(meta -> meta.getLanguage() != null)
             .map(meta -> DocumentLanguageResponse.DocumentLanguage.builder()
                     .language(meta.getLanguage().getCode())
@@ -155,7 +156,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    return VersionFactory.get(docMetaVersion, version);
+    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, version);
   }
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
@@ -271,7 +272,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
             .filter(name -> DocumentLanguage.getCodes().contains(name))
             .collect(Collectors.toMap(
                     DocumentLanguage::fromCode,
-                    name -> String.format(DOC_URL_PATTERN, location + CommonConstants.SLASH + name)
+                    name -> location + CommonConstants.SLASH + name
             ));
   }
 
