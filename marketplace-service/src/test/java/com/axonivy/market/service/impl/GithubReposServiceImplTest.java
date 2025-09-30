@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -75,7 +76,7 @@ class GithubReposServiceImplTest {
     dbRepo = GithubRepo.builder()
         .productId("demo")
         .htmlUrl("https://old-url")
-        .workflowInformation(new ArrayList<>())
+        .workflowInformation(new HashSet<>())
         .testSteps(new ArrayList<>())
         .build();
   }
@@ -289,7 +290,7 @@ class GithubReposServiceImplTest {
   void testProcessExistingRepo() throws Exception {
     GithubRepo existingRepo = new GithubRepo();
     existingRepo.setProductId("demo");
-    existingRepo.setWorkflowInformation(new ArrayList<>());
+    existingRepo.setWorkflowInformation(new HashSet<>());
     existingRepo.getWorkflowInformation().add(new WorkflowInformation());
     existingRepo.setTestSteps(new ArrayList<>());
     existingRepo.getTestSteps().add(new TestStep());
@@ -334,12 +335,12 @@ class GithubReposServiceImplTest {
     when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
 
     GithubRepo repo = new GithubRepo();
-    repo.setWorkflowInformation(new ArrayList<>());
+    repo.setWorkflowInformation(new HashSet<>());
 
     service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should create new workflow info");
-    WorkflowInformation info = repo.getWorkflowInformation().get(0);
+    WorkflowInformation info = repo.getWorkflowInformation().iterator().next();
     assertEquals(WorkFlowType.CI, info.getWorkflowType(), "Should have CI workflow type as expected");
     assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
     assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
@@ -358,12 +359,12 @@ class GithubReposServiceImplTest {
     GithubRepo repo = new GithubRepo();
     WorkflowInformation existing = new WorkflowInformation();
     existing.setWorkflowType(WorkFlowType.CI);
-    repo.setWorkflowInformation(new ArrayList<>(List.of(existing)));
+    repo.setWorkflowInformation(new HashSet<>(List.of(existing)));
 
     service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
-    WorkflowInformation info = repo.getWorkflowInformation().get(0);
+    WorkflowInformation info = repo.getWorkflowInformation().iterator().next();
     assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
     assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
   }

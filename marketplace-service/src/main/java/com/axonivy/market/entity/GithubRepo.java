@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
@@ -72,7 +74,7 @@ public class GithubRepo extends GenericIdEntity {
   private String e2eBadgeUrl;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = REPOSITORY_ID)
-  private List<WorkflowInformation> workflowInformation;
+  private Set<WorkflowInformation> workflowInformation;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = REPOSITORY_ID)
@@ -82,7 +84,7 @@ public class GithubRepo extends GenericIdEntity {
     return GithubRepo.builder()
         .productId(productId)
         .htmlUrl(repo.getHtmlUrl().toString())
-        .workflowInformation(new ArrayList<>())
+        .workflowInformation(new HashSet<>())
         .testSteps(new ArrayList<>())
         .build();
   }
