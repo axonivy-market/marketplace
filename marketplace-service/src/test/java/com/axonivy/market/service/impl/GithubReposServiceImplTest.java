@@ -77,7 +77,7 @@ class GithubReposServiceImplTest {
         .productId("demo")
         .htmlUrl("https://old-url")
         .workflowInformation(new HashSet<>())
-        .testSteps(new ArrayList<>())
+        .testSteps(new HashSet<>())
         .build();
   }
 
@@ -292,7 +292,7 @@ class GithubReposServiceImplTest {
     existingRepo.setProductId("demo");
     existingRepo.setWorkflowInformation(new HashSet<>());
     existingRepo.getWorkflowInformation().add(new WorkflowInformation());
-    existingRepo.setTestSteps(new ArrayList<>());
+    existingRepo.setTestSteps(new HashSet<>());
     existingRepo.getTestSteps().add(new TestStep());
 
     when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(existingRepo);

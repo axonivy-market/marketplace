@@ -15,10 +15,8 @@ import org.kohsuke.github.GHObject;
 
 import java.io.IOException;
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
@@ -78,14 +76,14 @@ public class GithubRepo extends GenericIdEntity {
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = REPOSITORY_ID)
-  private List<TestStep> testSteps;
+  private Set<TestStep> testSteps;
 
   public static GithubRepo from(GHObject repo, String productId) throws IOException {
     return GithubRepo.builder()
         .productId(productId)
         .htmlUrl(repo.getHtmlUrl().toString())
         .workflowInformation(new HashSet<>())
-        .testSteps(new ArrayList<>())
+        .testSteps(new HashSet<>())
         .build();
   }
 }

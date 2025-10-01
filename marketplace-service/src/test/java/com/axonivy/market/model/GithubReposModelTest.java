@@ -21,7 +21,7 @@ class GithubReposModelTest {
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
     TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED, WorkFlowType.DEV);
-    githubRepo.setTestSteps(List.of(step1, step2, step3));
+    githubRepo.setTestSteps(Set.of(step1, step2, step3));
 
     WorkflowInformation ciInfo = new WorkflowInformation();
     ciInfo.setWorkflowType(WorkFlowType.CI);
