@@ -53,24 +53,24 @@
     </div>
   </section>
   <!-- Section: Policy & Social Media -->
-  <section class="d-flex flex-lg-row flex-column justify-content-between social-media-section">
+  <section class="d-flex flex-lg-row flex-column justify-content-center justify-content-lg-between social-media-section">
     <div class="navbar navbar-expand-xl align-self-md-center w-md-100">
       <!-- Left -->
       <div
         class="flex-row navbar-nav me-auto mb-lg-0 flex-wrap w-md-100 justify-content-center text-center footer__ivy-policy">
         @for (ivyFooterLink of ivyFooterLinks; track $index) {
           @if (ivyFooterLink.label === 'common.footer.ivyCompanyInfo') {
-            <div class="link--left text-secondary h5-text" [class]="ivyFooterLink.containerStyleClass">
+            <div class="link--left text-secondary h5-text w-md-100 footer__ivy-company-tag">
               © {{ year }} {{ ivyFooterLink.label | translate }}
             </div>
           } @else {
-            <div class="link--left" [class]="ivyFooterLink.containerStyleClass">
+            <div class="link--left footer__ivy-footer-link-tag">
               <a 
               [lang]="languageService.selectedLanguage()" 
-              class="nav-link policy-link text-secondary h5-text" 
+              class="nav-link ivy-footer-link text-secondary h5-text" 
               aria-current="page" 
-              aria-labelledby="legal-notice" 
-              aria-describedby="legal-notice" 
+              aria-labelledby="ivy-footer-link" 
+              aria-describedby="ivy-footer-link" 
               [href]="ivyFooterLink.link | translate" 
               target="_blank">
                 {{ ivyFooterLink.label | translate }}

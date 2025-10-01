@@ -89,6 +89,8 @@
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
       "legalNotice": "Legal Notice",
+      "ivyCompanyInfoUrl": "",
+      "privacyPolicyUrl": "https://www.axonivy.com/privacy-policy",
       "legalNoticeUrl": "https://www.axonivy.com/legal-notice"
     },
     "product": {

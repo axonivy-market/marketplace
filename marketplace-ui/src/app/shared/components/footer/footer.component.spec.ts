@@ -64,10 +64,10 @@ describe('FooterComponent', () => {
   it('Ivy tag in ivy policy section should be display in higher row', () => {
     viewport.set(540);
 
-    const ivyTag = fixture.nativeElement.querySelector('.footer__ivy-tag');
+    const ivyTag = fixture.nativeElement.querySelector('.footer__ivy-company-tag');
 
     const ivyTermOfService = fixture.nativeElement.querySelector(
-      '.footer__ivy-policy-tag'
+      '.footer__ivy-footer-link-tag'
     );
 
     expect(ivyTag.getBoundingClientRect().top).toBeLessThan(
@@ -109,7 +109,7 @@ describe('FooterComponent', () => {
 
   it('should navigate to the correct URL when the policy link text is clicked', () => {
     const policyLinks = fixture.debugElement.queryAll(
-      By.css('.policy-link')
+      By.css('.ivy-footer-link')
     );
 
     const policyLinksFromConstants = IVY_FOOTER_LINKS.filter((element) => element.link.trim().length !== 0);
