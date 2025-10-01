@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import static com.axonivy.market.constants.EntityConstants.ARCHIVED_ARTIFACT;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,6 +18,10 @@ import static com.axonivy.market.constants.EntityConstants.ARCHIVED_ARTIFACT;
 @Entity
 @Table(name = ARCHIVED_ARTIFACT)
 public class ArchivedArtifact extends GenericIdEntity {
+
+  @Serial
+  private static final long serialVersionUID = 1;
+
   private String lastVersion;
   private String groupId;
   private String artifactId;

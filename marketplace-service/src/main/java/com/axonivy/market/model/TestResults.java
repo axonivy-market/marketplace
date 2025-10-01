@@ -17,6 +17,10 @@ import java.util.Map;
 @NoArgsConstructor
 public class TestResults {
   private WorkFlowType workflow;
+
+  /**
+   * @deprecated Deprecated since version 1.17.0
+   */
   @Deprecated(forRemoval = true, since = "1.17.0")
   @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
   private String badgeUrl;

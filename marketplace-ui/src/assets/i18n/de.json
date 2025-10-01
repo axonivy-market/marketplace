@@ -3,7 +3,8 @@
     "branch": "Axon Ivy Marktplatz",
     "language": {
       "english": "Englisch",
-      "german": "Deutsch"
+      "german": "Deutsch",
+      "french": "Français"
     },
     "preview": {
       "pageTitle": "Veröffentlichungsvorschau",
@@ -29,7 +30,8 @@
       "tutorial": "Tutorial",
       "community": "Community",
       "team": "Team",
-      "market": "Marktplatz"
+      "market": "Marktplatz",
+      "test": "test be"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
