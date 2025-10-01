@@ -11,6 +11,7 @@ declare const viewport: Viewport;
 describe('FooterComponent', () => {
   let component: FooterComponent;
   let fixture: ComponentFixture<FooterComponent>;
+  let translate: TranslateService;
 
   beforeEach(async () => {
     let testMockDate: Date;
@@ -27,6 +28,22 @@ describe('FooterComponent', () => {
 
     fixture = TestBed.createComponent(FooterComponent);
     component = fixture.componentInstance;
+    translate = TestBed.inject(TranslateService);
+
+    translate.setTranslation('en', {
+      common: {
+        footer: {
+          ivyCompanyInfo: 'Axon Ivy Inc.',
+          privacyPolicy: 'Privacy Policy',
+          legalNotice: 'Legal Notice',
+          ivyCompanyInfoUrl: '',
+          privacyPolicyUrl: 'https://www.axonivy.com/privacy-policy',
+          legalNoticeUrl: 'https://www.axonivy.com/legal-notice',
+        },
+      },
+    });
+    translate.use('en');
+    
     fixture.detectChanges();
   });
 
@@ -107,21 +124,16 @@ describe('FooterComponent', () => {
     expect(downloadButton.href).toBe(DOWNLOAD_URL);
   });
 
-  it('should navigate to the correct URL when the policy link text is clicked', () => {
-    const policyLinks = fixture.debugElement.queryAll(
-      By.css('.ivy-footer-link')
-    );
+  it('should render all footer links with correct href', () => {
+    const links = fixture.debugElement.queryAll(By.css('a.ivy-footer-link'));
+    const socialMediaLinksWithoutCompanyInfo = IVY_FOOTER_LINKS.filter((element) => element.label !== 'common.footer.ivyCompanyInfo');
+    expect(links.length).toBe(socialMediaLinksWithoutCompanyInfo.length);
 
-    const policyLinksFromConstants = IVY_FOOTER_LINKS.filter((element) => element.link.trim().length !== 0);
-
-    for (let index = 0; index < policyLinksFromConstants.length; index++) {
-      const policyLinkElement: HTMLAnchorElement =
-      policyLinks[index].nativeElement;
-
-      policyLinkElement.click();
-
-      expect(policyLinkElement.href).toBe(policyLinksFromConstants[index].link);
-    }
+    socialMediaLinksWithoutCompanyInfo.forEach((footerLink, index) => {
+      const expectedHref = translate.instant(footerLink.link);
+      const anchor = links[index].nativeElement as HTMLAnchorElement;
+      expect(anchor.href).toBe(expectedHref);
+    });
   });
 
   it('should get year of mock year', () => {
