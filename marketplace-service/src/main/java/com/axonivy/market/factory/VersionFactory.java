@@ -25,8 +25,6 @@ public class VersionFactory {
   // The arrays of all operators can appear in maven range version format
   static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
 
-  public static final List<String> DOC_VERSIONS = List.of("10.0", "12.0", "13.2", "dev");
-
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
       return defaultVersion;
@@ -63,9 +61,9 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion) {
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion, List<String> majorVersions) {
     String bestMatchVersion = get(versions, requestedVersion);
-    Map<String, String> latestSupportedDocVersions = DOC_VERSIONS.stream().filter(v -> !v.contains("dev"))
+    Map<String, String> latestSupportedDocVersions = majorVersions.stream()
             .collect(Collectors.toMap(
                     version -> get(versions, version),
                     version -> version

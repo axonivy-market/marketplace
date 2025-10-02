@@ -14,11 +14,13 @@ import com.axonivy.market.model.DocumentLanguageResponse;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -33,9 +35,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
-import static com.axonivy.market.factory.VersionFactory.DOC_VERSIONS;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -52,6 +54,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private final FileDownloadService fileDownloadService;
   private final ArtifactRepository artifactRepo;
   private final MarketplaceConfig marketplaceConfig;
+  private final AxonIvyClient axonIvyClient;
+
+  private List<String> majorVersions = new ArrayList<>();
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
@@ -78,7 +83,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
       List<String> releasedVersions, List<Artifact> docArtifacts) {
     if (isResetSync) {
-      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, releasedVersions);
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, Stream.concat(releasedVersions.stream()
+              , majorVersions.stream()).toList());
     }
 
     for (Artifact artifact : docArtifacts) {
@@ -99,7 +105,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version);
+    String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
         .findAny().orElse(null);
   }
@@ -107,7 +113,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   @Override
   public DocumentLanguageResponse findDocVersionsAndLanguages(String productId, String version, String language, String host) {
     List<ExternalDocumentMeta> docMetas =
-            externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, DOC_VERSIONS);
+            externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, majorVersions);
 
     DocumentLanguage selectedLanguage = DocumentLanguage.fromCode(language);
     String bestMatchVersion = findBestMatchVersion(productId, version);
@@ -156,7 +162,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, version);
+    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
   }
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
@@ -169,7 +175,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
-    Map<String, String> latestSupportedDocVersions = DOC_VERSIONS.stream().filter(v -> !v.contains("dev"))
+    Map<String, String> latestSupportedDocVersions = majorVersions.stream()
             .collect(Collectors.toMap(
                     version -> VersionFactory.get(releasedVersions, version),
                     version -> version
@@ -310,6 +316,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     Path majorFolder = parent.resolve(majorVersion);
     log.info("Update the latest doc folder {} to point to {}", majorFolder, versionFolder);
     FileUtils.duplicateFolder(versionFolder.getParent(), majorFolder);
-    return majorFolder.toString() + File.separator + DOC_DIR;
+    return majorFolder + File.separator + DOC_DIR;
+  }
+
+  @PostConstruct
+  private void init() {
+    majorVersions = axonIvyClient.getDocumentVersions();
   }
 }
