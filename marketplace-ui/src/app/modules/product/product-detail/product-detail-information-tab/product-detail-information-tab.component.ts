@@ -43,7 +43,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
   router = inject(Router);
-  shieldsBadgeUrl: string = '';
+  shieldsBadgeUrl = '';
 
   ngOnInit(): void {
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
@@ -88,7 +88,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
   getShieldsBadgeUrl(): string {
-    if (!this.productDetail || !this.productDetail.sourceUrl) {
+    if (!this.productDetail?.sourceUrl) {
       return '';
     }
     try {
