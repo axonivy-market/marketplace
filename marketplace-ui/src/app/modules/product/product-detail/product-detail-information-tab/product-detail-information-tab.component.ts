@@ -22,7 +22,6 @@ const PRODUCT_DETAIL = 'productDetail';
 const SHIELDS_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
 const SHIELDS_BRANCH = 'master';
-
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
@@ -30,7 +29,6 @@ const SHIELDS_BRANCH = 'master';
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })
-
 export class ProductDetailInformationTabComponent implements OnChanges {
   @Input()
   productDetail!: ProductDetail;
@@ -125,6 +123,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     );
   }
   onBadgeClick() {
-     this.router.navigate(['/monitoring']);
+    this.router.navigate(['/monitoring']);
   }
 }
