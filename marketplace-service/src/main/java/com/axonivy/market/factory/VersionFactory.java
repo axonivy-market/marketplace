@@ -50,7 +50,7 @@ public class VersionFactory {
               .findFirst().orElse(null);
     }
 
-    if (version != null) {
+    if (version != null && !sortedVersions.isEmpty()) {
       return sortedVersions.get(0);
     }
 
@@ -63,12 +63,19 @@ public class VersionFactory {
 
   public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion, List<String> majorVersions) {
     String bestMatchVersion = get(versions, requestedVersion);
-    Map<String, String> latestSupportedDocVersions = majorVersions.stream()
-            .collect(Collectors.toMap(
-                    version -> get(versions, version),
-                    version -> version
-            ));
+    Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
     return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
+  }
+
+  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions, List<String> majorVersions) {
+    return majorVersions.stream().map(v -> Map.entry(VersionFactory.get(versions, v), v))
+        .filter(e -> e.getKey() != null && !e.getKey().isEmpty())
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (a, b) -> a, // keep first when duplicate
+            LinkedHashMap::new
+        ));
   }
 
   public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
@@ -107,6 +114,6 @@ public class VersionFactory {
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
     return CollectionUtils.isEmpty(releaseVersions) ? version : releaseVersions.stream().filter(
-        ver -> ver.startsWith(version)).findAny().orElse(version);
+            ver -> ver.startsWith(version)).findAny().orElse(StringUtils.EMPTY);
   }
 }

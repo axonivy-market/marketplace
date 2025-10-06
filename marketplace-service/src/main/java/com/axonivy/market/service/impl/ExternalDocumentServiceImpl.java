@@ -175,11 +175,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
-    Map<String, String> latestSupportedDocVersions = majorVersions.stream()
-            .collect(Collectors.toMap(
-                    version -> VersionFactory.get(releasedVersions, version),
-                    version -> version
-            ));
+    Map<String, String> latestSupportedDocVersions = VersionFactory.getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
+
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
     for (String version : missingVersions) {
       handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions);
@@ -213,6 +210,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
     String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+    if (StringUtils.isBlank(location)) {
+      return;
+    }
     if (latestSupportedDocVersions.containsKey(version)) {
       String majorVersion = latestSupportedDocVersions.get(version);
       String majorLocation = updateLatestFolder(Paths.get(location), majorVersion);
@@ -311,7 +311,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return EMPTY;
   }
 
-  private String updateLatestFolder(Path versionFolder, String majorVersion) {
+  public String updateLatestFolder(Path versionFolder, String majorVersion) {
     Path parent = versionFolder.getParent().getParent();
     Path majorFolder = parent.resolve(majorVersion);
     log.info("Update the latest doc folder {} to point to {}", majorFolder, versionFolder);
@@ -320,7 +320,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @PostConstruct
-  private void init() {
+  public void init() {
     majorVersions = axonIvyClient.getDocumentVersions();
   }
 }
