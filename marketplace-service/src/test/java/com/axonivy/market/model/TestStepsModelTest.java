@@ -6,7 +6,7 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +26,7 @@ class TestStepsModelTest {
     result2.setName("Example name test");
     result2.setStatus(TestStatus.FAILED);
     result2.setType(WorkFlowType.DEV);
-    repo.setTestSteps(List.of(result, result2));
+    repo.setTestSteps(Set.of(result, result2));
 
     GithubReposModel model = GithubReposModel.from(repo);
 

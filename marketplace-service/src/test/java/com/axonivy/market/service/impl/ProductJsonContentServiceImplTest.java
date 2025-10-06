@@ -32,7 +32,7 @@ class ProductJsonContentServiceImplTest extends BaseSetup {
   private ProductJsonContentServiceImpl productJsonContentService;
 
   @Test
-  void testUpdateProductJsonContent_ValidJsonContent() {
+  void testUpdateProductJsonContentValidJsonContent() {
     String jsonContent = "{\"version\":\"${version}\"}";
     Product product = new Product();
     product.setId(MOCK_PRODUCT_ID);
@@ -47,14 +47,18 @@ class ProductJsonContentServiceImplTest extends BaseSetup {
     Mockito.verify(productJsonRepo).save(captor.capture());
 
     ProductJsonContent savedContent = captor.getValue();
-    assertEquals(MOCK_RELEASED_VERSION, savedContent.getVersion());
-    assertEquals(MOCK_PRODUCT_ID, savedContent.getProductId());
-    assertEquals(MOCK_PRODUCT_NAME, savedContent.getName());
-    assertEquals("{\"version\":\"" + MOCK_RELEASED_VERSION + "\"}", savedContent.getContent());
+    assertEquals(MOCK_RELEASED_VERSION, savedContent.getVersion(),
+        "Saved content version should match release version");
+    assertEquals(MOCK_PRODUCT_ID, savedContent.getProductId(),
+        "Saved content product ID should match product ID");
+    assertEquals(MOCK_PRODUCT_NAME, savedContent.getName(),
+        "Saved content product name should match product name");
+    assertEquals("{\"version\":\"" + MOCK_RELEASED_VERSION + "\"}", savedContent.getContent(),
+        "Saved content should match version syntax");
   }
 
   @Test
-  void testUpdateProductJsonContent_EmptyJsonContent() {
+  void testUpdateProductJsonContentEmptyJsonContent() {
     productJsonContentService.updateProductJsonContent(StringUtils.EMPTY, MOCK_SNAPSHOT_VERSION,
         ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID, MOCK_PRODUCT_NAME);
     Mockito.verify(productJsonRepo, Mockito.never()).save(any(ProductJsonContent.class));

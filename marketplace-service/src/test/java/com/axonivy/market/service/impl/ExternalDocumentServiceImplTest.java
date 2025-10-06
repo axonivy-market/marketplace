@@ -142,12 +142,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testFindAllProductsHaveDocument() {
     var result = service.findAllProductsHaveDocument();
     verify(productRepository, times(1)).findAllProductsHaveDocument();
-    assertTrue(result.isEmpty());
+    assertTrue(result.isEmpty(), "Expected the result to be empty when repository returns nothing");
 
     when(productRepository.findAllProductsHaveDocument()).thenReturn(List.of(mockPortalProduct().get()));
     result = service.findAllProductsHaveDocument();
-    assertNotNull(result);
-    assertEquals(PORTAL, result.get(0).getId());
+    assertNotNull(result, "Expected the result not to be null when repository returns a product");
+    assertEquals(PORTAL, result.get(0).getId(), "Expected the first product ID to be PORTAL");
   }
 
   @Test
@@ -180,7 +180,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
     var result = service.findExternalDocument(PORTAL, mockVersion);
     verify(productRepository, times(1)).findById(any());
-    assertNull(result);
+    assertNull(result, "Expected result to be null when no matching document meta exists");
 
     mockProductDocumentMeta.setProductId(PORTAL);
     mockProductDocumentMeta.setVersion(mockVersion);
@@ -188,8 +188,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
             .thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocument(PORTAL, mockVersion);
-    assertNotNull(result);
-    assertTrue(result.getRelativeLink().contains("/index.html"));
+    assertNotNull(result, "Expected result not to be null when matching document meta exists");
+    assertTrue(result.getRelativeLink().contains("/index.html"),
+        "Expected the relative link to contain '/index.html'");
   }
 
   private Optional<Product> mockPortalProduct() {

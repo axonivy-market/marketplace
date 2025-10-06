@@ -5,7 +5,8 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal
+  signal,
+  OnInit
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -43,7 +44,7 @@ const MAX_FILE_SIZE_MB = 20;
   styleUrls: ['./release-preview.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class ReleasePreviewComponent {
+export class ReleasePreviewComponent implements OnInit {
   protected LoadingComponentId = LoadingComponentId;
   selectedFile: File | null = null;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -51,6 +52,9 @@ export class ReleasePreviewComponent {
   isZipFile = false;
   isUploaded = false;
   shouldShowHint = false;
+  isDragging = false;
+  file: File | null = null;
+  errorMessage: string | null = null;
   readmeContent: WritableSignal<ReleasePreviewData> = signal(
     {} as ReleasePreviewData
   );
@@ -73,18 +77,68 @@ export class ReleasePreviewComponent {
     this.pageTitleService.setTitleOnLangChange('common.preview.pageTitle');
   }
 
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+
+    if (event.dataTransfer?.files.length) {
+      const droppedFile = event.dataTransfer.files[0];
+      this.setSelectedFile(droppedFile);
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
-      this.selectedFile = file;
-
-      // Check if the selected file is a ZIP file
-      this.isZipFile =
-        file.type === 'application/zip' ||
-        (file.name.endsWith('.zip') && file.size < maxFileSize);
+      this.setSelectedFile(input.files[0]);
     }
+  }
+
+  setSelectedFile(file: File) {
+    const maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const isZip = file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    const withinSize = file.size < maxFileSize;
+    if (isZip && withinSize) {
+      const replacing = !!this.selectedFile && this.selectedFile !== file;
+      this.selectedFile = file;
+      this.isZipFile = true;
+      this.errorMessage = null;
+      if (replacing) {
+        this.isUploaded = false;
+        this.readmeContent.set({} as ReleasePreviewData);
+      }
+    } else {
+      this.selectedFile = null;
+      this.isZipFile = false;
+
+      if (!isZip) {
+        this.errorMessage = 'common.preview.errors.invalidZip';
+      } else if (!withinSize) {
+        this.errorMessage = 'common.preview.errors.tooLarge';
+      } else {
+        this.errorMessage = 'common.preview.errors.seemsProblem';
+      }
+    }
+  }
+
+  fileSizeInMB(bytes: number): string {
+    return (bytes / 1024 / 1024).toFixed(2);
+  }
+
+  removeFile() {
+    this.selectedFile = null;
+    this.isZipFile = false;
+    this.isUploaded = false;
   }
 
   toggleHint() {

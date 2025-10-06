@@ -65,7 +65,6 @@ class FileUtilsTest {
     String fileContent = Files.readString(createdFile.toPath());
     assertEquals(content, fileContent, "File content should match the written content");
     createdFile.delete();
-
   }
 
   @Test

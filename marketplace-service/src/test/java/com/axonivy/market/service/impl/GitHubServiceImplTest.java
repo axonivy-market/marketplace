@@ -2,9 +2,12 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -15,10 +18,12 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -63,37 +68,43 @@ class GitHubServiceImplTest {
   @Mock
   private GHTeam ghTeam;
 
+  @Mock
+  private GithubUserRepository githubUserRepository;
+
   @Spy
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
   @Test
-  void testGetGitHub_WithValidToken() throws IOException {
+  void testGetGitHubWithValidToken() throws IOException {
     when(gitHubProperty.getToken()).thenReturn("validToken");
-    assertNotNull(gitHubService.getGitHub());
+    assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
     verify(gitHubProperty).getToken();
   }
 
   @Test
-  void testGetGitHub_WithNullToken() throws IOException {
+  void testGetGitHubWithNullToken() throws IOException {
     when(gitHubProperty.getToken()).thenReturn(null);
-    assertNotNull(gitHubService.getGitHub());
+    assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created even when token is null");
   }
 
   @Test
-  void testGetOrganization_WithValidOrgName() throws IOException {
+  void testGetOrganizationWithValidOrgName() throws IOException {
     when(gitHubService.getGitHub()).thenReturn(gitHub);
     GHOrganization mockOrganization = mock(GHOrganization.class);
     when(gitHub.getOrganization("test-org")).thenReturn(mockOrganization);
+
     GHOrganization organization = gitHubService.getOrganization("test-org");
-    assertNotNull(organization);
+
+    assertNotNull(organization, "Expected organization to be returned for valid org name 'test-org'");
+
     verify(gitHubProperty).getToken();
     verify(gitHubService).getGitHub();
     verify(gitHub).getOrganization("test-org");
   }
 
   @Test
-  void testGetDirectoryContent_ValidInputs() throws IOException {
+  void testGetDirectoryContentValidInputs() throws IOException {
     GHRepository mockRepository = mock(GHRepository.class);
     String path = "src";
     String ref = "main";
@@ -103,22 +114,24 @@ class GitHubServiceImplTest {
 
     List<GHContent> contents = gitHubService.getDirectoryContent(mockRepository, path, ref);
 
-    assertNotNull(contents);
-    assertEquals(2, contents.size());
+    assertNotNull(contents, "Expected non-null directory content for valid path and ref");
+    assertEquals(2, contents.size(), "Expected directory content list to contain exactly 2 items");
+
     verify(mockRepository).getDirectoryContent(path, ref);
   }
 
   @Test
-  void testGetDirectoryContent_NullRepository() {
+  void testGetDirectoryContentNullRepository() {
     String path = "src";
     String ref = "main";
 
     assertThrows(IllegalArgumentException.class,
-        () -> gitHubService.getDirectoryContent(null, path, ref));
+        () -> gitHubService.getDirectoryContent(null, path, ref),
+        "Expected IllegalArgumentException when repository is null");
   }
 
   @Test
-  void testGetRepository_ValidRepositoryPath() throws IOException {
+  void testGetRepositoryValidRepositoryPath() throws IOException {
     String repositoryPath = "my-org/my-repo";
     GHRepository mockRepository = mock(GHRepository.class);
     when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
@@ -126,12 +139,12 @@ class GitHubServiceImplTest {
 
     GHRepository repository = gitHubService.getRepository(repositoryPath);
 
-    assertNotNull(repository);
+    assertNotNull(repository, "Expected repository to be returned for valid repository path 'my-org/my-repo'");
     verify(gitHubService.getGitHub()).getRepository(repositoryPath);
   }
 
   @Test
-  void testGetGHContent_ValidInputs() throws IOException {
+  void testGetGHContentValidInputs() throws IOException {
     GHRepository mockRepository = mock(GHRepository.class);
     String path = "README.md";
     String ref = "main";
@@ -141,21 +154,22 @@ class GitHubServiceImplTest {
 
     GHContent content = gitHubService.getGHContent(mockRepository, path, ref);
 
-    assertNotNull(content);
+    assertNotNull(content, "Expected non-null content for valid path 'README.md' and ref 'main'");
     verify(mockRepository).getFileContent(path, ref);
   }
 
   @Test
-  void testGetGHContent_NullRepository() {
+  void testGetGHContentNullRepository() {
     String path = "README.md";
     String ref = "main";
 
     assertThrows(IllegalArgumentException.class,
-        () -> gitHubService.getGHContent(null, path, ref));
+        () -> gitHubService.getGHContent(null, path, ref),
+        "Expected IllegalArgumentException when repository is null for getGHContent");
   }
 
   @Test
-  void testGetAccessToken_ValidCodeAndGitHubProperty() throws Exception {
+  void testGetAccessTokenValidCodeAndGitHubProperty() throws Exception {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -176,21 +190,29 @@ class GitHubServiceImplTest {
 
     GitHubAccessTokenResponse result = gitHubService.getAccessToken(code, gitHubProperty);
 
-    assertNotNull(result);
-    assertEquals(accessToken, result.getAccessToken());
+    assertNotNull(result, "Expected non-null GitHubAccessTokenResponse when valid code and properties are provided");
+    assertEquals(accessToken, result.getAccessToken(),
+        "Expected access token in response to match the mocked access token");
+
     verify(restTemplate).postForEntity(anyString(), any(HttpEntity.class), eq(GitHubAccessTokenResponse.class));
   }
 
-  @Test
-  void testGetAccessToken_NullGitHubProperty() {
-    MissingHeaderException exception = assertThrows(MissingHeaderException.class, () ->
-        gitHubService.getAccessToken("validCode", null)
-    );
-    assertEquals("Invalid or missing header", exception.getMessage());
-  }
 
   @Test
-  void testGetAccessToken_GitHubErrorResponse() throws Oauth2ExchangeCodeException {
+  void testGetAccessTokenNullGitHubProperty() {
+    MissingHeaderException exception = assertThrows(
+        MissingHeaderException.class,
+        () -> gitHubService.getAccessToken("validCode", null),
+        "Expected MissingHeaderException when GitHubProperty is null"
+    );
+
+    assertEquals("Invalid or missing header", exception.getMessage(),
+        "Expected exception message to be 'Invalid or missing header'");
+  }
+
+
+  @Test
+  void testGetAccessTokenGitHubErrorResponse() throws Oauth2ExchangeCodeException {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -210,15 +232,21 @@ class GitHubServiceImplTest {
         eq(GitHubAccessTokenResponse.class)
     )).thenReturn(responseEntity);
 
-    Oauth2ExchangeCodeException exception = assertThrows(Oauth2ExchangeCodeException.class, () ->
-        gitHubService.getAccessToken(code, gitHubProperty)
+    Oauth2ExchangeCodeException exception = assertThrows(
+        Oauth2ExchangeCodeException.class,
+        () -> gitHubService.getAccessToken(code, gitHubProperty),
+        "Expected Oauth2ExchangeCodeException when GitHub returns an error response"
     );
-    assertEquals(error, exception.getError());
-    assertEquals(errorDescription, exception.getErrorDescription());
+
+    assertEquals(error, exception.getError(),
+        "Expected exception error field to match the mocked GitHub error");
+    assertEquals(errorDescription, exception.getErrorDescription(),
+        "Expected exception errorDescription field to match the mocked GitHub error description");
   }
 
+
   @Test
-  void testGetAccessToken_SuccessfulResponseWithError() throws Oauth2ExchangeCodeException {
+  void testGetAccessTokenSuccessfulResponseWithError() throws Oauth2ExchangeCodeException {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -236,15 +264,21 @@ class GitHubServiceImplTest {
         eq(GitHubAccessTokenResponse.class)
     )).thenReturn(responseEntity);
 
-    Oauth2ExchangeCodeException exception = assertThrows(Oauth2ExchangeCodeException.class, () ->
-        gitHubService.getAccessToken(code, gitHubProperty)
+    Oauth2ExchangeCodeException exception = assertThrows(
+        Oauth2ExchangeCodeException.class,
+        () -> gitHubService.getAccessToken(code, gitHubProperty),
+        "Expected Oauth2ExchangeCodeException when GitHub responds with error fields despite a successful response"
     );
-    assertEquals("error_code", exception.getError());
-    assertEquals("Error description", exception.getErrorDescription());
+
+    assertEquals("error_code", exception.getError(),
+        "Expected exception error field to match the GitHub response error");
+    assertEquals("Error description", exception.getErrorDescription(),
+        "Expected exception errorDescription field to match the GitHub response error description");
   }
 
+
   @Test
-  void testValidateUserInOrganizationAndTeam_Valid() throws Exception {
+  void testValidateUserInOrganizationAndTeamValid() throws Exception {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
@@ -257,18 +291,18 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testIsUserInOrganizationAndTeam_NullGitHub() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenNullGitHub() throws IOException {
     GitHub gitHubNullAble = null;
     String organization = "my-org";
     String teamName = "my-team";
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHubNullAble, organization, teamName);
 
-    assertFalse(result);
+    assertFalse(result, "Expected result to be false when GitHub instance is null");
   }
 
   @Test
-  void testIsUserInOrganizationAndTeam_EmptyTeams() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenEmptyTeams() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
     Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
@@ -276,11 +310,11 @@ class GitHubServiceImplTest {
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result);
+    assertFalse(result, "Expected result to be false when user has no teams in GitHub");
   }
 
   @Test
-  void testIsUserInOrganizationAndTeam_TeamNotFound() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamNotFound() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
     Set<GHTeam> teams = new HashSet<>();
@@ -291,11 +325,11 @@ class GitHubServiceImplTest {
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result);
+    assertFalse(result, "Expected result to be false when the specified team is not found in the organization");
   }
 
   @Test
-  void testIsUserInOrganizationAndTeam_TeamFound() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamFound() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
     Set<GHTeam> teams = new HashSet<>();
@@ -307,11 +341,11 @@ class GitHubServiceImplTest {
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertTrue(result);
+    assertTrue(result, "Expected result to be true when the specified team is found in the organization");
   }
 
   @Test
-  void testIsUserInOrganizationAndTeam_TeamListNull() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamListNull() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
     Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
@@ -320,11 +354,11 @@ class GitHubServiceImplTest {
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result);
+    assertFalse(result, "Expected result to be false when the organization exists but its team list is null");
   }
 
   @Test
-  void testValidateUserInOrganizationAndTeam_throwsUnauthorizedException() throws IOException {
+  void testValidateUserInOrganizationAndTeamThrowsUnauthorizedException() throws IOException {
     String accessToken = "invalid-token";
     String organization = "orgName";
     String team = "teamName";
@@ -332,10 +366,18 @@ class GitHubServiceImplTest {
     GitHub gitHubMock = mock(GitHub.class);
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHubMock);
     when(gitHubService.isUserInOrganizationAndTeam(gitHubMock, organization, team)).thenReturn(false);
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
-      gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
-    });
-    assertEquals("GITHUB_USER_UNAUTHORIZED - User must be a member of team teamName and organization orgName", exception.getMessage());
+
+    UnauthorizedException exception = assertThrows(
+        UnauthorizedException.class,
+        () -> gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team),
+        "Expected UnauthorizedException when user is not in the specified organization/team"
+    );
+
+    assertEquals(
+        "GITHUB_USER_UNAUTHORIZED - User must be a member of team teamName and organization orgName",
+        exception.getMessage(),
+        "Expected exception message to clearly state unauthorized user and required team/organization"
+    );
   }
 
   @Test
@@ -396,11 +438,11 @@ class GitHubServiceImplTest {
     ).thenReturn(new ResponseEntity<>(responseBodyDependabotScanning, HttpStatus.OK));
 
     ProductSecurityInfo result = gitHubService.fetchSecurityInfoSafe(ghRepository, ghOrganization, accessToken);
-    assertNotNull(result);
+    assertNotNull(result, "Expected non-null ProductSecurityInfo result when security scanning responses are mocked");
   }
 
   @Test
-  void testGetNumberOfSecretScanningAlerts_Success() {
+  void testGetNumberOfSecretScanningAlertsSuccess() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
@@ -420,11 +462,15 @@ class GitHubServiceImplTest {
         any(ParameterizedTypeReference.class))
     ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
     SecretScanning result = gitHubService.getNumberOfSecretScanningAlerts(ghRepository, ghOrganization, accessToken);
-    assertEquals(AccessLevel.ENABLED, result.getStatus());
+    assertEquals(
+        AccessLevel.ENABLED,
+        result.getStatus(),
+        "Expected secret scanning status to be ENABLED when API returns alerts"
+    );
   }
 
   @Test
-  void testGetCodeScanningAlerts_Success() {
+  void testGetCodeScanningAlertsSuccess() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
@@ -446,11 +492,15 @@ class GitHubServiceImplTest {
         any(ParameterizedTypeReference.class))
     ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
     CodeScanning result = gitHubService.getCodeScanningAlerts(ghRepository, ghOrganization, accessToken);
-    assertEquals(AccessLevel.ENABLED, result.getStatus());
+    assertEquals(
+        AccessLevel.ENABLED,
+        result.getStatus(),
+        "Expected code scanning status to be ENABLED when API returns open alerts with high severity"
+    );
   }
 
   @Test
-  void testGetDependabotAlerts_Success() {
+  void testGetDependabotAlertsSuccess() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
@@ -472,11 +522,15 @@ class GitHubServiceImplTest {
         any(ParameterizedTypeReference.class))
     ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
-    assertEquals(AccessLevel.ENABLED, result.getStatus());
+    assertEquals(
+        AccessLevel.ENABLED,
+        result.getStatus(),
+        "Expected Dependabot alerts status to be ENABLED when API returns open alerts with high severity"
+    );
   }
 
   @Test
-  void testGetDependabotAlerts_NotFound() {
+  void testGetDependabotAlertsNotFound() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
@@ -492,27 +546,39 @@ class GitHubServiceImplTest {
         any(ParameterizedTypeReference.class))
     ).thenThrow(HttpClientErrorException.NotFound.class);
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
-    assertEquals(AccessLevel.NO_PERMISSION, result.getStatus());
+    assertEquals(
+        AccessLevel.NO_PERMISSION,
+        result.getStatus(),
+        "Expected Dependabot alerts status to be NO_PERMISSION when the API returns 404 Not Found"
+    );
   }
 
   @Test
-  void testGetDependabotAlerts_Disabled() {
+  void testGetDependabotAlertsDisabled() {
     String accessToken = "accessToken";
     String orgName = "orgName";
     String repoName = "repoName";
     String url = String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, orgName, repoName);
+
     GHRepository ghRepository = mock(GHRepository.class);
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
+
     when(restTemplate.exchange(
         eq(url),
         eq(HttpMethod.GET),
         any(HttpEntity.class),
         any(ParameterizedTypeReference.class))
     ).thenThrow(HttpClientErrorException.Forbidden.class);
+
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
-    assertEquals(AccessLevel.DISABLED, result.getStatus());
+
+    assertEquals(
+        AccessLevel.DISABLED,
+        result.getStatus(),
+        "Expected Dependabot alerts status to be DISABLED when the API returns 403 Forbidden"
+    );
   }
 
   @Test
@@ -525,7 +591,11 @@ class GitHubServiceImplTest {
     PagedIterable<GHRepository> mockPagedIterable = mock(PagedIterable.class);
     when(ghOrganization.listRepositories()).thenReturn(mockPagedIterable);
     List<ProductSecurityInfo> result = gitHubService.getSecurityDetailsForAllProducts(accessToken, orgName);
-    assertEquals(0, result.size());
+    assertEquals(
+        0,
+        result.size(),
+        "Expected no security details when the organization has no repositories"
+    );
   }
 
   @Test
@@ -537,8 +607,8 @@ class GitHubServiceImplTest {
     Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(Collections.emptyList(), mockPageable,
         mockProduct.getId(), mockProduct.getRepositoryName(), mockProduct.getSourceUrl());
 
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Expected non-null Page of GitHubReleaseModel even when there are no releases");
+    assertTrue(result.isEmpty(), "Expected Page to be empty when there are no GitHub releases");
   }
 
   @Test
@@ -727,9 +797,9 @@ class GitHubServiceImplTest {
   @Test
   void testGetGitHubReleaseModels() throws IOException {
     List<GHRelease> allReleases = Arrays.asList(
-      mock(GHRelease.class),
-      mock(GHRelease.class),
-      mock(GHRelease.class)
+        mock(GHRelease.class),
+        mock(GHRelease.class),
+        mock(GHRelease.class)
     );
     List<GHRelease> pagedReleases = Arrays.asList(allReleases.get(0), allReleases.get(1));
     Pageable pageable = mock(Pageable.class);
@@ -747,14 +817,73 @@ class GitHubServiceImplTest {
       model1.setName("release-1");
       GitHubReleaseModel model2 = new GitHubReleaseModel();
       model2.setName("latest-release");
-      doReturn(model1).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId, false);
-      doReturn(model2).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId, true);
-      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(allReleases, pageable, productId, productRepoName, productSourceUrl);
+      doReturn(model1).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId,
+          false);
+      doReturn(model2).when(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId,
+          true);
+      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(allReleases, pageable, productId,
+          productRepoName, productSourceUrl);
       assertEquals(2, result.getContent().size(), "Should return two models for the paged releases");
       assertEquals("release-1", result.getContent().get(0).getName(), "First model name should match first release");
-      assertEquals("latest-release", result.getContent().get(1).getName(), "Second model name should match latest release");
+      assertEquals("latest-release", result.getContent().get(1).getName(),
+          "Second model name should match latest release");
       verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(0), productSourceUrl, productId, false);
       verify(gitHubService).toGitHubReleaseModel(pagedReleases.get(1), productSourceUrl, productId, true);
     }
+  }
+
+  @Test
+  void testGetAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
+    String accessToken = "token";
+    // Use anonymous class as a fake
+    GHMyself myself = new GHMyself() {
+      @Override
+      public long getId() {return 123L;}
+
+      @Override
+      public String getName() {return "Test User";}
+
+      @Override
+      public String getLogin() {return "testuser";}
+
+      @Override
+      public String getAvatarUrl() {return "avatar_url";}
+    };
+    when(gitHub.getMyself()).thenReturn(myself);
+    doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
+
+    GithubUser existingUser = new GithubUser();
+    existingUser.setGitHubId("123");
+    when(githubUserRepository.searchByGitHubId("123")).thenReturn(existingUser);
+
+    GithubUser result = gitHubService.getAndUpdateUser(accessToken);
+
+    assertNotNull(result, "Returned GithubUser should not be null");
+    assertEquals("123", result.getGitHubId(), "GitHubId should be set correctly");
+    assertEquals("Test User", result.getName(), "Name should be updated from GHMyself");
+    assertEquals("testuser", result.getUsername(), "Username should be updated from GHMyself");
+    assertEquals("avatar_url", result.getAvatarUrl(), "Avatar URL should be updated from GHMyself");
+    assertEquals(GitHubConstants.GITHUB_PROVIDER_NAME, result.getProvider(), "Provider should be set to 'github'");
+
+    ArgumentCaptor<GithubUser> captor = ArgumentCaptor.forClass(GithubUser.class);
+    verify(githubUserRepository, times(1)).save(captor.capture());
+    assertEquals(result, captor.getValue(), "Saved user should match returned user");
+  }
+
+  @Test
+  void testGetAndUpdateUserThrowsNotFoundExceptionOnIOException() throws Exception {
+    // given
+    String accessToken = "token";
+    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHub.getMyself()).thenThrow(new IOException("GitHub API down"));
+
+    // when + then
+    NotFoundException ex = assertThrows(NotFoundException.class,
+        () -> gitHubService.getAndUpdateUser(accessToken),
+        "IOException should be translated into NotFoundException");
+
+    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+            "user details from GitHub", ex.getMessage(),
+        "Error message should be meaningful");
   }
 }

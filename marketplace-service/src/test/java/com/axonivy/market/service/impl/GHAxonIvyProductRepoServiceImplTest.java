@@ -83,10 +83,11 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   void testContentFromGHRepoAndTag() throws IOException {
     setup();
     var result = axonivyProductRepoServiceImpl.getContentFromGHRepoAndTag(StringUtils.EMPTY, null, null);
-    assertNull(result);
+    assertNull(result, "Expected result to be null when calling getContentFromGHRepoAndTag with empty repo and null tag");
+
     when(axonivyProductRepoServiceImpl.getOrganization()).thenThrow(IOException.class);
     result = axonivyProductRepoServiceImpl.getContentFromGHRepoAndTag(StringUtils.EMPTY, null, null);
-    assertNull(result);
+    assertNull(result, "Expected result to be null when getOrganization throws IOException");
   }
 
   @Test
@@ -101,16 +102,19 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     MavenUtils.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts,
         MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
 
-    assertEquals(2, artifacts.size());  // Assert that 2 artifacts were added
-    assertEquals(MOCK_ARTIFACT_ID, artifacts.get(0).getArtifactId());  // Validate first artifact
-    assertEquals(MOCK_GROUP_ID, artifacts.get(1).getGroupId());
+    assertEquals(2, artifacts.size(), "Expected 2 artifacts to be added to the list"); // Assert that 2 artifacts were added
+    assertEquals(MOCK_ARTIFACT_ID, artifacts.get(0).getArtifactId(), "First artifact's artifactId does not match"); // Validate first artifact
+    assertEquals(MOCK_GROUP_ID, artifacts.get(1).getGroupId(), "Second artifact's groupId does not match");
   }
 
   @Test
   void testGetOrganization() throws IOException {
     when(gitHubService.getOrganization(anyString())).thenReturn(mockGHOrganization);
-    assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
-    assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
+    assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization(),
+        "Expected getOrganization() to return the mocked GHOrganization on first call");
+
+    assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization(),
+        "Expected getOrganization() to return the mocked GHOrganization on second call");
   }
 
   @Test
@@ -133,16 +137,16 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     Artifact artifact = MavenUtils.createArtifactFromJsonNode(dataNode, repoUrl, isDependency);
 
-    assertEquals(repoUrl, artifact.getRepoUrl());
-    assertTrue(artifact.getIsDependency());
-    assertEquals(groupId, artifact.getGroupId());
-    assertEquals(artifactId, artifact.getArtifactId());
-    assertEquals(type, artifact.getType());
-    assertTrue(artifact.getIsProductArtifact());
+    assertEquals(repoUrl, artifact.getRepoUrl(), "Artifact repoUrl does not match expected value");
+    assertTrue(artifact.getIsDependency(), "Artifact should be marked as a dependency");
+    assertEquals(groupId, artifact.getGroupId(), "Artifact groupId does not match expected value");
+    assertEquals(artifactId, artifact.getArtifactId(), "Artifact artifactId does not match expected value");
+    assertEquals(type, artifact.getType(), "Artifact type does not match expected value");
+    assertTrue(artifact.getIsProductArtifact(), "Artifact should be marked as a product artifact");
   }
 
   @Test
-  void testExtractReadMeFileFromContents_ImageFromRootFolder() {
+  void testExtractReadMeFileFromContentsImageFromRootFolder() {
     String readmeContentWithImageFolder = """
         #Product-name
         Test README
@@ -158,18 +162,21 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
 
-    assertEquals("""
-            #Product-name
-            Test README
-            ## Demo
-            Demo content
-            ## Setup
-            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
-        updatedReadme);
+    assertEquals(
+        """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (imageId-66e2b14868f2f95b2f95549a)""",
+        updatedReadme,
+        "Expected README content to have the image URL updated correctly"
+    );
   }
 
   @Test
-  void testExtractReadMeFileFromContents_ImageFromChildFolder() throws IOException {
+  void testExtractReadMeFileFromContentsImageFromChildFolder() throws IOException {
     String readmeContentWithImageFolder = """
         #Product-name
         Test README
@@ -200,14 +207,17 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
 
-    assertEquals("""
-            #Product-name
-            Test README
-            ## Demo
-            Demo content
-            ## Setup
-            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
-        updatedReadme);
+    assertEquals(
+        """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (imageId-66e2b14868f2f95b2f95549a)""",
+        updatedReadme,
+        "Expected README content to correctly update image URLs from child folders"
+    );
   }
 
   @Test
@@ -244,15 +254,21 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testConvertProductJsonToMavenProductInfo() throws IOException {
-    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(null)));
-    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(content)));
+    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(null)),
+        "Expected result to be empty when input JSON content is null");
+
+    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(content)),
+        "Expected result to be empty when input JSON content is empty");
 
     InputStream inputStream = getMockInputStream();
     when(GitHubUtils.extractedContentStream(content)).thenReturn(inputStream);
-    assertEquals(2, GitHubUtils.convertProductJsonToMavenProductInfo(content).size());
+    assertEquals(2, GitHubUtils.convertProductJsonToMavenProductInfo(content).size(),
+        "Expected 2 Maven product info objects when mock input stream contains products");
+
     inputStream = getMockInputStreamWithOutProjectAndDependency();
     when(GitHubUtils.extractedContentStream(content)).thenReturn(inputStream);
-    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(content)));
+    assertTrue(CollectionUtils.isEmpty(GitHubUtils.convertProductJsonToMavenProductInfo(content)),
+        "Expected result to be empty when input stream has no project or dependency");
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
@@ -276,7 +292,10 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testExtractedContentStream() {
-    assertNull(GitHubUtils.extractedContentStream(null));
-    assertNull(GitHubUtils.extractedContentStream(content));
+    assertNull(GitHubUtils.extractedContentStream(null),
+        "Expected extractedContentStream to return null when input content is null");
+
+    assertNull(GitHubUtils.extractedContentStream(content),
+        "Expected extractedContentStream to return null when input content is empty or invalid");
   }
 }

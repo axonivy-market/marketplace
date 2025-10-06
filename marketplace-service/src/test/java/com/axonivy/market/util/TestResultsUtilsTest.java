@@ -8,6 +8,7 @@ import com.axonivy.market.model.TestResults;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +17,7 @@ class TestResultsUtilsTest {
   @Test
   void testProcessTestResultsWithEmptyTestSteps() {
     GithubRepo githubRepo = new GithubRepo();
-    githubRepo.setTestSteps(List.of());
+    githubRepo.setTestSteps(Set.of());
 
     List<TestResults> results = TestResultsUtils.processTestResults(githubRepo);
 
@@ -40,7 +41,7 @@ class TestResultsUtilsTest {
     testStep.setType(WorkFlowType.E2E);
     testStep.setStatus(TestStatus.PASSED);
     testStep.setName("test");
-    githubRepo.setTestSteps(List.of(testStep));
+    githubRepo.setTestSteps(Set.of(testStep));
 
     List<TestResults> results = TestResultsUtils.processTestResults(githubRepo);
 

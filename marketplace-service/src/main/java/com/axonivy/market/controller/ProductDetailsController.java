@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -128,8 +129,10 @@ public class ProductDetailsController {
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-      @PathVariable(VERSION) String version, @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version, designerVersion);
+      @PathVariable(VERSION) String version,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,
+        designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
@@ -153,7 +156,12 @@ public class ProductDetailsController {
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY,
           example = "ivy-demos-app.zip") String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
-    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+    HttpStatusCode statusCode;
+    if (StringUtils.isBlank(downloadUrl)) {
+      statusCode = HttpStatus.NOT_FOUND;
+    } else {
+      statusCode = HttpStatus.OK;
+    }
     return new ResponseEntity<>(downloadUrl, statusCode);
   }
 
@@ -180,7 +188,7 @@ public class ProductDetailsController {
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   public void syncLatestReleasesForProducts() throws IOException {
-    Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
+    Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for (String productId : productIdList) {
       this.productService.syncGitHubReleaseModels(productId, pageable);
@@ -195,7 +203,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GitHubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    var githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
@@ -210,7 +218,8 @@ public class ProductDetailsController {
   @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
       description = "Return the download url of artifact from version and id")
   public ResponseEntity<StreamingResponseBody> downloadZipArtifact(
-      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, description = "Product id", example = "demos") String id,
+      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, description = "Product id",
+          example = "demos") String id,
       @PathVariable(value = VERSION) @Parameter(in = ParameterIn.PATH, description = "Release version",
           example = "10.0") String version,
       @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.PATH, description = "Artifact id", example =
@@ -228,9 +237,9 @@ public class ProductDetailsController {
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
-      Link link = linkTo(
-              methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion(), version)).withSelfRel();
+      var link = linkTo(
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+              product.getBestMatchVersion(), version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));
@@ -240,9 +249,9 @@ public class ProductDetailsController {
     ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     selfLinkWithVersion = switch (path) {
       case BEST_MATCH_BY_ID_AND_VERSION ->
-              methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case BY_ID_AND_VERSION ->
-              methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
     return linkTo(selfLinkWithVersion).withSelfRel();

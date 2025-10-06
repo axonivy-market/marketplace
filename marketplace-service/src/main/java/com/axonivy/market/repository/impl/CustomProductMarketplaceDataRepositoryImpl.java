@@ -1,16 +1,16 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductMarketplaceData;
-import com.axonivy.market.repository.BaseRepository;
+import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
-import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData> implements CustomProductMarketplaceDataRepository {
+public class CustomProductMarketplaceDataRepositoryImpl extends AbstractBaseRepository<ProductMarketplaceData>
+    implements CustomProductMarketplaceDataRepository {
 
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
           UPDATE product_marketplace_data  
@@ -42,7 +42,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
   @Override
   @Transactional
   public int increaseInstallationCount(String productId) {
-    Query query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
     query.setParameter(PRODUCT_ID, productId);
     return ((Number) query.getSingleResult()).intValue();
   }
@@ -57,7 +57,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     Long count = getEntityManager().createQuery(criteriaNumberContext.query()).getSingleResult();
     boolean marketPlaceExists = count > 0;
     if (!marketPlaceExists) {
-      ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
+      var productMarketplaceData = new ProductMarketplaceData();
       productMarketplaceData.setId(productId);
       save(productMarketplaceData);
     }

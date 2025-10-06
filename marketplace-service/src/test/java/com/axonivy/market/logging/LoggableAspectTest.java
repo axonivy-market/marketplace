@@ -62,9 +62,9 @@ class LoggableAspectTest {
     mockRequestAttributes("invalid-source", "mock-agent");
     MethodSignature signature = mockMethodSignature();
 
-    assertThrows(MissingHeaderException.class, () ->
-        loggableAspect.logMethodCall(mockJoinPoint(signature))
-    );
+    assertThrows(MissingHeaderException.class,
+        () -> loggableAspect.logMethodCall(mockJoinPoint(signature)),
+        "Expected MissingHeaderException to be thrown when headers are invalid");
   }
 
   private JoinPoint mockJoinPoint(MethodSignature signature) {

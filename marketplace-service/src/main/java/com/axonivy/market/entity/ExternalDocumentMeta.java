@@ -7,6 +7,8 @@ import lombok.*;
 
 import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_META;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,6 +17,9 @@ import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_MET
 @Entity
 @Table(name = EXTERNAL_DOCUMENT_META)
 public class ExternalDocumentMeta extends AuditableIdEntity {
+
+  @Serial
+  private static final long serialVersionUID = 1;
 
   private String productId;
   private String artifactId;

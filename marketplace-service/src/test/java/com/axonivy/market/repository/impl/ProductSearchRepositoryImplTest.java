@@ -111,7 +111,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "Expected product name not found in the result");
-
   }
 
   @Test
@@ -194,7 +193,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
     List<Product> result = productListedRepository.findAllProductsHaveDocument();
 
-    assertEquals(1, result.size());
+    assertEquals(1, result.size(), "Expected exactly 1 product");
   }
 
 
