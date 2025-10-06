@@ -11,9 +11,11 @@ import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -21,6 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -212,7 +215,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldBuildResponseWithVersionsAndLanguages() {
+  void testFindDocVersionsAndLanguagesSuccess() {
     ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
             .productId("portal")
             .version("12.0")
@@ -239,5 +242,28 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.getVersions().size(), "Should have one version");
     assertEquals(2, result.getLanguages().size(), "Should have two languages");
+  }
+
+  @Test
+  void testUpdateLatestFolder() {
+    Path versionFolder = Paths.get("/tmp/share/portal/12.0/en");
+    String majorVersion = "12";
+
+    Path expectedParent = versionFolder.getParent().getParent();
+    Path expectedMajorFolder = expectedParent.resolve(majorVersion);
+
+    try (MockedStatic<FileUtils> mockedFileUtils = Mockito.mockStatic(FileUtils.class)) {
+      mockedFileUtils.when(() ->
+              FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder)
+      ).thenAnswer(invocation -> null);
+
+      String result = service.updateLatestFolder(versionFolder, majorVersion);
+
+      mockedFileUtils.verify(() ->
+                      FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder),
+              times(1)
+      );
+      assertNotNull(result);
+    }
   }
 }

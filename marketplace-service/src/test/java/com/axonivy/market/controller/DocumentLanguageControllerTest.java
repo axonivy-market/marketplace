@@ -15,7 +15,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -40,7 +39,6 @@ class DocumentLanguageControllerTest {
 
     @Test
     void testGetDocumentByVersionAndLanguageSuccess() {
-        // given
         var response = DocumentLanguageResponse.builder()
                 .versions(List.of(new DocumentLanguageResponse.DocumentVersion("12.0", "url1")))
                 .languages(List.of(new DocumentLanguageResponse.DocumentLanguage("en", "url2")))

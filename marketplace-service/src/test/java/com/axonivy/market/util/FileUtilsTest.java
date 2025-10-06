@@ -10,12 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -23,7 +18,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -265,7 +259,7 @@ class FileUtilsTest {
 
     FileUtils.duplicateFolder(sourceDir, targetDir);
 
-    assertTrue(Files.exists(targetDir));
+    assertTrue(Files.exists(targetDir), "Target directory should exist");
     assertEquals("hello"
             , Files.readString(targetDir.resolve("file1.txt")), "file1.txt content should match");
     assertEquals("world"
@@ -281,10 +275,8 @@ class FileUtilsTest {
     Path targetDir = Files.createDirectory(tempDir.resolve("target"));
     Files.writeString(Files.createFile(targetDir.resolve("old.txt")), "old");
 
-    // when
     FileUtils.duplicateFolder(sourceDir, targetDir);
 
-    // then
     assertTrue(Files.exists(targetDir.resolve("file.txt")), "New file should be copied");
     assertFalse(Files.exists(targetDir.resolve("old.txt")), "Old file should be deleted");
   }
