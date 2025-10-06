@@ -39,7 +39,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private final List<String> majorVersions = List.of("10.0", "12.0", "13.1", "dev");
 
-  @MockBean
+    @MockBean
   ProductRepository productRepository;
 
   @MockBean
@@ -209,5 +209,35 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Artifact mockPortalMavenArtifact() {
     return Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
         .name("Portal Guide").type("zip").build();
+  }
+
+  @Test
+  void shouldBuildResponseWithVersionsAndLanguages() {
+    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
+            .productId("portal")
+            .version("12.0")
+            .language(DocumentLanguage.ENGLISH)
+            .relativeLink("docs/portal/12/en")
+            .build();
+
+    ExternalDocumentMeta jaMeta = ExternalDocumentMeta.builder()
+            .productId("portal")
+            .version("12.0")
+            .language(DocumentLanguage.JAPANESE)
+            .relativeLink("docs/portal/12/ja")
+            .build();
+
+    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq("portal"), anyList()))
+            .thenReturn(List.of(enMeta, jaMeta));
+
+    when(service.findBestMatchVersion(PORTAL, "12.0")).thenReturn("12.0");
+
+    String host = "http://localhost:8080";
+    var result = service.findDocVersionsAndLanguages("portal", "12.0",
+            DocumentLanguage.ENGLISH.getCode(), host);
+
+    assertNotNull(result);
+    assertEquals(1, result.getVersions().size());
+    assertEquals(2, result.getLanguages().size());
   }
 }

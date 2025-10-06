@@ -68,7 +68,8 @@ public class VersionFactory {
     return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
   }
 
-  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions, List<String> majorVersions) {
+  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions
+          , List<String> majorVersions) {
     return majorVersions.stream().map(v -> Map.entry(VersionFactory.get(versions, v), v))
         .filter(e -> e.getKey() != null && !e.getKey().isEmpty())
         .collect(Collectors.toMap(

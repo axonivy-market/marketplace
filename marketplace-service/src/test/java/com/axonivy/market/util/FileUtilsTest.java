@@ -23,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -249,5 +250,45 @@ class FileUtilsTest {
     assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()),
         "Should not throw exception when IO error occurs during unzip");
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
+  }
+
+  @Test
+  void shouldDuplicateFolderSuccessfully() throws IOException {
+    Path tempDir = Files.createTempDirectory(TEST_DIR);
+    // given
+    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
+    Path targetDir = tempDir.resolve("target");
+
+    // create files in source
+    Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
+    Files.writeString(file1, "hello");
+    Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
+    Files.writeString(file2, "world");
+
+    // when
+    FileUtils.duplicateFolder(sourceDir, targetDir);
+
+    // then
+    assertTrue(Files.exists(targetDir));
+    assertThat(Files.list(targetDir)).hasSize(2);
+    assertThat(Files.readString(targetDir.resolve("file1.txt"))).isEqualTo("hello");
+    assertThat(Files.readString(targetDir.resolve("file2.txt"))).isEqualTo("world");
+  }
+
+  @Test
+  void shouldClearExistingFolderBeforeCopy() throws IOException {
+    Path tempDir = Files.createTempDirectory(TEST_DIR);
+    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
+    Files.writeString(Files.createFile(sourceDir.resolve("file.txt")), "new");
+
+    Path targetDir = Files.createDirectory(tempDir.resolve("target"));
+    Files.writeString(Files.createFile(targetDir.resolve("old.txt")), "old");
+
+    // when
+    FileUtils.duplicateFolder(sourceDir, targetDir);
+
+    // then
+    assertThat(Files.exists(targetDir.resolve("file.txt"))).isTrue();
+    assertThat(Files.exists(targetDir.resolve("old.txt"))).isFalse();
   }
 }

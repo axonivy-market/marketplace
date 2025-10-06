@@ -117,24 +117,20 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<ExternalDocumentMeta> docMetas =
             externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, majorVersions);
 
-    DocumentLanguage selectedLanguage = DocumentLanguage.fromCode(language);
+    var selectedLanguage = DocumentLanguage.fromCode(language);
 
     List<DocumentLanguageResponse.DocumentVersion> documentVersions = docMetas.stream()
-            .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion)) // group by version
+            .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
             .entrySet().stream()
-            .map(entry -> {
+            .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
               String ver = entry.getKey();
               ExternalDocumentMeta chosenMeta = entry.getValue().stream()
-                      .filter(meta -> meta.getLanguage() != null
-                              && meta.getLanguage().equals(selectedLanguage))
+                      .filter(meta -> meta.getLanguage() != null && meta.getLanguage().equals(selectedLanguage))
                       .findFirst()
                       .orElse(entry.getValue().get(0));
-              return DocumentLanguageResponse.DocumentVersion.builder()
-                      .version(ver)
-                      .url(String.format("%s/%s", host, chosenMeta.getRelativeLink()))
-                      .build();
-            })
-            .toList();
+              return DocumentLanguageResponse.DocumentVersion.builder().version(ver)
+                      .url(String.format("%s/%s", host, chosenMeta.getRelativeLink())).build();
+            }).toList();
 
     var bestMatchVersion = findBestMatchVersion(productId, version);
     List<DocumentLanguageResponse.DocumentLanguage> documentLanguages = docMetas.stream()
@@ -223,7 +219,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
-      relativeLinkWithLanguage.forEach((language, link) -> {
+      relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
         ExternalDocumentMeta meta = buildDocumentMeta(link, language, artifact, productId, version);
         externalDocumentMetaRepo.save(meta);
       });
