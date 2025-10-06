@@ -18,25 +18,22 @@ import static com.axonivy.market.constants.RequestMappingConstants.DOCUMENT_VERS
 @Log4j2
 @RestController
 @RequestMapping(DOCUMENT)
-@Tag(name = "Document Language Controller", description = "API collection for utilizing document versions and languages")
+@Tag(name = "Document Language Controller"
+        , description = "API collection for utilizing document versions and languages")
 @AllArgsConstructor
 public class DocumentLanguageController {
 
-    final ExternalDocumentService externalDocumentService;
+    private final ExternalDocumentService externalDocumentService;
 
     @GetMapping(DOCUMENT_VERSION_LANGUAGE)
-    public ResponseEntity<DocumentLanguageResponse> getDocumentByVersionAndLanguage(@PathVariable String product, @PathVariable String version,
-                                                                                   @PathVariable String language) {
-        String host = ServletUriComponentsBuilder.fromCurrentRequestUri()
-                .replacePath(null) // remove the path
-                .build()
-                .toUriString();
-        DocumentLanguageResponse response =  externalDocumentService.findDocVersionsAndLanguages(product, version, language, host);
+    public ResponseEntity<DocumentLanguageResponse> getDocumentByVersionAndLanguage(@PathVariable String product
+            , @PathVariable String version, @PathVariable String language) {
+        var host = ServletUriComponentsBuilder.fromCurrentRequestUri().replacePath(null).build().toUriString();
+        DocumentLanguageResponse response = externalDocumentService.findDocVersionsAndLanguages(product, version
+                , language, host);
         if (response == null) {
-            log.warn("No document found for product: {}, version: {}, language: {}", product, version, language);
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(response);
     }
-
 }

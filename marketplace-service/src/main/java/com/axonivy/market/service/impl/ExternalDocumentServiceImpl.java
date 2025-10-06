@@ -103,7 +103,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (product.isEmpty()) {
       return null;
     }
-    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo
+            .findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
     String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
@@ -111,27 +112,23 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public DocumentLanguageResponse findDocVersionsAndLanguages(String productId, String version, String language, String host) {
+  public DocumentLanguageResponse findDocVersionsAndLanguages(String productId, String version
+          , String language, String host) {
     List<ExternalDocumentMeta> docMetas =
             externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, majorVersions);
 
     DocumentLanguage selectedLanguage = DocumentLanguage.fromCode(language);
-    String bestMatchVersion = findBestMatchVersion(productId, version);
 
-    // === Versions ===
     List<DocumentLanguageResponse.DocumentVersion> documentVersions = docMetas.stream()
             .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion)) // group by version
             .entrySet().stream()
             .map(entry -> {
               String ver = entry.getKey();
-
-              // try to find a match for the requested language
               ExternalDocumentMeta chosenMeta = entry.getValue().stream()
                       .filter(meta -> meta.getLanguage() != null
                               && meta.getLanguage().equals(selectedLanguage))
                       .findFirst()
                       .orElse(entry.getValue().get(0));
-
               return DocumentLanguageResponse.DocumentVersion.builder()
                       .version(ver)
                       .url(String.format("%s/%s", host, chosenMeta.getRelativeLink()))
@@ -139,7 +136,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
             })
             .toList();
 
-// === Languages === (filter by selected version, but use language from ExternalDocumentMeta)
+    var bestMatchVersion = findBestMatchVersion(productId, version);
     List<DocumentLanguageResponse.DocumentLanguage> documentLanguages = docMetas.stream()
             .filter(meta -> meta.getVersion().equals(bestMatchVersion))
             .filter(meta -> meta.getLanguage() != null)
@@ -175,7 +172,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
-    Map<String, String> latestSupportedDocVersions = VersionFactory.getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
+    Map<String, String> latestSupportedDocVersions = VersionFactory
+            .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
 
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
     for (String version : missingVersions) {
@@ -235,14 +233,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language, Artifact artifact, String productId, String version) {
+  private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
+          , Artifact artifact, String productId, String version) {
     // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
             CommonConstants.SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
-    List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo.findByProductIdAndRelativeLinkAndVersionIn(
-            productId, relativeLocation, List.of(version));
+    List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo
+            .findByProductIdAndRelativeLinkAndVersionIn(productId, relativeLocation, List.of(version));
     if (!existingExternalDocumentMeta.isEmpty()) {
       externalDocumentMeta = existingExternalDocumentMeta.get(0);
     }
@@ -263,7 +262,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public Map<DocumentLanguage, String> getRelativePathWithLanguage(String location) {
-    File shareFolder = new File(location);
+    var shareFolder = new File(location);
     if (!shareFolder.isDirectory()) {
       return Map.of();
     }

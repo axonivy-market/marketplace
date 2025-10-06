@@ -61,7 +61,8 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion, List<String> majorVersions) {
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion
+          , List<String> majorVersions) {
     String bestMatchVersion = get(versions, requestedVersion);
     Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
     return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
@@ -73,7 +74,7 @@ public class VersionFactory {
         .collect(Collectors.toMap(
             Map.Entry::getKey,
             Map.Entry::getValue,
-            (a, b) -> a, // keep first when duplicate
+            (a, b) -> a,
             LinkedHashMap::new
         ));
   }
