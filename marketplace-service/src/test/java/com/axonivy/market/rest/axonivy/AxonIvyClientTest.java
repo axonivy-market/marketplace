@@ -17,7 +17,7 @@ class AxonIvyClientTest {
     @Test
     void testGetDocumentVersions() {
         List<String> versions = axonIvyClient.getDocumentVersions();
-        assertFalse(versions.isEmpty());
+        assertFalse(versions.isEmpty(), "Expected to fetch at least one document");
     }
 
 }
