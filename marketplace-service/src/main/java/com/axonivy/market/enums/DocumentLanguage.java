@@ -11,11 +11,9 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public enum DocumentLanguage {
 
-    ENGLISH("en","/en/"), JAPANESE("ja","/ja/");
+    ENGLISH("en"), JAPANESE("ja");
 
     private final String code;
-
-    private final String path;
 
     public static List<String> getCodes() {
         return Stream.of(DocumentLanguage.values()).map(DocumentLanguage::getCode).toList();
