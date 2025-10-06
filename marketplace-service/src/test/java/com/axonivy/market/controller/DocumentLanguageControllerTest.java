@@ -16,7 +16,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +39,7 @@ class DocumentLanguageControllerTest {
     }
 
     @Test
-    void shouldReturnOkWhenResponseExists() {
+    void testGetDocumentByVersionAndLanguageSuccess() {
         // given
         var response = DocumentLanguageResponse.builder()
                 .versions(List.of(new DocumentLanguageResponse.DocumentVersion("12.0", "url1")))
@@ -51,16 +51,16 @@ class DocumentLanguageControllerTest {
         ResponseEntity<DocumentLanguageResponse> result =
                 languageController.getDocumentByVersionAndLanguage("portal", "12", "en");
         assertTrue(result.getStatusCode().is2xxSuccessful(), "Status code should be 2xx");
-        assertThat(result.getBody()).isEqualTo(response);
+        assertEquals(result.getBody(), response, "Response body should match the mock response");
     }
 
     @Test
-    void shouldReturnNotFoundWhenResponseIsNull() {
+    void testGetDocumentByVersionAndLanguageNotFound() {
         when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(null);
         ResponseEntity<DocumentLanguageResponse> result =
                 languageController.getDocumentByVersionAndLanguage("portal", "12", "en");
         assertTrue(result.getStatusCode().is4xxClientError(), "Status code should be 4xx");
-        assertThat(result.getBody()).isNull();
+        assertNull(result.getBody(),  "Response body should be null");
     }
 }

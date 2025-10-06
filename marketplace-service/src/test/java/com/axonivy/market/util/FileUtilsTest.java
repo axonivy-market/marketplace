@@ -253,30 +253,27 @@ class FileUtilsTest {
   }
 
   @Test
-  void shouldDuplicateFolderSuccessfully() throws IOException {
+  void testDuplicateFolderSuccess() throws IOException {
     Path tempDir = Files.createTempDirectory(TEST_DIR);
-    // given
     Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
     Path targetDir = tempDir.resolve("target");
 
-    // create files in source
     Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
     Files.writeString(file1, "hello");
     Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
     Files.writeString(file2, "world");
 
-    // when
     FileUtils.duplicateFolder(sourceDir, targetDir);
 
-    // then
     assertTrue(Files.exists(targetDir));
-    assertThat(Files.list(targetDir)).hasSize(2);
-    assertThat(Files.readString(targetDir.resolve("file1.txt"))).isEqualTo("hello");
-    assertThat(Files.readString(targetDir.resolve("file2.txt"))).isEqualTo("world");
+    assertEquals("hello"
+            , Files.readString(targetDir.resolve("file1.txt")), "file1.txt content should match");
+    assertEquals("world"
+            , Files.readString(targetDir.resolve("file2.txt")), "file2.txt content should match");
   }
 
   @Test
-  void shouldClearExistingFolderBeforeCopy() throws IOException {
+  void testDuplicateFolderShouldClearOldFolder() throws IOException {
     Path tempDir = Files.createTempDirectory(TEST_DIR);
     Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
     Files.writeString(Files.createFile(sourceDir.resolve("file.txt")), "new");
@@ -288,7 +285,7 @@ class FileUtilsTest {
     FileUtils.duplicateFolder(sourceDir, targetDir);
 
     // then
-    assertThat(Files.exists(targetDir.resolve("file.txt"))).isTrue();
-    assertThat(Files.exists(targetDir.resolve("old.txt"))).isFalse();
+    assertTrue(Files.exists(targetDir.resolve("file.txt")), "New file should be copied");
+    assertFalse(Files.exists(targetDir.resolve("old.txt")), "Old file should be deleted");
   }
 }

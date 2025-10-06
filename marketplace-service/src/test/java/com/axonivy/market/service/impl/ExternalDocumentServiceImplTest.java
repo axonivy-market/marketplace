@@ -236,8 +236,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     var result = service.findDocVersionsAndLanguages("portal", "12.0",
             DocumentLanguage.ENGLISH.getCode(), host);
 
-    assertNotNull(result);
-    assertEquals(1, result.getVersions().size());
-    assertEquals(2, result.getLanguages().size());
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getVersions().size(), "Should have one version");
+    assertEquals(2, result.getLanguages().size(), "Should have two languages");
   }
 }
