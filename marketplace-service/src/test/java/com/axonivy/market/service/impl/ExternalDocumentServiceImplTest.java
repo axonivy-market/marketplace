@@ -263,7 +263,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
                       FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder),
               times(1)
       );
-      assertNotNull(result);
+      assertNotNull(result, "Result should not be null");
     }
   }
 }
