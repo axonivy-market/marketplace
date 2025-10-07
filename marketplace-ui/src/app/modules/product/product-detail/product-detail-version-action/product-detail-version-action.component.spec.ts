@@ -464,7 +464,7 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedArtifact).toEqual('');
   });
 
-  it('should update selectedArtifact values when currentArtifactExist is found', () => {
+  it('should update selectedArtifact values when existingArtifact is found', () => {
     const version = '1.0.0';
     const mockArtifacts = [
       {
