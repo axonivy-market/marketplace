@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface GithubRepoRepository extends JpaRepository<GithubRepo, String> {
   @EntityGraph(attributePaths = {"workflowInformation","testSteps"})
-  GithubRepo findByName(String name);
+  GithubRepo findByNameOrProductId(String name, String productId);
 
   @Modifying
   @Transactional
