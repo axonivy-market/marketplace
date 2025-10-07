@@ -168,19 +168,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       }
     });
 
-    const currentArtifactExist = this.artifacts().find(
+    const existingArtifact = this.artifacts().find(
       artifact => artifact.name === this.selectedArtifactName
     );
-    if (currentArtifactExist) {
-      this.selectedArtifactId = currentArtifactExist.id?.artifactId ?? '';
-      this.selectedArtifactName = currentArtifactExist.name ?? '';
-      this.selectedArtifact = currentArtifactExist.downloadUrl ?? '';
+    if (existingArtifact) {
+      this.updateChosenArtifact(existingArtifact);
     } else if (this.artifacts().length !== 0) {
-      this.selectedArtifactId = this.artifacts()[0].id?.artifactId ?? '';
-      this.selectedArtifactName = this.artifacts()[0].name ?? '';
-      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
+      this.updateChosenArtifact(this.artifacts()[0]);
     }
     this.addVersionParamToRoute(version);
+  }
+
+  private updateChosenArtifact(artifact: ItemDropdown) {
+    this.selectedArtifactId = artifact.id?.artifactId ?? '';
+    this.selectedArtifactName = artifact.name ?? '';
+    this.selectedArtifact = artifact.downloadUrl ?? '';
   }
 
   addVersionParamToRoute(selectedVersion: string) {
