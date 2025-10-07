@@ -140,9 +140,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectArtifact(artifact: ItemDropdown) {
-    this.selectedArtifactId = artifact.id?.artifactId ?? '';
-    this.selectedArtifactName = artifact.name ?? '';
-    this.selectedArtifact = artifact.downloadUrl ?? '';
+    this.updateChosenArtifact(artifact);
   }
 
   onSelectVersion(version: string) {
@@ -172,11 +170,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       artifact => artifact.name === this.selectedArtifactName
     );
     if (existingArtifact) {
-      this.onSelectArtifact(existingArtifact);
+      this.updateChosenArtifact(existingArtifact);
     } else if (this.artifacts().length !== 0) {
-      this.onSelectArtifact(this.artifacts()[0]);
+      this.updateChosenArtifact(this.artifacts()[0]);
     }
     this.addVersionParamToRoute(version);
+  }
+
+  private updateChosenArtifact(artifact: ItemDropdown) {
+    this.selectedArtifactId = artifact.id?.artifactId ?? '';
+    this.selectedArtifactName = artifact.name ?? '';
+    this.selectedArtifact = artifact.downloadUrl ?? '';
   }
 
   addVersionParamToRoute(selectedVersion: string) {
