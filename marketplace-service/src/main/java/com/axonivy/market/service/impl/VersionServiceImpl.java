@@ -4,7 +4,6 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -20,16 +19,17 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MavenConstants.TEST_ARTIFACTID;
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
@@ -40,6 +40,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 @AllArgsConstructor
 public class VersionServiceImpl implements VersionService {
+  private static final Pattern MAIN_VERSION_PATTERN =
+      Pattern.compile(MavenConstants.MAIN_VERSION_REGEX);
 
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductMarketplaceDataService productMarketplaceDataService;
@@ -79,7 +81,7 @@ public class VersionServiceImpl implements VersionService {
       String designerVersion) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent =
+      var productJsonContent =
           productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
@@ -88,7 +90,7 @@ public class VersionServiceImpl implements VersionService {
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
       productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     } catch (JsonProcessingException jsonProcessingException) {
-      log.error(jsonProcessingException.getMessage());
+      log.error(jsonProcessingException);
     }
     return result;
   }
@@ -96,36 +98,35 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getInstallableVersions(String productId,
       Boolean isShowDevVersion, String designerVersion) {
-    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
         VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }
+
+    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     for (String version : VersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-      Link link = linkTo(
+      var link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
               designerVersion)).withSelfRel();
-      VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
       versionAndUrlList.add(versionAndUrlModel);
     }
     return versionAndUrlList;
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
-    String[] artifactParts = StringUtils.defaultString(artifact).split(MavenConstants.MAIN_VERSION_REGEX);
+    String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
     if (artifactParts.length < 1) {
       return StringUtils.EMPTY;
     }
 
     String artifactId = artifactParts[0];
-    String fileType = artifactParts[artifactParts.length - 1];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(metadataList)) {
       return StringUtils.EMPTY;
     }
 
-    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
@@ -136,11 +137,13 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
 
+    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
+
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
         artifactModels, targetVersion, modelArtifactIds);
 
-
+    String fileType = artifactParts[artifactParts.length - 1];
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
       downloadUrl = StringUtils.EMPTY;
@@ -148,8 +151,8 @@ public class VersionServiceImpl implements VersionService {
     return downloadUrl;
   }
 
-  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(List<MavenArtifactVersion> existingData,
-      String version, List<String> artifactsIds) {
+  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(Collection<MavenArtifactVersion> existingData,
+      String version, Collection<String> artifactsIds) {
     return existingData.stream()
         .filter(
             artifact -> version.equals(artifact.getId().getProductVersion()) &&
@@ -158,5 +161,4 @@ public class VersionServiceImpl implements VersionService {
         .map(MavenArtifactVersion::getDownloadUrl)
         .orElse(null);
   }
-
 }

@@ -11,7 +11,6 @@ import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -41,13 +40,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -101,8 +98,8 @@ public class FeedbackController {
   public ResponseEntity<FeedbackModel> findFeedback(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) {
-    Feedback feedback = feedbackService.findFeedback(id);
-    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    var feedback = feedbackService.findFeedback(id);
+    var model = feedbackModelAssembler.toModel(feedback);
     addModelLinks(model, feedback);
     return ResponseEntity.ok(model);
   }
@@ -140,8 +137,8 @@ public class FeedbackController {
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
       @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
-    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
-    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
+    var model = feedbackModelAssembler.toModel(feedback);
     addModelLinks(model, feedback);
     return ResponseEntity.ok(model);
   }
@@ -161,13 +158,14 @@ public class FeedbackController {
 
     // Validate the token
     if (token == null || !jwtService.validateToken(token)) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Unauthorized if token is missing or invalid
+      // Unauthorized if token is missing or invalid
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    Claims claims = jwtService.getClaimsFromToken(token);
-    Feedback newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+    var claims = jwtService.getClaimsFromToken(token);
+    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
 
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
+    var location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
         .toUri();
 
     return ResponseEntity.created(location).build();
@@ -189,7 +187,7 @@ public class FeedbackController {
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
-  private void addModelLinks(FeedbackModel model, Feedback feedback){
+  private static void addModelLinks(FeedbackModel model, Feedback feedback){
     model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
   }
 }

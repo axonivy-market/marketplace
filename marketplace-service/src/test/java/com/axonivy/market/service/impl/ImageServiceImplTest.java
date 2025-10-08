@@ -60,32 +60,37 @@ class ImageServiceImplTest extends BaseSetup {
 
     verify(imageRepository).save(argumentCaptor.capture());
 
-    assertEquals(argumentCaptor.getValue().getProductId(), expectedImage.getProductId());
-    assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
-    assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
+    assertEquals(expectedImage.getProductId(), argumentCaptor.getValue().getProductId(),
+        "Saved image should have the same productId as the expected image");
+    assertEquals(expectedImage.getSha(), argumentCaptor.getValue().getSha(),
+        "Saved image should have the same SHA as the expected image");
+    assertEquals(expectedImage.getImageUrl(), argumentCaptor.getValue().getImageUrl(),
+        "Saved image should have the same image URL as the expected image");
 
     when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(List.of(expectedImage));
     Image result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
-    assertEquals(expectedImage, result);
 
+    assertEquals(expectedImage, result,
+        "When an image with the same productId and SHA already exists, the method should return that image");
   }
 
   @Test
-  void testMappingImageFromGHContent_getImageFromDownloadUrl() throws IOException {
+  void testMappingImageFromGHContentGetImageFromDownloadUrl() throws IOException {
     GHContent content = mock(GHContent.class);
     when(content.getSha()).thenReturn("914d9b6956db7a1404622f14265e435f36db81fa");
     when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
 
     byte[] mockResult = "content".getBytes();
-    when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
+    when(content.read()).thenThrow(new IOException("Unrecognized encoding"));
     when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn(mockResult);
 
     imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     verify(imageRepository).save(argumentCaptor.capture());
     verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
-    assertEquals(mockResult, argumentCaptor.getValue().getImageData());
 
+    assertEquals(mockResult, argumentCaptor.getValue().getImageData(),
+        "Image data saved in the repository should match the bytes returned by fileDownloadService when GHContent.read() fails");
   }
 
   @Test
@@ -108,8 +113,8 @@ class ImageServiceImplTest extends BaseSetup {
 
       Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
-      assertNotNull(result);
-      assertEquals(newImage, result);
+      assertNotNull(result, "Returned image should not be null when mapping from a valid downloaded folder");
+      assertEquals(newImage, result, "Returned image should match the newly saved image for the given productId");
       verify(imageRepository).save(any(Image.class));
     }
   }
@@ -134,35 +139,38 @@ class ImageServiceImplTest extends BaseSetup {
 
       Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
-      assertNotNull(result);
-      assertEquals(existingImage, result);
+      assertNotNull(result,
+          "Returned image should not be null when an existing image is already stored in the repository");
+      assertEquals(existingImage, result,
+          "Returned image should match the already existing image instead of saving a new one");
       verify(imageRepository, never()).save(any(Image.class));
     }
   }
 
   @Test
-  void testMappingImageFromDownloadedFolder_ReturnNull() {
+  void testMappingImageFromDownloadedFolderReturnNull() {
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
       String productId = "connectivity-demo";
       Path imagePath = Path.of("connectivity-image.png");
-      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenThrow(
-          new NullPointerException("File not found"));
+      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath))
+          .thenThrow(new NullPointerException("File not found"));
 
       Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
-      assertNull(result);
+      assertNull(result,
+          "Result should be null when the image stream cannot be extracted (e.g., file not found)");
       verify(imageRepository, times(0)).save(any(Image.class));
     }
   }
 
   @Test
-  void testMappingImageFromGHContent_noGhContent() {
+  void testMappingImageFromGHContentNoGhContent() {
     var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null);
-    assertNull(result);
+    assertNull(result, "Result should be null when GHContent is not provided (null input)");
   }
 
   @Test
-  void testReadPreviewImageByName_ImageExists() {
+  void testReadPreviewImageByNameImageExists() {
     Path imagePath = Path.of(IMAGE_NAME);
 
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
@@ -177,23 +185,28 @@ class ImageServiceImplTest extends BaseSetup {
 
       byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
 
-      assertNotNull(result);
-      assertArrayEquals("mocked image content".getBytes(), result);
+      assertNotNull(result,
+          "Result should not be null when the image file exists and can be read successfully");
+      assertArrayEquals("mocked image content".getBytes(), result,
+          "Returned image bytes should match the expected mocked image content");
     }
   }
 
   @Test
-  void testReadPreviewImageByName_NotFoundDirectory() {
+  void testReadPreviewImageByNameNotFoundDirectory() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
+
       byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
 
-      assertEquals(0, result.length);
+      assertEquals(0, result.length,
+          "When the image directory does not exist, the service should return an empty byte array");
     }
   }
 
+
   @Test
-  void testReadPreviewImageByName_NotFoundImage() {
+  void testReadPreviewImageByNameNotFoundImage() {
     Path imagePath = Path.of(IMAGE_NAME);
 
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
@@ -206,12 +219,14 @@ class ImageServiceImplTest extends BaseSetup {
 
       byte[] result = imageService.readPreviewImageByName("wrong.png");
 
-      assertEquals(0, result.length);
+      assertEquals(0, result.length,
+          "When the requested image name does not match any existing file, the service should return an empty byte array");
     }
   }
 
+
   @Test
-  void testReadPreviewImageByName_IOException() {
+  void testReadPreviewImageByNameIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
 
       mockedFiles.when(() -> Files.exists(any())).thenReturn(true);
@@ -219,7 +234,11 @@ class ImageServiceImplTest extends BaseSetup {
       mockedFiles.when(() -> Files.isRegularFile(any())).thenReturn(true);
       mockedFiles.when(() -> Files.walk(any())).thenThrow(new IOException("Exception!!"));
 
-      assertDoesNotThrow(() -> imageService.readPreviewImageByName(IMAGE_NAME));
+      assertDoesNotThrow(
+          () -> imageService.readPreviewImageByName(IMAGE_NAME),
+          "The service should handle IOExceptions gracefully without throwing them to the caller"
+      );
     }
   }
+
 }

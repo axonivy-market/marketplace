@@ -7,6 +7,7 @@ import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,11 +21,11 @@ class GithubReposModelTest {
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED, WorkFlowType.CI);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED, WorkFlowType.CI);
     TestStep step3 = new TestStep("Example name 3", TestStatus.PASSED, WorkFlowType.DEV);
-    githubRepo.setTestSteps(List.of(step1, step2, step3));
+    githubRepo.setTestSteps(Set.of(step1, step2, step3));
 
     WorkflowInformation ciInfo = new WorkflowInformation();
     ciInfo.setWorkflowType(WorkFlowType.CI);
-    githubRepo.setWorkflowInformation(List.of(ciInfo));
+    githubRepo.setWorkflowInformation(Set.of(ciInfo));
 
     githubRepo.setFocused(true);
 

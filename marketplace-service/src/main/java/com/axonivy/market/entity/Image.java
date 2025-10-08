@@ -13,6 +13,8 @@ import lombok.Setter;
 import static com.axonivy.market.constants.EntityConstants.BYTEA_TYPE;
 import static com.axonivy.market.constants.EntityConstants.IMAGE;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,6 +23,9 @@ import static com.axonivy.market.constants.EntityConstants.IMAGE;
 @Entity
 @Table(name = IMAGE)
 public class Image extends GenericIdEntity {
+
+  @Serial
+  private static final long serialVersionUID = 1;
 
   @Schema(description = "Product id", example = "jira-connector")
   private String productId;

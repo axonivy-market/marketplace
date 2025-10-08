@@ -13,18 +13,18 @@ import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHRelease;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
-public class ProductContentUtils {
+public final class ProductContentUtils {
   /*
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
    * Match exactly Demo or Setup
@@ -36,7 +36,7 @@ public class ProductContentUtils {
   public static final String SETUP = "setup";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s(\\s+\"[^\"]+\")?\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
-  private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
+  private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_USERNAME_REGEX = "@([\\p{Alnum}\\-]+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
@@ -44,6 +44,12 @@ public class ProductContentUtils {
   private static final Pattern GITHUB_PULL_REQUEST_PATTERN = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
   private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
       Pattern.UNICODE_CHARACTER_CLASS);
+  public static final Pattern README_FILE_LOCALE_PATTERN =
+      Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
+  public static final Pattern IMAGE_EXTENSION_PATTERN =
+      Pattern.compile(CommonConstants.IMAGE_EXTENSION);
+  public static final Pattern DEMO_SETUP_PATTERN =
+      Pattern.compile(DEMO_SETUP_TITLE);
 
   private ProductContentUtils() {
   }
@@ -64,8 +70,7 @@ public class ProductContentUtils {
 
   public static String getReadmeFileLocale(String readmeFile) {
     String result = StringUtils.EMPTY;
-    Pattern pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
-    Matcher matcher = pattern.matcher(readmeFile);
+    var matcher = README_FILE_LOCALE_PATTERN.matcher(readmeFile);
     if (matcher.find()) {
       result = matcher.group(1);
     }
@@ -75,34 +80,34 @@ public class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
+    String[] parts = DEMO_SETUP_PATTERN.split(readmeContents);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
     String description = Strings.EMPTY;
     String setup = Strings.EMPTY;
     String demo = Strings.EMPTY;
 
-    if (parts.length > 0) {
-      description = removeFirstLine(parts[0]);
+    if (parts.length > CommonConstants.ZERO) {
+      description = removeFirstLine(parts[CommonConstants.ZERO]);
     }
 
-    if (parts.length == 2) {
+    if (parts.length == CommonConstants.TWO) {
       if (demoIndex != -1) {
-        demo = parts[1];
+        demo = parts[CommonConstants.ONE];
       } else {
-        setup = parts[1];
+        setup = parts[CommonConstants.ONE];
       }
-    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
+    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > CommonConstants.TWO) {
       if (demoIndex < setupIndex) {
-        demo = parts[1];
-        setup = parts[2];
+        demo = parts[CommonConstants.ONE];
+        setup = parts[CommonConstants.TWO];
       } else {
-        setup = parts[1];
-        demo = parts[2];
+        setup = parts[CommonConstants.ONE];
+        demo = parts[CommonConstants.TWO];
       }
     }
 
-    ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+    var readmeContentsModel = new ReadmeContentsModel();
     readmeContentsModel.setDescription(description.trim());
     readmeContentsModel.setDemo(demo.trim());
     readmeContentsModel.setSetup(setup.trim());
@@ -111,8 +116,7 @@ public class ProductContentUtils {
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
-    Pattern pattern = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-    Matcher matcher = pattern.matcher(readmeContents);
+    var matcher = IMAGE_EXTENSION_PATTERN.matcher(readmeContents);
     return matcher.find();
   }
 
@@ -122,7 +126,11 @@ public class ProductContentUtils {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      result = index != StringUtils.INDEX_NOT_FOUND ? text.substring(index + 1).trim() : Strings.EMPTY;
+      if (index != StringUtils.INDEX_NOT_FOUND) {
+        result = text.substring(index + 1).trim();
+      } else {
+        result = Strings.EMPTY;
+      }
     } else {
       result = text;
     }
@@ -131,15 +139,15 @@ public class ProductContentUtils {
   }
 
   public static ProductModuleContent initProductModuleContent(String productId, String version) {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
+    var productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(productId);
     productModuleContent.setVersion(version);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }
 
-  public static void updateProductModule(ProductModuleContent productModuleContent, List<Artifact> artifacts) {
-    Artifact artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
+  public static void updateProductModule(ProductModuleContent productModuleContent, Collection<Artifact> artifacts) {
+    var artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
     if (Objects.nonNull(artifact)) {
       productModuleContent.setIsDependency(Boolean.TRUE);
       productModuleContent.setGroupId(artifact.getGroupId());
@@ -163,7 +171,7 @@ public class ProductContentUtils {
    */
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
+      var imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imagePattern,
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }

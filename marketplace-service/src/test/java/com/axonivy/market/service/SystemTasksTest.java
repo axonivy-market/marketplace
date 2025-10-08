@@ -74,7 +74,9 @@ class SystemTasksTest {
     doThrow(new IOException()).when(productDetailsController).syncLatestReleasesForProducts();
     tasks.syncDataForProductReleases();
 
-    assertThrows(IOException.class, () -> productDetailsController.syncLatestReleasesForProducts());
+    assertThrows(IOException.class,
+        () -> productDetailsController.syncLatestReleasesForProducts(),
+        "Expected IOException to be thrown when syncing latest releases for products fails");
   }
 
   @Test

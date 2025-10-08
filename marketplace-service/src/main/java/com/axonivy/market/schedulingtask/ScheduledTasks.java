@@ -21,14 +21,15 @@ public class ScheduledTasks {
   private static final String SCHEDULING_TASK_PRODUCTS_CRON = "${market.scheduling.products-cron}";
   // External documentation sync will start at 00:40 in order to prevent running at the same time with other
   private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
-  private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
+  private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling" +
+      ".products-release-notes-cron}";
   private static final String SCHEDULING_TASK_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
 
-  final ProductRepository productRepo;
-  final ProductService productService;
-  final ProductDetailsController productDetailsController;
-  final ExternalDocumentService externalDocumentService;
-  final ProductDependencyService productDependencyService;
+  private final ProductRepository productRepo;
+  private final ProductService productService;
+  private final ProductDetailsController productDetailsController;
+  private final ExternalDocumentService externalDocumentService;
+  private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)

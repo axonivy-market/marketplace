@@ -26,4 +26,10 @@ public class CommonConstants {
   public static final String TEST_REPORT_FILE = "export-test-json-file";
   public static final String NEW_LINE = "\\n";
   public static final String PROD_ENV = "production";
+  public static final int PAGE_SIZE_10 = 10;
+  public static final int PAGE_SIZE_20 = 20;
+  public static final int ZERO = 0;
+  public static final int ONE = 1;
+  public static final int TWO = 2;
+  public static final int THREE = 3;
 }
