@@ -110,11 +110,6 @@
       <artifactId>h2</artifactId>
       <scope>test</scope> <!-- Only for testing -->
     </dependency>
-    <dependency>
-      <groupId>fi.solita.clamav</groupId>
-      <artifactId>clamav-client</artifactId>
-      <version>1.0.1</version>
-    </dependency>
   </dependencies>
 
   <build>

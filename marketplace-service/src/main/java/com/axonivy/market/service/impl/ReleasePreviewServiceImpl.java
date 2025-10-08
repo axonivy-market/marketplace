@@ -7,10 +7,8 @@ import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.ProductContentUtils;
-import fi.solita.clamav.ClamAVClient;
-import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,28 +27,12 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 
 @Log4j2
 @Service
+@AllArgsConstructor
 public class ReleasePreviewServiceImpl implements ReleasePreviewService {
-//  @Value("${market.clamav.host}")
-//  private String CLAMAV_HOST_NAME;
-//  @Value("${market.clamav.port}")
-//  private int CLAMAV_PORT;
-  private final ClamAVClient clamAVClient;
-
-  public ReleasePreviewServiceImpl(
-      @Value("${market.clamav.host}") String host,
-      @Value("${market.clamav.port}") int port
-  ) {
-    this.clamAVClient = new ClamAVClient(host, port);
-  }
 
   @Override
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
-      byte[] reply = clamAVClient.scan(file.getInputStream());
-      if (!ClamAVClient.isCleanReply(reply)) {
-        log.error("ClamAVClient is not clean reply");
-        return null;
-      }
       FileUtils.unzip(file, PREVIEW_DIR);
     } catch (IOException e){
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
