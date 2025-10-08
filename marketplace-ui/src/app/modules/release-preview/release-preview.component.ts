@@ -94,6 +94,7 @@ export class ReleasePreviewComponent implements OnInit {
     if (event.dataTransfer?.files.length) {
       const droppedFile = event.dataTransfer.files[0];
       this.setSelectedFile(droppedFile);
+      this.onSubmit();
     }
   }
 
@@ -101,6 +102,7 @@ export class ReleasePreviewComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.setSelectedFile(input.files[0]);
+      this.onSubmit();
     }
   }
 
