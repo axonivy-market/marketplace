@@ -38,7 +38,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
       boolean isSafeFile = ZipSafetyScanner.analyze(file);
-      if (isSafeFile) {
+      if (!isSafeFile) {
+        log.error("The file is not safe to be extracted, skipped this file");
         return null;
       }
       FileUtils.unzip(file, PREVIEW_DIR);
