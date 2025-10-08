@@ -68,8 +68,6 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - 8080
-    depends_on:
-      - clamav
 
 volumes:
   marketcache:
