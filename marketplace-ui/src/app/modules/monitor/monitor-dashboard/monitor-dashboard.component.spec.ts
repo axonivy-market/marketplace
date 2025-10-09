@@ -337,7 +337,7 @@ describe('MonitoringDashboardComponent', () => {
       component.activeTab = FOCUSED_TAB;
       component.ngOnInit();
 
-      expect(component.activeTab).toBe(STANDARD_TAB);
+      expect(component.activeTab).toBe(FOCUSED_TAB);
     });
 
     it('should not set initialFilter when search query parameter is missing', () => {

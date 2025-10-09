@@ -52,8 +52,8 @@ export class MonitoringDashboardComponent implements OnInit {
       this.route.queryParams.subscribe(params => {
         if (params['search']) {
           this.initialFilter.set(params['search']);
+          this.activeTab = STANDARD_TAB;
         }
-        this.activeTab = STANDARD_TAB;
       });
       
       this.loadRepositories();
