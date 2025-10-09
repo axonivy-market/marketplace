@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -22,8 +22,9 @@ import { HistoryService } from '../../../core/services/history/history.service';
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
-export class ProductFilterComponent {
+export class ProductFilterComponent implements OnChanges {
   @Input() isProductHomepage = false;
+  @Input() initialSearchText = '';
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();
@@ -85,7 +86,7 @@ export class ProductFilterComponent {
 
 
       // Update search text
-      this.searchText = queryParams['search'] || '';
+      this.searchText = queryParams['search'] || this.initialSearchText || '';
       this.historyService.lastSearchText.set(this.searchText);
 
       this.router.navigate([], {
@@ -94,6 +95,15 @@ export class ProductFilterComponent {
         queryParams
       });
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialSearchText'] && changes['initialSearchText'].currentValue !== changes['initialSearchText'].previousValue) {
+      if (this.initialSearchText && !this.searchText) {
+        this.searchText = this.initialSearchText;
+        this.onSearchChanged(this.initialSearchText);
+      }
+    }
   }
 
   onSelectType(type: ItemDropdown<TypeOption>) {

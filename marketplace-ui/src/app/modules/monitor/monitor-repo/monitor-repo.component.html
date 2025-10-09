@@ -2,7 +2,7 @@
   <!-- Search Bar -->
   <div class="feature-bar d-flex align-items-center justify-content-between">
     <app-product-filter class="flex-grow-1 h-100" (searchChange)="onSearchChanged($event)"
-      [isProductHomepage]="false"></app-product-filter>
+      [initialSearchText]="initialFilter" [isProductHomepage]="false"></app-product-filter>
 
     <!-- Mode Toggle -->
     <div class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">

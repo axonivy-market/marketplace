@@ -10,6 +10,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -35,6 +36,7 @@ export class MonitoringDashboardComponent implements OnInit {
   themeService = inject(ThemeService);
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
+  route = inject(ActivatedRoute);
 
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
@@ -43,9 +45,17 @@ export class MonitoringDashboardComponent implements OnInit {
   repositories = signal<Repository[]>([]);
   focusedRepo = computed(() => this.repositories().filter(r => r.focused));
   standardRepo = computed(() => this.repositories().filter(r => !r.focused));
+  initialFilter = signal<string>('');
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.route.queryParams.subscribe(params => {
+        if (params['search']) {
+          this.initialFilter.set(params['search']);
+        }
+        this.activeTab = STANDARD_TAB;
+      });
+      
       this.loadRepositories();
       this.pageTitleService.setTitleOnLangChange(
         'common.monitor.dashboard.pageTitle'

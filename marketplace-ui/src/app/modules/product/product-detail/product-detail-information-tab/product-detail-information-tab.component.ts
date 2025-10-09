@@ -19,9 +19,9 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { Router } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
-const SHIELDS_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
+const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
-const SHIELDS_BRANCH = 'master';
+const BRANCH = 'master';
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
@@ -44,6 +44,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   loadingService = inject(LoadingService);
   router = inject(Router);
   shieldsBadgeUrl = '';
+  repoName = '';
 
   ngOnInit(): void {
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
@@ -88,14 +89,14 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
   getShieldsBadgeUrl(): string {
-    if (!this.productDetail?.sourceUrl) {
+    if (!this.productDetail?.statusBadgeUrl) {
       return '';
     }
-    try {
-      return `${SHIELDS_BASE_URL}/axonivy-market/${this.productDetail.id}/${SHIELDS_WORKFLOW}?branch=${SHIELDS_BRANCH}`;
-    } catch {
-      return '';
-    }
+    const url = new URL(this.productDetail.statusBadgeUrl);
+    const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+    const owner = pathParts[0]; 
+    this.repoName = pathParts[1]; 
+    return `${SHIELDS_BADGE_BASE_URL}/${owner}/${this.repoName}/${SHIELDS_WORKFLOW}?branch=${BRANCH}`;
   }
 
   isVersionUnchangedOrFirstChange(change: SimpleChange | undefined): boolean {
@@ -123,6 +124,14 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     );
   }
   onBadgeClick() {
-    this.router.navigate(['/monitoring']);
+    if (this.repoName) {
+      this.router.navigate(['/monitoring'], { 
+        queryParams: { 
+          search: this.repoName
+        } 
+      });
+    } else {
+      this.router.navigate(['/monitoring']);
+    }
   }
 }
