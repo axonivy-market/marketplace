@@ -60,7 +60,7 @@ public class VersionFactory {
     // Get latest released version if requested version is 'latest'
     if (version == DevelopmentVersion.LATEST) {
       return sortedVersions.stream().filter(VersionUtils::isReleasedVersion)
-              .findFirst().orElse(null);
+          .findFirst().orElse(null);
     }
 
     if (version != null && !sortedVersions.isEmpty()) {
@@ -75,16 +75,16 @@ public class VersionFactory {
   }
 
   public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion
-          , List<String> majorVersions) {
+      , List<String> majorVersions) {
     String bestMatchVersion = get(versions, requestedVersion);
     Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
     return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
   }
 
   public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions
-          , List<String> majorVersions) {
-    return majorVersions.stream().map(v -> Map.entry(VersionFactory.get(versions, v), v))
-        .filter(e -> e.getKey() != null && !e.getKey().isEmpty())
+      , List<String> majorVersions) {
+    return majorVersions.stream().map(version -> Map.entry(VersionFactory.get(versions, version), version))
+        .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
         .collect(Collectors.toMap(
             Map.Entry::getKey,
             Map.Entry::getValue,

@@ -180,7 +180,7 @@ public class FileUtils {
       }
       org.apache.commons.io.FileUtils.copyDirectory(oldPath.toFile(), newPath.toFile());
     } catch (IOException e) {
-      log.error("#duplicateFolder Cannot duplicate latest folder {} → {}"
+      log.error("#duplicateFolder Cannot duplicate folder {} → {}"
               , oldPath.getFileName(), newPath.getFileName(), e);
     }
   }

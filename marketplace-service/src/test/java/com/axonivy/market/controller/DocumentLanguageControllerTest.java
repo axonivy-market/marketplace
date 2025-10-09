@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.model.DocumentLanguageResponse;
+import com.axonivy.market.enums.DocumentLanguage;
+import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.ExternalDocumentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,43 +23,46 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentLanguageControllerTest {
 
-    @Mock
-    private ExternalDocumentService service;
+  private static final String PORTAL = "portal";
+  private static final String TEST_VERSION = "12";
 
-    @InjectMocks
-    private DocumentLanguageController languageController;
+  @Mock
+  private ExternalDocumentService service;
 
-    @BeforeEach
-    void setup() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/api/docs/portal/12/en");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    }
+  @InjectMocks
+  private DocumentLanguageController languageController;
 
-    @Test
-    void testGetDocumentByVersionAndLanguageSuccess() {
-        var response = DocumentLanguageResponse.builder()
-                .versions(List.of(new DocumentLanguageResponse.DocumentVersion("12.0", "url1")))
-                .languages(List.of(new DocumentLanguageResponse.DocumentLanguage("en", "url2")))
-                .build();
+  @BeforeEach
+  void setup() {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setRequestURI("/api/docs/portal/12/en");
+    request.setServerName("localhost");
+    request.setServerPort(8080);
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+  }
 
-        when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(response);
-        ResponseEntity<DocumentLanguageResponse> result =
-                languageController.getDocumentByVersionAndLanguage("portal", "12", "en");
-        assertTrue(result.getStatusCode().is2xxSuccessful(), "Status code should be 2xx");
-        assertEquals(result.getBody(), response, "Response body should match the mock response");
-    }
+  @Test
+  void testGetDocumentByVersionAndLanguageSuccess() {
+    var response = DocumentInfoResponse.builder()
+        .versions(List.of(new DocumentInfoResponse.DocumentVersion(TEST_VERSION, "url1")))
+        .languages(List.of(new DocumentInfoResponse.DocumentLanguage(DocumentLanguage.ENGLISH.getCode(), "url2")))
+        .build();
 
-    @Test
-    void testGetDocumentByVersionAndLanguageNotFound() {
-        when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(null);
-        ResponseEntity<DocumentLanguageResponse> result =
-                languageController.getDocumentByVersionAndLanguage("portal", "12", "en");
-        assertTrue(result.getStatusCode().is4xxClientError(), "Status code should be 4xx");
-        assertNull(result.getBody(),  "Response body should be null");
-    }
+    when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(response);
+    ResponseEntity<DocumentInfoResponse> result =
+        languageController.getDocumentByVersionAndLanguage(PORTAL, TEST_VERSION, DocumentLanguage.ENGLISH.getCode());
+    assertTrue(result.getStatusCode().is2xxSuccessful(), "Status code should be 2xx");
+    assertEquals(result.getBody(), response, "Response body should match the mock response");
+  }
+
+  @Test
+  void testGetDocumentByVersionAndLanguageNotFound() {
+    when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(null);
+    ResponseEntity<DocumentInfoResponse> result =
+        languageController.getDocumentByVersionAndLanguage(PORTAL, TEST_VERSION, DocumentLanguage.ENGLISH.getCode());
+    assertTrue(result.getStatusCode().is4xxClientError(), "Status code should be 4xx");
+    assertNull(result.getBody(), "Response body should be null");
+  }
 }

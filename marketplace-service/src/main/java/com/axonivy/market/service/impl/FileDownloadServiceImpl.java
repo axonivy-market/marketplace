@@ -33,8 +33,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.ZIP_EXTENSION;
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
-import static com.axonivy.market.constants.DirectoryConstants.ZIP_EXTENSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service

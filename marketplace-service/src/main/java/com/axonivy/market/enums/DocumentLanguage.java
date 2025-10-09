@@ -11,19 +11,18 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public enum DocumentLanguage {
 
-    ENGLISH("en"), JAPANESE("ja");
+  ENGLISH("en"), JAPANESE("ja");
 
-    private final String code;
+  private final String code;
 
-    public static List<String> getCodes() {
-        return Stream.of(DocumentLanguage.values()).map(DocumentLanguage::getCode).toList();
-    }
+  public static List<String> getCodes() {
+    return Stream.of(values()).map(DocumentLanguage::getCode).toList();
+  }
 
-    public static DocumentLanguage fromCode(String code) {
-        return Arrays.stream(values())
-                .filter(lang -> lang.code.equals(code))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unsupported language: " + code));
-    }
-
+  public static DocumentLanguage fromCode(String code) {
+    return Arrays.stream(values())
+        .filter(lang -> lang.code.equals(code))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Unsupported language: " + code));
+  }
 }

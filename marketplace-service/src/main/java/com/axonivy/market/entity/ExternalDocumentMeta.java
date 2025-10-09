@@ -2,6 +2,8 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.DocumentLanguage;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.*;
 
@@ -27,5 +29,6 @@ public class ExternalDocumentMeta extends AuditableIdEntity {
   private String version;
   private String storageDirectory;
   private String relativeLink;
+  @Enumerated(EnumType.STRING)
   private DocumentLanguage language;
 }

@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.config.MarketplaceConfig;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
@@ -10,7 +9,7 @@ import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
-import com.axonivy.market.model.DocumentLanguageResponse;
+import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -41,6 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
@@ -59,8 +59,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private final ArtifactRepository artifactRepo;
   private final MarketplaceConfig marketplaceConfig;
   private final AxonIvyClient axonIvyClient;
+  private List<String> majorVersions;
 
-  private List<String> majorVersions = new ArrayList<>();
+  @PostConstruct
+  public void init() {
+    majorVersions = axonIvyClient.getDocumentVersions();
+  }
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
@@ -88,7 +92,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       List<String> releasedVersions, List<Artifact> docArtifacts) {
     if (isResetSync) {
       externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, Stream.concat(releasedVersions.stream()
-              , majorVersions.stream()).toList());
+          , majorVersions.stream()).toList());
     }
 
     for (Artifact artifact : docArtifacts) {
@@ -108,7 +112,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return null;
     }
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo
-            .findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
+        .findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
     String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
@@ -116,40 +120,45 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public DocumentLanguageResponse findDocVersionsAndLanguages(String productId, String version
-          , String language, String host) {
-    List<ExternalDocumentMeta> docMetas =
-            externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, majorVersions);
-
+  public DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version
+      , String language, String host) {
     var selectedLanguage = DocumentLanguage.fromCode(language);
+    List<ExternalDocumentMeta> docMetas =
+        externalDocumentMetaRepo.findByArtifactNameAndAndLanguageVersionIn(artifact, selectedLanguage, majorVersions);
 
-    List<DocumentLanguageResponse.DocumentVersion> documentVersions = docMetas.stream()
-            .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
-            .entrySet().stream()
-            .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
-              String ver = entry.getKey();
-              ExternalDocumentMeta chosenMeta = entry.getValue().stream()
-                      .filter(meta -> meta.getLanguage() != null && meta.getLanguage().equals(selectedLanguage))
-                      .findFirst()
-                      .orElse(entry.getValue().get(0));
-              return DocumentLanguageResponse.DocumentVersion.builder().version(ver)
-                      .url(String.format("%s/%s", host, chosenMeta.getRelativeLink())).build();
-            }).toList();
+    List<ExternalDocumentMeta> docMetasForLanguages =
+        externalDocumentMetaRepo.findByArtifactNameAndVersion(artifact, version);
 
-    var bestMatchVersion = findBestMatchVersion(productId, version);
-    List<DocumentLanguageResponse.DocumentLanguage> documentLanguages = docMetas.stream()
-            .filter(meta -> meta.getVersion().equals(bestMatchVersion))
-            .filter(meta -> meta.getLanguage() != null)
-            .map(meta -> DocumentLanguageResponse.DocumentLanguage.builder()
-                    .language(meta.getLanguage().getCode())
-                    .url(String.format("%s/%s", host, meta.getRelativeLink()))
-                    .build())
-            .toList();
+    if (docMetas.isEmpty()) {
+      return null;
+    }
 
-    return DocumentLanguageResponse.builder()
-            .versions(documentVersions)
-            .languages(documentLanguages)
-            .build();
+    List<DocumentInfoResponse.DocumentVersion> documentVersions = docMetas.stream()
+        .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
+        .entrySet().stream()
+        .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
+          String ver = entry.getKey();
+          ExternalDocumentMeta chosenMeta = entry.getValue().stream()
+              .filter(meta -> meta.getLanguage() != null && meta.getLanguage().equals(selectedLanguage))
+              .findFirst()
+              .orElse(entry.getValue().get(0));
+          return DocumentInfoResponse.DocumentVersion.builder().version(ver)
+              .url(host + SLASH + chosenMeta.getRelativeLink()).build();
+        }).toList();
+
+    List<DocumentInfoResponse.DocumentLanguage> documentLanguages = docMetasForLanguages.stream()
+        .filter(meta -> meta.getVersion().equals(version))
+        .filter(meta -> meta.getLanguage() != null)
+        .map(meta -> DocumentInfoResponse.DocumentLanguage.builder()
+            .language(meta.getLanguage().getCode())
+            .url(host + SLASH + meta.getRelativeLink())
+            .build())
+        .toList();
+
+    return DocumentInfoResponse.builder()
+        .versions(documentVersions)
+        .languages(documentLanguages)
+        .build();
   }
 
   public String findBestMatchVersion(String productId, String version) {
@@ -169,11 +178,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
-              "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
+          "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
     Map<String, String> latestSupportedDocVersions = VersionFactory
-            .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
+        .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
 
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
     for (String version : missingVersions) {
@@ -234,14 +243,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
-          , Artifact artifact, String productId, String version) {
+      , Artifact artifact, String productId, String version) {
     // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
-            CommonConstants.SLASH);
+        SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
     List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo
-            .findByProductIdAndRelativeLinkAndVersionIn(productId, relativeLocation, List.of(version));
+        .findByProductIdAndLanguageAndVersion(productId, language, version);
     if (!existingExternalDocumentMeta.isEmpty()) {
       externalDocumentMeta = existingExternalDocumentMeta.get(0);
     }
@@ -273,12 +282,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     return Arrays.stream(files)
-            .map(File::getName)
-            .filter(name -> DocumentLanguage.getCodes().contains(name))
-            .collect(Collectors.toMap(
-                    DocumentLanguage::fromCode,
-                    name -> location + CommonConstants.SLASH + name
-            ));
+        .map(File::getName)
+        .filter(name -> DocumentLanguage.getCodes().contains(name))
+        .collect(Collectors.toMap(
+            DocumentLanguage::fromCode,
+            name -> location + SLASH + name
+        ));
   }
 
   private String getShareFolderLocationByArtifactAndVersion(Artifact artifact, String version) {
@@ -313,13 +322,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   public String updateLatestFolder(Path versionFolder, String majorVersion) {
     Path parent = versionFolder.getParent().getParent();
     Path majorFolder = parent.resolve(majorVersion);
-    log.info("Update the latest doc folder {} to point to {}", majorFolder, versionFolder);
     FileUtils.duplicateFolder(versionFolder.getParent(), majorFolder);
     return majorFolder + File.separator + DOC_DIR;
-  }
-
-  @PostConstruct
-  public void init() {
-    majorVersions = axonIvyClient.getDocumentVersions();
   }
 }

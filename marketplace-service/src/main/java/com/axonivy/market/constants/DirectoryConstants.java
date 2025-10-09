@@ -10,6 +10,5 @@ public class DirectoryConstants {
   public static final String CACHE_DIR = "market-cache";
   public static final String DATA_CACHE_DIR = DATA_DIR + "/" + CACHE_DIR;
   public static final String GITHUB_REPO_DIR = "data/work/github";
-  public static final String ZIP_EXTENSION = ".zip";
   public static final String DOC_DIR = "doc";
 }

@@ -40,9 +40,11 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private static final String PORTAL = "portal";
 
+  private static final String TEST_VERSION = "12.0";
+
   private final List<String> majorVersions = List.of("10.0", "12.0", "13.1", "dev");
 
-    @MockBean
+  @MockBean
   ProductRepository productRepository;
 
   @MockBean
@@ -157,16 +159,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
-            ExternalDocumentMeta.builder().version(version).build()));
+        ExternalDocumentMeta.builder().version(version).build()));
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
       mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-              , version, majorVersions)).thenReturn(version);
+          , version, majorVersions)).thenReturn(version);
 
       String result = service.findBestMatchVersion(productId, version);
 
       assertEquals(version, result, "Should return the matched version");
       mockedVersionFactory.verify(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-              , version, majorVersions), times(1));
+          , version, majorVersions), times(1));
     }
 
     verify(productRepository).findById(productId);
@@ -186,7 +188,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     mockProductDocumentMeta.setVersion(mockVersion);
     mockProductDocumentMeta.setRelativeLink(RELATIVE_DOC_LOCATION);
     when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
-            .thenReturn(List.of(mockProductDocumentMeta));
+        .thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocument(PORTAL, mockVersion);
     assertNotNull(result, "Expected result not to be null when matching document meta exists");
     assertTrue(result.getRelativeLink().contains("/index.html"),
@@ -211,34 +213,34 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   private static Artifact mockPortalMavenArtifact() {
-    return Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
+    return Artifact.builder().artifactId("portal-guide").doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
   }
 
   @Test
   void testFindDocVersionsAndLanguagesSuccess() {
     ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
-            .productId("portal")
-            .version("12.0")
-            .language(DocumentLanguage.ENGLISH)
-            .relativeLink("docs/portal/12/en")
-            .build();
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/12/en")
+        .build();
 
     ExternalDocumentMeta jaMeta = ExternalDocumentMeta.builder()
-            .productId("portal")
-            .version("12.0")
-            .language(DocumentLanguage.JAPANESE)
-            .relativeLink("docs/portal/12/ja")
-            .build();
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.JAPANESE)
+        .relativeLink("docs/portal/12/ja")
+        .build();
 
-    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq("portal"), anyList()))
-            .thenReturn(List.of(enMeta, jaMeta));
+    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq(PORTAL), anyList()))
+        .thenReturn(List.of(enMeta, jaMeta));
 
-    when(service.findBestMatchVersion(PORTAL, "12.0")).thenReturn("12.0");
+    when(service.findBestMatchVersion(PORTAL, TEST_VERSION)).thenReturn(TEST_VERSION);
 
     String host = "http://localhost:8080";
-    var result = service.findDocVersionsAndLanguages("portal", "12.0",
-            DocumentLanguage.ENGLISH.getCode(), host);
+    var result = service.findDocVersionsAndLanguages("portal", TEST_VERSION,
+        DocumentLanguage.ENGLISH.getCode(), host);
 
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.getVersions().size(), "Should have one version");
@@ -255,14 +257,14 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     try (MockedStatic<FileUtils> mockedFileUtils = Mockito.mockStatic(FileUtils.class)) {
       mockedFileUtils.when(() ->
-              FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder)
+          FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder)
       ).thenAnswer(invocation -> null);
 
       String result = service.updateLatestFolder(versionFolder, majorVersion);
 
       mockedFileUtils.verify(() ->
-                      FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder),
-              times(1)
+              FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder),
+          times(1)
       );
       assertNotNull(result, "Result should not be null");
     }
