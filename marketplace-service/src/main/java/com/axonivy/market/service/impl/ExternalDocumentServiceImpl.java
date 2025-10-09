@@ -123,17 +123,17 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   public DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version
       , String language, String host) {
     var selectedLanguage = DocumentLanguage.fromCode(language);
-    List<ExternalDocumentMeta> docMetas =
-        externalDocumentMetaRepo.findByArtifactNameAndAndLanguageVersionIn(artifact, selectedLanguage, majorVersions);
+    List<ExternalDocumentMeta> docMetasByVersions =
+        externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, majorVersions);
 
-    List<ExternalDocumentMeta> docMetasForLanguages =
-        externalDocumentMetaRepo.findByArtifactNameAndVersion(artifact, version);
+    List<ExternalDocumentMeta> docMetasByLanguages =
+        externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, Collections.singletonList(version));
 
-    if (docMetas.isEmpty()) {
+    if (docMetasByVersions.isEmpty()) {
       return null;
     }
 
-    List<DocumentInfoResponse.DocumentVersion> documentVersions = docMetas.stream()
+    List<DocumentInfoResponse.DocumentVersion> documentVersions = docMetasByVersions.stream()
         .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
         .entrySet().stream()
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
@@ -146,19 +146,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               .url(host + SLASH + chosenMeta.getRelativeLink()).build();
         }).toList();
 
-    List<DocumentInfoResponse.DocumentLanguage> documentLanguages = docMetasForLanguages.stream()
-        .filter(meta -> meta.getVersion().equals(version))
-        .filter(meta -> meta.getLanguage() != null)
-        .map(meta -> DocumentInfoResponse.DocumentLanguage.builder()
-            .language(meta.getLanguage().getCode())
-            .url(host + SLASH + meta.getRelativeLink())
+    List<DocumentInfoResponse.DocumentLanguage> documentLanguages = docMetasByLanguages.stream()
+        .map(docMeta -> DocumentInfoResponse.DocumentLanguage.builder()
+            .language(docMeta.getLanguage().getCode())
+            .url(host + SLASH + docMeta.getRelativeLink())
             .build())
         .toList();
 
-    return DocumentInfoResponse.builder()
-        .versions(documentVersions)
-        .languages(documentLanguages)
-        .build();
+    return DocumentInfoResponse.builder().versions(documentVersions).languages(documentLanguages).build();
   }
 
   public String findBestMatchVersion(String productId, String version) {

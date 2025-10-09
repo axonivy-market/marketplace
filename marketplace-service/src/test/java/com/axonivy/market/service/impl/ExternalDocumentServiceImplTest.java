@@ -233,17 +233,18 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         .relativeLink("docs/portal/12/ja")
         .build();
 
-    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq(PORTAL), anyList()))
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
+        .thenReturn(List.of(enMeta, jaMeta));
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
+        Collections.singletonList(TEST_VERSION)))
         .thenReturn(List.of(enMeta, jaMeta));
 
-    when(service.findBestMatchVersion(PORTAL, TEST_VERSION)).thenReturn(TEST_VERSION);
-
     String host = "http://localhost:8080";
-    var result = service.findDocVersionsAndLanguages("portal", TEST_VERSION,
+    var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
         DocumentLanguage.ENGLISH.getCode(), host);
 
     assertNotNull(result, "Result should not be null");
-    assertEquals(1, result.getVersions().size(), "Should have one version");
+    assertEquals(2, result.getVersions().size(), "Should have one version");
     assertEquals(2, result.getLanguages().size(), "Should have two languages");
   }
 

@@ -20,10 +20,7 @@ public interface ExternalDocumentMetaRepository extends JpaRepository<ExternalDo
 
   List<ExternalDocumentMeta> findByProductIdAndVersionIn(String productId, List<String> versions);
 
-  List<ExternalDocumentMeta> findByArtifactNameAndVersion(String artifactName, String version);
-
-  List<ExternalDocumentMeta> findByArtifactNameAndAndLanguageVersionIn(String artifactName, DocumentLanguage language,
-      List<String> versions);
+  List<ExternalDocumentMeta> findByArtifactNameAndVersionIn(String artifactName, List<String> versions);
 
   List<ExternalDocumentMeta> findByProductIdAndLanguageAndVersion(String productId, DocumentLanguage language
       , String version);
