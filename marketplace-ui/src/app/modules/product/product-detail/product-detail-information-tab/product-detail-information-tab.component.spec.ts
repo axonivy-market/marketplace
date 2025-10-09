@@ -1,3 +1,4 @@
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
 import { of } from 'rxjs';
@@ -7,14 +8,15 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../../../shared/mocks/mock-data';
+
 const TEST_ID = 'portal';
 const TEST_VERSION = '10.0.0';
 const TEST_ARTIFACT_NAME = 'Portal Guide';
 const TEST_DOC_URL = '/market-cache/portal/portal-guide/10.0.0/doc/index.html';
-const SHIELDS_BADGE_BASE_URL =
-  'https://img.shields.io/github/actions/workflow/status';
+const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
 const BRANCH = 'master';
+
 describe('ProductDetailInformationTabComponent', () => {
   let component: ProductDetailInformationTabComponent;
   let fixture: ComponentFixture<ProductDetailInformationTabComponent>;
