@@ -98,11 +98,12 @@ export class ProductFilterComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialSearchText'] && changes['initialSearchText'].currentValue !== changes['initialSearchText'].previousValue) {
-      if (this.initialSearchText && !this.searchText) {
-        this.searchText = this.initialSearchText;
-        this.onSearchChanged(this.initialSearchText);
-      }
+    const searchTextChange = changes['initialSearchText'];
+    if (searchTextChange?.currentValue !== searchTextChange?.previousValue &&
+        this.initialSearchText && 
+        !this.searchText) {
+      this.searchText = this.initialSearchText;
+      this.onSearchChanged(this.initialSearchText);
     }
   }
 
