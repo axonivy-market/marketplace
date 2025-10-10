@@ -2,6 +2,8 @@ import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatbotServiceService } from '../../../modules/chatbot/chatbot-service.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import MarkdownIt from 'markdown-it';
 
 interface ChatMessage {
   message: string;
@@ -31,8 +33,18 @@ export class ChatBubbleComponent implements AfterViewChecked {
   messages: ChatMessage[] = [];
   isLoading = false;
   private isInitialized = false;
+  private markdownParser = new MarkdownIt({
+    linkify: true 
+  });
 
-  constructor(private chatbotService: ChatbotServiceService) {}
+  constructor(private chatbotService: ChatbotServiceService, private sanitizer: DomSanitizer) {
+    this.markdownParser.renderer.rules['link_open'] = (tokens, idx, options, env, self) => {
+      const token = tokens[idx];
+      token.attrPush(['target', '_blank']);
+      token.attrPush(['rel', 'noopener noreferrer']);
+      return self.renderToken(tokens, idx, options);
+    };
+  }
 
   ngAfterViewChecked(): void {
     this.scrollToBottom();
@@ -142,5 +154,15 @@ export class ChatBubbleComponent implements AfterViewChecked {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  getSanitizedMessage(message: string): SafeHtml {
+    const html = this.markdownParser.render(message);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  parseMarkdownToHtml(markdown: string): SafeHtml {
+    const html = this.markdownParser.render(markdown);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

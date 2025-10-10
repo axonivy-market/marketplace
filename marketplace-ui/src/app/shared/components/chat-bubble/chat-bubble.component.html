@@ -27,8 +27,7 @@
         <div class="chat-messages" #chatMessages>
           @for (message of messages; track message.timestamp) {
             <div class="message" [class.user-message]="message.isUser" [class.bot-message]="!message.isUser">
-              <div class="message-content">
-                {{ message.message }}
+              <div class="message-content" [innerHTML]="message.isUser ? message.message : parseMarkdownToHtml(message.message)">
               </div>
               <div class="message-time">
                 {{ message.timestamp | date:'HH:mm' }}
