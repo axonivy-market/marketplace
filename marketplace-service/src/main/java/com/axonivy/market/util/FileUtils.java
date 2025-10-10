@@ -8,7 +8,12 @@ import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -180,8 +185,7 @@ public class FileUtils {
       }
       org.apache.commons.io.FileUtils.copyDirectory(oldPath.toFile(), newPath.toFile());
     } catch (IOException e) {
-      log.error("#duplicateFolder Cannot duplicate folder {} → {}"
-              , oldPath.getFileName(), newPath.getFileName(), e);
+      log.error("#duplicateFolder Cannot duplicate folder {} → {}", oldPath.getFileName(), newPath.getFileName(), e);
     }
   }
 }

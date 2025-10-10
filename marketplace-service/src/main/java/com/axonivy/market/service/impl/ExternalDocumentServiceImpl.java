@@ -31,12 +31,14 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,8 +93,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
       List<String> releasedVersions, List<Artifact> docArtifacts) {
     if (isResetSync) {
-      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, Stream.concat(releasedVersions.stream()
-          , majorVersions.stream()).toList());
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
+          Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
     }
 
     for (Artifact artifact : docArtifacts) {
@@ -120,8 +122,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version
-      , String language, String host) {
+  public DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version, String language,
+      String host) {
     var selectedLanguage = DocumentLanguage.fromCode(language);
     List<ExternalDocumentMeta> docMetasByVersions =
         externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, majorVersions);

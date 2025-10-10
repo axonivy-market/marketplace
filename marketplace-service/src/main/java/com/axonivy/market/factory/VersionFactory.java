@@ -13,11 +13,12 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
@@ -74,15 +75,15 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion
-      , List<String> majorVersions) {
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion,
+      List<String> majorVersions) {
     String bestMatchVersion = get(versions, requestedVersion);
     Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
     return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
   }
 
-  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions
-      , List<String> majorVersions) {
+  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions,
+      List<String> majorVersions) {
     return majorVersions.stream().map(version -> Map.entry(VersionFactory.get(versions, version), version))
         .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
         .collect(Collectors.toMap(

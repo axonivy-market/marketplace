@@ -1,6 +1,10 @@
 package com.axonivy.market.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -28,6 +32,4 @@ public class DocumentInfoResponse {
     private String language;
     private String url;
   }
-
-
 }
