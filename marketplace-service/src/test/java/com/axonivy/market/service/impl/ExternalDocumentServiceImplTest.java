@@ -244,7 +244,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         DocumentLanguage.ENGLISH.getCode(), host);
 
     assertNotNull(result, "Result should not be null");
-    assertEquals(2, result.getVersions().size(), "Should have one version");
+    assertEquals(1, result.getVersions().size(), "Should have one version");
     assertEquals(2, result.getLanguages().size(), "Should have two languages");
   }
 
