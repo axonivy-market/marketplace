@@ -14,6 +14,8 @@ import lombok.Setter;
 
 import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
 
+import java.io.Serial;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -21,7 +23,10 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @Builder
 @Entity
 @Table(name = MAVEN_ARTIFACT_VERSION)
-public class MavenArtifactVersion extends AuditableEntity<MavenArtifactKey> {
+public class MavenArtifactVersion extends AbstractAuditableEntity<MavenArtifactKey> {
+
+  @Serial
+  private static final long serialVersionUID = 1;
 
   @EmbeddedId
   private MavenArtifactKey id;

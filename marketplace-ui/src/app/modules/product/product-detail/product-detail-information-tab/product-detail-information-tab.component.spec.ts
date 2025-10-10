@@ -13,6 +13,9 @@ const TEST_ID = 'portal';
 const TEST_VERSION = '10.0.0';
 const TEST_ARTIFACT_NAME = 'Portal Guide';
 const TEST_DOC_URL = '/market-cache/portal/portal-guide/10.0.0/doc/index.html';
+const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
+const SHIELDS_WORKFLOW = 'ci.yml';
+const BRANCH = 'master';
 
 describe('ProductDetailInformationTabComponent', () => {
   let component: ProductDetailInformationTabComponent;
@@ -181,5 +184,72 @@ describe('ProductDetailInformationTabComponent', () => {
   it('should return false when values differ and firstChange is false', () => {
     const change = new SimpleChange('v2', 'v1', false);
     expect(component.isVersionUnchangedOrFirstChange(change)).toBeFalse();
+  });
+
+  describe('getShieldsBadgeUrl', () => {
+    it('should return empty string if productDetail is undefined', () => {
+      component.productDetail = undefined as any;
+      expect(component.getShieldsBadgeUrl()).toBe('');
+    });
+
+    it('should return empty string if statusBadgeUrl is missing', () => {
+      component.productDetail = {
+        id: 'repo',
+        statusBadgeUrl: ''
+      } as ProductDetail;
+      expect(component.getShieldsBadgeUrl()).toBe('');
+    });
+
+    it('should return correct Shields.io badge URL for valid productDetail', () => {
+      component.productDetail = {
+        statusBadgeUrl:
+          'https://github.com/axonivy-market/keycloak-connector/actions/workflows/ci.yml/badge.svg'
+      } as ProductDetail;
+      expect(component.getShieldsBadgeUrl()).toBe(
+        'https://img.shields.io/github/actions/workflow/status/axonivy-market/keycloak-connector/ci.yml?branch=master'
+      );
+    });
+
+    it('should navigate to /monitoring with repo name in query params when onBadgeClick is called and productDetail has id', () => {
+      component.repoName = 'test-repo';
+      const navigateSpy = spyOn(component.router, 'navigate');
+
+      component.onBadgeClick();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/monitoring'], {
+        queryParams: { search: 'test-repo' }
+      });
+    });
+
+    it('should return empty string when statusBadgeUrl is missing', () => {
+      component.productDetail = {
+        id: 'repo',
+        statusBadgeUrl: ''
+      } as ProductDetail;
+      const result = component.getShieldsBadgeUrl();
+      expect(result).toBe('');
+    });
+
+    it('should return formatted shields.io badge URL and set repoName', () => {
+      component.productDetail = {
+        statusBadgeUrl:
+          'https://github.com/axonivy-market/keycloak-connector/actions/workflows/ci.yml/badge.svg'
+      } as ProductDetail;
+
+      const result = component.getShieldsBadgeUrl();
+
+      expect(component.repoName).toBe('keycloak-connector');
+      expect(result).toBe(
+        `${SHIELDS_BADGE_BASE_URL}/axonivy-market/keycloak-connector/${SHIELDS_WORKFLOW}?branch=${BRANCH}`
+      );
+    });
+
+    it('should not navigate when onBadgeClick is called and productDetail is missing repoName', () => {
+      component.repoName = '';
+      const navigateSpy = spyOn(component.router, 'navigate');
+
+      component.onBadgeClick();
+      expect(navigateSpy).toHaveBeenCalledWith(['/monitoring']);
+    });
   });
 });

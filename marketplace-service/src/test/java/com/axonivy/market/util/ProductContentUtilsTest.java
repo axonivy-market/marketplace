@@ -30,8 +30,10 @@ class ProductContentUtilsTest extends BaseSetup {
     ProductModuleContent mockProductModuleContent = new ProductModuleContent();
     Artifact mockArtifact = getMockArtifact();
     ProductContentUtils.updateProductModule(mockProductModuleContent, List.of(mockArtifact));
-    assertEquals(mockArtifact.getGroupId(), mockProductModuleContent.getGroupId(), "Group ID should be updated from artifact");
-    assertEquals(mockArtifact.getArtifactId(), mockProductModuleContent.getArtifactId(), "Artifact ID should be updated from artifact");
+    assertEquals(mockArtifact.getGroupId(), mockProductModuleContent.getGroupId(),
+        "Group ID should be updated from artifact");
+    assertEquals(mockArtifact.getArtifactId(), mockProductModuleContent.getArtifactId(),
+        "Artifact ID should be updated from artifact");
     assertEquals(mockArtifact.getName(), mockProductModuleContent.getName(), "Name should be updated from artifact");
     assertEquals(mockArtifact.getType(), mockProductModuleContent.getType(), "Type should be updated from artifact");
   }
@@ -39,14 +41,18 @@ class ProductContentUtilsTest extends BaseSetup {
   @Test
   void testRemoveFirstLine() {
     assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine(null), "Null input should return empty string");
-    assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine(" "), "Whitespace input should return empty string");
-    assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine("#"), "Single hash input should return empty string");
-    assertEquals("Second line", ProductContentUtils.removeFirstLine("#First line\nSecond line"), "Should remove first line and return remaining content");
+    assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine(" "),
+        "Whitespace input should return empty string");
+    assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine("#"),
+        "Single hash input should return empty string");
+    assertEquals("Second line", ProductContentUtils.removeFirstLine("#First line\nSecond line"),
+        "Should remove first line and return remaining content");
   }
 
   @Test
   void testGetReadmeFileLocale() {
-    assertEquals(StringUtils.EMPTY, ProductContentUtils.getReadmeFileLocale("README.md"), "Default README.md should return empty locale");
+    assertEquals(StringUtils.EMPTY, ProductContentUtils.getReadmeFileLocale("README.md"),
+        "Default README.md should return empty locale");
     assertEquals("DE", ProductContentUtils.getReadmeFileLocale("README_DE.md"), "README_DE.md should return DE locale");
   }
 
@@ -79,11 +85,15 @@ class ProductContentUtilsTest extends BaseSetup {
   void testGetExtractedPartsOfReadmeSwapDemoAndSetupParts() {
     String readmeContents = getMockReadmeContent(MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS);
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()), "Description should not be blank for swapped demo/setup parts");
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDemo()), "Demo section should not be blank for swapped demo/setup parts");
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getSetup()), "Setup section should not be blank for swapped demo/setup parts");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()),
+        "Description should not be blank for swapped demo/setup parts");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDemo()),
+        "Demo section should not be blank for swapped demo/setup parts");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getSetup()),
+        "Setup section should not be blank for swapped demo/setup parts");
     if (StringUtils.isNotBlank(readmeContentsModel.getSetup())) {
-      assertTrue(readmeContentsModel.getSetup().startsWith("Mattermost Instance"), "Setup section should start with 'Mattermost Instance' for swapped parts");
+      assertTrue(readmeContentsModel.getSetup().startsWith("Mattermost Instance"),
+          "Setup section should start with 'Mattermost Instance' for swapped parts");
     }
   }
 
@@ -91,32 +101,42 @@ class ProductContentUtilsTest extends BaseSetup {
   void testGetExtractedPartsOfReadmeNoDemoPart() {
     String readmeContents = getMockReadmeContent(MOCK_README_FILE_NO_DEMO_PART);
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()), "Description should not be blank when demo part is missing");
-    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()), "Demo section should be blank when demo part is missing");
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getSetup()), "Setup section should not be blank when demo part is missing");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()),
+        "Description should not be blank when demo part is missing");
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()),
+        "Demo section should be blank when demo part is missing");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getSetup()),
+        "Setup section should not be blank when demo part is missing");
   }
 
   @Test
   void testGetExtractedPartsOfReadmeNoSetupPart() {
     String readmeContents = getMockReadmeContent(MOCK_README_FILE_NO_SETUP_PART);
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()), "Description should not be blank when setup part is missing");
-    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDemo()), "Demo section should not be blank when setup part is missing");
-    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()), "Setup section should be blank when setup part is missing");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()),
+        "Description should not be blank when setup part is missing");
+    assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDemo()),
+        "Demo section should not be blank when setup part is missing");
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()),
+        "Setup section should be blank when setup part is missing");
   }
 
   @Test
   void testGetExtractedPartsOfReadmeWithOnlyOneDescription() {
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(SAMPLE_PRODUCT_NAME);
-    assertEquals(SAMPLE_PRODUCT_NAME, readmeContentsModel.getDescription(), "Description should match the sample product name");
-    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()), "Demo section should be blank for single description");
-    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()), "Setup section should be blank for single description");
+    assertEquals(SAMPLE_PRODUCT_NAME, readmeContentsModel.getDescription(),
+        "Description should match the sample product name");
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()),
+        "Demo section should be blank for single description");
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()),
+        "Setup section should be blank for single description");
   }
 
   @Test
   void testGetExtractedPartsOfEmptyReadme() {
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(StringUtils.EMPTY);
-    assertTrue(StringUtils.isBlank(readmeContentsModel.getDescription()), "Description should be blank for empty readme");
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDescription()),
+        "Description should be blank for empty readme");
     assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()), "Demo section should be blank for empty readme");
     assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()), "Setup section should be blank for empty readme");
   }
@@ -125,9 +145,12 @@ class ProductContentUtilsTest extends BaseSetup {
   void testGetExtractedPartsOfReadmeAtCorrectHeadings() {
     String readmeContents = getMockReadmeContent();
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    assertTrue(readmeContentsModel.getDescription().startsWith("Axon Ivy’s mattermost connector"), "Description should start with expected content");
-    assertTrue(readmeContentsModel.getDemo().startsWith("### Demo sample"), "Demo section should start with '### Demo sample'");
-    assertTrue(readmeContentsModel.getSetup().startsWith("### Setup guideline"), "Setup section should start with '### Setup guideline'");
+    assertTrue(readmeContentsModel.getDescription().startsWith("Axon Ivy’s mattermost connector"),
+        "Description should start with expected content");
+    assertTrue(readmeContentsModel.getDemo().startsWith("### Demo sample"),
+        "Demo section should start with '### Demo sample'");
+    assertTrue(readmeContentsModel.getSetup().startsWith("### Setup guideline"),
+        "Setup section should start with '### Setup guideline'");
   }
 
   @Test
@@ -138,8 +161,10 @@ class ProductContentUtilsTest extends BaseSetup {
         ### Setup
         Setup content (./image.png)""";
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithHeading3);
-    assertTrue(readmeContentsModel.getDescription().startsWith("Test README"), "Description should start with 'Test README' for heading3 format");
-    assertTrue(readmeContentsModel.getSetup().startsWith("Setup content (./image.png)"), "Setup section should start with expected content for heading3 format");
+    assertTrue(readmeContentsModel.getDescription().startsWith("Test README"),
+        "Description should start with 'Test README' for heading3 format");
+    assertTrue(readmeContentsModel.getSetup().startsWith("Setup content (./image.png)"),
+        "Setup section should start with expected content for heading3 format");
 
     String readmeContentsWithSpaceHeading = """
         #Product-name
@@ -151,23 +176,29 @@ class ProductContentUtilsTest extends BaseSetup {
         Setup content (./image.png)""";
     ReadmeContentsModel readmeContentsModel1 =
         ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithSpaceHeading);
-    assertTrue(readmeContentsModel1.getDemo().startsWith("### Demo project"), "Demo section should start with '### Demo project' for space heading format");
-    assertTrue(readmeContentsModel1.getSetup().startsWith("Setup content (./image.png)"), "Setup section should start with expected content for space heading format");
+    assertTrue(readmeContentsModel1.getDemo().startsWith("### Demo project"),
+        "Demo section should start with '### Demo project' for space heading format");
+    assertTrue(readmeContentsModel1.getSetup().startsWith("Setup content (./image.png)"),
+        "Setup section should start with expected content for space heading format");
   }
 
   @Test
   void testHasImageDirectives() {
     String readmeContents = getMockReadmeContent();
-    assertTrue(ProductContentUtils.hasImageDirectives(readmeContents), "Mock readme content should contain image directives");
-    assertFalse(ProductContentUtils.hasImageDirectives(StringUtils.EMPTY), "Empty string should not contain image directives");
+    assertTrue(ProductContentUtils.hasImageDirectives(readmeContents),
+        "Mock readme content should contain image directives");
+    assertFalse(ProductContentUtils.hasImageDirectives(StringUtils.EMPTY),
+        "Empty string should not contain image directives");
   }
 
   @Test
   void testInitProductModuleContent() {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
         MOCK_RELEASED_VERSION);
-    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId(), "Product ID should match the sample product ID");
-    assertEquals(MOCK_RELEASED_VERSION, productModuleContent.getVersion(), "Version should match the mock released version");
+    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId(),
+        "Product ID should match the sample product ID");
+    assertEquals(MOCK_RELEASED_VERSION, productModuleContent.getVersion(),
+        "Version should match the mock released version");
     assertEquals(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, SAMPLE_PRODUCT_ID, MOCK_RELEASED_VERSION),
         productModuleContent.getId(), "ID should be formatted with product ID and version pattern");
   }
@@ -176,8 +207,10 @@ class ProductContentUtilsTest extends BaseSetup {
   void testInitProductModuleContentWithoutVersion() {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
         StringUtils.EMPTY);
-    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId(), "Product ID should match the sample product ID when version is empty");
-    assertTrue(StringUtils.isBlank(productModuleContent.getVersion()), "Version should be blank when empty version is provided");
+    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId(),
+        "Product ID should match the sample product ID when version is empty");
+    assertTrue(StringUtils.isBlank(productModuleContent.getVersion()),
+        "Version should be blank when empty version is provided");
     assertTrue(StringUtils.isBlank(productModuleContent.getId()), "ID should be blank when version is empty");
   }
 
@@ -193,18 +226,25 @@ class ProductContentUtilsTest extends BaseSetup {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
     assertEquals(3, moduleContents.size(), "Module contents should contain 3 sections (description, demo, setup)");
-    assertTrue(productModuleContent.getDescription().get(Language.EN.getValue()).startsWith("Axon Ivy"), "English description should start with 'Axon Ivy'");
-    assertTrue(productModuleContent.getDescription().get(Language.DE.getValue()).startsWith("Der"), "German description should start with 'Der'");
-    assertTrue(StringUtils.isNotBlank(productModuleContent.getSetup().get(Language.DE.getValue())), "German setup content should not be blank");
+    assertTrue(productModuleContent.getDescription().get(Language.EN.getValue()).startsWith("Axon Ivy"),
+        "English description should start with 'Axon Ivy'");
+    assertTrue(productModuleContent.getDescription().get(Language.DE.getValue()).startsWith("Der"),
+        "German description should start with 'Der'");
+    assertTrue(StringUtils.isNotBlank(productModuleContent.getSetup().get(Language.DE.getValue())),
+        "German setup content should not be blank");
     assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
-        productModuleContent.getSetup().get(Language.EN.getValue())), "German and English setup content should be equal");
+            productModuleContent.getSetup().get(Language.EN.getValue())),
+        "German and English setup content should be equal");
     assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
-        productModuleContent.getSetup().get(Language.EN.getValue())), "German and English setup content should be equal (duplicate check)");
-    assertTrue(StringUtils.isNotBlank(productModuleContent.getDemo().get(Language.DE.getValue())), "German demo content should not be blank");
+            productModuleContent.getSetup().get(Language.EN.getValue())),
+        "German and English setup content should be equal (duplicate check)");
+    assertTrue(StringUtils.isNotBlank(productModuleContent.getDemo().get(Language.DE.getValue())),
+        "German demo content should not be blank");
     assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
         productModuleContent.getDemo().get(Language.EN.getValue())), "German and English demo content should be equal");
     assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
-        productModuleContent.getDemo().get(Language.EN.getValue())), "German and English demo content should be equal (duplicate check)");
+            productModuleContent.getDemo().get(Language.EN.getValue())),
+        "German and English demo content should be equal (duplicate check)");
   }
 
   @Test

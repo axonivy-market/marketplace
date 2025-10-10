@@ -36,10 +36,15 @@ class ProductDesignerInstallationServiceImplTest extends BaseSetup {
     when(productDesignerInstallationRepository.findByProductId(any(), any())).thenReturn(this.mockResultReturn);
     List<DesignerInstallation> results = productDesignerInstallationServiceImpl.findByProductId(
         BaseSetup.SAMPLE_PRODUCT_ID);
-    assertEquals(2, results.size());
-    assertEquals("10.0.22", results.get(0).getDesignerVersion());
-    assertEquals(50, results.get(0).getNumberOfDownloads());
-    assertEquals("11.4.0", results.get(1).getDesignerVersion());
-    assertEquals(30, results.get(1).getNumberOfDownloads());
+    assertEquals(2, results.size(),
+        "Designer installation list size should match mock result size");
+    assertEquals("10.0.22", results.get(0).getDesignerVersion(),
+        "First designer installation version should match first mock designer installation version");
+    assertEquals(50, results.get(0).getNumberOfDownloads(),
+        "First designer installation count should match first mock designer installation count");
+    assertEquals("11.4.0", results.get(1).getDesignerVersion(),
+        "Second designer installation version should match second mock designer installation version");
+    assertEquals(30, results.get(1).getNumberOfDownloads(),
+        "Second designer installation count should match second mock designer installation count");
   }
 }

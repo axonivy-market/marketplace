@@ -19,9 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 
 @Service
@@ -33,14 +35,14 @@ public class MetadataServiceImpl implements MetadataService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final FileDownloadService fileDownloadService;
 
-  public void updateMavenArtifactVersionWithModel(List<MavenArtifactVersion> artifactModelsInVersions,
+  public void updateMavenArtifactVersionWithModel(Collection<MavenArtifactVersion> artifactModelsInVersions,
       String version, Metadata metadata) {
-    MavenArtifactVersion model = MavenUtils.buildMavenArtifactVersionFromMetadata(version, metadata);
+    var model = MavenUtils.buildMavenArtifactVersionFromMetadata(version, metadata);
     artifactModelsInVersions.removeIf(artifactVersion -> artifactVersion.getId().equals(model.getId()));
     artifactModelsInVersions.add(model);
   }
 
-  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {
+  public void updateMavenArtifactVersionData(Iterable<Metadata> metadataSet, String productId) {
     List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {
@@ -48,7 +50,7 @@ public class MetadataServiceImpl implements MetadataService {
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
-      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
+      var metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
       updateMavenArtifactVersionFromMetadata(artifactModelsInVersions, metadataWithVersions);
     }
     mavenArtifactVersionRepo.saveAll(artifactModelsInVersions);
@@ -103,7 +105,7 @@ public class MetadataServiceImpl implements MetadataService {
 
   public void updateMavenArtifactVersionForNonReleaseDevVersion(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata, String version) {
-    Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
+    var snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
     String xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapShotMetadata.getUrl());
     MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapShotMetadata, true);
     updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapShotMetadata);

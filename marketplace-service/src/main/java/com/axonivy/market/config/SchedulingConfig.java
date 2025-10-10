@@ -8,11 +8,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class SchedulingConfig {
 
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
+  private static final int POOL_SIZE = 10;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
-    ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-    taskScheduler.setPoolSize(10);
+    var taskScheduler = new ThreadPoolTaskScheduler();
+    taskScheduler.setPoolSize(POOL_SIZE);
     taskScheduler.setThreadNamePrefix(THREAD_NAME_PREFIX);
     taskScheduler.initialize();
     return taskScheduler;

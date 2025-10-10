@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   private String moderatorName;
 
   @Schema(description = "Feedback reviewing timestamp", example = "2024-06-24T00:00:00.000Z")
-  private Date reviewDate;
+  private LocalDateTime reviewDate;
 
   @Schema(description = "Feedback modification version", example = "3")
   private Integer version;

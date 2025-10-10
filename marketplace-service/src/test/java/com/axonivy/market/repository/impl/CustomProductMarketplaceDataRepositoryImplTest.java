@@ -35,7 +35,7 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
     when(query.getSingleResult()).thenReturn(getMockProductMarketplaceData().getInstallationCount());
 
     int updatedCount = repo.increaseInstallationCount(MOCK_PRODUCT_ID);
-    assertEquals(3, updatedCount);
+    assertEquals(3, updatedCount, "Expected installation count to be incremented to 3");
   }
 
   @Test
@@ -59,7 +59,7 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
     when(em.find(ProductMarketplaceData.class, MOCK_PRODUCT_ID)).thenReturn(updatedProductMarketplaceData);
 
     int updatedCount = repo.updateInitialCount(MOCK_PRODUCT_ID, initialCount);
-    assertEquals(11, updatedCount);
+    assertEquals(11, updatedCount, "Expected installation count to be updated from 10 to 11");
   }
 
   @Test

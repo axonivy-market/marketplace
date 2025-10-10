@@ -29,12 +29,11 @@ public class ReleasePreviewController {
   @PostMapping
   @Operation(hidden = true)
   public ResponseEntity<Object> extractZipFile(@RequestParam(value = "file") MultipartFile file) {
-    String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    var baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     ReleasePreview preview = previewService.extract(file, baseUrl);
     if (preview == null) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     return ResponseEntity.ok(preview);
   }
-
 }

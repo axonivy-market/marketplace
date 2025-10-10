@@ -27,7 +27,12 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
   @Value("${market.limited.request-paths}")
   private List<String> requestPaths;
-  private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+  private final Map<String, Bucket> clientBuckets;
+
+  public LimitCallingConfig() {
+    super();
+    this.clientBuckets = new ConcurrentHashMap<>();
+  }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -38,7 +43,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
     boolean isRequestPathMatched = requestPaths.stream().anyMatch(apiPath::contains);
     if (isRequestPathMatched) {
-      Bucket bucket = buckets.computeIfAbsent(clientIp, this::createNewBucket);
+      var bucket = clientBuckets.computeIfAbsent(clientIp, this::createNewBucket);
 
       if (bucket.tryConsume(1)) {
         log.warn("Request allowed for IP: {}. Remaining tokens: {}", clientIp, bucket.getAvailableTokens());
@@ -60,7 +65,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
     return Bucket.builder().addLimit(limit).build();
   }
 
-  private String getClientIp(HttpServletRequest request) {
+  private static String getClientIp(HttpServletRequest request) {
     String forwardedFor = request.getHeader(REQUEST_HEADER);
     if (StringUtils.isNotEmpty(forwardedFor)) {
       return forwardedFor.split(",")[0];

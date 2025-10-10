@@ -62,7 +62,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   void testFetchAllMarketItems() throws IOException {
     // Empty due to missing token
     var ghContentMap = axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
-    assertEquals(0, ghContentMap.values().size());
+    assertEquals(0, ghContentMap.values().size(), "Expected no market items when token is missing");
 
     // Has one record from Github-repo
     var mockGHFileContent = mock(GHContent.class);
@@ -76,7 +76,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(gitHubService.getDirectoryContent(any(), any(), any())).thenReturn(mockGhContents);
 
     ghContentMap = axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
-    assertEquals(1, ghContentMap.values().size());
+    assertEquals(1, ghContentMap.values().size(), "Expected one market item when GitHub repo returns one record");
   }
 
   @Test
@@ -92,7 +92,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(ghRepository.getCompare(anyString(), anyString())).thenReturn(mockGHCompare);
 
     var gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
-    assertEquals(0, gitHubFiles.size());
+    assertEquals(0, gitHubFiles.size(), "Expected no files when commit has no associated files");
 
     when(mockCommit.listFiles()).thenReturn(pagedFile);
     var mockFile = mock(File.class);
@@ -106,14 +106,14 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(pagedFile.toList()).thenReturn(List.of(mockFile, mockFile2));
 
     gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
-    assertEquals(1, gitHubFiles.size());
-    assertEquals(fileName, gitHubFiles.get(0).getFileName());
+    assertEquals(1, gitHubFiles.size(), "Expected exactly one file matching the 'market/' directory");
+    assertEquals(fileName, gitHubFiles.get(0).getFileName(), "Expected the file name to be 'market/test-meta.json'");
   }
 
   @Test
   void testGetLastCommit() {
     var lastCommit = axonIvyMarketRepoServiceImpl.getLastCommit(0L);
-    assertNull(lastCommit);
+    assertNull(lastCommit, "Expected lastCommit to be null for an ID of 0L");
   }
 
   @Test
@@ -123,6 +123,6 @@ class GHAxonIvyMarketRepoServiceImplTest {
     mockGhContents.add(mockGHContent);
     when(gitHubService.getDirectoryContent(any(), any(), any())).thenReturn(mockGhContents);
     var ghContents = axonIvyMarketRepoServiceImpl.getMarketItemByPath("market/connector/a-trust");
-    assertEquals(1, ghContents.size());
+    assertEquals(1, ghContents.size(), "Expected exactly one GHContent item for the given path");
   }
 }

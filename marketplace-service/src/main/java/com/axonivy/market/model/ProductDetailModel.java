@@ -67,7 +67,7 @@ public class ProductDetailModel extends ProductModel {
   }
 
   public static ProductDetailModel createModel(Product product, boolean isProduction) {
-    ProductDetailModel model = new ProductDetailModel();
+    var model = new ProductDetailModel();
     ProductModel.createResource(model, product);
     createDetailResource(model, product, isProduction);
     return model;

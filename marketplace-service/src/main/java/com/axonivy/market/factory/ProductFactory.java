@@ -32,6 +32,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
 
+  private static final int TOKEN_LAST_SEGMENT = 1;
+  private static final int TOKEN_SECOND_LAST_SEGMENT = 2;
+
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -52,7 +55,7 @@ public class ProductFactory {
     Meta meta;
     try {
       meta = jsonDecode(ghContent);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Mapping from Meta file by GHContent failed", e);
       return product;
     }
@@ -78,8 +81,11 @@ public class ProductFactory {
     product.setCost(
         StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     extractSourceUrl(product, meta);
-    List<Artifact> artifacts = CollectionUtils.isEmpty(
-        meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
+
+    List<Artifact> artifacts = meta.getMavenArtifacts();
+    if (CollectionUtils.isEmpty(meta.getMavenArtifacts())) {
+      artifacts = new ArrayList<>();
+    }
 
     for (Artifact artifact : artifacts) {
       artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId()));
@@ -124,7 +130,8 @@ public class ProductFactory {
     var tokensLength = tokens.length;
     var repositoryPath = sourceUrl;
     if (tokensLength > 1) {
-      repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
+      repositoryPath = String.join(SLASH, tokens[tokensLength - TOKEN_SECOND_LAST_SEGMENT],
+          tokens[tokensLength - TOKEN_LAST_SEGMENT]);
     }
     product.setRepositoryName(repositoryPath);
     product.setSourceUrl(sourceUrl);

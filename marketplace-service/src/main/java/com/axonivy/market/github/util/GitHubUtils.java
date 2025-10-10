@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHObject;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.hateoas.Link;
 
@@ -17,7 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -26,13 +29,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
+  private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
   public static long getGHCommitDate(GHCommit commit) {
-    long commitTime = 0L;
+    var commitTime = 0L;
     if (commit != null) {
       try {
         commitTime = commit.getCommitDate().getTime();
-      } catch (Exception e) {
+      } catch (IOException e) {
         log.error("Check last commit failed", e);
       }
     }
@@ -60,18 +64,20 @@ public class GitHubUtils {
   }
 
   public static int sortMetaJsonFirst(String fileName1, String fileName2) {
-    if (fileName1.endsWith(META_FILE))
+    if (fileName1.endsWith(META_FILE)) {
       return -1;
-    if (fileName2.endsWith(META_FILE))
+    }
+    if (fileName2.endsWith(META_FILE)) {
       return 1;
+    }
     return fileName1.compareTo(fileName2);
   }
 
-  public static void findImages(List<GHContent> files, List<GHContent> images) {
+  public static void findImages(Iterable<GHContent> files, List<GHContent> images) {
     for (GHContent file : files) {
       if (file.isDirectory()) {
         findImagesInDirectory(file, images);
-      } else if (file.getName().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)) {
+      } else if (IMAGE_EXTENSION_PATTERN.matcher(file.getName().toLowerCase(Locale.getDefault())).matches()) {
         images.add(file);
       }
     }
@@ -82,7 +88,7 @@ public class GitHubUtils {
       List<GHContent> childrenFiles = file.listDirectoryContent().toList();
       findImages(childrenFiles, images);
     } catch (IOException e) {
-      log.error(e.getMessage());
+      log.error("Error finding images in directory: ", e);
     }
   }
 
@@ -95,9 +101,13 @@ public class GitHubUtils {
   }
 
   public static InputStream extractedContentStream(GHContent content) {
+    if (content == null) {
+      log.warn("Can not read the current content because it is null");
+      return null;
+    }
     try {
       return content.read();
-    } catch (IOException | NullPointerException e) {
+    } catch (IOException e) {
       log.warn("Can not read the current content: {}", e.getMessage());
       return null;
     }

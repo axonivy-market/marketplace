@@ -64,7 +64,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
     model.setType(product.getType());
     model.setTags(product.getTags());
 
-    Link logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
+    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     model.setLogoUrl(logoLink.getHref());
     return model;
   }

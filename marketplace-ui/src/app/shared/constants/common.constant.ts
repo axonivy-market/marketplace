@@ -60,14 +60,16 @@ export const SOCIAL_MEDIA_LINK = [
 
 export const IVY_FOOTER_LINKS = [
   {
-    containerStyleClass: 'w-md-100 footer__ivy-tag',
     label: 'common.footer.ivyCompanyInfo',
-    link: ''
+    link: 'common.footer.ivyCompanyInfoUrl'
   },
   {
-    containerStyleClass: 'footer__ivy-policy-tag',
     label: 'common.footer.privacyPolicy',
-    link: 'https://www.axonivy.com/privacy-policy'
+    link: 'common.footer.privacyPolicyUrl'
+  },
+  {
+    label: 'common.footer.legalNotice',
+    link: 'common.footer.legalNoticeUrl'
   },
 ];
 

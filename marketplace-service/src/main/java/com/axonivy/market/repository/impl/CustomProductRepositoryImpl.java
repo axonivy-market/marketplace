@@ -10,7 +10,7 @@ import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.repository.BaseRepository;
+import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -18,6 +18,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
@@ -30,15 +31,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
+import org.springframework.data.domain.Sort;
+
+@Log4j2
 @Builder
-public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
-  final ProductCustomSortRepository productCustomSortRepo;
-  final ProductModuleContentRepository contentRepository;
+public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product> implements CustomProductRepository {
+  private final ProductCustomSortRepository productCustomSortRepo;
+  private final ProductModuleContentRepository contentRepository;
 
   public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
       ProductModuleContentRepository contentRepository) {
@@ -48,7 +53,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   @Override
   public Product getProductByIdAndVersion(String id, String version) {
-    Product result = findProductByIdAndRelatedData(id);
+    var result = findProductByIdAndRelatedData(id);
     if (!Objects.isNull(result)) {
       ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
       if (content != null) {
@@ -71,6 +76,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     try {
       return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
+      log.error("Cannot find product: ", e);
       return null;
     }
   }
@@ -85,22 +91,25 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
     CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
-    PageRequest pageRequest = (PageRequest) pageable;
+    var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(criteriaContext.builder(),
-        searchCriteria);
+
+    long total = resultList.size();
+    if (resultList.size() >= pageable.getPageSize()) {
+      total = getTotalCount(criteriaContext.builder(), searchCriteria);
+    }
 
     return new PageImpl<>(resultList, pageable, total);
   }
 
   private List<Order> sortByOrders(
-          CriteriaQueryContext<Product> criteriaContext,
+      CriteriaQueryContext<Product> criteriaContext,
       PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
-      pageRequest.getSort().stream().findFirst().ifPresent(order -> {
-        SortOption sortOption = SortOption.of(order.getProperty());
+      pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
+        var sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
           case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
@@ -109,20 +118,23 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
         }
       });
     }
-    orders.add(sortById(criteriaContext)); // Always sort by ID as a fallback
+
+    // Always sort by ID as a fallback
+    orders.add(sortById(criteriaContext));
     return orders;
   }
 
   private List<Order> sortByStandard(
-          CriteriaQueryContext<Product> criteriaContext, String language
+      CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
     List<Order> orders = new ArrayList<>();
-    Order order = criteriaContext.builder().desc(
-            criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
+    var order = criteriaContext.builder().desc(
+        criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER),
+            Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
-      SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      var sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
       switch (sortOptionExtension) {
         case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
         case RECENT -> orders.add(sortByRecent(criteriaContext));
@@ -132,16 +144,16 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return orders;
   }
 
-  private Order sortByPopularity(
-          CriteriaQueryContext<Product> criteriaContext) {
+  private static Order sortByPopularity(
+      CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(INSTALLATION_COUNT));
   }
 
-  private Order sortByAlphabet(
-          CriteriaQueryContext<Product> criteriaContext, String language
+  private static Order sortByAlphabet(
+      CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
     Expression<Object> nameValue = criteriaContext.builder().coalesce(
-            criteriaContext.builder().selectCase()
+        criteriaContext.builder().selectCase()
             .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
             .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
     );
@@ -150,11 +162,11 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return criteriaContext.builder().asc(nameValue);
   }
 
-  private Order sortById(CriteriaQueryContext<Product> criteriaContext) {
+  private static Order sortById(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().asc(criteriaContext.root().get(ID));
   }
 
-  private Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
+  private static Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(
         criteriaContext.builder().coalesce(criteriaContext.root().get(FIRST_PUBLISHED_DATE),
             criteriaContext.builder().literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
@@ -164,16 +176,20 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<Product> countRoot = countQuery.from(Product.class);
     // Rebuild predicate for the count query using the new Root<Product>
-    Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
+    var countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
     countQuery.select(cb.countDistinct(countRoot)).where(countPredicate);
     return getEntityManager().createQuery(countQuery).getSingleResult();
   }
 
   private List<Product> getPagedProductsByCriteria(
-          CriteriaQueryContext<Product> criteriaContext,
+      CriteriaQueryContext<Product> criteriaContext,
       ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
-    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
-    Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
+    var language = Language.EN;
+    if (searchCriteria.getLanguage() != null) {
+      language = searchCriteria.getLanguage();
+    }
+
+    var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
     criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
@@ -202,7 +218,10 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     criteriaContext.query().where(searchCriteria);
 
     List<Product> results = findByCriteria(criteriaContext);
-    return results.isEmpty() ? null : results.get(0);
+    if (results.isEmpty()) {
+      return null;
+    }
+    return results.get(0);
   }
 
   @Override
@@ -244,7 +263,11 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
     List<Predicate> filters = new ArrayList<>();
-    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
+    var language = Language.EN;
+    if (searchCriteria.getLanguage() != null) {
+      language = searchCriteria.getLanguage();
+    }
+
     List<DocumentField> filterProperties = new ArrayList<>(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
     if (ObjectUtils.isNotEmpty(searchCriteria.getFields())) {
       filterProperties.clear();
@@ -255,7 +278,8 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
           .anyMatch(excludeField -> excludeField.name().equals(field.name())));
     }
 
-    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(searchCriteria.getKeyword().toLowerCase());
+    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(
+        searchCriteria.getKeyword().toLowerCase(Locale.getDefault()));
     for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
         // Correctly join the Map<String, String> names collection
@@ -264,7 +288,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
         Path<String> languageKey = namesJoin.key();
         Path<String> nameValue = namesJoin.value();
         // Filter by language key
-        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
+        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase(Locale.getDefault()));
         // Apply keyword search on product names (value)
         Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
         // Combine conditions
@@ -273,7 +297,9 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
         filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
     }
-    return cb.or(filters.toArray(new Predicate[0])); // Return OR condition for broader match
+
+    // Return OR condition for broader match
+    return cb.or(filters.toArray(new Predicate[0]));
   }
 
   @Override

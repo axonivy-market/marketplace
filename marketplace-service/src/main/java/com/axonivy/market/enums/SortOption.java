@@ -20,7 +20,9 @@ public enum SortOption {
   private final Sort.Direction direction;
 
   public static SortOption of(String option) {
-    option = StringUtils.isBlank(option) ? option : option.trim();
+    if (StringUtils.isNotBlank(option)) {
+      option = option.trim();
+    }
     for (var sortOption : values()) {
       if (StringUtils.equalsIgnoreCase(sortOption.option, option)) {
         return sortOption;
@@ -30,7 +32,9 @@ public enum SortOption {
   }
 
   public String getCode(String language) {
-    return StringUtils.isNotBlank(language) && ALPHABETICALLY.option.equalsIgnoreCase(option) ? String.format("%s.%s",
-        ALPHABETICALLY.code, language) : code;
+    if (StringUtils.isNotBlank(language) && ALPHABETICALLY.option.equalsIgnoreCase(option)) {
+      return String.format("%s.%s", ALPHABETICALLY.code, language);
+    }
+    return code;
   }
 }

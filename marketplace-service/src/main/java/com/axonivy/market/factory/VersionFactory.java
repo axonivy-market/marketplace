@@ -12,31 +12,40 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
-  static final String PROJECT_VERSION = "${project.version}";
+  private static final String PROJECT_VERSION = "${project.version}";
   // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
-  static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
+  private static final Pattern RANGE_VERSION_PATTERN = Pattern.compile("[\\[\\]()]");
   // The arrays of all operators can appear in maven range version format
-  static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
+  private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[]{"(", "]", "[", ")"};
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
       return defaultVersion;
     }
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
-      var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, EMPTY);
-      String[] parts = plainVersions.split(CommonConstants.COMMA);
-      return parts.length > 1 ? parts[1].trim() : parts[0].trim();
+      return extractVersionFromRange(mavenVersion);
     }
     return defaultVersion;
+  }
+
+  private static String extractVersionFromRange(String mavenVersion) {
+    var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
+    String[] parts = plainVersions.split(CommonConstants.COMMA);
+    if (parts.length > CommonConstants.ONE) {
+      return parts[CommonConstants.ONE].trim();
+    }
+    return parts[CommonConstants.ZERO].trim();
   }
 
   public static String get(List<String> versions, String requestedVersion) {
@@ -63,7 +72,7 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
+  public static String getFromMetadata(Collection<Metadata> metadataList, String requestedVersion) {
     var version = DevelopmentVersion.of(requestedVersion);
 
     // Get latest dev version from metadata
@@ -81,24 +90,30 @@ public class VersionFactory {
       return releasedVersions.stream().min(new LatestVersionComparator()).orElse(EMPTY);
     }
 
-    // Get latest dev version from specific version
+    String result;
     if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
-      requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
-      return findVersionStartWith(artifactVersions, requestedVersion);
+      // Get latest dev version from specific version
+      String latestDevVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
+      result = findVersionStartWith(artifactVersions, latestDevVersion);
+    } else {
+      String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
+
+      // Return latest version of specific version if can not find latest release of that version
+      if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(requestedVersion))
+          && !CollectionUtils.containsInstance(releasedVersions, matchVersion)) {
+        result = findVersionStartWith(artifactVersions, requestedVersion);
+      } else {
+        result = matchVersion;
+      }
     }
 
-    String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
-
-    // Return latest version of specific version if can not fnd latest release of that version
-    if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(
-        requestedVersion)) && !CollectionUtils.containsInstance(releasedVersions, matchVersion)) {
-      return findVersionStartWith(artifactVersions, requestedVersion);
-    }
-    return matchVersion;
+    return result;
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    return CollectionUtils.isEmpty(releaseVersions) ? version : releaseVersions.stream().filter(
-        ver -> ver.startsWith(version)).findAny().orElse(version);
+    if (CollectionUtils.isEmpty(releaseVersions)) {
+      return version;
+    }
+    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(version);
   }
 }

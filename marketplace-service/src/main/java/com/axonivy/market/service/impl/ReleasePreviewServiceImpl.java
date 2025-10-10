@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
 import com.axonivy.market.util.FileUtils;
@@ -18,8 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.PreviewConstants.IMAGE_DOWNLOAD_URL;
@@ -30,11 +31,13 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 @AllArgsConstructor
 public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
+  private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
+
   @Override
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
       FileUtils.unzip(file, PREVIEW_DIR);
-    } catch (IOException e){
+    } catch (IOException e) {
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
       return null;
     }
@@ -65,14 +68,17 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       String readmeContents, String baseUrl) {
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
-      List<Path> allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
-          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+      List<Path> allImagePaths = imagePathStream
+          .filter(Files::isRegularFile)
+          .filter(path -> IMAGE_EXTENSION_PATTERN.matcher(
+              path.getFileName().toString().toLowerCase(Locale.getDefault())).matches())
+          .toList();
 
       allImagePaths.stream()
           .filter(Objects::nonNull)
-          .forEach(imagePath -> {
-            String imageFileName = imagePath.getFileName().toString();
-            String downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
+          .forEach((Path imagePath) -> {
+            var imageFileName = imagePath.getFileName().toString();
+            var downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
             imageUrls.put(imageFileName, downloadURLFormat);
           });
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
@@ -84,11 +90,11 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
       String baseUrl, String location) throws IOException {
-    String readmeContents = Files.readString(readmeFile);
+    var readmeContents = Files.readString(readmeFile);
     if (ProductContentUtils.hasImageDirectives(readmeContents)) {
       readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
     }
-    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
     ProductContentUtils.mappingDescriptionSetupAndDemo(
         moduleContents,
         readmeFile.getFileName().toString(),

@@ -12,6 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class VersionAndUrlModel {
-  String version;
-  String url;
+  private String version;
+  private String url;
 }

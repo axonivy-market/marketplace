@@ -27,8 +27,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -51,12 +53,13 @@ public class MavenUtils {
       return extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
       log.error("Can not get maven artifacts from Product.json of {}", productJson);
+      log.error(e);
       return new ArrayList<>();
     }
   }
 
   public static Artifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
-    Artifact artifact = new Artifact();
+    var artifact = new Artifact();
     artifact.setRepoUrl(repoUrl);
     artifact.setIsDependency(isDependency);
     artifact.setGroupId(getTextValueFromNodeAndPath(node, ProductJsonConstants.GROUP_ID));
@@ -67,10 +70,14 @@ public class MavenUtils {
   }
 
   private static String getTextValueFromNodeAndPath(JsonNode node, String path) {
-    return Objects.isNull(node.path(path)) ? StringUtils.EMPTY : node.path(path).asText();
+    if (Objects.isNull(node.path(path))) {
+      return StringUtils.EMPTY;
+    }
+    return node.path(path).asText();
   }
 
-  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<Artifact> artifacts,
+  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency,
+      Collection<Artifact> artifacts,
       String repoUrl) {
     String nodeName = ProductJsonConstants.PROJECTS;
     if (isDependency) {
@@ -78,13 +85,13 @@ public class MavenUtils {
     }
     JsonNode dependenciesNode = dataNode.path(nodeName);
     for (JsonNode dependencyNode : dependenciesNode) {
-      Artifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
+      var artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
       artifacts.add(artifact);
     }
   }
 
   public static List<Artifact> convertProductJsonToMavenProductInfo(Path folderPath) throws IOException {
-    Path productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
+    var productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
 
     if (!(Files.exists(productJsonPath) && Files.isRegularFile(productJsonPath))) {
       log.warn("product.json file not found in the folder: {}", folderPath);
@@ -99,10 +106,15 @@ public class MavenUtils {
   }
 
   public static InputStream extractedContentStream(Path filePath) {
+    if (filePath == null) {
+      log.warn("Invalid file path");
+      return null;
+    }
     try {
       return Files.newInputStream(filePath);
-    } catch (IOException | NullPointerException e) {
-      log.warn("Cannot read the current file: {}", e.getMessage());
+    } catch (IOException e) {
+      log.error("Cannot read the current file: {}", e.getMessage());
+      log.error(e);
       return null;
     }
   }
@@ -149,6 +161,7 @@ public class MavenUtils {
       return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
     } catch (Exception e) {
       log.error("Cannot extract product.json file {}", filePath);
+      log.error(e);
       return null;
     }
   }
@@ -157,7 +170,7 @@ public class MavenUtils {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
     String repoUrl = StringUtils.defaultIfBlank(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
-    ArchivedArtifact archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(version,
+    var archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(version,
         artifact.getArchivedArtifacts());
 
     if (Objects.nonNull(archivedArtifactBestMatchVersion)) {
@@ -175,7 +188,7 @@ public class MavenUtils {
     if (StringUtils.isBlank(version)) {
       version = baseVersion;
     }
-    String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
+    var artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
 
@@ -219,8 +232,14 @@ public class MavenUtils {
       ArchivedArtifact archivedArtifact) {
     String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
         convertArtifactIdToName(artifact.getArtifactId()));
-    String artifactId = Objects.isNull(archivedArtifact) ? artifact.getArtifactId() : archivedArtifact.getArtifactId();
-    String groupId = Objects.isNull(archivedArtifact) ? artifact.getGroupId() : archivedArtifact.getGroupId();
+
+    var artifactId = artifact.getArtifactId();
+    var groupId = artifact.getGroupId();
+    if (Objects.nonNull(archivedArtifact)) {
+      artifactId = archivedArtifact.getArtifactId();
+      groupId = archivedArtifact.getGroupId();
+    }
+
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     String repoUrl = StringUtils.defaultIfEmpty(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
@@ -235,8 +254,9 @@ public class MavenUtils {
       return StringUtils.EMPTY;
     }
     return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
-            .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-            .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
+        .map(part -> part.substring(0, 1).toUpperCase(Locale.getDefault()) + part.substring(1).toLowerCase(
+            Locale.getDefault()))
+        .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
@@ -274,7 +294,7 @@ public class MavenUtils {
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifacts)) {
-      artifacts.forEach(artifact -> {
+      artifacts.forEach((Artifact artifact) -> {
         String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
             artifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
@@ -287,7 +307,7 @@ public class MavenUtils {
   public static Set<Metadata> extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
-      artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
+      artifact.getArchivedArtifacts().forEach((ArchivedArtifact archivedArtifact) -> {
         String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
             archivedArtifact.getGroupId(), archivedArtifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl, archivedArtifact));
@@ -316,7 +336,7 @@ public class MavenUtils {
   }
 
   public static final String getDefaultMirrorMavenRepo(String repoUrl) {
-    if(StringUtils.isBlank(repoUrl) || StringUtils.equals(DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
       return DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;

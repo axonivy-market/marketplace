@@ -463,4 +463,31 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedArtifactName).toEqual('');
     expect(component.selectedArtifact).toEqual('');
   });
+
+  it('should update selectedArtifact values when existingArtifact is found', () => {
+    const version = '1.0.0';
+    const mockArtifacts = [
+      {
+        id: { artifactId: '123' },
+        name: 'artifact-A',
+        downloadUrl: 'http://example.com/a'
+      } as ItemDropdown,
+      {
+        id: { artifactId: '456' },
+        name: 'artifact-B',
+        downloadUrl: 'http://example.com/b'
+      } as ItemDropdown
+    ];
+
+    component.artifacts.set(mockArtifacts);
+    component.selectedArtifactName = 'artifact-B';
+
+    spyOn(component, 'addVersionParamToRoute');
+    component['updateSelectedArtifact'](version);
+
+    expect(component.selectedArtifactId).toBe('456');
+    expect(component.selectedArtifactName).toBe('artifact-B');
+    expect(component.selectedArtifact).toBe('http://example.com/b');
+    expect(component.addVersionParamToRoute).toHaveBeenCalledWith(version);
+  });
 });

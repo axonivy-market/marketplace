@@ -7,6 +7,7 @@ import { ProductFilterComponent } from './product-filter.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
+import { SimpleChanges } from '@angular/core';
 
 declare const viewport: Viewport;
 
@@ -224,6 +225,47 @@ describe('ProductFilterComponent', () => {
     );
 
     expect(clearSearchTextButton).toBeTruthy();
+  });
+
+  describe('ngOnChanges()', () => {
+    it('should NOT update searchText when initialSearchText changes but searchText already has value', () => {
+      spyOn(component, 'onSearchChanged');
+      component.searchText = 'existing-search';
+      component.initialSearchText = '';
+
+      const changes = {
+        initialSearchText: {
+          currentValue: 'test-search',
+          previousValue: '',
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      };
+
+      component.ngOnChanges(changes);
+
+      expect(component.searchText).toBe('existing-search');
+      expect(component.onSearchChanged).not.toHaveBeenCalled();
+    });
+
+    it('should NOT update searchText when initialSearchText is empty', () => {
+      spyOn(component, 'onSearchChanged');
+      component.searchText = '';
+
+      const changes = {
+        initialSearchText: {
+          currentValue: '',
+          previousValue: 'old-search',
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      };
+
+      component.ngOnChanges(changes);
+
+      expect(component.searchText).toBe('');
+      expect(component.onSearchChanged).not.toHaveBeenCalled();
+    });
   });
 
   describe('onClearSearch()', () => {

@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Converter
-public class StringListConverter extends CollectionConverter<List<String>> {
+public class StringListConverter extends AbstractCollectionConverter<List<String>> {
 
   @Override
   protected List<String> createCollection(Collection<String> elements) {

@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @MappedSuperclass
-public abstract class GenericEntity<T> implements Serializable {
+public abstract class AbstractGenericEntity<T> implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;

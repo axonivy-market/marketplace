@@ -37,23 +37,30 @@ class MetadataReaderUtilsTest extends BaseSetup {
     LocalDateTime expectedLastUpdated = LocalDateTime.parse("20230924010101",
         DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT));
 
-    assertEquals(MOCK_SPRINT_RELEASED_VERSION, modifiedMetadata.getLatest());
-    assertEquals(MOCK_RELEASED_VERSION, modifiedMetadata.getRelease());
-    assertEquals(expectedLastUpdated, modifiedMetadata.getLastUpdated());
+    assertEquals(MOCK_SPRINT_RELEASED_VERSION, modifiedMetadata.getLatest(),
+        "Metadata latest version should match sprint released version");
+    assertEquals(MOCK_RELEASED_VERSION, modifiedMetadata.getRelease(),
+        "Metadata released should match released version");
+    assertEquals(expectedLastUpdated, modifiedMetadata.getLastUpdated(),
+        "Metadata last updated date should match expected last updated date");
   }
 
   @Test
   void testUpdateMetadataFromInvalidSnapshotMavenXML() {
     MetadataReaderUtils.updateMetadataFromMavenXML(INVALID_METADATA, metadata, true);
-    Assertions.assertNull(metadata.getLatest());
-    Assertions.assertNull(metadata.getRelease());
-    Assertions.assertNull(metadata.getLastUpdated());
+    Assertions.assertNull(metadata.getLatest(),
+        "Metadata latest version should be null if metadata is invalid");
+    Assertions.assertNull(metadata.getRelease(),
+        "Metadata release should be null if metadata is invalid");
+    Assertions.assertNull(metadata.getLastUpdated(),
+        "Metadata last updated date should be null if metadata is invalid");
   }
 
   @Test
   void testUpdateMetadataFromSnapshotXml() {
     MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapShotMetadataContent(), metadata, true);
-    assertEquals("12.0.2-20250224.083844-2", metadata.getSnapshotVersionValue());
+    assertEquals("12.0.2-20250224.083844-2", metadata.getSnapshotVersionValue(),
+        "Metadata snapshot version should be match input");
   }
 
   @Test
@@ -72,7 +79,8 @@ class MetadataReaderUtilsTest extends BaseSetup {
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(mockMetadataUrl)).thenReturn(
           getMockSnapShotMetadataContent());
       String snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(MOCK_SNAPSHOT_VERSION, mockArtifact);
-      assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue);
+      assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue,
+          "Metadata snapshot version should be match input");
     }
   }
 }

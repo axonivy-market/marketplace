@@ -4,7 +4,6 @@ import com.axonivy.market.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.DASH_SEPARATOR;
@@ -12,11 +11,13 @@ import static com.axonivy.market.constants.MavenConstants.MAIN_VERSION_REGEX;
 import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-public class MavenVersionComparator {
-
+public final class MavenVersionComparator {
+  private static final Pattern DIGIT_REGEX_PATTERN = Pattern.compile(CommonConstants.DIGIT_REGEX);
+  private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final int GREATER_THAN = 1;
   private static final int EQUAL = 0;
   private static final int LESS_THAN = -1;
+  private static final int MAIN_QUALIFIER_PARTS = 2;
 
   private MavenVersionComparator() {
   }
@@ -32,23 +33,27 @@ public class MavenVersionComparator {
     if (mainComparison != EQUAL) {
       return mainComparison;
     }
+    return compareByQualifierPresence(versionParts, otherVersionParts);
+  }
 
+  private static int compareByQualifierPresence(String[] versionParts, String[] otherVersionParts) {
+    int result;
     // Compare qualifiers
     String qualifier1 = getQualifierPart(versionParts);
     String qualifier2 = getQualifierPart(otherVersionParts);
     // Consider versions without a qualifier higher than those with qualifiers
     if (qualifier1.isEmpty() && !qualifier2.isEmpty()) {
-      return GREATER_THAN;
+      result = GREATER_THAN;
+    } else if (!qualifier1.isEmpty() && qualifier2.isEmpty()) {
+      result = LESS_THAN;
+    } else {
+      result = compareQualifier(qualifier1, qualifier2);
     }
-    if (!qualifier1.isEmpty() && qualifier2.isEmpty()) {
-      return LESS_THAN;
-    }
-    return compareQualifier(qualifier1, qualifier2);
+    return result;
   }
 
   private static String stripLeadingChars(String version) {
-    Pattern pattern = Pattern.compile(CommonConstants.DIGIT_REGEX);
-    Matcher matcher = pattern.matcher(version);
+    var matcher = DIGIT_REGEX_PATTERN.matcher(version);
     if (matcher.find()) {
       return matcher.group(1);
     }
@@ -56,11 +61,11 @@ public class MavenVersionComparator {
   }
 
   private static int compareMainVersion(String mainVersion, String otherMainVersion) {
-    String[] parts1 = mainVersion.split(MAIN_VERSION_REGEX);
-    String[] parts2 = otherMainVersion.split(MAIN_VERSION_REGEX);
+    String[] parts1 = MAIN_VERSION_PATTERN.split(mainVersion);
+    String[] parts2 = MAIN_VERSION_PATTERN.split(otherMainVersion);
 
     int length = Math.max(parts1.length, parts2.length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       int num1 = parseToNumber(parts1, i);
       int num2 = parseToNumber(parts2, i);
       if (num1 != num2) {
@@ -71,11 +76,15 @@ public class MavenVersionComparator {
   }
 
   private static String getQualifierPart(String[] versionParts) {
-    return versionParts.length > 1 ? versionParts[1] : EMPTY;
+    if (versionParts.length > 1 && versionParts[1] != null) {
+      return versionParts[1];
+    } else {
+      return EMPTY;
+    }
   }
 
   private static String[] createMainAndQualifierArray(String version) {
-    return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, 2);
+    return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, MAIN_QUALIFIER_PARTS);
   }
 
   private static int parseToNumber(String[] versionParts, int index) {

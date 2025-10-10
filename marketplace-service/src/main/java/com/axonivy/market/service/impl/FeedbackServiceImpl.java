@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackSortOption;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,11 +36,13 @@ import java.util.stream.IntStream;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
-
+  private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
+  private static final int MIN_STAR = 1;
+  private static final int MAX_STAR = 5;
+  private static final int MAX_PERCENT = 100;
   private final FeedbackRepository feedbackRepository;
   private final GithubUserRepository githubUserRepository;
   private final ProductRepository productRepository;
-  private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, GithubUserRepository githubUserRepository,
       ProductRepository productRepository) {
@@ -51,32 +55,39 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
     List<Feedback> feedbacks = results.getContent().stream()
-        .map(result -> {
-          Feedback feedback = Feedback.builder()
-              .userId(result.getUserId())
-              .productId(result.getProductId())
-              .content(result.getContent())
-              .rating(result.getRating())
-              .feedbackStatus(result.getFeedbackStatus())
-              .moderatorName(result.getModeratorName())
-              .reviewDate(result.getReviewDate())
-              .version(result.getVersion())
-              .productNames(result.getProductNames())  // Convert JSON to Map
-              .build();
-
-          feedback.setId(result.getId());
-          feedback.setCreatedAt(result.getCreatedAt());
-          feedback.setUpdatedAt(result.getUpdatedAt());
-
-          return feedback;
-        }).toList();
+        .map(FeedbackServiceImpl::mapToFeedback)
+        .toList();
     return new PageImpl<>(feedbacks, pageable, results.getTotalElements());
+  }
+
+  private static Feedback mapToFeedback(FeedbackProjection feedbackProjection) {
+    var feedback = Feedback.builder()
+        .userId(feedbackProjection.getUserId())
+        .productId(feedbackProjection.getProductId())
+        .content(feedbackProjection.getContent())
+        .rating(feedbackProjection.getRating())
+        .feedbackStatus(feedbackProjection.getFeedbackStatus())
+        .moderatorName(feedbackProjection.getModeratorName())
+        .reviewDate(feedbackProjection.getReviewDate())
+        .version(feedbackProjection.getVersion())
+        .productNames(feedbackProjection.getProductNames())
+        .build();
+
+    feedback.setId(feedbackProjection.getId());
+    feedback.setCreatedAt(feedbackProjection.getCreatedAt());
+    feedback.setUpdatedAt(feedbackProjection.getUpdatedAt());
+
+    return feedback;
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    Pageable refinedPageable = pageable != null ? refinePagination(pageable) : PageRequest.of(0, 10);
+    Pageable refinedPageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_10);
+    if (pageable != null) {
+      refinedPageable = refinePagination(pageable);
+    }
+
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinedPageable);
     return new PageImpl<>(feedbacks, refinedPageable, feedbacks.size());
@@ -109,29 +120,38 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
-        .map(existingFeedback -> {
-          boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
-          FeedbackStatus newStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
-          if (isApproved) {
-            List<Feedback> approvedLatestFeedbacks = feedbackRepository
-                .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
-                    feedbackApproval.getUserId(), List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
-
-            if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
-              Feedback currentLatest = approvedLatestFeedbacks.get(0);
-              currentLatest.setIsLatest(null);
-              feedbackRepository.save(currentLatest);
-            }
-          }
-          existingFeedback.setFeedbackStatus(newStatus);
-          existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
-          existingFeedback.setReviewDate(new Date());
-          existingFeedback.setIsLatest(isApproved ? true : null);
+        .map((Feedback existingFeedback) -> {
+          applyUpdatesToFeedback(feedbackApproval, existingFeedback);
 
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
             String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         ));
+  }
+
+  private void applyUpdatesToFeedback(FeedbackApprovalModel feedbackApproval, Feedback existingFeedback) {
+    boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
+    var newStatus = FeedbackStatus.REJECTED;
+    if (isApproved) {
+      newStatus = FeedbackStatus.APPROVED;
+      List<Feedback> approvedLatestFeedbacks = feedbackRepository
+          .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
+              feedbackApproval.getUserId(), List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
+
+      if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
+        var currentLatest = approvedLatestFeedbacks.get(0);
+        currentLatest.setIsLatest(null);
+        feedbackRepository.save(currentLatest);
+      }
+    }
+    existingFeedback.setFeedbackStatus(newStatus);
+    existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
+    existingFeedback.setReviewDate(LocalDateTime.now());
+    if (isApproved) {
+      existingFeedback.setIsLatest(true);
+    } else {
+      existingFeedback.setIsLatest(null);
+    }
   }
 
   @Override
@@ -140,11 +160,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING)
+    var pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING)
         .stream().findFirst().orElse(null);
     List<Feedback> approvedFeedbacks = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
 
-    Feedback matchingApprovedFeedback = getMatchingApprovedFeedback(approvedFeedbacks, feedback);
+    var matchingApprovedFeedback = getMatchingApprovedFeedback(approvedFeedbacks, feedback);
     if (matchingApprovedFeedback != null) {
       if (pendingFeedback != null) {
         feedbackRepository.delete(pendingFeedback);
@@ -167,7 +187,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private Feedback getMatchingApprovedFeedback(List<Feedback> approvedFeedbacks, FeedbackModelRequest feedback) {
+  private static Feedback getMatchingApprovedFeedback(List<Feedback> approvedFeedbacks, FeedbackModelRequest feedback) {
     return approvedFeedbacks.stream()
         .filter(existing ->
             existing.getContent().trim().equalsIgnoreCase(feedback.getContent().trim()) &&
@@ -176,9 +196,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         .orElse(null);
   }
 
-  private List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
+  private static List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
     return feedbacks.stream()
-        .filter(feedback -> {
+        .filter((Feedback feedback) -> {
           if (FeedbackStatus.APPROVED == feedbackStatus) {
             return feedbackStatus == feedback.getFeedbackStatus() || feedback.getFeedbackStatus() == null;
           }
@@ -207,15 +227,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
-      return IntStream.rangeClosed(1, 5).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
+      return IntStream.rangeClosed(MIN_STAR, MAX_STAR).mapToObj(star -> new ProductRating(star, 0, 0)).toList();
     }
 
     Map<Integer, Long> ratingCountMap = feedbacks.stream()
         .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
 
-    return IntStream.rangeClosed(1, 5).mapToObj(star -> {
+    return IntStream.rangeClosed(MIN_STAR, MAX_STAR).mapToObj((int star) -> {
       long count = ratingCountMap.getOrDefault(star, 0L);
-      int percent = (int) ((count * 100) / totalFeedbacks);
+      int percent = (int) ((count * MAX_PERCENT) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);
     }).toList();
   }
@@ -233,11 +253,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   private Pageable refinePagination(Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
+    var pageRequest = (PageRequest) pageable;
     if (pageable != null) {
       List<Sort.Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
-        FeedbackSortOption feedbackSortOption = FeedbackSortOption.of(sort.getProperty());
+        var feedbackSortOption = FeedbackSortOption.of(sort.getProperty());
         List<Sort.Order> order = createOrder(feedbackSortOption);
         orders.addAll(order);
       }

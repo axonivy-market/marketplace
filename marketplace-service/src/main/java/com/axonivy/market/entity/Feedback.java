@@ -14,7 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.io.Serial;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
@@ -28,6 +29,9 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 @Table(name = FEEDBACK)
 public class Feedback extends AuditableIdEntity {
 
+  @Serial
+  private static final long serialVersionUID = 1;
+
   private String userId;
   private String productId;
   @Transient
@@ -38,12 +42,16 @@ public class Feedback extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private FeedbackStatus feedbackStatus;
   private String moderatorName;
-  private Date reviewDate;
+  private LocalDateTime reviewDate;
   @Version
   private Integer version;
   private Boolean isLatest;
 
   public void setContent(String content) {
-    this.content = content != null ? content.trim() : null;
+    if (content != null) {
+      this.content = content.trim();
+    } else {
+      this.content = null;
+    }
   }
 }

@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,9 @@ import java.util.Map;
 @Log4j2
 @RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
+
+  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -55,22 +59,25 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
     SortOption.of(customSort.getRuleForRemainder());
 
-    ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
+    var productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
     productCustomSortRepo.deleteAll();
     productMarketplaceDataRepo.resetCustomOrderForAllProducts();
     productCustomSortRepo.save(productCustomSort);
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts) {
+  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(
+      Collection<String> orderedListOfProducts) {
     List<ProductMarketplaceData> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
     for (String productId : orderedListOfProducts) {
       validateProductExists(productId);
-      ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+      var productMarketplaceData = getProductMarketplaceData(productId);
 
-      productMarketplaceData.setCustomOrder(descendingOrder--);
+      int currentOrder = descendingOrder;
+      descendingOrder--;
+      productMarketplaceData.setCustomOrder(currentOrder);
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
@@ -79,7 +86,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public int updateInstallationCountForProduct(String productId, String designerVersion) {
     validateProductExists(productId);
-    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+    var productMarketplaceData = getProductMarketplaceData(productId);
 
     log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
@@ -96,14 +103,18 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
     log.info("synchronizing installation count for product {}", productId);
-    int result = 0;
+    var result = 0;
     try {
-      String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
+      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      result = keyList.contains(productId) ? mapping.get(productId) : random.nextInt(20, 50);
+      if (keyList.contains(productId)) {
+        result = mapping.get(productId);
+      } else {
+        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
+      }
       log.info("synchronized installation count for product {} successfully", productId);
     } catch (IOException ex) {
       log.error("Could not read the marketplace-installation file to synchronize", ex);
@@ -113,7 +124,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public int updateProductInstallationCount(String id) {
-    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(id);
+    var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
       return productMarketplaceDataRepo.updateInitialCount(id,
           getInstallationCountFromFileOrInitializeRandomly(id));
@@ -138,7 +149,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
         version);
-    if(CollectionUtils.isEmpty(mavenArtifactVersions)) {
+    if (CollectionUtils.isEmpty(mavenArtifactVersions)) {
       return null;
     }
     String downloadUrl = mavenArtifactVersions.get(0).getDownloadUrl();

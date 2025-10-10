@@ -9,16 +9,16 @@ import org.apache.logging.log4j.util.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-public class ImageUtils {
-  public static final String IMAGE_ID_FORMAT_PATTERN = "imageId-\\w+";
-  private static final Pattern PATTERN = Pattern.compile(IMAGE_ID_FORMAT_PATTERN);
+public final class ImageUtils {
+  public static final String IMAGE_ID_FORMAT_REGEX = "imageId-\\w+";
+  private static final Pattern IMAGE_ID_FORMAT_PATTERN = Pattern.compile(IMAGE_ID_FORMAT_REGEX,
+      Pattern.UNICODE_CHARACTER_CLASS);
 
   private ImageUtils() {
   }
@@ -38,25 +38,31 @@ public class ImageUtils {
     if (ObjectUtils.isEmpty(content)) {
       return;
     }
-    content.forEach((key, value) -> {
+    content.forEach((String key, String value) -> {
       List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
-        String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
-        String imageLink;
-        if (isProduction) {
-          imageLink = createImageUrlForProduction(rawId);
-        } else {
-          imageLink = createImageUrl(rawId);
-        }
-        value = value.replace(imageId, imageLink);
+        value = replaceImageIdWithImageLink(isProduction, value, imageId);
       }
       content.put(key, value);
     });
   }
 
+  private static String replaceImageIdWithImageLink(boolean isProduction, String value, String imageId) {
+    var rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
+    String imageLink;
+    if (isProduction) {
+      imageLink = createImageUrlForProduction(rawId);
+    } else {
+      imageLink = createImageUrl(rawId);
+    }
+    value = value.replace(imageId, imageLink);
+    return value;
+  }
+
+
   private static List<String> extractAllImageIds(String content) {
     List<String> result = new ArrayList<>();
-    Matcher matcher = PATTERN.matcher(content);
+    var matcher = IMAGE_ID_FORMAT_PATTERN.matcher(content);
     while (matcher.find()) {
       var foundImgTag = matcher.group();
       result.add(foundImgTag);

@@ -24,7 +24,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
 
   @Override
   public FeedbackModel toModel(Feedback feedback) {
-    FeedbackModel resource = new FeedbackModel();
+    var resource = new FeedbackModel();
     return createResource(resource, feedback);
   }
 
@@ -39,12 +39,16 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     try {
       githubUser = githubUserService.findUser(feedback.getUserId());
     } catch (NotFoundException e) {
-      log.warn(e.getMessage());
+      log.warn("Github user not found", e);
       githubUser = new GithubUser();
     }
     model.setId(feedback.getId());
     model.setUserId(githubUser.getId());
-    model.setUsername(StringUtils.isBlank(githubUser.getName()) ? githubUser.getUsername() : githubUser.getName());
+    if (StringUtils.isBlank(githubUser.getName())) {
+      model.setUsername(githubUser.getUsername());
+    } else {
+      model.setUsername(githubUser.getName());
+    }
     model.setUserAvatarUrl(githubUser.getAvatarUrl());
     model.setUserProvider(githubUser.getProvider());
     model.setProductId(feedback.getProductId());

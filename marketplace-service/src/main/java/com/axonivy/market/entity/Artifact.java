@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Transient;
 
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Set;
 
@@ -25,6 +26,10 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 @Entity
 @Table(name = ARTIFACT)
 public class Artifact extends GenericIdEntity {
+
+  @Serial
+  private static final long serialVersionUID = 1;
+
   private String repoUrl;
   private String name;
   private String groupId;

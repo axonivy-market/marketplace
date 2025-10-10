@@ -4,9 +4,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,8 +32,8 @@ public class FileUtils {
   private static final String ENTRY_OUTSIDE_TARGET_DIR = "entry is outside the target dir";
 
   public static File createFile(String fileName) throws IOException {
-    File file = new File(fileName);
-    File parentDir = file.getParentFile();
+    var file = new File(fileName);
+    var parentDir = file.getParentFile();
     createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
       throw new IOException("Failed to create file: " + file.getAbsolutePath());
@@ -42,7 +42,7 @@ public class FileUtils {
   }
 
   public static void writeToFile(File file, String content) throws IOException {
-    try (FileWriter writer = new FileWriter(file, false)) {
+    try (var writer = new FileWriter(file, false)) {
       writer.write(content);
     }
   }
@@ -96,7 +96,7 @@ public class FileUtils {
   }
 
   // Common method to extract .zip file
-  public static void unzip(MultipartFile file, String location) throws IOException {
+  public static void unzip(InputStreamSource file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 

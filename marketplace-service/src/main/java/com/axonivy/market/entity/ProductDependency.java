@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
@@ -23,6 +24,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 @Entity
 @Table(name = PRODUCT_DEPENDENCY)
 public class ProductDependency extends AuditableIdEntity {
+  @Serial
+  private static final long serialVersionUID = 1;
+
   private String productId;
   private String artifactId;
   private String version;

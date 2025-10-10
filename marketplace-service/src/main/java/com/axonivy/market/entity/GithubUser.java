@@ -10,12 +10,17 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import static com.axonivy.market.constants.EntityConstants.GITHUB_USER;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = GITHUB_USER)
 public class GithubUser extends GenericIdEntity {
+
+  @Serial
+  private static final long serialVersionUID = 1;
 
   private String gitHubId;
   private String provider;
