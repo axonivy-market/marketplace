@@ -13,10 +13,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -58,10 +61,10 @@ public class VersionFactory {
     // Get latest released version if requested version is 'latest'
     if (version == DevelopmentVersion.LATEST) {
       return sortedVersions.stream().filter(VersionUtils::isReleasedVersion)
-              .findFirst().orElse(null);
+          .findFirst().orElse(null);
     }
 
-    if (version != null) {
+    if (version != null && !sortedVersions.isEmpty()) {
       return sortedVersions.get(0);
     }
 
@@ -70,6 +73,25 @@ public class VersionFactory {
       requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
     }
     return findVersionStartWith(sortedVersions, requestedVersion);
+  }
+
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion,
+      List<String> majorVersions) {
+    String bestMatchVersion = get(versions, requestedVersion);
+    Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
+    return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
+  }
+
+  public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions,
+      List<String> majorVersions) {
+    return majorVersions.stream().map(version -> Map.entry(VersionFactory.get(versions, version), version))
+        .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (a, b) -> a,
+            LinkedHashMap::new
+        ));
   }
 
   public static String getFromMetadata(Collection<Metadata> metadataList, String requestedVersion) {
@@ -114,6 +136,6 @@ public class VersionFactory {
     if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
     }
-    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(version);
+    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(StringUtils.EMPTY);
   }
 }

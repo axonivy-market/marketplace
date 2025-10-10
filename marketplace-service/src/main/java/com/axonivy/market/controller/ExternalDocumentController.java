@@ -63,8 +63,6 @@ public class ExternalDocumentController {
 
   @GetMapping(DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
-    log.info("#redirectToBestVersion Redirect to best match version for path: {}", path);
-
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
     String version = DocPathUtils.extractVersion(path);
     String productId = DocPathUtils.extractProductId(path);
@@ -76,13 +74,13 @@ public class ExternalDocumentController {
       var resolvedPath = DocPathUtils.resolveDocPath(updatedPath);
 
       if (resolvedPath == null || !Files.exists(resolvedPath)) {
-        log.warn("#redirectToBestVersionThe Document is not exist, redirect to 404.");
+        log.warn("#redirectToBestVersion The Document is not exist, redirect to 404.");
         return response.location(URI.create(ERROR_PAGE_404)).build();
       }
 
       return response.location(URI.create(CommonConstants.SLASH + DirectoryConstants.CACHE_DIR + updatedPath)).build();
     }
-    log.warn("#redirectToBestVersionThe Path is invalid {}, redirect to 404.", path);
+    log.warn("#redirectToBestVersion The Path is invalid {}, redirect to 404.", path);
     return response.location(URI.create(ERROR_PAGE_404)).build();
   }
 
@@ -119,4 +117,5 @@ public class ExternalDocumentController {
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
+
 }
