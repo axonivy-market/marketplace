@@ -99,9 +99,12 @@ export class ProductFilterComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     const searchTextChange = changes['initialSearchText'];
-    if (searchTextChange?.currentValue !== searchTextChange?.previousValue &&
-        this.initialSearchText && 
-        !this.searchText) {
+    // Update searchText only if the initialSearchText input has changed, 
+    // the new value is non-empty, and the current searchText is empty.
+    const shouldUpdateSearchText =
+      searchTextChange?.currentValue !== searchTextChange?.previousValue &&
+      this.initialSearchText && !this.searchText;
+    if (shouldUpdateSearchText) {
       this.searchText = this.initialSearchText;
       this.onSearchChanged(this.initialSearchText);
     }
