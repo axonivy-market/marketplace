@@ -44,7 +44,7 @@ public class TestResultsUtils {
   private static List<TestResults> mapCountsToResults(Map<String, Integer> counts, GithubRepo githubRepo) {
     List<TestResults> results = new ArrayList<>(
         Optional.ofNullable(githubRepo.getWorkflowInformation())
-            .orElse(Collections.emptyList())
+            .orElse(Collections.emptySet())
             .stream()
             .filter(info -> info.getWorkflowType() != null)
             .map(info -> buildInitialTestResults(info.getWorkflowType()))
