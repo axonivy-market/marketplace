@@ -91,10 +91,9 @@ public class ChatService {
   }
 
   private ChatCompletionsOptions getChatCompletionsOptions(String searchContext, String userMessage) {
-    String enhancedSystemPrompt = searchContext;
 
     List<ChatRequestMessage> chatMessages = Arrays.asList(
-        new ChatRequestSystemMessage(enhancedSystemPrompt),
+        new ChatRequestSystemMessage(searchContext),
         new ChatRequestUserMessage(userMessage)
     );
 
