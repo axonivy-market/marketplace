@@ -301,4 +301,61 @@ describe('MonitoringDashboardComponent', () => {
     expect(errorElement).toBeTruthy();
     expect(errorElement.nativeElement.textContent).toContain(errorMessage);
   });
+
+  describe('ngOnInit query parameter handling', () => {
+    let activatedRoute: ActivatedRoute;
+
+    beforeEach(() => {
+      activatedRoute = TestBed.inject(ActivatedRoute);
+    });
+
+    it('should set initialFilter when search query parameter is present', () => {
+      const searchValue = 'test-repo';
+      activatedRoute.queryParams = of({ search: searchValue });
+      
+      component.platformId = 'browser';
+      component.ngOnInit();
+
+      expect(component.initialFilter()).toBe(searchValue);
+    });
+
+    it('should set activeTab to STANDARD_TAB when search parameter is present', () => {
+      const searchValue = 'test-repo';
+      activatedRoute.queryParams = of({ search: searchValue });
+      
+      component.platformId = 'browser';
+      component.activeTab = FOCUSED_TAB;
+      component.ngOnInit();
+
+      expect(component.activeTab).toBe(STANDARD_TAB);
+    });
+
+    it('should set activeTab to STANDARD_TAB even when search parameter is empty string', () => {
+      activatedRoute.queryParams = of({ search: '' });
+      
+      component.platformId = 'browser';
+      component.activeTab = FOCUSED_TAB;
+      component.ngOnInit();
+
+      expect(component.activeTab).toBe(FOCUSED_TAB);
+    });
+
+    it('should not set initialFilter when search query parameter is missing', () => {
+      activatedRoute.queryParams = of({});
+      
+      component.platformId = 'browser';
+      component.ngOnInit();
+
+      expect(component.initialFilter()).toBe('');
+    });
+
+    it('should not set initialFilter when search query parameter is empty', () => {
+      activatedRoute.queryParams = of({ search: '' });
+      
+      component.platformId = 'browser';
+      component.ngOnInit();
+
+      expect(component.initialFilter()).toBe('');
+    });
+  });
 });

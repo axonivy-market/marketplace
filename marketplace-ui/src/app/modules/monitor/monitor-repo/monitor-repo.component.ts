@@ -54,6 +54,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   @Input() repositories: Repository[] = [];
   @Input() isStandardTab = false;
   @Input() tabKey!: string;
+  @Input() initialFilter = '';
   @Output() searchChange = new EventEmitter<string>();
 
   mode: Record<string, RepoMode> = {};
@@ -74,11 +75,17 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
+    
+    if (this.initialFilter) {
+      this.searchText = this.initialFilter;
+    }
   }
 
   ngOnChanges() {
     this.allRepositories = [...this.repositories];
-    this.applyFilter(this.searchText);
+    
+    const filterText = this.searchText || this.initialFilter;
+    this.applyFilter(filterText);
   }
 
   onSearchChanged(searchString: string) {
