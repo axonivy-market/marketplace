@@ -108,6 +108,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           sort: newSortParam
         };
         if (isParamChanged) {
+          this.criteria = {
+            ...this.criteria,
+            nextPageHref: '',
+          };
           this.loadProductItems(true);
         }
       });
