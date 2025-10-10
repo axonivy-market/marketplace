@@ -58,7 +58,8 @@ public class ChatService {
       - **Clarify user questions** if they are ambiguous.
       - Maintain a **friendly, concise, and helpful tone**.
       - If you don’t know something specific about a product, suggest checking the **Axon Ivy Marketplace** or **contacting the vendor**.
-      
+      - Avoid making up information. If unsure, admit it and guide the user to official resources.
+      - If question is unrelated to the marketplace, politely inform the user that you can only assist with marketplace-related inquiries.
       """;
 
   public String getChatResponse(String userMessage) {
