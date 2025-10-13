@@ -207,9 +207,9 @@ describe('ProductComponent', () => {
     });
   }));
 
-  it('setupIntersectionObserver should not trigger when init page', () => {
+  it('nextPageHref should be empty when page is initialized', () => {
     component.ngAfterViewInit();
-    expect(component.criteria.nextPageHref).toBeUndefined();
+    expect(component.criteria.nextPageHref).toEqual('');
   });
 
   it('should call loadProductItems when observerElement is intersecting and has more products', () => {
