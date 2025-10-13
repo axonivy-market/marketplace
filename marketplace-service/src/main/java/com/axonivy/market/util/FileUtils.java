@@ -177,4 +177,15 @@ public class FileUtils {
       zipOut.closeEntry();
     }
   }
+
+  public static void duplicateFolder(Path oldPath, Path newPath) {
+    try {
+      if (Files.exists(newPath)) {
+        clearDirectory(newPath);
+      }
+      org.apache.commons.io.FileUtils.copyDirectory(oldPath.toFile(), newPath.toFile());
+    } catch (IOException e) {
+      log.error("#duplicateFolder Cannot duplicate folder {} → {}", oldPath.getFileName(), newPath.getFileName(), e);
+    }
+  }
 }

@@ -33,14 +33,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.ZIP_EXTENSION;
+import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class FileDownloadServiceImpl implements FileDownloadService {
-  private static final String DOC_DIR = "doc";
-  private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1_000_000_000;
   private static final String IAR = "iar";
@@ -115,7 +115,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
     byte[] fileContent = downloadFile(url);
     if (fileContent == null || fileContent.length == 0) {
-      log.warn("Downloaded file is empty or null from URL: {}", url);
+      log.warn("Cannot download file or file is empty from url: {}", url);
       return null;
     }
 
