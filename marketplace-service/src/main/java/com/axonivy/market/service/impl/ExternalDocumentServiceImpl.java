@@ -8,6 +8,7 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.DocumentInfoResponse;
@@ -56,7 +57,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  private static final String DEV = "dev";
   private final ProductRepository productRepo;
   private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   private final FileDownloadService fileDownloadService;
@@ -141,8 +141,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
         .entrySet().stream()
         .sorted((v1, v2) -> {
-          if (DEV.equalsIgnoreCase(v1.getKey())) return 1;
-          if (DEV.equalsIgnoreCase(v2.getKey())) return -1;
+          if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v1.getKey())) {
+            return 1;
+          }
+          if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v2.getKey())) {
+            return -1;
+          }
           return MavenVersionComparator.compare(v1.getKey(), v2.getKey());
         })
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
