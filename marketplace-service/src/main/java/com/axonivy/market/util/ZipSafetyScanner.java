@@ -9,38 +9,20 @@ import java.util.zip.*;
 
 @Log4j2
 public class ZipSafetyScanner {
-  // Giới hạn kích thước
-  public static final long maxTotalUncompressedBytes = 50L * 1024 * 1024; // 50MB
-  public static final long maxSingleUncompressedBytes = 30L * 1024 * 1024; // 30MB
-  public static final int maxEntries = 50;
-  public static final double maxCompressionRatioPerEntry = 200.0;
-  public static final double maxGlobalCompressionRatio = 100.0;
-  public static final int maxNestedArchiveDepth = 3;
-  public static final Set<String> dangerousExtensions = new HashSet<>(Arrays.asList(
+  // Limit the size for uncompressed bytes
+  private static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 50L * 1024 * 1024; // 50MB
+  private static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
+  private static final int MAX_ENTRIES = 50;
+  private static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
+  private static final double MAX_GLOBAL_COMPRESSION_RATIO = 100.0;
+  private static final int MAX_NESTED_ARCHIVE_DEPTH = 3;
+  private static final Set<String> DANGEROUS_EXTENSIONS = new HashSet<>(Arrays.asList(
       ".exe", ".dll", ".bat", ".cmd", ".sh", ".ps1", ".vbs", ".js", ".jar",
       ".php", ".phps", ".phtml", ".py", ".rb", ".pl", ".class", ".com"
   ));
 
   // Giới hạn đọc thử nội dung để kiểm nested (chỉ đọc vài byte đầu entry)
-  public static int nestedHeaderProbeBytes = 8;
-
-  /* ===================== KẾT QUẢ / ISSUE ===================== */
-  public static class Issue {
-    public final String code;
-    public final String message;
-    public final String entryName;
-
-    public Issue(String code, String message, String entryName) {
-      this.code = code;
-      this.message = message;
-      this.entryName = entryName;
-    }
-
-    @Override
-    public String toString() {
-      return "[" + code + "] " + message + (entryName != null ? " (entry=" + entryName + ")" : "");
-    }
-  }
+  private static final int NESTED_HEADER_PROBE_BYTES = 8;
 
   /**
    * Analyze a ZIP file without unzipping
@@ -74,7 +56,7 @@ public class ZipSafetyScanner {
         long uncompressedSize = e.getSize();
 
         // Stop if there are too much sub files in zip file
-        if (entries > maxEntries) {
+        if (entries > MAX_ENTRIES) {
           log.error("Zip entry too large: {}", name);
           isValid = false;
           break;
@@ -109,7 +91,7 @@ public class ZipSafetyScanner {
         }
 
         // Purpose: Prevent single files from being too large.
-        if (uncompressedSize > maxSingleUncompressedBytes) {
+        if (uncompressedSize > MAX_SINGLE_UNCOMPRESSED_BYTES) {
           log.error("Uncompressed entry file {} size too large: {}", name, uncompressedSize);
           isValid = false;
           break;
@@ -120,7 +102,7 @@ public class ZipSafetyScanner {
         if (compressedSize > 0 && uncompressedSize > 0) {
           double ratio = (double) uncompressedSize / (double) compressedSize;
           if (ratio > maxEntryRatio) maxEntryRatio = ratio;
-          if (ratio > maxCompressionRatioPerEntry) {
+          if (ratio > MAX_COMPRESSION_RATIO_PER_ENTRY) {
             log.error("The file {} has high compression ratio too large: {}", name, ratio);
             isValid = false;
             break;
@@ -132,22 +114,20 @@ public class ZipSafetyScanner {
 
         // Purpose: Check the total size when extracting the entire ZIP.
         // Avoid ZIP bombs that compress many small files but have a very large total size.
-        if (totalUncompressed > maxTotalUncompressedBytes) {
+        if (totalUncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES) {
           log.error("The total of uncompressed bytes too large: {}", totalUncompressed);
           isValid = false;
           break;
         }
 
         // Purpose: Detect ZIP files that contain other ZIP files inside.
-        if (looksLikeNestedArchive(name)) {
-          if (isZipSignature(zf, e, nestedHeaderProbeBytes)) {
+        if (looksLikeNestedArchive(name) && isZipSignature(zf, e, NESTED_HEADER_PROBE_BYTES)) {
             nestedArchiveCount++;
-            if (nestedArchiveCount > maxNestedArchiveDepth) {
+            if (nestedArchiveCount > MAX_NESTED_ARCHIVE_DEPTH) {
               log.error("There are many nested file in the entry: {}", name);
               isValid = false;
               break;
             }
-          }
         }
       }
     } finally {
@@ -159,7 +139,7 @@ public class ZipSafetyScanner {
       double globalRatio = (totalCompressed > 0 && totalUncompressed > 0) ?
           (double) totalUncompressed / totalCompressed : 0.0;
 
-      if (globalRatio > maxGlobalCompressionRatio) {
+      if (globalRatio > MAX_GLOBAL_COMPRESSION_RATIO) {
         log.error("Global compression ratio too large: {}", globalRatio);
         isValid = false;
       }
@@ -183,7 +163,7 @@ public class ZipSafetyScanner {
 
   private static boolean hasDangerousExtension(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
-    for (String ext : ZipSafetyScanner.dangerousExtensions) {
+    for (String ext : ZipSafetyScanner.DANGEROUS_EXTENSIONS) {
       if (lower.endsWith(ext)) return true;
     }
     return false;
