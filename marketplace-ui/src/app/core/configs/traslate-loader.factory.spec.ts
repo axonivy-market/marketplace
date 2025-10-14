@@ -15,6 +15,8 @@ import {
   provideHttpClient,
   withInterceptorsFromDi
 } from '@angular/common/http';
+import { Language } from '../../shared/enums/language.enum';
+import { BROWSER } from '../../shared/constants/common.constant';
 
 const TRANSLATE_KEY = 'translations';
 const ASSETS = 'assets';
@@ -32,7 +34,7 @@ describe('TranslateUniversalLoader', () => {
         TransferState,
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: PLATFORM_ID, useValue: BROWSER },
         {
           provide: TranslateUniversalLoader,
           useFactory: translateUniversalLoaderFactory,
@@ -51,11 +53,11 @@ describe('TranslateUniversalLoader', () => {
   });
 
   it('should return cached translations from TransferState', done => {
-    const key = makeStateKey<object>(`${TRANSLATE_KEY}-en`);
+    const key = makeStateKey<object>(`${TRANSLATE_KEY}-${Language.EN}`);
     const cachedTranslations = { hello: 'world' };
     transferState.set(key, cachedTranslations);
 
-    loader.getTranslation('en').subscribe((result: Object) => {
+    loader.getTranslation(Language.EN).subscribe((result: Object) => {
       expect(result).toEqual(cachedTranslations);
       done();
     });
@@ -78,16 +80,16 @@ describe('TranslateUniversalLoader', () => {
   it('should fetch translations via HttpClient on browser', done => {
     spyOn(isPlatformServer as any, 'call').and.returnValue(false);
 
-    const mockResponse = { hello: 'browser' };
+    const mockResponse = { hello: BROWSER };
 
-    loader.getTranslation('en').subscribe((result: Object) => {
+    loader.getTranslation(Language.EN).subscribe((result: Object) => {
       expect(result).toEqual(mockResponse);
-      const key = makeStateKey<object>(`${TRANSLATE_KEY}-en`);
+      const key = makeStateKey<object>(`${TRANSLATE_KEY}-${Language.EN}`);
       expect(transferState.get(key, null)).toEqual(mockResponse);
       done();
     });
 
-    const req = httpMock.expectOne(`/${ASSETS}/${I18N}/en${JSON_EXTENSION}`);
+    const req = httpMock.expectOne(`/${ASSETS}/${I18N}/${Language.EN}${JSON_EXTENSION}`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
