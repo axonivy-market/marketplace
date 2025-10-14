@@ -14,9 +14,9 @@ import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.SearchResult;
 import com.azure.search.documents.util.SearchPagedIterable;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -24,17 +24,14 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class ChatService {
 
   private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
-  @Autowired
-  private OpenAIClient openAIClient;
+  private final OpenAIClient openAIClient;
+  private final SearchClient searchClient;
 
-  @Autowired(required = false)
-  private SearchClient searchClient;
-
-  @Autowired
   @Qualifier("chatbotDeploymentName")
   private String deploymentName;
 
