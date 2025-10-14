@@ -10,7 +10,11 @@ import {
   TranslateUniversalLoader,
   translateUniversalLoaderFactory
 } from './translate-loader.factory';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 const TRANSLATE_KEY = 'translations';
 const ASSETS = 'assets';
@@ -46,7 +50,7 @@ describe('TranslateUniversalLoader', () => {
     httpMock.verify();
   });
 
-  it('should return cached translations from TransferState', (done) => {
+  it('should return cached translations from TransferState', done => {
     const key = makeStateKey<object>(`${TRANSLATE_KEY}-en`);
     const cachedTranslations = { hello: 'world' };
     transferState.set(key, cachedTranslations);
@@ -57,9 +61,11 @@ describe('TranslateUniversalLoader', () => {
     });
   });
 
-  it('should load translations from filesystem on the server', (done) => {
+  it('should load translations from filesystem on the server', done => {
     spyOn(isPlatformServer as any, 'call').and.returnValue(true);
-    spyOn<any>(loader, 'loadTranslationsFromFileSystem').and.returnValue(of({ hi: 'there' }));
+    spyOn<any>(loader, 'loadTranslationsFromFileSystem').and.returnValue(
+      of({ hi: 'there' })
+    );
 
     (loader as any).platformId = 'server';
 
@@ -69,7 +75,7 @@ describe('TranslateUniversalLoader', () => {
     });
   });
 
-  it('should fetch translations via HttpClient on browser', (done) => {
+  it('should fetch translations via HttpClient on browser', done => {
     spyOn(isPlatformServer as any, 'call').and.returnValue(false);
 
     const mockResponse = { hello: 'browser' };
@@ -84,5 +90,21 @@ describe('TranslateUniversalLoader', () => {
     const req = httpMock.expectOne(`/${ASSETS}/${I18N}/en${JSON_EXTENSION}`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
+  });
+
+  it('should mock loadTranslationsFromFileSystem without real fs', done => {
+    const mockTranslation = { hello: 'mocked' };
+
+    spyOn<any>(loader, 'loadTranslationsFromFileSystem').and.callFake(
+      (lang: string) => {
+        expect(lang).toBe('en');
+        return of(mockTranslation);
+      }
+    );
+
+    loader['loadTranslationsFromFileSystem']('en').subscribe(result => {
+      expect(result).toEqual(mockTranslation);
+      done();
+    });
   });
 });
