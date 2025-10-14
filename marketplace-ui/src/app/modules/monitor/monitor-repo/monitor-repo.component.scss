@@ -1,7 +1,20 @@
+.monitor-repo-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
 .table {
   margin-top: 2.5rem;
   border-collapse: collapse;
-  width: auto;
+  width: 100%;
+  table-layout: fixed;
+
+  th,
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   th {
     position: relative;
@@ -68,13 +81,40 @@
 }
 
 .connector-column {
-  width: 330px;
+  width: 24%;
   cursor: pointer;
 }
 
 .workflow-column {
-  width: 350px;
+  width: 17%;
   cursor: pointer;
+}
+
+.table th:last-child,
+.table td:last-child {
+  width: 8%;
+}
+
+@media (max-width: 992px) {
+  .table th,
+  .table td {
+    white-space: normal;
+  }
+  .connector-column {
+    width: 30%;
+  }
+  .workflow-column {
+    width: 20%;
+  }
+}
+
+@media (max-width: 640px) {
+  .table {
+    table-layout: auto;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+  }
 }
 
 .table-header {

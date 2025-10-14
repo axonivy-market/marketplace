@@ -30,7 +30,11 @@
       "tutorial": "Tutorial",
       "community": "Community",
       "team": "Team",
-      "market": "Market"
+      "market": "Market",
+      "test": "Test",
+      "monitor": "Monitor",
+      "login": "Login with GitHub",
+      "logout": "Logout"
     },
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
@@ -44,7 +48,8 @@
         "connector": "Connectors",
         "util": "Utilities",
         "demos": "Demos",
-        "solution": "Solutions"
+        "solution": "Solutions",
+        "test": "Test"
       }
     },
     "error": {
@@ -87,7 +92,11 @@
       "download": "Download",
       "ivyCompanyInfo": "Axon Ivy Inc.",
       "privacyPolicy": "Privacy Policy",
-      "termsOfService": "Terms of Service"
+      "termsOfService": "Terms of Service",
+      "legalNotice": "Legal Notice",
+      "ivyCompanyInfoUrl": "",
+      "privacyPolicyUrl": "https://www.axonivy.com/privacy-policy",
+      "legalNoticeUrl": "https://www.axonivy.com/legal-notice"
     },
     "product": {
       "detail": {

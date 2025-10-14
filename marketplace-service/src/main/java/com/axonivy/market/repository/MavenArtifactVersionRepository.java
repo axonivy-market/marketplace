@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface MavenArtifactVersionRepository extends JpaRepository<MavenArtifactVersion, MavenArtifactKey> {
   String SELECT_BY_PRODUCT_ID = "SELECT m FROM MavenArtifactVersion m WHERE m.productId = :productId ";
+
   @Query(SELECT_BY_PRODUCT_ID + "ORDER BY m.id.isAdditionalVersion")
   List<MavenArtifactVersion> findByProductIdOrderByAdditionalVersion(@Param("productId") String productId);
 
@@ -23,7 +24,9 @@ public interface MavenArtifactVersionRepository extends JpaRepository<MavenArtif
   List<MavenArtifactVersion> findByProductIdAndArtifactIdAndVersion(@Param("productId") String productId,
       @Param("artifactId") String artifactId, @Param("version") String version);
 
-  @Query("SELECT m.id.productVersion FROM MavenArtifactVersion m WHERE m.productId = :productId AND m.id.artifactId = :artifactId")
+  @Query(
+      "SELECT m.id.productVersion FROM MavenArtifactVersion m WHERE m.productId = :productId AND m.id.artifactId = " +
+          ":artifactId")
   List<String> findProductVersionsByProductIdAndArtifactId(@Param("productId") String productId,
       @Param("artifactId") String artifactId);
 }

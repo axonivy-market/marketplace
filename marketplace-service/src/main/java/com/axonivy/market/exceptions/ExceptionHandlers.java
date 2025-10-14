@@ -30,7 +30,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
       HttpStatusCode status, WebRequest request) {
-    BindingResult bindingResult = ex.getBindingResult();
+    var bindingResult = ex.getBindingResult();
     List<String> errors = new ArrayList<>();
     if (bindingResult.hasErrors()) {
       for (FieldError fieldError : bindingResult.getFieldErrors()) {
@@ -47,7 +47,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(MissingHeaderException.class)
-  public ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
+  public ResponseEntity<Object> handleMissingServletRequestParameter(Throwable missingHeaderException) {
     var errorMessage = new Message();
     errorMessage.setMessageDetails(missingHeaderException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);

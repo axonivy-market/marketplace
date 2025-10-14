@@ -88,9 +88,11 @@ class ProductControllerTest extends BaseSetup {
     when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
     var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", false, pageable);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(result.hasBody(), "Expected response to have a body");
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Expected response body to contain 0 products");
   }
 
   @Test
@@ -105,13 +107,17 @@ class ProductControllerTest extends BaseSetup {
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
     var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", false, pageable);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(result.hasBody(), "Expected response to have a body");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Expected response body size to be 1");
     assertEquals(PRODUCT_NAME_SAMPLE,
-        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()));
+        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()),
+        "Expected product English name to be " + PRODUCT_NAME_SAMPLE);
     assertEquals(PRODUCT_NAME_DE_SAMPLE,
-        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()));
+        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()),
+        "Expected product German name to be " + PRODUCT_NAME_DE_SAMPLE);
   }
 
   @Test
@@ -120,10 +126,12 @@ class ProductControllerTest extends BaseSetup {
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertEquals("Data is already up to date, nothing to sync", response.getBody().getMessageDetails());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(response.hasBody(),  "Expected response to have a body");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Expected help code to be " + ErrorCode.SUCCESSFUL.getCode());
+    assertEquals("Data is already up to date, nothing to sync", response.getBody().getMessageDetails(),
+        "Expected message to be 'Data is already up to date, nothing to sync'");
   }
 
   @Test
@@ -132,10 +140,12 @@ class ProductControllerTest extends BaseSetup {
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, true);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Finished sync [[portal]] data in"));
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(response.hasBody(), "Expected response to have a body");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Expected help code to be " + ErrorCode.SUCCESSFUL.getCode());
+    assertTrue(response.getBody().getMessageDetails().contains("Finished sync [[portal]] data in"),
+        "Expected message details to contain 'Finished sync [[portal]] data in'");
   }
 
   @Test
@@ -145,9 +155,11 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false));
+        () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false),
+        "Expected UnauthorizedException to be thrown when token is invalid");
 
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
+        "Expected exception message to be '" + ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText());
   }
 
   @Test
@@ -157,9 +169,13 @@ class ProductControllerTest extends BaseSetup {
     when(axonIvyMarketRepoService.getMarketItemByPath(any(String.class))).thenReturn(new ArrayList<>());
     var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE, true);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getHelpText(), response.getBody().getMessageDetails());
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP status to be 200 OK when product path is invalid");
+    assertTrue(response.hasBody(),
+        "Response body should not be null or empty when product path is invalid");
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getHelpText(), response.getBody().getMessageDetails(),
+        "Expected response messageDetails to indicate PRODUCT_NOT_FOUND");
   }
 
   @Test
@@ -173,9 +189,13 @@ class ProductControllerTest extends BaseSetup {
     when(service.syncOneProduct(any(String.class), any(String.class), any(Boolean.class))).thenReturn(true);
     var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE, true);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals("Sync successfully!", response.getBody().getMessageDetails());
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP status 200 OK when syncOneProduct succeeds");
+    assertTrue(response.hasBody(),
+        "Response body should not be null or empty when syncOneProduct succeeds");
+    assertEquals("Sync successfully!", response.getBody().getMessageDetails(),
+        "Expected success message 'Sync successfully!' in response body");
   }
 
   @Test
@@ -186,21 +206,24 @@ class ProductControllerTest extends BaseSetup {
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
         () -> productController.syncOneProduct(INVALID_AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
-            PRODUCT_PATH_SAMPLE, false));
+            PRODUCT_PATH_SAMPLE, false),
+        "Expected UnauthorizedException when syncing product with an invalid token");
 
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
+        "Exception message should match the expected unauthorized help text");
   }
 
   @Test
   void testGetBearerTokenWithValidHeader() {
     String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
-    assertEquals("valid_token", token);
+    assertEquals("valid_token", token,
+        "Extracted bearer token should match the expected value 'valid_token'");
   }
 
   @Test
   void testGetBearerTokenWithInvalidHeader() {
     String token = AuthorizationUtils.getBearerToken("InvalidTokenFormat");
-    assertNull(token);
+    assertNull(token, "Token should be null when the Authorization header format is invalid");
   }
 
   private Product createProductMock() {
@@ -226,25 +249,33 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncFirstPublishedDateOfAllProducts(INVALID_AUTHORIZATION_HEADER));
+        () -> productController.syncFirstPublishedDateOfAllProducts(INVALID_AUTHORIZATION_HEADER),
+        "Calling syncFirstPublishedDateOfAllProducts with an invalid token should throw UnauthorizedException");
 
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
+        "UnauthorizedException message should match the expected help text for unauthorized GitHub users");
   }
 
   @Test
   void testSyncFirstPublishedDateOfAllProductsFailed() {
     when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
     var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be OK even when syncing first published dates fails");
+    assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode(),
+        "Help code should not indicate SUCCESSFUL when syncing first published dates fails");
   }
 
   @Test
   void testSyncFirstPublishedDateOfAllProductsSuccess() {
     when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(true);
     var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be OK when syncing first published dates succeeds");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode(),
+        "Help code should indicate SUCCESSFUL when syncing first published dates succeeds");
   }
 
   @Test
@@ -253,9 +284,12 @@ class ProductControllerTest extends BaseSetup {
 
     var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals("Synced 5 artifact(s)", Objects.requireNonNull(response.getBody()).getMessageDetails());
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be OK when product artifacts are successfully synced");
+    assertTrue(response.hasBody(),
+        "Response should contain a body when product artifacts are successfully synced");
+    assertEquals("Synced 5 artifact(s)", Objects.requireNonNull(response.getBody()).getMessageDetails(),
+        "Response message should confirm that 5 artifacts were synced");
   }
 
   @Test
@@ -264,9 +298,12 @@ class ProductControllerTest extends BaseSetup {
 
     var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
 
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails());
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
+        "Response status should be NO_CONTENT when there are no artifacts to sync");
+    assertTrue(response.hasBody(),
+        "Response should still contain a body even when there are no artifacts to sync");
+    assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails(),
+        "Response message should indicate that there was nothing to sync");
   }
 
   @Test
@@ -276,8 +313,10 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false, null));
+        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false, null),
+        "Expected UnauthorizedException when using an invalid authorization token");
 
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
+        "Exception message should match the unauthorized help text");
   }
 }

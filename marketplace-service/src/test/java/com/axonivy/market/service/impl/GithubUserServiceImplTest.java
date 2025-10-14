@@ -42,9 +42,11 @@ class GithubUserServiceImplTest {
     when(githubUserRepository.findAll()).thenReturn(Collections.singletonList(githubUser));
 
     List<GithubUser> result = userService.getAllUsers();
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals(githubUser.getId(), result.get(0).getId());
+
+    assertNotNull(result, "Result list from getAllUsers() should not be null");
+    assertEquals(1, result.size(), "Result list should contain exactly one user");
+    assertEquals(githubUser.getId(), result.get(0).getId(),
+        "The ID of the returned user should match the mocked githubUser");
     verify(githubUserRepository, times(1)).findAll();
   }
 
@@ -55,19 +57,26 @@ class GithubUserServiceImplTest {
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(githubUser));
 
     GithubUser result = userService.findUser(userId);
-    assertNotNull(result);
-    assertEquals(userId, result.getId());
+
+    assertNotNull(result, "Returned user should not be null");
+    assertEquals(userId, result.getId(), "The returned user ID should match the requested userId");
     verify(githubUserRepository, times(1)).findById(userId);
   }
 
   @Test
-  void testFindUser_NotFound() {
+  void testFindUserNotFound() {
     String userId = "1";
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
 
-    NotFoundException exception = assertThrows(NotFoundException.class, () -> userService.findUser(userId));
-    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+    NotFoundException exception = assertThrows(NotFoundException.class,
+        () -> userService.findUser(userId),
+        "Expected NotFoundException when user is not found"
+    );
+
+    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode(),
+        "Exception code should indicate USER_NOT_FOUND");
+
     verify(githubUserRepository, times(1)).findById(userId);
   }
 
@@ -76,10 +85,12 @@ class GithubUserServiceImplTest {
     when(githubUserRepository.save(any(GithubUser.class))).thenReturn(githubUser);
 
     GithubUser result = userService.createUser(githubUser);
-    assertNotNull(result);
-    assertEquals(githubUser.getId(), result.getId());
-    assertEquals(githubUser.getName(), result.getName());
-    assertEquals(githubUser.getUsername(), result.getUsername());
+
+    assertNotNull(result, "Created user should not be null");
+    assertEquals(githubUser.getId(), result.getId(), "User ID should match the saved entity");
+    assertEquals(githubUser.getName(), result.getName(), "User name should match the saved entity");
+    assertEquals(githubUser.getUsername(), result.getUsername(), "Username should match the saved entity");
+
     verify(githubUserRepository, times(1)).save(githubUser);
   }
 }

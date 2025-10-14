@@ -29,7 +29,7 @@ public class ProductDesignerInstallationServiceImpl implements ProductDesignerIn
         productDesignerInstallationRepository.findByProductId(productId,
             Sort.by(Sort.Direction.DESC, PostgresDBConstants.DESIGNER_VERSION));
     for (ProductDesignerInstallation productDesignerInstallation : productDesignerInstallations) {
-      DesignerInstallation designerInstallation = new DesignerInstallation(
+      var designerInstallation = new DesignerInstallation(
           productDesignerInstallation.getDesignerVersion(), productDesignerInstallation.getInstallationCount());
       designerInstallations.add(designerInstallation);
     }

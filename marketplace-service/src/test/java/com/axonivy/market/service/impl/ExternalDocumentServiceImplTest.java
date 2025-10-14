@@ -4,19 +4,26 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +40,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private static final String PORTAL = "portal";
 
+  private static final String TEST_VERSION = "12.0";
+
+  private final List<String> majorVersions = List.of("10.0", "12.0", "13.1", "dev");
+
   @MockBean
   ProductRepository productRepository;
 
@@ -43,10 +54,19 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   FileDownloadService fileDownloadService;
 
   @MockBean
+  AxonIvyClient axonIvyClient;
+
+  @MockBean
   ArtifactRepository artifactRepository;
 
   @SpyBean
   ExternalDocumentServiceImpl service;
+
+  @BeforeEach
+  void setup() {
+    when(axonIvyClient.getDocumentVersions()).thenReturn(majorVersions);
+    service.init();
+  }
 
   @Test
   void testSyncDocumentForNonProduct() {
@@ -70,18 +90,18 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
-
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+    doReturn(RELATIVE_WORKING_LOCATION).when(service).updateLatestFolder(any(Path.class), anyString());
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
-
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_DOC_LOCATION);
     when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn("data" + RELATIVE_WORKING_LOCATION);
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
+    doReturn(RELATIVE_WORKING_LOCATION).when(service).updateLatestFolder(any(Path.class), anyString());
     service.syncDocumentForProduct(PORTAL, true, null);
-    verify(externalDocumentMetaRepository, times(2)).save(any());
+    verify(externalDocumentMetaRepository, times(3)).save(any());
 
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().get().getArtifacts());
@@ -89,16 +109,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any())).thenReturn(
         List.of(createExternalDocumentMock()));
     service.syncDocumentForProduct(PORTAL, false, null);
-    verify(externalDocumentMetaRepository, times(6)).findByProductIdAndVersionIn(any(), any());
+    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersionIn(any(), any());
   }
 
   @Test
   void testSyncDocumentForProductButCannotExtractToShareFolder() throws IOException {
     prepareProductDataForSyncTest();
-
+    doReturn(RELATIVE_WORKING_LOCATION).when(service).updateLatestFolder(any(Path.class), anyString());
     service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
-    verify(externalDocumentMetaRepository, times(0)).save(any());
+    verify(externalDocumentMetaRepository, times(2)).save(any());
   }
 
   private void prepareProductDataForSyncTest() throws IOException {
@@ -114,22 +134,22 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testSyncDocumentForProductIdAndVersion() throws IOException {
     prepareProductDataForSyncTest();
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-
+    doReturn(RELATIVE_WORKING_LOCATION).when(service).updateLatestFolder(any(Path.class), anyString());
     service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
-    verify(externalDocumentMetaRepository, times(1)).save(any());
+    verify(externalDocumentMetaRepository, times(2)).save(any());
   }
 
   @Test
   void testFindAllProductsHaveDocument() {
     var result = service.findAllProductsHaveDocument();
     verify(productRepository, times(1)).findAllProductsHaveDocument();
-    assertTrue(result.isEmpty());
+    assertTrue(result.isEmpty(), "Expected the result to be empty when repository returns nothing");
 
     when(productRepository.findAllProductsHaveDocument()).thenReturn(List.of(mockPortalProduct().get()));
     result = service.findAllProductsHaveDocument();
-    assertNotNull(result);
-    assertEquals(PORTAL, result.get(0).getId());
+    assertNotNull(result, "Expected the result not to be null when repository returns a product");
+    assertEquals(PORTAL, result.get(0).getId(), "Expected the first product ID to be PORTAL");
   }
 
   @Test
@@ -139,14 +159,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
-            ExternalDocumentMeta.builder().version(version).build()));
+        ExternalDocumentMeta.builder().version(version).build()));
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.get(Collections.singletonList(version), version)).thenReturn(version);
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
+          , version, majorVersions)).thenReturn(version);
 
       String result = service.findBestMatchVersion(productId, version);
 
       assertEquals(version, result, "Should return the matched version");
-      mockedVersionFactory.verify(() -> VersionFactory.get(Collections.singletonList(version), version));
+      mockedVersionFactory.verify(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
+          , version, majorVersions), times(1));
     }
 
     verify(productRepository).findById(productId);
@@ -155,20 +177,22 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testFindExternalDocumentURI() {
-    var mockVersion = "10.0.0";
+    var mockVersion = "10.0";
     var mockProductDocumentMeta = new ExternalDocumentMeta();
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
     var result = service.findExternalDocument(PORTAL, mockVersion);
     verify(productRepository, times(1)).findById(any());
-    assertNull(result);
+    assertNull(result, "Expected result to be null when no matching document meta exists");
 
     mockProductDocumentMeta.setProductId(PORTAL);
     mockProductDocumentMeta.setVersion(mockVersion);
     mockProductDocumentMeta.setRelativeLink(RELATIVE_DOC_LOCATION);
-    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(mockProductDocumentMeta));
+    when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
+        .thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocument(PORTAL, mockVersion);
-    assertNotNull(result);
-    assertTrue(result.getRelativeLink().contains("/index.html"));
+    assertNotNull(result, "Expected result not to be null when matching document meta exists");
+    assertTrue(result.getRelativeLink().contains("/index.html"),
+        "Expected the relative link to contain '/index.html'");
   }
 
   private Optional<Product> mockPortalProduct() {
@@ -189,7 +213,61 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   private static Artifact mockPortalMavenArtifact() {
-    return Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
+    return Artifact.builder().artifactId("portal-guide").doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
+  }
+
+  @Test
+  void testFindDocVersionsAndLanguagesSuccess() {
+    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/12/en")
+        .build();
+
+    ExternalDocumentMeta jaMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.JAPANESE)
+        .relativeLink("docs/portal/12/ja")
+        .build();
+
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
+        .thenReturn(List.of(enMeta, jaMeta));
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
+        Collections.singletonList(TEST_VERSION)))
+        .thenReturn(List.of(enMeta, jaMeta));
+
+    String host = "http://localhost:8080";
+    var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
+        DocumentLanguage.ENGLISH.getCode(), host);
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getVersions().size(), "Should have one version");
+    assertEquals(2, result.getLanguages().size(), "Should have two languages");
+  }
+
+  @Test
+  void testUpdateLatestFolder() {
+    Path versionFolder = Paths.get("/tmp/share/portal/12.0/en");
+    String majorVersion = "12";
+
+    Path expectedParent = versionFolder.getParent().getParent();
+    Path expectedMajorFolder = expectedParent.resolve(majorVersion);
+
+    try (MockedStatic<FileUtils> mockedFileUtils = Mockito.mockStatic(FileUtils.class)) {
+      mockedFileUtils.when(() ->
+          FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder)
+      ).thenAnswer(invocation -> null);
+
+      String result = service.updateLatestFolder(versionFolder, majorVersion);
+
+      mockedFileUtils.verify(() ->
+              FileUtils.duplicateFolder(versionFolder.getParent(), expectedMajorFolder),
+          times(1)
+      );
+      assertNotNull(result, "Result should not be null");
+    }
   }
 }

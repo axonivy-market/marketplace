@@ -7,7 +7,6 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,20 +63,26 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
-          String readmeContents = new String(readmeFile.read().readAllBytes());
-          if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
-          }
-
-          ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-
-          ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
+          mapDescriptionSetupAndDemoToProductModuleContent(product, contents, readmeFile, moduleContents);
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Cannot get README file's content {}", e.getMessage());
     }
+  }
+
+  private void mapDescriptionSetupAndDemoToProductModuleContent(Product product, List<GHContent> contents,
+      GHContent readmeFile,
+      Map<String, Map<String, String>> moduleContents) throws IOException {
+    var readmeContents = new String(readmeFile.read().readAllBytes(), StandardCharsets.UTF_8);
+    if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+      readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
+    }
+
+    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+
+    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
   }
 
   public String updateImagesWithDownloadUrl(String productId, List<GHContent> contents, String readmeContents) {
@@ -88,7 +94,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
 
-  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+  private static List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
     List<GHContent> images = new ArrayList<>();
     GitHubUtils.findImages(productFolderContents, images);
     return images;

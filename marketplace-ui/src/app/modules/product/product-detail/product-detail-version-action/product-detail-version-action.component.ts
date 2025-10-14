@@ -139,6 +139,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
+  onSelectArtifact(artifact: ItemDropdown) {
+    this.updateChosenArtifact(artifact);
+  }
+
   onSelectVersion(version: string) {
     if (this.selectedVersion() !== version) {
       this.selectedVersion.set(version);
@@ -161,12 +165,22 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         artifact.label = artifact.name;
       }
     });
-    if (this.artifacts().length !== 0) {
-      this.selectedArtifactId = this.artifacts()[0].id?.artifactId ?? '';
-      this.selectedArtifactName = this.artifacts()[0].name ?? '';
-      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
+
+    const existingArtifact = this.artifacts().find(
+      artifact => artifact.name === this.selectedArtifactName
+    );
+    if (existingArtifact) {
+      this.updateChosenArtifact(existingArtifact);
+    } else if (this.artifacts().length !== 0) {
+      this.updateChosenArtifact(this.artifacts()[0]);
     }
     this.addVersionParamToRoute(version);
+  }
+
+  private updateChosenArtifact(artifact: ItemDropdown) {
+    this.selectedArtifactId = artifact.id?.artifactId ?? '';
+    this.selectedArtifactName = artifact.name ?? '';
+    this.selectedArtifact = artifact.downloadUrl ?? '';
   }
 
   addVersionParamToRoute(selectedVersion: string) {
@@ -181,12 +195,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onSelectVersionInDesigner(version: string) {
     this.selectedVersion.set(version);
-  }
-
-  onSelectArtifact(artifact: ItemDropdown) {
-    this.selectedArtifactName = artifact.name;
-    this.selectedArtifact = artifact.downloadUrl;
-    this.selectedArtifactId = artifact?.id?.artifactId;
   }
 
   onShowDevVersion(event: Event) {

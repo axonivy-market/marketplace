@@ -41,7 +41,7 @@ public class ImageController {
   public ResponseEntity<byte[]> findImageById(
       @PathVariable(ID) @Parameter(description = "The image id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id) {
-    HttpHeaders headers = new HttpHeaders();
+    var headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
     byte[] imageData = imageService.readImage(id);
     if (imageData == null) {
@@ -58,7 +58,7 @@ public class ImageController {
   @Operation(hidden = true)
   public ResponseEntity<byte[]> findPreviewImageByName(
       @PathVariable("imageName") String imageName) {
-    HttpHeaders headers = new HttpHeaders();
+    var headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
     byte[] imageData = imageService.readPreviewImageByName(imageName);
     if (imageData.length == 0) {

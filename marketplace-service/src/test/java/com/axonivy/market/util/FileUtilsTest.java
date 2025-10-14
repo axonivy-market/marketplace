@@ -10,12 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,6 +26,8 @@ class FileUtilsTest {
 
   private static final String FILE_PATH = "src/test/resources/test-file.xml";
   private static final String TEST_DIR = "testDir";
+  private static final String FILE1 = "file1.txt";
+  private static final String FILE2 = "file2.txt";
   private static final String SAMPLE_DOWNLOAD_URL_1 = "https://example.com/file1.txt";
   private static final String SAMPLE_DOWNLOAD_URL_2 = "https://example.com/file2.txt";
   private static final String DEPLOY_OPTION_YAML_FILE_NAME = "deploy.options.yaml";
@@ -70,7 +67,6 @@ class FileUtilsTest {
     String fileContent = Files.readString(createdFile.toPath());
     assertEquals(content, fileContent, "File content should match the written content");
     createdFile.delete();
-
   }
 
   @Test
@@ -135,14 +131,15 @@ class FileUtilsTest {
       utilities.when(() -> HttpFetchingUtils.fetchResourceUrl(SAMPLE_DOWNLOAD_URL_2))
           .thenReturn(ResponseEntity.ok(resource2));
       utilities.when(() -> HttpFetchingUtils.extractFileNameFromUrl(SAMPLE_DOWNLOAD_URL_1))
-          .thenReturn("file1.txt");
+          .thenReturn(FILE1);
       utilities.when(() -> HttpFetchingUtils.extractFileNameFromUrl(SAMPLE_DOWNLOAD_URL_2))
-          .thenReturn("file2.txt");
+          .thenReturn(FILE2);
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
       // When
-      OutputStream returnedStream = FileUtils.buildArtifactStreamFromArtifactUrls(List.of(SAMPLE_DOWNLOAD_URL_1, SAMPLE_DOWNLOAD_URL_2), baos);
+      OutputStream returnedStream = FileUtils.buildArtifactStreamFromArtifactUrls(
+          List.of(SAMPLE_DOWNLOAD_URL_1, SAMPLE_DOWNLOAD_URL_2), baos);
 
       // Then
       assertSame(baos, returnedStream, "the result stream should come from the input");
@@ -155,11 +152,11 @@ class FileUtilsTest {
         boolean foundConfig = false;
         while ((entry = zis.getNextEntry()) != null) {
           String entryName = entry.getName();
-          if (entryName.equals("file1.txt")) {
+          if (entryName.equals(FILE1)) {
             foundFile1 = true;
             String extracted = new String(zis.readAllBytes());
             assertEquals(content1, extracted, "The extracted value should equal given input text's stream");
-          } else if (entryName.equals("file2.txt")) {
+          } else if (entryName.equals(FILE2)) {
             foundFile2 = true;
             String extracted = new String(zis.readAllBytes());
             assertEquals(content2, extracted, "The extracted value should equal given input text's stream");
@@ -200,6 +197,7 @@ class FileUtilsTest {
       }
     }
   }
+
   @Test
   void testUnzipArtifactExtractsFilesAndDirs() throws IOException {
     Path tempDir = Files.createTempDirectory("unzipTest");
@@ -210,7 +208,7 @@ class FileUtilsTest {
       zos.putNextEntry(new ZipEntry("dir1/file1.txt"));
       zos.write("hello".getBytes());
       zos.closeEntry();
-      zos.putNextEntry(new ZipEntry("file2.txt"));
+      zos.putNextEntry(new ZipEntry(FILE2));
       zos.write("world".getBytes());
       zos.closeEntry();
     }
@@ -218,11 +216,11 @@ class FileUtilsTest {
     FileUtils.unzipArtifact(bais, tempDir.toFile());
     assertTrue(Files.exists(tempDir.resolve("dir1/file1.txt")),
         "Extracted file dir1/file1.txt should exist");
-    assertTrue(Files.exists(tempDir.resolve("file2.txt")),
+    assertTrue(Files.exists(tempDir.resolve(FILE2)),
         "Extracted file file2.txt should exist");
     assertEquals("hello", Files.readString(tempDir.resolve("dir1/file1.txt")),
         "Content of dir1/file1.txt should match");
-    assertEquals("world", Files.readString(tempDir.resolve("file2.txt")),
+    assertEquals("world", Files.readString(tempDir.resolve(FILE2)),
         "Content of file2.txt should match");
     // Clean up
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
@@ -236,8 +234,8 @@ class FileUtilsTest {
     when(parent.exists()).thenReturn(false);
     when(parent.mkdirs()).thenReturn(false);
     assertThrows(IllegalStateException.class, () -> {
-      FileUtils.createParentDirectories(file);
-    },
+          FileUtils.createParentDirectories(file);
+        },
         "Should throw exception when parent directories cannot be created");
   }
 
@@ -249,5 +247,40 @@ class FileUtilsTest {
     assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()),
         "Should not throw exception when IO error occurs during unzip");
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
+  }
+
+  @Test
+  void testDuplicateFolderSuccess() throws IOException {
+    Path tempDir = Files.createTempDirectory(TEST_DIR);
+    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
+    Path targetDir = tempDir.resolve("target");
+
+    Path file1 = Files.createFile(sourceDir.resolve(FILE1));
+    Files.writeString(file1, "hello");
+    Path file2 = Files.createFile(sourceDir.resolve(FILE2));
+    Files.writeString(file2, "world");
+
+    FileUtils.duplicateFolder(sourceDir, targetDir);
+
+    assertTrue(Files.exists(targetDir), "Target directory should exist");
+    assertEquals("hello"
+        , Files.readString(targetDir.resolve(FILE1)), "file1.txt content should match");
+    assertEquals("world"
+        , Files.readString(targetDir.resolve(FILE2)), "file2.txt content should match");
+  }
+
+  @Test
+  void testDuplicateFolderShouldClearOldFolder() throws IOException {
+    Path tempDir = Files.createTempDirectory(TEST_DIR);
+    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
+    Files.writeString(Files.createFile(sourceDir.resolve("file.txt")), "new");
+
+    Path targetDir = Files.createDirectory(tempDir.resolve("target"));
+    Files.writeString(Files.createFile(targetDir.resolve("old.txt")), "old");
+
+    FileUtils.duplicateFolder(sourceDir, targetDir);
+
+    assertTrue(Files.exists(targetDir.resolve("file.txt")), "New file should be copied");
+    assertFalse(Files.exists(targetDir.resolve("old.txt")), "Old file should be deleted");
   }
 }

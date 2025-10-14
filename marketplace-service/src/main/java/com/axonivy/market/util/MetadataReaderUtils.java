@@ -7,12 +7,15 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +33,7 @@ public class MetadataReaderUtils {
 
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
       boolean isSnapShot) {
-    Document document = getDocumentFromXMLContent(xmlData);
+    var document = getDocumentFromXMLContent(xmlData);
     try {
       LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
@@ -60,21 +63,30 @@ public class MetadataReaderUtils {
     metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
     metadata.setRelease(getElementValue(document, MavenConstants.LATEST_RELEASE_TAG));
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
-    for (int i = 0; i < versionNodes.getLength(); i++) {
+    for (var i = 0; i < versionNodes.getLength(); i++) {
       metadata.getVersions().add(versionNodes.item(i).getTextContent());
     }
   }
 
   private static LocalDateTime getLastUpdatedTimeFromDocument(Document document, boolean isSnapShot) {
-    String textValue = isSnapShot ? Objects.requireNonNull(getElementValue(document,
-        MavenConstants.SNAPSHOT_LAST_UPDATED_TAG)) : Objects.requireNonNull(getElementValue(document,
+    String textValue;
+    DateTimeFormatter lastUpdatedFormatter;
+
+    if (isSnapShot) {
+      textValue = Objects.requireNonNull(getElementValue(document,
+        MavenConstants.SNAPSHOT_LAST_UPDATED_TAG));
+      lastUpdatedFormatter = SNAPSHOT_DATE_TIME_FORMATTER;
+    } else {
+      textValue = Objects.requireNonNull(getElementValue(document,
         MavenConstants.LAST_UPDATED_TAG));
-    DateTimeFormatter lastUpdatedFormatter = isSnapShot ? SNAPSHOT_DATE_TIME_FORMATTER : DATE_TIME_FORMATTER;
+      lastUpdatedFormatter = DATE_TIME_FORMATTER;
+    }
+
     return LocalDateTime.parse(textValue, lastUpdatedFormatter);
   }
 
   public static String getElementValue(Document doc, String tagName) {
-    NodeList nodeList = doc.getElementsByTagName(tagName);
+    var nodeList = doc.getElementsByTagName(tagName);
     if (nodeList.getLength() > 0) {
       return nodeList.item(0).getTextContent();
     }
@@ -86,17 +98,21 @@ public class MetadataReaderUtils {
     String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
         mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
     var metadataContent = HttpFetchingUtils.getFileAsString(snapShotMetadataUrl);
-    Document document = getDocumentFromXMLContent(metadataContent);
+    var document = getDocumentFromXMLContent(metadataContent);
     return getElementValue(document, MavenConstants.VALUE_TAG);
   }
 
   public static Document getDocumentFromXMLContent(String xmlData) {
+    if (StringUtils.isBlank(xmlData)) {
+      log.error("Metadata Reader: cannot read the metadata because xml data is null");
+      return null;
+    }
     Document document = null;
     try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-    } catch (Exception e) {
+    } catch (ParserConfigurationException | IOException | SAXException e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
     return document;

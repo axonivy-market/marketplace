@@ -11,6 +11,8 @@ import lombok.Setter;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_DATA;
 
+import java.io.Serial;
+
 @Getter
 @Setter
 @Builder
@@ -18,7 +20,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_D
 @AllArgsConstructor
 @Entity
 @Table(name = PRODUCT_MARKETPLACE_DATA)
-public class ProductMarketplaceData extends GenericEntity<String> {
+public class ProductMarketplaceData extends AbstractGenericEntity<String> {
+  @Serial
+  private static final long serialVersionUID = 1;
 
   @Id
   private String id;

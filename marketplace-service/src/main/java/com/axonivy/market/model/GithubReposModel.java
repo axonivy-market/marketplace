@@ -13,6 +13,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 
@@ -39,26 +40,26 @@ public class GithubReposModel {
   @Schema(
       example = """
             {
-              "workflow": "CI",
+              "workflowType": "CI",
                "lastBuilt": "2025-08-28 04:25:24.000",
                "conclusion": "success",
                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             },
             {
-              "workflow": "DEV",
+              "workflowType": "DEV",
                "lastBuilt": "2025-08-28 04:25:24.000",
                "conclusion": "success",
                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             },
             {
-              "workflow": "E2E",
+              "workflowType": "E2E",
                "lastBuilt": "2025-08-28 04:25:24.000",
                "conclusion": "success",
                "lastBuiltRun": "https://github.com/market/excel-connector/actions/runs/17052929095/job/48344635259"
             }
           """
   )
-  private List<WorkflowInformation> workflowInformation;
+  private Set<WorkflowInformation> workflowInformation;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
   private Boolean focused;

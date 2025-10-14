@@ -3,9 +3,15 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +19,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Log4j2
 @Component
+@NoArgsConstructor
 public class JwtServiceImpl implements JwtService {
+  private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
 
   @Value("${jwt.secret}")
   private String secret;
@@ -28,7 +37,7 @@ public class JwtServiceImpl implements JwtService {
     claims.put("username", githubUser.getUsername());
     claims.put("accessToken", accessToken);
     return Jwts.builder().setClaims(claims).setSubject(githubUser.getId()).setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * 86400000))
+        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
         .signWith(SignatureAlgorithm.HS512, secret).compact();
   }
 
@@ -36,7 +45,9 @@ public class JwtServiceImpl implements JwtService {
     try {
       getClaimsJws(token);
       return true;
-    } catch (Exception e) {
+    } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |
+             IllegalArgumentException e) {
+      log.error("Error validating token: ", e);
       return false;
     }
   }

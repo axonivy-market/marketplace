@@ -27,7 +27,6 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Link } from '../../shared/models/apis/link.model';
 import { Page } from '../../shared/models/apis/page.model';
 import { Language } from '../../shared/enums/language.enum';
-import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import {
@@ -109,6 +108,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           sort: newSortParam
         };
         if (isParamChanged) {
+          this.criteria = {
+            ...this.criteria,
+            nextPageHref: '',
+          };
           this.loadProductItems(true);
         }
       });
