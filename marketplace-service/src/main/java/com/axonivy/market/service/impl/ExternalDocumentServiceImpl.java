@@ -1,12 +1,14 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.DocumentInfoResponse;
@@ -138,6 +140,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<DocumentInfoResponse.DocumentVersion> documentVersions = docMetasByVersions.stream()
         .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
         .entrySet().stream()
+        .sorted((v1, v2) -> {
+          if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v1.getKey())) {
+            return 1;
+          }
+          if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v2.getKey())) {
+            return -1;
+          }
+          return MavenVersionComparator.compare(v1.getKey(), v2.getKey());
+        })
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
           String ver = entry.getKey();
           ExternalDocumentMeta chosenMeta = entry.getValue().stream()
@@ -145,13 +156,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               .findFirst()
               .orElse(entry.getValue().get(0));
           return DocumentInfoResponse.DocumentVersion.builder().version(ver)
-              .url(host + SLASH + chosenMeta.getRelativeLink()).build();
+              .url(host + chosenMeta.getRelativeLink()).build();
         }).toList();
 
     List<DocumentInfoResponse.DocumentLanguage> documentLanguages = docMetasByLanguages.stream()
         .map(docMeta -> DocumentInfoResponse.DocumentLanguage.builder()
             .language(docMeta.getLanguage().getCode())
-            .url(host + SLASH + docMeta.getRelativeLink())
+            .url(host + docMeta.getRelativeLink())
             .build())
         .toList();
 
