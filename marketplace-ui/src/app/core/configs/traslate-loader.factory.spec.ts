@@ -91,20 +91,4 @@ describe('TranslateUniversalLoader', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
-
-  it('should mock loadTranslationsFromFileSystem without real fs', done => {
-    const mockTranslation = { hello: 'mocked' };
-
-    spyOn<any>(loader, 'loadTranslationsFromFileSystem').and.callFake(
-      (lang: string) => {
-        expect(lang).toBe('en');
-        return of(mockTranslation);
-      }
-    );
-
-    loader['loadTranslationsFromFileSystem']('en').subscribe(result => {
-      expect(result).toEqual(mockTranslation);
-      done();
-    });
-  });
 });
