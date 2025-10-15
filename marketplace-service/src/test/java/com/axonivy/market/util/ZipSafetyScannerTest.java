@@ -29,33 +29,36 @@ class ZipSafetyScannerTest {
   void testAnalyze_validZip() throws IOException {
     byte[] zip = createZipWithEntry("valid.txt", "Hello World".getBytes());
     MultipartFile file = mockZipFile(zip, false);
-    assertTrue(ZipSafetyScanner.analyze(file));
+    assertTrue(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return true for a valid zip file with a permitted entry.");
   }
 
   @Test
   void testAnalyze_nullOrEmptyZip() throws IOException {
     MultipartFile file = mockZipFile(new byte[0], true);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file), "Expected analyze to return false for a null or empty zip file.");
   }
 
   @ParameterizedTest
   @MethodSource("invalidEntryNamesProvider")
-  void testAnalyze_invalidEntry(String entryName, byte[] data) throws IOException {
+  void testAnalyzeInvalidEntry(String entryName, byte[] data) throws IOException {
     byte[] zip = createZipWithEntry(entryName, data);
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return false for invalid entry name: " + entryName);
   }
 
   @Test
-  void testAnalyze_entryTooLarge() throws IOException {
+  void testAnalyzeEntryTooLarge() throws IOException {
     byte[] largeData = new byte[(int) (ZipSafetyScanner.MAX_SINGLE_UNCOMPRESSED_BYTES + 1)];
     byte[] zip = createZipWithEntry("big.txt", largeData);
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return false when a single entry exceeds the maximum allowed uncompressed size.");
   }
 
   @Test
-  void testAnalyze_tooManyEntries() throws IOException {
+  void testAnalyzeTooManyEntries() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
       for (int i = 0; i < ZipSafetyScanner.MAX_ENTRIES + 1; i++) {
@@ -66,11 +69,12 @@ class ZipSafetyScannerTest {
       }
     }
     MultipartFile file = mockZipFile(baos.toByteArray(), false);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return false when the number of entries exceeds the allowed maximum.");
   }
 
   @Test
-  void testAnalyze_highCompressionRatioEntry() throws IOException {
+  void testAnalyzeHighCompressionRatioEntry() throws IOException {
     // compressed size = 1, uncompressed = 1000000
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -81,11 +85,12 @@ class ZipSafetyScannerTest {
     }
     byte[] zip = baos.toByteArray();
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return false for an entry with a very high compression ratio (potential zip bomb).");
   }
 
   @Test
-  void testAnalyze_totalUncompressedTooLarge() throws IOException {
+  void testAnalyzeTotalUncompressedTooLarge() throws IOException {
     // Add multiple entries to go over total uncompressed limit
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -97,11 +102,12 @@ class ZipSafetyScannerTest {
       }
     }
     MultipartFile file = mockZipFile(baos.toByteArray(), false);
-    assertFalse(ZipSafetyScanner.analyze(file));
+    assertFalse(ZipSafetyScanner.analyze(file),
+        "Expected analyze to return false when total uncompressed size of all entries exceeds the allowed maximum.");
   }
 
   @Test
-  void testAnalyze_globalCompressionRatioTooHigh() throws IOException {
+  void testAnalyzeGlobalCompressionRatioTooHigh() throws IOException {
     // Compress a lot of repetitive data (high global ratio)
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -161,7 +167,8 @@ class ZipSafetyScannerTest {
 
     try (ZipFile zipFile = new ZipFile(tempZip)) {
       // Should be false because there are 3 nested zips (MAX_NESTED_ARCHIVE_DEPTH == 3)
-      assertTrue(ZipSafetyScanner.detectNestedZipFiles(zipFile));
+      assertTrue(ZipSafetyScanner.detectNestedZipFiles(zipFile),
+          "Expected detectNestedZipFiles to return true for a zip file with 3 nested archives.");
     } finally {
       tempZip.deleteOnExit();
     }

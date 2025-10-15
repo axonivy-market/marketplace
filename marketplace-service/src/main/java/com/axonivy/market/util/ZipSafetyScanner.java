@@ -59,8 +59,13 @@ public class ZipSafetyScanner {
           return false;
         }
 
-        if (compressedSize > 0) {totalCompressed += compressedSize;}
-        if (uncompressedSize > 0) {totalUncompressed += uncompressedSize;}
+        if (compressedSize > 0) {
+          totalCompressed += compressedSize;
+        }
+
+        if (uncompressedSize > 0) {
+          totalUncompressed += uncompressedSize;
+        }
 
         if (compressedSize > 0 && uncompressedSize > 0) {
           double ratio = (double) uncompressedSize / compressedSize;
@@ -182,7 +187,9 @@ public class ZipSafetyScanner {
   private static boolean hasNestedZip(ZipInputStream zipStream, int nestedArchiveCount) throws IOException {
     ZipEntry entry;
     while ((entry = zipStream.getNextEntry()) != null) {
-      if (entry.isDirectory()) continue;
+      if (entry.isDirectory()) {
+        continue;
+      }
       String name = entry.getName();
       if (looksLikeNestedArchive(name)) {
         nestedArchiveCount++;
