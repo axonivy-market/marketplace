@@ -36,6 +36,8 @@ public class RequestMappingConstants {
   public static final String ARTIFACTS_AS_ZIP = "/{id}/{artifactId}/{version}/zip-file";
   public static final String SYNC_ZIP_ARTIFACTS = "zip-sync";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
+  public static final String DOCUMENT = API + "/docs";
+  public static final String DOCUMENT_VERSION_LANGUAGE = "/{artifact}/{version}/{language}";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
   public static final String SECURITY_MONITOR = API + "/security-monitor";
   public static final String RELEASE_PREVIEW = API + "/release-preview";

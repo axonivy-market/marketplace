@@ -295,7 +295,8 @@ class GithubReposServiceImplTest {
     existingRepo.setTestSteps(new HashSet<>());
     existingRepo.getTestSteps().add(new TestStep());
 
-    when(githubRepoRepository.findByName(ghRepo.getName())).thenReturn(existingRepo);
+    when(githubRepoRepository.findByNameOrProductId(ghRepo.getName(), existingRepo.getProductId()))
+        .thenReturn(existingRepo);
     doReturn(List.of()).when(serviceSpy).processWorkflowWithFallback(any(), any(), any());
 
     serviceSpy.processProduct(ghRepo, dbRepo.getProductId());

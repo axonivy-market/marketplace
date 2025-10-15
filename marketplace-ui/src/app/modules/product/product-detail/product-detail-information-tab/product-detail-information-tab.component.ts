@@ -19,6 +19,9 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { Router } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
+const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
+const SHIELDS_WORKFLOW = 'ci.yml';
+const BRANCH = 'master';
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
@@ -40,9 +43,12 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
   router = inject(Router);
+  shieldsBadgeUrl = '';
+  repoName = '';
 
   ngOnInit(): void {
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
+    this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -80,6 +86,17 @@ export class ProductDetailInformationTabComponent implements OnChanges {
         }
       });
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
+    this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+  }
+  getShieldsBadgeUrl(): string {
+    if (!this.productDetail?.statusBadgeUrl) {
+      return '';
+    }
+    const url = new URL(this.productDetail.statusBadgeUrl);
+    const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+    const owner = pathParts[0]; 
+    this.repoName = pathParts[1]; 
+    return `${SHIELDS_BADGE_BASE_URL}/${owner}/${this.repoName}/${SHIELDS_WORKFLOW}?branch=${BRANCH}`;
   }
 
   isVersionUnchangedOrFirstChange(change: SimpleChange | undefined): boolean {
@@ -106,7 +123,15 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       changedProduct.currentValue !== changedProduct.previousValue
     );
   }
-  onBadgeClick(names: string) {
-    this.router.navigate(['/report', names, "CI"]);
+  onBadgeClick() {
+    if (this.repoName) {
+      this.router.navigate(['/monitoring'], { 
+        queryParams: { 
+          search: this.repoName
+        } 
+      });
+    } else {
+      this.router.navigate(['/monitoring']);
+    }
   }
 }
