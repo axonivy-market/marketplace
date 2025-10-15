@@ -21,8 +21,7 @@
       "errors": {
         "invalidZip": "Invalid file. Please upload a .zip file.",
         "tooLarge": "File is too large. Maximum allowed size is {{max}}MB.",
-        "seemsProblem": "There seems to be a problem with your file. Please try again.",
-        "dangerousFile": "Zip file contains some "
+        "seemsProblem": "There seems to be a problem with your file. Please try again."
       }
     },
     "nav": {
