@@ -11,7 +11,7 @@
       "title": "Product Release Preview",
       "description": "Preview your product's details",
       "dragDropText": "Drag & Drop here or Click to select",
-      "onlyZip": "Only (product-name)-product.zip files up to {{max}}MB are supported",
+      "onlyZip": "Only (product-name)-product.zip files up to {{max}}MB are supported. Please upload a valid Zip file containing a README.md file.",
       "buttonLabel": "Upload",
       "buttonHint": "Please upload a valid Zip file containing a README.md file.",
       "fileSizeUnit": "MB",
