@@ -193,7 +193,8 @@ public class ZipSafetyScanner {
       String name = entry.getName();
       if (looksLikeNestedArchive(name)) {
         nestedArchiveCount++;
-        byte[] data = zipStream.readAllBytes(); // Read this entry's bytes
+        // Read this entry's bytes
+        byte[] data = zipStream.readAllBytes();
         try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
           if (hasNestedZip(nestedZip,nestedArchiveCount)) {
             return true;

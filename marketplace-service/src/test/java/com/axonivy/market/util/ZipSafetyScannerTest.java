@@ -26,7 +26,7 @@ class ZipSafetyScannerTest {
   }
 
   @Test
-  void testAnalyze_validZip() throws IOException {
+  void testAnalyzeValidZip() throws IOException {
     byte[] zip = createZipWithEntry("valid.txt", "Hello World".getBytes());
     MultipartFile file = mockZipFile(zip, false);
     assertTrue(ZipSafetyScanner.analyze(file),
@@ -34,7 +34,7 @@ class ZipSafetyScannerTest {
   }
 
   @Test
-  void testAnalyze_nullOrEmptyZip() throws IOException {
+  void testAnalyzeNullOrEmptyZip() throws IOException {
     MultipartFile file = mockZipFile(new byte[0], true);
     assertFalse(ZipSafetyScanner.analyze(file), "Expected analyze to return false for a null or empty zip file.");
   }
