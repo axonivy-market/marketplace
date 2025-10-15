@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.ZipSafetyScanner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -149,13 +150,16 @@ class ReleasePreviewServiceImplTest {
     @Test
     void testExtractSuccess() {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "mockFileName",
-                "application/zip", "test".getBytes());
-        try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
-            fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenAnswer(invocation -> null);
-        }
+            "application/zip", "test".getBytes());
         when(releasePreviewService.extractReadme(anyString(), anyString())).thenReturn(new ReleasePreview());
-        ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
-        assertNotNull(result, "Release preview should be null");
+        try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class);
+             MockedStatic<ZipSafetyScanner> zipScanner = Mockito.mockStatic(ZipSafetyScanner.class)) {
+            fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenAnswer(invocation -> null);
+            zipScanner.when(() -> ZipSafetyScanner.analyze(mockMultipartFile)).thenReturn(true);
+
+            ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
+            assertNotNull(result, "Release preview should NOT be null");
+        }
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,14 +10,16 @@ import java.util.*;
 import java.util.zip.*;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ZipSafetyScanner {
+
   // Limit the size for uncompressed bytes
-  private static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 50L * 1024 * 1024; // 50MB
-  private static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
-  private static final int MAX_ENTRIES = 50;
-  private static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
-  private static final double MAX_GLOBAL_COMPRESSION_RATIO = 100.0;
-  private static final int MAX_NESTED_ARCHIVE_DEPTH = 3;
+  public static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 50L * 1024 * 1024; // 50MB
+  public static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
+  public static final int MAX_ENTRIES = 50;
+  public static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
+  public static final double MAX_GLOBAL_COMPRESSION_RATIO = 100.0;
+  public static final int MAX_NESTED_ARCHIVE_DEPTH = 3;
   private static final Set<String> DANGEROUS_EXTENSIONS = new HashSet<>(Arrays.asList(
       ".exe", ".dll", ".bat", ".cmd", ".sh", ".ps1", ".vbs", ".js", ".jar",
       ".php", ".phps", ".phtml", ".py", ".rb", ".pl", ".class", ".com"
@@ -30,18 +34,18 @@ public class ZipSafetyScanner {
       return false;
     }
 
-    File tempFile = File.createTempFile("upload-", ".zip");
+    File tempFile = File.createTempFile("tempUpload-", ".zip");
     try (InputStream input = zipFile.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
       input.transferTo(output);
     }
 
-    int entries = 0;
-    long totalCompressed = 0;
-    long totalUncompressed = 0;
-    double maxEntryRatio = 0.0;
-    boolean isValid = true;
     try (ZipFile zf = new ZipFile(tempFile)) {
+      int entries = 0;
+      long totalCompressed = 0;
+      long totalUncompressed = 0;
+      double maxEntryRatio = 0.0;
+
       Enumeration<? extends ZipEntry> en = zf.entries();
       while (en.hasMoreElements()) {
         ZipEntry e = en.nextElement();
@@ -51,92 +55,91 @@ public class ZipSafetyScanner {
         long compressedSize = e.getCompressedSize();
         long uncompressedSize = e.getSize();
 
-        // Stop if there are too much sub files in zip file
-        if (entries > MAX_ENTRIES) {
-          log.error("Zip entry too large: {}", name);
-          isValid = false;
-          break;
-        }
-        // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
-        if (isTraversal(name)) {
-          log.error("Entry name has traversal signal: {}", name);
-          isValid = false;
-          break;
-        }
-
-        // Prevent entries with paths starting from the root (e.g. /usr/bin/file or C:\Windows\...).
-        // Avoid overwriting system files when extracting.
-        if (isAbsolutePathLike(name)) {
-          log.error("Entry name has absolutely path: {}", name);
-          isValid = false;
-          break;
-        }
-
-        // Purpose: Prevent files like .bashrc, .gitignore, .ssh/authorized_keys , .env
-        // Protect the system from overwriting hidden configuration files when unzipping.
-        if (isHiddenDotFile(name)) {
-          log.error("Entry file is an anonymous file (.): {}", name);
-          isValid = false;
-          break;
-        }
-
-        if (hasDangerousExtension(name)) {
-          log.error("Dangerous extensions detected: {}", name);
-          isValid = false;
-          break;
-        }
-
-        // Purpose: Prevent single files from being too large.
-        if (uncompressedSize > MAX_SINGLE_UNCOMPRESSED_BYTES) {
-          log.error("Uncompressed entry file {} size too large: {}", name, uncompressedSize);
-          isValid = false;
-          break;
-        }
-
-        // Purpose: Calculate the ratio between compressed and decompressed size.
-        // Reason: If the ratio is too high (e.g. 1 byte compressed → 1GB decompressed), it could be a ZIP bomb.
-        if (compressedSize > 0 && uncompressedSize > 0) {
-          double ratio = (double) uncompressedSize / (double) compressedSize;
-          if (ratio > maxEntryRatio) maxEntryRatio = ratio;
-          if (ratio > MAX_COMPRESSION_RATIO_PER_ENTRY) {
-            log.error("The file {} has high compression ratio too large: {}", name, ratio);
-            isValid = false;
-            break;
-          }
+        if (!isEntryValid(name, compressedSize, uncompressedSize, entries, totalUncompressed)) {
+          return false;
         }
 
         if (compressedSize > 0) totalCompressed += compressedSize;
         if (uncompressedSize > 0) totalUncompressed += uncompressedSize;
 
-        // Purpose: Check the total size when extracting the entire ZIP.
-        // Avoid ZIP bombs that compress many small files but have a very large total size.
-        if (totalUncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES) {
-          log.error("The total of uncompressed bytes too large: {}", totalUncompressed);
-          isValid = false;
-          break;
-        }
-
-        // Purpose: Detect ZIP files that contain other ZIP files inside.
-        if (detectNestedZipFiles(zf)) {
-          isValid = false;
-          break;
+        if (compressedSize > 0 && uncompressedSize > 0) {
+          double ratio = (double) uncompressedSize / compressedSize;
+          maxEntryRatio = Math.max(maxEntryRatio, ratio);
         }
       }
+
+      if (detectNestedZipFiles(zf)) {
+        return false;
+      }
+
+      if (!isGlobalRatioValid(totalCompressed, totalUncompressed)) {
+        return false;
+      }
+
+      return true;
     } finally {
       tempFile.deleteOnExit();
     }
+  }
 
-    // Global compression ratio check
-    if (isValid) {
-      double globalRatio = (totalCompressed > 0 && totalUncompressed > 0) ?
-          (double) totalUncompressed / totalCompressed : 0.0;
-
-      if (globalRatio > MAX_GLOBAL_COMPRESSION_RATIO) {
-        log.error("Global compression ratio too large: {}", globalRatio);
-        isValid = false;
+  private static boolean isEntryValid(String name, long compressedSize, long uncompressedSize, int entries, long totalUncompressed) {
+    // Stop if there are too much sub files in zip file
+    if (entries > MAX_ENTRIES) {
+      log.error("Zip entry too large: {}", name);
+      return false;
+    }
+    // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
+    if (isTraversal(name)) {
+      log.error("Entry name has traversal signal: {}", name);
+      return false;
+    }
+    // Prevent entries with paths starting from the root (e.g. /usr/bin/file or C:\Windows\...).
+    // Avoid overwriting system files when extracting.
+    if (isAbsolutePathLike(name)) {
+      log.error("Entry name has absolutely path: {}", name);
+      return false;
+    }
+    // Purpose: Prevent files like .bashrc, .gitignore, .ssh/authorized_keys , .env
+    // Protect the system from overwriting hidden configuration files when unzipping.
+    if (isHiddenDotFile(name)) {
+      log.error("Entry file is an anonymous file (.): {}", name);
+      return false;
+    }
+    if (hasDangerousExtension(name)) {
+      log.error("Dangerous extensions detected: {}", name);
+      return false;
+    }
+    // Purpose: Prevent single files from being too large.
+    if (uncompressedSize > MAX_SINGLE_UNCOMPRESSED_BYTES) {
+      log.error("Uncompressed entry file {} size too large: {}", name, uncompressedSize);
+      return false;
+    }
+    // Purpose: Calculate the ratio between compressed and decompressed size.
+    // Reason: If the ratio is too high (e.g. 1 byte compressed → 1GB decompressed), it could be a ZIP bomb.
+    if (compressedSize > 0 && uncompressedSize > 0) {
+      double ratio = (double) uncompressedSize / compressedSize;
+      if (ratio > MAX_COMPRESSION_RATIO_PER_ENTRY) {
+        log.error("The file {} has high compression ratio too large: {}", name, ratio);
+        return false;
       }
     }
-    return isValid;
+
+    if (totalUncompressed + uncompressedSize > MAX_TOTAL_UNCOMPRESSED_BYTES) {
+      log.error("The total of uncompressed bytes too large: {}", totalUncompressed + uncompressedSize);
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean isGlobalRatioValid(long totalCompressed, long totalUncompressed) {
+    if (totalCompressed > 0 && totalUncompressed > 0) {
+      double ratio = (double) totalUncompressed / totalCompressed;
+      if (ratio > MAX_GLOBAL_COMPRESSION_RATIO) {
+        log.error("Global compression ratio too large: {}", ratio);
+        return false;
+      }
+    }
+    return true;
   }
 
   public static boolean detectNestedZipFiles(ZipFile zipFile) throws IOException {
@@ -152,7 +155,7 @@ public class ZipSafetyScanner {
         return true;
       }
     }
-    return false; // safe
+    return false; //false
   }
 
   private static boolean hasNestedZip(ZipFile zipFile) throws IOException {
