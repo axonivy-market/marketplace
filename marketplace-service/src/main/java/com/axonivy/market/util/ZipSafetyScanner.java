@@ -21,9 +21,6 @@ public class ZipSafetyScanner {
       ".php", ".phps", ".phtml", ".py", ".rb", ".pl", ".class", ".com"
   ));
 
-  // Giới hạn đọc thử nội dung để kiểm nested (chỉ đọc vài byte đầu entry)
-  private static final int NESTED_HEADER_PROBE_BYTES = 8;
-
   /**
    * Analyze a ZIP file without unzipping
    */
@@ -43,7 +40,6 @@ public class ZipSafetyScanner {
     long totalCompressed = 0;
     long totalUncompressed = 0;
     double maxEntryRatio = 0.0;
-    int nestedArchiveCount = 0;
     boolean isValid = true;
     try (ZipFile zf = new ZipFile(tempFile)) {
       Enumeration<? extends ZipEntry> en = zf.entries();
@@ -121,13 +117,9 @@ public class ZipSafetyScanner {
         }
 
         // Purpose: Detect ZIP files that contain other ZIP files inside.
-        if (looksLikeNestedArchive(name) && isZipSignature(zf, e, NESTED_HEADER_PROBE_BYTES)) {
-            nestedArchiveCount++;
-            if (nestedArchiveCount > MAX_NESTED_ARCHIVE_DEPTH) {
-              log.error("There are many nested file in the entry: {}", name);
-              isValid = false;
-              break;
-            }
+        if (detectNestedZipFiles(zf)) {
+          isValid = false;
+          break;
         }
       }
     } finally {
@@ -146,6 +138,71 @@ public class ZipSafetyScanner {
     }
     return isValid;
   }
+
+  public static boolean detectNestedZipFiles(ZipFile zipFile) throws IOException {
+    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+    while (entries.hasMoreElements()) {
+      ZipEntry entry = entries.nextElement();
+      // skip directories
+      if (entry.isDirectory()) {
+        continue;
+      }
+
+      if (hasNestedZip(zipFile)) {
+        return true;
+      }
+    }
+    return false; // safe
+  }
+
+  private static boolean hasNestedZip(ZipFile zipFile) throws IOException {
+    int nestedArchiveCount = 0;
+    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+    while (entries.hasMoreElements()) {
+      ZipEntry entry = entries.nextElement();
+      if (entry.isDirectory()) continue;
+      String name = entry.getName();
+      if (looksLikeNestedArchive(name)) {
+        nestedArchiveCount++;
+        // Read this entry as a ZIP and process recursively
+        try (InputStream is = zipFile.getInputStream(entry)) {
+          byte[] data = is.readAllBytes();
+          try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
+            if (hasNestedZip(nestedZip,nestedArchiveCount)) {
+              log.error("Too many nested ZIP entries detected (>{}): {}", MAX_NESTED_ARCHIVE_DEPTH, name);
+              return true;
+            }
+          } catch (IOException e) {
+            // Not a valid zip, skip
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasNestedZip(ZipInputStream zipStream, int nestedArchiveCount) throws IOException {
+    ZipEntry entry;
+    while ((entry = zipStream.getNextEntry()) != null) {
+      if (entry.isDirectory()) continue;
+      String name = entry.getName();
+      if (looksLikeNestedArchive(name)) {
+        nestedArchiveCount++;
+        byte[] data = zipStream.readAllBytes(); // Read this entry's bytes
+        try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
+          if (hasNestedZip(nestedZip,nestedArchiveCount)) {
+            return true;
+          }
+        } catch (IOException e) {
+          // Not a valid zip, skip
+        }
+      }
+      zipStream.closeEntry();
+    }
+    return nestedArchiveCount >= MAX_NESTED_ARCHIVE_DEPTH;
+  }
+
+
 
   private static boolean isTraversal(String name) {
     return name.contains(".." + "/") || name.contains("../") || name.contains("..\\") || name.startsWith("../")
@@ -172,17 +229,5 @@ public class ZipSafetyScanner {
   private static boolean looksLikeNestedArchive(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
     return lower.endsWith(".zip") || lower.endsWith(".jar") || lower.endsWith(".war") || lower.endsWith(".ear");
-  }
-
-  private static boolean isZipSignature(ZipFile zf, ZipEntry entry, int probeBytes) {
-    if (entry.isDirectory()) return false;
-    try (InputStream in = zf.getInputStream(entry)) {
-      byte[] buf = new byte[Math.min(probeBytes, 8)];
-      int read = in.read(buf);
-      if (read < 4) return false;
-      return buf[0] == 'P' && buf[1] == 'K'; // Đơn giản
-    } catch (IOException e) {
-      return false;
-    }
   }
 }
