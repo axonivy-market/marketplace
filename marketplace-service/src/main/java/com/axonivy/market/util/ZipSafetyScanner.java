@@ -59,30 +59,22 @@ public class ZipSafetyScanner {
           return false;
         }
 
-        if (compressedSize > 0) totalCompressed += compressedSize;
-        if (uncompressedSize > 0) totalUncompressed += uncompressedSize;
+        if (compressedSize > 0) {totalCompressed += compressedSize;}
+        if (uncompressedSize > 0) {totalUncompressed += uncompressedSize;}
 
         if (compressedSize > 0 && uncompressedSize > 0) {
           double ratio = (double) uncompressedSize / compressedSize;
           maxEntryRatio = Math.max(maxEntryRatio, ratio);
         }
       }
-
-      if (detectNestedZipFiles(zf)) {
-        return false;
-      }
-
-      if (!isGlobalRatioValid(totalCompressed, totalUncompressed)) {
-        return false;
-      }
-
-      return true;
+      return !detectNestedZipFiles(zf) && isGlobalRatioValid(totalCompressed, totalUncompressed);
     } finally {
       tempFile.deleteOnExit();
     }
   }
 
-  private static boolean isEntryValid(String name, long compressedSize, long uncompressedSize, int entries, long totalUncompressed) {
+  private static boolean isEntryValid(String name, long compressedSize, long uncompressedSize,
+      int entries, long totalUncompressed) {
     // Stop if there are too much sub files in zip file
     if (entries > MAX_ENTRIES) {
       log.error("Zip entry too large: {}", name);
@@ -163,7 +155,9 @@ public class ZipSafetyScanner {
     Enumeration<? extends ZipEntry> entries = zipFile.entries();
     while (entries.hasMoreElements()) {
       ZipEntry entry = entries.nextElement();
-      if (entry.isDirectory()) continue;
+      if (entry.isDirectory()) {
+        continue;
+      }
       String name = entry.getName();
       if (looksLikeNestedArchive(name)) {
         nestedArchiveCount++;
@@ -171,12 +165,13 @@ public class ZipSafetyScanner {
         try (InputStream is = zipFile.getInputStream(entry)) {
           byte[] data = is.readAllBytes();
           try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
-            if (hasNestedZip(nestedZip,nestedArchiveCount)) {
+            if (hasNestedZip(nestedZip, nestedArchiveCount)) {
               log.error("Too many nested ZIP entries detected (>{}): {}", MAX_NESTED_ARCHIVE_DEPTH, name);
               return true;
             }
           } catch (IOException e) {
             // Not a valid zip, skip
+            log.error("It is not a ZIP entry: {}", name, e);
           }
         }
       }
@@ -198,6 +193,7 @@ public class ZipSafetyScanner {
           }
         } catch (IOException e) {
           // Not a valid zip, skip
+          log.error("It is not a ZIP entry: {}", name, e);
         }
       }
       zipStream.closeEntry();
@@ -206,10 +202,10 @@ public class ZipSafetyScanner {
   }
 
 
-
   private static boolean isTraversal(String name) {
-    return name.contains(".." + "/") || name.contains("../") || name.contains("..\\") || name.startsWith("../")
-        || name.startsWith("..\\");
+    boolean containsDoubleDotSlash = name.contains(".." + "/") || name.contains("../") || name.contains("..\\");
+    boolean startsWithDoubleDot = name.startsWith("../") || name.startsWith("..\\");
+    return containsDoubleDotSlash || startsWithDoubleDot;
   }
 
   private static boolean isAbsolutePathLike(String name) {
@@ -217,14 +213,21 @@ public class ZipSafetyScanner {
   }
 
   private static boolean isHiddenDotFile(String name) {
-    String simple = name.contains("/") ? name.substring(name.lastIndexOf('/') + 1) : name;
+    String simple;
+    if (name.contains("/")) {
+      simple = name.substring(name.lastIndexOf('/') + 1);
+    } else {
+      simple = name;
+    }
     return simple.startsWith(".") && simple.length() > 1;
   }
 
   private static boolean hasDangerousExtension(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
     for (String ext : ZipSafetyScanner.DANGEROUS_EXTENSIONS) {
-      if (lower.endsWith(ext)) return true;
+      if (lower.endsWith(ext)) {
+        return true;
+      }
     }
     return false;
   }
