@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
 import { ChatBubbleComponent } from './chat-bubble.component';
-import { ChatbotServiceService } from '../../../modules/chatbot/chatbot-service.service';
+import { ChatbotServiceService } from '../chatbot-service.service';
 
 describe('ChatBubbleComponent', () => {
   let component: ChatBubbleComponent;

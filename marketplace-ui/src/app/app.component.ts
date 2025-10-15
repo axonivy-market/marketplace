@@ -12,7 +12,7 @@ import {
   Event
 } from '@angular/router';
 import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.component";
-import { ChatBubbleComponent } from "./shared/components/chat-bubble/chat-bubble.component";
+import { ChatBubbleComponent } from "./modules/chatbot/chat-bubble/chat-bubble.component";
 import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 import { WindowRef } from './core/services/browser/window-ref.service';
 import { DocumentRef } from './core/services/browser/document-ref.service';

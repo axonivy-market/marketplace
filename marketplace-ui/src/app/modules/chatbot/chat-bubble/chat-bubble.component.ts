@@ -1,9 +1,10 @@
-import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewChecked, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatbotServiceService } from '../../../modules/chatbot/chatbot-service.service';
+import { ChatbotServiceService } from '../chatbot-service.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import MarkdownIt from 'markdown-it';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 interface ChatMessage {
   message: string;
@@ -21,13 +22,13 @@ interface ChatbotResponse {
 @Component({
   selector: 'app-chat-bubble',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './chat-bubble.component.html',
   styleUrls: ['./chat-bubble.component.scss']
 })
 export class ChatBubbleComponent implements AfterViewChecked {
   @ViewChild('chatMessages') private chatMessagesContainer!: ElementRef;
-
+  translateService = inject(TranslateService);
   isExpanded = false;
   currentMessage = '';
   messages: ChatMessage[] = [];
@@ -60,7 +61,6 @@ export class ChatBubbleComponent implements AfterViewChecked {
         });
       }
     } catch (err) {
-      // Handle any scrolling errors silently
     }
   }
 
@@ -73,12 +73,15 @@ export class ChatBubbleComponent implements AfterViewChecked {
   }
 
   private initializeChat(): void {
-    const welcomeMessage: ChatMessage = {
-      message: 'Hello! Welcome to AxonIvy Marketplace chat service. How can I assist you today?',
-      isUser: false,
-      timestamp: new Date()
-    };
-    this.messages.push(welcomeMessage);
+    this.translateService.get('common.chatbot.welcomeMessage').subscribe(welcomeText => {
+      const welcomeMessage: ChatMessage = {
+        message: welcomeText,
+        isUser: false,
+        timestamp: new Date()
+      };
+      this.messages.push(welcomeMessage);
+    });
+    
     this.isInitialized = true;
     
     // Scroll to bottom after welcome message
@@ -101,7 +104,6 @@ export class ChatBubbleComponent implements AfterViewChecked {
     };
     this.messages.push(userMessage);
 
-    // Scroll to bottom after user message
     setTimeout(() => this.scrollToBottom(), 50);
 
     const messageToSend = this.currentMessage.trim();
@@ -118,33 +120,34 @@ export class ChatBubbleComponent implements AfterViewChecked {
           };
           this.messages.push(botMessage);
           
-          // Scroll to bottom after bot response
           setTimeout(() => this.scrollToBottom(), 100);
         } else {
-          const errorMessage: ChatMessage = {
-            message: response.error || 'Sorry, something went wrong. Please try again later.',
-            isUser: false,
-            timestamp: new Date()
-          };
-          this.messages.push(errorMessage);
-          
-          // Scroll to bottom after error message
-          setTimeout(() => this.scrollToBottom(), 100);
+          this.translateService.get('common.chatbot.errorMessage').subscribe(errorText => {
+            const errorMessage: ChatMessage = {
+              message: response.error || errorText,
+              isUser: false,
+              timestamp: new Date()
+            };
+            this.messages.push(errorMessage);
+            
+            setTimeout(() => this.scrollToBottom(), 100);
+          });
         }
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error getting chatbot response:', error);
-        const errorMessage: ChatMessage = {
-          message: 'Sorry, unable to connect to chat service. Please try again later.',
-          isUser: false,
-          timestamp: new Date()
-        };
-        this.messages.push(errorMessage);
-        this.isLoading = false;
-        
-        // Scroll to bottom after error message
-        setTimeout(() => this.scrollToBottom(), 100);
+        this.translateService.get('common.chatbot.connectionError').subscribe(connectionErrorText => {
+          const errorMessage: ChatMessage = {
+            message: connectionErrorText,
+            isUser: false,
+            timestamp: new Date()
+          };
+          this.messages.push(errorMessage);
+          this.isLoading = false;
+          
+          setTimeout(() => this.scrollToBottom(), 100);
+        });
       }
     });
   }

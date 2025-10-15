@@ -273,6 +273,13 @@
         "twentyItems": "20 items per page",
         "all": "All"
       }
+    },
+    "chatbot": {
+      "title": "Axon Ivy Marketplace Chat Support",
+      "welcomeMessage": "Hello! Welcome to Axon Ivy Marketplace chat service. How can I assist you today?",
+      "placeholder": "Type your message...",
+      "errorMessage": "Sorry, something went wrong. Please try again later.",
+      "connectionError": "Sorry, unable to connect to chat service. Please try again later."
     }
   }
 }
