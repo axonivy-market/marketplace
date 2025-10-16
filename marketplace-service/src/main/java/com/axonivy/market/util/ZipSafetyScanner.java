@@ -147,7 +147,6 @@ public class ZipSafetyScanner {
       if (entry.isDirectory()) {
         continue;
       }
-
       if (hasNestedZip(zipFile)) {
         return true;
       }
@@ -166,19 +165,27 @@ public class ZipSafetyScanner {
       String name = entry.getName();
       if (looksLikeNestedArchive(name)) {
         nestedArchiveCount++;
-        // Read this entry as a ZIP and process recursively
-        try (InputStream is = zipFile.getInputStream(entry)) {
-          byte[] data = is.readAllBytes();
-          try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
-            if (hasNestedZip(nestedZip, nestedArchiveCount)) {
-              log.error("Too many nested ZIP entries detected (>{}): {}", MAX_NESTED_ARCHIVE_DEPTH, name);
-              return true;
-            }
-          } catch (IOException e) {
-            // Not a valid zip, skip
-            log.error("It is not a ZIP entry: {}", name, e);
-          }
+        if (readZipEntryAndProcessRecursively(zipFile, entry, nestedArchiveCount, name)) {
+          return true;
         }
+      }
+    }
+    return false;
+  }
+
+  private static boolean readZipEntryAndProcessRecursively(ZipFile zipFile, ZipEntry entry, int nestedArchiveCount,
+      String name) throws IOException {
+    // Read this entry as a ZIP and process recursively
+    try (InputStream is = zipFile.getInputStream(entry)) {
+      byte[] data = is.readAllBytes();
+      try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
+        if (hasNestedZip(nestedZip, nestedArchiveCount)) {
+          log.error("Too many nested ZIP entries detected (>{}): {}", MAX_NESTED_ARCHIVE_DEPTH, name);
+          return true;
+        }
+      } catch (IOException e) {
+        // Not a valid zip, skip
+        log.error("It is not a ZIP entry: {}", name, e);
       }
     }
     return false;
@@ -187,26 +194,34 @@ public class ZipSafetyScanner {
   private static boolean hasNestedZip(ZipInputStream zipStream, int nestedArchiveCount) throws IOException {
     ZipEntry entry;
     while ((entry = zipStream.getNextEntry()) != null) {
-      if (entry.isDirectory()) {
+      String name = entry.getName();
+      if (entry.isDirectory() || !looksLikeNestedArchive(name)) {
+        zipStream.closeEntry();
         continue;
       }
-      String name = entry.getName();
-      if (looksLikeNestedArchive(name)) {
-        nestedArchiveCount++;
-        // Read this entry's bytes
-        byte[] data = zipStream.readAllBytes();
-        try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
-          if (hasNestedZip(nestedZip,nestedArchiveCount)) {
-            return true;
-          }
-        } catch (IOException e) {
-          // Not a valid zip, skip
-          log.error("It is not a ZIP entry: {}", name, e);
-        }
-      }
+
+      nestedArchiveCount++;
+      byte[] data = zipStream.readAllBytes();
+      boolean foundNested = processNestedZip(data, nestedArchiveCount, name);
       zipStream.closeEntry();
+
+      if (foundNested) {
+        return true;
+      }
     }
     return nestedArchiveCount >= MAX_NESTED_ARCHIVE_DEPTH;
+  }
+
+  private static boolean processNestedZip(byte[] data, int nestedArchiveCount, String name) {
+    try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
+      if (hasNestedZip(nestedZip, nestedArchiveCount)) {
+        return true;
+      }
+    } catch (IOException e) {
+      // Not a valid zip, skip
+      log.error("It is not a ZIP entry: {}", name, e);
+    }
+    return false;
   }
 
 
