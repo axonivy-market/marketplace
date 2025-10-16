@@ -32,7 +32,8 @@
       "team": "Team",
       "market": "Marktplatz",
       "test": "test be",
-      "monitor": "Überwachen"
+      "monitor": "Überwachen",
+      "login": "Mit GitHub anmelden"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
