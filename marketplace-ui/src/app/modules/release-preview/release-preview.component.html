@@ -8,7 +8,7 @@
     </h3>
   </div>
   <div class="container mt-5">
-    <form (submit)="onSubmit()">
+    <form>
       <div class="form-group">
         <button
           type="button"
@@ -74,14 +74,6 @@
           </a>
         </small>
       </div>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="!selectedFile || !isZipFile"
-        [lang]="languageService.selectedLanguage()"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-        {{ 'common.preview.buttonLabel' | translate }}
-      </button>
     </form>
     <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
       <div
