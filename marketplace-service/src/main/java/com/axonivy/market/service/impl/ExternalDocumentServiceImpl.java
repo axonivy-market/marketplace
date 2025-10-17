@@ -57,6 +57,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
+  private static final String DOC_FACTORY_DOC = "docfactory";
+  private static final String DOC_FACTORY_ID = "doc-factory";
   private final ProductRepository productRepo;
   private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   private final FileDownloadService fileDownloadService;
@@ -170,6 +172,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public String findBestMatchVersion(String productId, String version) {
+    if (DOC_FACTORY_DOC.equalsIgnoreCase(productId)){
+      productId = DOC_FACTORY_ID;
+    }
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
       return null;
