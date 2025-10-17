@@ -1,9 +1,14 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.PageResponse;
+import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -14,6 +19,12 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +39,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.IS_FOCUSED;
+import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -39,18 +52,19 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
+  private final PagedResourcesAssembler<GithubReposModel> pagedResourcesAssembler;
 
-  @Operation(summary = "Get all GitHub repositories",
-      description = "Fetch all GitHub repositories with their details and test results")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successfully fetched GitHub repositories"
-  )
-  @GetMapping(REPOS)
-  public ResponseEntity<List<GithubReposModel>> getGitHubRepos() {
-    List<GithubReposModel> response = githubReposService.fetchAllRepositories();
-    return new ResponseEntity<>(response, HttpStatus.OK);
-  }
+//  @Operation(summary = "Get all GitHub repositories",
+//      description = "Fetch all GitHub repositories with their details and test results")
+//  @ApiResponse(
+//      responseCode = "200",
+//      description = "Successfully fetched GitHub repositories"
+//  )
+//  @GetMapping(REPOS)
+//  public ResponseEntity<List<GithubReposModel>> getGitHubRepos() {
+//    List<GithubReposModel> response = githubReposService.fetchAllRepositories();
+//    return new ResponseEntity<>(response, HttpStatus.OK);
+//  }
 
   @GetMapping(REPOS_REPORT)
   @Operation(hidden = true)
@@ -74,11 +88,23 @@ public class MonitorDashBoardController {
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
   public ResponseEntity<String> updateFocusedRepo(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-                                                  @RequestParam(REPOS) List<String> repos) {
+      @RequestParam(REPOS) List<String> repos) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-            GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
+  }
+
+//  @GetMapping("Phuc")
+  @GetMapping(REPOS)
+  @Operation(hidden = true)
+  public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
+      required = false) Boolean isFocused, @ParameterObject Pageable pageable) {
+    Page<GithubReposModel> results = githubReposService.fetchAllRepositories(isFocused, pageable);
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
+        results.getTotalElements(), results.getTotalPages());
+    PagedModel<GithubReposModel> pagedModel = PagedModel.of(results.getContent(), pageMetadata);
+    return ResponseEntity.ok(pagedModel);
   }
 }

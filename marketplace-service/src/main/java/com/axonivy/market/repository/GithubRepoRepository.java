@@ -2,6 +2,8 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.GithubRepo;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,4 +26,7 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, String> 
 
   @Query("SELECT r FROM GithubRepo r LEFT JOIN FETCH r.testSteps WHERE r.name = :name")
   Optional<GithubRepo> findByNameWithTestSteps(@Param("name") String name);
+
+  @EntityGraph(attributePaths = {"workflowInformation", "testSteps"})
+  Page<GithubRepo> findAllByFocused(Boolean isFocused, Pageable pageable);
 }

@@ -18,3 +18,10 @@ export interface ChangeLogCriteria {
   productId?: string;
   nextPageHref?: string;
 }
+
+export interface MonitoringCriteria {
+  search: string | '';
+  isFocused: boolean | null;
+  // sort: SortOption | null;
+  pageable: Pageable;
+}

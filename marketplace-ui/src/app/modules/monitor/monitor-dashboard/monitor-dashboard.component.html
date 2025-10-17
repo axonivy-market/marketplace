@@ -45,12 +45,12 @@
       <div class="tab-content col-12 default-cursor">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
           [ngClass]="{ 'show active': activeTab === FOCUSED_TAB }">
-          <app-monitor-repo [repositories]="focusedRepo()" [isStandardTab]="false"
+          <app-monitor-repo [repositories]="this.repositories()" [isStandardTab]="false" (click)="onSelectedTabChanged()"
             [initialFilter]="initialFilter()" tabKey="focused"></app-monitor-repo>
         </div>
-        <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
+        <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab" (click)="onSelectedTabChanged()"
           [ngClass]="{ 'show active': activeTab === STANDARD_TAB }">
-          <app-monitor-repo [repositories]="standardRepo()" [isStandardTab]="true" 
+          <app-monitor-repo [repositories]="this.repositories()" [isStandardTab]="true"
             [initialFilter]="initialFilter()" tabKey="standard"></app-monitor-repo>
         </div>
       </div>

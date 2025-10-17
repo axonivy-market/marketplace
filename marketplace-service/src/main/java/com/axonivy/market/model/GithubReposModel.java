@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.plexus.util.StringUtils;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,7 @@ import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@Relation(collectionRelation = "githubRepos", itemRelation = "githubRepos")
 public class GithubReposModel {
 
   @EqualsAndHashCode.Include

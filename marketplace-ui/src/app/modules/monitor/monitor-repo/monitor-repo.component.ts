@@ -75,7 +75,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-    
+
     if (this.initialFilter) {
       this.searchText = this.initialFilter;
     }
@@ -83,7 +83,6 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
 
   ngOnChanges() {
     this.allRepositories = [...this.repositories];
-    
     const filterText = this.searchText || this.initialFilter;
     this.applyFilter(filterText);
   }

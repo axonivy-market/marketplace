@@ -24,6 +24,9 @@ import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHWorkflowRun;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -185,5 +188,12 @@ public class GithubReposServiceImpl implements GithubReposService {
       return;
     }
     githubRepoRepository.updateFocusedRepoByName(repos);
+  }
+
+  @Override
+  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, Pageable pageable) {
+    Page<GithubRepo> result = githubRepoRepository.findAllByFocused(isFocused, pageable);
+    List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
+    return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }
 }
