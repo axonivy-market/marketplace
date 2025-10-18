@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { GithubService, Repository } from '../github.service';
+import { GithubService, Repository, RepositoryPages } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -52,15 +52,17 @@ export class MonitoringDashboardComponent implements OnInit {
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = FOCUSED_TAB;
   isLoading = false;
-  criteria: MonitoringCriteria = {
+  // criteria: MonitoringCriteria = {
+  //   search: '',
+  //   isFocused: null,
+  //   pageable: DEFAULT_PAGEABLE
+  // };
+  monitoringCriteria = signal<MonitoringCriteria>({
     search: '',
     isFocused: null,
-    // sort: null,
     pageable: DEFAULT_PAGEABLE
-  };
-  repositories = signal<Repository[]>([]);
-  focusedRepo = computed(() => []);
-  standardRepo = computed(() => []);
+  });
+  repositories = signal<RepositoryPages>({ _embedded: { githubRepos: [] } });
   initialFilter = signal<string>('');
 
   ngOnInit(): void {
@@ -71,8 +73,7 @@ export class MonitoringDashboardComponent implements OnInit {
           this.activeTab = STANDARD_TAB;
         }
       });
-
-      this.loadRepositories(this.criteria);
+      this.loadRepositories(this.monitoringCriteria());
       this.pageTitleService.setTitleOnLangChange(
         'common.monitor.dashboard.pageTitle'
       );
@@ -86,7 +87,7 @@ export class MonitoringDashboardComponent implements OnInit {
     this.detectMonitoringActiveTab();
     this.githubService.getRepositories(criteria).subscribe({
       next: data => {
-        this.repositories.set(data._embedded.githubRepos);
+        this.repositories.set(data);
         this.isLoading = false;
         this.error = '';
       },
@@ -98,16 +99,15 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   detectMonitoringActiveTab(): void {
-    this.criteria.isFocused = this.activeTab === FOCUSED_TAB;
+    if (this.activeTab === STANDARD_TAB) {
+      this.monitoringCriteria().isFocused = '';
+    }else {
+      this.monitoringCriteria().isFocused = 'true';
+    }
   }
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
-  }
-
-  onSelectedTabChanged(): void {
-    console.log('onSelectedTabChanged');
-    console.log(this.criteria);
-    this.loadRepositories(this.criteria);
+    this.loadRepositories(this.monitoringCriteria());
   }
 }

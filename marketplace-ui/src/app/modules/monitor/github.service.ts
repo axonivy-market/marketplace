@@ -24,7 +24,7 @@ export interface RepositoryPages {
   _embedded: {
     githubRepos: Repository[];
   };
-  page: Page;
+  page?: Page;
 }
 
 export interface WorkflowInformation {

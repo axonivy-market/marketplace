@@ -1,5 +1,5 @@
 import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { Repository } from '../github.service';
+import { Repository, RepositoryPages } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -51,7 +51,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
 
-  @Input() repositories: Repository[] = [];
+  @Input() repositoryPages: RepositoryPages = { _embedded: { githubRepos: [] }, page: undefined };
   @Input() isStandardTab = false;
   @Input() tabKey!: string;
   @Input() initialFilter = '';
@@ -82,7 +82,7 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges() {
-    this.allRepositories = [...this.repositories];
+    this.allRepositories = [...this.repositoryPages._embedded.githubRepos];
     const filterText = this.searchText || this.initialFilter;
     this.applyFilter(filterText);
   }
