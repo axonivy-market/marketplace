@@ -48,7 +48,7 @@
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
              [ngClass]="{ 'show active': activeTab === STANDARD_TAB }">
         </div>
-        <app-monitor-repo [repositoryPages]="this.repositories()" [isStandardTab]="true"
+        <app-monitor-repo [activeTab]="activeTab"
                           [initialFilter]="initialFilter()" tabKey="standard" />
       </div>
     </div>

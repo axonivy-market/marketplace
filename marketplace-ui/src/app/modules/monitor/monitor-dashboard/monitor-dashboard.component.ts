@@ -1,10 +1,9 @@
-import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { GithubService, Repository, RepositoryPages } from '../github.service';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { RepositoryPages } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
-  DEFAULT_PAGEABLE,
   FOCUSED_TAB,
   MONITORING_WIKI_LINK,
   STANDARD_TAB
@@ -12,15 +11,10 @@ import {
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { MonitoringRepoComponent } from "../monitor-repo/monitor-repo.component";
-import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { MonitoringRepoComponent } from '../monitor-repo/monitor-repo.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { ActivatedRoute } from '@angular/router';
-import { HttpParams } from '@angular/common/http';
-import { RequestParam } from '../../../shared/enums/request-param';
-import { Criteria, MonitoringCriteria } from '../../../shared/models/criteria.model';
-import { Language } from '../../../shared/enums/language.enum';
-import { SortOption } from '../../../shared/enums/sort-option.enum';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -41,7 +35,6 @@ export class MonitoringDashboardComponent implements OnInit {
 
   protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
-  githubService = inject(GithubService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
   pageTitleService: PageTitleService = inject(PageTitleService);
@@ -52,16 +45,7 @@ export class MonitoringDashboardComponent implements OnInit {
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = FOCUSED_TAB;
   isLoading = false;
-  // criteria: MonitoringCriteria = {
-  //   search: '',
-  //   isFocused: null,
-  //   pageable: DEFAULT_PAGEABLE
-  // };
-  monitoringCriteria = signal<MonitoringCriteria>({
-    search: '',
-    isFocused: null,
-    pageable: DEFAULT_PAGEABLE
-  });
+
   repositories = signal<RepositoryPages>({ _embedded: { githubRepos: [] } });
   initialFilter = signal<string>('');
 
@@ -73,7 +57,6 @@ export class MonitoringDashboardComponent implements OnInit {
           this.activeTab = STANDARD_TAB;
         }
       });
-      this.loadRepositories(this.monitoringCriteria());
       this.pageTitleService.setTitleOnLangChange(
         'common.monitor.dashboard.pageTitle'
       );
@@ -82,32 +65,7 @@ export class MonitoringDashboardComponent implements OnInit {
     }
   }
 
-  loadRepositories(criteria: MonitoringCriteria): void {
-    this.isLoading = true;
-    this.detectMonitoringActiveTab();
-    this.githubService.getRepositories(criteria).subscribe({
-      next: data => {
-        this.repositories.set(data);
-        this.isLoading = false;
-        this.error = '';
-      },
-      error: err => {
-        this.error = err.message;
-        this.isLoading = false;
-      }
-    });
-  }
-
-  detectMonitoringActiveTab(): void {
-    if (this.activeTab === STANDARD_TAB) {
-      this.monitoringCriteria().isFocused = '';
-    }else {
-      this.monitoringCriteria().isFocused = 'true';
-    }
-  }
-
   setActiveTab(tab: string): void {
     this.activeTab = tab;
-    this.loadRepositories(this.monitoringCriteria());
   }
 }

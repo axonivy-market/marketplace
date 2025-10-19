@@ -100,18 +100,18 @@
   </table>
 
   <!-- Pagination -->
-  <div class="d-flex justify-content-between py-2" *ngIf="getCollectionSize() > 0">
-    <ngb-pagination [collectionSize]="getCollectionSize()" [(page)]="page" [pageSize]="getPageSize()"
-      (pageChange)="refreshPagination()"></ngb-pagination>
+  <div class="d-flex justify-content-between py-2" *ngIf="totalElements > 0">
+    <ngb-pagination [collectionSize]="totalElements" [(page)]="this.page" [pageSize]="this.pageSize"
+      (pageChange)="onPageChange($event)"></ngb-pagination>
 
-    <select class="form-select pagination" [(ngModel)]="pageSize" (ngModelChange)="refreshPagination()">
+    <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
       <option [ngValue]="10">
         {{ 'common.monitor.pagination.tenItems' | translate }}
       </option>
       <option [ngValue]="20">
         {{ 'common.monitor.pagination.twentyItems' | translate }}
       </option>
-      <option [ngValue]="-1">
+      <option [ngValue]="999">
         {{ 'common.monitor.pagination.all' | translate }}
       </option>
     </select>
