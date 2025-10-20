@@ -45,4 +45,30 @@ export class RepoTestResultComponent {
       }
     }
   }
+
+  getWorkflowDisplay(state: string): {
+    icon: string;
+    label: string;
+    tooltip: string;
+  } {
+    if (!state) {
+      return { icon: '', label: '', tooltip: '' };
+    }
+
+    let icon = '🟢';
+    if (state.includes('disabled')) {
+      icon = '⚠️';
+    } else if (state === 'deleted') {
+      icon = '❌';
+    }
+
+    const labelKey = 'common.monitor.workflow.status.' + state;
+    const tooltipKey = 'common.monitor.workflow.tooltip.' + state;
+
+    return {
+      icon,
+      label: this.translateService.instant(labelKey),
+      tooltip: this.translateService.instant(tooltipKey)
+    };
+  }
 }

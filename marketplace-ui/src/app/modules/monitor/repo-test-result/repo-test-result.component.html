@@ -33,4 +33,23 @@
       </div>
     }
   }
+  <div class="sub-status align-middle" [lang]="languageService.selectedLanguage()">
+  @if (workflowInfo?.currentWorkflowState) {
+    @let display = getWorkflowDisplay(workflowInfo?.currentWorkflowState || '');
+    <span class="test-details fs-5">
+      {{ 'common.monitor.workflow.label' | translate }}:
+      {{ display.label }}
+      <span
+        class="workflow-icon"
+        [attr.title]="display.tooltip">
+        {{ display.icon }}
+      </span>
+    </span>
+  }
+  @if (workflowInfo?.disabledDate) {
+    <span class="test-details fs-5">
+      {{ workflowInfo?.disabledDate | date: 'short' }}
+    </span>
+  }
+</div>
 }

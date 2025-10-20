@@ -5,6 +5,7 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.WorkflowInformation;
@@ -110,7 +111,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowInfo(dbRepo, workflowType, run);
+        updateWorkflowInfo(ghRepo, dbRepo, workflowType, run);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -123,7 +124,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType,
+  private static void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
       GHWorkflowRun run) throws IOException {
     var workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
@@ -134,6 +135,18 @@ public class GithubReposServiceImpl implements GithubReposService {
           repo.getWorkflowInformation().add(newWorkflowInfo);
           return newWorkflowInfo;
         });
+    var repoWorkflow = ghRepo.getWorkflow(workflowType.getFileName());
+
+    WorkflowStatus currentStatus = Arrays.stream(WorkflowStatus.values())
+        .filter(workflowStatus -> workflowStatus.getStatus().equals(repoWorkflow.getState()))
+        .findFirst()
+        .orElse(null);
+
+    if (currentStatus != null) {
+      workflowInformation.setCurrentWorkflowState(currentStatus.getStatus());
+      workflowInformation.setDisabledDate(
+          WorkflowStatus.ACTIVE != currentStatus ? repoWorkflow.getUpdatedAt() : null);
+    }
 
     workflowInformation.setLastBuilt(run.getCreatedAt());
     workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
