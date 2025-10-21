@@ -216,7 +216,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
     var mockGithubFile = new GitHubFile();
-    mockGithubFile.setFileName("connector/"+META_FILE);
+    mockGithubFile.setFileName("connector/" + META_FILE);
     mockGithubFile.setType(FileType.META);
     mockGithubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
