@@ -3,6 +3,7 @@
   max-width: 100%;
   overflow: hidden;
 }
+
 .table {
   margin-top: 2.5rem;
   border-collapse: collapse;
@@ -17,22 +18,23 @@
   }
 
   th {
-    position: relative;
     border-right: none;
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: 25%;
-      bottom: 25%;
-      right: 0;
-      width: 1px;
-      background: var(--monitoring-border-color);
+    h5 {
+      border-left: 1px solid var(--monitoring-border-color);
+      padding-left: 1rem;
     }
-  }
 
-  th:last-child::after {
-    content: none;
+    &:first-child {
+      h5 {
+        border-left: none;
+        padding-left: 0;
+      }
+    }
+
+    &:last-child::after {
+      content: none;
+    }
   }
 }
 

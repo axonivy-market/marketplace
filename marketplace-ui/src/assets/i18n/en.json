@@ -272,6 +272,23 @@
         "tenItems": "10 items per page",
         "twentyItems": "20 items per page",
         "all": "All"
+      },
+      "workflow": {
+        "label": "Workflow",
+        "status": {
+          "active": "Active",
+          "disabled_inactivity": "Disabled",
+          "disabled_manually": "Disabled",
+          "disabled_unknown": "Disabled",
+          "deleted": "Deleted"
+        },
+        "tooltip": {
+          "active": "Active: The workflow is enabled and will run automatically when triggered.",
+          "disabled_inactivity": "Disabled inactivity: The workflow was automatically disabled due to prolonged repository inactivity. You need to re-enable it to run again.",
+          "disabled_manually": "Disabled manually: The workflow was manually disabled and will not run until re-enabled.",
+          "disabled_unknown": "Disabled unknown: The workflow is disabled for an unknown reason. Check configuration or repository permissions.",
+          "deleted": "Deleted: The workflow file has been deleted from the repository and cannot run."
+        }
       }
     }
   }

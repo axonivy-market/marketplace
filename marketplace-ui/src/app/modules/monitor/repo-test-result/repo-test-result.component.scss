@@ -11,3 +11,13 @@
 .sub-status {
   margin: 0.5rem 0;
 }
+
+.sub-status.empty-test-row {
+  visibility: hidden;
+}
+
+.workflow-icon {
+  padding-bottom: 0.2em;
+  cursor: pointer;
+  vertical-align: middle;
+}
