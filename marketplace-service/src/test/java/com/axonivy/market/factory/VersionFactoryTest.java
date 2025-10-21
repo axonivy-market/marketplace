@@ -75,6 +75,6 @@ class VersionFactoryTest  extends BaseSetup {
     assertEquals("10.0.10-m123", resolvedVersion, "Should return highest version in range");
 
     resolvedVersion = VersionFactory.resolveVersion(MOCK_PRODUCT_ID_WITH_VERSION, MOCK_RELEASED_VERSION);
-    assertEquals(MOCK_RELEASED_VERSION, resolvedVersion, "Should return default release version");
+    assertEquals(MOCK_PRODUCT_ID_WITH_VERSION, resolvedVersion, "Should return exact version");
   }
 }
