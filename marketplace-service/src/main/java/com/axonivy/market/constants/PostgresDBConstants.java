@@ -23,4 +23,5 @@ public class PostgresDBConstants {
   public static final String TYPE = "type";
   public static final String USER_ID = "userId";
   public static final String EXCLUDED_STATUSES = "excludedStatuses";
+  public static final String WORKFLOW_TYPE = "workflowType";
 }
