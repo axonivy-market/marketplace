@@ -33,6 +33,13 @@
       </div>
     }
   }
+
+    @if (hasAnyTestResults() && !hasWorkflowTestResults()) {
+    <div class="sub-status align-middle empty-test-row">
+      <span class="test-details fs-5">&nbsp;</span>
+    </div>
+  }
+
   <div class="sub-status align-middle" [lang]="languageService.selectedLanguage()">
   @if (workflowInfo?.currentWorkflowState) {
     @let display = getWorkflowDisplay(workflowInfo?.currentWorkflowState || '');
