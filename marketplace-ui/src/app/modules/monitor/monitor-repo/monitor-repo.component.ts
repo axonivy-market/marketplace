@@ -161,7 +161,9 @@ export class MonitoringRepoComponent implements OnInit {
     } else {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
-      this.criteria.workflowType = this.COLUMN_NAME;
+      if (column != 'name') {
+        this.criteria.workflowType = this.COLUMN_NAME;
+      }
     }
     this.criteria.sortDirection = this.sortDirection;
     this.loadRepositories(this.criteria);
@@ -175,27 +177,6 @@ export class MonitoringRepoComponent implements OnInit {
     }
   }
 
-  private compareColumnValues(repo1ColumnValue: string, repo2ColumnValue: string, sortDirection: string): number {
-    const columnValueComparison = repo1ColumnValue.localeCompare(repo2ColumnValue);
-    if (columnValueComparison === 0) {
-      return 0;
-    }
-
-    const isAscendingDirection = sortDirection === ASCENDING;
-    if (isAscendingDirection) {
-      return columnValueComparison;
-    } else {
-      return -columnValueComparison;
-    }
-  }
-
-  private getColumnValue(repo: Repository, column: string): string {
-    if (column === this.COLUMN_NAME) {
-      return repo.repoName;
-    }
-
-    return this.findWorkflowMatch(repo, column)?.conclusion ?? '';
-  }
 
   findWorkflowMatch(repo: Repository, workflow: string) {
     return repo.workflowInformation?.find(wf => wf.workflowType === workflow);

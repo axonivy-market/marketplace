@@ -102,7 +102,7 @@ public class MonitorDashBoardController {
   public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
           required = false) Boolean isFocused, @ParameterObject Pageable pageable,
       @RequestParam(value = "search", required = false) String searchText,
-      @RequestParam(value = "workFlowType", required = false, defaultValue = "CI") String type,
+      @RequestParam(value = "workflowType", required = false, defaultValue = "CI") String type,
       @RequestParam(value = "sortDirection", required = false, defaultValue = "ASC") String sortDirection
   ) {
     Page<GithubReposModel> results = githubReposService.fetchAllRepositories(isFocused, searchText, type, sortDirection,

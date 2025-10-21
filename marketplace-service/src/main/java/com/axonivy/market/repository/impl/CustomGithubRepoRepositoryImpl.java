@@ -21,12 +21,12 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   public Page<GithubRepo> findAllByFocusedSorted(Boolean isFocused, String workflowType, String sortDirection,
       String productId, Pageable pageable) {
     String orderBy;
-    if ("DESC".equalsIgnoreCase(sortDirection)) {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END, r.product_id";
-    } else {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END, r.product_id";
-    }
-
+//    if ("DESC".equalsIgnoreCase(sortDirection)) {
+//      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
+//    } else {
+//      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
+//    }
+    orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
     String focusQuery = BooleanUtils.isTrue(isFocused)
         ? "WHERE r.focused = true "
         : "WHERE r.focused IS NULL ";
@@ -37,22 +37,24 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
       productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', productId, '%')) ";
     }
 
-    String sql = "SELECT r.* FROM github_repo r " +
+    String sql = "SELECT r.id, r.name, r.product_id, r.html_url, r.focused, w.conclusion AS dev_conclusion " +
+        "FROM github_repo r " +
         "LEFT JOIN ( " +
-        "    SELECT w1.* " +
+        "    SELECT w1.repository_id, w1.conclusion " +
         "    FROM workflow_information w1 " +
         "    WHERE w1.workflow_type = :workflowType " +
-        "    AND w1.last_built = ( " +
-        "        SELECT MAX(w2.last_built) " +
-        "        FROM workflow_information w2 " +
-        "        WHERE w2.repository_id = w1.repository_id AND w2.workflow_type = w1.workflow_type " +
-        "    ) " +
+        "      AND w1.last_built = ( " +
+        "          SELECT MAX(w2.last_built) " +
+        "          FROM workflow_information w2 " +
+        "          WHERE w2.repository_id = w1.repository_id " +
+        "            AND w2.workflow_type = :workflowType " +
+        "      ) " +
         ") w ON w.repository_id = r.id " +
         focusQuery +
         productQuery +
         orderBy;
 
-    Query nativeQuery = entityManager.createNativeQuery(sql, GithubRepo.class);
+   Query nativeQuery = entityManager.createNativeQuery(sql, GithubRepo.class);
     nativeQuery.setParameter("workflowType", workflowType);
     if (StringUtils.isNotBlank(productId)) {
       nativeQuery.setParameter("productId", productId);
@@ -61,13 +63,16 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     nativeQuery.setMaxResults(pageable.getPageSize());
 
     List<GithubRepo> repos = nativeQuery.getResultList();
-
+    for (GithubRepo repo : repos) {
+      System.out.println(repo.getProductId());
+    }
     // Count query
     String countSql = "SELECT COUNT(*) FROM github_repo r " +
         focusQuery +
         productQuery;
     Query countQuery = entityManager.createNativeQuery(countSql);
     Number total = (Number) countQuery.getSingleResult();
+
 
     return new PageImpl<>(repos, pageable, total.longValue());
   }

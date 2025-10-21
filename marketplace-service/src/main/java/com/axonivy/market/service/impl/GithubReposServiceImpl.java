@@ -209,6 +209,9 @@ public class GithubReposServiceImpl implements GithubReposService {
 //    } else {
 //      result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
 //    }
+//    for (GithubRepo githubRepo : result.getContent()) {
+//      System.out.println(githubRepo.getProductId());
+//    }
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }
