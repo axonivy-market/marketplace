@@ -161,11 +161,9 @@ export class MonitoringRepoComponent implements OnInit {
     } else {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
-      if (column != 'name') {
-        this.criteria.workflowType = this.COLUMN_NAME;
-      }
     }
     this.criteria.sortDirection = this.sortDirection;
+    this.criteria.workflowType = this.sortColumn;
     this.loadRepositories(this.criteria);
   }
 

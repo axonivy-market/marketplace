@@ -21,12 +21,12 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   public Page<GithubRepo> findAllByFocusedSorted(Boolean isFocused, String workflowType, String sortDirection,
       String productId, Pageable pageable) {
     String orderBy;
-//    if ("DESC".equalsIgnoreCase(sortDirection)) {
-//      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
-//    } else {
-//      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
-//    }
-    orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
+    if ("DESC".equalsIgnoreCase(sortDirection)) {
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
+    } else {
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
+    }
+
     String focusQuery = BooleanUtils.isTrue(isFocused)
         ? "WHERE r.focused = true "
         : "WHERE r.focused IS NULL ";
@@ -63,9 +63,6 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     nativeQuery.setMaxResults(pageable.getPageSize());
 
     List<GithubRepo> repos = nativeQuery.getResultList();
-    for (GithubRepo repo : repos) {
-      System.out.println(repo.getProductId());
-    }
     // Count query
     String countSql = "SELECT COUNT(*) FROM github_repo r " +
         focusQuery +
