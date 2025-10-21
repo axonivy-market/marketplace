@@ -59,9 +59,9 @@ export class GithubService {
 
   getRepositories(criteria: MonitoringCriteria): Observable<RepositoryPages> {
     let requestParams = new HttpParams()
-      // .set(RequestParam.SORT, `${criteria.sort}`)
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SEARCH, `${criteria.search}`)
       .set(RequestParam.IS_FOCUSED, `${criteria.isFocused}`);
 
     const options = {

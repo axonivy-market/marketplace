@@ -30,4 +30,8 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, String> 
 
   @EntityGraph(attributePaths = {"workflowInformation", "testSteps"})
   Page<GithubRepo> findAllByFocused(Boolean isFocused, Pageable pageable);
+
+  @EntityGraph(attributePaths = {"workflowInformation", "testSteps"})
+  Page<GithubRepo> findAllByFocusedAndProductIdContainingIgnoreCase(Boolean isFocused, String productId,
+      Pageable pageable);
 }

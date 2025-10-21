@@ -26,11 +26,9 @@ import {
   CI_BUILD,
   DEFAULT_MODE,
   DEFAULT_MONITORING_PAGEABLE,
-  DEFAULT_PAGEABLE,
   DESCENDING,
   DEV_BUILD,
   E2E_BUILD,
-  FOCUSED_TAB,
   MARKET_BASE_URL,
   NAME_COLUMN,
   REPORT_MODE,
@@ -71,7 +69,6 @@ export class MonitoringRepoComponent implements OnInit {
 
   mode: Record<string, RepoMode> = {};
   workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
-  searchText = '';
   page = 1;
   pageSize = 10;
   totalElements = 0;
@@ -93,10 +90,9 @@ export class MonitoringRepoComponent implements OnInit {
     }
 
     if (this.initialFilter) {
-      this.searchText = this.initialFilter;
+      this.criteria.search = this.initialFilter;
     }
 
-    this.criteria.search = this.searchText;
     this.loadRepositories(this.criteria);
   }
 
@@ -106,7 +102,7 @@ export class MonitoringRepoComponent implements OnInit {
       this.updateCriteriaAndLoad();
     }
     if (changes['initialFilter'] && !changes['initialFilter'].firstChange) {
-      this.searchText = this.initialFilter;
+      this.criteria.search = this.initialFilter;
       this.resetDefaultPage();
       this.updateCriteriaAndLoad();
     }
@@ -123,18 +119,17 @@ export class MonitoringRepoComponent implements OnInit {
     } else {
       this.criteria.isFocused = '';
     }
-    this.criteria.search = this.searchText;
     this.criteria.pageable.size = this.pageSize;
     this.criteria.pageable.page = this.page - 1;
     this.loadRepositories(this.criteria);
   }
 
   onSearchChanged(searchString: string) {
-    this.searchText = searchString;
     this.page = 1; // reset về page đầu khi search
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
-    this.criteria.search = this.searchText;
+    this.criteria.search = searchString;
+    console.log(this.criteria);
     this.loadRepositories(this.criteria);
   }
 
@@ -142,7 +137,6 @@ export class MonitoringRepoComponent implements OnInit {
     this.page = newPage;
     this.criteria.pageable.page = newPage - 1;
     this.criteria.pageable.size = this.pageSize;
-    this.criteria.search = this.searchText;
     this.loadRepositories(this.criteria);
   }
 
@@ -226,7 +220,7 @@ export class MonitoringRepoComponent implements OnInit {
   loadRepositories(criteria: MonitoringCriteria): void {
     this.githubService.getRepositories(criteria).subscribe({
       next: (data) => {
-        this.displayedRepositories = data._embedded.githubRepos;
+        this.displayedRepositories = data?._embedded?.githubRepos || [];
         this.totalElements = data.page?.totalElements || 0;
       },
       error: (err) => {},

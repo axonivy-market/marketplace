@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
@@ -192,8 +193,13 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, Pageable pageable) {
-    Page<GithubRepo> result = githubRepoRepository.findAllByFocused(isFocused, pageable);
+  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, Pageable pageable) {
+    Page<GithubRepo> result;
+    if (StringUtils.isBlank(searchText)) {
+      result = githubRepoRepository.findAllByFocused(isFocused, pageable);
+    } else {
+      result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
+    }
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }

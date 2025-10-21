@@ -100,8 +100,9 @@ public class MonitorDashBoardController {
   @GetMapping(REPOS)
   @Operation(hidden = true)
   public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
-      required = false) Boolean isFocused, @ParameterObject Pageable pageable) {
-    Page<GithubReposModel> results = githubReposService.fetchAllRepositories(isFocused, pageable);
+      required = false) Boolean isFocused, @ParameterObject Pageable pageable,
+      @RequestParam(value = "search", required = false) String searchText) {
+    Page<GithubReposModel> results = githubReposService.fetchAllRepositories(isFocused,searchText ,pageable);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
         results.getTotalElements(), results.getTotalPages());
     PagedModel<GithubReposModel> pagedModel = PagedModel.of(results.getContent(), pageMetadata);

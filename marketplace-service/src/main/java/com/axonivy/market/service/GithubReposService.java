@@ -14,5 +14,6 @@ public interface GithubReposService {
 
   void updateFocusedRepo(List<String> repos);
 
-  Page<GithubReposModel> fetchAllRepositories(Boolean isFocused,Pageable pageable);
+  Page<GithubReposModel> fetchAllRepositories(Boolean isFocused,String searchText ,Pageable pageable);
+
 }

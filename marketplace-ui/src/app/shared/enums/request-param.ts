@@ -7,4 +7,5 @@ export enum RequestParam {
   PAGE = 'page',
   SIZE = 'size',
   IS_FOCUSED = 'isFocused',
+  SEARCH = 'search',
 }
