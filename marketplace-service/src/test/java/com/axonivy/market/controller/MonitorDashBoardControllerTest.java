@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -33,16 +32,6 @@ class MonitorDashBoardControllerTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-  }
-
-  @Test
-  void testGetGitHubReposReturnsList() {
-    GithubReposModel model = new GithubReposModel();
-    when(githubReposService.fetchAllRepositories()).thenReturn(List.of(model));
-    ResponseEntity<List<GithubReposModel>> response = controller.getGitHubRepos();
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals(1, response.getBody().size(), "Response body should contain one element");
-    assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
   }
 
   @Test

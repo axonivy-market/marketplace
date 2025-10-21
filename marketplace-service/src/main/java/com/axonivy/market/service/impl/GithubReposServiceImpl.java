@@ -179,14 +179,6 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public List<GithubReposModel> fetchAllRepositories() {
-    List<GithubRepo> entities = githubRepoRepository.findAll();
-    return entities.stream()
-        .map(GithubReposModel::from)
-        .toList();
-  }
-
-  @Override
   public void updateFocusedRepo(List<String> repos) {
     if (repos == null || repos.isEmpty()) {
       return;
@@ -197,21 +189,8 @@ public class GithubReposServiceImpl implements GithubReposService {
   @Override
   public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
       String sortDirection, Pageable pageable) {
-    Page<GithubRepo> result;
-    result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,searchText,pageable);
-//    if (StringUtils.isBlank(searchText)) {
-//      result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,searchText,pageable);
-//      if (sortDirection.equalsIgnoreCase("asc")) {
-//        result = githubRepoRepository.findAllByFocusedAsc(null, workFlowType, pageable);
-//      } else {
-//        result = githubRepoRepository.findAllByFocusedDESC(null, workFlowType, pageable);
-//      }
-//    } else {
-//      result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
-//    }
-//    for (GithubRepo githubRepo : result.getContent()) {
-//      System.out.println(githubRepo.getProductId());
-//    }
+    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType, sortDirection,
+        searchText, pageable);
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }

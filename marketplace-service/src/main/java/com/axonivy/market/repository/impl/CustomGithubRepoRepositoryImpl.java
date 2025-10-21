@@ -27,7 +27,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     String orderBy;
 
     if (workflowType.equalsIgnoreCase(NAME)) {
-      orderBy = "ORDER BY r.product_id " + (sortDirection.isBlank() ? ASCENDING : DESCENDING);
+      orderBy = "ORDER BY r.product_id " + (DESCENDING.equalsIgnoreCase(sortDirection) ? DESCENDING : ASCENDING);
     } else if (DESCENDING.equalsIgnoreCase(sortDirection)) {
       orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
     } else {

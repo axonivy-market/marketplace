@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +9,6 @@ import java.util.List;
 
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
-
-  List<GithubReposModel> fetchAllRepositories();
 
   void updateFocusedRepo(List<String> repos);
 

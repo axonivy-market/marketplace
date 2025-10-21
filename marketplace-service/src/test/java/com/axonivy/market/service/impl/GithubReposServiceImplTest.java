@@ -5,7 +5,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -83,8 +81,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductExistingRepo() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.of(dbRepo));
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -96,8 +92,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductNewRepo() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -109,8 +103,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductDataAccessException() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -123,21 +115,6 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testFetchAllRepositories() {
-    GithubRepo repo = new GithubRepo();
-    when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
-    try (var mocked = mockStatic(GithubReposModel.class)) {
-      mocked.when(() -> GithubReposModel.from(repo)).thenReturn(new GithubReposModel());
-
-      List<GithubReposModel> result = service.fetchAllRepositories();
-
-      assertEquals(1, result.size(),
-          "Should return one GithubReposModel when one GithubRepo is present");
-      mocked.verify(() -> GithubReposModel.from(repo));
-    }
-  }
-
-  @Test
   void testLoadAndStoreTestReportsSuccess() throws Exception {
     Product product = new Product();
     product.setRepositoryName("repo1");
@@ -145,8 +122,6 @@ class GithubReposServiceImplTest {
 
     when(productRepository.findAll()).thenReturn(List.of(product));
     when(gitHubService.getRepository(product.getRepositoryName())).thenReturn(ghRepo);
-    when(githubRepoRepository.findByNameWithTestSteps(product.getRepositoryName()))
-        .thenReturn(Optional.of(dbRepo));
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
     assertDoesNotThrow(() -> serviceSpy.loadAndStoreTestReports(),

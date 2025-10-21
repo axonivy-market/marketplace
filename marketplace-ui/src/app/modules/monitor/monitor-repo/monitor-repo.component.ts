@@ -79,7 +79,7 @@ export class MonitoringRepoComponent implements OnInit {
     search: '',
     isFocused: 'true',
     sortDirection: 'ASC',
-    workflowType: 'CI',
+    workflowType: 'name',
     pageable: DEFAULT_MONITORING_PAGEABLE,
   };
   languageService = inject(LanguageService);
