@@ -55,11 +55,13 @@ export class RepoTestResultComponent {
       return { icon: '', label: '', tooltip: '' };
     }
 
-    let icon = '🟢';
+    let icon = '';
     if (state.includes('disabled')) {
       icon = '⚠️';
     } else if (state === 'deleted') {
       icon = '❌';
+    } else {
+      icon = '🟢';
     }
 
     const labelKey = 'common.monitor.workflow.status.' + state;
@@ -73,8 +75,8 @@ export class RepoTestResultComponent {
   }
 
   // Check if repo has any test results to avoid workflow status row doesn't jump
-  private isNonEmptyResults(obj: any): boolean {
-    return obj && Object.keys(obj).length > 0;
+  private isNonEmptyResults(obj: unknown): obj is Record<string, unknown> {
+    return typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0;
   }
 
   hasAnyTestResults(): boolean {

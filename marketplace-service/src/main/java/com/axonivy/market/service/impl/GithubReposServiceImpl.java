@@ -23,6 +23,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowRun;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -98,7 +99,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     githubRepoRepository.save(githubRepo);
   }
 
-  private static String getProductId(String repoName, String productId) {
+  private String getProductId(String repoName, String productId) {
     return REPO_NAME_TO_PRODUCT_ID.entrySet().stream()
         .filter(e -> repoName.startsWith(e.getKey()))
         .map(Map.Entry::getValue)
@@ -124,7 +125,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
+  private void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
       GHWorkflowRun run) throws IOException {
     var workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
@@ -137,6 +138,14 @@ public class GithubReposServiceImpl implements GithubReposService {
         });
     var repoWorkflow = ghRepo.getWorkflow(workflowType.getFileName());
 
+    addWorkflowState(repoWorkflow, workflowInformation);
+
+    workflowInformation.setLastBuilt(run.getCreatedAt());
+    workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
+    workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
+  }
+
+  private void addWorkflowState(GHWorkflow repoWorkflow, WorkflowInformation workflowInformation) throws IOException {
     WorkflowStatus currentStatus = Arrays.stream(WorkflowStatus.values())
         .filter(workflowStatus -> workflowStatus.getStatus().equals(repoWorkflow.getState()))
         .findFirst()
@@ -144,13 +153,12 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     if (currentStatus != null) {
       workflowInformation.setCurrentWorkflowState(currentStatus.getStatus());
-      workflowInformation.setDisabledDate(
-          WorkflowStatus.ACTIVE != currentStatus ? repoWorkflow.getUpdatedAt() : null);
+      if(WorkflowStatus.ACTIVE != currentStatus){
+        workflowInformation.setDisabledDate(repoWorkflow.getUpdatedAt());
+      } else {
+        workflowInformation.setDisabledDate(null);
+      }
     }
-
-    workflowInformation.setLastBuilt(run.getCreatedAt());
-    workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
-    workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
