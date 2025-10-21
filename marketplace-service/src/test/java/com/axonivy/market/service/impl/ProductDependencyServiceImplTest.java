@@ -10,6 +10,7 @@ import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.MetadataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,6 +54,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   MetadataRepository metadataRepository;
   @Mock
   ProductDependencyRepository productDependencyRepository;
+  @Mock
+  MetadataService metadataService;
   @InjectMocks
   ProductDependencyServiceImpl productDependencyService;
 
