@@ -41,6 +41,7 @@ public class VersionFactory {
     } else if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
       resolvedVersion = mavenVersion.trim();
     }
+
     return resolvedVersion;
   }
   private static String extractVersionFromRange(String mavenVersion) {
