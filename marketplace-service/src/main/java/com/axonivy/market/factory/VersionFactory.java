@@ -33,18 +33,16 @@ public class VersionFactory {
   private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[]{"(", "]", "[", ")"};
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
+    String resolvedVersion = defaultVersion;
     if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
       return defaultVersion;
+    } else if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
+      resolvedVersion = extractVersionFromRange(mavenVersion);
+    } else if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
+      resolvedVersion = mavenVersion.trim();
     }
-    if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
-      return extractVersionFromRange(mavenVersion);
-    }
-    if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
-      return mavenVersion.trim();
-    }
-    return defaultVersion;
+    return resolvedVersion;
   }
-
   private static String extractVersionFromRange(String mavenVersion) {
     var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
     String[] parts = plainVersions.split(CommonConstants.COMMA);

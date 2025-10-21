@@ -48,7 +48,7 @@ public class MetadataServiceImpl implements MetadataService {
       return metadataWithVersion.get();
     }
 
-    Metadata metadata = existingMetadata.stream().findFirst()
+    var metadata = existingMetadata.stream().findFirst()
         .orElseGet(() -> createNewMetadata(dependencyModel));
 
     return updateWithVersion(metadata, version);
@@ -171,7 +171,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataList, String version) {
+  private static Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataList, String version) {
     return metadataList.stream()
         .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
         .findFirst();
