@@ -265,7 +265,7 @@ class MetadataServiceImplTest extends BaseSetup {
     
     Metadata result = metadataService.getMetadataByVersion(mockDependency, MOCK_RELEASED_VERSION);
     
-    assertEquals(existingMetadata, result,"Expected existing metadata to be returned after adding missing version");
+    assertEquals(existingMetadata, result, "Expected existing metadata to be returned after adding missing version");
     verify(metadataRepo, times(1)).flush();
   }
 
