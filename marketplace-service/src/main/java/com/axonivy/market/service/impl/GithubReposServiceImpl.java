@@ -99,7 +99,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     githubRepoRepository.save(githubRepo);
   }
 
-  private String getProductId(String repoName, String productId) {
+  private static String getProductId(String repoName, String productId) {
     return REPO_NAME_TO_PRODUCT_ID.entrySet().stream()
         .filter(e -> repoName.startsWith(e.getKey()))
         .map(Map.Entry::getValue)
@@ -145,7 +145,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
   }
 
-  private void addWorkflowState(GHWorkflow repoWorkflow, WorkflowInformation workflowInformation) throws IOException {
+  private static void addWorkflowState(GHWorkflow repoWorkflow, WorkflowInformation workflowInformation) throws IOException {
     WorkflowStatus currentStatus = Arrays.stream(WorkflowStatus.values())
         .filter(workflowStatus -> workflowStatus.getStatus().equals(repoWorkflow.getState()))
         .findFirst()
