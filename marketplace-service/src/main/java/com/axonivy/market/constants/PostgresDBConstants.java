@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 public class PostgresDBConstants {
   public static final String ID = "id";
   public static final String PRODUCT_MARKETPLACE_DATA = "productMarketplaceData";
-  public static final String MARKETPLACE_DATA_CUSTOM_ORDER = "marketplaceData.customOrder";
   public static final String INSTALLATION_COUNT = "installationCount";
   public static final String SYNCHRONIZED_INSTALLATION_COUNT = "synchronizedInstallationCount";
   public static final String PRODUCT_ID = "productId";
@@ -21,7 +20,7 @@ public class PostgresDBConstants {
   public static final String DOC = "doc";
   public static final String LISTED = "listed";
   public static final String TYPE = "type";
-  public static final String USER_ID = "userId";
-  public static final String EXCLUDED_STATUSES = "excludedStatuses";
   public static final String WORKFLOW_TYPE = "workflowType";
+  public static final String ASCENDING = "ASC";
+  public static final String DESCENDING = "DESC";
 }

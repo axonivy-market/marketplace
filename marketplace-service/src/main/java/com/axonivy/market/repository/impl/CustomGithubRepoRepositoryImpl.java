@@ -14,10 +14,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import static com.axonivy.market.constants.EntityConstants.NAME;
-import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
-import static com.axonivy.market.constants.PostgresDBConstants.WORKFLOW_TYPE;
+import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepository {
+
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -27,8 +27,8 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     String orderBy;
 
     if (workflowType.equalsIgnoreCase(NAME)) {
-      orderBy = "ORDER BY r.product_id " + sortDirection;
-    } else if ("DESC".equalsIgnoreCase(sortDirection)) {
+      orderBy = "ORDER BY r.product_id " + (sortDirection.isBlank() ? ASCENDING : DESCENDING);
+    } else if (DESCENDING.equalsIgnoreCase(sortDirection)) {
       orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
     } else {
       orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
@@ -38,7 +38,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
 
     String productQuery = "";
     if (StringUtils.isNotBlank(productId)) {
-      productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', productId, '%')) ";
+      productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', :productId, '%')) ";
     }
 
     String querySentence = """
@@ -59,18 +59,21 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
 
     Query nativeQuery = entityManager.createNativeQuery(querySentence, GithubRepo.class);
     nativeQuery.setParameter(WORKFLOW_TYPE, workflowType);
+    String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery + productQuery;
+    Query countQuery = entityManager.createNativeQuery(countSql);
+
     if (StringUtils.isNotBlank(productId)) {
-      nativeQuery.setParameter(PRODUCT_ID, productId);
+      nativeQuery.setParameter(PRODUCT_ID, productId.toLowerCase());
+      countQuery.setParameter(PRODUCT_ID, productId.toLowerCase());
     }
+
     nativeQuery.setFirstResult((int) pageable.getOffset());
     nativeQuery.setMaxResults(pageable.getPageSize());
 
+    @SuppressWarnings("unchecked")
     List<GithubRepo> githubRepoList = nativeQuery.getResultList();
-    // Count query
-    String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery + productQuery;
-    Query countQuery = entityManager.createNativeQuery(countSql);
-    Number total = (Number) countQuery.getSingleResult();
 
+    Number total = (Number) countQuery.getSingleResult();
 
     return new PageImpl<>(githubRepoList, pageable, total.longValue());
   }

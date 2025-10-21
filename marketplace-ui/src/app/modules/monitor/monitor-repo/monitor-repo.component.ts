@@ -155,7 +155,6 @@ export class MonitoringRepoComponent implements OnInit {
   }
 
   sortRepositoriesByColumn(column: string) {
-    console.log('sortRepositoriesByColumn', column);
     if (this.sortColumn === column) {
       this.toggleSortDirection();
     } else {
