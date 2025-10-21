@@ -242,6 +242,7 @@ public class ProductServiceImpl implements ProductService {
       var product = new Product();
       ProductFactory.mappingByGHContent(product, fileContent);
       mappingVendorImageFromGHContent(product, fileContent);
+      updateFirstPublishedDateOfProduct(product);
       transferComputedDataFromDB(product);
       productId = productRepo.save(product).getId();
     } else {
