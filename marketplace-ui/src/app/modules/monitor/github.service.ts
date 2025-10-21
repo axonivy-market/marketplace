@@ -62,7 +62,9 @@ export class GithubService {
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
       .set(RequestParam.SEARCH, `${criteria.search}`)
-      .set(RequestParam.IS_FOCUSED, `${criteria.isFocused}`);
+      .set(RequestParam.IS_FOCUSED, `${criteria.isFocused}`)
+      .set(RequestParam.WORK_FLOW_TYPE, `${criteria.workflowType}`)
+      .set(RequestParam.SORT_DIRECTION, `${criteria.sortDirection}`);
 
     const options = {
       params: requestParams,

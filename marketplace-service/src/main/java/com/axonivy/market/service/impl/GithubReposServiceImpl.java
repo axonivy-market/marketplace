@@ -198,16 +198,17 @@ public class GithubReposServiceImpl implements GithubReposService {
   public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
       String sortDirection, Pageable pageable) {
     Page<GithubRepo> result;
-    if (StringUtils.isBlank(searchText)) {
-      result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,pageable);
+    result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,searchText,pageable);
+//    if (StringUtils.isBlank(searchText)) {
+//      result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,searchText,pageable);
 //      if (sortDirection.equalsIgnoreCase("asc")) {
 //        result = githubRepoRepository.findAllByFocusedAsc(null, workFlowType, pageable);
 //      } else {
 //        result = githubRepoRepository.findAllByFocusedDESC(null, workFlowType, pageable);
 //      }
-    } else {
-      result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
-    }
+//    } else {
+//      result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
+//    }
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }

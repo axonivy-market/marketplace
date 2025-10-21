@@ -22,6 +22,7 @@ export interface ChangeLogCriteria {
 export interface MonitoringCriteria {
   search: string | '';
   isFocused: string | null;
-  // sort: SortOption | null;
+  sortDirection: string | null;
+  workflowType: string | null;
   pageable: Pageable;
 }

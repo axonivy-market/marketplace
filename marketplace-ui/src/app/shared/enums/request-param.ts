@@ -8,4 +8,6 @@ export enum RequestParam {
   SIZE = 'size',
   IS_FOCUSED = 'isFocused',
   SEARCH = 'search',
+  WORK_FLOW_TYPE = 'workflowType',
+  SORT_DIRECTION = 'sortDirection',
 }

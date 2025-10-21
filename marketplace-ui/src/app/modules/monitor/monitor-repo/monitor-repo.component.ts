@@ -78,6 +78,8 @@ export class MonitoringRepoComponent implements OnInit {
   criteria: MonitoringCriteria = {
     search: '',
     isFocused: 'true',
+    sortDirection: 'ASC',
+    workflowType: 'CI',
     pageable: DEFAULT_MONITORING_PAGEABLE,
   };
   languageService = inject(LanguageService);
@@ -159,16 +161,10 @@ export class MonitoringRepoComponent implements OnInit {
     } else {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
+      this.criteria.workflowType = this.COLUMN_NAME;
     }
-
-    this.displayedRepositories.sort((repo1, repo2) => {
-      const repo1ColumnValue =
-        this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
-      const repo2ColumnValue =
-        this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
-
-      return this.compareColumnValues(repo1ColumnValue, repo2ColumnValue, this.sortDirection);
-    });
+    this.criteria.sortDirection = this.sortDirection;
+    this.loadRepositories(this.criteria);
   }
 
   private toggleSortDirection() {

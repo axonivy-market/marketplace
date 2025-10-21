@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,15 +19,24 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
 
   @Override
   public Page<GithubRepo> findAllByFocusedSorted(Boolean isFocused, String workflowType, String sortDirection,
-      Pageable pageable) {
+      String productId, Pageable pageable) {
     String orderBy;
     if ("DESC".equalsIgnoreCase(sortDirection)) {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END, r.id";
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END, r.product_id";
     } else {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END, r.id";
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END, r.product_id";
     }
 
-    String focusQuery = BooleanUtils.isTrue(isFocused) ? "WHERE r.focused = true" : "WHERE r.focused IS NULL ";
+    String focusQuery = BooleanUtils.isTrue(isFocused)
+        ? "WHERE r.focused = true "
+        : "WHERE r.focused IS NULL ";
+
+    String productQuery = "";
+    if (StringUtils.isNotBlank(productId)) {
+      // Use LOWER for case-insensitive search (works on most DBs)
+      productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', productId, '%')) ";
+    }
+
     String sql = "SELECT r.* FROM github_repo r " +
         "LEFT JOIN ( " +
         "    SELECT w1.* " +
@@ -39,12 +49,13 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
         "    ) " +
         ") w ON w.repository_id = r.id " +
         focusQuery +
+        productQuery +
         orderBy;
 
     Query nativeQuery = entityManager.createNativeQuery(sql, GithubRepo.class);
     nativeQuery.setParameter("workflowType", workflowType);
-    if (BooleanUtils.isTrue(isFocused)) {
-      nativeQuery.setParameter("isFocused", isFocused);
+    if (StringUtils.isNotBlank(productId)) {
+      nativeQuery.setParameter("productId", productId);
     }
     nativeQuery.setFirstResult((int) pageable.getOffset());
     nativeQuery.setMaxResults(pageable.getPageSize());
@@ -52,7 +63,9 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     List<GithubRepo> repos = nativeQuery.getResultList();
 
     // Count query
-    String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery;
+    String countSql = "SELECT COUNT(*) FROM github_repo r " +
+        focusQuery +
+        productQuery;
     Query countQuery = entityManager.createNativeQuery(countSql);
     Number total = (Number) countQuery.getSingleResult();
 
