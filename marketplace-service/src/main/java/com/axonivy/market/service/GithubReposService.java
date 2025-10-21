@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ public interface GithubReposService {
 
   void updateFocusedRepo(List<String> repos);
 
-  Page<GithubReposModel> fetchAllRepositories(Boolean isFocused,String searchText ,Pageable pageable);
+  Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
+      String sortDirection, Pageable pageable);
 
 }

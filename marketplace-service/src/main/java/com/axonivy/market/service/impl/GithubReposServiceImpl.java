@@ -15,6 +15,8 @@ import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +30,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -63,7 +64,8 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
-
+  @PersistenceContext
+  private EntityManager entityManager;
   @Override
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
@@ -193,10 +195,16 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, Pageable pageable) {
+  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
+      String sortDirection, Pageable pageable) {
     Page<GithubRepo> result;
     if (StringUtils.isBlank(searchText)) {
-      result = githubRepoRepository.findAllByFocused(isFocused, pageable);
+      result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType,sortDirection ,pageable);
+//      if (sortDirection.equalsIgnoreCase("asc")) {
+//        result = githubRepoRepository.findAllByFocusedAsc(null, workFlowType, pageable);
+//      } else {
+//        result = githubRepoRepository.findAllByFocusedDESC(null, workFlowType, pageable);
+//      }
     } else {
       result = githubRepoRepository.findAllByFocusedAndProductIdContainingIgnoreCase(isFocused, searchText, pageable);
     }
