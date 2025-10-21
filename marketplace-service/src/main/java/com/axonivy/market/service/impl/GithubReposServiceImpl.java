@@ -125,7 +125,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
+  private static void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
       GHWorkflowRun run) throws IOException {
     var workflowInformation = repo.getWorkflowInformation().stream()
         .filter(workflow -> workflowType == workflow.getWorkflowType())
@@ -145,7 +145,8 @@ public class GithubReposServiceImpl implements GithubReposService {
     workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
   }
 
-  private static void addWorkflowState(GHWorkflow repoWorkflow, WorkflowInformation workflowInformation) throws IOException {
+  private static void addWorkflowState(GHWorkflow repoWorkflow,
+      WorkflowInformation workflowInformation) throws IOException {
     WorkflowStatus currentStatus = Arrays.stream(WorkflowStatus.values())
         .filter(workflowStatus -> workflowStatus.getStatus().equals(repoWorkflow.getState()))
         .findFirst()
