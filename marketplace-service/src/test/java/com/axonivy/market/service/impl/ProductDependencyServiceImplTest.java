@@ -178,12 +178,13 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
         .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath()));
 
-    when(metadataRepository.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_DEPENDENCY_ARTIFACT_ID))
-        .thenReturn(List.of(Metadata.builder()
+    when(metadataService.getMetadataByVersion(any(), eq(MOCK_VERSION)))
+        .thenReturn(Metadata.builder()
             .productId(MOCK_PRODUCT_ID)
             .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
             .groupId(MOCK_GROUP_ID)
-            .versions(Set.of(MOCK_VERSION)).build()));
+            .versions(Set.of(MOCK_VERSION))
+            .build());
 
     when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID,
         MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))

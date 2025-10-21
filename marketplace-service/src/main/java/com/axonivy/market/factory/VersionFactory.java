@@ -39,6 +39,9 @@ public class VersionFactory {
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
       return extractVersionFromRange(mavenVersion);
     }
+    if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
+      return mavenVersion.trim();
+    }
     return defaultVersion;
   }
 

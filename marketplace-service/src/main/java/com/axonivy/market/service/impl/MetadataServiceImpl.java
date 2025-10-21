@@ -43,10 +43,7 @@ public class MetadataServiceImpl implements MetadataService {
     List<Metadata> existingMetadata = metadataRepo.findByGroupIdAndArtifactId(
         dependencyModel.getGroupId(), dependencyModel.getArtifactId());
 
-    Optional<Metadata> metadataWithVersion = existingMetadata.stream()
-        .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
-        .findFirst();
-
+    Optional<Metadata> metadataWithVersion = findMetadataWithVersion(existingMetadata, version);
     if (metadataWithVersion.isPresent()) {
       return metadataWithVersion.get();
     }
@@ -165,16 +162,18 @@ public class MetadataServiceImpl implements MetadataService {
       
       List<Metadata> updated = metadataRepo.findByGroupIdAndArtifactId(
           metadata.getGroupId(), metadata.getArtifactId());
-      
-      return updated.stream()
-          .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
-          .findFirst()
-          .orElse(metadata);
+      return findMetadataWithVersion(updated, version).orElse(metadata);
           
     } catch (Exception e) {
       log.error("Failed to update metadata for {} - {}: {}", 
           metadata.getGroupId(), metadata.getArtifactId(), e.getMessage());
       return metadata;
     }
+  }
+
+  private Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataList, String version) {
+    return metadataList.stream()
+        .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
+        .findFirst();
   }
 }
