@@ -344,4 +344,43 @@ class GithubReposServiceImplTest {
     assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
     assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
   }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProduct_productNotFound() {
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.empty());
+
+    service.loadAndStoreTestRepostsForOneProduct("p1");
+
+    verify(productRepository, times(1)).findById("p1");
+    verifyNoMoreInteractions(productRepository, githubRepoRepository, testStepsService, gitHubService);
+  }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProduct_productFound() throws Exception {
+    Product product = new Product();
+    product.setId("p1");
+    product.setRepositoryName("repoName");
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.of(product));
+
+    when(gitHubService.getRepository("repoName")).thenReturn(ghRepo);
+
+    service.loadAndStoreTestRepostsForOneProduct("p1");
+
+    verify(productRepository, times(1)).findById("p1");
+    verify(gitHubService, times(1)).getRepository("repoName");
+    verify(githubRepoRepository, times(1)).save(any());
+  }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProduct_handlesException() throws Exception {
+    Product product = new Product();
+    product.setId("p1");
+    product.setRepositoryName("repoName");
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.of(product));
+    when(gitHubService.getRepository("repoName")).thenThrow(new DataAccessException("DB Error") {
+    });
+
+    assertDoesNotThrow(() -> service.loadAndStoreTestRepostsForOneProduct("p1"));
+    verify(gitHubService).getRepository("repoName");
+  }
 }

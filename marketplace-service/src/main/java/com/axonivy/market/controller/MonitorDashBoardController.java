@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.IS_FOCUSED;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -49,11 +51,11 @@ public class MonitorDashBoardController {
   @GetMapping(REPOS_REPORT)
   @Operation(hidden = true)
   public ResponseEntity<List<TestStepsModel>> getTestReport(
-      @PathVariable(REPO) @Parameter(description = "Repository name", example = "my-repo",
-          in = ParameterIn.PATH) String repo,
-      @PathVariable(WORKFLOW) @Parameter(description = "Workflow name", example = "build-workflow",
+      @PathVariable(PostgresDBConstants.PRODUCT_ID) @Parameter(description = "productId", example = "portal",
+          in = ParameterIn.PATH) String productId,
+      @PathVariable(WORKFLOW) @Parameter(description = "Workflow name", example = "CI",
           in = ParameterIn.PATH) WorkFlowType workflow) {
-    List<TestStepsModel> response = testStepsService.fetchTestReport(repo, workflow);
+    List<TestStepsModel> response = testStepsService.fetchTestReport(productId, workflow);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -63,6 +65,16 @@ public class MonitorDashBoardController {
   public ResponseEntity<String> syncGithubMonitor() throws IOException {
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
+  }
+
+  @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
+  @Operation(summary = "Sync one GitHub monitor", hidden = true,
+      description = "Load and store test reports from GitHub repositories for a product")
+  public ResponseEntity<String> syncOneGithubMonitor(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+          in = ParameterIn.PATH) String id) throws IOException {
+    githubReposService.loadAndStoreTestRepostsForOneProduct(id);
+    return ResponseEntity.ok("Repositor loaded successfully.");
   }
 
   @PutMapping(FOCUSED)

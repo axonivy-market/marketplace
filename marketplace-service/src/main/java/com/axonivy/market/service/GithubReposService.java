@@ -10,6 +10,8 @@ import java.util.List;
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
 
+  void loadAndStoreTestRepostsForOneProduct(String productId) throws IOException;
+
   void updateFocusedRepo(List<String> repos);
 
   Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,

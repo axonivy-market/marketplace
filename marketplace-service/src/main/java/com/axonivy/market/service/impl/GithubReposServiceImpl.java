@@ -20,6 +20,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
@@ -64,8 +65,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
-  @PersistenceContext
-  private EntityManager entityManager;
+
   @Override
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
@@ -73,13 +73,27 @@ public class GithubReposServiceImpl implements GithubReposService {
             && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
-      try {
-        log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
-        GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
-        processProduct(repository, product.getId());
-      } catch (IOException | GHException | DataAccessException e) {
-        log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
-      }
+      syncGithubRepos(product);
+    }
+  }
+
+  @Override
+  public void loadAndStoreTestRepostsForOneProduct(String productId) {
+    Product product = productRepository.findById(productId).orElse(null);
+    if (ObjectUtils.isEmpty(product)) {
+      log.error("There is no this product {} to sync for monitoring page", productId);
+      return;
+    }
+    syncGithubRepos(product);
+  }
+
+  private void syncGithubRepos(Product product) {
+    try {
+      log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
+      GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
+      processProduct(repository, product.getId());
+    } catch (IOException | GHException | DataAccessException e) {
+      log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
     }
   }
 
