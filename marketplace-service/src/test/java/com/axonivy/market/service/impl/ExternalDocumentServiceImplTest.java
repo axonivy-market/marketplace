@@ -176,7 +176,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testFindBestMatchVersionForDocFatory() {
+  void testFindBestMatchVersionForDocFactory() {
     String docFactoryDoc = "docfactory";
     String docFactoryId = "doc-factory";
     String version = "3.0.0";
