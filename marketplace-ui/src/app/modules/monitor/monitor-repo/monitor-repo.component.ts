@@ -116,7 +116,7 @@ export class MonitoringRepoComponent implements OnInit {
   }
 
   updateCriteriaAndLoad() {
-    if (this.activeTab != STANDARD_TAB) {
+    if (this.activeTab !== STANDARD_TAB) {
       this.criteria.isFocused = 'true';
     } else {
       this.criteria.isFocused = '';
@@ -127,7 +127,7 @@ export class MonitoringRepoComponent implements OnInit {
   }
 
   onSearchChanged(searchString: string) {
-    this.page = 1; // reset về page đầu khi search
+    this.page = 1;
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
     this.criteria.search = searchString;
@@ -192,11 +192,10 @@ export class MonitoringRepoComponent implements OnInit {
 
   loadRepositories(criteria: MonitoringCriteria): void {
     this.githubService.getRepositories(criteria).subscribe({
-      next: (data) => {
+      next: data => {
         this.displayedRepositories = data?._embedded?.githubRepos || [];
-        this.totalElements = data.page?.totalElements || 0;
-      },
-      error: (err) => {},
+        this.totalElements = data.page?.totalElements ?? 0;
+      }
     });
   }
 }

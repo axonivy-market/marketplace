@@ -6,10 +6,7 @@ import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { Page } from '../../shared/models/apis/page.model';
 import { RequestParam } from '../../shared/enums/request-param';
-import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { MonitoringCriteria } from '../../shared/models/criteria.model';
-import { Product } from '../../shared/models/product.model';
-import { Link } from '../../shared/models/apis/link.model';
 
 export interface Repository {
   repoName: string;
@@ -58,7 +55,7 @@ export class GithubService {
   constructor(private readonly http: HttpClient) {}
 
   getRepositories(criteria: MonitoringCriteria): Observable<RepositoryPages> {
-    let requestParams = new HttpParams()
+    const requestParams = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
       .set(RequestParam.SEARCH, `${criteria.search}`)
