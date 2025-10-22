@@ -176,6 +176,30 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testFindBestMatchVersionForDocFatory() {
+    String docFactoryDoc = "docfactory";
+    String docFactoryId = "doc-factory";
+    String version = "3.0.0";
+
+    when(productRepository.findById(docFactoryId)).thenReturn(Optional.of(new Product()));
+    when(externalDocumentMetaRepository.findByProductId(docFactoryId)).thenReturn(List.of(
+        ExternalDocumentMeta.builder().version(version).build()));
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
+          , version, majorVersions)).thenReturn(version);
+
+      String result = service.findBestMatchVersion(docFactoryDoc, version);
+
+      assertEquals(version, result, "Should return the matched version");
+      mockedVersionFactory.verify(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
+          , version, majorVersions), times(1));
+    }
+
+    verify(productRepository).findById(docFactoryId);
+    verify(externalDocumentMetaRepository).findByProductId(docFactoryId);
+  }
+
+  @Test
   void testFindExternalDocumentURI() {
     var mockVersion = "10.0";
     var mockProductDocumentMeta = new ExternalDocumentMeta();
