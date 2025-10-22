@@ -21,20 +21,15 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   @PersistenceContext
   private EntityManager entityManager;
 
+  public CustomGithubRepoRepositoryImpl(EntityManager entityManager) {
+    this.entityManager = entityManager;
+  }
+
   @Override
   public Page<GithubRepo> findAllByFocusedSorted(Boolean isFocused, String workflowType, String sortDirection,
       String productId, Pageable pageable) {
-    String orderBy;
-
-    if (workflowType.equalsIgnoreCase(NAME)) {
-      orderBy = "ORDER BY r.product_id " + (DESCENDING.equalsIgnoreCase(sortDirection) ? DESCENDING : ASCENDING);
-    } else if (DESCENDING.equalsIgnoreCase(sortDirection)) {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
-    } else {
-      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
-    }
-
-    String focusQuery = BooleanUtils.isTrue(isFocused) ? "WHERE r.focused = true " : "WHERE r.focused IS NULL ";
+    String orderBy = getOrderBy(workflowType, sortDirection);
+    String focusQuery = getFocusQuery(isFocused);
 
     String productQuery = "";
     if (StringUtils.isNotBlank(productId)) {
@@ -63,8 +58,8 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     Query countQuery = entityManager.createNativeQuery(countSql);
 
     if (StringUtils.isNotBlank(productId)) {
-      nativeQuery.setParameter(PRODUCT_ID, productId.toLowerCase());
-      countQuery.setParameter(PRODUCT_ID, productId.toLowerCase());
+      nativeQuery.setParameter(PRODUCT_ID, productId);
+      countQuery.setParameter(PRODUCT_ID, productId);
     }
 
     nativeQuery.setFirstResult((int) pageable.getOffset());
@@ -76,5 +71,35 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     Number total = (Number) countQuery.getSingleResult();
 
     return new PageImpl<>(githubRepoList, pageable, total.longValue());
+  }
+
+  private static String getFocusQuery(Boolean isFocused) {
+    String focusQuery;
+    if (BooleanUtils.isTrue(isFocused)) {
+      focusQuery = "WHERE r.focused = true ";
+    } else {
+      focusQuery = "WHERE r.focused IS NULL ";
+    }
+    return focusQuery;
+  }
+
+  private static String getOrderBy(String workflowType, String sortDirection) {
+    String orderBy;
+    String direction;
+
+    if (DESCENDING.equalsIgnoreCase(sortDirection)) {
+      direction = ASCENDING;
+    } else {
+      direction = DESCENDING;
+    }
+
+    if (workflowType.equalsIgnoreCase(NAME)) {
+      orderBy = "ORDER BY r.product_id " + direction;
+    } else if (DESCENDING.equalsIgnoreCase(sortDirection)) {
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 1 WHEN 'failure' THEN 2 ELSE 3 END";
+    } else {
+      orderBy = "ORDER BY CASE w.conclusion WHEN 'success' THEN 2 WHEN 'failure' THEN 1 ELSE 3 END";
+    }
+    return orderBy;
   }
 }

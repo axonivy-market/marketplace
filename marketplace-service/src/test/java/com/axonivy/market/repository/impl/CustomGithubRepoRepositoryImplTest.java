@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,7 +24,7 @@ class CustomGithubRepoRepositoryImplTest {
   @BeforeEach
   void setUp() {
     entityManager = mock(EntityManager.class);
-    customGithubRepoRepository = new CustomGithubRepoRepositoryImpl();
+    customGithubRepoRepository = new CustomGithubRepoRepositoryImpl(entityManager);
     // Use reflection to inject the mock because @PersistenceContext isn't set in test
     try {
       var field = CustomGithubRepoRepositoryImpl.class.getDeclaredField("entityManager");
@@ -37,7 +36,7 @@ class CustomGithubRepoRepositoryImplTest {
   }
 
   @Test
-  void testFindAllByFocusedSorted_withFocusedTrue_andProductId() {
+  void testFindAllByFocusedSortedWithFocusedTrueAndProductId() {
     // Arrange
     String workflowType = "build";
     String sortDirection = "DESC";
@@ -68,9 +67,9 @@ class CustomGithubRepoRepositoryImplTest {
     Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(isFocused, workflowType, sortDirection, productId, pageable);
 
     // Assert
-    assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals(repoList, result.getContent());
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getTotalElements(), "Total elements should be 1");
+    assertEquals(repoList, result.getContent(), "Content should match the expected repo list");
 
     // Verify query construction and parameter setting
     verify(entityManager, times(1)).createNativeQuery(anyString(), eq(GithubRepo.class));
@@ -85,7 +84,7 @@ class CustomGithubRepoRepositoryImplTest {
   }
 
   @Test
-  void testFindAllByFocusedSorted_withFocusedNull_andNoProductId() {
+  void testFindAllByFocusedSortedWithFocusedNullAndNoProductId() {
     // Arrange
     String workflowType = "build";
     String sortDirection = "ASC";
@@ -115,9 +114,9 @@ class CustomGithubRepoRepositoryImplTest {
     Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(isFocused, workflowType, sortDirection, productId, pageable);
 
     // Assert
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
-    assertEquals(repoList, result.getContent());
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getContent().size(), "Content size should be 1");
+    assertEquals(repoList, result.getContent(), "Content should match the expected repo list");
 
     verify(nativeQuery, times(1)).setParameter("workflowType", workflowType);
     verify(nativeQuery, never()).setParameter(eq("productId"), any());

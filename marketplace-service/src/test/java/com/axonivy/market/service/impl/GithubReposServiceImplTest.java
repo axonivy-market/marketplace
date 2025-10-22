@@ -346,7 +346,7 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testLoadAndStoreTestRepostsForOneProduct_productNotFound() {
+  void testLoadAndStoreTestRepostsForOneProductProductNotFound() {
     when(productRepository.findById("p1")).thenReturn(java.util.Optional.empty());
 
     service.loadAndStoreTestRepostsForOneProduct("p1");
@@ -356,7 +356,7 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testLoadAndStoreTestRepostsForOneProduct_productFound() throws Exception {
+  void testLoadAndStoreTestRepostsForOneProductProductFound() throws Exception {
     Product product = new Product();
     product.setId("p1");
     product.setRepositoryName("repoName");
@@ -372,7 +372,7 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testLoadAndStoreTestRepostsForOneProduct_handlesException() throws Exception {
+  void testLoadAndStoreTestRepostsForOneProductHandlesException() throws Exception {
     Product product = new Product();
     product.setId("p1");
     product.setRepositoryName("repoName");
@@ -380,7 +380,8 @@ class GithubReposServiceImplTest {
     when(gitHubService.getRepository("repoName")).thenThrow(new DataAccessException("DB Error") {
     });
 
-    assertDoesNotThrow(() -> service.loadAndStoreTestRepostsForOneProduct("p1"));
+    assertDoesNotThrow(() -> service.loadAndStoreTestRepostsForOneProduct("p1"),
+        "Should not throw an exception when GitHubService.getRepository throws DataAccessException");
     verify(gitHubService).getRepository("repoName");
   }
 }

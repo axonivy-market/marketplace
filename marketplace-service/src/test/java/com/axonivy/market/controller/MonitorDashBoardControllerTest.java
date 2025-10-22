@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -11,6 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -73,5 +78,34 @@ class MonitorDashBoardControllerTest {
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),
          "Response body should match expected message");
+  }
+
+  @Test
+  void testFindAllFeedbacks_returnsPagedModel() {
+    // Arrange
+    GithubReposModel model = new GithubReposModel();
+    List<GithubReposModel> models = List.of(model);
+    Page<GithubReposModel> page = new PageImpl<>(models, PageRequest.of(0, 10), 1);
+
+    when(githubReposService.fetchAllRepositories(
+        eq(true), eq("feedback"), eq("name"), eq("ASC"), any(PageRequest.class)))
+        .thenReturn(page);
+
+    // Act
+    ResponseEntity<PagedModel<GithubReposModel>> response = controller.findAllFeedbacks(
+        true, PageRequest.of(0, 10), "feedback", "name", "ASC");
+
+    // Assert
+    PagedModel<GithubReposModel> pagedModel = response.getBody();
+    assertNotNull(pagedModel, "PagedModel should not be null");
+    assertEquals(1, pagedModel.getContent().size(), "Content size should be 1");
+    assertTrue(pagedModel.getContent().contains(model), "Content should contain the mocked model");
+
+    PagedModel.PageMetadata metadata = pagedModel.getMetadata();
+    assertNotNull(metadata, "Page metadata should not be null");
+    assertEquals(10, metadata.getSize(), "Page size should be 10");
+    assertEquals(0, metadata.getNumber(), "Page number should be 0");
+    assertEquals(1, metadata.getTotalElements(), "Total elements should be 1");
+    assertEquals(1, metadata.getTotalPages(), "Total pages should be 1");
   }
 }
