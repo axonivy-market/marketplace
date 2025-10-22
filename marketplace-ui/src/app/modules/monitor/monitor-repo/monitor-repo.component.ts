@@ -131,7 +131,6 @@ export class MonitoringRepoComponent implements OnInit {
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
     this.criteria.search = searchString;
-    console.log(this.criteria);
     this.loadRepositories(this.criteria);
   }
 
