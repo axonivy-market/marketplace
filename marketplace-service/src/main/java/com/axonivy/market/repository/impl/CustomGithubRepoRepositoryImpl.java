@@ -65,8 +65,10 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     nativeQuery.setFirstResult((int) pageable.getOffset());
     nativeQuery.setMaxResults(pageable.getPageSize());
 
-    @SuppressWarnings("unchecked")
-    List<GithubRepo> githubRepoList = nativeQuery.getResultList();
+    List<?> resultList = nativeQuery.getResultList();
+    List<GithubRepo> githubRepoList = resultList.stream()
+        .map(o -> (GithubRepo) o)
+        .toList();
 
     Number total = (Number) countQuery.getSingleResult();
 
