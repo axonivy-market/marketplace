@@ -207,6 +207,45 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
+  @Test
+  void testSyncProductsAsNewMetaJSONFromGitHub() throws IOException {
+    // Start testing by adding new meta
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGithubFile = new GitHubFile();
+    mockGithubFile.setFileName("connector/" + META_FILE);
+    mockGithubFile.setType(FileType.META);
+    mockGithubFile.setStatus(FileStatus.ADDED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
+    var mockGHContent = mockGHContentAsMetaJSON();
+    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+    when(mockGHContent.read()).thenReturn(this.getClass().getResourceAsStream(META_JSON_FILE_WITH_VENDOR_INFORMATION));
+    when(productRepo.save(any(Product.class))).thenReturn(new Product());
+    var mockGhTag = mock(GHTag.class);
+    when(mockGhTag.getCommit()).thenReturn(mockCommit);
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags("axonivy-market/jira-connector")).thenReturn(List.of(mockGhTag));
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo(false);
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
+
+    // Start testing by deleting new meta
+    mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    var mockDate = new Date();
+    when(mockCommit.getCommitDate()).thenReturn(mockDate);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    mockGithubFile.setStatus(FileStatus.REMOVED);
+    // Executes
+    result = productService.syncLatestDataFromMarketRepo(false);
+    assertNotNull(result, "Latest data from Market repo should not be null");
+    assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
+  }
+
   // Using a random UUID in test; no dedicated constant/ID needed
   @SuppressWarnings("java:S5977")
   @Test
