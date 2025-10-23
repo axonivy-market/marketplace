@@ -12,6 +12,8 @@ public final class DocPathUtils {
             Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
     private static final int VERSION_INDEX = 1;
     private static final int PRODUCT_ID_INDEX = 3;
+    private static final String DOC_FACTORY_DOC = "docfactory";
+    private static final String DOC_FACTORY_ID = "doc-factory";
 
     private DocPathUtils() {
     }
@@ -21,11 +23,15 @@ public final class DocPathUtils {
      * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> portal
      */
     public static String extractProductId(String path) {
-        var matcher = PATH_PATTERN.matcher(path);
-        if (matcher.matches()) {
-            return matcher.group(VERSION_INDEX);
+      var matcher = PATH_PATTERN.matcher(path);
+      if (matcher.matches()) {
+        String productId = matcher.group(VERSION_INDEX);
+        if (productId.equalsIgnoreCase(DOC_FACTORY_DOC)){
+          return DOC_FACTORY_ID;
         }
-        return null;
+        return productId;
+      }
+      return null;
     }
 
     /**
