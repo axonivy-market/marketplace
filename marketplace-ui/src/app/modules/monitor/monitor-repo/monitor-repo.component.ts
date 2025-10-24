@@ -22,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
 import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';
 import {
+  ALL_ITEMS_PAGE_SIZE,
   ASCENDING,
   CI_BUILD,
   DEFAULT_MODE,
@@ -198,4 +199,6 @@ export class MonitoringRepoComponent implements OnInit {
       }
     });
   }
+
+  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
 }

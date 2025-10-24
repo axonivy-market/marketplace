@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -62,8 +63,16 @@ class CustomGithubRepoRepositoryImplTest {
     when(nativeQuery.getResultList()).thenReturn(repoList);
     when(countQuery.getSingleResult()).thenReturn(1L);
 
+    MonitoringSearchCriteria criteria = MonitoringSearchCriteria.builder()
+        .isFocused(isFocused)
+        .searchText(productId)
+        .workFlowType(workflowType)
+        .pageable(pageable)
+        .sortDirection(sortDirection)
+        .build();
+
     // Act
-    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(isFocused, workflowType, sortDirection, productId, pageable);
+    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -87,8 +96,6 @@ class CustomGithubRepoRepositoryImplTest {
     // Arrange
     String workflowType = "build";
     String sortDirection = "ASC";
-    String productId = null;
-    Boolean isFocused = null;
     Pageable pageable = PageRequest.of(1, 5); // offset: 5
 
     Query nativeQuery = mock(Query.class);
@@ -109,8 +116,15 @@ class CustomGithubRepoRepositoryImplTest {
     when(nativeQuery.getResultList()).thenReturn(repoList);
     when(countQuery.getSingleResult()).thenReturn(1L);
 
+    MonitoringSearchCriteria criteria = MonitoringSearchCriteria.builder()
+        .workFlowType(workflowType)
+        .pageable(pageable)
+        .sortDirection(sortDirection)
+        .build();
+
+
     // Act
-    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(isFocused, workflowType, sortDirection, productId, pageable);
+    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria);
 
     // Assert
     assertNotNull(result, "Result should not be null");

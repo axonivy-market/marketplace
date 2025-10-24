@@ -376,3 +376,4 @@ export const STANDARD_TAB = 'standard';
 
 export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';
+export const ALL_ITEMS_PAGE_SIZE = 999;

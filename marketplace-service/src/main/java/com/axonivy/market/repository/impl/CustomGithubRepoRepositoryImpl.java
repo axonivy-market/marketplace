@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.repository.CustomGithubRepoRepository;
 import jakarta.persistence.EntityManager;
@@ -26,13 +27,12 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   }
 
   @Override
-  public Page<GithubRepo> findAllByFocusedSorted(Boolean isFocused, String workflowType, String sortDirection,
-      String productId, Pageable pageable) {
-    String orderBy = getOrderBy(workflowType, sortDirection);
-    String focusQuery = getFocusQuery(isFocused);
+  public Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria) {
+    String orderBy = getOrderBy(criteria.getWorkFlowType(), criteria.getSortDirection());
+    String focusQuery = getFocusQuery(criteria.getIsFocused());
 
     String productQuery = "";
-    if (StringUtils.isNotBlank(productId)) {
+    if (StringUtils.isNotBlank(criteria.getSearchText())) {
       productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', :productId, '%')) ";
     }
 
@@ -53,17 +53,17 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
         """ + focusQuery + productQuery + orderBy;
 
     Query nativeQuery = entityManager.createNativeQuery(querySentence, GithubRepo.class);
-    nativeQuery.setParameter(WORKFLOW_TYPE, workflowType);
+    nativeQuery.setParameter(WORKFLOW_TYPE, criteria.getWorkFlowType());
     String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery + productQuery;
     Query countQuery = entityManager.createNativeQuery(countSql);
 
-    if (StringUtils.isNotBlank(productId)) {
-      nativeQuery.setParameter(PRODUCT_ID, productId);
-      countQuery.setParameter(PRODUCT_ID, productId);
+    if (StringUtils.isNotBlank(criteria.getSearchText())) {
+      nativeQuery.setParameter(PRODUCT_ID, criteria.getSearchText());
+      countQuery.setParameter(PRODUCT_ID, criteria.getSearchText());
     }
 
-    nativeQuery.setFirstResult((int) pageable.getOffset());
-    nativeQuery.setMaxResults(pageable.getPageSize());
+    nativeQuery.setFirstResult((int) criteria.getPageable().getOffset());
+    nativeQuery.setMaxResults(criteria.getPageable().getPageSize());
 
     List<?> resultList = nativeQuery.getResultList();
     List<GithubRepo> githubRepoList = resultList.stream()
@@ -72,7 +72,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
 
     Number total = (Number) countQuery.getSingleResult();
 
-    return new PageImpl<>(githubRepoList, pageable, total.longValue());
+    return new PageImpl<>(githubRepoList, criteria.getPageable(), total.longValue());
   }
 
   private static String getFocusQuery(Boolean isFocused) {

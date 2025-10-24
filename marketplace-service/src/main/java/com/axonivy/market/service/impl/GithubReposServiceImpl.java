@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -203,8 +204,15 @@ public class GithubReposServiceImpl implements GithubReposService {
   @Override
   public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
       String sortDirection, Pageable pageable) {
-    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(isFocused, workFlowType, sortDirection,
-        searchText, pageable);
+
+    MonitoringSearchCriteria criteria = new MonitoringSearchCriteria();
+    criteria.setSearchText(searchText);
+    criteria.setWorkFlowType(workFlowType);
+    criteria.setSortDirection(sortDirection);
+    criteria.setPageable(pageable);
+    criteria.setIsFocused(isFocused);
+
+    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(criteria);
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }
