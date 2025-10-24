@@ -11,7 +11,7 @@ import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 
@@ -104,7 +104,7 @@ export function handleHttpError(
   router: Router,
   error: HttpErrorResponse
 ): Observable<never> {
-  if (error.status === UNAUTHORIZED) {
+  if (error.status === UNAUTHORIZED || error.status === FORBIDDEN) {
     return throwError(() => error);
   }
 

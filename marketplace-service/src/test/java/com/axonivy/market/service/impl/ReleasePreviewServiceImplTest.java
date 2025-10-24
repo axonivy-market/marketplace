@@ -155,7 +155,6 @@ class ReleasePreviewServiceImplTest {
         try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class);
              MockedStatic<ZipSafetyScanner> zipScanner = Mockito.mockStatic(ZipSafetyScanner.class)) {
             fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenAnswer(invocation -> null);
-            zipScanner.when(() -> ZipSafetyScanner.analyze(mockMultipartFile)).thenReturn(true);
 
             ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
             assertNotNull(result, "Release preview should NOT be null");

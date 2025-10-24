@@ -151,7 +151,7 @@
           <div class="no-tabs d-xl-block col-12">
             @if (isUploaded) {
               <p [lang]="languageService.selectedLanguage()">
-                {{ translateService.get('common.preview.noTabs') | async }}
+                {{ errorMessage }}
               </p>
             }
           </div>

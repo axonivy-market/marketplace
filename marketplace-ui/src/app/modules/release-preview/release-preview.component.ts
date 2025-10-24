@@ -165,7 +165,11 @@ export class ReleasePreviewComponent implements OnInit {
         this.readmeContent.set(response);
         this.isUploaded = true;
         this.shouldShowHint = false;
-      }
+      },
+      error: (err) => {
+        this.isUploaded = true;
+        this.errorMessage = err.error?.message;
+    }
     });
   }
 

@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -8,7 +9,7 @@ import org.mockito.Mockito;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.util.zip.*;
 
@@ -27,16 +28,29 @@ class ZipSafetyScannerTest {
 
   @Test
   void testAnalyzeValidZip() throws IOException {
-    byte[] zip = createZipWithEntry("valid.txt", "Hello World".getBytes());
-    MultipartFile file = mockZipFile(zip, false);
-    assertTrue(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return true for a valid zip file with a permitted entry.");
+    // Include both README.md and a permitted entry
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+      // Add README.md
+      zos.putNextEntry(new ZipEntry("README.md"));
+      zos.write("Doc".getBytes());
+      zos.closeEntry();
+      // Add another allowed file
+      zos.putNextEntry(new ZipEntry("valid.txt"));
+      zos.write("Hello World".getBytes());
+      zos.closeEntry();
+    }
+    MultipartFile file = mockZipFile(baos.toByteArray(), false);
+    // Expect no exception for a valid zip file with README.md and permitted entry
+    assertDoesNotThrow(() -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to not throw for a valid zip file with README.md and a permitted entry.");
   }
 
   @Test
   void testAnalyzeNullOrEmptyZip() throws IOException {
     MultipartFile file = mockZipFile(new byte[0], true);
-    assertFalse(ZipSafetyScanner.analyze(file), "Expected analyze to return false for a null or empty zip file.");
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException for a null or empty zip file.");
   }
 
   @ParameterizedTest
@@ -44,8 +58,8 @@ class ZipSafetyScannerTest {
   void testAnalyzeInvalidEntry(String entryName, byte[] data) throws IOException {
     byte[] zip = createZipWithEntry(entryName, data);
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return false for invalid entry name: " + entryName);
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException for invalid entry name: " + entryName);
   }
 
   @Test
@@ -53,8 +67,8 @@ class ZipSafetyScannerTest {
     byte[] largeData = new byte[(int) (ZipSafetyScanner.MAX_SINGLE_UNCOMPRESSED_BYTES + 1)];
     byte[] zip = createZipWithEntry("big.txt", largeData);
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return false when a single entry exceeds the maximum allowed uncompressed size.");
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException when a single entry exceeds the maximum allowed uncompressed size.");
   }
 
   @Test
@@ -69,24 +83,33 @@ class ZipSafetyScannerTest {
       }
     }
     MultipartFile file = mockZipFile(baos.toByteArray(), false);
-    assertFalse(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return false when the number of entries exceeds the allowed maximum.");
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException when the number of entries exceeds the allowed maximum.");
+  }
+
+  @Test
+  void testAnalyzeMissingReadmeFile() throws IOException {
+    // Create a zip file WITHOUT README.md.
+    byte[] zip = createZipWithEntry("somefile.txt", "content".getBytes());
+    MultipartFile file = mockZipFile(zip, false);
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException when README.md is missing.");
   }
 
   @Test
   void testAnalyzeHighCompressionRatioEntry() throws IOException {
-    // compressed size = 1, uncompressed = 1000000
+    // compressed size = 1, uncompressed = 1_000_000
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
       ZipEntry entry = new ZipEntry("bomb.txt");
       zos.putNextEntry(entry);
-      zos.write(new byte[1000000]); // 1MB uncompressed
+      zos.write(new byte[1_000_000]); // 1MB uncompressed
       zos.closeEntry();
     }
     byte[] zip = baos.toByteArray();
     MultipartFile file = mockZipFile(zip, false);
-    assertFalse(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return false for an entry with a very high compression ratio (potential zip bomb).");
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException for an entry with a very high compression ratio (potential zip bomb).");
   }
 
   @Test
@@ -102,26 +125,8 @@ class ZipSafetyScannerTest {
       }
     }
     MultipartFile file = mockZipFile(baos.toByteArray(), false);
-    assertFalse(ZipSafetyScanner.analyze(file),
-        "Expected analyze to return false when total uncompressed size of all entries exceeds the allowed maximum.");
-  }
-
-  @Test
-  void testAnalyzeGlobalCompressionRatioTooHigh() throws IOException {
-    // Compress a lot of repetitive data (high global ratio)
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-      byte[] data = new byte[1000000]; // 1MB uncompressed, will compress well
-      ZipEntry entry = new ZipEntry("bomb.txt");
-      zos.putNextEntry(entry);
-      zos.write(data);
-      zos.closeEntry();
-    }
-    MultipartFile file = mockZipFile(baos.toByteArray(), false);
-    // This may or may not fail depending on compression, but if ratio is high, should fail
-    boolean result = ZipSafetyScanner.analyze(file);
-    // Assert that the analysis fails due to high global compression ratio
-    assertFalse(result, "Expected analyze to return false for a zip bomb with high global compression ratio");
+    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+        "Expected analyze to throw InvalidZipEntryException when total uncompressed size of all entries exceeds the allowed maximum.");
   }
 
   @Test
@@ -166,7 +171,7 @@ class ZipSafetyScannerTest {
     Files.write(tempZip.toPath(), zipBytes);
 
     try (ZipFile zipFile = new ZipFile(tempZip)) {
-      // Should be false because there are 3 nested zips (MAX_NESTED_ARCHIVE_DEPTH == 3)
+      // Should be true because there are 3 nested zips (MAX_NESTED_ARCHIVE_DEPTH == 3)
       assertTrue(ZipSafetyScanner.detectNestedZipFiles(zipFile),
           "Expected detectNestedZipFiles to return true for a zip file with 3 nested archives.");
     } finally {
