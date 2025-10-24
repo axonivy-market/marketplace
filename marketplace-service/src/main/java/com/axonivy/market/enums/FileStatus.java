@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @AllArgsConstructor
 public enum FileStatus {
-  MODIFIED("modified"), ADDED("added"), REMOVED("removed");
+  MODIFIED("modified"), ADDED("added"), REMOVED("removed"), RENAMED("renamed");
 
   private final String code;
 
