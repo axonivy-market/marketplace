@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -15,15 +16,22 @@ import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHWorkflowRun;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -66,13 +74,27 @@ public class GithubReposServiceImpl implements GithubReposService {
             && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
-      try {
-        log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
-        GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
-        processProduct(repository, product.getId());
-      } catch (IOException | GHException | DataAccessException e) {
-        log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
-      }
+      syncGithubRepos(product);
+    }
+  }
+
+  @Override
+  public void loadAndStoreTestRepostsForOneProduct(String productId) {
+    Product product = productRepository.findById(productId).orElse(null);
+    if (ObjectUtils.isEmpty(product)) {
+      log.error("There is no this product {} to sync for monitoring page", productId);
+      return;
+    }
+    syncGithubRepos(product);
+  }
+
+  private void syncGithubRepos(Product product) {
+    try {
+      log.info("#loadAndStoreTestReports Starting sync data TestReports of repo: {}", product.getRepositoryName());
+      GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
+      processProduct(repository, product.getId());
+    } catch (IOException | GHException | DataAccessException e) {
+      log.error("#loadAndStoreTestReports Error processing product {}", product.getRepositoryName(), e);
     }
   }
 
@@ -172,18 +194,26 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public List<GithubReposModel> fetchAllRepositories() {
-    List<GithubRepo> entities = githubRepoRepository.findAll();
-    return entities.stream()
-        .map(GithubReposModel::from)
-        .toList();
-  }
-
-  @Override
   public void updateFocusedRepo(List<String> repos) {
     if (repos == null || repos.isEmpty()) {
       return;
     }
     githubRepoRepository.updateFocusedRepoByName(repos);
+  }
+
+  @Override
+  public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
+      String sortDirection, Pageable pageable) {
+
+    MonitoringSearchCriteria criteria = new MonitoringSearchCriteria();
+    criteria.setSearchText(searchText);
+    criteria.setWorkFlowType(workFlowType);
+    criteria.setSortDirection(sortDirection);
+    criteria.setPageable(pageable);
+    criteria.setIsFocused(isFocused);
+
+    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(criteria);
+    List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
+    return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }
 }

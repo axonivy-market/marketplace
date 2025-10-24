@@ -28,7 +28,6 @@ export class RepoReportComponent implements OnInit {
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
     this.workflow = this.route.snapshot.paramMap.get('workflow') ?? '';
-
     if (this.repo && this.workflow) {
       this.fetchTestReport(this.repo, this.workflow);
     } else {

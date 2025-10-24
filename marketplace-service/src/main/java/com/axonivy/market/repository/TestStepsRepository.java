@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface TestStepsRepository extends JpaRepository<TestStep, String> {
     @Query("SELECT ts FROM GithubRepo repo JOIN repo.testSteps ts\n" +
-            "WHERE repo.name = :repoName AND ts.type = :workflowType")
+            "WHERE repo.productId = :productId AND ts.type = :workflowType")
     List<TestStep> findByRepoAndWorkflowAndType(
-            @Param("repoName") String repoName,
+            @Param("productId") String productId,
             @Param("workflowType") WorkFlowType workflowType
     );
 }

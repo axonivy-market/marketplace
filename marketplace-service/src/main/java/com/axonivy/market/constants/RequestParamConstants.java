@@ -21,5 +21,6 @@ public class RequestParamConstants {
   public static final String MARKET_ITEM_PATH = "marketItemPath";
   public static final String OVERRIDE_MARKET_ITEM_PATH = "overrideMarketItemPath";
   public static final String URL = "url";
+  public static final String IS_FOCUSED = "isFocused";
 
 }

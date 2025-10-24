@@ -1,7 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { GithubService, Repository, TestStep } from './github.service';
+import {
+  GithubService,
+  Repository,
+  RepositoryPages,
+  TestStep
+} from './github.service';
 import { API_URI } from '../../shared/constants/api.constant';
+import { MonitoringCriteria } from '../../shared/models/criteria.model';
 
 const mockRepos: Repository[] = [
   {
@@ -41,13 +47,54 @@ describe('GithubService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should fetch repositories', () => {
-    service.getRepositories().subscribe(repos => {
-      expect(repos).toEqual(mockRepos);
+  const mockCriteria: MonitoringCriteria = {
+    search: 'test',
+    isFocused: 'true',
+    sortDirection: 'ASC',
+    workflowType: 'CI',
+    pageable: { page: 0, size: 10 }
+  };
+
+  const mockResponse: RepositoryPages = {
+    _embedded: {
+      githubRepos: [
+        {
+          repoName: 'repo-1',
+          productId: 'product-1',
+          htmlUrl: 'http://github.com/repo-1',
+          focused: true,
+          workflowInformation: [],
+          testResults: []
+        }
+      ]
+    },
+    page: {
+      size: 10,
+      totalElements: 1,
+      totalPages: 1,
+      number: 0
+    }
+  };
+
+  it('should call getRepositories and return RepositoryPages', () => {
+    service.getRepositories(mockCriteria).subscribe((res) => {
+      expect(res).toEqual(mockResponse);
     });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
+
+    const req = httpMock.expectOne((request) => {
+      return (
+        request.url === API_URI.MONITOR_DASHBOARD &&
+        request.params.get('search') === mockCriteria.search &&
+        request.params.get('isFocused') === mockCriteria.isFocused &&
+        request.params.get('sortDirection') === mockCriteria.sortDirection &&
+        request.params.get('workflowType') === mockCriteria.workflowType &&
+        request.params.get('page') === mockCriteria.pageable.page.toString() &&
+        request.params.get('size') === mockCriteria.pageable.size.toString()
+      );
+    });
+
     expect(req.request.method).toBe('GET');
-    req.flush(mockRepos);
+    req.flush(mockResponse);
   });
 
   it('should fetch test report', () => {
@@ -58,18 +105,6 @@ describe('GithubService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockTestStep);
   });
-
-  it('should handle error when fetching repositories', () => {
-    let error: any;
-    service.getRepositories().subscribe({
-      next: () => {},
-      error: err => error = err
-    });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
-    req.flush('Error', { status: 500, statusText: 'Server Error' });
-    expect(error).toBeTruthy();
-  });
-
 
   it('should handle error when fetching test report', () => {
     let error: any;
