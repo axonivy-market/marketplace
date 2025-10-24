@@ -23,15 +23,15 @@ public final class DocPathUtils {
      * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> portal
      */
     public static String extractProductId(String path) {
+      String productId = null;
       var matcher = PATH_PATTERN.matcher(path);
       if (matcher.matches()) {
-        String productId = matcher.group(VERSION_INDEX);
+        productId = matcher.group(VERSION_INDEX);
         if (productId.equalsIgnoreCase(DOC_FACTORY_DOC)){
-          return DOC_FACTORY_ID;
+          productId = DOC_FACTORY_ID;
         }
-        return productId;
       }
-      return null;
+      return productId;
     }
 
     /**
