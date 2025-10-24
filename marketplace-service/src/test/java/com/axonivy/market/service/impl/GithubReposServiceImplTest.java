@@ -351,7 +351,7 @@ class GithubReposServiceImplTest {
 
     service.loadAndStoreTestRepostsForOneProduct("p1");
 
-    verify(productRepository, times(1)).findById("p1");
+    verify(productRepository).findById("p1");
     verifyNoMoreInteractions(productRepository, githubRepoRepository, testStepsService, gitHubService);
   }
 
@@ -366,9 +366,9 @@ class GithubReposServiceImplTest {
 
     service.loadAndStoreTestRepostsForOneProduct("p1");
 
-    verify(productRepository, times(1)).findById("p1");
-    verify(gitHubService, times(1)).getRepository("repoName");
-    verify(githubRepoRepository, times(1)).save(any());
+    verify(productRepository).findById("p1");
+    verify(gitHubService).getRepository("repoName");
+    verify(githubRepoRepository).save(any());
   }
 
   @Test

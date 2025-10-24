@@ -51,7 +51,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     NgbTypeaheadModule,
     NgbPaginationModule,
     ProductFilterComponent,
-    RepoTestResultComponent,
+    RepoTestResultComponent
   ],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss',
@@ -78,7 +78,7 @@ export class MonitoringRepoComponent implements OnInit {
   criteria: MonitoringCriteria = {
     search: '',
     isFocused: 'true',
-    sortDirection: 'ASC',
+    sortDirection: ASCENDING,
     workflowType: 'name',
     pageable: DEFAULT_MONITORING_PAGEABLE,
   };

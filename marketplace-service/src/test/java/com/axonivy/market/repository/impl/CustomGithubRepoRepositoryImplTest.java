@@ -3,6 +3,7 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.entity.GithubRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -27,9 +28,7 @@ class CustomGithubRepoRepositoryImplTest {
     customGithubRepoRepository = new CustomGithubRepoRepositoryImpl(entityManager);
     // Use reflection to inject the mock because @PersistenceContext isn't set in test
     try {
-      var field = CustomGithubRepoRepositoryImpl.class.getDeclaredField("entityManager");
-      field.setAccessible(true);
-      field.set(customGithubRepoRepository, entityManager);
+      FieldUtils.writeField(customGithubRepoRepository, "entityManager", entityManager, true);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -49,10 +49,9 @@ public class MonitorDashBoardController {
   private final PagedResourcesAssembler<GithubReposModel> pagedResourcesAssembler;
 
   @GetMapping(REPOS_REPORT)
-  @Operation(hidden = true)
   public ResponseEntity<List<TestStepsModel>> getTestReport(
-      @PathVariable(PostgresDBConstants.PRODUCT_ID) @Parameter(description = "productId", example = "portal",
-          in = ParameterIn.PATH) String productId,
+      @PathVariable(PostgresDBConstants.PRODUCT_ID)
+      @Parameter(description = "productId", example = "portal", in = ParameterIn.PATH) String productId,
       @PathVariable(WORKFLOW) @Parameter(description = "Workflow name", example = "CI",
           in = ParameterIn.PATH) WorkFlowType workflow) {
     List<TestStepsModel> response = testStepsService.fetchTestReport(productId, workflow);
@@ -68,13 +67,12 @@ public class MonitorDashBoardController {
   }
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
-  @Operation(summary = "Sync one GitHub monitor", hidden = true,
-      description = "Load and store test reports from GitHub repositories for a product")
+  @Operation(hidden = true)
   public ResponseEntity<String> syncOneGithubMonitor(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) throws IOException {
     githubReposService.loadAndStoreTestRepostsForOneProduct(id);
-    return ResponseEntity.ok("Repositor loaded successfully.");
+    return ResponseEntity.ok("Repository loaded successfully.");
   }
 
   @PutMapping(FOCUSED)
@@ -89,7 +87,6 @@ public class MonitorDashBoardController {
   }
 
   @GetMapping(REPOS)
-  @Operation(hidden = true)
   public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
           required = false) Boolean isFocused, @ParameterObject Pageable pageable,
       @RequestParam(value = "search", required = false) String searchText,
