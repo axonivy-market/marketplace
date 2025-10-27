@@ -465,7 +465,7 @@ public String resolveBestMatchRedirectUrl(String path) {
       return buildDocRedirectUrl(productCategory, productName, version, language);
     }
 
-    if (segments.length == 3 || segments.length == 4) {
+    if (segments.length == 3 || (segments.length == 4 && DOC_DIR.equals(segments[3]))) {
       version = segments[2];
       return buildDocRedirectUrl(productCategory, productName, version, null);
     }
@@ -477,6 +477,7 @@ public String resolveBestMatchRedirectUrl(String path) {
       };
       return buildDocRedirectUrl(productCategory, productName, latestVersion, null);
     }
+
     if (segments.length > 5) {
       String extractedVersion = DocPathUtils.extractVersion(path);
       String extractedProductId = DocPathUtils.extractProductId(path);
@@ -506,7 +507,8 @@ public String resolveBestMatchRedirectUrl(String path) {
 }
 
 /**
- * Build redirect URL with fallback logic:
+ * Build redirect URL with fallback logic and ensure trailing slash:
+ *  - Always redirect to directory with trailing slash
  *  - If language exists → use it
  *  - Else → try 'en'
  *  - Else → fallback to doc root
@@ -516,13 +518,14 @@ private String buildDocRedirectUrl(String productCategory, String productName, S
       + CommonConstants.SLASH + productCategory
       + CommonConstants.SLASH + productName
       + CommonConstants.SLASH + version
-      + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH;
+      + CommonConstants.SLASH + DOC_DIR;
 
   if (language != null) {
     Path langPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, language);
     if (Files.exists(langPath)) {
-      log.info("#resolveBestMatchRedirectUrl Redirecting to: {}", baseUrl + language + "/");
-      return baseUrl + language + "/";
+      String redirectUrl = baseUrl + CommonConstants.SLASH + language + CommonConstants.SLASH;
+      log.info("#resolveBestMatchRedirectUrl Redirecting to: {}", redirectUrl);
+      return redirectUrl;
     } else {
       log.warn("#resolveBestMatchRedirectUrl Language {} not found, fallback to English/doc root", language);
     }
@@ -530,12 +533,13 @@ private String buildDocRedirectUrl(String productCategory, String productName, S
 
   Path enPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, "en");
   if (Files.exists(enPath)) {
-    log.info("#resolveBestMatchRedirectUrl Redirecting to English version: {}", baseUrl + "en/");
-    return baseUrl + "en/";
+    String redirectUrl = baseUrl + CommonConstants.SLASH + "en" + CommonConstants.SLASH;
+    log.info("#resolveBestMatchRedirectUrl Redirecting to English version: {}", redirectUrl);
+    return redirectUrl;
   }
 
-  log.info("#resolveBestMatchRedirectUrl Fallback to doc root: {}", baseUrl);
-  return baseUrl;
+  String redirectUrl = baseUrl + CommonConstants.SLASH;
+  log.info("#resolveBestMatchRedirectUrl Fallback to doc root: {}", redirectUrl);
+  return redirectUrl;
 }
-
 }
