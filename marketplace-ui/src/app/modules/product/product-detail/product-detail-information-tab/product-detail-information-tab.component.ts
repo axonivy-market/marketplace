@@ -58,8 +58,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       return;
     }
     version = this.extractVersionValue(
-      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ||
-        this.selectedVersion
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ?? this.selectedVersion
     );
     // Invalid version
     if (version === undefined || version === '') {
