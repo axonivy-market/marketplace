@@ -21,6 +21,7 @@ import { By } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ProductDetailComponent } from './product-detail/product-detail.component';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 describe('ProductComponent', () => {
   let component: ProductComponent;
@@ -235,6 +236,19 @@ describe('ProductComponent', () => {
     callback(entries as IntersectionObserverEntry[]);
 
     expect(component.hasMore).not.toHaveBeenCalled();
+    expect(component.loadProductItems).not.toHaveBeenCalled();
+  });
+
+  
+  it('should not call loadProductItems when observerElement is still loading', () => {
+    spyOn(component, 'loadProductItems').and.callThrough();
+    spyOn(component, 'hasMore').and.returnValue(true);
+    component.loadingService.showLoading(LoadingComponentId.END_LANDING_PAGE);
+
+    const entries = [{ isIntersecting: true }];
+    const callback = mockIntersectionObserver.callback;
+
+    callback(entries as IntersectionObserverEntry[]);
     expect(component.loadProductItems).not.toHaveBeenCalled();
   });
 
