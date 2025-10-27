@@ -1,7 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
@@ -10,7 +8,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
-import com.axonivy.market.util.DocPathUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -64,23 +60,15 @@ public class ExternalDocumentController {
   @GetMapping(DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
-    String version = DocPathUtils.extractVersion(path);
-    String productId = DocPathUtils.extractProductId(path);
-
-    if (productId != null && version != null && path != null) {
-      String bestMatchVersion = externalDocumentService.findBestMatchVersion(productId, version);
-      // Replace the old version with the best matched version
-      String updatedPath = DocPathUtils.updateVersionInPath(path, bestMatchVersion, version);
-      var resolvedPath = DocPathUtils.resolveDocPath(updatedPath);
-
-      if (resolvedPath == null || !Files.exists(resolvedPath)) {
-        log.warn("#redirectToBestVersion The Document is not exist, redirect to 404.");
-        return response.location(URI.create(ERROR_PAGE_404)).build();
-      }
-
-      return response.location(URI.create(CommonConstants.SLASH + DirectoryConstants.CACHE_DIR + updatedPath)).build();
+    
+    String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
+    
+    if (redirectUrl != null) {
+      log.info("#redirectToBestVersion Redirecting to: {}", redirectUrl);
+      return response.location(URI.create(redirectUrl)).build();
     }
-    log.warn("#redirectToBestVersion The Path is invalid {}, redirect to 404.", path);
+    
+    log.warn("#redirectToBestVersion Unable to resolve path {}, redirect to 404.", path);
     return response.location(URI.create(ERROR_PAGE_404)).build();
   }
 
@@ -117,5 +105,4 @@ public class ExternalDocumentController {
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
-
 }

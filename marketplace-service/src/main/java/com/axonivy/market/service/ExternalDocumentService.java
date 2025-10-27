@@ -13,7 +13,12 @@ public interface ExternalDocumentService {
 
   ExternalDocumentMeta findExternalDocument(String productId, String version);
 
-  String findBestMatchVersion(String productId, String version);
-
   DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version, String language, String host);
+  
+  /**
+   * Resolve the best redirect URL for a given document path
+   * @param path The original path from the URL
+   * @return The redirect URL or null if cannot be resolved
+   */
+  String resolveBestMatchRedirectUrl(String path);
 }

@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
@@ -18,7 +19,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
-import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.DocPathUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import jakarta.annotation.PostConstruct;
@@ -33,6 +34,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -97,6 +99,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (isResetSync) {
       externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
           Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
+      for (Artifact artifact : docArtifacts) {
+        cleanUpSymlinksForArtifact(artifact, releasedVersions);
+      }
     }
 
     for (Artifact artifact : docArtifacts) {
@@ -183,7 +188,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       List<String> releasedVersions) {
     List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
     log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
-    // Skip download doc to share folder on develop mode
+
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
           "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
@@ -207,7 +212,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<String> missingVersions = new ArrayList<>(releasedVersions);
     if (!isResetSync) {
       List<String> existedDocMetaVersions = new ArrayList<>();
-      // Find in DB by productId and versions, then double-check the share folder
       for (var docMeta : externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, releasedVersions)) {
         String shareLocation = getShareFolderLocationByArtifactAndVersion(artifact, docMeta.getVersion());
         if (doesDocExistInShareFolder(shareLocation)) {
@@ -221,7 +225,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private void handleDocumentMeta(String productId, Artifact artifact, String version,
       boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
-    // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
     String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
@@ -230,10 +233,117 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     if (latestSupportedDocVersions.containsKey(version)) {
       String majorVersion = latestSupportedDocVersions.get(version);
-      String majorLocation = updateLatestFolder(Paths.get(location), majorVersion);
-      buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
+      String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion, version);
+      if (StringUtils.isNotBlank(majorLocation)) {
+        buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
+        createLanguageSymlinks(Paths.get(majorLocation));
+      }
     }
+
     buildDocumentWithLanguage(location, artifact, productId, version);
+    createLanguageSymlinks(Paths.get(location));
+  }
+
+  /**
+   * Creates a symbolic link for major version pointing to the specific version folder.
+   * 
+   * @param versionFolder The path to the specific version folder (e.g., .../10.1.1/doc)
+   * @param majorVersion The major version to create symlink for (e.g., "10")
+   * @param specificVersion The specific version (e.g., "10.1.1")
+   * @return The path to the symlinked major version folder, or empty string on failure
+   */
+  private String createSymlinkForMajorVersion(Path versionFolder, String majorVersion, String specificVersion) {
+    try {
+      Path specificVersionParent = versionFolder.getParent();
+      Path artifactRoot = specificVersionParent.getParent();
+      Path majorVersionPath = artifactRoot.resolve(majorVersion);
+      
+      if (Files.exists(majorVersionPath)) {
+        if (Files.isSymbolicLink(majorVersionPath)) {
+          Files.delete(majorVersionPath);
+          log.info("Deleted existing symlink: {}", majorVersionPath);
+        } else {
+          try {
+            org.apache.commons.io.FileUtils.deleteDirectory(majorVersionPath.toFile());
+            log.info("Force deleted existing directory to create symlink: {}", majorVersionPath);
+          } catch (IOException deleteEx) {
+            log.warn("Failed to delete existing directory: {}. Skipping symlink creation.", majorVersionPath, deleteEx);
+            return EMPTY;
+          }
+        }
+      }
+      
+      Path relativeTarget = Path.of(specificVersionParent.getFileName().toString());
+      Files.createSymbolicLink(majorVersionPath, relativeTarget);
+      log.info("Created symlink: {} -> {}", majorVersionPath, relativeTarget);
+      
+      return majorVersionPath + File.separator + DOC_DIR;
+      
+    } catch (IOException e) {
+      log.error("Failed to create symlink for major version {} pointing to {}", majorVersion, specificVersion, e);
+      return EMPTY;
+    }
+  }
+
+  /**
+   * Create language symlinks in the doc directory
+   * Creates an 'en' symlink that points to the root doc directory as fallback for English
+   * 
+   * @param docPath The path to the doc directory (e.g., /market-cache/portal/portal-guide/13.1/doc)
+   */
+  private void createLanguageSymlinks(Path docPath) {
+    try {
+      if (!Files.exists(docPath) || !Files.isDirectory(docPath)) {
+        return;
+      }
+
+      Path enSymlink = docPath.resolve("en");
+      
+      if (Files.exists(enSymlink)) {
+        if (Files.isSymbolicLink(enSymlink)) {
+          Files.delete(enSymlink);
+          log.info("Deleted existing language symlink: {}", enSymlink);
+        } else if (Files.isDirectory(enSymlink)) {
+          log.info("Directory 'en' already exists, skipping symlink creation: {}", enSymlink);
+          return;
+        }
+      }
+      
+      Path relativeTarget = Path.of(".");
+      Files.createSymbolicLink(enSymlink, relativeTarget);
+      log.info("Created language symlink: {} -> {}", enSymlink, relativeTarget);
+      
+    } catch (IOException e) {
+      log.error("Failed to create language symlinks for path {}", docPath, e);
+    }
+  }
+
+  /**
+   * Clean up symlinks for an artifact when resetting sync
+   */
+  private void cleanUpSymlinksForArtifact(Artifact artifact, List<String> releasedVersions) {
+    try {
+      String sampleVersion = releasedVersions.isEmpty() ? "1.0.0" : releasedVersions.get(0);
+      String sampleLocation = getShareFolderLocationByArtifactAndVersion(artifact, sampleVersion);
+      Path artifactRoot = Paths.get(sampleLocation).getParent().getParent();
+      
+      if (!Files.exists(artifactRoot)) {
+        return;
+      }
+      
+      Files.list(artifactRoot)
+          .filter(Files::isSymbolicLink)
+          .forEach(symlink -> {
+            try {
+              Files.delete(symlink);
+            } catch (IOException e) {
+              log.error("Failed to delete symlink: {}", symlink, e);
+            }
+          });
+      
+    } catch (IOException e) {
+      log.error("Error during symlink cleanup for artifact {}", artifact.getArtifactId(), e);
+    }
   }
 
   private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
@@ -252,7 +362,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
       , Artifact artifact, String productId, String version) {
-    // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
         SLASH);
@@ -327,10 +436,106 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return EMPTY;
   }
 
-  public String updateLatestFolder(Path versionFolder, String majorVersion) {
-    Path parent = versionFolder.getParent().getParent();
-    Path majorFolder = parent.resolve(majorVersion);
-    FileUtils.duplicateFolder(versionFolder.getParent(), majorFolder);
-    return majorFolder + File.separator + DOC_DIR;
+  @Override
+public String resolveBestMatchRedirectUrl(String path) {
+  if (path == null || path.trim().isEmpty()) {
+    log.warn("#resolveBestMatchRedirectUrl The Path is null or empty.");
+    return null;
   }
+
+  String normalizedPath = path.trim().replaceAll("^/+|/+$", "");
+  log.info("#resolveBestMatchRedirectUrl Processing path: {}", normalizedPath);
+
+  String[] segments = normalizedPath.split("/");
+  if (segments.length < 2) {
+    log.warn("#resolveBestMatchRedirectUrl Unable to process path {}", path);
+    return null;
+  }
+
+  String productCategory = segments[0];
+  String productName = segments[1];
+
+  try {
+    String version = null;
+    String language = null;
+
+    if (segments.length == 5 && DOC_DIR.equals(segments[3])) {
+      version = segments[2];
+      language = segments[4];
+      return buildDocRedirectUrl(productCategory, productName, version, language);
+    }
+
+    if (segments.length == 3 || segments.length == 4) {
+      version = segments[2];
+      return buildDocRedirectUrl(productCategory, productName, version, null);
+    }
+
+    if (segments.length == 2) {
+      String latestVersion = switch (productCategory) {
+        case "portal", "docfactory" -> "13.1";
+        default -> "dev";
+      };
+      return buildDocRedirectUrl(productCategory, productName, latestVersion, null);
+    }
+    if (segments.length > 5) {
+      String extractedVersion = DocPathUtils.extractVersion(path);
+      String extractedProductId = DocPathUtils.extractProductId(path);
+
+      if (extractedProductId != null && extractedVersion != null) {
+        String bestMatchVersion = findBestMatchVersion(extractedProductId, extractedVersion);
+        if (bestMatchVersion != null) {
+          String updatedPath = DocPathUtils.updateVersionInPath(path, bestMatchVersion, extractedVersion);
+          var resolvedPath = DocPathUtils.resolveDocPath(updatedPath);
+
+          if (resolvedPath != null && Files.exists(resolvedPath)) {
+            String redirectUrl = CommonConstants.SLASH + DirectoryConstants.CACHE_DIR + updatedPath;
+            log.info("#resolveBestMatchRedirectUrl Redirecting full path to: {}", redirectUrl);
+            return redirectUrl;
+          }
+        }
+      }
+      return null;
+    }
+
+  } catch (Exception e) {
+    log.error("#resolveBestMatchRedirectUrl Error processing path {}: {}", path, e.getMessage());
+  }
+
+  log.warn("#resolveBestMatchRedirectUrl Unable to process path {}", path);
+  return null;
+}
+
+/**
+ * Build redirect URL with fallback logic:
+ *  - If language exists → use it
+ *  - Else → try 'en'
+ *  - Else → fallback to doc root
+ */
+private String buildDocRedirectUrl(String productCategory, String productName, String version, String language) {
+  String baseUrl = CommonConstants.SLASH + DirectoryConstants.CACHE_DIR
+      + CommonConstants.SLASH + productCategory
+      + CommonConstants.SLASH + productName
+      + CommonConstants.SLASH + version
+      + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH;
+
+  if (language != null) {
+    Path langPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, language);
+    if (Files.exists(langPath)) {
+      log.info("#resolveBestMatchRedirectUrl Redirecting to: {}", baseUrl + language + "/");
+      return baseUrl + language + "/";
+    } else {
+      log.warn("#resolveBestMatchRedirectUrl Language {} not found, fallback to English/doc root", language);
+    }
+  }
+
+  Path enPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, "en");
+  if (Files.exists(enPath)) {
+    log.info("#resolveBestMatchRedirectUrl Redirecting to English version: {}", baseUrl + "en/");
+    return baseUrl + "en/";
+  }
+
+  log.info("#resolveBestMatchRedirectUrl Fallback to doc root: {}", baseUrl);
+  return baseUrl;
+}
+
 }
