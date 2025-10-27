@@ -16,7 +16,7 @@ import {
   NgbTooltipModule,
   NgbPagination,
   NgbPaginationModule,
-  NgbTypeaheadModule,
+  NgbTypeaheadModule
 } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
@@ -55,7 +55,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     RepoTestResultComponent
   ],
   templateUrl: './monitor-repo.component.html',
-  styleUrl: './monitor-repo.component.scss',
+  styleUrl: './monitor-repo.component.scss'
 })
 export class MonitoringRepoComponent implements OnInit {
   readonly COLUMN_NAME = NAME_COLUMN;
@@ -81,7 +81,7 @@ export class MonitoringRepoComponent implements OnInit {
     isFocused: 'true',
     sortDirection: ASCENDING,
     workflowType: 'name',
-    pageable: DEFAULT_MONITORING_PAGEABLE,
+    pageable: DEFAULT_MONITORING_PAGEABLE
   };
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
@@ -173,7 +173,6 @@ export class MonitoringRepoComponent implements OnInit {
       this.sortDirection = ASCENDING;
     }
   }
-
 
   findWorkflowMatch(repo: Repository, workflow: string) {
     return repo.workflowInformation?.find(wf => wf.workflowType === workflow);

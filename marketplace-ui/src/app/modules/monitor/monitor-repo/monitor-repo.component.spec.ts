@@ -224,4 +224,67 @@ describe('MonitoringRepoComponent', () => {
     fixture.detectChanges();
     expect(header.nativeElement.className).toContain('bi-arrow-down');
   });
+
+  it('should update page, pageable.page, pageable.size and call loadRepositories on page change', () => {
+    // Arrange
+    const newPage = 3;
+    component.pageSize = 15;
+    component.criteria.pageable.size = 10; // initial value
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    // Act
+    component.onPageChange(newPage);
+
+    // Assert
+    expect(component.page).toBe(newPage);
+    expect(component.criteria.pageable.page).toBe(newPage - 1);
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+  });
+
+  it('should update pageSize, reset page to 1, pageable.page to 0, pageable.size and call loadRepositories on page size change', () => {
+    // Arrange
+    const newSize = 25;
+    component.page = 4;
+    component.criteria.pageable.page = 3; // initial value
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    // Act
+    component.onPageSizeChanged(newSize);
+
+    // Assert
+    expect(component.pageSize).toBe(newSize);
+    expect(component.page).toBe(1);
+    expect(component.criteria.pageable.page).toBe(0);
+    expect(component.criteria.pageable.size).toBe(newSize);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+  });
+
+  it('should set isFocused to true when activeTab is not STANDARD_TAB and call loadRepositories', () => {
+    component.activeTab = 'not-standard';
+    component.page = 2;
+    component.pageSize = 15;
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    component.updateCriteriaAndLoad();
+
+    expect(component.criteria.isFocused).toBe('true');
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.criteria.pageable.page).toBe(component.page - 1);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+  });
+
+  it('should set isFocused to empty string when activeTab is STANDARD_TAB and call loadRepositories', () => {
+    component.activeTab = 'standard'; // STANDARD_TAB
+    component.page = 4;
+    component.pageSize = 20;
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    component.updateCriteriaAndLoad();
+
+    expect(component.criteria.isFocused).toBe('');
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.criteria.pageable.page).toBe(component.page - 1);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+  });
 });

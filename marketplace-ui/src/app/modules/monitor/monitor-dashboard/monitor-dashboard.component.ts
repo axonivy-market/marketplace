@@ -44,9 +44,7 @@ export class MonitoringDashboardComponent implements OnInit {
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = FOCUSED_TAB;
-  isLoading = false;
 
-  repositories = signal<RepositoryPages>({ _embedded: { githubRepos: [] } });
   initialFilter = signal<string>('');
 
   ngOnInit(): void {
@@ -60,8 +58,6 @@ export class MonitoringDashboardComponent implements OnInit {
       this.pageTitleService.setTitleOnLangChange(
         'common.monitor.dashboard.pageTitle'
       );
-    } else {
-      this.isLoading = false;
     }
   }
 
