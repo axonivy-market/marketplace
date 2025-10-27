@@ -21,4 +21,8 @@ export class LoadingService {
   hideLoading(componentId: string) {
     this.setLoading(componentId, false);
   }
+
+  isLoading(componentId: string): boolean {
+    return this.loadingStates()[componentId] || false;
+  }
 }
