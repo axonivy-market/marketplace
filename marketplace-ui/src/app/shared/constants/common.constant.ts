@@ -235,6 +235,8 @@ export const VERSION = {
   displayPrefix: 'Version '
 };
 
+export const VERSION_PARAM = 'version';
+
 export const I18N_ERROR_CODE_PATH = 'common.error.description';
 export const I18N_DEFAULT_ERROR_CODE = 'default';
 

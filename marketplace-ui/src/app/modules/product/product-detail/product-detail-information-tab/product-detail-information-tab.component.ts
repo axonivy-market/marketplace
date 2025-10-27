@@ -11,12 +11,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { VERSION } from '../../../../shared/constants/common.constant';
+import { VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
@@ -42,6 +42,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
+  route = inject(ActivatedRoute);
   router = inject(Router);
   shieldsBadgeUrl = '';
   repoName = '';
@@ -56,21 +57,17 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     if (this.isVersionUnchangedOrFirstChange(changes[SELECTED_VERSION])) {
       return;
     }
-    const changedProduct = changes[PRODUCT_DETAIL];
-    if (this.isProductChanged(changedProduct)) {
-      version = this.productDetail.newestReleaseVersion;
-    } else {
-      version = this.selectedVersion;
-    }
+    version = this.extractVersionValue(
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ||
+        this.selectedVersion
+    );
     // Invalid version
     if (version === undefined || version === '') {
       return;
     }
-
     this.productDetailService
       .getExternalDocumentForProductByVersion(
-        this.productDetail.id,
-        this.extractVersionValue(version)
+        this.productDetail.id, version
       )
       .subscribe({
         next: response => {
@@ -85,7 +82,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
           this.resetValues();
         }
       });
-    this.displayVersion = this.extractVersionValue(this.selectedVersion);
+    this.displayVersion = version;
     this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
   getShieldsBadgeUrl(): string {

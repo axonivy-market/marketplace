@@ -8,9 +8,11 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../../../shared/mocks/mock-data';
+import { ActivatedRoute } from '@angular/router';
 
 const TEST_ID = 'portal';
 const TEST_VERSION = '10.0.0';
+const TEST_VERSION_PARAM = 'Version 10.0.0';
 const TEST_ARTIFACT_NAME = 'Portal Guide';
 const TEST_DOC_URL = '/market-cache/portal/portal-guide/10.0.0/doc/index.html';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
@@ -21,16 +23,20 @@ describe('ProductDetailInformationTabComponent', () => {
   let component: ProductDetailInformationTabComponent;
   let fixture: ComponentFixture<ProductDetailInformationTabComponent>;
   let productDetailService: jasmine.SpyObj<ProductDetailService>;
+  let mockVersion: string | null = TEST_VERSION_PARAM;
 
   beforeEach(async () => {
     const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['getExternalDocumentForProductByVersion']);
-
+    mockVersion = TEST_VERSION_PARAM;
     await TestBed.configureTestingModule({
       imports: [ProductDetailInformationTabComponent,
         TranslateModule.forRoot()
       ],
       providers: [
         { provide: ProductDetailService, useValue: productDetailServiceSpy },
+        { provide: ActivatedRoute, useFactory: () => ({
+          snapshot: { queryParamMap: { get: (key: string) => (key === 'version' ? mockVersion : null) } }
+        }) },
         LanguageService,
         TranslateService
       ]
@@ -73,6 +79,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should not set externalDocumentLink if version is invalid', () => {
+    mockVersion = null;
     component.productDetail = { id: TEST_ID, newestReleaseVersion: '' } as ProductDetail;
     component.selectedVersion = '';
     const changes: SimpleChanges = {
@@ -143,28 +150,6 @@ describe('ProductDetailInformationTabComponent', () => {
 
     const result  = component.isProductChanged(productChanged);
     expect(result).toBe(true);
-  });
-
-  it('should get correct externalDocumentLink by newestReleaseVersion', () => {
-    productDetailService.getExternalDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
-    component.productDetail = { id: TEST_ID, newestReleaseVersion: TEST_VERSION } as ProductDetail;
-    component.selectedVersion = TEST_VERSION;
-    const changes: SimpleChanges = {
-      selectedVersion: {
-        currentValue: TEST_VERSION,
-        previousValue: '8.0.0',
-        firstChange: false,
-        isFirstChange: () => false
-      },
-      productDetail: {
-        currentValue: component.productDetail,
-        previousValue: component.productDetail.newestReleaseVersion = '12.0.0-m266',
-        firstChange: true,
-        isFirstChange: () => true
-      }
-    };
-    component.ngOnChanges(changes);
-    expect(productDetailService.getExternalDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, '12.0.0-m266');
   });
 
   it('should return false when change is undefined', () => {
