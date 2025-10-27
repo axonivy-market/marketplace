@@ -239,7 +239,6 @@ describe('ProductComponent', () => {
     expect(component.loadProductItems).not.toHaveBeenCalled();
   });
 
-  
   it('should not call loadProductItems when observerElement is still loading', () => {
     spyOn(component, 'loadProductItems').and.callThrough();
     spyOn(component, 'hasMore').and.returnValue(true);

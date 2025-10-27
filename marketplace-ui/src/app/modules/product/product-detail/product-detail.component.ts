@@ -325,7 +325,11 @@ export class ProductDetailComponent implements AfterViewInit {
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && this.hasMoreChangelogs() && !this.loadingService.isLoading(LoadingComponentId.PRODUCT_CHANGELOG)) {
+        if (
+          entry.isIntersecting &&
+          this.hasMoreChangelogs() &&
+          !this.loadingService.isLoading(LoadingComponentId.PRODUCT_CHANGELOG)
+        ) {
           this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
           this.loadChangelogs();
         }

@@ -238,7 +238,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && this.hasMore() && !this.loadingService.isLoading(LoadingComponentId.END_LANDING_PAGE)) {
+        if (
+          entry.isIntersecting &&
+          this.hasMore() &&
+          !this.loadingService.isLoading(LoadingComponentId.END_LANDING_PAGE)
+        ) {
           this.criteria.nextPageHref = this.responseLink?.next?.href;
           this.loadProductItems();
         }
