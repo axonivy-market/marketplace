@@ -1,7 +1,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SimpleChange, SimpleChanges } from '@angular/core';
 import { ProductDetailService } from '../product-detail.service';
 import { LanguageService } from '../../../../core/services/language/language.service';
@@ -76,6 +76,72 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(productDetailService.getExternalDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
     expect(component.externalDocumentLink).toBe(TEST_DOC_URL);
     expect(component.displayExternalDocName).toBe(TEST_ARTIFACT_NAME);
+  });
+
+    it('should set externalDocumentLink and displayExternalDocName on null response', () => {
+      (
+        productDetailService.getExternalDocumentForProductByVersion as jasmine.Spy
+      ).and.returnValue(of(null));
+      component.productDetail = {
+        id: TEST_ID,
+        newestReleaseVersion: TEST_VERSION
+      } as ProductDetail;
+      component.selectedVersion = TEST_VERSION;
+      const changes: SimpleChanges = {
+        selectedVersion: {
+          currentValue: TEST_VERSION,
+          previousValue: '8.0.0',
+          firstChange: false,
+          isFirstChange: () => false
+        },
+        productDetail: {
+          currentValue: component.productDetail,
+          previousValue: null,
+          firstChange: true,
+          isFirstChange: () => true
+        }
+      };
+
+      component.ngOnChanges(changes);
+
+      expect(
+        productDetailService.getExternalDocumentForProductByVersion
+      ).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
+      expect(component.externalDocumentLink).toBe('');
+      expect(component.displayExternalDocName).toBe('');
+    });
+
+  it('should set externalDocumentLink and displayExternalDocName on error', () => {
+    productDetailService.getExternalDocumentForProductByVersion.and.returnValue(
+      throwError(() => new Error('Network error'))
+    );
+    component.productDetail = {
+      id: TEST_ID,
+      newestReleaseVersion: TEST_VERSION
+    } as ProductDetail;
+    component.selectedVersion = TEST_VERSION;
+    const changes: SimpleChanges = {
+      selectedVersion: {
+        currentValue: TEST_VERSION,
+        previousValue: '8.0.0',
+        firstChange: false,
+        isFirstChange: () => false
+      },
+      productDetail: {
+        currentValue: component.productDetail,
+        previousValue: null,
+        firstChange: true,
+        isFirstChange: () => true
+      }
+    };
+
+    component.ngOnChanges(changes);
+
+    expect(
+      productDetailService.getExternalDocumentForProductByVersion
+    ).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
+    expect(component.externalDocumentLink).toBe('');
+    expect(component.displayExternalDocName).toBe('');
   });
 
   it('should not set externalDocumentLink if version is invalid', () => {

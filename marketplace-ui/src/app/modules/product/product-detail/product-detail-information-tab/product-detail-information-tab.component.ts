@@ -89,6 +89,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
         }
       });
   }
+  
   getShieldsBadgeUrl(): string {
     if (!this.productDetail?.statusBadgeUrl) {
       return '';
