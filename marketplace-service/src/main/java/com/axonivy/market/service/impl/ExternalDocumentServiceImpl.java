@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
@@ -19,7 +18,6 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
-import com.axonivy.market.util.DocPathUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import jakarta.annotation.PostConstruct;
@@ -40,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -244,14 +243,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     createLanguageSymlinks(Paths.get(location));
   }
 
-  /**
-   * Creates a symbolic link for major version pointing to the specific version folder.
-   * 
-   * @param versionFolder The path to the specific version folder (e.g., .../10.1.1/doc)
-   * @param majorVersion The major version to create symlink for (e.g., "10")
-   * @param specificVersion The specific version (e.g., "10.1.1")
-   * @return The path to the symlinked major version folder, or empty string on failure
-   */
   private String createSymlinkForMajorVersion(Path versionFolder, String majorVersion, String specificVersion) {
     try {
       Path specificVersionParent = versionFolder.getParent();
@@ -285,12 +276,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  /**
-   * Create language symlinks in the doc directory
-   * Creates an 'en' symlink that points to the root doc directory as fallback for English
-   * 
-   * @param docPath The path to the doc directory (e.g., /market-cache/portal/portal-guide/13.1/doc)
-   */
   private void createLanguageSymlinks(Path docPath) {
     try {
       if (!Files.exists(docPath) || !Files.isDirectory(docPath)) {
@@ -318,9 +303,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  /**
-   * Clean up symlinks for an artifact when resetting sync
-   */
   private void cleanUpSymlinksForArtifact(Artifact artifact, List<String> releasedVersions) {
     try {
       String sampleVersion = releasedVersions.isEmpty() ? "1.0.0" : releasedVersions.get(0);
@@ -436,110 +418,81 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return EMPTY;
   }
 
-  @Override
+@Override
 public String resolveBestMatchRedirectUrl(String path) {
-  if (path == null || path.trim().isEmpty()) {
-    log.warn("#resolveBestMatchRedirectUrl The Path is null or empty.");
-    return null;
-  }
-
-  String normalizedPath = path.trim().replaceAll("^/+|/+$", "");
-  log.info("#resolveBestMatchRedirectUrl Processing path: {}", normalizedPath);
-
-  String[] segments = normalizedPath.split("/");
-  if (segments.length < 2) {
-    log.warn("#resolveBestMatchRedirectUrl Unable to process path {}", path);
-    return null;
-  }
-
-  String productCategory = segments[0];
-  String productName = segments[1];
-
-  try {
-    String version = null;
-    String language = null;
-
-    if (segments.length == 5 && DOC_DIR.equals(segments[3])) {
-      version = segments[2];
-      language = segments[4];
-      return buildDocRedirectUrl(productCategory, productName, version, language);
+    if (path == null || path.trim().isEmpty()) {
+        return null;
     }
 
-    if (segments.length == 3 || (segments.length == 4 && DOC_DIR.equals(segments[3]))) {
-      version = segments[2];
-      return buildDocRedirectUrl(productCategory, productName, version, null);
+    if (path.contains("index.html") || path.endsWith(".html")) {
+        log.info("Path contains .html file, letting nginx handle it: {}", path);
+        return null;
     }
 
-    if (segments.length == 2) {
-      String latestVersion = switch (productCategory) {
-        case "portal", "docfactory" -> "13.1";
-        default -> "dev";
-      };
-      return buildDocRedirectUrl(productCategory, productName, latestVersion, null);
-    }
+    try {
+        Path baseDir = Paths.get("/usr/share/nginx/html/market-cache/portal/portal-guide");
 
-    if (segments.length > 5) {
-      String extractedVersion = DocPathUtils.extractVersion(path);
-      String extractedProductId = DocPathUtils.extractProductId(path);
+        String version = extractVersion(path);
 
-      if (extractedProductId != null && extractedVersion != null) {
-        String bestMatchVersion = findBestMatchVersion(extractedProductId, extractedVersion);
-        if (bestMatchVersion != null) {
-          String updatedPath = DocPathUtils.updateVersionInPath(path, bestMatchVersion, extractedVersion);
-          var resolvedPath = DocPathUtils.resolveDocPath(updatedPath);
-
-          if (resolvedPath != null && Files.exists(resolvedPath)) {
-            String redirectUrl = CommonConstants.SLASH + DirectoryConstants.CACHE_DIR + updatedPath;
-            log.info("#resolveBestMatchRedirectUrl Redirecting full path to: {}", redirectUrl);
-            return redirectUrl;
-          }
+        if (version == null) {
+            String latestVersion = findLatestVersion(baseDir);
+            return latestVersion != null
+                    ? "/market-cache/portal/portal-guide/" + latestVersion + "/"
+                    : null;
         }
-      }
-      return null;
+
+        Path versionPath = baseDir.resolve(version);
+
+        if (Files.isSymbolicLink(versionPath)) {
+            Path targetPath = Files.readSymbolicLink(versionPath);
+            Path realPath = baseDir.resolve(targetPath);
+
+            if (hasIndex(realPath)) {
+                return "/market-cache/portal/portal-guide/" + targetPath.getFileName() + "/";
+            } else {
+                return null; 
+            }
+        }
+
+        if (Files.exists(versionPath) && hasIndex(versionPath)) {
+            return "/market-cache/portal/portal-guide/" + version + "/";
+        }
+
+        String latestVersion = findLatestVersion(baseDir);
+        if (latestVersion != null && !latestVersion.equals(version)) {
+            return "/market-cache/portal/portal-guide/" + latestVersion + "/";
+        }
+
+        return null; 
+    } catch (Exception e) {
+        log.error("Error in resolveBestMatchRedirectUrl", e);
+        return null;
     }
-
-  } catch (Exception e) {
-    log.error("#resolveBestMatchRedirectUrl Error processing path {}: {}", path, e.getMessage());
-  }
-
-  log.warn("#resolveBestMatchRedirectUrl Unable to process path {}", path);
-  return null;
 }
 
-/**
- * Build redirect URL with fallback logic and ensure trailing slash:
- *  - Always redirect to directory with trailing slash
- *  - If language exists → use it
- *  - Else → try 'en'
- *  - Else → fallback to doc root
- */
-private String buildDocRedirectUrl(String productCategory, String productName, String version, String language) {
-  String baseUrl = CommonConstants.SLASH + DirectoryConstants.CACHE_DIR
-      + CommonConstants.SLASH + productCategory
-      + CommonConstants.SLASH + productName
-      + CommonConstants.SLASH + version
-      + CommonConstants.SLASH + DOC_DIR;
+private boolean hasIndex(Path dir) {
+    Path index = dir.resolve("doc/index.html");
+    Path indexEn = dir.resolve("doc/en/index.html");
+    return Files.exists(index) || Files.exists(indexEn);
+}
 
-  if (language != null) {
-    Path langPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, language);
-    if (Files.exists(langPath)) {
-      String redirectUrl = baseUrl + CommonConstants.SLASH + language + CommonConstants.SLASH;
-      log.info("#resolveBestMatchRedirectUrl Redirecting to: {}", redirectUrl);
-      return redirectUrl;
-    } else {
-      log.warn("#resolveBestMatchRedirectUrl Language {} not found, fallback to English/doc root", language);
+private String findLatestVersion(Path baseDir) throws IOException {
+    try (Stream<Path> paths = Files.list(baseDir)) {
+        return paths
+                .map(p -> p.getFileName().toString())
+                .filter(v -> v.matches("\\d+(\\.\\d+)*(-m\\d+)?"))
+                .max(Comparator.naturalOrder())
+                .orElse(null);
     }
-  }
+}
 
-  Path enPath = Paths.get(DirectoryConstants.CACHE_DIR, productCategory, productName, version, DOC_DIR, "en");
-  if (Files.exists(enPath)) {
-    String redirectUrl = baseUrl + CommonConstants.SLASH + "en" + CommonConstants.SLASH;
-    log.info("#resolveBestMatchRedirectUrl Redirecting to English version: {}", redirectUrl);
-    return redirectUrl;
-  }
-
-  String redirectUrl = baseUrl + CommonConstants.SLASH;
-  log.info("#resolveBestMatchRedirectUrl Fallback to doc root: {}", redirectUrl);
-  return redirectUrl;
+private String extractVersion(String path) {
+    String[] segments = path.split("/");
+    for (String seg : segments) {
+        if (seg.matches("\\d+(\\.\\d+)*(-m\\d+)?") || seg.matches("dev")) {
+            return seg;
+        }
+    }
+    return null;
 }
 }
