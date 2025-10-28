@@ -33,4 +33,29 @@
       </div>
     }
   }
+
+    @if (hasAnyTestResults() && !hasWorkflowTestResults()) {
+    <div class="sub-status align-middle empty-test-row">
+      <span class="test-details fs-5">&nbsp;</span>
+    </div>
+  }
+
+  <div class="sub-status align-middle" [lang]="languageService.selectedLanguage()">
+  @if (workflowInfo?.currentWorkflowState) {
+    @let display = getWorkflowDisplay(workflowInfo?.currentWorkflowState || '');
+    <span class="test-details fs-5 d-inline-flex align-items-center" [attr.title]="display.tooltip">
+      {{ 'common.monitor.workflow.label' | translate }}:
+      {{ display.label }}
+      <span
+        class="workflow-icon ms-1">
+        {{ display.icon }}
+      </span>
+      @if (workflowInfo?.disabledDate) {
+        <span class="text-muted built-date">
+          {{ workflowInfo?.disabledDate | date: 'short' }}
+        </span>
+      }
+    </span>
+  }
+</div>
 }

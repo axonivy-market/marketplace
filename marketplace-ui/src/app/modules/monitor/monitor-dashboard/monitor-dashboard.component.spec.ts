@@ -35,14 +35,19 @@ describe('MonitoringDashboardComponent', () => {
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
             lastBuiltRunUrl:
-              'https://github.com/market/rtf-factory/actions/runs/11111'
+              'https://github.com/market/rtf-factory/actions/runs/11111',
+            currentWorkflowState: 'active',
+            disabledDate: null
+            
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
             lastBuiltRunUrl:
-              'https://github.com/market/rtf-factory/actions/runs/11111'
+              'https://github.com/market/rtf-factory/actions/runs/11111',
+            currentWorkflowState: 'disabled_manually',
+            disabledDate: new Date('2025-07-22T12:00:00Z')
           }
         ],
         focused: true,

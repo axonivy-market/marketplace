@@ -5,6 +5,7 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.WorkflowInformation;
@@ -22,6 +23,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowRun;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -105,39 +107,69 @@ public class GithubReposServiceImpl implements GithubReposService {
         .orElse(productId);
   }
 
-  public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      WorkFlowType workflowType) {
+  public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowInfo(dbRepo, workflowType, run);
-        GHArtifact artifact = gitHubService.getExportTestArtifact(run);
-        if (artifact != null) {
-          return processArtifact(artifact, dbRepo, workflowType);
-        }
+        var workflowInformation = dbRepo.getWorkflowInformation().stream()
+            .filter(workflow -> workflowType == workflow.getWorkflowType())
+            .findFirst()
+            .orElseGet(() -> {
+              var newWorkflowInfo = new WorkflowInformation();
+              newWorkflowInfo.setWorkflowType(workflowType);
+              dbRepo.getWorkflowInformation().add(newWorkflowInfo);
+              return newWorkflowInfo;
+            });
+
+        updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
+        return processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
       }
     } catch (IOException | GHException e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
+
     }
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowInfo(GithubRepo repo, WorkFlowType workflowType,
-      GHWorkflowRun run) throws IOException {
-    var workflowInformation = repo.getWorkflowInformation().stream()
-        .filter(workflow -> workflowType == workflow.getWorkflowType())
-        .findFirst()
-        .orElseGet(() -> {
-          var newWorkflowInfo = new WorkflowInformation();
-          newWorkflowInfo.setWorkflowType(workflowType);
-          repo.getWorkflowInformation().add(newWorkflowInfo);
-          return newWorkflowInfo;
-        });
+  private List<TestStep> processActiveWorkflowArtifact(GHWorkflowRun run, GithubRepo dbRepo,
+      WorkflowInformation workflowInfo, WorkFlowType workflowType) throws IOException {
+
+    if (WorkflowStatus.ACTIVE.getStatus().equals(workflowInfo.getCurrentWorkflowState())) {
+      GHArtifact artifact = gitHubService.getExportTestArtifact(run);
+      if (artifact != null) {
+        return processArtifact(artifact, dbRepo, workflowType);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  private static void updateWorkflowInfo(GHRepository ghRepo, WorkflowInformation workflowInformation,
+      WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
+    var repoWorkflow = ghRepo.getWorkflow(workflowType.getFileName());
+
+    addWorkflowState(repoWorkflow, workflowInformation);
 
     workflowInformation.setLastBuilt(run.getCreatedAt());
     workflowInformation.setConclusion(String.valueOf(run.getConclusion()));
     workflowInformation.setLastBuiltRunUrl(run.getHtmlUrl().toString());
+  }
+
+  private static void addWorkflowState(GHWorkflow repoWorkflow,
+      WorkflowInformation workflowInformation) throws IOException {
+    WorkflowStatus currentStatus = Arrays.stream(WorkflowStatus.values())
+        .filter(workflowStatus -> workflowStatus.getStatus().equals(repoWorkflow.getState()))
+        .findFirst()
+        .orElse(null);
+
+    if (currentStatus != null) {
+      workflowInformation.setCurrentWorkflowState(currentStatus.getStatus());
+      if(WorkflowStatus.ACTIVE != currentStatus){
+        workflowInformation.setDisabledDate(repoWorkflow.getUpdatedAt());
+      } else {
+        workflowInformation.setDisabledDate(null);
+      }
+    }
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,

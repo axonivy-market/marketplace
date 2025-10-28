@@ -14,6 +14,7 @@ import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { By } from '@angular/platform-browser';
 import { ASCENDING, DEFAULT_MODE, FOCUSED_TAB, REPORT_MODE } from '../../../shared/constants/common.constant';
+import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
@@ -32,14 +33,18 @@ describe('MonitoringRepoComponent', () => {
             lastBuilt: new Date('2025-07-20T12:00:00Z'),
             conclusion: 'success',
             lastBuiltRunUrl:
-              'https://github.com/market/rtf-factory/actions/runs/11111'
+              'https://github.com/market/rtf-factory/actions/runs/11111',
+            currentWorkflowState: 'active',
+            disabledDate: null
           },
           {
             workflowType: 'DEV',
             lastBuilt: new Date('2025-07-21T12:00:00Z'),
             conclusion: 'failure',
             lastBuiltRunUrl:
-              'https://github.com/market/rtf-factory/actions/runs/11111'
+              'https://github.com/market/rtf-factory/actions/runs/11111',
+            currentWorkflowState: 'deleted',
+            disabledDate: new Date('2025-07-22T12:00:00Z')
           }
         ],
         focused: true,
@@ -224,5 +229,53 @@ describe('MonitoringRepoComponent', () => {
     component.sortRepositoriesByColumn(component.COLUMN_NAME);
     fixture.detectChanges();
     expect(header.nativeElement.className).toContain('bi-arrow-down');
+  });
+
+  it('should render workflow tooltip inside CI header', () => {
+    const ciHeader = fixture.debugElement.query(
+      By.css('th.workflow-column:nth-child(2) app-build-badge-tooltip')
+    );
+    expect(ciHeader).toBeTruthy();
+  });
+
+  it('should trigger sort when clicking column header', () => {
+    spyOn(component, 'sortRepositoriesByColumn');
+    const connectorNameHeader = fixture.debugElement.query(By.css('th:first-child'));
+    connectorNameHeader.triggerEventHandler('click', {});
+    expect(component.sortRepositoriesByColumn).toHaveBeenCalled();
+  });
+
+  it('should allow hover on header to show tooltip', () => {
+    const tooltipEl = fixture.debugElement.query(
+      By.directive(BuildBadgeTooltipComponent)
+    );
+    expect(tooltipEl).toBeTruthy();
+
+    tooltipEl.triggerEventHandler('mouseenter', {});
+    fixture.detectChanges();
+
+    const tooltipComponent =
+      tooltipEl.componentInstance as BuildBadgeTooltipComponent;
+    if ('visible' in tooltipComponent) {
+      tooltipComponent.visible = true;
+      fixture.detectChanges();
+      expect(tooltipComponent.visible).toBeTrue();
+    }
+  });
+
+  it('should allow sorting by multiple workflow columns independently', () => {
+    spyOn(component, 'sortRepositoriesByColumn').and.callThrough();
+
+    const ciHeader = fixture.debugElement.queryAll(
+      By.css('th.workflow-column')
+    )[0];
+    const devHeader = fixture.debugElement.queryAll(
+      By.css('th.workflow-column')
+    )[1];
+
+    ciHeader.triggerEventHandler('click', {});
+    devHeader.triggerEventHandler('click', {});
+
+    expect(component.sortRepositoriesByColumn).toHaveBeenCalledTimes(2);
   });
 });
