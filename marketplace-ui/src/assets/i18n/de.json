@@ -272,6 +272,23 @@
         "tenItems": "10 Items pro Seite",
         "twentyItems": "20 Items pro Seite",
         "all": "Alle"
+      },
+      "workflow": {
+        "label": "Staat",
+        "status": {
+          "active": "Aktiv",
+          "disabled_inactivity": "Deaktiviert",
+          "disabled_manually": "Deaktiviert",
+          "disabled_unknown": "Deaktiviert",
+          "deleted": "Gelöscht"
+        },
+        "tooltip": {
+          "active": "Aktiv: Der Workflow ist aktiviert und wird automatisch ausgeführt, wenn er ausgelöst wird.",
+          "disabled_inactivity": "Deaktiviert (Inaktivität): Der Workflow wurde aufgrund längerer Inaktivität des Repositories automatisch deaktiviert. Er muss erneut aktiviert werden, um ausgeführt zu werden.",
+          "disabled_manually": "Manuell deaktiviert: Der Workflow wurde manuell deaktiviert und wird erst nach erneuter Aktivierung ausgeführt.",
+          "disabled_unknown": "Deaktiviert (unbekannt): Der Workflow ist aus unbekannten Gründen deaktiviert. Überprüfen Sie die Konfiguration oder die Berechtigungen des Repositories.",
+          "deleted": "Gelöscht: Die Workflow-Datei wurde aus dem Repository gelöscht und kann nicht ausgeführt werden."
+        }
       }
     }
   }
