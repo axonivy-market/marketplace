@@ -110,33 +110,36 @@ public class GithubReposServiceImpl implements GithubReposService {
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
-      if (run != null) {
-        WorkflowInformation workflowInformation = dbRepo.getWorkflowInformation().stream()
-            .filter(workflow -> workflowType == workflow.getWorkflowType())
-            .findFirst()
-            .orElse(null);
-
-        // Create it if not exist
-        if (workflowInformation == null) {
-          workflowInformation = new WorkflowInformation();
-          workflowInformation.setWorkflowType(workflowType);
-          dbRepo.getWorkflowInformation().add(workflowInformation);
-        }
-
-        updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
-        if (WorkflowStatus.ACTIVE.getStatus().equals(
-            workflowInformation.getCurrentWorkflowState())) {
-          GHArtifact artifact = gitHubService.getExportTestArtifact(run);
-          if (artifact != null) {
-            return processArtifact(artifact, dbRepo, workflowType);
-          }
-        }
+      if (run == null) {
+        return Collections.emptyList();
       }
+
+      var workflowInformation = dbRepo.getWorkflowInformation().stream().filter(
+          workflow -> workflowType == workflow.getWorkflowType())
+          .findFirst()
+          .orElseGet(() -> {
+        var newWorkflowInfo = new WorkflowInformation();
+        newWorkflowInfo.setWorkflowType(workflowType);
+        dbRepo.getWorkflowInformation().add(newWorkflowInfo);
+        return newWorkflowInfo;
+      });
+
+      updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
+
+      if (!WorkflowStatus.ACTIVE.getStatus().equals(workflowInformation.getCurrentWorkflowState())) {
+        return Collections.emptyList();
+      }
+
+      GHArtifact artifact = gitHubService.getExportTestArtifact(run);
+      if (artifact == null) {
+        return Collections.emptyList();
+      }
+      return processArtifact(artifact, dbRepo, workflowType);
     } catch (IOException | GHException e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
+      return Collections.emptyList();
     }
-    return Collections.emptyList();
   }
 
   private static void updateWorkflowInfo(GHRepository ghRepo, WorkflowInformation workflowInformation,
