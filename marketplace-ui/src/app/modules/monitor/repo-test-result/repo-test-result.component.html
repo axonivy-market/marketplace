@@ -43,19 +43,18 @@
   <div class="sub-status align-middle" [lang]="languageService.selectedLanguage()">
   @if (workflowInfo?.currentWorkflowState) {
     @let display = getWorkflowDisplay(workflowInfo?.currentWorkflowState || '');
-    <span class="test-details fs-5">
+    <span class="test-details fs-5 d-inline-flex align-items-center" [attr.title]="display.tooltip">
       {{ 'common.monitor.workflow.label' | translate }}:
       {{ display.label }}
       <span
-        class="workflow-icon"
-        [attr.title]="display.tooltip">
+        class="workflow-icon ms-1">
         {{ display.icon }}
       </span>
-    </span>
-  }
-  @if (workflowInfo?.disabledDate) {
-    <span class="test-details fs-5">
-      {{ workflowInfo?.disabledDate | date: 'short' }}
+      @if (workflowInfo?.disabledDate) {
+        <span class="text-muted built-date">
+          {{ workflowInfo?.disabledDate | date: 'short' }}
+        </span>
+      }
     </span>
   }
 </div>

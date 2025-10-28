@@ -107,15 +107,29 @@ public class GithubReposServiceImpl implements GithubReposService {
         .orElse(productId);
   }
 
-  public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      WorkFlowType workflowType) {
+  public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        updateWorkflowInfo(ghRepo, dbRepo, workflowType, run);
-        GHArtifact artifact = gitHubService.getExportTestArtifact(run);
-        if (artifact != null) {
-          return processArtifact(artifact, dbRepo, workflowType);
+        WorkflowInformation workflowInformation = dbRepo.getWorkflowInformation().stream()
+            .filter(workflow -> workflowType == workflow.getWorkflowType())
+            .findFirst()
+            .orElse(null);
+
+        // Create it if not exist
+        if (workflowInformation == null) {
+          workflowInformation = new WorkflowInformation();
+          workflowInformation.setWorkflowType(workflowType);
+          dbRepo.getWorkflowInformation().add(workflowInformation);
+        }
+
+        updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
+        if (WorkflowStatus.ACTIVE.getStatus().equals(
+            workflowInformation.getCurrentWorkflowState())) {
+          GHArtifact artifact = gitHubService.getExportTestArtifact(run);
+          if (artifact != null) {
+            return processArtifact(artifact, dbRepo, workflowType);
+          }
         }
       }
     } catch (IOException | GHException e) {
@@ -125,17 +139,8 @@ public class GithubReposServiceImpl implements GithubReposService {
     return Collections.emptyList();
   }
 
-  private static void updateWorkflowInfo(GHRepository ghRepo, GithubRepo repo, WorkFlowType workflowType,
-      GHWorkflowRun run) throws IOException {
-    var workflowInformation = repo.getWorkflowInformation().stream()
-        .filter(workflow -> workflowType == workflow.getWorkflowType())
-        .findFirst()
-        .orElseGet(() -> {
-          var newWorkflowInfo = new WorkflowInformation();
-          newWorkflowInfo.setWorkflowType(workflowType);
-          repo.getWorkflowInformation().add(newWorkflowInfo);
-          return newWorkflowInfo;
-        });
+  private static void updateWorkflowInfo(GHRepository ghRepo, WorkflowInformation workflowInformation,
+      WorkFlowType workflowType, GHWorkflowRun run) throws IOException {
     var repoWorkflow = ghRepo.getWorkflow(workflowType.getFileName());
 
     addWorkflowState(repoWorkflow, workflowInformation);
