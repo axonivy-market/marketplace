@@ -29,6 +29,8 @@ export interface WorkflowInformation {
   lastBuilt: Date;
   conclusion: string;
   lastBuiltRunUrl: string;
+  currentWorkflowState: string;
+  disabledDate: Date | null;
 }
 
 export interface TestResult {

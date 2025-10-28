@@ -4,6 +4,7 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowRun;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -147,6 +149,11 @@ class GithubReposServiceImplTest {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
     GHArtifact artifact = mock(GHArtifact.class);
     JsonNode jsonNode = mock(JsonNode.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+
+    when(ghRepo.getWorkflow(CI.getFileName())).thenReturn(workflow);
+    when(workflow.getState()).thenReturn(WorkflowStatus.ACTIVE.getStatus());
+    when(workflow.getUpdatedAt()).thenReturn(new Date());
 
     when(gitHubService.getLatestWorkflowRun(ghRepo, CI.getFileName())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
@@ -161,6 +168,16 @@ class GithubReposServiceImplTest {
 
     assertEquals(1, steps.size(),
         "Should return one test step when workflow run and artifact are found");
+
+    WorkflowInformation workflowInformation = dbRepo.getWorkflowInformation().stream()
+        .filter(info -> WorkFlowType.CI == info.getWorkflowType())
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(workflowInformation, "Workflow information entry should exist for CI");
+    assertEquals(WorkflowStatus.ACTIVE.getStatus(), workflowInformation.getCurrentWorkflowState(),
+        "Should record active state");
+    assertNull(workflowInformation.getDisabledDate(), "Disabled date should be null for active state");
   }
 
   @Test
@@ -249,16 +266,32 @@ class GithubReposServiceImplTest {
   void testProcessArtifactWithIOException() throws Exception {
     GHWorkflowRun run = mock(GHWorkflowRun.class);
     GHArtifact artifact = mock(GHArtifact.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
 
     when(gitHubService.getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
     when(gitHubService.downloadArtifactZip(artifact)).thenThrow(new IOException("Download failed"));
     when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+    when(ghRepo.getWorkflow(WorkFlowType.CI.getFileName())).thenReturn(workflow);
+    when(workflow.getState()).thenReturn(WorkflowStatus.DISABLED_MANUALLY.getStatus());
+    Date disabledDate = new Date();
+    when(workflow.getUpdatedAt()).thenReturn(disabledDate);
 
     List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, WorkFlowType.CI);
 
     assertTrue(result.isEmpty(), "Should return empty list when IO exception occurs");
     verify(gitHubService).getLatestWorkflowRun(ghRepo, WorkFlowType.CI.getFileName());
+
+    WorkflowInformation workflowInformation = dbRepo.getWorkflowInformation().stream()
+        .filter(info -> WorkFlowType.CI == info.getWorkflowType())
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(workflowInformation, "Workflow info should exist despite artifact IO error");
+    assertEquals(WorkflowStatus.DISABLED_MANUALLY.getStatus(), workflowInformation.getCurrentWorkflowState(),
+        "Should capture disabled state");
+    assertEquals(disabledDate, workflowInformation.getDisabledDate(),
+        "Disabled date should be set when workflow disabled");
   }
 
   @Test
@@ -293,19 +326,43 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
 
     for (WorkFlowType type : WorkFlowType.values()) {
+      GHWorkflow workflow = mock(GHWorkflow.class);
+      when(ghRepo.getWorkflow(type.getFileName())).thenReturn(workflow);
+      when(workflow.getState()).thenReturn(WorkflowStatus.ACTIVE.getStatus());
+      when(workflow.getUpdatedAt()).thenReturn(new Date());
+    }
+
+    for (WorkFlowType type : WorkFlowType.values()) {
       service.processWorkflowWithFallback(ghRepo, dbRepo, type);
     }
 
     assertEquals(WorkFlowType.values().length, dbRepo.getWorkflowInformation().size(),
         "Should have one WorkflowInformation entry per workflow type"
     );
+
+    dbRepo.getWorkflowInformation().forEach(info -> {
+      assertEquals(WorkflowStatus.ACTIVE.getStatus(), info.getCurrentWorkflowState(),
+          "Each workflow should be active in this test");
+      assertNull(info.getDisabledDate(), "Disabled date should be null for active workflows");
+    });
   }
 
   @Test
   void testUpdateWorkflowInfoCreatesNewEntry() throws Exception {
+    GHRepository ghRepoMock = mock(GHRepository.class);
     GHWorkflowRun run = mock(GHWorkflowRun.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+
     when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
     when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+    Date workflowUpdated = new Date();
+
+    when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
+    when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
+
+    when(ghRepoMock.getWorkflow(any())).thenReturn(workflow);
+    when(workflow.getState()).thenReturn(WorkflowStatus.ACTIVE.getStatus());
+    when(workflow.getUpdatedAt()).thenReturn(workflowUpdated);
 
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
@@ -313,36 +370,50 @@ class GithubReposServiceImplTest {
     GithubRepo repo = new GithubRepo();
     repo.setWorkflowInformation(new HashSet<>());
 
-    service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
+    service.processWorkflowWithFallback(ghRepoMock, repo, WorkFlowType.CI);
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should create new workflow info");
     WorkflowInformation info = repo.getWorkflowInformation().iterator().next();
     assertEquals(WorkFlowType.CI, info.getWorkflowType(), "Should have CI workflow type as expected");
-    assertEquals(ghRepo.getCreatedAt(), info.getLastBuilt(), "Last built should be set");
+    assertEquals(run.getCreatedAt(), info.getLastBuilt(), "Last built should be set from run creation time");
     assertEquals("success", info.getConclusion(), "Conclusion should be set to 'success'");
     assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
+    assertEquals(WorkflowStatus.ACTIVE.getStatus(), info.getCurrentWorkflowState(),
+        "Current workflow state should match mocked state");
+    assertNull(info.getDisabledDate(), "Disabled date should be null when workflow is active");
   }
 
   @Test
   void testUpdateWorkflowInfoUpdatesExistingEntry() throws Exception {
+    GHRepository ghRepoMock = mock(GHRepository.class);
     GHWorkflowRun run = mock(GHWorkflowRun.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+
     when(run.getConclusion()).thenReturn(GHWorkflowRun.Conclusion.SUCCESS);
     when(run.getHtmlUrl()).thenReturn(URI.create(URL_EXAMPLE).toURL());
+    Date workflowUpdated = new Date();
 
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(run);
     when(gitHubService.getExportTestArtifact(run)).thenReturn(null);
+
+    when(ghRepoMock.getWorkflow(any())).thenReturn(workflow);
+    when(workflow.getState()).thenReturn(WorkflowStatus.DISABLED_INACTIVITY.getStatus());
+    when(workflow.getUpdatedAt()).thenReturn(workflowUpdated);
 
     GithubRepo repo = new GithubRepo();
     WorkflowInformation existing = new WorkflowInformation();
     existing.setWorkflowType(WorkFlowType.CI);
     repo.setWorkflowInformation(new HashSet<>(List.of(existing)));
 
-    service.processWorkflowWithFallback(mock(GHRepository.class), repo, WorkFlowType.CI);
+    service.processWorkflowWithFallback(ghRepoMock, repo, WorkFlowType.CI);
 
     assertEquals(1, repo.getWorkflowInformation().size(), "Should not create a duplicate");
     WorkflowInformation info = repo.getWorkflowInformation().iterator().next();
     assertEquals("success", info.getConclusion(), "Conclusion should be 'success'");
     assertEquals(URL_EXAMPLE, info.getLastBuiltRunUrl(), "Result should return a build run url");
+    assertEquals(WorkflowStatus.DISABLED_INACTIVITY.getStatus(), info.getCurrentWorkflowState(),
+        "Current workflow state should match mocked state");
+    assertEquals(workflowUpdated, info.getDisabledDate(), "Disabled date should be set when workflow is not active");
   }
 
   @Test

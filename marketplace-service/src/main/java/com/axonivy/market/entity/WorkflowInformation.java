@@ -33,4 +33,6 @@ public class WorkflowInformation extends GenericIdEntity {
   private Date lastBuilt;
   private String conclusion;
   private String lastBuiltRunUrl;
+  private String currentWorkflowState;
+  private Date disabledDate;
 }
