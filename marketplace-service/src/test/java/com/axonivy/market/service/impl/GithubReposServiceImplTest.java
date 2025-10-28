@@ -6,8 +6,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.WorkflowInformation;
+import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -85,8 +83,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductExistingRepo() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.of(dbRepo));
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -98,8 +94,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductNewRepo() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -111,8 +105,6 @@ class GithubReposServiceImplTest {
 
   @Test
   void testProcessProductDataAccessException() {
-    when(githubRepoRepository.findByNameWithTestSteps(ghRepo.getName())).thenReturn(Optional.empty());
-
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
 
@@ -125,21 +117,6 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testFetchAllRepositories() {
-    GithubRepo repo = new GithubRepo();
-    when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
-    try (var mocked = mockStatic(GithubReposModel.class)) {
-      mocked.when(() -> GithubReposModel.from(repo)).thenReturn(new GithubReposModel());
-
-      List<GithubReposModel> result = service.fetchAllRepositories();
-
-      assertEquals(1, result.size(),
-          "Should return one GithubReposModel when one GithubRepo is present");
-      mocked.verify(() -> GithubReposModel.from(repo));
-    }
-  }
-
-  @Test
   void testLoadAndStoreTestReportsSuccess() throws Exception {
     Product product = new Product();
     product.setRepositoryName("repo1");
@@ -147,8 +124,6 @@ class GithubReposServiceImplTest {
 
     when(productRepository.findAll()).thenReturn(List.of(product));
     when(gitHubService.getRepository(product.getRepositoryName())).thenReturn(ghRepo);
-    when(githubRepoRepository.findByNameWithTestSteps(product.getRepositoryName()))
-        .thenReturn(Optional.of(dbRepo));
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());
     assertDoesNotThrow(() -> serviceSpy.loadAndStoreTestReports(),
@@ -439,5 +414,45 @@ class GithubReposServiceImplTest {
     assertEquals(WorkflowStatus.DISABLED_INACTIVITY.getStatus(), info.getCurrentWorkflowState(),
         "Current workflow state should match mocked state");
     assertEquals(workflowUpdated, info.getDisabledDate(), "Disabled date should be set when workflow is not active");
+  }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProductProductNotFound() {
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.empty());
+
+    service.loadAndStoreTestRepostsForOneProduct("p1");
+
+    verify(productRepository).findById("p1");
+    verifyNoMoreInteractions(productRepository, githubRepoRepository, testStepsService, gitHubService);
+  }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProductProductFound() throws Exception {
+    Product product = new Product();
+    product.setId("p1");
+    product.setRepositoryName("repoName");
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.of(product));
+
+    when(gitHubService.getRepository("repoName")).thenReturn(ghRepo);
+
+    service.loadAndStoreTestRepostsForOneProduct("p1");
+
+    verify(productRepository).findById("p1");
+    verify(gitHubService).getRepository("repoName");
+    verify(githubRepoRepository).save(any());
+  }
+
+  @Test
+  void testLoadAndStoreTestRepostsForOneProductHandlesException() throws Exception {
+    Product product = new Product();
+    product.setId("p1");
+    product.setRepositoryName("repoName");
+    when(productRepository.findById("p1")).thenReturn(java.util.Optional.of(product));
+    when(gitHubService.getRepository("repoName")).thenThrow(new DataAccessException("DB Error") {
+    });
+
+    assertDoesNotThrow(() -> service.loadAndStoreTestRepostsForOneProduct("p1"),
+        "Should not throw an exception when GitHubService.getRepository throws DataAccessException");
+    verify(gitHubService).getRepository("repoName");
   }
 }

@@ -13,8 +13,15 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { By } from '@angular/platform-browser';
-import { ASCENDING, DEFAULT_MODE, FOCUSED_TAB, REPORT_MODE } from '../../../shared/constants/common.constant';
-import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
+import {
+  ASCENDING,
+  DEFAULT_MODE,
+  DESCENDING,
+  FOCUSED_TAB,
+  NAME_COLUMN,
+  REPORT_MODE
+} from '../../../shared/constants/common.constant';
+import { SimpleChange, SimpleChanges } from '@angular/core';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
@@ -97,11 +104,12 @@ describe('MonitoringRepoComponent', () => {
 
     fixture = TestBed.createComponent(MonitoringRepoComponent);
     component = fixture.componentInstance;
-
+    const changes: SimpleChanges = {
+      activeTab: new SimpleChange('focus', 'standard', false)
+    };
     component.tabKey = FOCUSED_TAB;
-    component.repositories = [...mockRepositories];
-    component.ngOnChanges();
-    component.refreshPagination();
+    component.displayedRepositories = [...mockRepositories];
+    component.ngOnChanges(changes);
 
     fixture.detectChanges();
   });
@@ -115,62 +123,46 @@ describe('MonitoringRepoComponent', () => {
     expect(component.mode[FOCUSED_TAB]).toBe(DEFAULT_MODE);
   });
 
-  it('should filter repositories when search changes', () => {
-    component.onSearchChanged('repo1');
-    expect(component.filteredRepositories.length).toBe(1);
-    expect(component.filteredRepositories[0].repoName).toBe('repo1');
+  it('should update criteria.search, reset page, update pageable, and call loadRepositories on search', () => {
+    const searchString = 'asana';
 
-    component.onSearchChanged('asanaaaa');
-    expect(component.filteredRepositories.length).toBe(0);
-  });
+    component.page = 5;
+    component.pageSize = 20;
+    component.criteria.pageable.page = 4;
+    component.criteria.pageable.size = 20;
 
-  it('should calculate pagination correctly', () => {
-    component.pageSize = 2;
-    component.refreshPagination();
-    expect(component.displayedRepositories.length).toBe(2);
-    component.page = 2;
-    component.refreshPagination();
-    expect(component.displayedRepositories.length).toBe(1);
-  });
+    spyOn(component, 'loadRepositories').and.callThrough();
+    component.onSearchChanged(searchString);
 
-  it('should return correct page size for normal and "all"', () => {
-    component.pageSize = 2;
-    expect(component.getPageSize()).toBe(2);
-
-    component.pageSize = -1;
-    component.filteredRepositories = mockRepositories;
-    expect(component.getPageSize()).toBe(3);
-
-    component.filteredRepositories = [];
-    expect(component.getPageSize()).toBe(1);
-  });
-
-  it('should return collection size correctly', () => {
-    component.filteredRepositories = mockRepositories.slice(0, 2);
-    expect(component.getCollectionSize()).toBe(2);
+    expect(component.page).toBe(1);
+    expect(component.criteria.pageable.page).toBe(0);
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.criteria.search).toBe(searchString);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 
   it('should show all repositories when pageSize = -1', () => {
     component.pageSize = -1;
-    component.filteredRepositories = [...mockRepositories];
-    component.refreshPagination();
+    component.displayedRepositories = [...mockRepositories];
     expect(component.displayedRepositories.length).toBe(
       mockRepositories.length
     );
   });
 
-  it('should sort repositories by name ascending/descending', () => {
-    component.sortColumn = component.COLUMN_NAME;
+  it('should toggle sort direction if the same column is passed and call loadRepositories', () => {
+    // Setup initial state
+    component.sortColumn = NAME_COLUMN;
     component.sortDirection = ASCENDING;
-    // Descending
-    component.sortRepositoriesByColumn(component.COLUMN_NAME);
-    expect(component.filteredRepositories.map(r => r.repoName)).toEqual([
-      'repo3', 'repo2', 'repo1' ]);
+    component.criteria.workflowType = NAME_COLUMN;
 
-    // Ascending
-    component.sortRepositoriesByColumn(component.COLUMN_NAME);
-    expect(component.filteredRepositories.map(r => r.repoName)).toEqual([
-      'repo1', 'repo2', 'repo3' ]);
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    component.sortRepositoriesByColumn(NAME_COLUMN);
+
+    expect(component.sortDirection).toBe(DESCENDING);
+    expect(component.criteria.sortDirection).toBe(DESCENDING);
+    expect(component.criteria.workflowType).toBe(NAME_COLUMN);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 
   it('should return correct market URL', () => {
@@ -211,8 +203,14 @@ describe('MonitoringRepoComponent', () => {
   });
 
   it('should show no-repositories message when filtered list is empty', () => {
-    component.onSearchChanged('asanaaaa');
+    spyOn(component, 'loadRepositories').and.callFake(() => {
+      component.displayedRepositories = [];
+      component.totalElements = 0;
+    });
+
+    component.onSearchChanged('asanaaaaa');
     fixture.detectChanges();
+
     const noRepositoriesMessage = fixture.debugElement.query(
       By.css('.no-repositories')
     );
@@ -231,51 +229,66 @@ describe('MonitoringRepoComponent', () => {
     expect(header.nativeElement.className).toContain('bi-arrow-down');
   });
 
-  it('should render workflow tooltip inside CI header', () => {
-    const ciHeader = fixture.debugElement.query(
-      By.css('th.workflow-column:nth-child(2) app-build-badge-tooltip')
-    );
-    expect(ciHeader).toBeTruthy();
+  it('should update page, pageable.page, pageable.size and call loadRepositories on page change', () => {
+    // Arrange
+    const newPage = 3;
+    component.pageSize = 15;
+    component.criteria.pageable.size = 10; // initial value
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    // Act
+    component.onPageChange(newPage);
+
+    // Assert
+    expect(component.page).toBe(newPage);
+    expect(component.criteria.pageable.page).toBe(newPage - 1);
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 
-  it('should trigger sort when clicking column header', () => {
-    spyOn(component, 'sortRepositoriesByColumn');
-    const connectorNameHeader = fixture.debugElement.query(By.css('th:first-child'));
-    connectorNameHeader.triggerEventHandler('click', {});
-    expect(component.sortRepositoriesByColumn).toHaveBeenCalled();
+  it('should update pageSize, reset page to 1, pageable.page to 0, pageable.size and call loadRepositories on page size change', () => {
+    // Arrange
+    const newSize = 25;
+    component.page = 4;
+    component.criteria.pageable.page = 3; // initial value
+    spyOn(component, 'loadRepositories').and.callThrough();
+
+    // Act
+    component.onPageSizeChanged(newSize);
+
+    // Assert
+    expect(component.pageSize).toBe(newSize);
+    expect(component.page).toBe(1);
+    expect(component.criteria.pageable.page).toBe(0);
+    expect(component.criteria.pageable.size).toBe(newSize);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 
-  it('should allow hover on header to show tooltip', () => {
-    const tooltipEl = fixture.debugElement.query(
-      By.directive(BuildBadgeTooltipComponent)
-    );
-    expect(tooltipEl).toBeTruthy();
+  it('should set isFocused to true when activeTab is not STANDARD_TAB and call loadRepositories', () => {
+    component.activeTab = 'not-standard';
+    component.page = 2;
+    component.pageSize = 15;
+    spyOn(component, 'loadRepositories').and.callThrough();
 
-    tooltipEl.triggerEventHandler('mouseenter', {});
-    fixture.detectChanges();
+    component.updateCriteriaAndLoad();
 
-    const tooltipComponent =
-      tooltipEl.componentInstance as BuildBadgeTooltipComponent;
-    if ('visible' in tooltipComponent) {
-      tooltipComponent.visible = true;
-      fixture.detectChanges();
-      expect(tooltipComponent.visible).toBeTrue();
-    }
+    expect(component.criteria.isFocused).toBe('true');
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.criteria.pageable.page).toBe(component.page - 1);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 
-  it('should allow sorting by multiple workflow columns independently', () => {
-    spyOn(component, 'sortRepositoriesByColumn').and.callThrough();
+  it('should set isFocused to empty string when activeTab is STANDARD_TAB and call loadRepositories', () => {
+    component.activeTab = 'standard'; // STANDARD_TAB
+    component.page = 4;
+    component.pageSize = 20;
+    spyOn(component, 'loadRepositories').and.callThrough();
 
-    const ciHeader = fixture.debugElement.queryAll(
-      By.css('th.workflow-column')
-    )[0];
-    const devHeader = fixture.debugElement.queryAll(
-      By.css('th.workflow-column')
-    )[1];
+    component.updateCriteriaAndLoad();
 
-    ciHeader.triggerEventHandler('click', {});
-    devHeader.triggerEventHandler('click', {});
-
-    expect(component.sortRepositoriesByColumn).toHaveBeenCalledTimes(2);
+    expect(component.criteria.isFocused).toBe('');
+    expect(component.criteria.pageable.size).toBe(component.pageSize);
+    expect(component.criteria.pageable.page).toBe(component.page - 1);
+    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
   });
 });

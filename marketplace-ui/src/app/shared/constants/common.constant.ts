@@ -221,6 +221,11 @@ export const DEFAULT_PAGEABLE: Pageable = {
   size: 20
 };
 
+export const DEFAULT_MONITORING_PAGEABLE: Pageable = {
+  page: 0,
+  size: 10
+};
+
 export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
   page: 0,
   size: 40
@@ -371,3 +376,4 @@ export const STANDARD_TAB = 'standard';
 
 export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';
+export const ALL_ITEMS_PAGE_SIZE = 9999;

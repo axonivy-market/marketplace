@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.model.WorkflowInformation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -15,7 +14,6 @@ import org.kohsuke.github.GHObject;
 
 import java.io.IOException;
 import java.io.Serial;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
