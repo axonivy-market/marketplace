@@ -5,7 +5,6 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.repository.CustomGithubRepoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
