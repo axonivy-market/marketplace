@@ -17,6 +17,7 @@ import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ROUTER } from '../../../../shared/constants/router.constant';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
@@ -65,24 +66,28 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       return;
     }
     this.productDetailService
-      .getExternalDocumentForProductByVersion(
-        this.productDetail.id, version
-      )
+      .getExternalDocumentForProductByVersion(this.productDetail.id, version)
       .subscribe({
         next: response => {
           if (response) {
             this.externalDocumentLink = response.relativeLink;
             this.displayExternalDocName = response.artifactName;
+            version = response.version;
           } else {
             this.resetValues();
+            version = this.extractVersionValue(this.selectedVersion);
           }
+          this.displayVersion = version;
+          this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+          this.addVersionParamToRoute(version);
         },
         error: () => {
           this.resetValues();
+          this.displayVersion = this.extractVersionValue(this.selectedVersion);
+          this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+          this.addVersionParamToRoute(version);
         }
       });
-    this.displayVersion = version;
-    this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
   getShieldsBadgeUrl(): string {
     if (!this.productDetail?.statusBadgeUrl) {
@@ -130,4 +135,14 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       this.router.navigate(['/monitoring']);
     }
   }
+
+  addVersionParamToRoute(selectedVersion: string) {
+      this.router
+        .navigate([], {
+          relativeTo: this.route,
+          queryParams: { [ROUTER.VERSION]: selectedVersion },
+          queryParamsHandling: 'merge'
+        })
+        .then();
+    }
 }

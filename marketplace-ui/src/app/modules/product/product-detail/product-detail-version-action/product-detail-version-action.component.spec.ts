@@ -206,7 +206,7 @@ describe('ProductDetailVersionActionComponent', () => {
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {
     const { mockArtifact1, mockArtifact2 } = mockApiWithExpectedResponse();
     component.selectedVersion.set('Version 1.0');
-    component.getVersionWithArtifact();
+    component.getVersionWithArtifact(true);
     expect(
       productServiceMock.sendRequestToProductDetailVersionAPI
     ).toHaveBeenCalledWith(
