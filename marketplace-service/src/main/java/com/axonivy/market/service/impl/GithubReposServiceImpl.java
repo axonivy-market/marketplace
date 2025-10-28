@@ -79,7 +79,7 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   public void loadAndStoreTestRepostsForOneProduct(String productId) {
-    Product product = productRepository.findById(productId).orElse(null);
+    var product = productRepository.findById(productId).orElse(null);
     if (ObjectUtils.isEmpty(product)) {
       log.error("There is no this product {} to sync for monitoring page", productId);
       return;
@@ -234,7 +234,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   public Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,
       String sortDirection, Pageable pageable) {
 
-    MonitoringSearchCriteria criteria = new MonitoringSearchCriteria();
+    var criteria = new MonitoringSearchCriteria();
     criteria.setSearchText(searchText);
     criteria.setWorkFlowType(workFlowType);
     criteria.setSortDirection(sortDirection);

@@ -31,7 +31,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     String orderBy = getOrderBy(criteria.getWorkFlowType(), criteria.getSortDirection());
     String focusQuery = getFocusQuery(criteria.getIsFocused());
 
-    String productQuery = "";
+    var productQuery = "";
     if (StringUtils.isNotBlank(criteria.getSearchText())) {
       productQuery = " AND LOWER(r.product_id) LIKE LOWER(CONCAT('%', :productId, '%')) ";
     }
@@ -52,10 +52,10 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
             ) w ON w.repository_id = r.id
         """ + focusQuery + productQuery + orderBy;
 
-    Query nativeQuery = entityManager.createNativeQuery(querySentence, GithubRepo.class);
+    var nativeQuery = entityManager.createNativeQuery(querySentence, GithubRepo.class);
     nativeQuery.setParameter(WORKFLOW_TYPE, criteria.getWorkFlowType());
     String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery + productQuery;
-    Query countQuery = entityManager.createNativeQuery(countSql);
+    var countQuery = entityManager.createNativeQuery(countSql);
 
     if (StringUtils.isNotBlank(criteria.getSearchText())) {
       nativeQuery.setParameter(PRODUCT_ID, criteria.getSearchText());

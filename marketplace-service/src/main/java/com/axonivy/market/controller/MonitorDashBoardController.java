@@ -98,7 +98,7 @@ public class MonitorDashBoardController {
   ) {
     Page<GithubReposModel> results = githubReposService.fetchAllRepositories(isFocused, searchText, type, sortDirection,
         pageable);
-    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
+    var pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
         results.getTotalElements(), results.getTotalPages());
     PagedModel<GithubReposModel> pagedModel = PagedModel.of(results.getContent(), pageMetadata);
     return ResponseEntity.ok(pagedModel);
