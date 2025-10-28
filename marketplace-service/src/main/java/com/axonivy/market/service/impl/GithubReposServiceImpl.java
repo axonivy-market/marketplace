@@ -111,7 +111,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
-        WorkflowInformation workflowInformation = dbRepo.getWorkflowInformation().stream()
+        var workflowInformation = dbRepo.getWorkflowInformation().stream()
             .filter(workflow -> workflowType == workflow.getWorkflowType())
             .findFirst()
             .orElseGet(() -> {
