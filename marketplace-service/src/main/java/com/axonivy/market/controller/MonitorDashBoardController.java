@@ -71,9 +71,12 @@ public class MonitorDashBoardController {
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<String> syncOneGithubMonitor(
+  public ResponseEntity<String> syncOneGithubMonitor(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) throws IOException {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.loadAndStoreTestRepostsForOneProduct(id);
     return ResponseEntity.ok("Repository loaded successfully.");
   }
