@@ -8,7 +8,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.WorkflowInformation;
+import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -16,13 +16,10 @@ import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHException;
@@ -209,10 +206,9 @@ public class GithubReposServiceImpl implements GithubReposService {
     criteria.setSearchText(searchText);
     criteria.setWorkFlowType(workFlowType);
     criteria.setSortDirection(sortDirection);
-    criteria.setPageable(pageable);
     criteria.setIsFocused(isFocused);
 
-    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(criteria);
+    Page<GithubRepo> result = githubRepoRepository.findAllByFocusedSorted(criteria, pageable);
     List<GithubReposModel> githubRepos = result.getContent().stream().map(GithubReposModel::from).toList();
     return new PageImpl<>(githubRepos, pageable, result.getTotalElements());
   }

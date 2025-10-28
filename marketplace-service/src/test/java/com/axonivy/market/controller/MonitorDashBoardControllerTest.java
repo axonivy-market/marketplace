@@ -7,10 +7,12 @@ import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,8 +25,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 class MonitorDashBoardControllerTest {
+
+  private static final String TOKEN = "dummy-token";
+
   @Mock
   private GithubReposService githubReposService;
   @Mock
@@ -39,6 +45,8 @@ class MonitorDashBoardControllerTest {
     MockitoAnnotations.openMocks(this);
   }
 
+
+
   @Test
   void testGetTestReportReturnsList() {
     TestStepsModel model = new TestStepsModel();
@@ -51,18 +59,32 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testSyncGithubMonitorReturnsOk() throws IOException {
-    doNothing().when(githubReposService).loadAndStoreTestReports();
-    ResponseEntity<String> response = controller.syncGithubMonitor();
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals("Repositories loaded successfully.", response.getBody(),
-        "Response body should match expected message");
+    // Mock static method
+    try (MockedStatic<AuthorizationUtils> utils = mockStatic(AuthorizationUtils.class)) {
+      utils.when(() -> AuthorizationUtils.getBearerToken(AUTHORIZATION)).thenReturn(TOKEN);
+      doNothing().when(githubService).validateUserInOrganizationAndTeam(TOKEN,
+          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+          GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+      doNothing().when(githubReposService).loadAndStoreTestReports();
+
+      ResponseEntity<String> response = controller.syncGithubMonitor(AUTHORIZATION);
+      assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
+      assertEquals("Repositories loaded successfully.", response.getBody(),
+          "Response body should match expected message");
+    }
   }
 
   @Test
   void testSyncGithubMonitorHandlesException() throws IOException {
-    doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
-    assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
-        "IOException should be thrown when service fails to load and store test reports");
+    try (MockedStatic<AuthorizationUtils> utils = mockStatic(AuthorizationUtils.class)) {
+      utils.when(() -> AuthorizationUtils.getBearerToken(AUTHORIZATION)).thenReturn(TOKEN);
+      doNothing().when(githubService).validateUserInOrganizationAndTeam(TOKEN,
+          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+      doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
+
+      assertThrows(IOException.class, () -> controller.syncGithubMonitor(AUTHORIZATION),
+          "IOException should be thrown when service fails to load and store test reports");
+    }
   }
 
   @Test
@@ -81,7 +103,7 @@ class MonitorDashBoardControllerTest {
   }
 
   @Test
-  void testFindAllFeedbacks_returnsPagedModel() {
+  void testFindAllFeedbacksReturnPagedModel() {
     // Arrange
     GithubReposModel model = new GithubReposModel();
     List<GithubReposModel> models = List.of(model);

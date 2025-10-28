@@ -59,9 +59,12 @@ public class MonitorDashBoardController {
   }
 
   @PutMapping(SYNC)
-  @Operation(summary = "Sync GitHub monitor",
-      description = "Load and store test reports from GitHub repositories")
-  public ResponseEntity<String> syncGithubMonitor() throws IOException {
+  @Operation(hidden = true)
+  public ResponseEntity<String> syncGithubMonitor(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
   }

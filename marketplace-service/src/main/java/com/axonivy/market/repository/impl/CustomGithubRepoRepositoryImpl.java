@@ -27,7 +27,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   }
 
   @Override
-  public Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria) {
+  public Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria, Pageable pageable) {
     String orderBy = getOrderBy(criteria.getWorkFlowType(), criteria.getSortDirection());
     String focusQuery = getFocusQuery(criteria.getIsFocused());
 
@@ -62,8 +62,8 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
       countQuery.setParameter(PRODUCT_ID, criteria.getSearchText());
     }
 
-    nativeQuery.setFirstResult((int) criteria.getPageable().getOffset());
-    nativeQuery.setMaxResults(criteria.getPageable().getPageSize());
+    nativeQuery.setFirstResult((int) pageable.getOffset());
+    nativeQuery.setMaxResults(pageable.getPageSize());
 
     List<?> resultList = nativeQuery.getResultList();
     List<GithubRepo> githubRepoList = resultList.stream()
@@ -72,7 +72,7 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
 
     Number total = (Number) countQuery.getSingleResult();
 
-    return new PageImpl<>(githubRepoList, criteria.getPageable(), total.longValue());
+    return new PageImpl<>(githubRepoList, pageable, total.longValue());
   }
 
   private static String getFocusQuery(Boolean isFocused) {

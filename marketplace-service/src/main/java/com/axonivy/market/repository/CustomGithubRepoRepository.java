@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CustomGithubRepoRepository {
-  Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria);
+  Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria, Pageable pageable);
 }

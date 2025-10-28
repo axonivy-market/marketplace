@@ -67,12 +67,11 @@ class CustomGithubRepoRepositoryImplTest {
         .isFocused(isFocused)
         .searchText(productId)
         .workFlowType(workflowType)
-        .pageable(pageable)
         .sortDirection(sortDirection)
         .build();
 
     // Act
-    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria);
+    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria, pageable);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -118,13 +117,12 @@ class CustomGithubRepoRepositoryImplTest {
 
     MonitoringSearchCriteria criteria = MonitoringSearchCriteria.builder()
         .workFlowType(workflowType)
-        .pageable(pageable)
         .sortDirection(sortDirection)
         .build();
 
 
     // Act
-    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria);
+    Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria, pageable);
 
     // Assert
     assertNotNull(result, "Result should not be null");

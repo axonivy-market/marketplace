@@ -2,6 +2,7 @@ package com.axonivy.market.model;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.entity.WorkflowInformation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.plexus.util.StringUtils;
-import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.util.List;

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Pageable;
 
 @Data
 @NoArgsConstructor
@@ -15,5 +14,4 @@ public class MonitoringSearchCriteria {
   private String searchText;
   private String workFlowType;
   private String sortDirection;
-  private Pageable pageable;
 }

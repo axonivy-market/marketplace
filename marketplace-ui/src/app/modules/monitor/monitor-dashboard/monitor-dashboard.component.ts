@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { RepositoryPages } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
