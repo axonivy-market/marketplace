@@ -161,9 +161,9 @@ public class MetadataServiceImpl implements MetadataService {
       updateMavenArtifactVersionData(metadataSet, metadata.getProductId());
       metadataRepo.flush();
 
-      List<Metadata> metadataLists = metadataRepo.findByGroupIdAndArtifactId(
+      List<Metadata> metadataList = metadataRepo.findByGroupIdAndArtifactId(
           metadata.getGroupId(), metadata.getArtifactId());
-      return findMetadataWithVersion(metadataLists, version).orElse(metadata);
+      return findMetadataWithVersion(metadataList, version).orElse(metadata);
 
     } catch (Exception e) {
       log.error("Failed to update metadata for {} - {}: {}",
@@ -172,8 +172,8 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private static Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataLists, String version) {
-    return metadataLists.stream()
+  private static Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataList, String version) {
+    return metadataList.stream()
         .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
         .findFirst();
   }
