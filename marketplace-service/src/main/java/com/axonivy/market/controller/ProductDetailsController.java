@@ -96,8 +96,8 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BEST_MATCH_VERSION_BY_ID_AND_VERSION)
-  @Operation(summary = "Find best match product detail by product id and version.",
-      description = "get product detail by it product id and version")
+  @Operation(summary = "Find best match version.",
+      description = "get best match version by id and version")
   public ResponseEntity<String> findBestMatchVersion(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -105,6 +105,9 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version,
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+    if (StringUtils.isEmpty(version)){
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     return new ResponseEntity<>(productService.getBestMatchVersion(id, version, isShowDevVersion), HttpStatus.OK);
   }
 
