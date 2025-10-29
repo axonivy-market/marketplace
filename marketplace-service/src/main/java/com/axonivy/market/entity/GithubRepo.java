@@ -15,7 +15,6 @@ import org.kohsuke.github.GHObject;
 
 import java.io.IOException;
 import java.io.Serial;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 

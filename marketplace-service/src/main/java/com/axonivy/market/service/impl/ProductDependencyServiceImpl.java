@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.enums.ErrorCode;
