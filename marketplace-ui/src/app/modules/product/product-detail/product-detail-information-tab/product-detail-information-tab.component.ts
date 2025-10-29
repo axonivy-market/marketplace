@@ -11,7 +11,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { ProductService  } from '../../product.service';
 import { SHOW_DEV_VERSION, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
@@ -45,7 +44,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
-  productService = inject(ProductService);
   cookieService = inject(CookieService);
   loadingService = inject(LoadingService);
   route = inject(ActivatedRoute);
@@ -76,7 +74,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       SHOW_DEV_VERSION,
       false
     );
-    this.productService
+    this.productDetailService
       .getBestMatchVersion(this.productDetail.id, version, isShowDevVersion)
       .subscribe({
         next: bestMatchVersion => {
