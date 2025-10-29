@@ -6,7 +6,6 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
