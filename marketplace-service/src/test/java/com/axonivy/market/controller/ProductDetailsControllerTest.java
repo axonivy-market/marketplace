@@ -370,4 +370,13 @@ class ProductDetailsControllerTest extends BaseSetup {
       assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
     }
   }
+
+  @Test
+  void testGetBestMatchVersion() {
+    String version = "1.0.0";
+    when(productService.getBestMatchVersion(DOCKER_CONNECTOR_ID, version, true)).thenReturn(version);
+    productDetailsController.findBestMatchVersion(DOCKER_CONNECTOR_ID, version, true);
+
+    verify(productService, times(1)).getBestMatchVersion(DOCKER_CONNECTOR_ID, version, true);
+  }
 }

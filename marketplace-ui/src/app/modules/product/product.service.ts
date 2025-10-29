@@ -61,6 +61,19 @@ export class ProductService {
     );
   }
 
+  getBestMatchVersion(
+    productId: string,
+    version: string,
+    isShowDevVersion: boolean
+  ): Observable<string> {
+    return this.httpClient.get(
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/best-match-version?isShowDevVersion=${isShowDevVersion}`,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
   getProductDetails(
     productId: string,
     isShowDevVersion: boolean

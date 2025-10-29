@@ -959,4 +959,17 @@ class ProductServiceImplTest extends BaseSetup {
 
     verify(productService, times(1)).getGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
   }
+
+  @Test
+  void shouldReturnBestMatchVersion() {
+    String productId = "123";
+    String inputVersion = "1";
+    List<String> repoVersions = List.of("1.0.0", "1.0.1", "1.0.2", "1.0.2-SNAPSHOT");
+    String bestMatchVersion = "1.0.2";
+
+    when(productRepo.getReleasedVersionsById(productId)).thenReturn(repoVersions);
+    String result = productService.getBestMatchVersion(productId, inputVersion, false);
+    assertEquals(bestMatchVersion, result);
+    verify(productRepo).getReleasedVersionsById(productId);
+  }
 }

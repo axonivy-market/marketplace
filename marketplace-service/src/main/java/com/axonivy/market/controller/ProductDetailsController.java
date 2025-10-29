@@ -88,11 +88,23 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
     if (productDetail == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
     return new ResponseEntity<>(model, HttpStatus.OK);
+  }
+
+  @GetMapping(BEST_MATCH_VERSION_BY_ID_AND_VERSION)
+  @Operation(summary = "Find best match product detail by product id and version.",
+      description = "get product detail by it product id and version")
+  public String findBestMatchVersion(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
+          in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
+          in = ParameterIn.PATH) String version, @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
+          "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+    return productService.getBestMatchVersion(id, version, isShowDevVersion);
   }
 
   @GetMapping(BY_ID)

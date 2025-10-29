@@ -4,6 +4,7 @@ import { ProductDetailInformationTabComponent } from './product-detail-informati
 import { of, throwError } from 'rxjs';
 import { SimpleChange, SimpleChanges } from '@angular/core';
 import { ProductDetailService } from '../product-detail.service';
+import { ProductService } from '../../product.service';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -23,20 +24,31 @@ describe('ProductDetailInformationTabComponent', () => {
   let component: ProductDetailInformationTabComponent;
   let fixture: ComponentFixture<ProductDetailInformationTabComponent>;
   let productDetailService: jasmine.SpyObj<ProductDetailService>;
+  let productService: jasmine.SpyObj<ProductService>;
   let mockVersion: string | null = TEST_VERSION_PARAM;
 
   beforeEach(async () => {
     const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['getExternalDocumentForProductByVersion']);
+    const productServiceSpy = jasmine.createSpyObj('ProductService', ['getBestMatchVersion']);
     mockVersion = TEST_VERSION_PARAM;
     await TestBed.configureTestingModule({
-      imports: [ProductDetailInformationTabComponent,
+      imports: [
+        ProductDetailInformationTabComponent,
         TranslateModule.forRoot()
       ],
       providers: [
         { provide: ProductDetailService, useValue: productDetailServiceSpy },
-        { provide: ActivatedRoute, useFactory: () => ({
-          snapshot: { queryParamMap: { get: (key: string) => (key === 'version' ? mockVersion : null) } }
-        }) },
+        { provide: ProductService, useValue: productServiceSpy },
+        {
+          provide: ActivatedRoute,
+          useFactory: () => ({
+            snapshot: {
+              queryParamMap: {
+                get: (key: string) => (key === 'version' ? mockVersion : null)
+              }
+            }
+          })
+        },
         LanguageService,
         TranslateService
       ]
@@ -45,6 +57,7 @@ describe('ProductDetailInformationTabComponent', () => {
     fixture = TestBed.createComponent(ProductDetailInformationTabComponent);
     component = fixture.componentInstance;
     productDetailService = TestBed.inject(ProductDetailService) as jasmine.SpyObj<ProductDetailService>;
+    productService = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
   });
 
   it('should create', () => {
@@ -52,6 +65,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should set externalDocumentLink and displayExternalDocName on valid version change', () => {
+    productService.getBestMatchVersion.and.returnValue(of(TEST_VERSION));
     productDetailService.getExternalDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
 
     component.productDetail = { id: TEST_ID, newestReleaseVersion: TEST_VERSION } as ProductDetail;
@@ -79,6 +93,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
     it('should set externalDocumentLink and displayExternalDocName on null response', () => {
+      productService.getBestMatchVersion.and.returnValue(of(TEST_VERSION));
       (
         productDetailService.getExternalDocumentForProductByVersion as jasmine.Spy
       ).and.returnValue(of(null));
@@ -112,6 +127,7 @@ describe('ProductDetailInformationTabComponent', () => {
     });
 
   it('should set externalDocumentLink and displayExternalDocName on error', () => {
+    productService.getBestMatchVersion.and.returnValue(of(TEST_VERSION));
     productDetailService.getExternalDocumentForProductByVersion.and.returnValue(
       throwError(() => new Error('Network error'))
     );
@@ -145,6 +161,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should not set externalDocumentLink if version is invalid', () => {
+    productService.getBestMatchVersion.and.returnValue(of(TEST_VERSION));
     mockVersion = null;
     component.productDetail = { id: TEST_ID, newestReleaseVersion: '' } as ProductDetail;
     component.selectedVersion = '';
