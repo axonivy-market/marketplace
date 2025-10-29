@@ -961,7 +961,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldReturnBestMatchVersion() {
+  void testGetBestMatchVersionSuccess() {
     String productId = "123";
     String inputVersion = "1";
     List<String> repoVersions = List.of("1.0.0", "1.0.1", "1.0.2", "1.0.2-SNAPSHOT");
@@ -969,7 +969,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(productRepo.getReleasedVersionsById(productId)).thenReturn(repoVersions);
     String result = productService.getBestMatchVersion(productId, inputVersion, false);
-    assertEquals(bestMatchVersion, result);
+    assertEquals(bestMatchVersion, result, "Should return correct version");
     verify(productRepo).getReleasedVersionsById(productId);
   }
 }
