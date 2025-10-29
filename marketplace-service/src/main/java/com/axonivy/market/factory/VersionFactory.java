@@ -34,9 +34,7 @@ public class VersionFactory {
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     String resolvedVersion = defaultVersion;
-    if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
-      return defaultVersion;
-    } else if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
+    if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
       resolvedVersion = extractVersionFromRange(mavenVersion);
     } else if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
       resolvedVersion = mavenVersion.trim();

@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.axonivy.market.constants.MavenConstants.*;
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
+import static com.axonivy.market.constants.MavenConstants.ARTIFACT_NAME_FORMAT;
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
 @Service
@@ -132,10 +133,10 @@ public class MetadataServiceImpl implements MetadataService {
 
   private Metadata createNewMetadata(Dependency dependencyModel) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(
-        DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, 
-        dependencyModel.getGroupId(), 
+        DEFAULT_IVY_MIRROR_MAVEN_BASE_URL,
+        dependencyModel.getGroupId(),
         dependencyModel.getArtifactId());
-    
+
     String artifactName = MavenUtils.convertArtifactIdToName(dependencyModel.getArtifactId());
     String type = StringUtils.defaultIfBlank(dependencyModel.getType(), DEFAULT_PRODUCT_TYPE);
 
@@ -150,7 +151,7 @@ public class MetadataServiceImpl implements MetadataService {
         .name(String.format(ARTIFACT_NAME_FORMAT, artifactName, type))
         .isProductArtifact(false)
         .build();
-    
+
     return metadataRepo.save(metadata);
   }
 
@@ -159,20 +160,20 @@ public class MetadataServiceImpl implements MetadataService {
       Set<Metadata> metadataSet = Set.of(metadata);
       updateMavenArtifactVersionData(metadataSet, metadata.getProductId());
       metadataRepo.flush();
-      
-      List<Metadata> updated = metadataRepo.findByGroupIdAndArtifactId(
+
+      List<Metadata> metadataLists = metadataRepo.findByGroupIdAndArtifactId(
           metadata.getGroupId(), metadata.getArtifactId());
-      return findMetadataWithVersion(updated, version).orElse(metadata);
-          
+      return findMetadataWithVersion(metadataLists, version).orElse(metadata);
+
     } catch (Exception e) {
-      log.error("Failed to update metadata for {} - {}: {}", 
+      log.error("Failed to update metadata for {} - {}: {}",
           metadata.getGroupId(), metadata.getArtifactId(), e.getMessage());
       return metadata;
     }
   }
 
-  private static Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataList, String version) {
-    return metadataList.stream()
+  private static Optional<Metadata> findMetadataWithVersion(List<Metadata> metadataLists, String version) {
+    return metadataLists.stream()
         .filter(meta -> meta.getVersions() != null && meta.getVersions().contains(version))
         .findFirst();
   }

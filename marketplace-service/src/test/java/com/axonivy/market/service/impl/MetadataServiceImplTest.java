@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -247,7 +248,7 @@ class MetadataServiceImplTest extends BaseSetup {
     Dependency mockDependency = new Dependency();
     mockDependency.setGroupId(MOCK_GROUP_ID);
     mockDependency.setArtifactId(MOCK_ARTIFACT_ID);
-    mockDependency.setType("iar");
+    mockDependency.setType(ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     
     Metadata existingMetadata = Metadata.builder()
         .groupId(MOCK_GROUP_ID)
@@ -257,7 +258,6 @@ class MetadataServiceImplTest extends BaseSetup {
         .build();
     
     when(metadataRepo.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_ARTIFACT_ID))
-        .thenReturn(List.of(existingMetadata))
         .thenReturn(List.of(existingMetadata));
     
     when(mavenArtifactVersionRepo.findByProductId(MOCK_PRODUCT_ID))
@@ -274,10 +274,9 @@ class MetadataServiceImplTest extends BaseSetup {
     Dependency mockDependency = new Dependency();
     mockDependency.setGroupId(MOCK_GROUP_ID);
     mockDependency.setArtifactId(MOCK_ARTIFACT_ID);
-    mockDependency.setType("iar");
+    mockDependency.setType(ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     
     when(metadataRepo.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_ARTIFACT_ID))
-        .thenReturn(List.of())
         .thenReturn(List.of());
     
     when(mavenArtifactVersionRepo.findByProductId(MOCK_ARTIFACT_ID))

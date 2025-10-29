@@ -51,8 +51,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Mock
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
-  MetadataRepository metadataRepository;
-  @Mock
   ProductDependencyRepository productDependencyRepository;
   @Mock
   MetadataService metadataService;
