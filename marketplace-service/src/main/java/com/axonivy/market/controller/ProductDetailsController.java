@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.axonivy.market.constants.RegexConstants.SAFE_STRING_REGEX;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -107,7 +107,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version,
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
-    Pattern safeVersionPattern = Pattern.compile(SAFE_STRING_REGEX);
+    var safeVersionPattern = RegexConstants.SAFE_STRING_PATTERN;
     if (!safeVersionPattern.matcher(version).matches()) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
