@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.RegexConstants.SAFE_STRING_REGEX;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -105,10 +107,15 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version,
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
-    if (StringUtils.isEmpty(version)){
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    Pattern safeVersionPattern = Pattern.compile(SAFE_STRING_REGEX);
+    if (!safeVersionPattern.matcher(version).matches()) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>(productService.getBestMatchVersion(id, version, isShowDevVersion), HttpStatus.OK);
+    String result = productService.getBestMatchVersion(id, version, isShowDevVersion);
+    return ResponseEntity
+        .ok()
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(result);
   }
 
   @GetMapping(BY_ID)
