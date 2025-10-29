@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -14,6 +15,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.maven.model.Dependency;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
@@ -216,6 +219,83 @@ class MetadataServiceImplTest extends BaseSetup {
       Assertions.assertEquals(2, getProductArtifacts(savedArtifactVersion).size(),
           "Expected two product artifacts (snapshot + released) to be saved from metadata");
     }
+  }
+
+  @Test
+  void testGetMetadataByVersionWithExistingMetadata() {
+    Dependency mockDependency = new Dependency();
+    mockDependency.setGroupId(MOCK_GROUP_ID);
+    mockDependency.setArtifactId(MOCK_ARTIFACT_ID);
+
+    Metadata existingMetadata = Metadata.builder()
+        .groupId(MOCK_GROUP_ID)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .productId(MOCK_PRODUCT_ID)
+        .versions(Set.of(MOCK_RELEASED_VERSION))
+        .build();
+
+    when(metadataRepo.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_ARTIFACT_ID))
+        .thenReturn(List.of(existingMetadata));
+
+    Metadata result = metadataService.getMetadataByVersion(mockDependency, MOCK_RELEASED_VERSION);
+
+    assertEquals(existingMetadata, result, "Expected existing metadata to be returned");
+    verify(metadataRepo, never()).save(any(Metadata.class));
+  }
+
+  @Test
+  void testGetMetadataByVersionWithExistingMetadataButMissingVersion() {
+    Dependency mockDependency = new Dependency();
+    mockDependency.setGroupId(MOCK_GROUP_ID);
+    mockDependency.setArtifactId(MOCK_ARTIFACT_ID);
+    mockDependency.setType(ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
+    
+    Metadata existingMetadata = Metadata.builder()
+        .groupId(MOCK_GROUP_ID)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .productId(MOCK_PRODUCT_ID)
+        .versions(Set.of("1.0.0"))
+        .build();
+    
+    when(metadataRepo.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_ARTIFACT_ID))
+        .thenReturn(List.of(existingMetadata));
+    
+    when(mavenArtifactVersionRepo.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(new ArrayList<>());
+    
+    Metadata result = metadataService.getMetadataByVersion(mockDependency, MOCK_RELEASED_VERSION);
+    
+    assertEquals(existingMetadata, result, "Expected existing metadata to be returned after adding missing version");
+    verify(metadataRepo, times(1)).flush();
+  }
+
+  @Test
+  void testGetMetadataByVersionWithNewMetadata() {
+    Dependency mockDependency = new Dependency();
+    mockDependency.setGroupId(MOCK_GROUP_ID);
+    mockDependency.setArtifactId(MOCK_ARTIFACT_ID);
+    mockDependency.setType(ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
+    
+    when(metadataRepo.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_ARTIFACT_ID))
+        .thenReturn(List.of());
+    
+    when(mavenArtifactVersionRepo.findByProductId(MOCK_ARTIFACT_ID))
+        .thenReturn(new ArrayList<>());
+    
+    Metadata savedMetadata = Metadata.builder()
+        .groupId(MOCK_GROUP_ID)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .productId(MOCK_ARTIFACT_ID)
+        .versions(new HashSet<>())
+        .build();
+    
+    when(metadataRepo.save(any(Metadata.class))).thenReturn(savedMetadata);
+    
+    Metadata result = metadataService.getMetadataByVersion(mockDependency, MOCK_RELEASED_VERSION);
+    
+    assertEquals(savedMetadata, result, "Expected newly created metadata to be returned");
+    verify(metadataRepo, times(1)).save(any(Metadata.class));
+    verify(metadataRepo, times(1)).flush();
   }
 
   private List<MavenArtifactVersion> getProductArtifacts(List<MavenArtifactVersion> models) {
