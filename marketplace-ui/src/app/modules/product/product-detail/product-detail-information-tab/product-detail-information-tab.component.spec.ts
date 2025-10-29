@@ -158,7 +158,39 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(component.displayExternalDocName).toBe('');
   });
 
+  it('should set externalDocumentLink and displayExternalDocName on getBestMatch error', () => {
+    productDetailService.getBestMatchVersion.and.returnValue(
+      throwError(() => new Error('Network error'))
+    );
+    component.productDetail = {
+      id: TEST_ID,
+      newestReleaseVersion: TEST_VERSION
+    } as ProductDetail;
+    component.selectedVersion = TEST_VERSION;
+    const changes: SimpleChanges = {
+      selectedVersion: {
+        currentValue: TEST_VERSION,
+        previousValue: '8.0.0',
+        firstChange: false,
+        isFirstChange: () => false
+      },
+      productDetail: {
+        currentValue: component.productDetail,
+        previousValue: null,
+        firstChange: true,
+        isFirstChange: () => true
+      }
+    };
+
+    component.ngOnChanges(changes);
+
+    expect(productDetailService.getBestMatchVersion).toHaveBeenCalled();
+    expect(component.externalDocumentLink).toBe('');
+    expect(component.displayExternalDocName).toBe('');
+  });
+
   it('should not set externalDocumentLink if version is invalid', () => {
+    productDetailService.getBestMatchVersion.and.returnValue(of(TEST_VERSION));
     mockVersion = null;
     component.productDetail = { id: TEST_ID, newestReleaseVersion: '' } as ProductDetail;
     component.selectedVersion = '';

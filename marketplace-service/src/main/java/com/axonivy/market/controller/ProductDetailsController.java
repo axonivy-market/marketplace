@@ -88,7 +88,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
     if (productDetail == null) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
