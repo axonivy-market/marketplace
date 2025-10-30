@@ -36,9 +36,9 @@ class ExternalDocumentControllerTest {
           "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
   private static final String SAMPLE_REDIRECT_PATH =
           "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
+  private static final String PATH = "market-cache/docfactory/doc-factory-doc/13/doc/index.html";
 
-  private static final String VERSION = "13.1.1";
-  private static final String BEST_MATCH_VERSION = "15.0";
+  private static final String BEST_MATCH_VERSION = "13.1.1";
   private static final Path RESOLVE_PATH = Path.of(SAMPLE_PATH);
   private static final String PORTAL = "portal";
 
@@ -55,7 +55,7 @@ class ExternalDocumentControllerTest {
   @Test
   void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
-    var result = externalDocumentController.findExternalDocument(PORTAL, VERSION);
+    var result = externalDocumentController.findExternalDocument(PORTAL, BEST_MATCH_VERSION);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should be ok");
     assertTrue(result.hasBody(), "Should have body");
     assertTrue(ObjectUtils.isNotEmpty(result.getBody()), "Body should not be empty");
@@ -63,14 +63,14 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testRedirectToBestVersionSuccess() {
-      when(service.findBestMatchVersion(PORTAL, VERSION))
+      when(service.resolveBestMatchRedirectUrl(PATH))
               .thenReturn(BEST_MATCH_VERSION);
 
       try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
            MockedStatic<Files> filesMock = mockStatic(Files.class)) {
 
           utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                  .thenReturn(VERSION);
+                  .thenReturn(BEST_MATCH_VERSION);
           utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
                   .thenReturn(PORTAL);
           utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
@@ -98,14 +98,14 @@ class ExternalDocumentControllerTest {
     @Test
     void testRedirectToBestVersionWithNoResource() {
 
-        when(service.findBestMatchVersion(PORTAL, VERSION))
+        when(service.resolveBestMatchRedirectUrl(PATH))
                 .thenReturn(BEST_MATCH_VERSION);
 
         try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
              MockedStatic<Files> filesMock = mockStatic(Files.class)) {
 
             utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                    .thenReturn(VERSION);
+                    .thenReturn(BEST_MATCH_VERSION);
             utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
                     .thenReturn(PORTAL);
             utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
