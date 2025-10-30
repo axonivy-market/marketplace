@@ -49,7 +49,7 @@ public class RequestMappingConstants {
   public static final String FEEDBACK_APPROVAL = "/approval";
   public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
   public static final String REPOS = "repos";
-  public static final String REPOS_REPORT = "/{repo}/{workflow}";
+  public static final String REPOS_REPORT = "/{productId}/{workflow}";
   public static final String REPO = "repo";
   public static final String WORKFLOW = "workflow";
   public static final String FOCUSED = "focus";

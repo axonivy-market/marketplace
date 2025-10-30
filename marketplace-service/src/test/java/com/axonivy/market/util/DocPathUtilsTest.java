@@ -10,12 +10,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class DocPathUtilsTest {
 
     private static final String SAMPLE_PATH = "/portal/portal-guide/13.1.1/doc/_images/dashboard1.png";
+    private static final String SAMPLE_DOC_FACTORY_PATH = "docfactory/doc-factory-doc/12/doc/index.html";
 
     @Test
     void testExtractProductIdSuccess() {
         assertEquals("portal", DocPathUtils.extractProductId(SAMPLE_PATH),
                 "Should extract productId correctly");
     }
+
+  @Test
+  void testExtractProductIdForSpecialDocSuccess() {
+    assertEquals("doc-factory", DocPathUtils.extractProductId(SAMPLE_DOC_FACTORY_PATH),
+        "Should extract productId correctly");
+  }
 
     @Test
     void testExtractVersionSuccess() {
@@ -67,7 +74,7 @@ class DocPathUtilsTest {
     }
 
     @Test
-    void testExtractArtifactNameSuccess() { 
+    void testExtractArtifactNameSuccess() {
         assertEquals("portal-guide", DocPathUtils.extractArtifactName(SAMPLE_PATH),
                 "Should extract artifact name correctly");
     }

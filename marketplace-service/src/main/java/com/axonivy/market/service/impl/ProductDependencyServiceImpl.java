@@ -1,17 +1,16 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
@@ -48,7 +47,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private final ProductDependencyRepository productDependencyRepository;
   private final FileDownloadService fileDownloadService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  private final MetadataRepository metadataRepository;
+  private final MetadataService metadataService;
 
   private static Model convertPomToModel(byte[] data) throws IOException, XmlPullParserException, NullPointerException {
     try (var inputStream = new ByteArrayInputStream(data)) {
@@ -184,7 +183,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
       // Find Metadata configuration of dependency
-      var dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
+      var dependencyMetadata = metadataService.getMetadataByVersion(dependencyModel, dependencyVersion);
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
       // Find dependency in ProductDependency table, create a new one if not exist
@@ -216,15 +215,6 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         productDependencies.addAll(persistedDependencies);
       }
     }
-  }
-
-  private Metadata getMetadataByVersion(Dependency dependencyModel, String version) {
-    List<Metadata> existingMetadata = metadataRepository.findByGroupIdAndArtifactId(dependencyModel.getGroupId(),
-        dependencyModel.getArtifactId());
-    return existingMetadata.stream().filter(meta -> meta.getVersions().contains(version)).findAny()
-        .orElseThrow(() -> new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
-            "Cannot find the metadata for %s - %s".formatted(dependencyModel.getGroupId(),
-                dependencyModel.getArtifactId())));
   }
 
   private List<String> getAllListedProductIds() {

@@ -11,7 +11,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INSTALLATION;
 

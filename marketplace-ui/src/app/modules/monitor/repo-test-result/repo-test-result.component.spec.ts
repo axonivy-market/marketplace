@@ -18,6 +18,8 @@ describe('RepoTestResultComponent', () => {
     mockTranslateService = jasmine.createSpyObj('TranslateService', [
       'instant', 'get'
     ]);
+    mockTranslateService.instant.and.callFake((key: string) => key);
+    mockTranslateService.get.and.callFake((key: string) => of(key));
     mockRepository = {
     repoName: 'test-repo',
     htmlUrl: 'https://github.com/user/test-repo',
@@ -129,5 +131,72 @@ describe('RepoTestResultComponent', () => {
   it('should correctly compute conclusion key', () => {
     expect(component.getConclusionKey('SUCCESS')).toBe('success');
     expect(component.getConclusionKey(undefined)).toBe('');
+  });
+
+  it('should return empty fields for empty state', () => {
+    const result = component.getWorkflowDisplay('');
+    expect(result.icon).toBe('');
+    expect(result.label).toBe('');
+    expect(result.tooltip).toBe('');
+  });
+
+  it('should return warning icon for state containing disabled', () => {
+    const state = 'disabled_inactivity';
+    const result = component.getWorkflowDisplay(state);
+    expect(result.icon).toBe('⚠️');
+    expect(result.label).toBe('common.monitor.workflow.status.' + state);
+    expect(result.tooltip).toBe('common.monitor.workflow.tooltip.' + state);
+  });
+
+  it('should return warning icon for simple disabled', () => {
+    const state = 'disabled_manually';
+    const result = component.getWorkflowDisplay(state);
+    expect(result.icon).toBe('⚠️');
+  });
+
+  it('should return delete icon for deleted state (precedence over disabled substring)', () => {
+    const state = 'deleted';
+    const result = component.getWorkflowDisplay(state);
+    expect(result.icon).toBe('❌');
+    expect(result.label).toBe('common.monitor.workflow.status.' + state);
+  });
+
+  it('should return green icon for active state', () => {
+    const state = 'active';
+    const result = component.getWorkflowDisplay(state);
+    expect(result.icon).toBe('🟢');
+    expect(result.label).toBe('common.monitor.workflow.status.' + state);
+    expect(result.tooltip).toBe('common.monitor.workflow.tooltip.' + state);
+  });
+
+  it('should report hasAnyTestResults and hasWorkflowTestResults true for matching non-empty workflow', () => {
+    component.mode = 'report';
+    component.workflowInfo = { workflowType: 'CI' } as any;
+    component.repository.testResults = [
+      { workflow: 'CI', results: { PASSED: 5, FAILED: 2, SKIPPED: 1 } }
+    ];
+    expect(component.hasAnyTestResults()).toBeTrue();
+    expect(component.hasWorkflowTestResults()).toBeTrue();
+  });
+
+  it('should report hasAnyTestResults true but hasWorkflowTestResults false for different workflow', () => {
+    component.mode = 'report';
+    component.workflowInfo = { workflowType: 'CD' } as any;
+    component.repository.testResults = [
+      { workflow: 'CI', results: { PASSED: 3, FAILED: 0, SKIPPED: 0 } }
+    ];
+    expect(component.hasAnyTestResults()).toBeTrue();
+    expect(component.hasWorkflowTestResults()).toBeFalse();
+  });
+
+  it('should report both false when results are null/undefined', () => {
+    component.mode = 'report';
+    component.workflowInfo = { workflowType: 'CI' } as any;
+    component.repository.testResults = [
+      { workflow: 'CI', results: null as any },
+      { workflow: 'CI', results: undefined as any }
+    ];
+    expect(component.hasAnyTestResults()).toBeFalse();
+    expect(component.hasWorkflowTestResults()).toBeFalse();
   });
 });
