@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
+import static com.axonivy.market.constants.DirectoryConstants.DATA_DIR;
 
 public final class DocPathUtils {
     private static final Pattern PATH_PATTERN =
@@ -55,7 +55,7 @@ public final class DocPathUtils {
      * Returns null if the path is invalid or attempts to traverse outside the base directory.
      */
     public static Path resolveDocPath(String path) {
-        var baseDir = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
+        var baseDir = Paths.get(DATA_DIR).toAbsolutePath().normalize();
         var relativePath = Paths.get(path).normalize();
         if (relativePath.isAbsolute()) {
             relativePath = Paths.get(path.substring(1)).normalize();

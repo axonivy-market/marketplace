@@ -416,6 +416,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (documentMeta == null || !doesDocExistInShareFolder(documentMeta.getStorageDirectory())) {
       return null;
     }
+    log.error("Resolved best match document for path {}", documentMeta.getRelativeLink());
     return documentMeta.getRelativeLink();
   }
 
@@ -427,25 +428,30 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (bestMatchVersion == null && artifactName != null) {
       String symlinkDir = getArtifactRootDirectory(productId, artifactName);
       String realVersion = resolveSymlinkVersion(symlinkDir, version);
+      log.warn("Resolved real version {} from symlink for productId {} and artifactName {}", realVersion,
+          productId, artifactName);
       bestMatchVersion = realVersion != null ? realVersion : version;
     }
+    log.error("Resolved best match version {} for version {} and artifactName {}", bestMatchVersion, version,
+        artifactName);
     return bestMatchVersion != null ? bestMatchVersion : version;
   }
 
   private ExternalDocumentMeta resolveDocumentMeta(String productId, DocumentLanguage language, String targetVersion) {
+    List<ExternalDocumentMeta> metas = Collections.emptyList();
     if (productId != null && language != null) {
-      List<ExternalDocumentMeta> metas = externalDocumentMetaRepo
-          .findByProductIdAndLanguageAndVersion(productId, language, targetVersion);
-      if (!metas.isEmpty()) {
+        metas = externalDocumentMetaRepo
+                .findByProductIdAndLanguageAndVersion(productId, language, targetVersion);
+    } else if (language == null) {
+        metas = externalDocumentMetaRepo
+                .findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH, targetVersion);
+        
+    }
+    if (!metas.isEmpty()) {
         return metas.get(0);
-      }
-      return externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, language, targetVersion).get(0);
-    } else if (productId != null) {
-      return externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH,
-          targetVersion).get(0);
     }
     return null;
-  }
+}
 
   private String getArtifactRootDirectory(String productId, String artifactName) {
     return DOC_CACHE_DIR + productId + "/" + artifactName;

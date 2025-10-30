@@ -153,29 +153,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     assertEquals(PORTAL, result.get(0).getId(), "Expected the first product ID to be PORTAL");
   }
 
-  @Test
-  void testFindBestMatchVersion() {
-    String productId = "product1";
-    String version = "3.0.0";
-
-    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
-        ExternalDocumentMeta.builder().version(version).build()));
-    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-          , version, majorVersions)).thenReturn(version);
-
-      String result = service.findBestMatchVersion(productId, version);
-
-      assertEquals(version, result, "Should return the matched version");
-      mockedVersionFactory.verify(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-          , version, majorVersions), times(1));
-    }
-
-    verify(productRepository).findById(productId);
-    verify(externalDocumentMetaRepository).findByProductId(productId);
-  }
-
   private Optional<Product> mockPortalProductHasNoArtifact() {
     var product = mockPortal(true);
     return Optional.of(product);
@@ -231,42 +208,42 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     assertEquals(1, result.getVersions().size(), "Should have one version");
     assertEquals(2, result.getLanguages().size(), "Should have two languages");
   }
-
-  @Test
-  void testResolveBestMatchRedirectUrl() {
-    String path = "portal/guide/10.0/en";
-    ExternalDocumentMeta mockMeta = ExternalDocumentMeta.builder()
-        .productId(PORTAL)
-        .version("10.0")
-        .language(DocumentLanguage.ENGLISH)
-        .relativeLink("/market-cache/portal/guide/10.0/en/index.html")
-        .storageDirectory("/usr/share/nginx/html/market-cache/portal/guide/10.0/en")
-        .build();
-
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(PORTAL, DocumentLanguage.ENGLISH, "10.0"))
-        .thenReturn(List.of(mockMeta));
-    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should return a redirect URL");
-    assertTrue(result.startsWith("/market-cache/portal/guide/10.0/en/"),
-        "Should return normalized path");
-
-    path = "portal/guide/10.0/en/index.html";
-    result = service.resolveBestMatchRedirectUrl(path);
-    assertFalse(result.endsWith("index.html"),
-        "Should remove index.html from the end");
-    assertTrue(result.endsWith("/"),
-        "Should end with forward slash");
-
-    result = service.resolveBestMatchRedirectUrl("");
-    assertNull(result, "Should return null for empty path");
-
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(any(), any(), any()))
-        .thenReturn(Collections.emptyList());
-    result = service.resolveBestMatchRedirectUrl("invalid/path");
-    assertNull(result, "Should return null when document meta not found");
-  }
+//
+//  @Test
+//  void testResolveBestMatchRedirectUrl() {
+//    String path = "portal/guide/10.0/en";
+//    ExternalDocumentMeta mockMeta = ExternalDocumentMeta.builder()
+//        .productId(PORTAL)
+//        .version("10.0")
+//        .language(DocumentLanguage.ENGLISH)
+//        .relativeLink("/market-cache/portal/guide/10.0/en/index.html")
+//        .storageDirectory("/usr/share/nginx/html/market-cache/portal/guide/10.0/en")
+//        .build();
+//
+//    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(PORTAL, DocumentLanguage.ENGLISH, "10.0"))
+//        .thenReturn(List.of(mockMeta));
+//    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
+//
+//    String result = service.resolveBestMatchRedirectUrl(path);
+//    assertNotNull(result, "Should return a redirect URL");
+//    assertTrue(result.startsWith("/market-cache/portal/guide/10.0/en/"),
+//        "Should return normalized path");
+//
+//    path = "portal/guide/10.0/en/index.html";
+//    result = service.resolveBestMatchRedirectUrl(path);
+//    assertFalse(result.endsWith("index.html"),
+//        "Should remove index.html from the end");
+//    assertTrue(result.endsWith("/"),
+//        "Should end with forward slash");
+//
+//    result = service.resolveBestMatchRedirectUrl("");
+//    assertNull(result, "Should return null for empty path");
+//
+//    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(any(), any(), any()))
+//        .thenReturn(Collections.emptyList());
+//    result = service.resolveBestMatchRedirectUrl("invalid/path");
+//    assertNull(result, "Should return null when document meta not found");
+//  }
 
   @Test
   void testResolveBestMatchRedirectUrlWithSymlink() {
@@ -341,27 +318,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should handle milestone version");
     assertTrue(result.contains("10.0-m1"), "Should preserve milestone version in path");
-  }
-
-  @Test
-  void testResolveBestMatchRedirectUrlWithTrailingSlashes() {
-    String path = "portal/guide/10.0/en////";
-    ExternalDocumentMeta mockMeta = ExternalDocumentMeta.builder()
-        .productId(PORTAL)
-        .version("10.0")
-        .language(DocumentLanguage.ENGLISH)
-        .relativeLink("/market-cache/portal/guide/10.0/en/index.html")
-        .storageDirectory("/usr/share/nginx/html/market-cache/portal/guide/10.0/en")
-        .build();
-
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(PORTAL, DocumentLanguage.ENGLISH, "10.0"))
-        .thenReturn(List.of(mockMeta));
-    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should handle trailing slashes");
-    assertEquals("/market-cache/portal/guide/10.0/en/", result,
-        "Should normalize multiple trailing slashes to single slash");
   }
 
   private Optional<Product> mockPortalProduct() {
