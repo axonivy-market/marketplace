@@ -23,8 +23,6 @@ proxy_client_headers[] = HTTP_X_REAL_IP
 proxy_client_headers[] = HTTP_X_FORWARDED_FOR
 proxy_client_headers[] = HTTP_CF_CONNECTING_IP
 proxy_client_headers[] = HTTP_CLIENT_IP
-proxy_client_headers[] = HTTP_WAF_FORWARDED_FOR
-proxy_client_headers[] = HTTP_LB_FORWARDED_FOR
 proxy_host_headers[] = HTTP_X_FORWARDED_HOST
 
 salt = "xxxx"
