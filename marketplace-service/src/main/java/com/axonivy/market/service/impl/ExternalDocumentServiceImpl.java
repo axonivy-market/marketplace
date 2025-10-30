@@ -193,11 +193,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       List<String> releasedVersions) {
     List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
     log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
-
+    // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
           "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
-      // Skip download doc to share folder on develop mode
       return;
     }
     Map<String, String> latestSupportedDocVersions = VersionFactory
