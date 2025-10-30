@@ -60,7 +60,7 @@ export class ProductService {
       `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
     );
   }
-  
+
   getProductDetails(
     productId: string,
     isShowDevVersion: boolean
