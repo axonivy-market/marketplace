@@ -53,6 +53,8 @@ import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
+import static com.axonivy.market.util.DocPathUtils.extractProductId;
+import static com.axonivy.market.util.DocPathUtils.extractVersion;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -66,7 +68,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private static final String DOC_CACHE_DIR = "/usr/share/nginx/html/market-cache/";
 
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  private static final Pattern VERSION_PATTERN = Pattern.compile("\\d+(\\.\\d+)*(-m\\d+)?|dev");
   private static final Pattern TRAILING_SLASH_PATTERN = Pattern.compile("/+$");
   private static final Pattern INDEX_HTML_PATTERN = Pattern.compile("/(index\\.html)?/?$");
   private final ProductRepository productRepo;
@@ -182,13 +183,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public String findBestMatchVersion(String productId, String version) {
-    var product = productRepo.findById(productId);
+    String extractedProductId = extractProductId(productId);
+    String extractedVersion = extractVersion(version);
+    var product = productRepo.findById(extractedProductId != null ? extractedProductId : productId);
     if (product.isEmpty()) {
       return null;
     }
-    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(extractedProductId != null ? extractedProductId : productId);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
+    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, extractedVersion != null ? extractedVersion : version, majorVersions);
   }
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
@@ -428,8 +431,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return null;
     }
 
-    String relativeLink = normalizeRelativeLink(documentMeta.getRelativeLink());
-    return relativeLink;
+    return normalizeRelativeLink(documentMeta.getRelativeLink());
   }
 
   private DocumentLanguage extractLanguage(String[] segments) {
@@ -476,16 +478,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       relativeLink += "/";
     }
     return relativeLink;
-  }
-
-  private String extractVersion(String path) {
-    String[] segments = path.split("/");
-    for (String seg : segments) {
-      if (VERSION_PATTERN.matcher(seg).matches()) {
-        return seg;
-      }
-    }
-    return null;
   }
 
   private String getArtifactRootDirectory(String productId, String artifactName) {

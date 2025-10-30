@@ -36,7 +36,6 @@ class ExternalDocumentControllerTest {
           "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
   private static final String SAMPLE_REDIRECT_PATH =
           "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
-  private static final String PATH = "market-cache/docfactory/doc-factory-doc/13/doc/index.html";
 
   private static final String BEST_MATCH_VERSION = "13.1.1";
   private static final Path RESOLVE_PATH = Path.of(SAMPLE_PATH);
@@ -63,7 +62,7 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testRedirectToBestVersionSuccess() {
-      when(service.resolveBestMatchRedirectUrl(PATH))
+      when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
               .thenReturn(BEST_MATCH_VERSION);
 
       try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
@@ -98,7 +97,7 @@ class ExternalDocumentControllerTest {
     @Test
     void testRedirectToBestVersionWithNoResource() {
 
-        when(service.resolveBestMatchRedirectUrl(PATH))
+        when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
                 .thenReturn(BEST_MATCH_VERSION);
 
         try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
