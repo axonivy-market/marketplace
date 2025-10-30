@@ -53,8 +53,7 @@ import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
-import static com.axonivy.market.util.DocPathUtils.extractProductId;
-import static com.axonivy.market.util.DocPathUtils.extractVersion;
+import static com.axonivy.market.util.DocPathUtils.*;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -183,16 +182,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public String findBestMatchVersion(String productId, String version) {
-    String extractedProductId = extractProductId(productId);
-    String extractedVersion = extractVersion(version);
-    var product = productRepo.findById(extractedProductId != null ? extractedProductId : productId);
+    var product = productRepo.findById(productId);
     if (product.isEmpty()) {
       return null;
     }
-    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(extractedProductId != null ? extractedProductId : productId);
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    return VersionFactory.getBestMatchMajorVersion(docMetaVersion, extractedVersion != null ? extractedVersion : version, majorVersions);
+    return VersionFactory.get(docMetaVersion, version);
   }
+
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions) {
@@ -404,43 +402,21 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public String resolveBestMatchRedirectUrl(String path) {
-    if (StringUtils.isBlank(path)) {
-      return null;
-    }
-    path = TRAILING_SLASH_PATTERN.matcher(path).replaceAll("");
-    path = INDEX_HTML_PATTERN.matcher(path).replaceAll("");
-    String[] segments = path.split("/");
-    if (segments.length < 1) {
-      return null;
-    }
-
-    String productId = segments[0];
-    String artifactName = segments.length > 1 ? segments[1] : null;
+    String productId = extractProductId(path);
+    String artifactName = extractArtifactName(path);
     String version = extractVersion(path);
-    DocumentLanguage language = extractLanguage(segments);
+    DocumentLanguage language = extractLanguage(path);
 
     if (version == null) {
       version = DevelopmentVersion.LATEST.getCode();
     }
-
     String targetVersion = resolveTargetVersion(productId, artifactName, version);
-
     ExternalDocumentMeta documentMeta = resolveDocumentMeta(productId, language, targetVersion);
 
     if (documentMeta == null || !doesDocExistInShareFolder(documentMeta.getStorageDirectory())) {
       return null;
     }
-
-    return normalizeRelativeLink(documentMeta.getRelativeLink());
-  }
-
-  private DocumentLanguage extractLanguage(String[] segments) {
-    for (int i = 2; i < segments.length; i++) {
-      if (DocumentLanguage.getCodes().contains(segments[i])) {
-        return DocumentLanguage.fromCode(segments[i]);
-      }
-    }
-    return null;
+    return documentMeta.getRelativeLink();
   }
 
   private String resolveTargetVersion(String productId, String artifactName, String version) {
@@ -463,21 +439,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       if (!metas.isEmpty()) {
         return metas.get(0);
       }
-      return externalDocumentMetaRepo.findByProductIdAndVersion(productId, targetVersion);
+      return externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, language, targetVersion).get(0);
     } else if (productId != null) {
-      return externalDocumentMetaRepo.findByProductIdAndVersion(productId, targetVersion);
+      return externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH,
+          targetVersion).get(0);
     }
     return null;
-  }
-
-  private String normalizeRelativeLink(String relativeLink) {
-    if (relativeLink.endsWith("/index.html")) {
-      relativeLink = relativeLink.substring(0, relativeLink.lastIndexOf("/index.html"));
-    }
-    if (!relativeLink.endsWith("/")) {
-      relativeLink += "/";
-    }
-    return relativeLink;
   }
 
   private String getArtifactRootDirectory(String productId, String artifactName) {

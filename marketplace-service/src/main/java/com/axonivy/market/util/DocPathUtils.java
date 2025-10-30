@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.enums.DocumentLanguage;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
@@ -12,6 +14,8 @@ public final class DocPathUtils {
             Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
     private static final int VERSION_INDEX = 1;
     private static final int PRODUCT_ID_INDEX = 3;
+    private static final int ARTIFACT_INDEX= 2;
+    private static final int REST_INDEX= 4;
 
     private DocPathUtils() {
     }
@@ -61,5 +65,29 @@ public final class DocPathUtils {
             return null;
         }
         return resolvedPath;
+    }
+
+    public static String extractArtifactName(String path) {
+        var matcher = PATH_PATTERN.matcher(path);
+        if (matcher.matches()) {
+            return matcher.group(ARTIFACT_INDEX);
+        }
+        return null;
+    }
+
+  public static DocumentLanguage extractLanguage(String path) {
+        var matcher = PATH_PATTERN.matcher(path);
+        if (matcher.matches()) {
+            String rest = matcher.group(REST_INDEX); // doc/en/index.html
+            if (rest != null) {
+                String[] segments = rest.split("/");
+                for (String seg : segments) {
+                    if (DocumentLanguage.getCodes().contains(seg)) {
+                        return DocumentLanguage.fromCode(seg);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
