@@ -5,6 +5,6 @@ export const environment = {
   githubAuthCallbackPath: '/auth/github/callback',
   dayInMiliseconds: 86400000,
   matomoSiteId: 1,
-  matomoTrackerUrl: '//marketplace.server.ivy-cloud.com:8085',
+  matomoTrackerUrl: '//market.axonivy.com/matomo-web',
   githubApiUrl: 'https://api.github.com'
 };
