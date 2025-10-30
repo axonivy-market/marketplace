@@ -77,5 +77,4 @@ class VersionFactoryTest  extends BaseSetup {
     resolvedVersion = VersionFactory.resolveVersion(MOCK_PRODUCT_ID_WITH_VERSION, MOCK_RELEASED_VERSION);
     assertEquals(MOCK_PRODUCT_ID_WITH_VERSION, resolvedVersion, "Should return exact version");
   }
-  
 }

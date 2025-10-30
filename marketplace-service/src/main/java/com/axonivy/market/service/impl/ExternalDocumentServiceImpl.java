@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,8 +66,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private static final String DOC_CACHE_DIR = "/usr/share/nginx/html/market-cache/";
 
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  private static final Pattern TRAILING_SLASH_PATTERN = Pattern.compile("/+$");
-  private static final Pattern INDEX_HTML_PATTERN = Pattern.compile("/(index\\.html)?/?$");
   private final ProductRepository productRepo;
   private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   private final FileDownloadService fileDownloadService;
@@ -200,6 +197,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
           "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
+      // Skip download doc to share folder on develop mode
       return;
     }
     Map<String, String> latestSupportedDocVersions = VersionFactory
@@ -220,6 +218,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<String> missingVersions = new ArrayList<>(releasedVersions);
     if (!isResetSync) {
       List<String> existedDocMetaVersions = new ArrayList<>();
+      // Find in DB by productId and versions, then double-check the share folder
       for (var docMeta : externalDocumentMetaRepo.findByProductIdAndVersionIn(productId, releasedVersions)) {
         String shareLocation = getShareFolderLocationByArtifactAndVersion(artifact, docMeta.getVersion());
         if (doesDocExistInShareFolder(shareLocation)) {
@@ -233,6 +232,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private void handleDocumentMeta(String productId, Artifact artifact, String version,
       boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
+    // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
     String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
@@ -244,7 +244,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       String majorVersion = extractMajorVersion(mappedVersion, version);
       handleSymlinkAndBuild(location, artifact, productId, majorVersion);
     }
-
     buildDocumentWithLanguage(location, artifact, productId, version);
   }
 
@@ -323,6 +322,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
       , Artifact artifact, String productId, String version) {
+    // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
         SLASH);

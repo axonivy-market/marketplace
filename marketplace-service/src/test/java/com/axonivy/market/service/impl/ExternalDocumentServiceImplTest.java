@@ -38,6 +38,7 @@ import static org.mockito.Mockito.*;
 @TestPropertySource("classpath:application-test.properties")
 @SpringBootTest
 class ExternalDocumentServiceImplTest extends BaseSetup {
+
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + "/index.html";
 

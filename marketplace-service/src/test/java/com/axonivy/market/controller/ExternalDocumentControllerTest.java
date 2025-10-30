@@ -25,6 +25,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.ERROR_PAGE_40
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,9 +34,9 @@ class ExternalDocumentControllerTest {
   private static final String TOKEN = "token";
 
   private static final String SAMPLE_PATH =
-      "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
+          "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
   private static final String SAMPLE_REDIRECT_PATH =
-      "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
+          "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
 
   private static final String VERSION = "13.1.1";
   private static final Path RESOLVE_PATH = Path.of(SAMPLE_PATH);
@@ -80,10 +81,10 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testRedirectToBestVersionWithInvalidPath() {
-    ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
-    assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
-    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-        .contains(ERROR_PAGE_404), "Should redirect to 404");
+      ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
+      assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
+      assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
+          .contains(ERROR_PAGE_404), "Should redirect to 404");
   }
 
   @Test
