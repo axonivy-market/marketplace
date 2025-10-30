@@ -1,9 +1,13 @@
-import { HttpClient, HttpContext } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { Page } from '../../shared/models/apis/page.model';
+import { RequestParam } from '../../shared/enums/request-param';
+import { MonitoringCriteria } from '../../shared/models/criteria.model';
+
 export interface Repository {
   repoName: string;
   productId: string;
@@ -13,11 +17,20 @@ export interface Repository {
   testResults: TestResult[];
 }
 
+export interface RepositoryPages {
+  _embedded: {
+    githubRepos: Repository[];
+  };
+  page?: Page;
+}
+
 export interface WorkflowInformation {
   workflowType: 'CI' | 'DEV' | 'E2E';
   lastBuilt: Date;
   conclusion: string;
   lastBuiltRunUrl: string;
+  currentWorkflowState: string;
+  disabledDate: Date | null;
 }
 
 export interface TestResult {
@@ -41,15 +54,26 @@ export interface TestStep {
   providedIn: 'root'
 })
 export class GithubService {
-  constructor(private readonly http: HttpClient) { }
+  constructor(private readonly http: HttpClient) {}
 
-  getRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(`${API_URI.MONITOR_DASHBOARD}`, {
+  getRepositories(criteria: MonitoringCriteria): Observable<RepositoryPages> {
+    const requestParams = new HttpParams()
+      .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SEARCH, `${criteria.search}`)
+      .set(RequestParam.IS_FOCUSED, `${criteria.isFocused}`)
+      .set(RequestParam.WORK_FLOW_TYPE, `${criteria.workflowType}`)
+      .set(RequestParam.SORT_DIRECTION, `${criteria.sortDirection}`);
+
+    const options = {
+      params: requestParams,
       context: new HttpContext().set(
         LoadingComponent,
         LoadingComponentId.MONITORING_DASHBOARD
       )
-    });
+    };
+
+    return this.http.get<RepositoryPages>(`${API_URI.MONITOR_DASHBOARD}`,options);
   }
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {

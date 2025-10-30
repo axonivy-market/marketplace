@@ -6,10 +6,10 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.MetadataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -50,9 +50,9 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Mock
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
-  MetadataRepository metadataRepository;
-  @Mock
   ProductDependencyRepository productDependencyRepository;
+  @Mock
+  MetadataService metadataService;
   @InjectMocks
   ProductDependencyServiceImpl productDependencyService;
 
@@ -175,12 +175,13 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
         .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath()));
 
-    when(metadataRepository.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_DEPENDENCY_ARTIFACT_ID))
-        .thenReturn(List.of(Metadata.builder()
+    when(metadataService.getMetadataByVersion(any(), eq(MOCK_VERSION)))
+        .thenReturn(Metadata.builder()
             .productId(MOCK_PRODUCT_ID)
             .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
             .groupId(MOCK_GROUP_ID)
-            .versions(Set.of(MOCK_VERSION)).build()));
+            .versions(Set.of(MOCK_VERSION))
+            .build());
 
     when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID,
         MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))

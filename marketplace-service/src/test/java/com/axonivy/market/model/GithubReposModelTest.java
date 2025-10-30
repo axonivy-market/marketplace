@@ -2,6 +2,7 @@ package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import org.junit.jupiter.api.Test;

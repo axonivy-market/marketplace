@@ -1,6 +1,5 @@
-package com.axonivy.market.model;
+package com.axonivy.market.entity;
 
-import com.axonivy.market.entity.GenericIdEntity;
 import com.axonivy.market.enums.WorkFlowType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
@@ -34,4 +33,6 @@ public class WorkflowInformation extends GenericIdEntity {
   private Date lastBuilt;
   private String conclusion;
   private String lastBuiltRunUrl;
+  private String currentWorkflowState;
+  private Date disabledDate;
 }

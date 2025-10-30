@@ -48,6 +48,7 @@ import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { signal, ElementRef } from '@angular/core';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -1513,6 +1514,32 @@ describe('ProductDetailComponent', () => {
       expect(component.hasMoreChangelogs).not.toHaveBeenCalled();
       expect(component.loadChangelogs).not.toHaveBeenCalled();
     });
+
+    it('should not call loadChangelogs when isLoading', () => {
+      component.observerElement = mockObserverElement;
+      component.isBrowser = true;
+      component.loadingService.showLoading(LoadingComponentId.PRODUCT_CHANGELOG);
+      (component as any).changelogIntersectionObserver = undefined;
+      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
+      spyOn(component, 'loadChangelogs');
+
+      component.setupIntersectionObserver();
+      const observerCallback = (window as any).IntersectionObserver
+        ._lastCallback;
+      const mockEntries: IntersectionObserverEntry[] = [
+        {
+          isIntersecting: false,
+          target: mockObserverElement.nativeElement,
+          boundingClientRect: {} as DOMRectReadOnly,
+          intersectionRatio: 0,
+          intersectionRect: {} as DOMRectReadOnly,
+          rootBounds: {} as DOMRectReadOnly,
+          time: Date.now()
+        }
+      ];
+      observerCallback(mockEntries, mockObserver);
+      expect(component.loadChangelogs).not.toHaveBeenCalled();
+    });  
 
     it('should handle multiple entries in intersection callback', () => {
       // Arrange
