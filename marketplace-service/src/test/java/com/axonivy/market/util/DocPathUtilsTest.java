@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.enums.DocumentLanguage;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -50,6 +51,32 @@ class DocPathUtilsTest {
     void testResolveDocPathFailed() {
         Path resolved = DocPathUtils.resolveDocPath("/../../etc/passwd");
         assertNull(resolved, "Path traversal should return null");
+    }
+
+    @Test
+    void testExtractLanguageFromPath() {
+        String path = "/portal/portal-guide/13.1.1/doc/en/_images/dashboard1.png";
+        DocumentLanguage language = DocPathUtils.extractLanguage(path);
+        assertEquals(DocumentLanguage.ENGLISH, language, "Should extract language correctly");
+    }
+
+    @Test
+    void testExtractLanguageFromPathNoLanguage() {
+      DocumentLanguage language = DocPathUtils.extractLanguage(SAMPLE_PATH);
+        assertNull(language, "Should return null when no language is present");
+    }
+
+    @Test
+    void testExtractArtifactNameSuccess() { 
+        assertEquals("portal-guide", DocPathUtils.extractArtifactName(SAMPLE_PATH),
+                "Should extract artifact name correctly");
+    }
+
+    @Test
+    void testExtractArtifactNameNoArtifact() {
+        String path = "dashboard1.png";
+        String artifactName = DocPathUtils.extractArtifactName(path);
+        assertNull(artifactName, "Should return null when no artifact name is present");
     }
 
 }

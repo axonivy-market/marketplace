@@ -33,11 +33,11 @@ class ExternalDocumentControllerTest {
   private static final String TOKEN = "token";
 
   private static final String SAMPLE_PATH =
-          "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
+      "/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
   private static final String SAMPLE_REDIRECT_PATH =
-          "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
+      "market-cache/portal/portal-guide/13.1.1/doc/_images/dashboard.png";
 
-  private static final String BEST_MATCH_VERSION = "13.1.1";
+  private static final String VERSION = "13.1.1";
   private static final Path RESOLVE_PATH = Path.of(SAMPLE_PATH);
   private static final String PORTAL = "portal";
 
@@ -54,7 +54,7 @@ class ExternalDocumentControllerTest {
   @Test
   void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
-    var result = externalDocumentController.findExternalDocument(PORTAL, BEST_MATCH_VERSION);
+    var result = externalDocumentController.findExternalDocument(PORTAL, VERSION);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should be ok");
     assertTrue(result.hasBody(), "Should have body");
     assertTrue(ObjectUtils.isNotEmpty(result.getBody()), "Body should not be empty");
@@ -62,64 +62,47 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testRedirectToBestVersionSuccess() {
-      when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
-              .thenReturn(BEST_MATCH_VERSION);
+    when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
+        .thenReturn(SAMPLE_REDIRECT_PATH);
 
-      try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
-           MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-
-          utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                  .thenReturn(BEST_MATCH_VERSION);
-          utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
-                  .thenReturn(PORTAL);
-          utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
-                  .thenReturn(SAMPLE_PATH);
-          utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
-                  .thenReturn(RESOLVE_PATH);
-          filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(true);
-
-          ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
-
-          assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
-          assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-                  .contains(SAMPLE_REDIRECT_PATH), "Should redirect to the correct path");
+    try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class)) {
+      utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
+          .thenReturn(RESOLVE_PATH);
+      try (var filesMock = mockStatic(Files.class)) {
+        filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(true);
+        ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
+        assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
+        assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
+            .contains(SAMPLE_REDIRECT_PATH), "Should redirect to the correct path");
       }
+    }
   }
 
   @Test
   void testRedirectToBestVersionWithInvalidPath() {
-      ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
-      assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
-      assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-          .contains(ERROR_PAGE_404), "Should redirect to 404");
+    ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
+    assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
+    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
+        .contains(ERROR_PAGE_404), "Should redirect to 404");
   }
 
-    @Test
-    void testRedirectToBestVersionWithNoResource() {
+  @Test
+  void testRedirectToBestVersionWithNoResource() {
+    when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
+        .thenReturn(SAMPLE_REDIRECT_PATH);
 
-        when(service.resolveBestMatchRedirectUrl(SAMPLE_PATH))
-                .thenReturn(BEST_MATCH_VERSION);
-
-        try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class);
-             MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-
-            utilsMock.when(() -> DocPathUtils.extractVersion(anyString()))
-                    .thenReturn(BEST_MATCH_VERSION);
-            utilsMock.when(() -> DocPathUtils.extractProductId(anyString()))
-                    .thenReturn(PORTAL);
-            utilsMock.when(() -> DocPathUtils.updateVersionInPath(anyString(), anyString(), anyString()))
-                    .thenReturn(SAMPLE_PATH);
-            utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
-                    .thenReturn(RESOLVE_PATH);
-            filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(false);
-
-            ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
-
-            assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
-            assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-                    .contains(ERROR_PAGE_404), "Should redirect to 404");
-        }
+    try (MockedStatic<DocPathUtils> utilsMock = mockStatic(DocPathUtils.class)) {
+      utilsMock.when(() -> DocPathUtils.resolveDocPath(anyString()))
+          .thenReturn(RESOLVE_PATH);
+      try (var filesMock = mockStatic(Files.class)) {
+        filesMock.when(() -> Files.exists(RESOLVE_PATH)).thenReturn(false);
+        ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(SAMPLE_PATH);
+        assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
+        assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
+            .contains(ERROR_PAGE_404), "Should redirect to 404");
+      }
     }
+  }
 
   @Test
   void testSyncDocumentForProduct() {

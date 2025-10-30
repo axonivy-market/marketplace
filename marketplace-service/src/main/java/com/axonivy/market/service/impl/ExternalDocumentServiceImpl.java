@@ -240,31 +240,28 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return;
     }
     if (latestSupportedDocVersions.containsKey(version)) {
-      String majorVersion = latestSupportedDocVersions.get(version);
-      if (majorVersion != null && majorVersion.contains(".")) {
-        majorVersion = majorVersion.substring(0, majorVersion.indexOf('.'));
-      }
-      String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion);
-      if (StringUtils.isNotBlank(majorLocation)) {
-        buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
-      }
-    }
-    if (latestSupportedDocVersions.containsKey(version)) {
       String mappedVersion = latestSupportedDocVersions.get(version);
-      String majorVersion;
-      if (mappedVersion != null && mappedVersion.contains(".")) {
-        majorVersion = mappedVersion.substring(0, mappedVersion.indexOf('.'));
-      } else {
-        majorVersion = mappedVersion != null ? mappedVersion : version.split("\\.")[0];
-      }
-      log.info("Creating symlink for majorVersion: {}", majorVersion);
-      String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion);
-      if (StringUtils.isNotBlank(majorLocation)) {
-        buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
-      }
+      String majorVersion = extractMajorVersion(mappedVersion, version);
+      handleSymlinkAndBuild(location, artifact, productId, majorVersion);
     }
 
     buildDocumentWithLanguage(location, artifact, productId, version);
+  }
+
+  private String extractMajorVersion(String mappedVersion, String version) {
+    if (mappedVersion != null && mappedVersion.contains(".")) {
+      return mappedVersion.substring(0, mappedVersion.indexOf('.'));
+    } else {
+      return mappedVersion != null ? mappedVersion : version.split("\\.")[0];
+    }
+  }
+
+  private void handleSymlinkAndBuild(String location, Artifact artifact, String productId, String majorVersion) {
+    log.info("Creating symlink for majorVersion: {}", majorVersion);
+    String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion);
+    if (StringUtils.isNotBlank(majorLocation)) {
+      buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
+    }
   }
 
   String setSymlinkPermissions(Path majorVersionPath) {
@@ -420,7 +417,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return documentMeta.getRelativeLink();
   }
 
-  private String resolveTargetVersion(String productId, String artifactName, String version) {
+  public String resolveTargetVersion(String productId, String artifactName, String version) {
     String bestMatchVersion = null;
     if (productId != null) {
       bestMatchVersion = findBestMatchVersion(productId, version);
@@ -428,24 +425,18 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (bestMatchVersion == null && artifactName != null) {
       String symlinkDir = getArtifactRootDirectory(productId, artifactName);
       String realVersion = resolveSymlinkVersion(symlinkDir, version);
-      log.warn("Resolved real version {} from symlink for productId {} and artifactName {}", realVersion,
-          productId, artifactName);
       bestMatchVersion = realVersion != null ? realVersion : version;
     }
-    log.error("Resolved best match version {} for version {} and artifactName {}", bestMatchVersion, version,
-        artifactName);
     return bestMatchVersion != null ? bestMatchVersion : version;
   }
 
-  private ExternalDocumentMeta resolveDocumentMeta(String productId, DocumentLanguage language, String targetVersion) {
+  public ExternalDocumentMeta resolveDocumentMeta(String productId, DocumentLanguage language, String targetVersion) {
     List<ExternalDocumentMeta> metas = Collections.emptyList();
     if (productId != null && language != null) {
-        metas = externalDocumentMetaRepo
-                .findByProductIdAndLanguageAndVersion(productId, language, targetVersion);
+        metas = externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, language, targetVersion);
     } else if (language == null) {
-        metas = externalDocumentMetaRepo
-                .findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH, targetVersion);
-        
+        metas = externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH,
+            targetVersion);
     }
     if (!metas.isEmpty()) {
         return metas.get(0);
@@ -453,8 +444,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return null;
 }
 
-  private String getArtifactRootDirectory(String productId, String artifactName) {
-    return DOC_CACHE_DIR + productId + "/" + artifactName;
+  public String getArtifactRootDirectory(String productId, String artifactName) {
+    return DOC_CACHE_DIR + productId + SLASH + artifactName;
   }
 
   public String resolveSymlinkVersion(String symlinkDir, String symlinkName) {
