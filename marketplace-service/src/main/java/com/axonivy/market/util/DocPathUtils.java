@@ -83,16 +83,14 @@ public final class DocPathUtils {
 
   public static DocumentLanguage extractLanguage(String path) {
         var matcher = PATH_PATTERN.matcher(path);
-        if (matcher.matches()) {
+        if (matcher.matches() && matcher.group(REST_INDEX) != null) {
             String rest = matcher.group(REST_INDEX); // doc/en/index.html
-            if (rest != null) {
                 String[] segments = rest.split("/");
                 for (String seg : segments) {
                     if (DocumentLanguage.getCodes().contains(seg)) {
                         return DocumentLanguage.fromCode(seg);
                     }
                 }
-            }
         }
         return null;
     }

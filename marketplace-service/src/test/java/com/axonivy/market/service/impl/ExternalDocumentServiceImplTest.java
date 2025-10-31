@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -370,5 +369,34 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     assertNull(result, "Should return null if not a symlink");
     Files.deleteIfExists(notSymlinkPath);
     Files.deleteIfExists(tempDir);
+  }
+
+  @Test
+  void testResolveTargetVersionReturnsBestMatchFromDB() {
+    String productId = "portal";
+    String artifactName = "portal-guide";
+    String version = "10.0.0";
+    ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
+      .useConstructor(productRepository, externalDocumentMetaRepository, fileDownloadService, artifactRepository, mock(MarketplaceConfig.class), axonIvyClient)
+      .defaultAnswer(CALLS_REAL_METHODS));
+    doReturn("10.0.1").when(mockService).findBestMatchVersion(productId, version);
+    doReturn("10.0.1").when(mockService).checkVersionCompatibility("10.0.1", version);
+    String result = mockService.resolveTargetVersion(productId, artifactName, version);
+    assertEquals("10.0.1", result, "Should return best match version from DB and check compatibility");
+  }
+
+  @Test
+  void testResolveTargetVersionReturnsSymlinkFallback() {
+    String productId = "portal";
+    String artifactName = "portal-guide";
+    String version = "10.0.0";
+    ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
+      .useConstructor(productRepository, externalDocumentMetaRepository, fileDownloadService, artifactRepository, mock(MarketplaceConfig.class), axonIvyClient)
+      .defaultAnswer(CALLS_REAL_METHODS));
+    doReturn(null).when(mockService).findBestMatchVersion(productId, version);
+    doReturn("10.0.2").when(mockService).resolveSymlinkVersion(any(), eq(version));
+    doReturn("10.0.2").when(mockService).checkVersionCompatibility("10.0.2", version);
+    String result = mockService.resolveTargetVersion(productId, artifactName, version);
+    assertEquals("10.0.2", result, "Should return symlink fallback and check compatibility");
   }
 }

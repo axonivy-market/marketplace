@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Artifact;
@@ -50,11 +51,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.DirectoryConstants.DOC_DIR;
 import static com.axonivy.market.util.DocPathUtils.*;
-import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -246,11 +245,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     buildDocumentWithLanguage(location, artifact, productId, version);
   }
 
-  private String extractMajorVersion(String mappedVersion, String version) {
+  private static String extractMajorVersion(String mappedVersion, String version) {
     if (mappedVersion != null && mappedVersion.contains(".")) {
       return mappedVersion.substring(0, mappedVersion.indexOf('.'));
     } else {
-      return mappedVersion != null ? mappedVersion : version.split("\\.")[0];
+      if (mappedVersion != null) {
+        return mappedVersion;
+      } else {
+        return version.split("\\.")[0];
+      }
     }
   }
 
@@ -283,24 +286,25 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         log.error("Setting symlink permissions is not supported on this operating system.", e);
       }
     }
-    return majorVersionPath + File.separator + DOC_DIR;
+    return majorVersionPath + File.separator + DirectoryConstants.DOC_DIR;
   }
 
   private String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
     try {
-      Path specificVersionParent = versionFolder.getParent();
-      Path artifactRoot = specificVersionParent.getParent();
-      Path majorVersionPath = artifactRoot.resolve(majorVersion);
+      var specificVersionParent = versionFolder.getParent();
+      var artifactRoot = specificVersionParent.getParent();
+      var majorVersionPath = artifactRoot.resolve(majorVersion);
 
       if (Files.exists(majorVersionPath) && Files.isSymbolicLink(majorVersionPath)) {
         Files.delete(majorVersionPath);
       }
 
-      Path relativeTarget = Path.of(specificVersionParent.getFileName().toString());
+      var relativeTarget = Path.of(specificVersionParent.getFileName().toString());
       Files.createSymbolicLink(majorVersionPath, relativeTarget);
 
       return setSymlinkPermissions(majorVersionPath);
     } catch (IOException e) {
+      log.error("Error creating symlink for major version {}: {}", majorVersion, e.getMessage());
       return EMPTY;
     }
   }
@@ -324,7 +328,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
-        SLASH);
+        CommonConstants.SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
     List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo
         .findByProductIdAndLanguageAndVersion(productId, language, version);
@@ -344,7 +348,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   public boolean doesDocExistInShareFolder(String location) {
     var shareFolder = new File(location);
-    return shareFolder.exists() && ObjectUtils.isNotEmpty(shareFolder.listFiles());
+    return shareFolder.exists() && isNotEmpty(shareFolder.listFiles());
   }
 
   public Map<DocumentLanguage, String> getRelativePathWithLanguage(String location) {
@@ -363,7 +367,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .filter(name -> DocumentLanguage.getCodes().contains(name))
         .collect(Collectors.toMap(
             DocumentLanguage::fromCode,
-            name -> location + SLASH + name
+            name -> location + CommonConstants.SLASH + name
         ));
   }
 
@@ -418,15 +422,24 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   public String resolveTargetVersion(String productId, String artifactName, String version) {
     String bestMatchVersion = null;
-    if (productId != null) {
-      bestMatchVersion = findBestMatchVersion(productId, version);
-    }
+    bestMatchVersion = findBestMatchVersion(productId, version);
     if (bestMatchVersion == null && artifactName != null) {
       String symlinkDir = getArtifactRootDirectory(productId, artifactName);
       String realVersion = resolveSymlinkVersion(symlinkDir, version);
-      bestMatchVersion = realVersion != null ? realVersion : version;
+      if (realVersion != null) {
+        bestMatchVersion = realVersion;
+      } else {
+        bestMatchVersion = version;
+      }
     }
-    return bestMatchVersion != null ? bestMatchVersion : version;
+    return checkVersionCompatibility(bestMatchVersion, version);
+  }
+
+  public String checkVersionCompatibility(String bestMatchVersion, String version) {
+    if (bestMatchVersion != null) {
+      return bestMatchVersion;
+    }
+    return version;
   }
 
   public ExternalDocumentMeta resolveDocumentMeta(String productId, DocumentLanguage language, String targetVersion) {
@@ -444,17 +457,17 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 }
 
   public String getArtifactRootDirectory(String productId, String artifactName) {
-    return DOC_CACHE_DIR + productId + SLASH + artifactName;
+    return DOC_CACHE_DIR + productId + CommonConstants.SLASH + artifactName;
   }
 
   public String resolveSymlinkVersion(String symlinkDir, String symlinkName) {
-    Path symlinkPath = Path.of(symlinkDir, symlinkName);
+    var symlinkPath = Path.of(symlinkDir, symlinkName);
     try {
       if (Files.isSymbolicLink(symlinkPath)) {
         Path target = Files.readSymbolicLink(symlinkPath);
         return target.getFileName().toString();
       }
-    } catch (Exception e) {
+    } catch (IOException | SecurityException | UnsupportedOperationException e) {
       log.error("Error resolving symlink version for {}:{}", symlinkDir, symlinkName, e);
     }
     return null;
