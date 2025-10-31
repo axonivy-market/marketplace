@@ -370,4 +370,21 @@ class ProductDetailsControllerTest extends BaseSetup {
       assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
     }
   }
+
+  @Test
+  void testGetBestMatchVersion() {
+    String version = "1.0.0";
+    when(productService.getBestMatchVersion(DOCKER_CONNECTOR_ID, version, true)).thenReturn(version);
+    var result = productDetailsController.findBestMatchVersion(DOCKER_CONNECTOR_ID, version, true);
+
+    verify(productService, times(1)).getBestMatchVersion(DOCKER_CONNECTOR_ID, version, true);
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+  }
+
+  @Test
+  void testGetBestMatchVersionInvalidVersion() {
+    String version = "not safe";
+    var result = productDetailsController.findBestMatchVersion(DOCKER_CONNECTOR_ID, version, true);
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode(), "Expected bad request on invalid version");
+  }
 }

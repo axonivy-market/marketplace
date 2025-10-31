@@ -1,28 +1,30 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { environment } from '../../../../environments/environment';
-import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
-import { SecurityMonitorService } from '../../security-monitor/security-monitor.service';
-import { SecurityMonitorComponent } from '../../security-monitor/security-monitor.component';
+import { ProductDetailService } from './product-detail.service';
+import { API_URI } from '../../../shared/constants/api.constant';
+import { ExternalDocument } from '../../../shared/models/external-document.model';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { ForwardingError } from '../../../core/interceptors/api.interceptor';
 
-describe('SecurityMonitorService', () => {
-  let service: SecurityMonitorService;
+describe('ProductDetailService', () => {
+  let service: ProductDetailService;
   let httpMock: HttpTestingController;
 
-  const mockApiUrl = environment.apiUrl + '/api/security-monitor';
+  const mockExternalDoc: ExternalDocument = {
+    productId: 'portal',
+    version: '10.0.0'
+  } as ExternalDocument;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [SecurityMonitorComponent],
-      providers: [
-        SecurityMonitorService,
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ],
-    });
-
-    service = TestBed.inject(SecurityMonitorService);
+      TestBed.configureTestingModule({
+        imports: [],
+        providers: [
+          ProductDetailService,
+          provideHttpClient(withInterceptorsFromDi()),
+          provideHttpClientTesting()
+        ]
+      });
+    service = TestBed.inject(ProductDetailService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -34,47 +36,41 @@ describe('SecurityMonitorService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should call API with token and return security details', () => {
-    const mockToken = 'valid-token';
-    const mockResponse: ProductSecurityInfo[] = [
-      {
-        repoName: 'repo1',
-        visibility: 'public',
-        archived: false,
-        dependabot: { status: 'ENABLED', alerts: {} },
-        codeScanning: { status: 'ENABLED', alerts: {} },
-        secretScanning: { status: 'ENABLED', numberOfAlerts: 0 },
-        branchProtectionEnabled: true,
-        lastCommitSHA: '12345',
-        lastCommitDate: '',
-      },
-    ];
+  describe('getExternalDocumentForProductByVersion', () => {
+    it('should call correct endpoint and return external document', () => {
+      const productId = 'p123';
+      const version = 'v1';
+      const expectedUrl = `${API_URI.EXTERNAL_DOCUMENT}/${productId}/${version}`;
 
-    service.getSecurityDetails(mockToken).subscribe((data) => {
-      expect(data).toEqual(mockResponse);
+      service.getExternalDocumentForProductByVersion(productId, version).subscribe(res => {
+        expect(res).toEqual(mockExternalDoc);
+      });
+
+      const req = httpMock.expectOne((r) => r.url === expectedUrl);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.context.get(ForwardingError)).toBeTrue();
+
+      req.flush(mockExternalDoc);
     });
-
-    const req = httpMock.expectOne(mockApiUrl);
-    expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
-
-    req.flush(mockResponse);
   });
 
-  it('should handle error response gracefully', () => {
-    const mockToken = 'invalid-token';
+  describe('getBestMatchVersion', () => {
+    it('should call correct endpoint and return version as text', () => {
+      const productId = 'p123';
+      const version = '1.0.0';
+      const isShowDevVersion = true;
+      const mockResponse = '1.0.1';
+      const expectedUrl = `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/best-match-version?isShowDevVersion=${isShowDevVersion}`;
 
-    service.getSecurityDetails(mockToken).subscribe({
-      next: () => fail('Expected an error, but received data.'),
-      error: (error) => {
-        expect(error.status).toBe(401);
-      },
+      service.getBestMatchVersion(productId, version, isShowDevVersion).subscribe(res => {
+        expect(res).toBe(mockResponse);
+      });
+
+      const req = httpMock.expectOne(expectedUrl);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.responseType).toBe('text');
+
+      req.flush(mockResponse);
     });
-
-    const req = httpMock.expectOne(mockApiUrl);
-    expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
-
-    req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
   });
 });

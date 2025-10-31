@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -93,6 +95,27 @@ public class ProductDetailsController {
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
     return new ResponseEntity<>(model, HttpStatus.OK);
+  }
+
+  @GetMapping(BEST_MATCH_VERSION_BY_ID_AND_VERSION)
+  @Operation(summary = "Find best match version.",
+      description = "get best match version by id and version")
+  public ResponseEntity<String> findBestMatchVersion(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
+          in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
+          in = ParameterIn.PATH) String version,
+      @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
+          "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+    var safeVersionPattern = RegexConstants.SAFE_STRING_PATTERN;
+    if (!safeVersionPattern.matcher(version).matches()) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    String result = productService.getBestMatchVersion(id, version, isShowDevVersion);
+    return ResponseEntity
+        .ok()
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(result);
   }
 
   @GetMapping(BY_ID)

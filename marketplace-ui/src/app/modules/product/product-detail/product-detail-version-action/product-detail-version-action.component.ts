@@ -184,10 +184,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   addVersionParamToRoute(selectedVersion: string) {
+    const extractedVersion = selectedVersion.replace(VERSION.displayPrefix, '');
     this.router
       .navigate([], {
         relativeTo: this.route,
-        queryParams: { [ROUTER.VERSION]: selectedVersion },
+        queryParams: { [ROUTER.VERSION]: extractedVersion },
         queryParamsHandling: 'merge'
       })
       .then();
@@ -246,7 +247,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return this.route.snapshot.queryParams[ROUTER.VERSION] || null;
+    return VERSION.displayPrefix.concat(this.route.snapshot.queryParams[ROUTER.VERSION]) || null;
   }
 
   getVersionInDesigner(): void {
