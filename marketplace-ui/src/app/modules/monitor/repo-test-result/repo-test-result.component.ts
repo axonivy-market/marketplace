@@ -45,4 +45,48 @@ export class RepoTestResultComponent {
       }
     }
   }
+
+  getWorkflowDisplay(state: string): {
+    icon: string;
+    label: string;
+    tooltip: string;
+  } {
+    if (!state) {
+      return { icon: '', label: '', tooltip: '' };
+    }
+
+    let icon = '';
+    if (state.includes('disabled')) {
+      icon = '⚠️';
+    } else if (state === 'deleted') {
+      icon = '❌';
+    } else {
+      icon = '🟢';
+    }
+
+    const labelKey = 'common.monitor.workflow.status.' + state;
+    const tooltipKey = 'common.monitor.workflow.tooltip.' + state;
+
+    return {
+      icon,
+      label: this.translateService.instant(labelKey),
+      tooltip: this.translateService.instant(tooltipKey)
+    };
+  }
+
+  // Check if repo has any test results to avoid workflow status row doesn't jump
+  private isNonEmptyResults(obj: unknown): obj is Record<string, unknown> {
+    return typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0;
+  }
+
+  hasAnyTestResults(): boolean {
+    return (this.repository?.testResults || []).some(b => this.isNonEmptyResults(b?.results));
+  }
+
+  hasWorkflowTestResults(): boolean {
+    const wf = this.workflowInfo?.workflowType;
+    return (this.repository?.testResults || []).some(
+      b => b.workflow === wf && this.isNonEmptyResults(b?.results)
+    );
+  }
 }

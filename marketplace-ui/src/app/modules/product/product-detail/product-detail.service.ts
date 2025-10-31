@@ -22,4 +22,18 @@ export class ProductDetailService {
       `${API_URI.EXTERNAL_DOCUMENT}/${productId}/${version}`, { context: new HttpContext().set(ForwardingError, true)}
     );
   }
+
+    getBestMatchVersion(
+      productId: string,
+      version: string,
+      isShowDevVersion: boolean
+    ): Observable<string> {
+      return this.httpClient.get(
+        `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/best-match-version?isShowDevVersion=${isShowDevVersion}`,
+        {
+          responseType: 'text'
+        }
+      );
+    }
+  
 }

@@ -4,24 +4,24 @@
     "language": {
       "english": "Englisch",
       "german": "Deutsch",
-      "french": "Français"
+      "french": "Französisch"
     },
     "preview": {
-      "pageTitle": "Veröffentlichungsvorschau",
+      "pageTitle": "Release Preview",
       "title": "Vorschau auf die Produktfreigabe",
-      "description": "Vorschau der Beschreibung Ihres Produkts",
-      "dragDropText": "Hierher ziehen & ablegen oder zum Auswählen klicken",
-      "onlyZip": "Nur (product-naam)-product.zip-Dateien bis {{max}}MB werden unterstützt. Bitte laden Sie eine gültige Zip-Datei mit einer README.md-Datei hoch.",
+      "description": "Vorschau Deiner Produktbeschreibung",
+      "dragDropText": "Drag & drop oder Auswählen",
+      "onlyZip": "Nur .zip-Dateien bis {{max}}MB werden unterstützt",
       "buttonLabel": "Hochladen",
-      "buttonHint": "Bitte laden Sie eine gültige Zip-Datei mit einer README.md-Datei hoch.",
+      "buttonHint": "Bitte laden eine gültige Zip-Datei mit einer README.md-Datei hoch.",
       "fileSizeUnit": "MB",
-      "noTabs": "Es scheint ein Problem mit Ihrer Zip-Datei zu geben.",
-      "link": "So erstellen Sie eine gültige README.",
-      "hintContent": "<p> Befolgen Sie die README-Vorlage strikt. Stellen Sie Folgendes sicher. </p></br> <code># Name Ihres Produkts </br></br> Hallo, dies ist unser Connector. </br></br>## Demo </br></br> Hier sollten Sie die Demo-Inhalte zeigen. </br></br>## Setup </br></br> Dieser Abschnitt sollte zeigen, wie Sie Ihr Produkt herunterladen und einrichten, .. </br></br> ```</br> @variables.yaml@</br> ``` </code> <div> <ul> <li>Falls Sie Variablen in die README-Datei einfügen möchten, platzieren Sie sie wie in der oben angegebenen Vorlage und deklarieren Sie eine Datei mit dem Namen <code>variables.yaml</code></li> <li><b>SETUP AND DEMO</b> Diese Überschriften sollten immer auf Englisch sein, unabhängig von der Sprache.</li> <li> Stellen Sie sicher, dass <b>SETUP AND DEMO</b> den vordefinierten Überschriften und der Struktur der Vorlage folgen. </li> <li> Bilder sollten das folgende Format verwenden <code>![image-name](image-directory.png)</code> </li> </ul>",
+      "noTabs": "Es scheint ein Problem mit Deiner Zip-Datei zu geben.",
+      "link": "So erstellst Du eine gültige README Datei.",
+      "hintContent": "<p> Bitte befolge die README-Vorlage recht strikt - nur so können wir sicherstellen, dass am Ende alles gut funktioniert. Stelle Folgendes sicher. </p></br> <code># Name Deines Produktes </br></br> Hallo, dies ist unser Konnektor. </br></br>## Demo </br></br> Hier solltest Du die Demo-Inhalte zeigen. </br></br>## Setup </br></br> Dieser Abschnitt sollte zeigen, wie Dein  Produkt heruntergeladen und eingerichtet wird, .. </br></br> ```</br> @variables.yaml@</br> ``` </code> <div> <ul> <li>Falls Du Variablen in die README-Datei einfügen möchten, platziere sie wie in der oben angegebenen Vorlage und deklariere eine Datei mit dem Namen <code>variables.yaml</code></li> <li><b>SETUP AND DEMO</b> Diese Überschriften sollten immer auf Englisch sein, unabhängig von der Sprache.</li> <li> Stelle sicher, dass <b>SETUP AND DEMO</b> den vordefinierten Überschriften und der Struktur der Vorlage folgen. </li> <li> Bilder sollten das folgende Format verwenden <code>![image-name](image-directory.png)</code> </li> </ul>",
       "errors": {
-        "invalidZip": "Ungültige Datei. Bitte laden Sie eine .zip-Datei hoch.",
-        "tooLarge": "Datei ist zu groß. Die maximale erlaubte Größe beträgt {{max}}MB.",
-        "seemsProblem": "Es gibt ein Problem mit Ihrer Datei. Bitte versuchen Sie es erneut."
+        "invalidZip": "Ungültige Datei. Bitte lade  eine .zip-Datei hoch.",
+        "tooLarge": "Datei ist zu groß. Die maximale erlaubte Größe beträgt {{max}} MB.",
+        "seemsProblem": "Es gibt ein Problem mit Deiner Datei. Bitte versuche es später erneut."
       }
     },
     "nav": {
@@ -31,21 +31,25 @@
       "community": "Community",
       "team": "Team",
       "market": "Marktplatz",
-      "test": "test be"
+      "test": "Test",
+      "monitor": "Monitor",
+      "login": "Mit GitHub anmelden",
+      "logout": "Logout"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
-      "contribute": "Hier findest du Konnektoren zu Standard-Softwarelösungen führender Anbieter wie Microsoft, Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder Signierung.",
-      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> baue deinen eigenen Konnektor.</a>"
+      "contribute": "Hier findest du Erweiterungen für die Anbindung von  Standard-Softwarelösungen führender Anbieter wie Microsoft, Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder -signierung.",
+      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> implementiere deinen eigenen Konnektor.</a>"
     },
     "filter": {
       "label": "Filter",
       "value": {
         "allTypes": "Alle",
-        "connector": "Konnektor",
-        "util": "Nützliches",
+        "connector": "Konnektoren",
+        "util": "Utilities",
         "demos": "Demos",
-        "solution": "Lösungen"
+        "solution": "Lösungen",
+        "test": "Test"
       }
     },
     "error": {
@@ -55,32 +59,32 @@
       "description": {
         "400": "Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen.",
         "401": "Unauthorized: Eine Authentifizierung ist erforderlich und ist fehlgeschlagen oder wurde nicht bereitgestellt.",
-        "403": "Forbidden: Der Server hat die Anfrage verstanden, verweigert jedoch die Autorisierung.",
-        "404": "Not Found: Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.",
+        "403": "Nicht erlaubt: Der Server hat die Anfrage verstanden, verweigert jedoch die Autorisierung.",
+        "404": "Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.",
         "408": "Request Timeout: Der Server hat das Zeitlimit für die Anfrage überschritten.",
-        "500": "Internal Server Error: Der Server stieß auf ein unerwartetes Problem.",
-        "502": "Bad Gateway: Der Server hat eine ungültige Antwort von einem vorgelagerten Server erhalten.",
-        "503": "Service Unavailable: Der Server kann vorübergehend die Anfrage nicht bearbeiten.",
-        "504": "Gateway Timeout: Der vorgelagerte Server konnte die Anfrage nicht rechtzeitig beantworten.",
+        "500": "Internal Server Error: Der Server hat ein unerwartetes Problem.",
+        "502": "Bad Gateway: Der Server hat eine ungültige Antwort von einem upstream-Server erhalten.",
+        "503": "Service Unavailable: Der Server kann die Anfrage vorübergehend nicht bearbeiten.",
+        "504": "Gateway Timeout: Der upstream Server konnte die Anfrage nicht rechtzeitig beantworten.",
         "default": "Unsere Webseite macht eine kleine Pause."
       },
-      "buttonLabel": "Zurück zur Startseite"
+      "buttonLabel": "Zurück zur Homepage"
     },
     "sort": {
       "label": "Sortierung",
       "value": {
-        "popularity": "Beliebtheit",
+        "popularity": "Popularität",
         "alphabetically": "Alphabetisch",
         "recent": "Datum der Veröffentlichung",
         "standard": "Standard",
-        "newest": "Neuestes",
+        "newest": "Neueste",
         "oldest": "Älteste",
         "highest": "Höchste",
         "lowest": "Niedrigste"
       }
     },
     "search": {
-      "placeholder": "Suche"
+      "placeholder": "Keywort Suche"
     },
     "nothingFound": "Leider hat deine Suche keinen Treffer ergeben.<br /> Ändere deinen Suchbegriff oder stöbere in unseren Kategorien nach ähnlichen Themen.",
     "footer": {
@@ -97,20 +101,20 @@
     "product": {
       "detail": {
         "backToMainPage": "Zurück zur Übersicht",
-        "review": "Überprüfung",
+        "review": "Review",
         "installation": "Downloads",
         "type": "Typ",
         "description": "Beschreibung",
-        "installationGuide": "Installation",
+        "installationGuide": "Installation Guide",
         "demo": "Demo",
         "maven": {
           "label": "Maven",
-          "description": "Sie können es als Maven-Artefakt in Ihre <i>pom.xml</i> einbinden."
+          "description": "Du kannst es als Maven-Artefakt in Deine <i>pom.xml</i> einbinden."
         },
         "information": {
           "label": "Informationen",
           "value": {
-            "implementedBy": "Durchgeführt von",
+            "implementedBy": "Implementiert von",
             "version": "Version",
             "compatibility": "Kompatibilität",
             "cost": "Kosten",
@@ -139,28 +143,28 @@
           "artifactSelector": {
             "label": "Artefakt"
           },
-          "appArtifactHint": "Um alle notwendigen und verwendbaren Abhängigkeiten einzubinden, um direkt auf der Axon Ivy Engine zu deployen, aktivieren Sie bitte diese Checkbox!",
-          "zipAppArtifactLabel": "Erstellen Sie eine ZIP-Datei für die Bereitstellung auf der Axon Ivy Engine"
+          "appArtifactHint": "Aktiviere bitte diese Checkbox, um alle notwendigen und verwendbaren Abhängigkeiten einzubinden und direkt auf der Axon Ivy Engine zu deployen.",
+          "zipAppArtifactLabel": "Erstelle eine ZIP-Datei für das Deployment auf die Axon Ivy Engine."
         },
         "contactUs": {
           "label": "Kontakt"
         },
-        "changelog": "Änderungen"
+        "changelog": "Changelog"
       }
     },
     "feedback": {
-      "label": "Rückmeldung",
-      "successMessage": "Ihr Feedback wurde erfolgreich übermittelt!",
-      "thankMessage": "Vielen Dank für Ihren Beitrag",
+      "label": "Feedback",
+      "successMessage": "Dein Feedback wurde erfolgreich übermittelt!",
+      "thankMessage": "Vielen Dank für Deinen Beitrag",
       "informMessage": "Dein Kommentar wird nach einer kurzen Begutachtung veröffentlicht.",
-      "addFeedbackTitle": "Geben Sie Ihr Feedback!",
+      "addFeedbackTitle": "Feedback Bitte!",
       "addFeedbackDescription": "Dein Feedback hilft uns, unsere Produkte stetig zu verbessern und die beste Qualität für Dich zu gewährleisten. Dabei gilt selbstverständlich unser <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a>:</br> <ul> <li>Bleib freundlich und gelassen.</li> <li>Bleib offen.</li> <li>Bleib rücksichtsvoll.</li> <li>Bleib respektvoll.</li> <li>Wähle Deine Worte achtsam.</li> <li>Wenn wir Deine Meinung nicht teilen, versuche zu verstehen warum.</li> </ul>",
       "currentProductTitle": "In Prüfung",
       "commentLabel": "Du kannst gerne einen Kommentar hinterlassen",
-      "submitBtnLabel": "Bewertung abgeben",
+      "submitBtnLabel": "Review einreichen",
       "loggedGithubAsLabel": "Eingeloggt bei Github als",
-      "reviewLabel": "Bewertung",
-      "detailedReviews": "Ausführliche Bewertungen",
+      "reviewLabel": "Review",
+      "detailedReviews": "Ausführliche Reviews",
       "showMoreBtnLabel": "Mehr anzeigen",
       "noFeedbackForConnectorLabel": "Zu diesem Konnektor gibt's noch kein Feedback.",
       "noFeedbackForSolutionLabel": "Zu dieser Lösung gibt's noch kein Feedback.",
@@ -168,13 +172,13 @@
       "noFeedbackSecondLabel": "Sag uns was Du denkst.",
       "rateFeedbackForConnectorBtnLabel": "Bewerte diesen Konnektor",
       "rateFeedbackForSolutionBtnLabel": "Bewerte diese Lösung",
-      "rateFeedbackForUtilityBtnLabel": "Bewerte dieses Tool",
+      "rateFeedbackForUtilityBtnLabel": "Bewerte dieses Utility",
       "reviewLabelNoYet": "Noch keine Bewertungen",
       "approvalPending": "Freigabe ausstehend"
     },
     "labels": {
       "redirecting": "Redirecting ...!",
-      "loading": "Laden ...!"
+      "loading": "Lade ...!"
     },
     "timeAgo": {
       "yearAgo": "vor einem Jahr",
@@ -196,9 +200,9 @@
     "showMore": "Mehr anzeigen",
     "approval": {
       "approvalTitle": "Feedback Genehmigung",
-      "about": "Bitte überprüfe und genehmige das Feedback eines/r NutzerIn.",
-      "instruction": "Das Feedback sollte unserem <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> entsprechen.",
-      "reviewFeedback": "Feedback überprüfen",
+      "about": "Bitte überprüfe und genehmige das Feedback.",
+      "instruction": "Das Feedback muss unserem <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> entsprechen.",
+      "reviewFeedback": "Feedback Review",
       "history": "Historie",
       "username": "Benutzername",
       "product": "Produktname",
@@ -209,26 +213,26 @@
       "updatedAt": "Aktualisiert am",
       "action": "Aktion",
       "moderator": "Moderator",
-      "reviewDate": "Überprüfungsdatum",
+      "reviewDate": "Datum des Reviews",
       "approveBtnLabel": "Genehmigen",
       "rejectBtnLabel": "Ablehnen",
-      "pageTitle": "Mühelose Verwaltung der Feedback Genehmigung",
-      "description": "Stellen Sie sicher, dass nur das beste Feedback weitergeleitet wird.",
-      "enterToken": "Bitte geben Sie Ihren Token ein, um auf die Feedback Genehmigung zuzugreifen.",
-      "enterTokenPlaceholder": "Geben Sie Ihren Token ein",
+      "pageTitle": "Einfache Verwaltung der Feedback Genehmigung",
+      "description": "Stelle  sicher, dass nur das beste Feedback weitergeleitet wird.",
+      "enterToken": "Bitte gebe Deinen Token ein, um auf das Feedback Approval zuzugreifen.",
+      "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
       "noFeedbacks": "Keine Feedback verfügbar."
     },
     "security": {
-      "pageTitle": "Sicherheitsmonitor"
+      "pageTitle": "Security Monitor"
     },
     "externalDocument": {
       "pageHeader": "Das Dokument des {{product}} für die Version {{version}}",
-      "helpText": "Das Dokument ist nicht bereit zum Rendern oder wurde noch nicht veröffentlicht. Bitte versuchen Sie es später erneut."
+      "helpText": "Das Dokument ist nicht bereit oder wurde noch nicht veröffentlicht. Bitte versuchen Sie es später erneut."
     },
     "monitor": {
       "dashboard": {
-        "title": "Axon Ivy Market – Monitoring",
+        "title": "Axon Ivy Marktplatz – Monitoring",
         "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">auf GitHub verfügbar</a>.",
         "noRepositories": "Keine Repositories gefunden.",
         "connector": "Konnektor",
@@ -238,10 +242,10 @@
         "github": "Github",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
-        "ciLastBuilt": "Zuletzt CI Gebaut",
-        "devLastBuilt": "Zuletzt DEV Gebaut",
-        "e2eLastBuilt": "Zuletzt E2E Gebaut",
-        "pageTitle": "Überwachungs-Dashboard",
+        "ciLastBuilt": "Letzter CI Built",
+        "devLastBuilt": "Letzter DEV Built",
+        "e2eLastBuilt": "Letzter E2E Built",
+        "pageTitle": "Monitoring Dashboard",
         "repo": {
           "name": "Repository-Name",
           "language": "Sprache",
@@ -251,8 +255,8 @@
         "noReport": "Es gibt keinen Testbericht in diesem Workflow.",
         "skipped": "Übersprungen",
         "tabTitle": {
-          "focused": "Fokussierte Markterweiterung",
-          "standard": "Standard Markterweiterung"
+          "focused": "Focused Market Extension",
+          "standard": "Standard Market Extension"
         },
         "toggle": {
           "default": "Standardmodus",
@@ -260,14 +264,31 @@
         }
       },
       "buildTooltip": {
-        "ci": "Verwendet eine feste Ivy-Version, um zu überprüfen, dass der Connector mit der offiziellen Veröffentlichung funktioniert.",
-        "dev": "Prüft, ob der Connector mit der neuesten Ivy-API (Nightly Build) kompatibel ist.",
-        "e2e": "Überprüft, dass unser Code mit der echten API funktioniert und bestätigt, dass der Endpunkt aktiv und korrekt ist."
+        "ci": "Verwendet eine definierte Ivy-Version, um zu überprüfen, dass der Konnektor mit dem offiziellen Release funktioniert.",
+        "dev": "Prüft, ob der Konnektor mit der neuesten Ivy-API (Nightly Build) kompatibel ist.",
+        "e2e": "Überprüft, dass unser Code mit der API funktioniert und bestätigt, dass der Endpunkt aktiv und korrekt ist."
       },
       "pagination": {
-        "tenItems": "10 pro Seite",
-        "twentyItems": "20 pro Seite",
+        "tenItems": "10 Items pro Seite",
+        "twentyItems": "20 Items pro Seite",
         "all": "Alle"
+      },
+      "workflow": {
+        "label": "Staat",
+        "status": {
+          "active": "Aktiv",
+          "disabled_inactivity": "Deaktiviert",
+          "disabled_manually": "Deaktiviert",
+          "disabled_unknown": "Deaktiviert",
+          "deleted": "Gelöscht"
+        },
+        "tooltip": {
+          "active": "Aktiv: Der Workflow ist aktiviert und wird automatisch ausgeführt, wenn er ausgelöst wird.",
+          "disabled_inactivity": "Deaktiviert (Inaktivität): Der Workflow wurde aufgrund längerer Inaktivität des Repositories automatisch deaktiviert. Er muss erneut aktiviert werden, um ausgeführt zu werden.",
+          "disabled_manually": "Manuell deaktiviert: Der Workflow wurde manuell deaktiviert und wird erst nach erneuter Aktivierung ausgeführt.",
+          "disabled_unknown": "Deaktiviert (unbekannt): Der Workflow ist aus unbekannten Gründen deaktiviert. Überprüfen Sie die Konfiguration oder die Berechtigungen des Repositories.",
+          "deleted": "Gelöscht: Die Workflow-Datei wurde aus dem Repository gelöscht und kann nicht ausgeführt werden."
+        }
       }
     }
   }

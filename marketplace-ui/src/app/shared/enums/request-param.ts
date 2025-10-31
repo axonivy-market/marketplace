@@ -5,5 +5,9 @@ export enum RequestParam {
   LANGUAGE = 'language',
   IS_REST_CLIENT_EDITOR = 'isRESTClient',
   PAGE = 'page',
-  SIZE = 'size'
+  SIZE = 'size',
+  IS_FOCUSED = 'isFocused',
+  SEARCH = 'search',
+  WORK_FLOW_TYPE = 'workflowType',
+  SORT_DIRECTION = 'sortDirection',
 }

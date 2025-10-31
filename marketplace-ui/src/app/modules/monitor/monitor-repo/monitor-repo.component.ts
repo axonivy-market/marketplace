@@ -1,5 +1,13 @@
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { Repository } from '../github.service';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+  SimpleChanges
+} from '@angular/core';
+import { GithubService, Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,16 +22,20 @@ import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
 import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';
 import {
+  ALL_ITEMS_PAGE_SIZE,
   ASCENDING,
   CI_BUILD,
   DEFAULT_MODE,
+  DEFAULT_MONITORING_PAGEABLE,
   DESCENDING,
   DEV_BUILD,
   E2E_BUILD,
   MARKET_BASE_URL,
   NAME_COLUMN,
-  REPORT_MODE
+  REPORT_MODE,
+  STANDARD_TAB
 } from '../../../shared/constants/common.constant';
+import { MonitoringCriteria } from '../../../shared/models/criteria.model';
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
@@ -45,86 +57,97 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
-export class MonitoringRepoComponent implements OnInit, OnChanges {
+export class MonitoringRepoComponent implements OnInit {
   readonly COLUMN_NAME = NAME_COLUMN;
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
 
-  @Input() repositories: Repository[] = [];
-  @Input() isStandardTab = false;
   @Input() tabKey!: string;
   @Input() initialFilter = '';
+  @Input() activeTab = '';
   @Output() searchChange = new EventEmitter<string>();
 
   mode: Record<string, RepoMode> = {};
   workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
-  searchText = '';
   page = 1;
   pageSize = 10;
+  totalElements = 0;
   sortColumn = this.COLUMN_NAME;
   sortDirection = ASCENDING;
-  allRepositories: Repository[] = [];
-  filteredRepositories: Repository[] = [];
   displayedRepositories: Repository[] = [];
-
+  criteria: MonitoringCriteria = {
+    search: '',
+    isFocused: 'true',
+    sortDirection: ASCENDING,
+    workflowType: 'name',
+    pageable: DEFAULT_MONITORING_PAGEABLE
+  };
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
+  githubService = inject(GithubService);
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-    
+
     if (this.initialFilter) {
-      this.searchText = this.initialFilter;
+      this.criteria.search = this.initialFilter;
+    }
+
+    this.loadRepositories(this.criteria);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['activeTab'] && !changes['activeTab'].firstChange) {
+      this.resetDefaultPage();
+      this.updateCriteriaAndLoad();
+    }
+    if (changes['initialFilter'] && !changes['initialFilter'].firstChange) {
+      this.criteria.search = this.initialFilter;
+      this.resetDefaultPage();
+      this.updateCriteriaAndLoad();
     }
   }
 
-  ngOnChanges() {
-    this.allRepositories = [...this.repositories];
-    
-    const filterText = this.searchText || this.initialFilter;
-    this.applyFilter(filterText);
+  resetDefaultPage() {
+    this.page = 1;
+    this.criteria.pageable.page = 0;
+  }
+
+  updateCriteriaAndLoad() {
+    if (this.activeTab !== STANDARD_TAB) {
+      this.criteria.isFocused = 'true';
+    } else {
+      this.criteria.isFocused = '';
+    }
+    this.criteria.pageable.size = this.pageSize;
+    this.criteria.pageable.page = this.page - 1;
+    this.loadRepositories(this.criteria);
   }
 
   onSearchChanged(searchString: string) {
-    this.searchText = searchString;
-    this.applyFilter(searchString);
+    this.page = 1;
+    this.criteria.pageable.page = 0;
+    this.criteria.pageable.size = this.pageSize;
+    this.criteria.search = searchString;
+    this.loadRepositories(this.criteria);
   }
 
-  applyFilter(search: string) {
-    if (search && search.trim().length > 0) {
-      this.filteredRepositories = this.allRepositories.filter(repo =>
-        repo.repoName.toLowerCase().includes(search.toLowerCase())
-      );
-    } else {
-      this.filteredRepositories = [...this.allRepositories];
-    }
-
-    this.refreshPagination();
+  onPageChange(newPage: number) {
+    this.page = newPage;
+    this.criteria.pageable.page = newPage - 1;
+    this.criteria.pageable.size = this.pageSize;
+    this.loadRepositories(this.criteria);
   }
 
-  getPageSize(): number {
-    if (this.pageSize === -1) {
-      return this.filteredRepositories.length || 1;
-    } else {
-      return this.pageSize;
-    }
-  }
-
-  getCollectionSize(): number {
-    return this.filteredRepositories.length;
-  }
-
-  refreshPagination() {
-    if (this.pageSize === -1) {
-      this.displayedRepositories = [...this.filteredRepositories];
-    } else {
-      const start = (this.page - 1) * this.pageSize;
-      const end = start + this.pageSize;
-      this.displayedRepositories = this.filteredRepositories.slice(start, end);
-    }
+  onPageSizeChanged(newSize: number) {
+    this.pageSize = newSize;
+    this.page = 1;
+    this.criteria.pageable.page = 0;
+    this.criteria.pageable.size = this.pageSize;
+    this.loadRepositories(this.criteria);
   }
 
   getMarketUrl(productId: string): string {
@@ -138,18 +161,9 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
       this.sortColumn = column;
       this.sortDirection = ASCENDING;
     }
-
-    this.filteredRepositories.sort((repo1, repo2) => {
-      const repo1ColumnValue =
-        this.getColumnValue(repo1, column)?.toString().toLowerCase() ?? '';
-      const repo2ColumnValue =
-        this.getColumnValue(repo2, column)?.toString().toLowerCase() ?? '';
-
-      return this.compareColumnValues(repo1ColumnValue, repo2ColumnValue, this.sortDirection);
-
-    });
-
-    this.refreshPagination();
+    this.criteria.sortDirection = this.sortDirection;
+    this.criteria.workflowType = this.sortColumn;
+    this.loadRepositories(this.criteria);
   }
 
   private toggleSortDirection() {
@@ -158,28 +172,6 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
     } else {
       this.sortDirection = ASCENDING;
     }
-  }
-
-  private compareColumnValues(repo1ColumnValue: string, repo2ColumnValue: string, sortDirection: string): number {
-    const columnValueComparison = repo1ColumnValue.localeCompare(repo2ColumnValue);
-    if (columnValueComparison === 0) {
-      return 0;
-    }
-
-    const isAscendingDirection = sortDirection === ASCENDING;
-    if (isAscendingDirection) {
-      return columnValueComparison;
-    } else {
-      return -columnValueComparison;
-    }
-  }
-
-  private getColumnValue(repo: Repository, column: string): string {
-    if (column === this.COLUMN_NAME) {
-      return repo.repoName;
-    }
-
-    return this.findWorkflowMatch(repo, column)?.conclusion ?? '';
   }
 
   findWorkflowMatch(repo: Repository, workflow: string) {
@@ -197,4 +189,15 @@ export class MonitoringRepoComponent implements OnInit, OnChanges {
       return 'bi bi-arrow-down';
     }
   }
+
+  loadRepositories(criteria: MonitoringCriteria): void {
+    this.githubService.getRepositories(criteria).subscribe({
+      next: data => {
+        this.displayedRepositories = data?._embedded?.githubRepos || [];
+        this.totalElements = data.page?.totalElements ?? 0;
+      }
+    });
+  }
+
+  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
 }
