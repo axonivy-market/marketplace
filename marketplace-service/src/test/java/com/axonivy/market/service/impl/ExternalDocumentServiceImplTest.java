@@ -407,4 +407,87 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     String result = service.extractMajorVersion(TEST_VERSION, "DEV");
     assertEquals(MAJOR_TEST_VERSION,result, "Should extract major version successfully");
   }
+
+  @Test
+  void testExtractMajorVersionWithDot() {
+    String result = service.extractMajorVersion(TEST_VERSION, TEST_VERSION);
+    assertEquals(MAJOR_TEST_VERSION, result, "Should extract major part before dot");
+  }
+
+  @Test
+  void testExtractMajorVersionWithMappedVersionNotNullNoDot() {
+    String result = service.extractMajorVersion("dev", TEST_VERSION);
+    assertEquals("dev", result, "Should return mappedVersion if no dot");
+  }
+
+  @Test
+  void testExtractMajorVersionWithMappedVersionNull() {
+    String result = service.extractMajorVersion(null, TEST_VERSION);
+    assertEquals(MAJOR_TEST_VERSION, result, "Should return first part of version if mappedVersion is null");
+  }
+
+  @Test
+  void testSetSymlinkPermissionsViewNotNull() throws Exception {
+    String os = System.getProperty("os.name").toLowerCase();
+    if (!os.contains("win")) {
+      Path tempDir = Files.createTempDirectory("symlinkPermTest");
+      Path majorVersionPath = tempDir.resolve("majorVersion");
+      Files.createDirectory(majorVersionPath);
+      // Should not throw and should return correct path
+      String result = service.setSymlinkPermissions(majorVersionPath);
+      assertTrue(result.contains("majorVersion"), "Should contain majorVersion in path");
+      Files.deleteIfExists(majorVersionPath);
+      Files.deleteIfExists(tempDir);
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersionDeletesIfExists() throws Exception {
+    String os = System.getProperty("os.name").toLowerCase();
+    if (!os.contains("win")) {
+      Path tempDir = Files.createTempDirectory("symlinkCreateTest");
+      Path versionFolder = tempDir.resolve("10.2.1/doc");
+      Files.createDirectories(versionFolder);
+      Path specificVersionParent = versionFolder.getParent();
+      Path artifactRoot = specificVersionParent.getParent();
+      Path majorVersionPath = artifactRoot.resolve("10");
+      Files.createSymbolicLink(majorVersionPath, specificVersionParent.getFileName());
+      assertTrue(Files.exists(majorVersionPath), "Symlink should exist before");
+      service.createSymlinkForMajorVersion(versionFolder, "10");
+      assertFalse(Files.exists(majorVersionPath), "Symlink should be deleted after");
+      Files.deleteIfExists(versionFolder);
+      Files.deleteIfExists(specificVersionParent);
+      Files.deleteIfExists(artifactRoot);
+      Files.deleteIfExists(tempDir);
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersionDeletesIfExistsWithMock() {
+    Path versionFolder = mock(Path.class);
+    Path specificVersionParent = mock(Path.class);
+    Path artifactRoot = mock(Path.class);
+    Path majorVersionPath = mock(Path.class);
+    Path relativeTarget = mock(Path.class);
+
+    when(versionFolder.getParent()).thenReturn(specificVersionParent);
+    when(specificVersionParent.getParent()).thenReturn(artifactRoot);
+    when(artifactRoot.resolve(MAJOR_TEST_VERSION)).thenReturn(majorVersionPath);
+    when(specificVersionParent.getFileName()).thenReturn(mock(Path.class));
+    try (MockedStatic<Path> pathStatic = mockStatic(Path.class)) {
+      pathStatic.when(() -> Path.of(anyString())).thenReturn(relativeTarget);
+
+      try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+        filesMock.when(() -> Files.exists(majorVersionPath)).thenReturn(true);
+        filesMock.when(() -> Files.isSymbolicLink(majorVersionPath)).thenReturn(true);
+        filesMock.when(() -> Files.delete(majorVersionPath)).thenAnswer(inv -> null);
+        filesMock.when(() -> Files.createSymbolicLink(majorVersionPath, relativeTarget)).thenReturn(majorVersionPath);
+
+        service.createSymlinkForMajorVersion(versionFolder, MAJOR_TEST_VERSION);
+
+        filesMock.verify(() -> Files.delete(majorVersionPath), times(1));
+        filesMock.verify(() -> Files.createSymbolicLink(majorVersionPath, relativeTarget), times(1));
+      }
+    }
+  }
 }

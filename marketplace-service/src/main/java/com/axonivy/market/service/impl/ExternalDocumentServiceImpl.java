@@ -288,7 +288,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return majorVersionPath + File.separator + DirectoryConstants.DOC_DIR;
   }
 
-  private String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
+  public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
     try {
       var specificVersionParent = versionFolder.getParent();
       var artifactRoot = specificVersionParent.getParent();
