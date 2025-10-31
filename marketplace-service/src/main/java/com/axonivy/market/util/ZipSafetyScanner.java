@@ -55,7 +55,8 @@ public class ZipSafetyScanner {
         long compressedSize = e.getCompressedSize();
         long uncompressedSize = e.getSize();
 
-        isEntryValid(name, compressedSize, uncompressedSize, entries, totalUncompressed);
+        isEntryValid(name, entries);
+        isEntrySizeValid(name, compressedSize, uncompressedSize, totalUncompressed);
 
         if (uncompressedSize > 0) {
           totalUncompressed += uncompressedSize;
@@ -71,7 +72,7 @@ public class ZipSafetyScanner {
       }
 
       if (detectNestedZipFiles(zf)) {
-        String errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
+        var errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
             MAX_NESTED_ARCHIVE_DEPTH, zipFile.getOriginalFilename());
         throw new InvalidZipEntryException(errorDetectNestedZip);
       }
@@ -83,32 +84,35 @@ public class ZipSafetyScanner {
     }
   }
 
-  private static void isEntryValid(String name, long compressedSize, long uncompressedSize,
-      int entries, long totalUncompressed) {
+  private static void isEntryValid(String name, int entries) {
     // Stop if there are too much sub files in zip file
     if (entries > MAX_ENTRIES) {
-      throw new InvalidZipEntryException("Zip entry too large: " + name);
+      throw new InvalidZipEntryException("Zip entry " + name + " is too large");
     }
     // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
     if (isTraversal(name)) {
-      throw new InvalidZipEntryException("Entry name has traversal: " + name);
+      throw new InvalidZipEntryException("Entry " + name + " has traversal");
     }
     // Prevent entries with paths starting from the root (e.g. /usr/bin/file or C:\Windows\...).
     // Avoid overwriting system files when extracting.
     if (isAbsolutePathLike(name)) {
-      throw new InvalidZipEntryException("Entry name has absolute path: " + name);
+      throw new InvalidZipEntryException("Entry name " + name + " has absolute path");
     }
     // Purpose: Prevent files like .bashrc, .gitignore, .ssh/authorized_keys , .env
     // Protect the system from overwriting hidden configuration files when unzipping.
     if (isHiddenDotFile(name)) {
-      throw new InvalidZipEntryException("Entry file is hidden: " + name);
+      throw new InvalidZipEntryException("Entry file " + name + " is hidden");
     }
     if (hasDangerousExtension(name)) {
-      throw new InvalidZipEntryException("Dangerous extension: " + name);
+      throw new InvalidZipEntryException("Entry name " + name + " is dangerous extension");
     }
+  }
+
+  private static void isEntrySizeValid(String name, long compressedSize, long uncompressedSize,
+      long totalUncompressed) {
     // Purpose: Prevent single files from being too large.
     if (uncompressedSize > MAX_SINGLE_UNCOMPRESSED_BYTES) {
-      throw new InvalidZipEntryException("Uncompressed entry file " + name + " exceeds 30MB in size.");
+      throw new InvalidZipEntryException("Uncompressed entry file " + name + " exceeds 30MB in size");
     }
     // Purpose: Calculate the ratio between compressed and decompressed size.
     // Reason: If the ratio is too high (e.g. 1 byte compressed → 1GB decompressed), it could be a ZIP bomb.
