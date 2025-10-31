@@ -42,9 +42,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + "/index.html";
 
   private static final String PORTAL = "portal";
-
+  private static final String PORTAL_ARTIFACT = "portal-guide";
   private static final String TEST_VERSION = "12.0";
-
+  private static final String MAJOR_TEST_VERSION = "12";
   private final List<String> majorVersions = List.of("10.0", "12.0", "13.1", "dev");
 
   @MockBean
@@ -217,7 +217,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   private static Artifact mockPortalMavenArtifact() {
-    return Artifact.builder().artifactId("portal-guide").doc(true).groupId(PORTAL)
+    return Artifact.builder().artifactId(PORTAL_ARTIFACT).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
   }
 
@@ -270,30 +270,29 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlReturnsNullIfNoMeta() {
-    // The extract* methods are not defined, so just call with a path that will return null
     String result = service.resolveBestMatchRedirectUrl("/some/path");
     assertNull(result, "Should return null if no document meta found");
   }
 
   @Test
   void testResolveTargetVersionPrefersBestMatchVersion() {
-    String productId = "portal";
-    String artifactName = "portal-guide";
-    String version = "10.0.0";
+    String productId = PORTAL;
+    String artifactName = PORTAL_ARTIFACT;
+    String version = TEST_VERSION;
     MarketplaceConfig mockConfig = mock(MarketplaceConfig.class);
     ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
         .useConstructor(productRepository, externalDocumentMetaRepository, fileDownloadService, artifactRepository,
             mockConfig, axonIvyClient)
         .defaultAnswer(CALLS_REAL_METHODS));
-    doReturn("10.0.0").when(mockService).findBestMatchVersion(productId, version);
+    doReturn(TEST_VERSION).when(mockService).findBestMatchVersion(productId, version);
     String result = mockService.resolveTargetVersion(productId, artifactName, version);
-    assertEquals("10.0.0", result, "Should return best match version");
+    assertEquals(TEST_VERSION, result, "Should return best match version");
   }
 
   @Test
   void testResolveTargetVersionFallsBackToSymlink() {
-    String productId = "portal";
-    String artifactName = "portal-guide";
+    String productId = PORTAL;
+    String artifactName = PORTAL_ARTIFACT;
     String version = "10.0.0";
     MarketplaceConfig mockConfig = mock(MarketplaceConfig.class);
     ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
@@ -301,16 +300,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
             mockConfig, axonIvyClient)
         .defaultAnswer(CALLS_REAL_METHODS));
     doReturn(null).when(mockService).findBestMatchVersion(productId, version);
-    doReturn("9.0.0").when(mockService).resolveSymlinkVersion(any(), eq(version));
+    doReturn(TEST_VERSION).when(mockService).resolveSymlinkVersion(any(), eq(version));
     String result = mockService.resolveTargetVersion(productId, artifactName, version);
-    assertEquals("9.0.0", result, "Should fallback to symlink version");
+    assertEquals(TEST_VERSION, result, "Should fallback to symlink version");
   }
 
   @Test
   void testResolveDocumentMetaReturnsNullIfEmpty() {
-    String productId = "portal";
+    String productId = PORTAL;
     DocumentLanguage language = DocumentLanguage.ENGLISH;
-    String targetVersion = "10.0.0";
+    String targetVersion = TEST_VERSION;
     when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(productId, language, targetVersion))
         .thenReturn(List.of());
     ExternalDocumentMeta result = service.resolveDocumentMeta(productId, language, targetVersion);
@@ -319,9 +318,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveDocumentMetaReturnsFirstMeta() {
-    String productId = "portal";
+    String productId = PORTAL;
     DocumentLanguage language = DocumentLanguage.ENGLISH;
-    String targetVersion = "10.0.0";
+    String targetVersion = TEST_VERSION;
     ExternalDocumentMeta meta = ExternalDocumentMeta.builder().productId(productId).version(targetVersion).language(
         language).build();
     when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(productId, language, targetVersion))
@@ -332,8 +331,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetArtifactRootDirectoryReturnsCorrectPath() {
-    String productId = "portal";
-    String artifactName = "portal-guide";
+    String productId = PORTAL;
+    String artifactName = PORTAL_ARTIFACT;
     String result = service.getArtifactRootDirectory(productId, artifactName);
     assertTrue(result.contains(productId), "Should contain productId");
     assertTrue(result.contains(artifactName), "Should contain artifactName");
@@ -343,17 +342,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testResolveSymlinkVersionReturnsTargetName() throws IOException {
     String os = System.getProperty("os.name").toLowerCase();
     if (os.contains("win")) {
-      // Skip symlink test on Windows due to privilege issues
       return;
     }
     Path tempDir = Files.createTempDirectory("symlinkDir");
     String symlinkName = "majorVersion";
-    Path targetDir = tempDir.resolve("10.0.0");
+    Path targetDir = tempDir.resolve(TEST_VERSION);
     Files.createDirectory(targetDir);
     Path symlinkPath = tempDir.resolve(symlinkName);
     Files.createSymbolicLink(symlinkPath, targetDir.getFileName());
     String result = service.resolveSymlinkVersion(tempDir.toString(), symlinkName);
-    assertEquals("10.0.0", result, "Should resolve symlink to target directory name");
+    assertEquals(TEST_VERSION, result, "Should resolve symlink to target directory name");
     Files.deleteIfExists(symlinkPath);
     Files.deleteIfExists(targetDir);
     Files.deleteIfExists(tempDir);
@@ -373,30 +371,40 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveTargetVersionReturnsBestMatchFromDB() {
-    String productId = "portal";
-    String artifactName = "portal-guide";
-    String version = "10.0.0";
+    String productId = PORTAL;
+    String version = TEST_VERSION;
     ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
       .useConstructor(productRepository, externalDocumentMetaRepository, fileDownloadService, artifactRepository, mock(MarketplaceConfig.class), axonIvyClient)
       .defaultAnswer(CALLS_REAL_METHODS));
-    doReturn("10.0.1").when(mockService).findBestMatchVersion(productId, version);
-    doReturn("10.0.1").when(mockService).checkVersionCompatibility("10.0.1", version);
-    String result = mockService.resolveTargetVersion(productId, artifactName, version);
-    assertEquals("10.0.1", result, "Should return best match version from DB and check compatibility");
+    doReturn(TEST_VERSION).when(mockService).findBestMatchVersion(productId, version);
+    doReturn(TEST_VERSION).when(mockService).checkVersionCompatibility(TEST_VERSION, version);
+    String result = mockService.resolveTargetVersion(productId, PORTAL_ARTIFACT, version);
+    assertEquals(TEST_VERSION, result, "Should return best match version from DB and check compatibility");
   }
 
   @Test
   void testResolveTargetVersionReturnsSymlinkFallback() {
-    String productId = "portal";
-    String artifactName = "portal-guide";
-    String version = "10.0.0";
+    String productId = PORTAL;
+    String version = TEST_VERSION;
     ExternalDocumentServiceImpl mockService = mock(ExternalDocumentServiceImpl.class, withSettings()
       .useConstructor(productRepository, externalDocumentMetaRepository, fileDownloadService, artifactRepository, mock(MarketplaceConfig.class), axonIvyClient)
       .defaultAnswer(CALLS_REAL_METHODS));
     doReturn(null).when(mockService).findBestMatchVersion(productId, version);
-    doReturn("10.0.2").when(mockService).resolveSymlinkVersion(any(), eq(version));
-    doReturn("10.0.2").when(mockService).checkVersionCompatibility("10.0.2", version);
-    String result = mockService.resolveTargetVersion(productId, artifactName, version);
-    assertEquals("10.0.2", result, "Should return symlink fallback and check compatibility");
+    doReturn(TEST_VERSION).when(mockService).resolveSymlinkVersion(any(), eq(version));
+    doReturn(TEST_VERSION).when(mockService).checkVersionCompatibility(TEST_VERSION, version);
+    String result = mockService.resolveTargetVersion(productId, PORTAL_ARTIFACT, version);
+    assertEquals(TEST_VERSION, result, "Should return symlink fallback and check compatibility");
+  }
+
+  @Test
+  void testExtractMapVersionNullIfInvalid() {
+    String result = service.extractMajorVersion(null, TEST_VERSION);
+    assertEquals(MAJOR_TEST_VERSION,result, "Should return null for invalid path structure");
+  }
+
+  @Test
+  void testExtractMapVersionWithDevVersion() {
+    String result = service.extractMajorVersion(TEST_VERSION, "DEV");
+    assertEquals(MAJOR_TEST_VERSION,result, "Should extract major version successfully");
   }
 }

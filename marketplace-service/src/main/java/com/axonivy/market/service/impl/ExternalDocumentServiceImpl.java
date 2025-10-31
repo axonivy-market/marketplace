@@ -245,7 +245,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     buildDocumentWithLanguage(location, artifact, productId, version);
   }
 
-  private static String extractMajorVersion(String mappedVersion, String version) {
+  String extractMajorVersion(String mappedVersion, String version) {
     if (mappedVersion != null && mappedVersion.contains(".")) {
       return mappedVersion.substring(0, mappedVersion.indexOf('.'));
     } else {
@@ -258,7 +258,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void handleSymlinkAndBuild(String location, Artifact artifact, String productId, String majorVersion) {
-    log.info("Creating symlink for majorVersion: {}", majorVersion);
     String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion);
     if (StringUtils.isNotBlank(majorLocation)) {
       buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
@@ -416,7 +415,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (documentMeta == null || !doesDocExistInShareFolder(documentMeta.getStorageDirectory())) {
       return null;
     }
-    log.error("Resolved best match document for path {}", documentMeta.getRelativeLink());
     return documentMeta.getRelativeLink();
   }
 

@@ -69,13 +69,11 @@ public class ExternalDocumentController {
       var resolvedPath = DocPathUtils.resolveDocPath(redirectUrl);
 
        if (resolvedPath == null || !Files.exists(resolvedPath)) {
-         log.warn("#redirectToBestVersion The Document is not exist, redirect to 404.");
          return response.location(URI.create(ERROR_PAGE_404)).build();
        }
 
       return response.location(URI.create(redirectUrl)).build();
     }
-    log.warn("#redirectToBestVersion The Path is invalid {}, redirect to 404.", path);
     return response.location(URI.create(ERROR_PAGE_404)).build();
   }
 
