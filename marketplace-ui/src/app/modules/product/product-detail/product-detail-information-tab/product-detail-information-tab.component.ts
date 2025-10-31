@@ -11,12 +11,15 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { VERSION } from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ROUTER } from '../../../../shared/constants/router.constant';
+import { CookieService } from 'ngx-cookie-service';
+import { CommonUtils } from '../../../../shared/utils/common.utils';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
@@ -41,7 +44,9 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
+  cookieService = inject(CookieService);
   loadingService = inject(LoadingService);
+  route = inject(ActivatedRoute);
   router = inject(Router);
   shieldsBadgeUrl = '';
   repoName = '';
@@ -56,46 +61,69 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     if (this.isVersionUnchangedOrFirstChange(changes[SELECTED_VERSION])) {
       return;
     }
-    const changedProduct = changes[PRODUCT_DETAIL];
-    if (this.isProductChanged(changedProduct)) {
-      version = this.productDetail.newestReleaseVersion;
-    } else {
-      version = this.selectedVersion;
-    }
+    version = this.extractVersionValue(
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ??
+        this.selectedVersion
+    );
     // Invalid version
     if (version === undefined || version === '') {
       return;
     }
-
+    const isShowDevVersion = CommonUtils.getCookieValue(
+      this.cookieService,
+      SHOW_DEV_VERSION,
+      false
+    );
     this.productDetailService
-      .getExternalDocumentForProductByVersion(
-        this.productDetail.id,
-        this.extractVersionValue(version)
-      )
+      .getBestMatchVersion(this.productDetail.id, version, isShowDevVersion)
       .subscribe({
-        next: response => {
-          if (response) {
-            this.externalDocumentLink = response.relativeLink;
-            this.displayExternalDocName = response.artifactName;
-          } else {
-            this.resetValues();
+        next: bestMatchVersion => {
+          if (bestMatchVersion === undefined || bestMatchVersion === '') {
+            return;
           }
+          this.productDetailService
+            .getExternalDocumentForProductByVersion(
+              this.productDetail.id,
+              bestMatchVersion
+            )
+            .subscribe({
+              next: response => {
+                if (response) {
+                  this.externalDocumentLink = response.relativeLink;
+                  this.displayExternalDocName = response.artifactName;
+                } else {
+                  this.resetValues();
+                }
+                this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+              },
+              error: () => {
+                this.resetValues();
+                this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+              }
+            });
+          this.displayVersion = bestMatchVersion;
+          this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+          this.addVersionParamToRoute(bestMatchVersion);
         },
         error: () => {
           this.resetValues();
+          this.displayVersion = this.extractVersionValue(this.selectedVersion);
+          this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+          this.addVersionParamToRoute(
+            this.extractVersionValue(this.selectedVersion)
+          );
         }
       });
-    this.displayVersion = this.extractVersionValue(this.selectedVersion);
-    this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
+
   getShieldsBadgeUrl(): string {
     if (!this.productDetail?.statusBadgeUrl) {
       return '';
     }
     const url = new URL(this.productDetail.statusBadgeUrl);
     const pathParts = url.pathname.split('/').filter(part => part.length > 0);
-    const owner = pathParts[0]; 
-    this.repoName = pathParts[1]; 
+    const owner = pathParts[0];
+    this.repoName = pathParts[1];
     return `${SHIELDS_BADGE_BASE_URL}/${owner}/${this.repoName}/${SHIELDS_WORKFLOW}?branch=${BRANCH}`;
   }
 
@@ -118,20 +146,31 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   //  To ensure the function always returns a boolean, you can explicitly coerce the result into a boolean using the !! operator or default it to false
   //  Adding !! in case of changedProduct is undefined, it will return false instead of returning undefined
   isProductChanged(changedProduct: SimpleChange) {
-    return !!(changedProduct?.previousValue &&
+    return !!(
+      changedProduct?.previousValue &&
       Object.keys(changedProduct.previousValue).length > 0 &&
       changedProduct.currentValue !== changedProduct.previousValue
     );
   }
   onBadgeClick() {
     if (this.repoName) {
-      this.router.navigate(['/monitoring'], { 
-        queryParams: { 
+      this.router.navigate(['/monitoring'], {
+        queryParams: {
           search: this.repoName
-        } 
+        }
       });
     } else {
       this.router.navigate(['/monitoring']);
     }
+  }
+
+  addVersionParamToRoute(selectedVersion: string) {
+    this.router
+      .navigate([], {
+        relativeTo: this.route,
+        queryParams: { [ROUTER.VERSION]: selectedVersion },
+        queryParamsHandling: 'merge'
+      })
+      .then();
   }
 }
