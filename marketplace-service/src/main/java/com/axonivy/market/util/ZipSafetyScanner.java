@@ -7,6 +7,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.*;
 
@@ -34,8 +36,10 @@ public class ZipSafetyScanner {
     if (zipFile == null || zipFile.isEmpty()) {
       throw new InvalidZipEntryException("Zip file is null or empty");
     }
+    
+    Path tempDir = Files.createTempDirectory("uploaded-Folder");
+    File tempFile = File.createTempFile("tempUpload-", ".zip", tempDir.toFile());
 
-    File tempFile = File.createTempFile("tempUpload-", ".zip");
     try (InputStream input = zipFile.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
       input.transferTo(output);
@@ -80,7 +84,8 @@ public class ZipSafetyScanner {
       log.error("Invalid zip entry detected: {}", ex.getMessage());
       throw ex;
     } finally {
-      tempFile.deleteOnExit();
+      Files.deleteIfExists(tempDir);
+      Files.deleteIfExists(tempFile.toPath());
     }
   }
 
@@ -131,7 +136,7 @@ public class ZipSafetyScanner {
   }
 
   public static int countNestedZipsRecursive(InputStream inputStream) throws IOException {
-    int count = 0;
+    var count = 0;
     try (var zis = new ZipInputStream(inputStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
