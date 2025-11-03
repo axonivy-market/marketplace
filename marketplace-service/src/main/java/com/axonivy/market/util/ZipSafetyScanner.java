@@ -132,25 +132,27 @@ public class ZipSafetyScanner {
 
   public static int countNestedZipsRecursive(InputStream inputStream) throws IOException {
     int count = 0;
-    try (ZipInputStream zis = new ZipInputStream(inputStream)) {
+    try (var zis = new ZipInputStream(inputStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
-        if (!entry.isDirectory() && looksLikeNestedArchive(entry.getName())) {
-          // Count the nested zip, and recursively check its contents
-          count++;
-          // Read the nested zip entry fully into a byte array
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          byte[] buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
-          int len;
-          while ((len = zis.read(buffer)) != -1) {
-            baos.write(buffer, 0, len);
-          }
-          // Recursively check inside the nested zip
-          count += countNestedZipsRecursive(new ByteArrayInputStream(baos.toByteArray()));
+        if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
+          continue;
         }
+        count++;
+        count += countInNestedZip(zis);
       }
     }
     return count;
+  }
+
+  private static int countInNestedZip(ZipInputStream zis) throws IOException {
+    var byteArrayOutputStream = new ByteArrayOutputStream();
+    var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+    int len;
+    while ((len = zis.read(buffer)) != -1) {
+      byteArrayOutputStream.write(buffer, 0, len);
+    }
+    return countNestedZipsRecursive(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
   }
 
   private static boolean isTraversal(String name) {

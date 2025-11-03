@@ -140,11 +140,12 @@ class ZipSafetyScannerTest {
     Mockito.when(multipartFile.getOriginalFilename()).thenReturn("test-file.zip");
 
     // Act & Assert
-    InvalidZipEntryException ex = assertThrows(
-        InvalidZipEntryException.class,
-        () -> ZipSafetyScanner.analyze(multipartFile)
-    );
-    assertTrue(ex.getMessage().contains("Too many nested ZIP entries detected (>3) in test-file.zip"));
+    InvalidZipEntryException ex = assertThrows(InvalidZipEntryException.class,
+        () -> ZipSafetyScanner.analyze(multipartFile),
+        "Expected analyze to throw InvalidZipEntryException for many nested zip file");
+
+    assertTrue(ex.getMessage().contains("Too many nested ZIP entries detected (>3) in test-file.zip"),
+        "Expected analyze to throw InvalidZipEntryException for many nested zip file");
   }
 
   // Utility to create a ZIP file in memory with a nested ZIP
