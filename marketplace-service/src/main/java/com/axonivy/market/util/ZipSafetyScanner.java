@@ -71,7 +71,7 @@ public class ZipSafetyScanner {
         throw new InvalidZipEntryException("Missing required file: README.md");
       }
 
-      if (detectNestedZipFiles(zf)) {
+      if (countNestedZipsRecursive(new FileInputStream(tempFile)) >= MAX_NESTED_ARCHIVE_DEPTH) {
         var errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
             MAX_NESTED_ARCHIVE_DEPTH, zipFile.getOriginalFilename());
         throw new InvalidZipEntryException(errorDetectNestedZip);
@@ -130,91 +130,28 @@ public class ZipSafetyScanner {
     }
   }
 
-  public static boolean detectNestedZipFiles(ZipFile zipFile) throws IOException {
-    Enumeration<? extends ZipEntry> entries = zipFile.entries();
-    while (entries.hasMoreElements()) {
-      ZipEntry entry = entries.nextElement();
-      // skip directories
-      if (entry.isDirectory()) {
-        continue;
-      }
-      if (hasNestedZip(zipFile)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static boolean hasNestedZip(ZipFile zipFile) throws IOException {
-    int nestedArchiveCount = 0;
-    Enumeration<? extends ZipEntry> entries = zipFile.entries();
-    while (entries.hasMoreElements()) {
-      ZipEntry entry = entries.nextElement();
-      if (entry.isDirectory()) {
-        continue;
-      }
-      String name = entry.getName();
-      if (looksLikeNestedArchive(name)) {
-        nestedArchiveCount++;
-        if (readZipEntryAndProcessRecursively(zipFile, entry, nestedArchiveCount, name)) {
-          return true;
+  public static int countNestedZipsRecursive(InputStream inputStream) throws IOException {
+    int count = 0;
+    try (ZipInputStream zis = new ZipInputStream(inputStream)) {
+      ZipEntry entry;
+      while ((entry = zis.getNextEntry()) != null) {
+        if (!entry.isDirectory() && looksLikeNestedArchive(entry.getName())) {
+          // Count the nested zip, and recursively check its contents
+          count++;
+          // Read the nested zip entry fully into a byte array
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          byte[] buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+          int len;
+          while ((len = zis.read(buffer)) != -1) {
+            baos.write(buffer, 0, len);
+          }
+          // Recursively check inside the nested zip
+          count += countNestedZipsRecursive(new ByteArrayInputStream(baos.toByteArray()));
         }
       }
     }
-    return false;
+    return count;
   }
-
-  private static boolean readZipEntryAndProcessRecursively(ZipFile zipFile, ZipEntry entry, int nestedArchiveCount,
-      String name) throws IOException {
-    // Read this entry as a ZIP and process recursively
-    try (InputStream is = zipFile.getInputStream(entry)) {
-      byte[] data = is.readAllBytes();
-      try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
-        if (hasNestedZip(nestedZip, nestedArchiveCount)) {
-          log.error("Too many nested ZIP entries detected (>{}): {}", MAX_NESTED_ARCHIVE_DEPTH, name);
-          return true;
-        }
-      } catch (IOException e) {
-        // Not a valid zip, skip
-        log.error("It is not a ZIP entry: {}", name, e);
-      }
-    }
-    return false;
-  }
-
-  private static boolean hasNestedZip(ZipInputStream zipStream, int nestedArchiveCount) throws IOException {
-    ZipEntry entry;
-    while ((entry = zipStream.getNextEntry()) != null) {
-      String name = entry.getName();
-      if (entry.isDirectory() || !looksLikeNestedArchive(name)) {
-        zipStream.closeEntry();
-        continue;
-      }
-
-      nestedArchiveCount++;
-      byte[] data = zipStream.readAllBytes();
-      boolean foundNested = processNestedZip(data, nestedArchiveCount, name);
-      zipStream.closeEntry();
-
-      if (foundNested) {
-        return true;
-      }
-    }
-    return nestedArchiveCount >= MAX_NESTED_ARCHIVE_DEPTH;
-  }
-
-  private static boolean processNestedZip(byte[] data, int nestedArchiveCount, String name) {
-    try (ZipInputStream nestedZip = new ZipInputStream(new ByteArrayInputStream(data))) {
-      if (hasNestedZip(nestedZip, nestedArchiveCount)) {
-        return true;
-      }
-    } catch (IOException e) {
-      // Not a valid zip, skip
-      log.error("It is not a ZIP entry: {}", name, e);
-    }
-    return false;
-  }
-
 
   private static boolean isTraversal(String name) {
     boolean containsDoubleDotSlash = name.contains(".." + "/") || name.contains("../") || name.contains("..\\");

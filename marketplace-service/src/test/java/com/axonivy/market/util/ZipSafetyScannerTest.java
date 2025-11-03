@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.util.zip.*;
 
@@ -130,53 +129,43 @@ class ZipSafetyScannerTest {
   }
 
   @Test
-  void testDetectNestedZipFiles() throws IOException {
-    // Create the innermost zip (level 3)
-    byte[] level3ZipBytes = createZipWithEntry("file3.txt", "level3".getBytes());
+  void testDetectTooManyNestedZipFilesThrowsException() throws IOException {
+    // Arrange: Create a zip file with too many nested zip files
+    int overDepth = ZipSafetyScanner.MAX_NESTED_ARCHIVE_DEPTH + 1;
+    byte[] zipData = createNestedZip(overDepth);
 
-    // Level 2: zip containing level3 zip
-    byte[] level2ZipBytes;
-    try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         ZipOutputStream zos = new ZipOutputStream(baos)) {
-      ZipEntry entry = new ZipEntry("level3.zip");
-      zos.putNextEntry(entry);
-      zos.write(level3ZipBytes);
-      zos.closeEntry();
-      level2ZipBytes = baos.toByteArray();
-    }
+    MultipartFile multipartFile = Mockito.mock(MultipartFile.class);
+    Mockito.when(multipartFile.isEmpty()).thenReturn(false);
+    Mockito.when(multipartFile.getInputStream()).thenReturn(new ByteArrayInputStream(zipData));
+    Mockito.when(multipartFile.getOriginalFilename()).thenReturn("test-file.zip");
 
-    // Level 1: zip containing level2 zip
-    byte[] level1ZipBytes;
-    try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         ZipOutputStream zos = new ZipOutputStream(baos)) {
-      ZipEntry entry = new ZipEntry("level2.zip");
-      zos.putNextEntry(entry);
-      zos.write(level2ZipBytes);
-      zos.closeEntry();
-      level1ZipBytes = baos.toByteArray();
-    }
+    // Act & Assert
+    InvalidZipEntryException ex = assertThrows(
+        InvalidZipEntryException.class,
+        () -> ZipSafetyScanner.analyze(multipartFile)
+    );
+    assertTrue(ex.getMessage().contains("Too many nested ZIP entries detected (>3) in test-file.zip"));
+  }
 
-    // Outer zip (top-level) containing level1 zip
+  // Utility to create a ZIP file in memory with a nested ZIP
+  private byte[] createNestedZip(int depth) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-      ZipEntry entry = new ZipEntry("level1.zip");
-      zos.putNextEntry(entry);
-      zos.write(level1ZipBytes);
+      if (depth > 0) {
+        // Recursively add a nested zip entry
+        byte[] nested = createNestedZip(depth - 1);
+        ZipEntry nestedEntry = new ZipEntry("nested" + depth + ".zip");
+        zos.putNextEntry(nestedEntry);
+        zos.write(nested);
+        zos.closeEntry();
+      }
+      // Add a simple file at the deepest level
+      ZipEntry fileEntry = new ZipEntry("README.md");
+      zos.putNextEntry(fileEntry);
+      zos.write("test".getBytes());
       zos.closeEntry();
     }
-    byte[] zipBytes = baos.toByteArray();
-
-    // Write to temp file and check
-    File tempZip = File.createTempFile("testNested-", ".zip");
-    Files.write(tempZip.toPath(), zipBytes);
-
-    try (ZipFile zipFile = new ZipFile(tempZip)) {
-      // Should be true because there are 3 nested zips (MAX_NESTED_ARCHIVE_DEPTH == 3)
-      assertTrue(ZipSafetyScanner.detectNestedZipFiles(zipFile),
-          "Expected detectNestedZipFiles to return true for a zip file with 3 nested archives.");
-    } finally {
-      tempZip.deleteOnExit();
-    }
+    return baos.toByteArray();
   }
 
   private MultipartFile mockZipFile(byte[] zipBytes, boolean empty) throws IOException {
