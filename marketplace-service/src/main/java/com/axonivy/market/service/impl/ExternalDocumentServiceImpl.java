@@ -39,15 +39,12 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,7 +59,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
-  private static final String DOC_CACHE_DIR = "/usr/share/nginx/html/market-cache/";
+  private static final String DOC_CACHE_DIR = "/app/data/market-cache/";
 
   private static final String MS_WIN_SEPARATOR = "\\\\";
   private final ProductRepository productRepo;
@@ -187,7 +184,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return VersionFactory.get(docMetaVersion, version);
   }
 
-
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions) {
     List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
@@ -239,22 +235,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     if (latestSupportedDocVersions.containsKey(version)) {
       String mappedVersion = latestSupportedDocVersions.get(version);
-      String majorVersion = extractMajorVersion(mappedVersion, version);
-      handleSymlinkAndBuild(location, artifact, productId, majorVersion);
+      String symlinkVersion = StringUtils.isNotBlank(mappedVersion) ? mappedVersion : version;
+      handleSymlinkAndBuild(location, artifact, productId, symlinkVersion);
     }
     buildDocumentWithLanguage(location, artifact, productId, version);
-  }
-
-  String extractMajorVersion(String mappedVersion, String version) {
-    if (mappedVersion != null && mappedVersion.contains(".")) {
-      return mappedVersion.substring(0, mappedVersion.indexOf('.'));
-    } else {
-      if (mappedVersion != null) {
-        return mappedVersion;
-      } else {
-        return version.split("\\.")[0];
-      }
-    }
   }
 
   private void handleSymlinkAndBuild(String location, Artifact artifact, String productId, String majorVersion) {
@@ -263,49 +247,51 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
     }
   }
-
-  String setSymlinkPermissions(Path majorVersionPath) {
-    if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
-      Set<PosixFilePermission> permissions = EnumSet.of(
-          PosixFilePermission.OWNER_READ,
-          PosixFilePermission.OWNER_WRITE,
-          PosixFilePermission.GROUP_READ,
-          PosixFilePermission.OTHERS_READ
-      );
-      try {
-        PosixFileAttributeView view = Files.getFileAttributeView(
-            majorVersionPath,
-            PosixFileAttributeView.class,
-            LinkOption.NOFOLLOW_LINKS
-        );
-        if (view != null) {
-          view.setPermissions(permissions);
-        }
-      } catch (UnsupportedOperationException | IOException e) {
-        log.error("Setting symlink permissions is not supported on this operating system.", e);
+  
+  private String createAndSetSymlink(Path linkPath, Path targetPath) {
+    try {
+      if (Files.exists(linkPath) && Files.isSymbolicLink(linkPath)) {
+        Files.delete(linkPath);
       }
+
+      Files.createSymbolicLink(linkPath, targetPath);
+      
+      String os = System.getProperty("os.name").toLowerCase();
+      if (!os.contains("win") && FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+        var view = Files.getFileAttributeView(linkPath, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+        if (view != null) {
+          view.setPermissions(FileDownloadService.DEFAULT_PERMISSIONS);
+        }
+      }
+      return linkPath + File.separator + DirectoryConstants.DOC_DIR;
+    } catch (IOException | UnsupportedOperationException e) {
+      log.error("Error creating/setting permissions for symlink at {}: {}", linkPath, e.getMessage());
+      return EMPTY;
     }
-    return majorVersionPath + File.separator + DirectoryConstants.DOC_DIR;
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
-    try {
-      var specificVersionParent = versionFolder.getParent();
-      var artifactRoot = specificVersionParent.getParent();
-      var majorVersionPath = artifactRoot.resolve(majorVersion);
-
-      if (Files.exists(majorVersionPath) && Files.isSymbolicLink(majorVersionPath)) {
-        Files.delete(majorVersionPath);
-      }
-
-      var relativeTarget = Path.of(specificVersionParent.getFileName().toString());
-      Files.createSymbolicLink(majorVersionPath, relativeTarget);
-
-      return setSymlinkPermissions(majorVersionPath);
-    } catch (IOException e) {
-      log.error("Error creating symlink for major version {}: {}", majorVersion, e.getMessage());
+    if (versionFolder == null || StringUtils.isBlank(majorVersion)) {
+      log.warn("Invalid input parameters for symlink creation. versionFolder: {}, majorVersion: {}", 
+          versionFolder, majorVersion);
       return EMPTY;
     }
+
+    return Optional.of(versionFolder)
+        .map(Path::getParent)
+        .map(parent -> {
+          var artifactRoot = parent.getParent();
+          var fileName = parent.getFileName();
+          if (artifactRoot == null || fileName == null) {
+            log.warn("Invalid path structure: {}", versionFolder);
+            return null;
+          }
+          return createAndSetSymlink(
+              artifactRoot.resolve(majorVersion), 
+              Path.of(fileName.toString())
+          );
+        })
+        .orElse(EMPTY);
   }
 
   private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
@@ -319,6 +305,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     } else {
       ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
       externalDocumentMetaRepo.save(meta);
+      
+      Path docPath = Paths.get(location);
+      Path enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
+      if (!Files.exists(enPath)) {
+        createAndSetSymlink(enPath, Path.of(CommonConstants.DOT_SEPARATOR));
+      }
     }
   }
 
@@ -364,9 +356,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return Arrays.stream(files)
         .map(File::getName)
         .filter(name -> DocumentLanguage.getCodes().contains(name))
+
         .collect(Collectors.toMap(
             DocumentLanguage::fromCode,
             name -> location + CommonConstants.SLASH + name
+
         ));
   }
 
@@ -409,50 +403,45 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (version == null) {
       version = DevelopmentVersion.LATEST.getCode();
     }
-    String targetVersion = resolveTargetVersion(productId, artifactName, version);
+
+    String targetVersion = resolveTargetVersion(productId, artifactName, version);    
     ExternalDocumentMeta documentMeta = resolveDocumentMeta(productId, language, targetVersion);
 
     if (documentMeta == null || !doesDocExistInShareFolder(documentMeta.getStorageDirectory())) {
       return null;
     }
-    return documentMeta.getRelativeLink();
+    
+    String relativeLink = documentMeta.getRelativeLink();
+    return relativeLink;
   }
 
   public String resolveTargetVersion(String productId, String artifactName, String version) {
-    String bestMatchVersion = null;
-    bestMatchVersion = findBestMatchVersion(productId, version);
-    if (bestMatchVersion == null && artifactName != null) {
+        
+    if (artifactName != null) {
       String symlinkDir = getArtifactRootDirectory(productId, artifactName);
-      String realVersion = resolveSymlinkVersion(symlinkDir, version);
-      if (realVersion != null) {
-        bestMatchVersion = realVersion;
-      } else {
-        bestMatchVersion = version;
+      String symlinkVersion = resolveSymlinkVersion(symlinkDir, version);
+      
+      if (StringUtils.isNotBlank(symlinkVersion)) {
+        return symlinkVersion;
       }
     }
-    return checkVersionCompatibility(bestMatchVersion, version);
-  }
-
-  public String checkVersionCompatibility(String bestMatchVersion, String version) {
-    if (bestMatchVersion != null) {
-      return bestMatchVersion;
-    }
-    return version;
+    
+    String bestMatchVersion = findBestMatchVersion(productId, version);
+    String result = StringUtils.defaultIfBlank(bestMatchVersion, version);
+    return result;
   }
 
   public ExternalDocumentMeta resolveDocumentMeta(String productId, DocumentLanguage language, String targetVersion) {
-    List<ExternalDocumentMeta> metas = Collections.emptyList();
-    if (productId != null && language != null) {
-        metas = externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, language, targetVersion);
-    } else if (language == null) {
-        metas = externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, DocumentLanguage.ENGLISH,
-            targetVersion);
+    if (StringUtils.isBlank(productId)) {
+      return null;
     }
-    if (!metas.isEmpty()) {
-        return metas.get(0);
-    }
-    return null;
-}
+
+    var documentLanguage = ObjectUtils.defaultIfNull(language, DocumentLanguage.ENGLISH);
+    return externalDocumentMetaRepo.findByProductIdAndLanguageAndVersion(productId, documentLanguage, targetVersion)
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
 
   public String getArtifactRootDirectory(String productId, String artifactName) {
     return DOC_CACHE_DIR + productId + CommonConstants.SLASH + artifactName;

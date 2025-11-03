@@ -64,7 +64,6 @@ public class ExternalDocumentController {
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
 
     String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
-
     if (redirectUrl != null) {
       var resolvedPath = DocPathUtils.resolveDocPath(redirectUrl);
 

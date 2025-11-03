@@ -2,8 +2,12 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.enums.DocumentLanguage;
 
+import io.micrometer.common.util.StringUtils;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -15,7 +19,7 @@ public final class DocPathUtils {
     private static final int VERSION_INDEX = 1;
     private static final int PRODUCT_ID_INDEX = 3;
     private static final int ARTIFACT_INDEX = 2;
-    private static final int REST_INDEX = 4;
+    private static final int REMAINING_PATH_INDEX = 4;
     private static final String DOC_FACTORY_DOC = "docfactory";
     private static final String DOC_FACTORY_ID = "doc-factory";
 
@@ -81,17 +85,22 @@ public final class DocPathUtils {
         return null;
     }
 
-  public static DocumentLanguage extractLanguage(String path) {
-        var matcher = PATH_PATTERN.matcher(path);
-        if (matcher.matches() && matcher.group(REST_INDEX) != null) {
-            String rest = matcher.group(REST_INDEX); // doc/en/index.html
-                String[] segments = rest.split("/");
-                for (String seg : segments) {
-                    if (DocumentLanguage.getCodes().contains(seg)) {
-                        return DocumentLanguage.fromCode(seg);
-                    }
-                }
+    /**
+     * Extract the language from a path that contains language code.
+     * Example: For path containing "doc/en/index.html", returns DocumentLanguage.ENGLISH
+     *
+     * @param path The path to extract language from
+     * @return The DocumentLanguage if found, null otherwise
+     */
+    public static DocumentLanguage extractLanguage(String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
         }
-        return null;
+        
+        return Arrays.stream(path.split(SLASH))
+                .filter(segment -> DocumentLanguage.getCodes().contains(segment))
+                .map(DocumentLanguage::fromCode)
+                .findFirst()
+                .orElse(null);
     }
 }
