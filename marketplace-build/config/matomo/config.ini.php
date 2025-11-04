@@ -1,5 +1,11 @@
 ; <?php exit; ?> DO NOT REMOVE THIS LINE
 ; file automatically generated or modified by Matomo; you can manually override the default values in global.ini.php by redefining them in this file.
+; # -------------------------------------------------------------------
+; # WARNING: This file for local development only.
+; # Dear Bug Hunter,
+; # This credential is intentionally included for educational purposes only and does not provide access to any production systems. Please do not submit it as part of our bug bounty program.
+; # Please replace xxxx with your actual credentials.
+; # -------------------------------------------------------------------
 [database]
 host = "mariadb"
 username = "xxxx"
