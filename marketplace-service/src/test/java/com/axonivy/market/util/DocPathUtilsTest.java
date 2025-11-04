@@ -41,10 +41,14 @@ class DocPathUtilsTest {
     }
 
     @Test
-    void testUpdateVersionInPathSuccess() {
-        String updated = DocPathUtils.updateVersionInPath(SAMPLE_PATH, "15.0", "13.1.1");
-        assertTrue(updated.contains("/15.0/"), "Updated path should contain new version");
-        assertFalse(updated.contains("/13.1.1/"), "Updated path should not contain old version");
+    void testUpdateVersionAndLanguageInPathSuccess() {
+        String updated = DocPathUtils.updateVersionAndLanguageInPath("portal", "portal-guide", "13.1.1",
+            DocumentLanguage.ENGLISH);
+        assertTrue(updated.contains("/portal/portal-guide/13.1.1/doc/en/index.html"), "Updated path should contain " +
+            "new" +
+            " version");
+        assertFalse(updated.contains("/portal/portal-guide/13/doc/in/index.html"), "Updated path should not " +
+            "contain old version");
     }
 
     @Test

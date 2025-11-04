@@ -13,6 +13,7 @@ import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,8 +21,13 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,12 +37,17 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class ExternalDocumentServiceImplTest extends BaseSetup {
 
+
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + "/index.html";
-
   private static final String PORTAL = "portal";
-
+  private static final String ARTIFACT_NAME = "portal-guide";
   private static final String TEST_VERSION = "12.0";
+  private static final String DEV_VERSION = "dev";
+  private static final String LATEST_VERSION = "latest";
+  private static final String EN_LANG = "en";
+  private static final String DOC_DIR = "doc";
+  private static final String BASE_PATH = "/" + PORTAL + "/" + ARTIFACT_NAME + "/";
 
   private final List<String> majorVersions = List.of("10.0", "12.0", "13.1", "dev");
 
@@ -57,6 +68,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @SpyBean
   ExternalDocumentServiceImpl service;
+
+  @TempDir
+  Path tempDir;
 
   @BeforeEach
   void setup() {
@@ -147,24 +161,21 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testFindBestMatchVersion() {
     String productId = "product1";
-    String version = "3.0.0";
+    String version = "3.0.5";
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
-        ExternalDocumentMeta.builder().version(version).build()));
+        ExternalDocumentMeta.builder().version("3.0.0").build(),
+        ExternalDocumentMeta.builder().version("3.1.0").build()));
+
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-          , version, majorVersions)).thenReturn(version);
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(version)))
+          .thenReturn("3.0.0");
 
       String result = service.findBestMatchVersion(productId, version);
 
-      assertEquals(version, result, "Should return the matched version");
-      mockedVersionFactory.verify(() -> VersionFactory.getBestMatchMajorVersion(Collections.singletonList(version)
-          , version, majorVersions), times(1));
+      assertEquals("3.0.0", result, "Should return the matched version");
     }
-
-    verify(productRepository).findById(productId);
-    verify(externalDocumentMetaRepository).findByProductId(productId);
   }
 
   @Test
@@ -241,119 +252,388 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testResolveBestMatchRedirectUrlScenarios() {
-    String productId = "docfactory";
-    String artifactName = "doc-factory-doc";
-    String version = "13.1.1";
-    String basePath = String.format("/%s/%s/%s/doc", productId, artifactName, version);
+  void testGetRelativePathWithLanguage_ValidLanguageDirectories() throws IOException {
+    Path testDir = tempDir.resolve("test-doc");
+    Files.createDirectories(testDir);
+    Files.createDirectory(testDir.resolve("en"));
+    Files.createDirectory(testDir.resolve("ja"));
+    Files.createDirectory(testDir.resolve("other"));
 
-    String enPath = basePath + "/en/index.html";
-    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
-        .productId("doc-factory")
-        .artifactName(artifactName)
-        .version(version)
-        .language(DocumentLanguage.ENGLISH)
-        .relativeLink(enPath)
-        .storageDirectory("/app/data/market-cache" + basePath)
-        .build();
-    
-    // Setup repository mocks
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(
-        eq("doc-factory"), eq(DocumentLanguage.ENGLISH), eq(version)))
-        .thenReturn(List.of(enMeta));
-    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-    
-    // Test various URL patterns
-    String[] testPaths = {
-        basePath + "/en/index.html",  // Full path
-        basePath + "/en",             // Language only
-        basePath,                     // Base path (should default to English)
-        String.format("/%s/%s/%s", productId, artifactName, version),  // Without /doc
-        String.format("/market-cache/%s/%s/%s/doc", productId, artifactName, version) // With market-cache prefix
-    };
-    
-    for (String testPath : testPaths) {
-        String result = service.resolveBestMatchRedirectUrl(testPath);
-        assertEquals(enPath, result, "All paths should resolve to the English path: " + testPath);
-    }
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
 
-    // Test error cases
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(any(), any(), any()))
-        .thenReturn(Collections.emptyList());
-    String result = service.resolveBestMatchRedirectUrl(basePath);
-    assertNull(result, "Should return null if no document meta found");
-
-    doReturn(false).when(service).doesDocExistInShareFolder(anyString());
-    result = service.resolveBestMatchRedirectUrl(enPath);
-    assertNull(result, "Should return null if document doesn't exist in share folder");
-
-    String pathWithoutVersion = String.format("/market-cache/%s/%s/doc", productId, artifactName);
-    result = service.resolveBestMatchRedirectUrl(pathWithoutVersion);
-    assertNull(result, "Should return null if version is missing");
+    assertEquals(2, result.size(), "Should have 2 languages");
+    assertTrue(result.containsKey(DocumentLanguage.ENGLISH));
+    assertTrue(result.containsKey(DocumentLanguage.JAPANESE));
   }
 
   @Test
-  void testResolveBestMatchRedirectUrlWithDifferentLanguages() {
-    String productId = "docfactory";
-    String artifactName = "doc-factory-doc";
-    String version = "13.1.1";
-    String basePath = String.format("/%s/%s/%s/doc", productId, artifactName, version);
-    
-    String jaPath = basePath + "/ja/index.html";
-    String enPath = basePath + "/en/index.html";
-    
-    // JAPANESE documentation
-    ExternalDocumentMeta jaMeta = ExternalDocumentMeta.builder()
-        .productId("doc-factory")
-        .artifactName(artifactName)
-        .version(version)
-        .language(DocumentLanguage.JAPANESE)
-        .relativeLink(jaPath)
-        .storageDirectory("/app/data/market-cache" + basePath)
+  void testGetRelativePathWithLanguage_NonDirectory() throws IOException {
+    Path testFile = tempDir.resolve("test-file.txt");
+    Files.createFile(testFile);
+
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testFile.toString());
+
+    assertTrue(result.isEmpty(), "Should return empty map for non-directory");
+  }
+
+  @Test
+  void testGetRelativePathWithLanguage_EmptyDirectory() throws IOException {
+    Path testDir = tempDir.resolve("empty-dir");
+    Files.createDirectories(testDir);
+
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
+
+    assertTrue(result.isEmpty(), "Should return empty map for directory without language subdirs");
+  }
+
+  @Test
+  void testDoesDocExistInShareFolder_ExistsWithFiles() throws IOException {
+    Path testDir = tempDir.resolve("doc-folder");
+    Files.createDirectories(testDir);
+    Files.createFile(testDir.resolve("index.html"));
+
+    boolean result = service.doesDocExistInShareFolder(testDir.toString());
+
+    assertTrue(result, "Should return true for existing folder with files");
+  }
+
+  @Test
+  void testDoesDocExistInShareFolder_EmptyFolder() throws IOException {
+    Path testDir = tempDir.resolve("empty-folder");
+    Files.createDirectories(testDir);
+
+    boolean result = service.doesDocExistInShareFolder(testDir.toString());
+
+    assertFalse(result, "Should return false for empty folder");
+  }
+
+  @Test
+  void testDoesDocExistInShareFolder_NonExistent() {
+    String nonExistentPath = tempDir.resolve("nonexistent").toString();
+
+    boolean result = service.doesDocExistInShareFolder(nonExistentPath);
+
+    assertFalse(result, "Should return false for non-existent folder");
+  }
+
+  @Test
+
+  void testResolveBestMatchRedirectUrl_DevVersion() {
+    String path = BASE_PATH + DEV_VERSION + "/" + DOC_DIR + "/" + EN_LANG + "/index.html";
+    String result = service.resolveBestMatchRedirectUrl(path);
+    assertNotNull(result, "Should return valid path for dev version");
+    assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
+  }
+
+  @Test
+
+  void testResolveBestMatchRedirectUrl_LatestVersion() {
+    String path = BASE_PATH + LATEST_VERSION + "/" + DOC_DIR + "/" + EN_LANG + "/index.html";
+    String result = service.resolveBestMatchRedirectUrl(path);
+    assertNotNull(result, "Should return valid path for latest version");
+    assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+  }
+
+  @Test
+
+  void testResolveBestMatchRedirectUrl_MissingProductName() {
+    String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + EN_LANG + "/index.html";
+    String result = service.resolveBestMatchRedirectUrl(path);
+    assertNull(result, "Should return null for missing product name");
+  }
+
+  @Test
+
+  void testResolveBestMatchRedirectUrl_MissingArtifactName() {
+    String path = "/market-cache/" + PORTAL + "//10.0/" + EN_LANG + "/index.html";
+    String result = service.resolveBestMatchRedirectUrl(path);
+    assertNull(result, "Should return null for missing artifact name");
+  }
+
+  @Test
+
+  void testResolveBestMatchRedirectUrl_WithBestMatchVersion() {
+    String path = BASE_PATH + "10.5/" + DOC_DIR + "/" + EN_LANG + "/index.html";
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(new Product()));
+    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
+        .version("10.0")
+        .productId(PORTAL)
+        .artifactName(ARTIFACT_NAME)
         .build();
-        
-    // English documentation (fallback)
-    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
-        .productId("doc-factory")
-        .artifactName(artifactName)
-        .version(version)
+    when(externalDocumentMetaRepository.findByProductId(PORTAL))
+        .thenReturn(List.of(meta));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq("10.5")))
+          .thenReturn(null);
+      mockedVersionFactory.when(() -> VersionFactory.get(any(List.class), eq("10.5")))
+          .thenReturn("10.0");
+
+      String result = service.resolveBestMatchRedirectUrl(path);
+
+      assertNotNull(result, "Should return valid path");
+      assertTrue(result.contains("10.0"), "Should contain matched version");
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersion_Success() throws IOException {
+    if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+      return;
+    }
+
+    Path productDir = tempDir.resolve("portal");
+    Path versionDir = productDir.resolve("1.0.0");
+    Path docDir = versionDir.resolve("doc");
+    Files.createDirectories(docDir);
+
+    String result = service.createSymlinkForMajorVersion(docDir, "1.0");
+
+    assertNotNull(result, "Should return symlink path");
+    assertTrue(result.contains("1.0"), "Should contain major version");
+    assertTrue(Files.exists(Paths.get(result)), "Symlink should exist");
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersion_InvalidInput() {
+    String result = service.createSymlinkForMajorVersion(null, "1.0");
+    assertEquals("", result, "Should return empty string for null path");
+
+    result = service.createSymlinkForMajorVersion(Paths.get("/tmp"), null);
+    assertEquals("", result, "Should return empty string for null version");
+
+    result = service.createSymlinkForMajorVersion(Paths.get("/tmp"), "");
+    assertEquals("", result, "Should return empty string for empty version");
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersion_SymlinkAlreadyExists() throws IOException {
+    if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+      return;
+    }
+
+    Path productDir = tempDir.resolve("portal");
+    Path versionDir = productDir.resolve("1.0.0");
+    Path docDir = versionDir.resolve("doc");
+    Files.createDirectories(docDir);
+
+    String firstResult = service.createSymlinkForMajorVersion(docDir, "1.0");
+    assertNotNull(firstResult, "Should create symlink first time");
+
+    String secondResult = service.createSymlinkForMajorVersion(docDir, "1.0");
+    assertNotNull(secondResult, "Should return existing symlink path");
+    assertEquals(firstResult, secondResult, "Should return same path");
+  }
+
+  @Test
+  void testCreateSymlinkForMajorVersion_InvalidPathStructure() {
+    Path rootPath = Paths.get("/");
+    String result = service.createSymlinkForMajorVersion(rootPath, "1.0");
+    assertEquals("", result, "Should return empty string for root path");
+  }
+
+  @Test
+  void testFindDocVersionsAndLanguages_EmptyDocMetas() {
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
+        .thenReturn(Collections.emptyList());
+
+    String host = "http://localhost:8080";
+    var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
+        DocumentLanguage.ENGLISH.getCode(), host);
+
+    assertNull(result, "Result should be null when no doc metas found");
+  }
+
+  @Test
+  void testFindDocVersionsAndLanguages_DevVersionSorting() {
+    ExternalDocumentMeta devMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version("dev")
         .language(DocumentLanguage.ENGLISH)
-        .relativeLink(enPath)
-        .storageDirectory("/app/data/market-cache" + basePath)
+        .relativeLink("docs/portal/dev/en")
         .build();
-    
-    // Setup repository responses
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(
-        eq("doc-factory"), eq(DocumentLanguage.JAPANESE), eq(version)))
-        .thenReturn(List.of(jaMeta));
-    when(externalDocumentMetaRepository.findByProductIdAndLanguageAndVersion(
-        eq("doc-factory"), eq(DocumentLanguage.ENGLISH), eq(version)))
+
+    ExternalDocumentMeta normalMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version("10.0")
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/10/en")
+        .build();
+
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
+        .thenReturn(List.of(devMeta, normalMeta));
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
+        Collections.singletonList("dev")))
+        .thenReturn(List.of(devMeta));
+
+    String host = "http://localhost:8080";
+    var result = service.findDocVersionsAndLanguages(PORTAL, "dev",
+        DocumentLanguage.ENGLISH.getCode(), host);
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals(2, result.getVersions().size(), "Should have two versions");
+    // Dev version should be sorted last
+    assertEquals("dev", result.getVersions().get(1).getVersion(), "Dev should be last");
+  }
+
+  @Test
+  void testFindDocVersionsAndLanguages_LanguageFallback() {
+    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/12/en")
+        .build();
+
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
         .thenReturn(List.of(enMeta));
-    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
+        Collections.singletonList(TEST_VERSION)))
+        .thenReturn(List.of(enMeta));
 
-    // Test JAPANESE paths
-    String[] deTestPaths = {
-        basePath + "/ja/index.html",
-        basePath + "/ja",
-        String.format("/%s/%s/%s?lang=de", productId, artifactName, version)
-    };
-    
-    for (String testPath : deTestPaths) {
-        String result = service.resolveBestMatchRedirectUrl(testPath);
-        assertEquals(jaPath, result, "All JAPANESE paths should resolve to the JAPANESE path with index.html");
-    }
+    String host = "http://localhost:8080";
+    var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
+        DocumentLanguage.JAPANESE.getCode(), host);
 
-    // Test English paths
-    String[] enTestPaths = {
-        basePath + "/en/index.html",
-        basePath + "/en",
-        basePath, // Default to English when no language specified
-        String.format("/%s/%s/%s", productId, artifactName, version)
-    };
-    
-    for (String testPath : enTestPaths) {
-        String result = service.resolveBestMatchRedirectUrl(testPath);
-        assertEquals(enPath, result, "All English paths should resolve to the English path with index.html");
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getVersions().size(), "Should have one version");
+    assertTrue(result.getVersions().get(0).getUrl().contains("/en"),
+        "Should fallback to English");
+  }
+
+  @Test
+  void testFindExternalDocument_EmptyProduct() {
+    when(productRepository.findById("nonexistent")).thenReturn(Optional.empty());
+
+    var result = service.findExternalDocument("nonexistent", "10.0");
+
+    assertNull(result, "Should return null for non-existent product");
+    verify(externalDocumentMetaRepository, never()).findByProductIdAndLanguage(any(), any());
+  }
+
+  @Test
+  void testFindExternalDocument_NoMatchingVersion() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(new Product()));
+
+    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version("10.0")
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/10/en")
+        .build();
+
+    when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
+        .thenReturn(List.of(meta));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq("99.0"), any()))
+          .thenReturn(null);
+
+      var result = service.findExternalDocument(PORTAL, "99.0");
+
+      assertNull(result, "Should return null when no matching version found");
     }
+  }
+
+  @Test
+  void testResolveBestMatchSymlinkVersion_BlankBestMatchVersion() {
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, "99.0"))
+          .thenReturn("");
+
+      String result = service.resolveBestMatchSymlinkVersion("portal", "portal-guide", "99.0",
+          DocumentLanguage.ENGLISH);
+
+      assertEquals("", result, "Should return empty string when bestMatchVersion is blank");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchSymlinkVersion_NullBestMatchVersion() {
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, "99.0"))
+          .thenReturn(null);
+
+      String result = service.resolveBestMatchSymlinkVersion("portal", "portal-guide", "99.0",
+          DocumentLanguage.ENGLISH);
+
+      assertEquals("", result, "Should return empty string when bestMatchVersion is null");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchSymlinkVersion_Success() {
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, "10.5"))
+          .thenReturn("10.0");
+
+      String result = service.resolveBestMatchSymlinkVersion("portal", "portal-guide", "10.5",
+          DocumentLanguage.ENGLISH);
+
+      assertNotNull(result, "Should return symlink path");
+      assertTrue(result.contains("portal"), "Should contain product name");
+      assertTrue(result.contains("10.0"), "Should contain matched version");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchSymlinkVersion_MissingParameters() {
+    String result = service.resolveBestMatchSymlinkVersion(null, "portal-guide", "10.0",
+        DocumentLanguage.ENGLISH);
+    assertEquals("", result, "Should return empty string for null productName");
+
+    result = service.resolveBestMatchSymlinkVersion("portal", null, "10.0",
+        DocumentLanguage.ENGLISH);
+    assertEquals("", result, "Should return empty string for null artifactName");
+
+    result = service.resolveBestMatchSymlinkVersion("portal", "portal-guide", null,
+        DocumentLanguage.ENGLISH);
+    assertEquals("", result, "Should return empty string for null version");
+
+    result = service.resolveBestMatchSymlinkVersion("", "portal-guide", "10.0",
+        DocumentLanguage.ENGLISH);
+    assertEquals("", result, "Should return empty string for empty productName");
+  }
+
+  @Test
+  void testResolveBestMatchSymlinkVersion_ExceptionHandling() {
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, "10.0"))
+          .thenThrow(new RuntimeException("Version error"));
+
+      String result = service.resolveBestMatchSymlinkVersion("portal", "portal-guide", "10.0",
+          DocumentLanguage.ENGLISH);
+
+      assertEquals("", result, "Should return empty string on exception");
+    }
+  }
+
+  @Test
+  void testFindBestMatchVersion_ProductNotFound() {
+    String productId = "nonexistent";
+    String version = "3.0.0";
+
+    when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+    String result = service.findBestMatchVersion(productId, version);
+
+    assertNull(result, "Should return null when product not found");
+    verify(productRepository).findById(productId);
+    verify(externalDocumentMetaRepository, never()).findByProductId(any());
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrl_InvalidPath() {
+    String path = "/invalid/path";
+    String result = service.resolveBestMatchRedirectUrl(path);
+    assertNull(result, "Should return null for invalid path");
+
+    path = "/market-cache";
+    result = service.resolveBestMatchRedirectUrl(path);
+    assertNull(result, "Should return null for incomplete path");
+
+    path = "/market-cache/portal";
+    result = service.resolveBestMatchRedirectUrl(path);
+    assertNull(result, "Should return null for path without version");
   }
 }

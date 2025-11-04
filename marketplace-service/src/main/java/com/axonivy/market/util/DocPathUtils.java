@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.enums.DocumentLanguage;
 
 import io.micrometer.common.util.StringUtils;
@@ -7,11 +8,9 @@ import io.micrometer.common.util.StringUtils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.DirectoryConstants.DATA_DIR;
 
 public final class DocPathUtils {
     private static final Pattern PATH_PATTERN =
@@ -19,10 +18,8 @@ public final class DocPathUtils {
     private static final int VERSION_INDEX = 1;
     private static final int PRODUCT_ID_INDEX = 3;
     private static final int ARTIFACT_INDEX = 2;
-    private static final int REMAINING_PATH_INDEX = 4;
-    private static final String DOC_FACTORY_DOC = "docfactory";
-    private static final String DOC_FACTORY_ID = "doc-factory";
-
+    public static final String DOC_FACTORY_DOC = "docfactory";
+    public static final String DOC_FACTORY_ID = "doc-factory";
     private DocPathUtils() {
     }
 
@@ -54,9 +51,9 @@ public final class DocPathUtils {
         return null;
     }
 
-    public static String updateVersionInPath(String path, String bestMatch, String version) {
-        // Replace the old version with the best matched version
-        return SLASH + path.replaceFirst(SLASH + Pattern.quote(version) + SLASH, SLASH + bestMatch + SLASH);
+  public static String updateVersionAndLanguageInPath(String productId, String artifactName, String bestMatch,
+        DocumentLanguage language) {
+        return SLASH + DirectoryConstants.CACHE_DIR + SLASH + productId + SLASH + artifactName + SLASH + bestMatch + SLASH + DirectoryConstants.DOC_DIR +SLASH + language.getCode() + SLASH + "index.html";
     }
 
     /**
@@ -65,7 +62,7 @@ public final class DocPathUtils {
      * Returns null if the path is invalid or attempts to traverse outside the base directory.
      */
     public static Path resolveDocPath(String path) {
-        var baseDir = Paths.get(DATA_DIR).toAbsolutePath().normalize();
+        var baseDir = Paths.get(DirectoryConstants.DATA_DIR).toAbsolutePath().normalize();
         var relativePath = Paths.get(path).normalize();
         if (relativePath.isAbsolute()) {
             relativePath = Paths.get(path.substring(1)).normalize();
@@ -96,7 +93,7 @@ public final class DocPathUtils {
         if (StringUtils.isBlank(path)) {
             return null;
         }
-        
+
         return Arrays.stream(path.split(SLASH))
                 .filter(segment -> DocumentLanguage.getCodes().contains(segment))
                 .map(DocumentLanguage::fromCode)
