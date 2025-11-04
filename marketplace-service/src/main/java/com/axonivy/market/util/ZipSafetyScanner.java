@@ -36,9 +36,8 @@ public class ZipSafetyScanner {
     if (zipFile == null || zipFile.isEmpty()) {
       throw new InvalidZipEntryException("Zip file is null or empty");
     }
-    
-    Path tempDir = Files.createTempDirectory("uploaded-Folder");
-    File tempFile = File.createTempFile("tempUpload-", ".zip", tempDir.toFile());
+
+    File tempFile = File.createTempFile("tempUpload-", ".zip");
 
     try (InputStream input = zipFile.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
@@ -84,8 +83,7 @@ public class ZipSafetyScanner {
       log.error("Invalid zip entry detected: {}", ex.getMessage());
       throw ex;
     } finally {
-      Files.deleteIfExists(tempDir);
-      Files.deleteIfExists(tempFile.toPath());
+      tempFile.deleteOnExit();
     }
   }
 
