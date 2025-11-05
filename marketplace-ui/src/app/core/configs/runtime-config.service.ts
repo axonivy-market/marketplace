@@ -23,18 +23,16 @@ export class RuntimeConfigService {
 
   getConfig(): RuntimeConfig {
     if (!this.config) {
+      this.config = environment as RuntimeConfig;
       if (isPlatformBrowser(this.platformId)) {
         this.config = this.transferState.get(RUNTIME_CONFIG_KEY, environment as RuntimeConfig);
-      } else {
-        this.config = environment as RuntimeConfig;
       }
     }
     return this.config;
   }
 
   /**
-   * Set the runtime configuration (server-side only)
-   * Also stores in TransferState for client hydration
+   * Set the runtime configuration (SSR only), then stores in TransferState for client.
    */
   setConfig(config: RuntimeConfig): void {
     this.config = config;

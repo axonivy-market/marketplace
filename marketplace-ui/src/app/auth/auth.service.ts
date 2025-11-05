@@ -50,7 +50,6 @@ export class AuthService {
   ) {
     this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
 
-    // Initialize all config-dependent URLs
     this.BASE_URL = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.API_URL);
     this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_API_URL) + '/user';
 

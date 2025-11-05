@@ -24,10 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
-
-    // Provide Matomo with dynamic configuration factory
-    provideMatomo(
-      () => {
+    provideMatomo(() => {
         const configService = inject(RuntimeConfigService);
         return {
           siteId: configService.get(RUNTIME_CONFIG_KEYS.MATOMO_SITE_ID),
