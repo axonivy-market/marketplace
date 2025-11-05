@@ -39,14 +39,14 @@ public class ZipSafetyScanner {
 
     File tempFile = File.createTempFile("tempUpload-", ".zip");
 
-    try (InputStream input = file.getInputStream();
+    try (var input = file.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
       input.transferTo(output);
     }
 
-    try (ZipFile zipFile = new ZipFile(tempFile)) {
-      int totalSizeArchive = 0;
-      int totalEntryArchive = 0;
+    try (var zipFile = new ZipFile(tempFile)) {
+      var totalSizeArchive = 0;
+      var totalEntryArchive = 0;
       boolean hasReadme = false;
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
       while (entries.hasMoreElements()) {
@@ -57,8 +57,8 @@ public class ZipSafetyScanner {
         totalEntryArchive++;
 
         int nBytes;
-        byte[] buffer = new byte[2048];
-        int totalSizeEntry = 0;
+        var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+        var totalSizeEntry = 0;
 
         while ((nBytes = in.read(buffer)) > 0) {
           out.write(buffer, 0, nBytes);
