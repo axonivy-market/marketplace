@@ -2,8 +2,8 @@ import { makeStateKey, StateKey } from '@angular/core';
 
 export interface RuntimeConfig {
   apiUrl: string;
-  githubClientId: string;
-  githubAuthCallbackPath: string;
+  githubOAuthAppClientId: string;
+  githubOAuthCallback: string;
   githubApiUrl: string;
   dayInMiliseconds: number;
   matomoSiteId: number;
@@ -12,8 +12,8 @@ export interface RuntimeConfig {
 
 export const ENV_VAR_NAMES = {
   API_URL: 'MARKET_API_URL',
-  GITHUB_CLIENT_ID: 'MARKET_GITHUB_CLIENT_ID',
-  GITHUB_AUTH_CALLBACK_PATH: 'MARKET_GITHUB_AUTH_CALLBACK_PATH',
+  GITHUB_OAUTH_APP_CLIENT_ID: 'MARKET_GITHUB_OAUTH_APP_CLIENT_ID',
+  GITHUB_OAUTH_CALLBACK: 'MARKET_GITHUB_OAUTH_CALLBACK',
   GITHUB_API_URL: 'MARKET_GITHUB_API_URL',
   DAY_IN_MILLISECONDS: 'MARKET_DAY_IN_MILLISECONDS',
   MATOMO_SITE_ID: 'MARKET_MATOMO_SITE_ID',
@@ -22,8 +22,8 @@ export const ENV_VAR_NAMES = {
 
 export const RUNTIME_CONFIG_KEYS = {
   API_URL: 'apiUrl',
-  GITHUB_CLIENT_ID: 'githubClientId',
-  GITHUB_AUTH_CALLBACK_PATH: 'githubAuthCallbackPath',
+  GITHUB_OAUTH_APP_CLIENT_ID: 'githubOAuthAppClientId',
+  GITHUB_OAUTH_CALLBACK: 'githubOAuthCallback',
   GITHUB_API_URL: 'githubApiUrl',
   DAY_IN_MILLISECONDS: 'dayInMiliseconds',
   MATOMO_SITE_ID: 'matomoSiteId',

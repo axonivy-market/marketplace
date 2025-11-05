@@ -38,7 +38,7 @@ export class AuthService {
 
   private readonly BASE_URL: string;
   private readonly userApiUrl: string;
-  private readonly githubAuthCallbackUrl: string;
+  private readonly githubOAuthCallbackUrl: string;
 
   constructor(
     private readonly http: HttpClient,
@@ -54,14 +54,14 @@ export class AuthService {
     this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_API_URL) + '/user';
 
     const win = this.windowRef.nativeWindow;
-    const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_AUTH_CALLBACK_PATH);
-    this.githubAuthCallbackUrl = (win?.location?.origin ?? '') + callbackPath;
+    const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_OAUTH_CALLBACK);
+    this.githubOAuthCallbackUrl = (win?.location?.origin ?? '') + callbackPath;
   }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
-    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_CLIENT_ID);
-    const authUrl = `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
+    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_OAUTH_APP_CLIENT_ID);
+    const authUrl = `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${state}`;
 
     const win = this.windowRef.nativeWindow;
     if (win) {

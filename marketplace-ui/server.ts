@@ -15,8 +15,8 @@ import { API_INTERNAL_URL, API_PUBLIC_URL } from './src/app/shared/constants/api
 function loadRuntimeConfigFromEnv(): RuntimeConfig {
   return {
     apiUrl: process.env[ENV_VAR_NAMES.API_URL] || environment.apiUrl,
-    githubClientId: process.env[ENV_VAR_NAMES.GITHUB_CLIENT_ID] || environment.githubClientId,
-    githubAuthCallbackPath: process.env[ENV_VAR_NAMES.GITHUB_AUTH_CALLBACK_PATH] || environment.githubAuthCallbackPath,
+    githubOAuthAppClientId: process.env[ENV_VAR_NAMES.GITHUB_OAUTH_APP_CLIENT_ID] || environment.githubOAuthAppClientId,
+    githubOAuthCallback: process.env[ENV_VAR_NAMES.GITHUB_OAUTH_CALLBACK] || environment.githubOAuthCallback,
     githubApiUrl: process.env[ENV_VAR_NAMES.GITHUB_API_URL] || environment.githubApiUrl,
     dayInMiliseconds: Number.parseInt(process.env[ENV_VAR_NAMES.DAY_IN_MILLISECONDS] || '', 10) || environment.dayInMiliseconds,
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,

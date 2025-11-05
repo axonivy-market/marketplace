@@ -9,8 +9,8 @@ describe('RuntimeConfigService', () => {
 
   const mockConfig: RuntimeConfig = {
     apiUrl: '/test-api',
-    githubClientId: 'test-client-id',
-    githubAuthCallbackPath: '/test/callback',
+    githubOAuthAppClientId: 'test-client-id',
+    githubOAuthCallback: '/test/callback',
     githubApiUrl: 'https://test.api.github.com',
     dayInMiliseconds: 86400000,
     matomoSiteId: 999,
@@ -56,7 +56,7 @@ describe('RuntimeConfigService', () => {
       
       expect(config).toBeDefined();
       expect(config.apiUrl).toBeDefined();
-      expect(config.githubClientId).toBeDefined();
+      expect(config.githubOAuthAppClientId).toBeDefined();
     });
   });
 
@@ -82,7 +82,7 @@ describe('RuntimeConfigService', () => {
       
       expect(service.get('apiUrl')).toBe(mockConfig.apiUrl);
       expect(service.get('matomoSiteId')).toBe(mockConfig.matomoSiteId);
-      expect(service.get('githubClientId')).toBe(mockConfig.githubClientId);
+      expect(service.get('githubOAuthAppClientId')).toBe(mockConfig.githubOAuthAppClientId);
     });
 
     it('should be type-safe', () => {
