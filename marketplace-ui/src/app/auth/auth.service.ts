@@ -1,12 +1,13 @@
 import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
 import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
 import { WindowRef } from '../core/services/browser/window-ref.service';
+import { RuntimeConfigService } from '../core/configs/runtime-config.service';
+import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
 
 export interface TokenPayload {
   username: string;
@@ -32,29 +33,36 @@ export interface GitHubUser {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly BASE_URL = environment.apiUrl;
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
-  private readonly userApiUrl = environment.githubApiUrl + '/user';
   private readonly httpClientWithoutInterceptor: HttpClient;
 
-  private readonly githubAuthCallbackUrl: string; // <-- moved from top to inside constructor
+  private readonly BASE_URL: string;
+  private readonly userApiUrl: string;
+  private readonly githubAuthCallbackUrl: string;
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly cookieService: CookieService,
     private readonly httpBackend: HttpBackend,
-    private readonly windowRef: WindowRef
+    private readonly windowRef: WindowRef,
+    private readonly runtimeConfig: RuntimeConfigService
   ) {
     this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
 
+    // Initialize all config-dependent URLs
+    this.BASE_URL = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.API_URL);
+    this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_API_URL) + '/user';
+
     const win = this.windowRef.nativeWindow;
-    this.githubAuthCallbackUrl = (win?.location?.origin ?? '') + environment.githubAuthCallbackPath;
+    const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_AUTH_CALLBACK_PATH);
+    this.githubAuthCallbackUrl = (win?.location?.origin ?? '') + callbackPath;
   }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
-    const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
+    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_CLIENT_ID);
+    const authUrl = `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
 
     const win = this.windowRef.nativeWindow;
     if (win) {
@@ -159,7 +167,8 @@ export class AuthService {
     const currentDate = new Date();
 
     const diffTime = Math.abs(expDate.getTime() - currentDate.getTime());
-    return Math.ceil(diffTime / environment.dayInMiliseconds);
+    const dayInMilliseconds = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.DAY_IN_MILLISECONDS);
+    return Math.ceil(diffTime / dayInMilliseconds);
   }
 
   getUserInfo(token: string): Observable<GitHubUser> {
