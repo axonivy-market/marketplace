@@ -8,7 +8,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
-import com.axonivy.market.util.DocPathUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -65,10 +63,7 @@ public class ExternalDocumentController {
     String responseURL = ERROR_PAGE_404;
     String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
     if (redirectUrl != null) {
-      var resolvedPath = DocPathUtils.resolveDocPath(redirectUrl);
-      if (resolvedPath != null && Files.exists(resolvedPath)) {
         responseURL = redirectUrl;
-      }
     }
     return response.location(URI.create(responseURL)).build();
   }
