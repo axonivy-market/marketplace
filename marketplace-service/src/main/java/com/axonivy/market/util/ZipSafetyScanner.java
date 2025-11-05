@@ -7,8 +7,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.*;
 
@@ -52,7 +50,6 @@ public class ZipSafetyScanner {
       while (entries.hasMoreElements()) {
         ZipEntry zipEntry = entries.nextElement();
         InputStream in = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-        OutputStream out = new BufferedOutputStream(new FileOutputStream("./output_onlyfortesting.txt"));
         isEntryValid(zipEntry.getName());
         totalEntryArchive++;
 
@@ -61,7 +58,6 @@ public class ZipSafetyScanner {
         var totalSizeEntry = 0;
 
         while ((nBytes = in.read(buffer)) > 0) {
-          out.write(buffer, 0, nBytes);
           totalSizeEntry += nBytes;
           totalSizeArchive += nBytes;
 
@@ -78,7 +74,7 @@ public class ZipSafetyScanner {
         throw new InvalidZipEntryException("Missing required file: README.md");
       }
 
-      if (countNestedZipsRecursive(new FileInputStream(tempFile)) >= MAX_NESTED_ARCHIVE_DEPTH) {
+      if (countNestedZipsRecursive(zipFile) >= MAX_NESTED_ARCHIVE_DEPTH) {
         var errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
             MAX_NESTED_ARCHIVE_DEPTH, file.getOriginalFilename());
         throw new InvalidZipEntryException(errorDetectNestedZip);
@@ -131,29 +127,38 @@ public class ZipSafetyScanner {
     }
   }
 
-  public static int countNestedZipsRecursive(InputStream inputStream) throws IOException {
+  public static int countNestedZipsRecursive(ZipFile zipFile) throws IOException {
     var count = 0;
-    try (var zis = new ZipInputStream(inputStream)) {
-      ZipEntry entry;
-      while ((entry = zis.getNextEntry()) != null) {
-        if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
-          continue;
+    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+    while (entries.hasMoreElements()) {
+      ZipEntry entry = entries.nextElement();
+      // Skip directories and non-archive files
+      if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
+        continue;
+      }
+      count++;
+      // Read the nested zip into memory
+      try (InputStream nestedIn = zipFile.getInputStream(entry)) {
+        byte[] nestedData = nestedIn.readAllBytes();
+        // Create a nested ZipFile in memory
+        try (ZipFile nestedZip = createInMemoryZipFile(nestedData)) {
+          count += countNestedZipsRecursive(nestedZip);
         }
-        count++;
-        count += countInNestedZip(zis);
       }
     }
     return count;
   }
 
-  private static int countInNestedZip(ZipInputStream zis) throws IOException {
-    var byteArrayOutputStream = new ByteArrayOutputStream();
-    var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
-    int len;
-    while ((len = zis.read(buffer)) != -1) {
-      byteArrayOutputStream.write(buffer, 0, len);
+  private static ZipFile createInMemoryZipFile(byte[] data) throws IOException {
+    File tempFile = File.createTempFile("nested-", ".zip");
+    try {
+      try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+        fos.write(data);
+      }
+      return new ZipFile(tempFile);
+    } finally {
+      tempFile.deleteOnExit();
     }
-    return countNestedZipsRecursive(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
   }
 
   private static boolean isTraversal(String name) {
