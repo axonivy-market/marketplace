@@ -9,9 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.zip.*;
 
@@ -20,7 +17,6 @@ import static com.axonivy.market.constants.CommonConstants.ZIP_EXTENSION;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ZipSafetyScanner {
-  private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   // Limit the size for uncompressed bytes
   public static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 50L * 1024 * 1024; // 50MB
   public static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
@@ -42,8 +38,7 @@ public class ZipSafetyScanner {
       throw new InvalidZipEntryException("Zip file is null or empty");
     }
 
-    File tempFile = File.createTempFile("tempUpload-", ZIP_EXTENSION);
-
+    var tempFile = new File("tempUpload" + ZIP_EXTENSION);
     try (var input = file.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
       input.transferTo(output);
@@ -60,16 +55,7 @@ public class ZipSafetyScanner {
         isEntryValid(zipEntry.getName());
         totalEntryArchive++;
 
-        int nBytes;
-        var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
-        var totalSizeEntry = 0;
-
-        while ((nBytes = in.read(buffer)) > 0) {
-          totalSizeEntry += nBytes;
-          totalSizeArchive += nBytes;
-
-          isEntrySizeValid(totalSizeEntry, zipEntry, totalSizeArchive, totalEntryArchive);
-        }
+        totalSizeArchive = checkTotalSizeArchive(totalSizeArchive, totalEntryArchive, zipEntry, in);
 
         // Check if README.md exists (case-insensitive)
         if ("README.md".equalsIgnoreCase(zipEntry.getName())) {
@@ -91,7 +77,7 @@ public class ZipSafetyScanner {
       log.error("Invalid zip entry detected: {}", ex.getMessage());
       throw ex;
     } finally {
-      tempFile.deleteOnExit();
+      Files.deleteIfExists(tempFile.toPath());
     }
   }
 
@@ -143,26 +129,18 @@ public class ZipSafetyScanner {
       while (entries.hasMoreElements()) {
         ZipEntry entry = entries.nextElement();
         InputStream in = new BufferedInputStream(zipFile.getInputStream(entry));
-        int nBytes;
-        var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
-        var totalSizeEntry = 0;
-        while ((nBytes = in.read(buffer)) > 0) {
-          totalSizeEntry += nBytes;
-          totalSizeArchive += nBytes;
-
-          isEntrySizeValid(totalSizeEntry, entry, totalSizeArchive, totalEntryArchive);
-        }
+        totalSizeArchive = checkTotalSizeArchive(totalSizeArchive, totalEntryArchive, entry, in);
         // Skip directories and non-archive files
         if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
           continue;
         }
         count++;
         // Read the nested zip into memory
-        try (InputStream nestedIn = zipFile.getInputStream(entry)) {
+        try (var nestedIn = zipFile.getInputStream(entry)) {
           byte[] nestedData = nestedIn.readAllBytes();
           // Create a nested ZipFile in memory
-          var tempFilePath = createInMemoryZipFile(nestedData);
-          File nestedZip = tempFilePath.toFile();
+          var tempFilePath = createTempZipFile(nestedData);
+          var nestedZip = tempFilePath.toFile();
           count += countNestedZipsRecursive(nestedZip);
           Files.deleteIfExists(tempFilePath);
         }
@@ -171,9 +149,23 @@ public class ZipSafetyScanner {
     }
   }
 
-  private static Path createInMemoryZipFile(byte[] data) throws IOException {
+  private static int checkTotalSizeArchive(int totalSizeArchive, int totalEntryArchive, ZipEntry entry,
+      InputStream in) throws IOException {
+    int nBytes;
+    var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+    var totalSizeEntry = 0;
+    while ((nBytes = in.read(buffer)) > 0) {
+      totalSizeEntry += nBytes;
+      totalSizeArchive += nBytes;
+
+      isEntrySizeValid(totalSizeEntry, entry, totalSizeArchive, totalEntryArchive);
+    }
+    return totalSizeArchive;
+  }
+
+  private static Path createTempZipFile(byte[] data) throws IOException {
     var tempFileName = UUID.randomUUID().toString();
-    File f = new File(tempFileName);
+    var f = new File(tempFileName);
     Files.write(f.toPath(), data);
     return f.toPath();
   }
