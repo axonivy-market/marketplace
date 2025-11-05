@@ -4,16 +4,24 @@ import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.zip.*;
+
+import static com.axonivy.market.constants.CommonConstants.ZIP_EXTENSION;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ZipSafetyScanner {
-
+  private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   // Limit the size for uncompressed bytes
   public static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 50L * 1024 * 1024; // 50MB
   public static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
@@ -154,25 +162,20 @@ public class ZipSafetyScanner {
         try (InputStream nestedIn = zipFile.getInputStream(entry)) {
           byte[] nestedData = nestedIn.readAllBytes();
           // Create a nested ZipFile in memory
-          File nestedZip = createInMemoryZipFile(nestedData);
+          var tempFilePath = createInMemoryZipFile(nestedData);
+          File nestedZip = tempFilePath.toFile();
           count += countNestedZipsRecursive(nestedZip);
-
+          Files.deleteIfExists(tempFilePath);
         }
       }
       return count;
     }
   }
 
-  private static File createInMemoryZipFile(byte[] data) throws IOException {
-    File tempFile = File.createTempFile("nested-", ".zip");
-    try {
-      try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-        fos.write(data);
-      }
-      return tempFile;
-    } finally {
-      tempFile.deleteOnExit();
-    }
+  private static Path createInMemoryZipFile(byte[] data) throws IOException {
+    var tempZipPath = createTempFile();
+    Files.write(tempZipPath, data);
+    return tempZipPath;
   }
 
   private static boolean isTraversal(String name) {
@@ -206,5 +209,18 @@ public class ZipSafetyScanner {
   private static boolean looksLikeNestedArchive(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
     return lower.endsWith(".zip") || lower.endsWith(".jar") || lower.endsWith(".war") || lower.endsWith(".ear");
+  }
+
+  private static Path createTempFile() throws IOException {
+    Path tempZipPath;
+    var tempFileName = UUID.randomUUID().toString();
+    if (SystemUtils.IS_OS_UNIX) {
+      FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PERMS);
+      tempZipPath = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr);
+    } else {
+      var tempFile = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
+      tempZipPath = tempFile.toPath();
+    }
+    return tempZipPath;
   }
 }
