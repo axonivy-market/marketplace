@@ -48,7 +48,8 @@ class DocPathUtilsTest {
 
   @Test
   void testUpdateVersionAndLanguageInPathSuccess() {
-    String updated = DocPathUtils.updateVersionAndLanguageInPath("portal", "portal-guide", "13.1.1",
+    String updated = DocPathUtils.updateVersionAndLanguageInPath("portal",
+        "portal-guide", "13.1.1",
         DocumentLanguage.ENGLISH);
     assertTrue(updated.contains("/portal/portal-guide/13.1.1/doc/en/index.html"),
         "Updated path should contain " + "new" + " version");
