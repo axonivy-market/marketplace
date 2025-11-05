@@ -301,6 +301,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
       Path docPath = Paths.get(location);
       Path enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
+      Path cacheRoot = Paths.get(DirectoryConstants.CACHE_DIR).toAbsolutePath().normalize();
+      Path normalizedEnPath = enPath.toAbsolutePath().normalize();
+      if (!normalizedEnPath.startsWith(cacheRoot)) {
+        log.warn("Attempted to create symlink outside of cache root: {}", normalizedEnPath);
+        return;
+      }
       if (!Files.exists(enPath)) {
         try {
           if (isSymlinkSupported()) {
