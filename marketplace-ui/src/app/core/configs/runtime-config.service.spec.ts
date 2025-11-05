@@ -11,10 +11,10 @@ describe('RuntimeConfigService', () => {
     apiUrl: '/test-api',
     githubClientId: 'test-client-id',
     githubAuthCallbackPath: '/test/callback',
+    githubApiUrl: 'https://test.api.github.com',
     dayInMiliseconds: 86400000,
     matomoSiteId: 999,
-    matomoTrackerUrl: '//test.tracker.com',
-    githubApiUrl: 'https://test.api.github.com'
+    matomoTrackerUrl: '//test.tracker.com'
   };
 
   beforeEach(() => {

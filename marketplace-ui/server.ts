@@ -17,10 +17,10 @@ function loadRuntimeConfigFromEnv(): RuntimeConfig {
     apiUrl: process.env[ENV_VAR_NAMES.API_URL] || environment.apiUrl,
     githubClientId: process.env[ENV_VAR_NAMES.GITHUB_CLIENT_ID] || environment.githubClientId,
     githubAuthCallbackPath: process.env[ENV_VAR_NAMES.GITHUB_AUTH_CALLBACK_PATH] || environment.githubAuthCallbackPath,
+    githubApiUrl: process.env[ENV_VAR_NAMES.GITHUB_API_URL] || environment.githubApiUrl,
     dayInMiliseconds: Number.parseInt(process.env[ENV_VAR_NAMES.DAY_IN_MILLISECONDS] || '', 10) || environment.dayInMiliseconds,
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,
-    matomoTrackerUrl: process.env[ENV_VAR_NAMES.MATOMO_TRACKER_URL] || environment.matomoTrackerUrl,
-    githubApiUrl: process.env[ENV_VAR_NAMES.GITHUB_API_URL] || environment.githubApiUrl
+    matomoTrackerUrl: process.env[ENV_VAR_NAMES.MATOMO_TRACKER_URL] || environment.matomoTrackerUrl
   };
 }
 
