@@ -74,7 +74,7 @@ public class ZipSafetyScanner {
         throw new InvalidZipEntryException("Missing required file: README.md");
       }
 
-      if (countNestedZipsRecursive(zipFile) >= MAX_NESTED_ARCHIVE_DEPTH) {
+      if (countNestedZipsRecursive(tempFile) >= MAX_NESTED_ARCHIVE_DEPTH) {
         var errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
             MAX_NESTED_ARCHIVE_DEPTH, file.getOriginalFilename());
         throw new InvalidZipEntryException(errorDetectNestedZip);
@@ -127,35 +127,37 @@ public class ZipSafetyScanner {
     }
   }
 
-  public static int countNestedZipsRecursive(ZipFile zipFile) throws IOException {
+  public static int countNestedZipsRecursive(File file) throws IOException {
     var count = 0;
-    Enumeration<? extends ZipEntry> entries = zipFile.entries();
-    while (entries.hasMoreElements()) {
-      ZipEntry entry = entries.nextElement();
-      // Skip directories and non-archive files
-      if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
-        continue;
-      }
-      count++;
-      // Read the nested zip into memory
-      try (InputStream nestedIn = zipFile.getInputStream(entry)) {
-        byte[] nestedData = nestedIn.readAllBytes();
-        // Create a nested ZipFile in memory
-        try (ZipFile nestedZip = createInMemoryZipFile(nestedData)) {
+    try (var zipFile = new ZipFile(file)) {
+      Enumeration<? extends ZipEntry> entries = zipFile.entries();
+      while (entries.hasMoreElements()) {
+        ZipEntry entry = entries.nextElement();
+        // Skip directories and non-archive files
+        if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
+          continue;
+        }
+        count++;
+        // Read the nested zip into memory
+        try (InputStream nestedIn = zipFile.getInputStream(entry)) {
+          byte[] nestedData = nestedIn.readAllBytes();
+          // Create a nested ZipFile in memory
+          File nestedZip = createInMemoryZipFile(nestedData);
           count += countNestedZipsRecursive(nestedZip);
+
         }
       }
     }
     return count;
   }
 
-  private static ZipFile createInMemoryZipFile(byte[] data) throws IOException {
+  private static File createInMemoryZipFile(byte[] data) throws IOException {
     File tempFile = File.createTempFile("nested-", ".zip");
     try {
       try (FileOutputStream fos = new FileOutputStream(tempFile)) {
         fos.write(data);
       }
-      return new ZipFile(tempFile);
+      return tempFile;
     } finally {
       tempFile.deleteOnExit();
     }
