@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.zip.*;
 
@@ -171,12 +173,13 @@ public class ZipSafetyScanner {
 
   private static Path createInMemoryZipFile(byte[] data) throws IOException {
     var tempFileName = UUID.randomUUID().toString();
-    File f = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
-    f.setReadable(true);
-    f.setWritable(true);
-    f.setExecutable(true);
-    Files.write(f.toPath(), data);
-    return f.toPath();
+//    FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PERMS);
+//    File f = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr).toFile();
+
+    Path secureTempDir = Files.createTempDirectory("myapp-");
+    Path tempFile = Files.createTempFile(secureTempDir, tempFileName, ".zip");
+    Files.write(tempFile, data);
+    return tempFile;
   }
 
   private static boolean isTraversal(String name) {
