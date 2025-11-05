@@ -173,13 +173,9 @@ public class ZipSafetyScanner {
 
   private static Path createInMemoryZipFile(byte[] data) throws IOException {
     var tempFileName = UUID.randomUUID().toString();
-//    FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PERMS);
-//    File f = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr).toFile();
-
-    Path secureTempDir = Files.createTempDirectory("myapp-");
-    Path tempFile = Files.createTempFile(secureTempDir, tempFileName, ".zip");
-    Files.write(tempFile, data);
-    return tempFile;
+    File f = new File(tempFileName);
+    Files.write(f.toPath(), data);
+    return f.toPath();
   }
 
   private static boolean isTraversal(String name) {
