@@ -62,18 +62,15 @@ public class ExternalDocumentController {
   @GetMapping(DOCUMENT_BEST_MATCH)
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
-
+    String responseURL = ERROR_PAGE_404;
     String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
     if (redirectUrl != null) {
       var resolvedPath = DocPathUtils.resolveDocPath(redirectUrl);
-
-       if (resolvedPath == null || !Files.exists(resolvedPath)) {
-         return response.location(URI.create(ERROR_PAGE_404)).build();
-       }
-
-      return response.location(URI.create(redirectUrl)).build();
+      if (resolvedPath != null && Files.exists(resolvedPath)) {
+        responseURL = redirectUrl;
+      }
     }
-    return response.location(URI.create(ERROR_PAGE_404)).build();
+    return response.location(URI.create(responseURL)).build();
   }
 
   @PutMapping(SYNC)

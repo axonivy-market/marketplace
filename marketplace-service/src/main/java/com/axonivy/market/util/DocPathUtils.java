@@ -62,7 +62,7 @@ public final class DocPathUtils {
      * Returns null if the path is invalid or attempts to traverse outside the base directory.
      */
     public static Path resolveDocPath(String path) {
-        var baseDir = Paths.get(DirectoryConstants.DATA_DIR).toAbsolutePath().normalize();
+        var baseDir = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
         var relativePath = Paths.get(path).normalize();
         if (relativePath.isAbsolute()) {
             relativePath = Paths.get(path.substring(1)).normalize();
@@ -74,6 +74,10 @@ public final class DocPathUtils {
         return resolvedPath;
     }
 
+    /**
+     * Extract the artifact name from a path like:
+     * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> portal-guide
+     */
     public static String extractArtifactName(String path) {
         var matcher = PATH_PATTERN.matcher(path);
         if (matcher.matches()) {

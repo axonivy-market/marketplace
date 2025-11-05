@@ -353,7 +353,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return Arrays.stream(files)
         .map(File::getName)
         .filter(name -> DocumentLanguage.getCodes().contains(name))
-
         .collect(Collectors.toMap(
             DocumentLanguage::fromCode,
             name -> location + CommonConstants.SLASH + name
