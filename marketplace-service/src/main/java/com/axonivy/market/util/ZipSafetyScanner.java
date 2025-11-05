@@ -219,6 +219,9 @@ public class ZipSafetyScanner {
       tempZipPath = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr);
     } else {
       var tempFile = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
+      tempFile.setReadable(true, true);
+      tempFile.setWritable(true, true);
+      tempFile.setExecutable(true, true);
       tempZipPath = tempFile.toPath();
     }
     return tempZipPath;
