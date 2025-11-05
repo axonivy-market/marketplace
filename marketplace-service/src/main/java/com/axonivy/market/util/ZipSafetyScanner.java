@@ -128,11 +128,23 @@ public class ZipSafetyScanner {
   }
 
   public static int countNestedZipsRecursive(File file) throws IOException {
-    var count = 0;
     try (var zipFile = new ZipFile(file)) {
+      var count = 0;
+      var totalSizeArchive = 0;
+      var totalEntryArchive = 0;
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
       while (entries.hasMoreElements()) {
         ZipEntry entry = entries.nextElement();
+        InputStream in = new BufferedInputStream(zipFile.getInputStream(entry));
+        int nBytes;
+        var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+        var totalSizeEntry = 0;
+        while ((nBytes = in.read(buffer)) > 0) {
+          totalSizeEntry += nBytes;
+          totalSizeArchive += nBytes;
+
+          isEntrySizeValid(totalSizeEntry, entry, totalSizeArchive, totalEntryArchive);
+        }
         // Skip directories and non-archive files
         if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
           continue;
@@ -147,8 +159,8 @@ public class ZipSafetyScanner {
 
         }
       }
+      return count;
     }
-    return count;
   }
 
   private static File createInMemoryZipFile(byte[] data) throws IOException {
