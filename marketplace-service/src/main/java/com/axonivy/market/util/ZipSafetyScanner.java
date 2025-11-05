@@ -4,15 +4,12 @@ import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.SystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.zip.*;
 
@@ -43,7 +40,7 @@ public class ZipSafetyScanner {
       throw new InvalidZipEntryException("Zip file is null or empty");
     }
 
-    File tempFile = File.createTempFile("tempUpload-", ".zip");
+    File tempFile = File.createTempFile("tempUpload-", ZIP_EXTENSION);
 
     try (var input = file.getInputStream();
          OutputStream output = new FileOutputStream(tempFile)) {
@@ -173,9 +170,13 @@ public class ZipSafetyScanner {
   }
 
   private static Path createInMemoryZipFile(byte[] data) throws IOException {
-    var tempZipPath = createTempFile();
-    Files.write(tempZipPath, data);
-    return tempZipPath;
+    var tempFileName = UUID.randomUUID().toString();
+    File f = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
+    f.setReadable(true);
+    f.setWritable(true);
+    f.setExecutable(true);
+    Files.write(f.toPath(), data);
+    return f.toPath();
   }
 
   private static boolean isTraversal(String name) {
@@ -209,21 +210,5 @@ public class ZipSafetyScanner {
   private static boolean looksLikeNestedArchive(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
     return lower.endsWith(".zip") || lower.endsWith(".jar") || lower.endsWith(".war") || lower.endsWith(".ear");
-  }
-
-  private static Path createTempFile() throws IOException {
-    Path tempZipPath;
-    var tempFileName = UUID.randomUUID().toString();
-    if (SystemUtils.IS_OS_UNIX) {
-      FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PERMS);
-      tempZipPath = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr);
-    } else {
-      var tempFile = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
-      tempFile.setReadable(true, true);
-      tempFile.setWritable(true, true);
-      tempFile.setExecutable(true, true);
-      tempZipPath = tempFile.toPath();
-    }
-    return tempZipPath;
   }
 }
