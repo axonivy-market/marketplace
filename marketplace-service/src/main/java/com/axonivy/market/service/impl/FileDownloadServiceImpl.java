@@ -227,7 +227,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     var folderPath = Paths.get(location);
     try {
       if (SystemUtils.IS_OS_UNIX) {
-        log.warn("UNIX_OS detected: grant permission for {}", location);
         Files.setPosixFilePermissions(folderPath, PERMS);
       }
     } catch (IOException e) {
