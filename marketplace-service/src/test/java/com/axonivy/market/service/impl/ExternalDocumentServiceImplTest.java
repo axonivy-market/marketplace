@@ -390,7 +390,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     Files.createDirectories(docDir);
 
     String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
-
+    System.out.println("Created symlink: " + result);
     assertNotNull(result, "Should return symlink path");
     assertTrue(result.contains(TEST_VERSION), "Should contain major version");
     assertTrue(Files.exists(Paths.get(result)), "Symlink should exist");
