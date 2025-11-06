@@ -12,6 +12,7 @@ import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -37,6 +38,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@Log4j2
 @TestPropertySource("classpath:application-test.properties")
 @SpringBootTest
 class ExternalDocumentServiceImplTest extends BaseSetup {
@@ -381,16 +383,18 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testCreateSymlinkForMajorVersion_Success() throws IOException {
     if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+      log.fatal("Skipping symlink test on non-POSIX file system");
       return;
     }
-
     Path productDir = tempDir.resolve("portal");
     Path versionDir = productDir.resolve("1.0.0");
     Path docDir = versionDir.resolve("doc");
     Files.createDirectories(docDir);
+    log.fatal("Doc dir: " + docDir.toString());
+    log.fatal("Temp dir: " + tempDir.toString());
 
     String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
-    System.out.println("Created symlink: " + result);
+    log.fatal("aaaa"+result);
     assertNotNull(result, "Should return symlink path");
     assertTrue(result.contains(TEST_VERSION), "Should contain major version");
     assertTrue(Files.exists(Paths.get(result)), "Symlink should exist");
