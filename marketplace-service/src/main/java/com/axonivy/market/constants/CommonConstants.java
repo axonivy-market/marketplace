@@ -35,4 +35,5 @@ public class CommonConstants {
   public static final String ZIP_EXTENSION = ".zip";
   public static final String INDEX_HTML = "index.html";
   public static final String SAFE_PATH_REGEX = "^[a-zA-Z0-9._-]+$";
+  public static final String[] FORBIDDEN_PATH_PARTS = { "..", CommonConstants.SLASH, "\\", java.io.File.separator };
 }
