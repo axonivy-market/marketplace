@@ -255,7 +255,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (versionFolder == null || StringUtils.isBlank(majorVersion)) {
       return EMPTY;
     }
-    log.fatal("POSIX file system is supported");
 
     return Optional.of(versionFolder)
       .map(Path::getParent)
