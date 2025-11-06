@@ -46,7 +46,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + "/index.html";
+
   private static final String PORTAL = "portal";
+
   private static final String ARTIFACT_NAME = "portal-guide";
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
