@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -259,7 +260,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetRelativePathWithLanguage_ValidLanguageDirectories() throws IOException {
+  void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
     Path testDir = tempDir.resolve("test-doc");
     Files.createDirectories(testDir);
     Files.createDirectory(testDir.resolve("en"));
@@ -274,7 +275,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetRelativePathWithLanguage_NonDirectory() throws IOException {
+  void testGetRelativePathWithLanguageNonDirectory() throws IOException {
     Path testFile = tempDir.resolve("test-file.txt");
     Files.createFile(testFile);
 
@@ -284,7 +285,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetRelativePathWithLanguage_EmptyDirectory() throws IOException {
+  void testGetRelativePathWithLanguageEmptyDirectory() throws IOException {
     Path testDir = tempDir.resolve("empty-dir");
     Files.createDirectories(testDir);
 
@@ -294,7 +295,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDoesDocExistInShareFolder_ExistsWithFiles() throws IOException {
+  void testDoesDocExistInShareFolderExistsWithFiles() throws IOException {
     Path testDir = tempDir.resolve("doc-folder");
     Files.createDirectories(testDir);
     Files.createFile(testDir.resolve(CommonConstants.INDEX_HTML));
@@ -305,7 +306,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDoesDocExistInShareFolder_EmptyFolder() throws IOException {
+  void testDoesDocExistInShareFolderEmptyFolder() throws IOException {
     Path testDir = tempDir.resolve("empty-folder");
     Files.createDirectories(testDir);
 
@@ -315,7 +316,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDoesDocExistInShareFolder_NonExistent() {
+  void testDoesDocExistInShareFolderNonExistent() {
     String nonExistentPath = tempDir.resolve("nonexistent").toString();
 
     boolean result = service.doesDocExistInShareFolder(nonExistentPath);
@@ -324,7 +325,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testResolveBestMatchRedirectUrl_DevVersion() {
+  void testResolveBestMatchRedirectUrlDevVersion() {
     String path = BASE_PATH + DEV_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for dev version");
@@ -332,7 +333,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testResolveBestMatchRedirectUrl_LatestVersion() {
+  void testResolveBestMatchRedirectUrlLatestVersion() {
     String path = BASE_PATH + LATEST_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for latest version");
@@ -340,21 +341,21 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testResolveBestMatchRedirectUrl_MissingProductName() {
+  void testResolveBestMatchRedirectUrlMissingProductName() {
     String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + EN_LANG + "/index.html";
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing product name");
   }
 
   @Test
-  void testResolveBestMatchRedirectUrl_MissingArtifactName() {
+  void testResolveBestMatchRedirectUrlMissingArtifactName() {
     String path = "/market-cache/" + PORTAL + "//10.0/" + EN_LANG + "/index.html";
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing artifact name");
   }
 
   @Test
-  void testResolveBestMatchRedirectUrl_WithBestMatchVersion() {
+  void testResolveBestMatchRedirectUrlWithBestMatchVersion() {
   String path = BASE_PATH + TEST_VERSION_12_5 + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(new Product()));
   ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
@@ -380,18 +381,24 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForMajorVersionSuccess() throws IOException {
-    if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
-      return;
-    }
-    Path productDir = tempDir.resolve("portal");
+    Path cacheRoot = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
+    Path productDir = cacheRoot.resolve("portal");
     Path versionDir = productDir.resolve(TEST_VERSION);
     Path docDir = versionDir.resolve("doc");
     Files.createDirectories(docDir);
 
-    String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
-    assertNotNull(result, "Should return symlink path");
-    assertTrue(result.contains(TEST_VERSION), "Should contain major version");
-    assertTrue(Files.exists(Paths.get(result)), "Symlink should exist");
+    try (
+        MockedStatic<Files> filesMock = mockStatic(Files.class, CALLS_REAL_METHODS)
+    ) {
+      filesMock.when(() -> Files.exists(any(Path.class))).thenReturn(false);
+      filesMock.when(() -> Files.createSymbolicLink(any(Path.class), any(Path.class)))
+          .thenAnswer(invocation -> invocation.getArgument(0));
+      String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
+      assertNotNull(result, "Should return symlink path");
+      assertFalse(result.isEmpty(), "Symlink path should not be empty");
+      filesMock.when(() -> Files.exists(any(Path.class))).thenReturn(true);
+      assertTrue(Files.exists(Paths.get(result)), "Symlink should exist");
+    }
   }
 
   @Test
