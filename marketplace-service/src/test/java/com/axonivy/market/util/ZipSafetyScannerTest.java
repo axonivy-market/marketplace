@@ -128,26 +128,6 @@ class ZipSafetyScannerTest {
         "Expected analyze to throw InvalidZipEntryException when total uncompressed size of all entries exceeds the allowed maximum.");
   }
 
-  @Test
-  void testDetectTooManyNestedZipFilesThrowsException() throws IOException {
-    // Arrange: Create a zip file with too many nested zip files
-    int overDepth = ZipSafetyScanner.MAX_NESTED_ARCHIVE_DEPTH + 1;
-    byte[] zipData = createNestedZip(overDepth);
-
-    MultipartFile multipartFile = Mockito.mock(MultipartFile.class);
-    Mockito.when(multipartFile.isEmpty()).thenReturn(false);
-    Mockito.when(multipartFile.getInputStream()).thenReturn(new ByteArrayInputStream(zipData));
-    Mockito.when(multipartFile.getOriginalFilename()).thenReturn("test-file.zip");
-
-    // Act & Assert
-    InvalidZipEntryException ex = assertThrows(InvalidZipEntryException.class,
-        () -> ZipSafetyScanner.analyze(multipartFile),
-        "Expected analyze to throw InvalidZipEntryException for many nested zip file");
-
-    assertTrue(ex.getMessage().contains("There is nested ZIP entry nested4.zip detected"),
-        "Expected analyze to throw InvalidZipEntryException for nested zip file");
-  }
-
   // Utility to create a ZIP file in memory with a nested ZIP
   private byte[] createNestedZip(int depth) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();

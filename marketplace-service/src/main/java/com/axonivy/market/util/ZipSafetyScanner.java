@@ -21,7 +21,6 @@ public class ZipSafetyScanner {
   public static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
   public static final int MAX_ENTRIES = 100;
   public static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
-  public static final int MAX_NESTED_ARCHIVE_DEPTH = 3;
   private static final Set<String> WHITELIST_EXTENSIONS = Set.of(".xml", ".svg", "png", "jpg",
       "jpeg", ".gif", ".json", ".md", ".zip");
 
@@ -115,7 +114,7 @@ public class ZipSafetyScanner {
       throw new InvalidZipEntryException("Entry file " + name + " is hidden");
     }
 
-    if (!isDirectory && hasDangerousExtension(name)) {
+    if (!isDirectory && isNotInWhiteListExtensions(name)) {
       throw new InvalidZipEntryException("Entry name " + name + " is dangerous extension");
     }
   }
@@ -138,7 +137,7 @@ public class ZipSafetyScanner {
     return simple.startsWith(".") && simple.length() > 1;
   }
 
-  private static boolean hasDangerousExtension(String name) {
+  private static boolean isNotInWhiteListExtensions(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
     return WHITELIST_EXTENSIONS.stream().noneMatch(lower::endsWith);
   }
