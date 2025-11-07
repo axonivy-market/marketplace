@@ -50,7 +50,14 @@ public class ZipSafetyScanner {
         isEntryValid(zipEntry.isDirectory(), zipEntry.getName());
         totalEntryArchive++;
 
-        totalSizeArchive = checkTotalSizeArchive(totalSizeArchive, totalEntryArchive, zipEntry, in);
+        int nBytes;
+        var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
+        var totalSizeEntry = 0;
+        while ((nBytes = in.read(buffer)) > 0) {
+          totalSizeEntry += nBytes;
+          totalSizeArchive += nBytes;
+          isEntrySizeValid(totalSizeEntry, zipEntry, totalSizeArchive, totalEntryArchive);
+        }
 
         // Check if README.md exists (case-insensitive)
         if ("README.md".equalsIgnoreCase(zipEntry.getName())) {
@@ -111,20 +118,6 @@ public class ZipSafetyScanner {
     if (!isDirectory && hasDangerousExtension(name)) {
       throw new InvalidZipEntryException("Entry name " + name + " is dangerous extension");
     }
-  }
-
-  private static int checkTotalSizeArchive(int totalSizeArchive, int totalEntryArchive, ZipEntry entry,
-      InputStream in) throws IOException {
-    int nBytes;
-    var buffer = new byte[FileUtils.DEFAULT_BUFFER_SIZE];
-    var totalSizeEntry = 0;
-    while ((nBytes = in.read(buffer)) > 0) {
-      totalSizeEntry += nBytes;
-      totalSizeArchive += nBytes;
-
-      isEntrySizeValid(totalSizeEntry, entry, totalSizeArchive, totalEntryArchive);
-    }
-    return totalSizeArchive;
   }
 
   private static boolean isTraversal(String name) {
