@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.*;
 
@@ -23,12 +22,8 @@ public class ZipSafetyScanner {
   public static final int MAX_ENTRIES = 100;
   public static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
   public static final int MAX_NESTED_ARCHIVE_DEPTH = 3;
-  private static final Set<String> DANGEROUS_EXTENSIONS = Set.of(
-      ".exe", ".dll", ".bat", ".cmd", ".sh", ".ps1", ".vbs", ".js", ".jar",
-      ".php", ".phps", ".phtml", ".py", ".rb", ".pl", ".class", ".com",
-      ".msi", ".cpl", ".cab", ".msp", ".msu", ".scr", ".sys", ".drv",
-      ".appx", ".xap", ".dmg", ".pkg", ".rpm", ".deb", ".bash"
-  );
+  private static final Set<String> WHITELIST_EXTENSIONS = Set.of(".xml", ".svg", "png", "jpg",
+      "jpeg", ".gif", ".json", ".md", ".zip");
 
   /**
    * Analyze a ZIP file without unzipping
@@ -52,7 +47,7 @@ public class ZipSafetyScanner {
       while (entries.hasMoreElements()) {
         ZipEntry zipEntry = entries.nextElement();
         InputStream in = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-        isEntryValid(zipEntry.getName());
+        isEntryValid(zipEntry.isDirectory(), zipEntry.getName());
         totalEntryArchive++;
 
         totalSizeArchive = checkTotalSizeArchive(totalSizeArchive, totalEntryArchive, zipEntry, in);
@@ -61,16 +56,14 @@ public class ZipSafetyScanner {
         if ("README.md".equalsIgnoreCase(zipEntry.getName())) {
           hasReadme = true;
         }
+
+        if (!zipEntry.isDirectory() && looksLikeNestedArchive(zipEntry.getName())) {
+          throw new InvalidZipEntryException("There is nested ZIP entry " + zipEntry.getName() + " detected");
+        }
       }
 
       if (!hasReadme) {
         throw new InvalidZipEntryException("Missing required file: README.md");
-      }
-
-      if (countNestedZipsRecursive(tempFile) >= MAX_NESTED_ARCHIVE_DEPTH) {
-        var errorDetectNestedZip = String.format("Too many nested ZIP entries detected (>%d) in %s",
-            MAX_NESTED_ARCHIVE_DEPTH, file.getOriginalFilename());
-        throw new InvalidZipEntryException(errorDetectNestedZip);
       }
 
     } catch (InvalidZipEntryException ex) {
@@ -99,7 +92,7 @@ public class ZipSafetyScanner {
     }
   }
 
-  private static void isEntryValid(String name) {
+  private static void isEntryValid(boolean isDirectory , String name) {
     // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
     if (isTraversal(name)) {
       throw new InvalidZipEntryException("Entry " + name + " has traversal");
@@ -115,37 +108,8 @@ public class ZipSafetyScanner {
       throw new InvalidZipEntryException("Entry file " + name + " is hidden");
     }
 
-    if (hasDangerousExtension(name)) {
+    if (!isDirectory && hasDangerousExtension(name)) {
       throw new InvalidZipEntryException("Entry name " + name + " is dangerous extension");
-    }
-  }
-
-  public static int countNestedZipsRecursive(File file) throws IOException {
-    try (var zipFile = new ZipFile(file)) {
-      var count = 0;
-      var totalSizeArchive = 0;
-      var totalEntryArchive = 0;
-      Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      while (entries.hasMoreElements()) {
-        ZipEntry entry = entries.nextElement();
-        InputStream in = new BufferedInputStream(zipFile.getInputStream(entry));
-        totalSizeArchive = checkTotalSizeArchive(totalSizeArchive, totalEntryArchive, entry, in);
-        // Skip directories and non-archive files
-        if (entry.isDirectory() || !looksLikeNestedArchive(entry.getName())) {
-          continue;
-        }
-        count++;
-        // Read the nested zip into memory
-        try (var nestedIn = zipFile.getInputStream(entry)) {
-          byte[] nestedData = nestedIn.readAllBytes();
-          // Create a nested ZipFile in memory
-          var tempFilePath = createTempZipFile(nestedData);
-          var nestedZip = tempFilePath.toFile();
-          count += countNestedZipsRecursive(nestedZip);
-          Files.deleteIfExists(tempFilePath);
-        }
-      }
-      return count;
     }
   }
 
@@ -161,13 +125,6 @@ public class ZipSafetyScanner {
       isEntrySizeValid(totalSizeEntry, entry, totalSizeArchive, totalEntryArchive);
     }
     return totalSizeArchive;
-  }
-
-  private static Path createTempZipFile(byte[] data) throws IOException {
-    var tempFileName = UUID.randomUUID().toString();
-    var f = new File(tempFileName);
-    Files.write(f.toPath(), data);
-    return f.toPath();
   }
 
   private static boolean isTraversal(String name) {
@@ -190,12 +147,7 @@ public class ZipSafetyScanner {
 
   private static boolean hasDangerousExtension(String name) {
     String lower = name.toLowerCase(Locale.ROOT);
-    for (String ext : ZipSafetyScanner.DANGEROUS_EXTENSIONS) {
-      if (lower.endsWith(ext)) {
-        return true;
-      }
-    }
-    return false;
+    return WHITELIST_EXTENSIONS.stream().noneMatch(lower::endsWith);
   }
 
   private static boolean looksLikeNestedArchive(String name) {

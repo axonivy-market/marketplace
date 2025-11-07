@@ -35,7 +35,7 @@ class ZipSafetyScannerTest {
       zos.write("Doc".getBytes());
       zos.closeEntry();
       // Add another allowed file
-      zos.putNextEntry(new ZipEntry("valid.txt"));
+      zos.putNextEntry(new ZipEntry("product.json"));
       zos.write("Hello World".getBytes());
       zos.closeEntry();
     }
@@ -144,8 +144,8 @@ class ZipSafetyScannerTest {
         () -> ZipSafetyScanner.analyze(multipartFile),
         "Expected analyze to throw InvalidZipEntryException for many nested zip file");
 
-    assertTrue(ex.getMessage().contains("Too many nested ZIP entries detected (>3) in test-file.zip"),
-        "Expected analyze to throw InvalidZipEntryException for many nested zip file");
+    assertTrue(ex.getMessage().contains("There is nested ZIP entry nested4.zip detected"),
+        "Expected analyze to throw InvalidZipEntryException for nested zip file");
   }
 
   // Utility to create a ZIP file in memory with a nested ZIP
