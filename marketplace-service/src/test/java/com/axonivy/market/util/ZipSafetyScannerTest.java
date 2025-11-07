@@ -128,27 +128,6 @@ class ZipSafetyScannerTest {
         "Expected analyze to throw InvalidZipEntryException when total uncompressed size of all entries exceeds the allowed maximum.");
   }
 
-  // Utility to create a ZIP file in memory with a nested ZIP
-  private byte[] createNestedZip(int depth) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-      if (depth > 0) {
-        // Recursively add a nested zip entry
-        byte[] nested = createNestedZip(depth - 1);
-        ZipEntry nestedEntry = new ZipEntry("nested" + depth + ".zip");
-        zos.putNextEntry(nestedEntry);
-        zos.write(nested);
-        zos.closeEntry();
-      }
-      // Add a simple file at the deepest level
-      ZipEntry fileEntry = new ZipEntry("README.md");
-      zos.putNextEntry(fileEntry);
-      zos.write("test".getBytes());
-      zos.closeEntry();
-    }
-    return baos.toByteArray();
-  }
-
   private MultipartFile mockZipFile(byte[] zipBytes, boolean empty) throws IOException {
     MultipartFile file = Mockito.mock(MultipartFile.class);
     Mockito.when(file.isEmpty()).thenReturn(empty);
