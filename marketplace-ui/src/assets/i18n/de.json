@@ -11,7 +11,7 @@
       "title": "Vorschau auf die Produktfreigabe",
       "description": "Vorschau Deiner Produktbeschreibung",
       "dragDropText": "Drag & drop oder Auswählen",
-      "onlyZip": "Nur .zip-Dateien bis {{max}}MB werden unterstützt",
+      "onlyZip": "Nur (product-naam)-product.zip-Dateien bis {{max}}MB werden unterstützt. Bitte laden Sie eine gültige Zip-Datei mit einer README.md-Datei hoch.",
       "buttonLabel": "Hochladen",
       "buttonHint": "Bitte laden eine gültige Zip-Datei mit einer README.md-Datei hoch.",
       "fileSizeUnit": "MB",
