@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
@@ -12,6 +13,7 @@ import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,7 +24,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.DirectoryConstants.DATA_CACHE_DIR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,7 +46,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String NON_EXISTENT_PRODUCT = "nonexistent";
 
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
-  private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + "/index.html";
+  private static final String RELATIVE_WORKING_LOCATION_EN = "/market-cache/portal/10.0.0/doc/en";
+  private static final String INDEX_FILE = "/index.html";
+  private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + INDEX_FILE;
+  private static final String RELATIVE_DOC_LOCATION_EN = RELATIVE_WORKING_LOCATION_EN + INDEX_FILE;
 
   private static final String PORTAL = "portal";
 
@@ -57,8 +60,13 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String EN_LANG = "en";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH = CommonConstants.SLASH + PORTAL + CommonConstants.SLASH + ARTIFACT_NAME + CommonConstants.SLASH;
+  private static final String TEST_PATH_VERSION_12_5 = BASE_PATH + TEST_VERSION_12_5 + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
+  
+  private static final Path PATH_TMP = Paths.get("/tmp");
+  private static final Path CACHE_ROOT_PATH = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
+  private static final Product EMPTY_PRODUCT = new Product();
 
-  private final List<String> majorVersions = List.of(TEST_VERSION, TEST_VERSION, "13.1", DEV_VERSION);
+  private final List<String> majorVersions = List.of(TEST_VERSION_12_5, TEST_VERSION, "13.1", DEV_VERSION);
 
   @MockBean
   ProductRepository productRepository;
@@ -90,7 +98,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testSyncDocumentForNonProduct() {
     when(productRepository.findProductByIdAndRelatedData(null)).thenReturn(null);
     service.syncDocumentForProduct(null, false, null);
-    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(productRepository, times(0)).findProductByIdAndRelatedData(any());
   }
 
   @Test
@@ -105,12 +113,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncDocumentForProduct() throws IOException {
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().orElse(null));
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
-        mockPortalProduct().get().getArtifacts());
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+        mockPortalProduct().orElse(new Product()).getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_DOC_LOCATION);
@@ -120,8 +128,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
 
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
-        mockPortalProduct().get().getArtifacts());
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+        mockPortalProduct().orElse(new Product()).getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any())).thenReturn(
         List.of(createExternalDocumentMock()));
     service.syncDocumentForProduct(PORTAL, false, null);
@@ -151,7 +159,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
     service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
-    verify(externalDocumentMetaRepository,atLeastOnce()).save(any());
+    verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
   }
 
   @Test
@@ -160,49 +168,50 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     verify(productRepository, times(1)).findAllProductsHaveDocument();
     assertTrue(result.isEmpty(), "Expected the result to be empty when repository returns nothing");
 
-    when(productRepository.findAllProductsHaveDocument()).thenReturn(List.of(mockPortalProduct().get()));
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(List.of(mockPortalProduct().orElse(new Product())));
     result = service.findAllProductsHaveDocument();
     assertNotNull(result, "Expected the result not to be null when repository returns a product");
+    assertFalse(result.isEmpty(), "Expected the result to contain products");
     assertEquals(PORTAL, result.get(0).getId(), "Expected the first product ID to be PORTAL");
   }
 
   @Test
   void testFindBestMatchVersion() {
     String productId = "product1";
-    String version = "3.0.5";
+    String version = TEST_VERSION_12_5;
 
-    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(productRepository.findById(productId)).thenReturn(Optional.of(EMPTY_PRODUCT));
     when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
-        ExternalDocumentMeta.builder().version("3.0.0").build(),
-        ExternalDocumentMeta.builder().version("3.1.0").build()));
+        ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
+        ExternalDocumentMeta.builder().version("12.4.0").build()));
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
       mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(version)))
-          .thenReturn("3.0.0");
+          .thenReturn(TEST_VERSION);
 
       String result = service.findBestMatchVersion(productId, version);
 
-      assertEquals("3.0.0", result, "Should return the matched version");
+      assertEquals(TEST_VERSION, result, "Should return the matched version");
     }
   }
 
   @Test
   void testFindExternalDocumentURI() {
-  var mockVersion = TEST_VERSION;
+    var mockVersion = TEST_VERSION;
     var mockProductDocumentMeta = new ExternalDocumentMeta();
-  when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
+    when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
     var result = service.findExternalDocument(PORTAL, mockVersion);
     verify(productRepository, times(1)).findById(any());
     assertNull(result, "Expected result to be null when no matching document meta exists");
 
-  mockProductDocumentMeta.setProductId(PORTAL);
-  mockProductDocumentMeta.setVersion(mockVersion);
-  mockProductDocumentMeta.setRelativeLink(RELATIVE_DOC_LOCATION);
+    mockProductDocumentMeta.setProductId(PORTAL);
+    mockProductDocumentMeta.setVersion(mockVersion);
+    mockProductDocumentMeta.setRelativeLink(RELATIVE_DOC_LOCATION);
     when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
         .thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocument(PORTAL, mockVersion);
     assertNotNull(result, "Expected result not to be null when matching document meta exists");
-    assertTrue(result.getRelativeLink().contains("/index.html"),
+    assertTrue(result.getRelativeLink().contains(INDEX_FILE),
         "Expected the relative link to contain '/index.html'");
   }
 
@@ -234,7 +243,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         .productId(PORTAL)
         .version(TEST_VERSION)
         .language(DocumentLanguage.ENGLISH)
-        .relativeLink("docs/portal/12/en")
+        .relativeLink(RELATIVE_WORKING_LOCATION_EN)
         .build();
 
     ExternalDocumentMeta jaMeta = ExternalDocumentMeta.builder()
@@ -263,7 +272,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
     Path testDir = tempDir.resolve("test-doc");
     Files.createDirectories(testDir);
-    Files.createDirectory(testDir.resolve("en"));
+    Files.createDirectory(testDir.resolve(EN_LANG));
     Files.createDirectory(testDir.resolve("ja"));
     Files.createDirectory(testDir.resolve("other"));
 
@@ -326,7 +335,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlDevVersion() {
-    String path = BASE_PATH + DEV_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
+    String path =
+        BASE_PATH + DEV_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for dev version");
     assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
@@ -334,7 +344,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    String path = BASE_PATH + LATEST_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
+    String path =
+        BASE_PATH + LATEST_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for latest version");
     assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
@@ -342,49 +353,48 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlMissingProductName() {
-    String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + EN_LANG + "/index.html";
+    String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + EN_LANG + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing product name");
   }
 
   @Test
   void testResolveBestMatchRedirectUrlMissingArtifactName() {
-    String path = "/market-cache/" + PORTAL + "//10.0/" + EN_LANG + "/index.html";
+    String path = "/market-cache/" + PORTAL + "//10.0/" + EN_LANG + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing artifact name");
   }
 
   @Test
   void testResolveBestMatchRedirectUrlWithBestMatchVersion() {
-  String path = BASE_PATH + TEST_VERSION_12_5 + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + "/index.html";
-    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(new Product()));
-  ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
-    .version(TEST_VERSION)
-    .productId(PORTAL)
-    .artifactName(ARTIFACT_NAME)
-    .build();
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
+        .version(TEST_VERSION)
+        .productId(PORTAL)
+        .artifactName(ARTIFACT_NAME)
+        .build();
     when(externalDocumentMetaRepository.findByProductId(PORTAL))
         .thenReturn(List.of(meta));
 
-  try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-    mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
-      .thenReturn(null);
-    mockedVersionFactory.when(() -> VersionFactory.get(any(List.class), eq(TEST_VERSION_12_5)))
-      .thenReturn(TEST_VERSION);
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+          .thenReturn(null);
+      mockedVersionFactory.when(() -> VersionFactory.get(anyList(), eq(TEST_VERSION_12_5)))
+          .thenReturn(TEST_VERSION);
 
-      String result = service.resolveBestMatchRedirectUrl(path);
+      doReturn(true).when(service).symlinkIsExisting(any(String.class));
+      String result = service.resolveBestMatchRedirectUrl(TEST_PATH_VERSION_12_5);
 
       assertNotNull(result, "Should return valid path");
-  assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
+      assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
     }
   }
 
   @Test
   void testCreateSymlinkForMajorVersionSuccess() throws IOException {
-    Path cacheRoot = Paths.get(DATA_CACHE_DIR).toAbsolutePath().normalize();
-    Path productDir = cacheRoot.resolve("portal");
+    Path productDir = CACHE_ROOT_PATH.resolve(PORTAL);
     Path versionDir = productDir.resolve(TEST_VERSION);
-    Path docDir = versionDir.resolve("doc");
+    Path docDir = versionDir.resolve(DOC_DIR);
     Files.createDirectories(docDir);
 
     try (
@@ -404,24 +414,20 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testCreateSymlinkForMajorVersionInvalidInput() {
     String result = service.createSymlinkForMajorVersion(null, TEST_VERSION);
-    assertEquals("", result, "Should return empty string for null path");
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null path");
 
-    result = service.createSymlinkForMajorVersion(Paths.get("/tmp"), null);
+    result = service.createSymlinkForMajorVersion(PATH_TMP, null);
     assertEquals("", result, "Should return empty string for null version");
 
-    result = service.createSymlinkForMajorVersion(Paths.get("/tmp"), "");
-    assertEquals("", result, "Should return empty string for empty version");
+    result = service.createSymlinkForMajorVersion(PATH_TMP, "");
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for empty version");
   }
 
   @Test
   void testCreateSymlinkForMajorVersionSymlinkAlreadyExists() throws IOException {
-    if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
-      return;
-    }
-
-    Path productDir = tempDir.resolve("portal");
+    Path productDir = tempDir.resolve(PORTAL);
     Path versionDir = productDir.resolve("1.0.0");
-    Path docDir = versionDir.resolve("doc");
+    Path docDir = versionDir.resolve(DOC_DIR);
     Files.createDirectories(docDir);
 
     String firstResult = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
@@ -436,7 +442,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testCreateSymlinkForMajorVersionInvalidPathStructure() {
     Path rootPath = Paths.get(CommonConstants.SLASH);
     String result = service.createSymlinkForMajorVersion(rootPath, TEST_VERSION);
-    assertEquals("", result, "Should return empty string for root path");
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for root path");
   }
 
   @Test
@@ -453,44 +459,44 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testFindDocVersionsAndLanguagesDevVersionSorting() {
-  ExternalDocumentMeta devMeta = ExternalDocumentMeta.builder()
-    .productId(PORTAL)
-    .version(DEV_VERSION)
-    .language(DocumentLanguage.ENGLISH)
-    .relativeLink("docs/portal/dev/en")
-    .build();
+    ExternalDocumentMeta devMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(DEV_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink("docs/portal/dev/en")
+        .build();
 
-  ExternalDocumentMeta normalMeta = ExternalDocumentMeta.builder()
-    .productId(PORTAL)
-    .version(TEST_VERSION)
-    .language(DocumentLanguage.ENGLISH)
-    .relativeLink("docs/portal/10/en")
-    .build();
+    ExternalDocumentMeta normalMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink(RELATIVE_DOC_LOCATION_EN)
+        .build();
 
-  when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
-    .thenReturn(List.of(devMeta, normalMeta));
-  when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
-    Collections.singletonList(DEV_VERSION)))
-    .thenReturn(List.of(devMeta));
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
+        .thenReturn(List.of(devMeta, normalMeta));
+    when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL,
+        Collections.singletonList(DEV_VERSION)))
+        .thenReturn(List.of(devMeta));
 
     String host = "http://localhost:8080";
-  var result = service.findDocVersionsAndLanguages(PORTAL, DEV_VERSION,
-    DocumentLanguage.ENGLISH.getCode(), host);
+    var result = service.findDocVersionsAndLanguages(PORTAL, DEV_VERSION,
+        DocumentLanguage.ENGLISH.getCode(), host);
 
     assertNotNull(result, "Result should not be null");
     assertEquals(2, result.getVersions().size(), "Should have two versions");
     // Dev version should be sorted last
-  assertEquals(DEV_VERSION, result.getVersions().get(1).getVersion(), "Dev should be last");
+    assertEquals(DEV_VERSION, result.getVersions().get(1).getVersion(), "Dev should be last");
   }
 
   @Test
   void testFindDocVersionsAndLanguagesLanguageFallback() {
-  ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
-    .productId(PORTAL)
-    .version(TEST_VERSION)
-    .language(DocumentLanguage.ENGLISH)
-    .relativeLink("docs/portal/12/en")
-    .build();
+    ExternalDocumentMeta enMeta = ExternalDocumentMeta.builder()
+        .productId(PORTAL)
+        .version(TEST_VERSION)
+        .language(DocumentLanguage.ENGLISH)
+        .relativeLink(RELATIVE_DOC_LOCATION_EN)
+        .build();
 
     when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
         .thenReturn(List.of(enMeta));
@@ -510,9 +516,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testFindExternalDocumentEmptyProduct() {
-  when(productRepository.findById(NON_EXISTENT_PRODUCT)).thenReturn(Optional.empty());
+    when(productRepository.findById(NON_EXISTENT_PRODUCT)).thenReturn(Optional.empty());
 
-  var result = service.findExternalDocument(NON_EXISTENT_PRODUCT, TEST_VERSION);
+    var result = service.findExternalDocument(NON_EXISTENT_PRODUCT, TEST_VERSION);
 
     assertNull(result, "Should return null for non-existent product");
     verify(externalDocumentMetaRepository, never()).findByProductIdAndLanguage(any(), any());
@@ -520,13 +526,13 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testFindExternalDocumentNoMatchingVersion() {
-    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(new Product()));
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
 
     ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
         .productId(PORTAL)
-        .version("10.0")
+        .version(TEST_VERSION)
         .language(DocumentLanguage.ENGLISH)
-        .relativeLink("docs/portal/10/en")
+        .relativeLink(RELATIVE_DOC_LOCATION_EN)
         .build();
 
     when(externalDocumentMetaRepository.findByProductIdAndLanguage(PORTAL, DocumentLanguage.ENGLISH))
@@ -544,76 +550,73 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchSymlinkVersionBlankBestMatchVersion() {
-  try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-    mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
-      .thenReturn("");
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
+          .thenReturn(StringUtils.EMPTY);
 
-    String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
-      DocumentLanguage.ENGLISH);
+      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
+          DocumentLanguage.ENGLISH);
 
-    assertEquals("", result, "Should return empty string when bestMatchVersion is blank");
-  }
+      assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is blank");
+    }
   }
 
   @Test
   void testResolveBestMatchSymlinkVersionNullBestMatchVersion() {
-  try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-    mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
-      .thenReturn(null);
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
+          .thenReturn(null);
 
-    String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
-      DocumentLanguage.ENGLISH);
+      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
+          DocumentLanguage.ENGLISH);
 
-    assertEquals("", result, "Should return empty string when bestMatchVersion is null");
-  }
+      assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is null");
+    }
   }
 
   @Test
   void testResolveBestMatchSymlinkVersionSuccess() {
-  try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-    mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, TEST_VERSION_12_5))
-      .thenReturn(TEST_VERSION);
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, TEST_VERSION_12_5))
+          .thenReturn(TEST_VERSION);
 
-    String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
-      DocumentLanguage.ENGLISH);
+      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
+          DocumentLanguage.ENGLISH);
 
-    assertNotNull(result, "Should return symlink path");
-    assertTrue(result.contains(PORTAL), "Should contain product name");
-    assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
-  }
+      assertNotNull(result, "Should return symlink path");
+      assertTrue(result.contains(PORTAL), "Should contain product name");
+      assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
+    }
   }
 
   @Test
   void testResolveBestMatchSymlinkVersionMissingParameters() {
-  String result = service.resolveBestMatchSymlinkVersion(null, ARTIFACT_NAME, TEST_VERSION,
-    DocumentLanguage.ENGLISH);
-  assertEquals("", result, "Should return empty string for null productName");
+    String result = service.resolveBestMatchSymlinkVersion(null, ARTIFACT_NAME, TEST_VERSION,
+        DocumentLanguage.ENGLISH);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null productName");
 
-  result = service.resolveBestMatchSymlinkVersion(PORTAL, null, TEST_VERSION,
-    DocumentLanguage.ENGLISH);
-  assertEquals("", result, "Should return empty string for null artifactName");
+    result = service.resolveBestMatchSymlinkVersion(PORTAL, null, TEST_VERSION,
+        DocumentLanguage.ENGLISH);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null artifactName");
 
-  result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, null,
-    DocumentLanguage.ENGLISH);
-  assertEquals("", result, "Should return empty string for null version");
+    result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, null,
+        DocumentLanguage.ENGLISH);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null version");
 
-  result = service.resolveBestMatchSymlinkVersion("", ARTIFACT_NAME, TEST_VERSION,
-    DocumentLanguage.ENGLISH);
-  assertEquals("", result, "Should return empty string for empty productName");
+    result = service.resolveBestMatchSymlinkVersion(StringUtils.EMPTY, ARTIFACT_NAME, TEST_VERSION,
+        DocumentLanguage.ENGLISH);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for empty productName");
   }
 
   @Test
   void testFindBestMatchVersionProductNotFound() {
-  String productId = NON_EXISTENT_PRODUCT;
-  String version = "3.0.0";
+    String productId = NON_EXISTENT_PRODUCT;
 
-  when(productRepository.findById(productId)).thenReturn(Optional.empty());
-
-  String result = service.findBestMatchVersion(productId, version);
-
-  assertNull(result, "Should return null when product not found");
-  verify(productRepository).findById(productId);
-  verify(externalDocumentMetaRepository, never()).findByProductId(any());
+    when(productRepository.findById(productId)).thenReturn(Optional.empty());
+    String result = service.findBestMatchVersion(productId, TEST_VERSION);
+    assertNull(result, "Should return null when product not found");
+    verify(productRepository).findById(productId);
+    verify(externalDocumentMetaRepository, never()).findByProductId(any());
   }
 
   @Test
@@ -629,5 +632,145 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     path = "/market-cache/portal";
     result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for path without version");
+  }
+
+  @Test
+  void testHandleSymlinkAndBuildMajorLocationNotBlank() {
+    Artifact artifact = Artifact.builder()
+        .artifactId(ARTIFACT_NAME)
+        .groupId(PORTAL)
+        .doc(true)
+        .build();
+    service.buildDocumentWithLanguage(RELATIVE_WORKING_LOCATION, artifact, PORTAL, TEST_VERSION);
+    verify(service, times(1)).buildDocumentWithLanguage(RELATIVE_WORKING_LOCATION, artifact, PORTAL, TEST_VERSION);
+  }
+
+  @Test
+  void testHandleDevOrLatestWithInvalidInput() {
+    String result = service.handleDevOrLatest(StringUtils.EMPTY, ARTIFACT_NAME, TEST_VERSION, DocumentLanguage.ENGLISH);
+    assertNull(result, "Should return null for null majorLocation");
+    result = service.handleDevOrLatest(RELATIVE_WORKING_LOCATION, StringUtils.EMPTY, TEST_VERSION,
+        DocumentLanguage.ENGLISH);
+    assertNull(result, "Should return null for null artifactName");
+    result = service.handleDevOrLatest(RELATIVE_WORKING_LOCATION, ARTIFACT_NAME, null, DocumentLanguage.ENGLISH);
+    assertNull(result, "Should return null for null version");
+  }
+
+  @Test
+  void testSymlinkIsExistingWithException() {
+    boolean result = service.symlinkIsExisting(null);
+    assertFalse(result, "Should return false when exception occurs");
+
+    result = service.symlinkIsExisting(RELATIVE_WORKING_LOCATION);
+    assertFalse(result, "Should return false for invalid path");
+  }
+
+  @Test
+  void testSymlinkIsExistingWithValidPath() {
+    boolean result = service.symlinkIsExisting("/market-cache/portal/portal-guide/12.0/doc/en");
+    assertFalse(result, "Should return false for non-existent path");
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlSymlinkNotExisting() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
+        .version(TEST_VERSION)
+        .productId(PORTAL)
+        .artifactName(ARTIFACT_NAME)
+        .build();
+    when(externalDocumentMetaRepository.findByProductId(PORTAL))
+        .thenReturn(List.of(meta));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+          .thenReturn(null);
+      mockedVersionFactory.when(() -> VersionFactory.get(anyList(), eq(TEST_VERSION_12_5)))
+          .thenReturn(TEST_VERSION);
+      doReturn(false).when(service).symlinkIsExisting(any(String.class));
+
+      String result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+
+      assertNull(result, "Should return null when symlink doesn't exist");
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForParentWithInvalidMajorVersion() throws IOException {
+    Path productDir = CACHE_ROOT_PATH.resolve(PORTAL);
+    Path versionDir = productDir.resolve(TEST_VERSION);
+    Files.createDirectories(versionDir);
+
+    String result = service.createSymlinkForMajorVersion(versionDir, RELATIVE_WORKING_LOCATION);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for invalid major version");
+
+    result = service.createSymlinkForMajorVersion(versionDir, StringUtils.EMPTY);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for blank major version");
+  }
+
+  @Test
+  void testCreateSymlinkForParentWithNullParentComponents() {
+    Path rootPath = Paths.get(CommonConstants.SLASH);
+    String result = service.createSymlinkForMajorVersion(rootPath, TEST_VERSION);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string when parent structure is invalid");
+  }
+
+  @Test
+  void testCreateSymlinkForParentOutsideCacheRoot() throws IOException {
+    Path tempPath = tempDir.resolve(RELATIVE_WORKING_LOCATION);
+    Files.createDirectories(tempPath);
+
+    String result = service.createSymlinkForMajorVersion(tempPath, TEST_VERSION);
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for path outside cache root");
+  }
+
+  @Test
+  void testCreateSymlinkForParentExistingSymlinkWithSameTarget() throws IOException {
+    Path productDir = CACHE_ROOT_PATH.resolve(PORTAL);
+    Path versionDir = productDir.resolve(TEST_VERSION);
+    Path docDir = versionDir.resolve(DOC_DIR);
+    Files.createDirectories(docDir);
+
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class, CALLS_REAL_METHODS)) {
+      Path symlinkPath = productDir.resolve(TEST_VERSION);
+      Path targetPath = Path.of(TEST_VERSION);
+
+      filesMock.when(() -> Files.exists(eq(symlinkPath), any()))
+          .thenReturn(true);
+      filesMock.when(() -> Files.isSymbolicLink(symlinkPath))
+          .thenReturn(true);
+      filesMock.when(() -> Files.readSymbolicLink(symlinkPath))
+          .thenReturn(targetPath);
+      filesMock.when(() -> Files.createSymbolicLink(eq(symlinkPath), eq(targetPath)))
+          .thenReturn(symlinkPath);
+
+      String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
+
+      assertNotNull(result, "Should return symlink path when symlink exists with correct target");
+      assertEquals(symlinkPath.toString(), result, "Result should be the symlink path");
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForParentIOException() throws IOException {
+    Path cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
+    Path productDir = cacheRoot.resolve(PORTAL);
+    Path versionDir = productDir.resolve(TEST_VERSION);
+    Path docDir = versionDir.resolve(DOC_DIR);
+    Files.createDirectories(docDir);
+
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class, CALLS_REAL_METHODS)) {
+      Path symlinkPath = productDir.resolve(TEST_VERSION);
+      Path targetPath = Path.of(TEST_VERSION);
+
+      filesMock.when(() -> Files.exists(eq(symlinkPath), any()))
+          .thenReturn(false);
+      filesMock.when(() -> Files.createSymbolicLink(eq(symlinkPath), eq(targetPath)))
+          .thenThrow(new IOException("Cannot create symlink"));
+
+      String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
+
+      assertEquals(StringUtils.EMPTY, result, "Should return empty string when IOException occurs");
+    }
   }
 }

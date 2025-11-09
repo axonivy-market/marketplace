@@ -60,11 +60,19 @@ public final class DocPathUtils {
     /**
      * Update the version and language in the document path
      */
-  public static String updateVersionAndLanguageInPath(String productId, String artifactName, String bestMatch,
-      DocumentLanguage language) {
-    return SLASH + DirectoryConstants.CACHE_DIR + SLASH + productId + SLASH + artifactName + SLASH + bestMatch +
-        SLASH + DirectoryConstants.DOC_DIR + SLASH + language.getCode() + SLASH + CommonConstants.INDEX_HTML;
-  }
+    public static String updateVersionAndLanguageInPath(String productId, String artifactName, String bestMatch,
+        DocumentLanguage language) {
+      return String.join(SLASH,
+          "",
+          DirectoryConstants.CACHE_DIR,
+          productId,
+          artifactName,
+          bestMatch,
+          DirectoryConstants.DOC_DIR,
+          language.getCode(),
+          CommonConstants.INDEX_HTML
+      );
+    }
 
   /**
    * Extract the artifact name from a path like:

@@ -34,6 +34,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,13 +73,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
-    if (!isEmpty(version)) {
-      try {
-        validateSafePathComponent(version);
-      } catch (IllegalArgumentException e) {
-        log.warn("Rejected version path: {}", e.getMessage());
-        return;
-      }
+    if (!validateSafePathComponent(productId)) {
+      log.warn("Rejected product ID path: {}", productId);
+      return;
     }
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (product == null) {
@@ -263,10 +260,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
   private String createSymlinkForParent(Path parent, String majorVersion) {
-    try {
-      validateSafePathComponent(majorVersion);
-    } catch (IllegalArgumentException e) {
-      log.warn("Rejected symlink creation : {}", e.getMessage());
+    if(!validateSafePathComponent(majorVersion)) {
       return EMPTY;
     }
     var artifactRoot = parent.getParent();
@@ -277,24 +271,36 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
     Path symlinkPath = artifactRoot.resolve(majorVersion);
     Path targetPath = Path.of(fileName.toString());
-    if (validatePathWithinCacheRoot(artifactRoot)) {
+    if (!validatePathWithinCacheRoot(artifactRoot)) {
       return null;
     }
-    if (!Files.exists(symlinkPath)) {
-      try {
-        if (isSymlinkSupported()) {
-          Files.createSymbolicLink(symlinkPath, targetPath);
-        }
-        return symlinkPath.toString();
-      } catch (IOException e) {
-        log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
-        return null;
-      }
+    
+    try {
+      validateSymlinkPath(symlinkPath, targetPath);
+      Files.createSymbolicLink(symlinkPath, targetPath);      
+    } catch (IOException e) {
+      log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
+      return null;
     }
     return symlinkPath.toString();
   }
 
-  private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
+  void validateSymlinkPath(Path symlinkPath, Path targetPath) throws IOException {
+    if (Files.exists(symlinkPath, LinkOption.NOFOLLOW_LINKS)) {
+        if (Files.isSymbolicLink(symlinkPath)) {
+          Path currentTarget = Files.readSymbolicLink(symlinkPath);
+          if (currentTarget.equals(targetPath)) {
+            return;
+          }
+        } else {
+          if (Files.isDirectory(symlinkPath)) {
+            fileDownloadService.deleteDirectory(symlinkPath);
+          }
+        }
+      }
+  }
+
+  void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
@@ -308,14 +314,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
       Path docPath = Paths.get(location);
       Path enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
-      if (validatePathWithinCacheRoot(enPath)) {
+      if (!validatePathWithinCacheRoot(enPath)) {
         return;
       }
       if (!Files.exists(enPath)) {
         try {
-          if (isSymlinkSupported()) {
-            Files.createSymbolicLink(enPath, Path.of(CommonConstants.DOT_SEPARATOR));
-          }
+          Path target = Path.of(CommonConstants.DOT_SEPARATOR);
+          validateSymlinkPath(enPath, target);
+          Files.createSymbolicLink(enPath, target);
         } catch (IOException e) {
           log.error("Cannot create symlink for doc/en: {}", e.getMessage());
         }
@@ -323,14 +329,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private static boolean validatePathWithinCacheRoot(Path path) {
+  static boolean validatePathWithinCacheRoot(Path path) {
     Path cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     Path normalizedPath = path.toAbsolutePath().normalize();
-    if (!normalizedPath.startsWith(cacheRoot)) {
-      log.warn("Path outside of cache root: {}", normalizedPath);
-      return true;
-    }
-    return false;
+    return normalizedPath.startsWith(cacheRoot);
   }
 
   private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
@@ -421,14 +423,17 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return handleDevOrLatest(productName, artifactName, version, language);
     }
 
-    String targetSymplink = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-    if (StringUtils.isNotBlank(targetSymplink)) {
-      return targetSymplink;
+    String targetsymlink = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
+    if (StringUtils.isNotBlank(targetsymlink) && symlinkIsExisting(targetsymlink)) {
+      return targetsymlink;
     }
 
-    targetSymplink = findBestMatchVersion(productId, version);
-    if (StringUtils.isNoneBlank(productName, artifactName, targetSymplink)) {
-      return DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, targetSymplink, language);
+    targetsymlink = findBestMatchVersion(productId, version);
+    if (StringUtils.isNoneBlank(productName, artifactName, targetsymlink) ) {
+      String updatedPath = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, targetsymlink, language);
+      if (symlinkIsExisting(updatedPath)) {
+        return updatedPath;
+      }
     }
 
     return null;
@@ -439,7 +444,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
+  String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
@@ -451,30 +456,28 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return EMPTY;
     }
-    String bestMatchVersion = null;
-    bestMatchVersion = VersionFactory.get(majorVersions, version);
+    String bestMatchVersion = VersionFactory.get(majorVersions, version);
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
-    String sympLink = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion, language);
-    return StringUtils.defaultIfBlank(sympLink, EMPTY);
+    String symLink = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion, language);
+    return StringUtils.defaultIfBlank(symLink, EMPTY);
   }
 
-  private boolean isSymlinkSupported() {
-    return org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
+  private static boolean validateSafePathComponent(String input) {
+    if (StringUtils.isBlank(input)||!input.matches(CommonConstants.SAFE_PATH_REGEX)) {
+      return false;
+    }
+    return !input.contains(String.join("", CommonConstants.FORBIDDEN_PATH_PARTS));
   }
 
-  private static void validateSafePathComponent(String input) {
-    if (StringUtils.isBlank(input)) {
-      throw new IllegalArgumentException("Path component is blank or null");
+  boolean symlinkIsExisting(String symlinkPath) {
+    try {
+      String folderPath = DirectoryConstants.DATA_DIR + symlinkPath;
+      return Files.exists(Paths.get(folderPath), LinkOption.NOFOLLOW_LINKS);
+    } catch (Exception e) {
+      log.error("Error checking symlink existence for path {}: {}", symlinkPath, e.getMessage());
     }
-    for (String forbidden : CommonConstants.FORBIDDEN_PATH_PARTS) {
-      if (input.contains(forbidden)) {
-        throw new IllegalArgumentException("Invalid path component: " + input);
-      }
-    }
-    if (!input.matches(CommonConstants.SAFE_PATH_REGEX)) {
-      throw new IllegalArgumentException("Path component contains invalid characters: " + input);
-    }
+    return false;
   }
 }
