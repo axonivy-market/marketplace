@@ -261,13 +261,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       .map(parent -> createSymlinkForParent(parent, majorVersion))
       .orElse(EMPTY);
     }
-
-  private String createSymlinkForParent(Path parent, String majorVersion) {
-    String result = validateAndCreateSymlink(parent, majorVersion);
-    return result;
-  }
   
-  private String validateAndCreateSymlink(Path parent, String majorVersion) {
+  private String createSymlinkForParent(Path parent, String majorVersion) {
     if (!validateSafePathComponent(majorVersion)) {
       return EMPTY;
     }
@@ -294,7 +289,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  void validateSymlinkPath(Path symlinkPath) throws IOException {
+  void validateSymlinkPath(Path symlinkPath){
     if (!Files.exists(symlinkPath, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(symlinkPath)) {
       return;
     }
@@ -422,27 +417,44 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String artifactName = extractArtifactName(path);
     String version = extractVersion(path);
     DocumentLanguage language = extractLanguage(path) != null ? extractLanguage(path) : DocumentLanguage.ENGLISH;
-    String resolvedUrl = null;
+    
     if (isDevOrLatest(version)) {
-      resolvedUrl = handleDevOrLatest(productName, artifactName, version, language);
-    } else {
-      String symlinkPath = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-      if (StringUtils.isNotBlank(symlinkPath) && symlinkIsExisting(symlinkPath)) {
-        resolvedUrl = symlinkPath;
-      } else {
-        String productId = getProductName(productName);
-        String bestMatchVersion = findBestMatchVersion(productId, version);
-        if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
-          String updatedPath = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion,
-              language);
-          if (symlinkIsExisting(updatedPath)) {
-            resolvedUrl = updatedPath;
-          }
-        }
-      }
+      return handleDevOrLatest(productName, artifactName, version, language);
     }
-
-    return resolvedUrl;
+    
+    String symlinkResult = findBestMatchSymlink(productName, artifactName, version, language);
+    if (symlinkResult != null) {
+      return symlinkResult;
+    }
+    
+    return fallBackFindBestmatchVersion(productName, artifactName, version, language);
+  }
+  
+  private String findBestMatchSymlink(String productName, String artifactName, String version, DocumentLanguage language) {
+    String symlinkPath = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
+    if (StringUtils.isNotBlank(symlinkPath) && symlinkIsExisting(symlinkPath)) {
+      return symlinkPath;
+    }
+    return null;
+  }
+  
+  private String fallBackFindBestmatchVersion(String productName, String artifactName, String version, DocumentLanguage language) {
+    String productId = getProductName(productName);
+    String bestMatchVersion = findBestMatchVersion(productId, version);
+    
+    if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
+      return tryBuildUpdatedPath(productName, artifactName, bestMatchVersion, language);
+    }
+    
+    return null;
+  }
+  
+  private String tryBuildUpdatedPath(String productName, String artifactName, String bestMatchVersion, DocumentLanguage language) {
+    String updatedPath = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion, language);
+    if (symlinkIsExisting(updatedPath)) {
+      return updatedPath;
+    }
+    return null;
   }
 
   private static boolean isDevOrLatest(String version) {
