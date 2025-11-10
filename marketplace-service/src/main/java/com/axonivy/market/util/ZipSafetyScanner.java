@@ -98,7 +98,7 @@ public class ZipSafetyScanner {
     }
   }
 
-  private static void isEntryValid(boolean isDirectory , String name) {
+  private static void isEntryValid(boolean isDirectory, String name) {
     // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
     if (isTraversal(name)) {
       throw new InvalidZipEntryException("Entry " + name + " has traversal");
@@ -115,7 +115,7 @@ public class ZipSafetyScanner {
     }
 
     if (!isDirectory && isNotInWhiteListExtensions(name)) {
-      throw new InvalidZipEntryException("Entry name " + name + " is dangerous extension");
+      throw new InvalidZipEntryException("Entry name " + name + " is not supported extension");
     }
   }
 
