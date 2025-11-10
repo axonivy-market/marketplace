@@ -311,7 +311,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     } else {
       ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
       externalDocumentMetaRepo.save(meta);
-
       var docPath = Paths.get(location);
       var enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
       if (!validatePathWithinCacheRoot(enPath)) {
