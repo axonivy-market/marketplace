@@ -26,6 +26,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -238,7 +239,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     if (latestSupportedDocVersions.containsKey(version)) {
       String mappedVersion = latestSupportedDocVersions.get(version);
-      String symlinkVersion = StringUtils.isNotBlank(mappedVersion) ? mappedVersion : version;
+      String symlinkVersion = StringUtils.defaultIfBlank(mappedVersion, version);
       handleSymlinkAndBuild(location, artifact, productId, symlinkVersion);
     }
     buildDocumentWithLanguage(location, artifact, productId, version);
@@ -416,7 +417,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String productName = extractProductId(path);
     String artifactName = extractArtifactName(path);
     String version = extractVersion(path);
-    DocumentLanguage language = extractLanguage(path) != null ? extractLanguage(path) : DocumentLanguage.ENGLISH;
+    DocumentLanguage extractLanguage = extractLanguage(path);
+    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
     if (isDevOrLatest(version)) {
       return handleDevOrLatest(productName, artifactName, version, language);
