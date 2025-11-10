@@ -466,7 +466,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
+  private static String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }

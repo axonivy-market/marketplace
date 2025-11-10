@@ -62,7 +62,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final Path PATH_TMP = Paths.get("/tmp");
   private static final Path CACHE_ROOT_PATH = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
   private static final Product EMPTY_PRODUCT = new Product();
-  private static final String HOST = "http://localhost:8080";;
+  private static final String HOST = "http://localhost:8080";
 
   private final List<String> majorVersions = List.of(TEST_VERSION_12_5, TEST_VERSION, "13.1", DEV_VERSION);
 
@@ -594,11 +594,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
-    String devPath = "/portal/portal-guide/dev/doc/en/index.html";
+    String devPath = "/portal/portal-guide/dev/doc/index.html";
     String result = service.resolveBestMatchRedirectUrl(devPath);
-    assertEquals("/market-cache/portal/portal-guide/dev/doc/en/index.html", result, "Should handle dev version correctly");
+    assertEquals("/market-cache/portal/portal-guide/dev/doc/en/index.html", result,
+        "Should handle dev version correctly");
 
-    String latestPath = "/portal/portal-guide/latest/doc/en/index.html";
+    String latestPath = "/portal/portal-guide/latest/doc/index.html";
     result = service.resolveBestMatchRedirectUrl(latestPath);
     assertEquals("/market-cache/portal/portal-guide/latest/doc/en/index.html", result, "Should handle latest version " +
         "correctly");
@@ -619,8 +620,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testResolveBestMatchRedirectUrlSymlinkPathValidation() {
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
 
-    String invalidPath = "/portal/portal-guide/invalid-version/doc/en/index.html";
-    String result = service.resolveBestMatchRedirectUrl(invalidPath);
+    String result = service.resolveBestMatchRedirectUrl(RELATIVE_WORKING_LOCATION_EN);
     assertNull(result, "Should return null for invalid symlink paths");
   }
 
