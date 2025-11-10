@@ -25,6 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -46,7 +47,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String NON_EXISTENT_PRODUCT = "nonexistent";
 
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
-  private static final String RELATIVE_WORKING_LOCATION_EN = "/market-cache/portal/10.0.0/doc/en";
+  private static final String RELATIVE_WORKING_LOCATION_EN = "/market-cache/portal/12.5.0/doc/en";
   private static final String INDEX_FILE = "/index.html";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + INDEX_FILE;
   private static final String RELATIVE_DOC_LOCATION_EN = RELATIVE_WORKING_LOCATION_EN + INDEX_FILE;
@@ -58,7 +59,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String DEV_VERSION = "dev";
   private static final String LATEST_VERSION = "latest";
   private static final String DOC_DIR = "doc";
-  private static final String BASE_PATH = CommonConstants.SLASH + PORTAL + CommonConstants.SLASH + ARTIFACT_NAME + CommonConstants.SLASH;
+  private static final String BASE_PATH =
+      CommonConstants.SLASH + PORTAL + CommonConstants.SLASH + ARTIFACT_NAME + CommonConstants.SLASH;
   private static final Path PATH_TMP = Paths.get("/tmp");
   private static final Path CACHE_ROOT_PATH = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
   private static final Product EMPTY_PRODUCT = new Product();
@@ -326,9 +328,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlDevVersion() {
-    String path = String.join(CommonConstants.SLASH, 
-        BASE_PATH + DEV_VERSION, 
-        DOC_DIR, 
+    String path = String.join(CommonConstants.SLASH,
+        BASE_PATH + DEV_VERSION,
+        DOC_DIR,
         DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for dev version");
@@ -387,9 +389,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     assertEquals(StringUtils.EMPTY, result, "Should return empty string for null path");
 
     result = service.createSymlinkForMajorVersion(PATH_TMP, null);
-    assertEquals("", result, "Should return empty string for null version");
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null version");
 
-    result = service.createSymlinkForMajorVersion(PATH_TMP, "");
+    result = service.createSymlinkForMajorVersion(PATH_TMP, StringUtils.EMPTY);
     assertEquals(StringUtils.EMPTY, result, "Should return empty string for empty version");
   }
 
@@ -594,15 +596,20 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
-    String devPath = "/portal/portal-guide/dev/doc/index.html";
+    String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
+        DOC_DIR, CommonConstants.INDEX_HTML);
     String result = service.resolveBestMatchRedirectUrl(devPath);
-    assertEquals("/market-cache/portal/portal-guide/dev/doc/en/index.html", result,
-        "Should handle dev version correctly");
+    String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+        PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+    assertEquals(expectedDevResult, result, "Should handle dev version correctly");
 
-    String latestPath = "/portal/portal-guide/latest/doc/index.html";
+    String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
+        DOC_DIR, CommonConstants.INDEX_HTML);
     result = service.resolveBestMatchRedirectUrl(latestPath);
-    assertEquals("/market-cache/portal/portal-guide/latest/doc/en/index.html", result, "Should handle latest version " +
-        "correctly");
+    String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+        PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+    assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+
     result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
     assertNull(result, "Should return null for invalid path components");
   }
@@ -611,7 +618,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testResolveBestMatchRedirectUrlWithNonExistentSymlinks() {
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
     when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(Collections.emptyList());
-    
+
     String result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
     assertNull(result, "Should return null when symlinks don't exist");
   }
@@ -691,7 +698,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class, CALLS_REAL_METHODS)) {
       Path symlinkPath = productDir.resolve(TEST_VERSION);
       Path targetPath = Path.of(TEST_VERSION);
-
       filesMock.when(() -> Files.exists(eq(symlinkPath), any()))
           .thenReturn(false);
       filesMock.when(() -> Files.createSymbolicLink(eq(symlinkPath), eq(targetPath)))
@@ -700,6 +706,67 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION);
 
       assertEquals(StringUtils.EMPTY, result, "Should return empty string when IOException occurs");
+    }
+  }
+
+  @Test
+  void testUpdatedPathSymlinkExists() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(
+        ExternalDocumentMeta.builder().version(TEST_VERSION).build()));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
+         MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+          .thenReturn(TEST_VERSION);
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+      String testPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
+          DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(testPath);
+
+      assertNotNull(result, "Should return path when symlink exists");
+      String expectedPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
+          ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertTrue(result.contains(expectedPath), "Should return updated path with best match version");
+    }
+  }
+
+  @Test
+  void testUpdatedPathSymlinkDoesNotExist() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(
+        ExternalDocumentMeta.builder().version(TEST_VERSION).build()));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
+         MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+          .thenReturn(TEST_VERSION);
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(false);
+      String testPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME,
+          TEST_VERSION_12_5, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(testPath);
+
+      assertNull(result, "Should return null when symlink does not exist");
+    }
+  }
+
+  @Test
+  void testTryBuildUpdatedPathInvalidPathException() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(
+        ExternalDocumentMeta.builder().version(TEST_VERSION).build()));
+
+    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
+         MockedStatic<Paths> pathsMock = mockStatic(Paths.class)) {
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+          .thenReturn(TEST_VERSION);
+      pathsMock.when(() -> Paths.get(anyString()))
+          .thenThrow(new InvalidPathException("invalid:path", "Invalid character"));
+      String result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+
+      assertNull(result, "Should return null when InvalidPathException occurs in symlink check");
     }
   }
 }

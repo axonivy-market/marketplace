@@ -77,7 +77,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
-    if (!validateSafePathComponent(productId)) {
+    if (isPathOutsideCacheRoot(productId)) {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
@@ -264,7 +264,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private String createSymlinkForParent(Path parent, String majorVersion) {
-    if (!validateSafePathComponent(majorVersion)) {
+    if (isPathOutsideCacheRoot(majorVersion)) {
       return EMPTY;
     }
     var artifactRoot = parent.getParent();
@@ -280,7 +280,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     var symlinkPath = artifactRoot.resolve(majorVersion);
 
     try {
-      validateSymlinkPath(symlinkPath);
+      prepareDirectoryForSymlinkPath(symlinkPath);
       var targetPath = Path.of(fileName.toString());
       Files.createSymbolicLink(symlinkPath, targetPath);
       return symlinkPath.toString();
@@ -290,7 +290,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  void validateSymlinkPath(Path symlinkPath) {
+  void prepareDirectoryForSymlinkPath(Path symlinkPath) {
     if (!Files.exists(symlinkPath, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(symlinkPath)) {
       return;
     }
@@ -319,7 +319,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       if (!Files.exists(enPath)) {
         try {
           var target = Path.of(CommonConstants.DOT_SEPARATOR);
-          validateSymlinkPath(enPath);
+          prepareDirectoryForSymlinkPath(enPath);
           Files.createSymbolicLink(enPath, target);
         } catch (IOException e) {
           log.error("Cannot create symlink for doc/en: {}", e.getMessage());
@@ -428,35 +428,28 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return symlinkResult;
     }
 
-    return fallBackFindBestMatchVersion(productName, artifactName, version, language);
+    return fallbackFindBestMatchVersion(productName, artifactName, version, language);
   }
 
   private String findBestMatchSymlink(String productName, String artifactName, String version,
       DocumentLanguage language) {
     String symlinkPath = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-    if (StringUtils.isNotBlank(symlinkPath) && symlinkIsExisting(symlinkPath)) {
+    if (StringUtils.isNotBlank(symlinkPath) && isSymlinkExisting(symlinkPath)) {
       return symlinkPath;
     }
     return null;
   }
 
-  private String fallBackFindBestMatchVersion(String productName, String artifactName, String version,
+  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
       DocumentLanguage language) {
     String productId = getProductName(productName);
     String bestMatchVersion = findBestMatchVersion(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
-      return tryBuildUpdatedPath(productName, artifactName, bestMatchVersion, language);
-    }
-
-    return null;
-  }
-
-  private String tryBuildUpdatedPath(String productName, String artifactName, String bestMatchVersion,
-      DocumentLanguage language) {
-    String updatedPath = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion,
-        language);
-    if (symlinkIsExisting(updatedPath)) {
-      return updatedPath;
+      String updatedPath = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
+          language);
+      if (isSymlinkExisting(updatedPath)) {
+        return updatedPath;
+      }
     }
     return null;
   }
@@ -466,11 +459,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private static String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
+  private static String handleDevOrLatest(String productName, String artifactName, String version,
+      DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
-    return DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, version, language);
+    return DocPathUtils.generatePath(productName, artifactName, version, language);
   }
 
   public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
@@ -482,19 +476,19 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
-    String symLink = DocPathUtils.updateVersionAndLanguageInPath(productName, artifactName, bestMatchVersion, language);
+    String symLink = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
     return StringUtils.defaultIfBlank(symLink, EMPTY);
   }
 
-  private static boolean validateSafePathComponent(String input) {
+  private static boolean isPathOutsideCacheRoot(String input) {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
-      return false;
+      return true;
     }
     String[] forbiddenPathParts = {"..", CommonConstants.SLASH, "\\", java.io.File.separator};
-    return !input.contains(String.join("", forbiddenPathParts));
+    return input.contains(String.join(EMPTY, forbiddenPathParts));
   }
 
-  private boolean symlinkIsExisting(String symlinkPath) {
+  private boolean isSymlinkExisting(String symlinkPath) {
     try {
       String folderPath = DirectoryConstants.DATA_DIR + symlinkPath;
       return Files.exists(Paths.get(folderPath), LinkOption.NOFOLLOW_LINKS);

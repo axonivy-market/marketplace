@@ -3,8 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.enums.DocumentLanguage;
-
-import io.micrometer.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -57,22 +56,22 @@ public final class DocPathUtils {
     return null;
   }
 
-    /**
-     * Update the version and language in the document path
-     */
-    public static String updateVersionAndLanguageInPath(String productId, String artifactName, String bestMatch,
-        DocumentLanguage language) {
-      return String.join(SLASH,
-          "",
-          DirectoryConstants.CACHE_DIR,
-          productId,
-          artifactName,
-          bestMatch,
-          DirectoryConstants.DOC_DIR,
-          language.getCode(),
-          CommonConstants.INDEX_HTML
-      );
-    }
+  /**
+   * Generate the document path based on given parameters
+   */
+  public static String generatePath(String productId, String artifactName, String bestMatch,
+      DocumentLanguage language) {
+    return String.join(SLASH,
+        StringUtils.EMPTY,
+        DirectoryConstants.CACHE_DIR,
+        productId,
+        artifactName,
+        bestMatch,
+        DirectoryConstants.DOC_DIR,
+        language.getCode(),
+        CommonConstants.INDEX_HTML
+    );
+  }
 
   /**
    * Extract the artifact name from a path like:
