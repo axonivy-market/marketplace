@@ -279,8 +279,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
 
     assertEquals(2, result.size(), "Should have 2 languages");
-    assertTrue(result.containsKey(DocumentLanguage.ENGLISH));
-    assertTrue(result.containsKey(DocumentLanguage.JAPANESE));
+    assertTrue(result.containsKey(DocumentLanguage.ENGLISH), "Should contain English language");
+    assertTrue(result.containsKey(DocumentLanguage.JAPANESE), "Should contain Japanese language");
   }
 
   @Test
