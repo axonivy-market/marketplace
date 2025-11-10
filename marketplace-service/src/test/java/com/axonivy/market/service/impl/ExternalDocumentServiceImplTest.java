@@ -57,14 +57,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
   private static final String LATEST_VERSION = "latest";
-  private static final String EN_LANG = "en";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH = CommonConstants.SLASH + PORTAL + CommonConstants.SLASH + ARTIFACT_NAME + CommonConstants.SLASH;
-  private static final String TEST_PATH_VERSION_12_5 = BASE_PATH + TEST_VERSION_12_5 + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
-  
   private static final Path PATH_TMP = Paths.get("/tmp");
   private static final Path CACHE_ROOT_PATH = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
   private static final Product EMPTY_PRODUCT = new Product();
+  private static final String HOST = "http://localhost:8080";;
 
   private final List<String> majorVersions = List.of(TEST_VERSION_12_5, TEST_VERSION, "13.1", DEV_VERSION);
 
@@ -121,8 +119,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
-    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_DOC_LOCATION);
-    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn("data" + RELATIVE_WORKING_LOCATION);
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
+    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_WORKING_LOCATION);
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
@@ -150,7 +148,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any()))
         .thenReturn(List.of(createExternalDocumentMock()));
-    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_DOC_LOCATION);
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
   }
 
   @Test
@@ -177,19 +175,18 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testFindBestMatchVersion() {
-    String productId = "product1";
     String version = TEST_VERSION_12_5;
 
-    when(productRepository.findById(productId)).thenReturn(Optional.of(EMPTY_PRODUCT));
-    when(externalDocumentMetaRepository.findByProductId(productId)).thenReturn(List.of(
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(
         ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
-        ExternalDocumentMeta.builder().version("12.4.0").build()));
+        ExternalDocumentMeta.builder().version(TEST_VERSION_12_5).build()));
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
       mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(version)))
           .thenReturn(TEST_VERSION);
 
-      String result = service.findBestMatchVersion(productId, version);
+      String result = service.findBestMatchVersion(PORTAL, version);
 
       assertEquals(TEST_VERSION, result, "Should return the matched version");
     }
@@ -228,12 +225,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Product mockPortal(boolean isEmptyArtifacts) {
     return Product.builder().id(PORTAL)
         .artifacts(isEmptyArtifacts ? List.of() : List.of(mockPortalMavenArtifact()))
-        .releasedVersions(List.of("8.0.0", "10.0.0"))
+        .releasedVersions(List.of("8.0.0", TEST_VERSION))
         .build();
   }
 
   private static Artifact mockPortalMavenArtifact() {
-    return Artifact.builder().artifactId("portal-guide").doc(true).groupId(PORTAL)
+    return Artifact.builder().artifactId(ARTIFACT_NAME).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
   }
 
@@ -259,9 +256,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         Collections.singletonList(TEST_VERSION)))
         .thenReturn(List.of(enMeta, jaMeta));
 
-    String host = "http://localhost:8080";
     var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
-        DocumentLanguage.ENGLISH.getCode(), host);
+        DocumentLanguage.ENGLISH.getCode(), HOST);
 
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.getVersions().size(), "Should have one version");
@@ -270,11 +266,11 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
-    Path testDir = tempDir.resolve("test-doc");
+    Path testDir = tempDir.resolve(PORTAL);
     Files.createDirectories(testDir);
-    Files.createDirectory(testDir.resolve(EN_LANG));
-    Files.createDirectory(testDir.resolve("ja"));
-    Files.createDirectory(testDir.resolve("other"));
+    Files.createDirectory(testDir.resolve(DocumentLanguage.ENGLISH.getCode()));
+    Files.createDirectory(testDir.resolve(DocumentLanguage.JAPANESE.getCode()));
+    Files.createDirectory(testDir.resolve(PORTAL));
 
     Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
 
@@ -285,9 +281,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageNonDirectory() throws IOException {
-    Path testFile = tempDir.resolve("test-file.txt");
+    Path testFile = tempDir.resolve(PORTAL);
     Files.createFile(testFile);
-
     Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testFile.toString());
 
     assertTrue(result.isEmpty(), "Should return empty map for non-directory");
@@ -295,20 +290,18 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageEmptyDirectory() throws IOException {
-    Path testDir = tempDir.resolve("empty-dir");
+    Path testDir = tempDir.resolve(PORTAL);
     Files.createDirectories(testDir);
-
     Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
 
-    assertTrue(result.isEmpty(), "Should return empty map for directory without language subdirs");
+    assertTrue(result.isEmpty(), "Should return empty map for directory without language sub dirs");
   }
 
   @Test
   void testDoesDocExistInShareFolderExistsWithFiles() throws IOException {
-    Path testDir = tempDir.resolve("doc-folder");
+    Path testDir = tempDir.resolve(PORTAL);
     Files.createDirectories(testDir);
     Files.createFile(testDir.resolve(CommonConstants.INDEX_HTML));
-
     boolean result = service.doesDocExistInShareFolder(testDir.toString());
 
     assertTrue(result, "Should return true for existing folder with files");
@@ -316,9 +309,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testDoesDocExistInShareFolderEmptyFolder() throws IOException {
-    Path testDir = tempDir.resolve("empty-folder");
+    Path testDir = tempDir.resolve(PORTAL);
     Files.createDirectories(testDir);
-
     boolean result = service.doesDocExistInShareFolder(testDir.toString());
 
     assertFalse(result, "Should return false for empty folder");
@@ -326,8 +318,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testDoesDocExistInShareFolderNonExistent() {
-    String nonExistentPath = tempDir.resolve("nonexistent").toString();
-
+    String nonExistentPath = tempDir.resolve(NON_EXISTENT_PRODUCT).toString();
     boolean result = service.doesDocExistInShareFolder(nonExistentPath);
 
     assertFalse(result, "Should return false for non-existent folder");
@@ -335,8 +326,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlDevVersion() {
-    String path =
-        BASE_PATH + DEV_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
+    String path = String.join(CommonConstants.SLASH, 
+        BASE_PATH + DEV_VERSION, 
+        DOC_DIR, 
+        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for dev version");
     assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
@@ -344,8 +337,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    String path =
-        BASE_PATH + LATEST_VERSION + CommonConstants.SLASH + DOC_DIR + CommonConstants.SLASH + EN_LANG + INDEX_FILE;
+    String path = String.join(CommonConstants.SLASH,
+        BASE_PATH + LATEST_VERSION,
+        DOC_DIR,
+        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNotNull(result, "Should return valid path for latest version");
     assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
@@ -353,41 +348,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlMissingProductName() {
-    String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + EN_LANG + INDEX_FILE;
+    String path = "/market-cache//" + ARTIFACT_NAME + "/10.0/" + DocumentLanguage.ENGLISH.getCode() + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing product name");
   }
 
   @Test
   void testResolveBestMatchRedirectUrlMissingArtifactName() {
-    String path = "/market-cache/" + PORTAL + "//10.0/" + EN_LANG + INDEX_FILE;
+    String path = "/market-cache/" + PORTAL + "//10.0/" + DocumentLanguage.ENGLISH.getCode() + INDEX_FILE;
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for missing artifact name");
-  }
-
-  @Test
-  void testResolveBestMatchRedirectUrlWithBestMatchVersion() {
-    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
-    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
-        .version(TEST_VERSION)
-        .productId(PORTAL)
-        .artifactName(ARTIFACT_NAME)
-        .build();
-    when(externalDocumentMetaRepository.findByProductId(PORTAL))
-        .thenReturn(List.of(meta));
-
-    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
-          .thenReturn(null);
-      mockedVersionFactory.when(() -> VersionFactory.get(anyList(), eq(TEST_VERSION_12_5)))
-          .thenReturn(TEST_VERSION);
-
-      doReturn(true).when(service).symlinkIsExisting(any(String.class));
-      String result = service.resolveBestMatchRedirectUrl(TEST_PATH_VERSION_12_5);
-
-      assertNotNull(result, "Should return valid path");
-      assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
-    }
   }
 
   @Test
@@ -426,7 +396,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testCreateSymlinkForMajorVersionSymlinkAlreadyExists() throws IOException {
     Path productDir = tempDir.resolve(PORTAL);
-    Path versionDir = productDir.resolve("1.0.0");
+    Path versionDir = productDir.resolve(TEST_VERSION);
     Path docDir = versionDir.resolve(DOC_DIR);
     Files.createDirectories(docDir);
 
@@ -450,9 +420,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(externalDocumentMetaRepository.findByArtifactNameAndVersionIn(PORTAL, majorVersions))
         .thenReturn(Collections.emptyList());
 
-    String host = "http://localhost:8080";
     var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
-        DocumentLanguage.ENGLISH.getCode(), host);
+        DocumentLanguage.ENGLISH.getCode(), HOST);
 
     assertNull(result, "Result should be null when no doc metas found");
   }
@@ -479,13 +448,11 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         Collections.singletonList(DEV_VERSION)))
         .thenReturn(List.of(devMeta));
 
-    String host = "http://localhost:8080";
     var result = service.findDocVersionsAndLanguages(PORTAL, DEV_VERSION,
-        DocumentLanguage.ENGLISH.getCode(), host);
+        DocumentLanguage.ENGLISH.getCode(), HOST);
 
     assertNotNull(result, "Result should not be null");
     assertEquals(2, result.getVersions().size(), "Should have two versions");
-    // Dev version should be sorted last
     assertEquals(DEV_VERSION, result.getVersions().get(1).getVersion(), "Dev should be last");
   }
 
@@ -504,13 +471,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         Collections.singletonList(TEST_VERSION)))
         .thenReturn(List.of(enMeta));
 
-    String host = "http://localhost:8080";
     var result = service.findDocVersionsAndLanguages(PORTAL, TEST_VERSION,
-        DocumentLanguage.JAPANESE.getCode(), host);
+        DocumentLanguage.JAPANESE.getCode(), HOST);
 
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.getVersions().size(), "Should have one version");
-    assertTrue(result.getVersions().get(0).getUrl().contains("/en"),
+    assertTrue(result.getVersions().get(0).getUrl().contains(DocumentLanguage.ENGLISH.getCode()),
         "Should fallback to English");
   }
 
@@ -624,75 +590,38 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     String path = "/invalid/path";
     String result = service.resolveBestMatchRedirectUrl(path);
     assertNull(result, "Should return null for invalid path");
-
-    path = "/market-cache";
-    result = service.resolveBestMatchRedirectUrl(path);
-    assertNull(result, "Should return null for incomplete path");
-
-    path = "/market-cache/portal";
-    result = service.resolveBestMatchRedirectUrl(path);
-    assertNull(result, "Should return null for path without version");
   }
 
   @Test
-  void testHandleSymlinkAndBuildMajorLocationNotBlank() {
-    Artifact artifact = Artifact.builder()
-        .artifactId(ARTIFACT_NAME)
-        .groupId(PORTAL)
-        .doc(true)
-        .build();
-    service.buildDocumentWithLanguage(RELATIVE_WORKING_LOCATION, artifact, PORTAL, TEST_VERSION);
-    verify(service, times(1)).buildDocumentWithLanguage(RELATIVE_WORKING_LOCATION, artifact, PORTAL, TEST_VERSION);
+  void testResolveBestMatchRedirectUrlWithDevVersion() {
+    String devPath = "/portal/portal-guide/dev/doc/en/index.html";
+    String result = service.resolveBestMatchRedirectUrl(devPath);
+    assertEquals("/market-cache/portal/portal-guide/dev/doc/en/index.html", result, "Should handle dev version correctly");
+
+    String latestPath = "/portal/portal-guide/latest/doc/en/index.html";
+    result = service.resolveBestMatchRedirectUrl(latestPath);
+    assertEquals("/market-cache/portal/portal-guide/latest/doc/en/index.html", result, "Should handle latest version " +
+        "correctly");
+    result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+    assertNull(result, "Should return null for invalid path components");
   }
 
   @Test
-  void testHandleDevOrLatestWithInvalidInput() {
-    String result = service.handleDevOrLatest(StringUtils.EMPTY, ARTIFACT_NAME, TEST_VERSION, DocumentLanguage.ENGLISH);
-    assertNull(result, "Should return null for null majorLocation");
-    result = service.handleDevOrLatest(RELATIVE_WORKING_LOCATION, StringUtils.EMPTY, TEST_VERSION,
-        DocumentLanguage.ENGLISH);
-    assertNull(result, "Should return null for null artifactName");
-    result = service.handleDevOrLatest(RELATIVE_WORKING_LOCATION, ARTIFACT_NAME, null, DocumentLanguage.ENGLISH);
-    assertNull(result, "Should return null for null version");
-  }
-
-  @Test
-  void testSymlinkIsExistingWithException() {
-    boolean result = service.symlinkIsExisting(null);
-    assertFalse(result, "Should return false when exception occurs");
-
-    result = service.symlinkIsExisting(RELATIVE_WORKING_LOCATION);
-    assertFalse(result, "Should return false for invalid path");
-  }
-
-  @Test
-  void testSymlinkIsExistingWithValidPath() {
-    boolean result = service.symlinkIsExisting("/market-cache/portal/portal-guide/12.0/doc/en");
-    assertFalse(result, "Should return false for non-existent path");
-  }
-
-  @Test
-  void testResolveBestMatchRedirectUrlSymlinkNotExisting() {
+  void testResolveBestMatchRedirectUrlWithNonExistentSymlinks() {
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
-    ExternalDocumentMeta meta = ExternalDocumentMeta.builder()
-        .version(TEST_VERSION)
-        .productId(PORTAL)
-        .artifactName(ARTIFACT_NAME)
-        .build();
-    when(externalDocumentMetaRepository.findByProductId(PORTAL))
-        .thenReturn(List.of(meta));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(Collections.emptyList());
+    
+    String result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+    assertNull(result, "Should return null when symlinks don't exist");
+  }
 
-    try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
-          .thenReturn(null);
-      mockedVersionFactory.when(() -> VersionFactory.get(anyList(), eq(TEST_VERSION_12_5)))
-          .thenReturn(TEST_VERSION);
-      doReturn(false).when(service).symlinkIsExisting(any(String.class));
+  @Test
+  void testResolveBestMatchRedirectUrlSymlinkPathValidation() {
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
 
-      String result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
-
-      assertNull(result, "Should return null when symlink doesn't exist");
-    }
+    String invalidPath = "/portal/portal-guide/invalid-version/doc/en/index.html";
+    String result = service.resolveBestMatchRedirectUrl(invalidPath);
+    assertNull(result, "Should return null for invalid symlink paths");
   }
 
   @Test

@@ -300,7 +300,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
+  private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
@@ -329,7 +329,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  static boolean validatePathWithinCacheRoot(Path path) {
+  private static boolean validatePathWithinCacheRoot(Path path) {
     var cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     var normalizedPath = path.toAbsolutePath().normalize();
     return normalizedPath.startsWith(cacheRoot);
@@ -445,7 +445,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       DocumentLanguage language) {
     String productId = getProductName(productName);
     String bestMatchVersion = findBestMatchVersion(productId, version);
-
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
       return tryBuildUpdatedPath(productName, artifactName, bestMatchVersion, language);
     }
@@ -468,7 +467,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
+  private String handleDevOrLatest(String productName, String artifactName, String version, DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
@@ -496,7 +495,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return !input.contains(String.join("", forbiddenPathParts));
   }
 
-  boolean symlinkIsExisting(String symlinkPath) {
+  private boolean symlinkIsExisting(String symlinkPath) {
     try {
       String folderPath = DirectoryConstants.DATA_DIR + symlinkPath;
       return Files.exists(Paths.get(folderPath), LinkOption.NOFOLLOW_LINKS);
