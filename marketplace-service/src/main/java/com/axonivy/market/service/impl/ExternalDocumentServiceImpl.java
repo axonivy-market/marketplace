@@ -127,7 +127,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo
         .findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
-    String resolvedVersion = VersionFactory.getBestMatchMajorVersion(docMetaVersion, version, majorVersions);
+    String resolvedVersion = VersionFactory.get(docMetaVersion, version);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
         .findAny().orElse(null);
   }

@@ -16,6 +16,7 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -566,6 +567,13 @@ public class ProductServiceImpl implements ProductService {
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
+  }
+
+  @Override
+  public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
+    List<String> versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
+        isShowDevVersion);
+    return VersionFactory.get(versions, version);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {

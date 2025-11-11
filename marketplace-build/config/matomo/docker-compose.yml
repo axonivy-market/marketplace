@@ -2,44 +2,54 @@ name: matomo-prod
 
 services:
   matomo-db:
-    image: mysql:9.1.0
+    image: mariadb:lts
     container_name: matomo-db
     restart: always
     volumes:
-      - matomo-data:/var/lib/mysql:Z
+      - matomo-data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - 3310:3306
-    env_file:
-      - ./matomo-db.env
+      - 3306:3306
+    networks:
+      - matomo-network
 
   matomo-app:
     image: matomo:fpm-alpine
     container_name: matomo-app
     restart: always
-    links:
+    depends_on:
       - matomo-db
     volumes:
-      - matomo:/var/www/html:z
+      - ../app/config:/var/www/html/config
+      - ../app/misc:/var/www/html/misc
+      - matomo:/var/www/html
     environment:
       - MATOMO_DATABASE_HOST=matomo-db
       - PHP_MEMORY_LIMIT=2048M
-    env_file:
-      - ./matomo-db.env
+    networks:
+      - matomo-network
 
   matomo-web:
     image: nginx:alpine
     container_name: matomo-web
     restart: always
     volumes:
-      - matomo:/var/www/html:z,ro
       - ./matomo.conf:/etc/nginx/conf.d/default.conf:z,ro
+      - matomo:/var/www/html:ro
     ports:
       - 8085:80
+    depends_on:
+      - matomo-app
+    networks:
+      - matomo-network
+
+networks:
+  matomo-network:
+    external: true
 
 volumes:
   matomo-data:

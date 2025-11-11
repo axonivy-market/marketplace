@@ -139,6 +139,6 @@ public class VersionFactory {
     if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
     }
-    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(StringUtils.EMPTY);
+    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(releaseVersions.get(0));
   }
 }
