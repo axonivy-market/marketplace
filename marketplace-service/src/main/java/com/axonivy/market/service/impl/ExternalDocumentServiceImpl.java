@@ -77,7 +77,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
-    if (isPathOutsideCacheRoot(productId)) {
+    if (isCacheRootPathUnsafe(productId)) {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
@@ -178,7 +178,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return DocumentInfoResponse.builder().versions(documentVersions).languages(documentLanguages).build();
   }
 
-  public String findBestMatchVersionPath(String productId, String version) {
+  public String fallbackFindBestMatchVersion(String productId, String version) {
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
       return null;
@@ -264,12 +264,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private String createSymlinkForParent(Path parent, String majorVersion) {
-    if (isPathOutsideCacheRoot(majorVersion)) {
+    if (isCacheRootPathUnsafe(majorVersion)) {
       return EMPTY;
     }
     var artifactRoot = parent.getParent();
     var fileName = parent.getFileName();
-    if (artifactRoot == null || fileName == null || !validatePathWithinCacheRoot(artifactRoot)) {
+    if (artifactRoot == null || fileName == null || validatePathOutsideCacheRoot(artifactRoot)) {
       return null;
     }
 
@@ -313,7 +313,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       externalDocumentMetaRepo.save(meta);
       var docPath = Paths.get(location);
       var enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
-      if (!validatePathWithinCacheRoot(enPath)) {
+      if (validatePathOutsideCacheRoot(enPath)) {
         return;
       }
       if (!Files.exists(enPath)) {
@@ -328,10 +328,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private static boolean validatePathWithinCacheRoot(Path path) {
+  private static boolean validatePathOutsideCacheRoot(Path path) {
     var cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     var normalizedPath = path.toAbsolutePath().normalize();
-    return normalizedPath.startsWith(cacheRoot);
+    return !normalizedPath.startsWith(cacheRoot);
   }
 
   private ExternalDocumentMeta buildDocumentMeta(String location, DocumentLanguage language
@@ -427,7 +427,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (bestMatchVersionPath != null) {
       return bestMatchVersionPath;
     }
-    return findBestMatchVersionPath(productName, artifactName, version, language);
+    return fallbackFindBestMatchVersion(productName, artifactName, version, language);
   }
 
   private String findBestMatchSymlink(String productName, String artifactName, String version,
@@ -439,10 +439,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return null;
   }
 
-  private String findBestMatchVersionPath(String productName, String artifactName, String version,
+  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
       DocumentLanguage language) {
     String productId = getProductName(productName);
-    String bestMatchVersion = findBestMatchVersionPath(productId, version);
+    String bestMatchVersion = fallbackFindBestMatchVersion(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
       String updatedPath = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
           language);
@@ -479,7 +479,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return StringUtils.defaultIfBlank(symLink, EMPTY);
   }
 
-  private static boolean isPathOutsideCacheRoot(String input) {
+  private static boolean isCacheRootPathUnsafe(String input) {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
       return true;
     }
