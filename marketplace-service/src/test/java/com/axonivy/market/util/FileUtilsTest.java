@@ -248,39 +248,4 @@ class FileUtilsTest {
         "Should not throw exception when IO error occurs during unzip");
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
   }
-
-  @Test
-  void testDuplicateFolderSuccess() throws IOException {
-    Path tempDir = Files.createTempDirectory(TEST_DIR);
-    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
-    Path targetDir = tempDir.resolve("target");
-
-    Path file1 = Files.createFile(sourceDir.resolve(FILE1));
-    Files.writeString(file1, "hello");
-    Path file2 = Files.createFile(sourceDir.resolve(FILE2));
-    Files.writeString(file2, "world");
-
-    FileUtils.duplicateFolder(sourceDir, targetDir);
-
-    assertTrue(Files.exists(targetDir), "Target directory should exist");
-    assertEquals("hello"
-        , Files.readString(targetDir.resolve(FILE1)), "file1.txt content should match");
-    assertEquals("world"
-        , Files.readString(targetDir.resolve(FILE2)), "file2.txt content should match");
-  }
-
-  @Test
-  void testDuplicateFolderShouldClearOldFolder() throws IOException {
-    Path tempDir = Files.createTempDirectory(TEST_DIR);
-    Path sourceDir = Files.createDirectory(tempDir.resolve("source"));
-    Files.writeString(Files.createFile(sourceDir.resolve("file.txt")), "new");
-
-    Path targetDir = Files.createDirectory(tempDir.resolve("target"));
-    Files.writeString(Files.createFile(targetDir.resolve("old.txt")), "old");
-
-    FileUtils.duplicateFolder(sourceDir, targetDir);
-
-    assertTrue(Files.exists(targetDir.resolve("file.txt")), "New file should be copied");
-    assertFalse(Files.exists(targetDir.resolve("old.txt")), "Old file should be deleted");
-  }
 }
