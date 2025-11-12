@@ -178,7 +178,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return DocumentInfoResponse.builder().versions(documentVersions).languages(documentLanguages).build();
   }
 
-  public String findBestMatchVersion(String productId, String version) {
+  public String findBestMatchVersionPath(String productId, String version) {
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
       return null;
@@ -422,13 +422,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (isDevOrLatest(version)) {
       return handleDevOrLatest(productName, artifactName, version, language);
     }
-
-    String symlinkResult = findBestMatchSymlink(productName, artifactName, version, language);
-    if (symlinkResult != null) {
-      return symlinkResult;
+    
+    String bestMatchVersionPath = findBestMatchVersionPath(productName, artifactName, version, language);
+    if (bestMatchVersionPath != null) {
+      return bestMatchVersionPath;
     }
-
-    return fallbackFindBestMatchVersion(productName, artifactName, version, language);
+    return findBestMatchSymlink(productName, artifactName, version, language);
   }
 
   private String findBestMatchSymlink(String productName, String artifactName, String version,
@@ -440,10 +439,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return null;
   }
 
-  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
+  private String findBestMatchVersionPath(String productName, String artifactName, String version,
       DocumentLanguage language) {
     String productId = getProductName(productName);
-    String bestMatchVersion = findBestMatchVersion(productId, version);
+    String bestMatchVersion = findBestMatchVersionPath(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
       String updatedPath = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
           language);

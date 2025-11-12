@@ -188,7 +188,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(version)))
           .thenReturn(TEST_VERSION);
 
-      String result = service.findBestMatchVersion(PORTAL, version);
+      String result = service.findBestMatchVersionPath(PORTAL, version);
 
       assertEquals(TEST_VERSION, result, "Should return the matched version");
     }
@@ -581,7 +581,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     String productId = NON_EXISTENT_PRODUCT;
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
-    String result = service.findBestMatchVersion(productId, TEST_VERSION);
+    String result = service.findBestMatchVersionPath(productId, TEST_VERSION);
     assertNull(result, "Should return null when product not found");
     verify(productRepository).findById(productId);
     verify(externalDocumentMetaRepository, never()).findByProductId(any());
