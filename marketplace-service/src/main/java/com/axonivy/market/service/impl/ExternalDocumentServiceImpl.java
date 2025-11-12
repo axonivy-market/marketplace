@@ -423,11 +423,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return handleDevOrLatest(productName, artifactName, version, language);
     }
     
-    String bestMatchVersionPath = findBestMatchVersionPath(productName, artifactName, version, language);
+    String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
     if (bestMatchVersionPath != null) {
       return bestMatchVersionPath;
     }
-    return findBestMatchSymlink(productName, artifactName, version, language);
+    return findBestMatchVersionPath(productName, artifactName, version, language);
   }
 
   private String findBestMatchSymlink(String productName, String artifactName, String version,
@@ -471,7 +471,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return EMPTY;
     }
-    String bestMatchVersion = VersionFactory.get(majorVersions, version);
+    String bestMatchVersion = VersionFactory.getSymlinkVersion(majorVersions, version);
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }

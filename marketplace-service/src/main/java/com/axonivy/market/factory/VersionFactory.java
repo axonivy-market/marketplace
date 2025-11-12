@@ -141,4 +141,11 @@ public class VersionFactory {
     }
     return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(releaseVersions.get(0));
   }
+
+  public static String getSymlinkVersion(List<String> versions, String requestedVersion) {
+    var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()
+        .filter(Objects::nonNull)
+        .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1)).toList();
+    return sortedVersions.stream().filter(ver -> ver.startsWith(requestedVersion)).findAny().orElse(EMPTY);
+  }
 }
