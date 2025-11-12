@@ -333,8 +333,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
           .thenReturn(true);
 
       String path = String.join(CommonConstants.SLASH,
-          BASE_PATH + DEV_VERSION,
-          DOC_DIR,
+          BASE_PATH + DEV_VERSION, DOC_DIR,
           DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
       String result = service.resolveBestMatchRedirectUrl(path);
 
@@ -352,8 +351,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
           .thenReturn(true);
 
       String path = String.join(CommonConstants.SLASH,
-          BASE_PATH + LATEST_VERSION,
-          DOC_DIR,
+          BASE_PATH + LATEST_VERSION, DOC_DIR,
           DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
       String result = service.resolveBestMatchRedirectUrl(path);
 

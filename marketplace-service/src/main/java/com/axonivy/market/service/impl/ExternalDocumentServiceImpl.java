@@ -470,7 +470,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return null;
   }
 
-
   public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
       DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
