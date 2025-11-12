@@ -475,8 +475,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
-    String symLink = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
-    return StringUtils.defaultIfBlank(symLink, EMPTY);
+    return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
   }
 
   private static boolean isRequestPathUnsafe(String input) {
