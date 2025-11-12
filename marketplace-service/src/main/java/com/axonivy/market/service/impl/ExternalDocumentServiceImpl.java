@@ -422,7 +422,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (isDevOrLatest(version)) {
       return handleDevOrLatest(productName, artifactName, version, language);
     }
-    
+
     String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
     if (bestMatchVersionPath != null) {
       return bestMatchVersionPath;
