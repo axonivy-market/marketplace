@@ -77,7 +77,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
-    if (isCacheRootPathUnsafe(productId)) {
+    if (isRequestPathUnsafe(productId)) {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
@@ -264,7 +264,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private String createSymlinkForParent(Path parent, String majorVersion) {
-    if (isCacheRootPathUnsafe(majorVersion)) {
+    if (isRequestPathUnsafe(majorVersion)) {
       return EMPTY;
     }
     var artifactRoot = parent.getParent();
@@ -471,7 +471,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return EMPTY;
     }
-    String bestMatchVersion = VersionFactory.getSymlinkVersion(majorVersions, version);
+    String bestMatchVersion = VersionFactory.getBestMatchMajorVersion(majorVersions, version);
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
@@ -479,7 +479,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return StringUtils.defaultIfBlank(symLink, EMPTY);
   }
 
-  private static boolean isCacheRootPathUnsafe(String input) {
+  private static boolean isRequestPathUnsafe(String input) {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
       return true;
     }

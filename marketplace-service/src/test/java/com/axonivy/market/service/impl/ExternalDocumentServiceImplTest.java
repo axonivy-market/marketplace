@@ -507,7 +507,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         .thenReturn(List.of(meta));
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq(VERSION_INVALID), any()))
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq(VERSION_INVALID)))
           .thenReturn(null);
 
       var result = service.findExternalDocument(PORTAL, VERSION_INVALID);
@@ -545,7 +545,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testResolveBestMatchSymlinkVersionSuccess() {
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, TEST_VERSION_12_5))
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(majorVersions, TEST_VERSION_12_5))
           .thenReturn(TEST_VERSION);
 
       String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
