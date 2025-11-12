@@ -328,24 +328,40 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlDevVersion() {
-    String path = String.join(CommonConstants.SLASH,
-        BASE_PATH + DEV_VERSION,
-        DOC_DIR,
-        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should return valid path for dev version");
-    assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String path = String.join(CommonConstants.SLASH,
+          BASE_PATH + DEV_VERSION,
+          DOC_DIR,
+          DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+      String result = service.resolveBestMatchRedirectUrl(path);
+
+      assertNotNull(result, "Should return valid path for dev version");
+      assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
+      assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
+      assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
   }
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    String path = String.join(CommonConstants.SLASH,
-        BASE_PATH + LATEST_VERSION,
-        DOC_DIR,
-        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should return valid path for latest version");
-    assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String path = String.join(CommonConstants.SLASH,
+          BASE_PATH + LATEST_VERSION,
+          DOC_DIR,
+          DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+      String result = service.resolveBestMatchRedirectUrl(path);
+
+      assertNotNull(result, "Should return valid path for latest version");
+      assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+      assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
+      assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
   }
 
   @Test
@@ -596,22 +612,27 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
-    String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
-        DOC_DIR, CommonConstants.INDEX_HTML);
-    String result = service.resolveBestMatchRedirectUrl(devPath);
-    String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-        PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-    assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
 
-    String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
-        DOC_DIR, CommonConstants.INDEX_HTML);
-    result = service.resolveBestMatchRedirectUrl(latestPath);
-    String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-        PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-    assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
+          DOC_DIR, CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
 
-    result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
-    assertNull(result, "Should return null for invalid path components");
+      String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
+          DOC_DIR, CommonConstants.INDEX_HTML);
+      result = service.resolveBestMatchRedirectUrl(latestPath);
+      String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+
+      result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+      assertNull(result, "Should return null for invalid path components");
+    }
   }
 
   @Test

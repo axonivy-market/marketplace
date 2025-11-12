@@ -463,8 +463,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
-    return DocPathUtils.generatePath(productName, artifactName, version, language);
+    String updatedPath = DocPathUtils.generatePath(productName, artifactName, version, language);
+    if (isSymlinkExisting(updatedPath)) {
+      return updatedPath;
+    }
+    return null;
   }
+
 
   public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
       DocumentLanguage language) {
@@ -486,7 +491,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return input.contains(String.join(EMPTY, forbiddenPathParts));
   }
 
-  private boolean isSymlinkExisting(String symlinkPath) {
+  private static boolean isSymlinkExisting(String symlinkPath) {
     try {
       String folderPath = DirectoryConstants.DATA_DIR + symlinkPath;
       return Files.exists(Paths.get(folderPath), LinkOption.NOFOLLOW_LINKS);
