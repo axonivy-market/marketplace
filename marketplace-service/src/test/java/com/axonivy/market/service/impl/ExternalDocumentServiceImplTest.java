@@ -567,21 +567,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testResolveBestMatchSymlinkVersionMissingParameters() {
-    String result = service.resolveBestMatchSymlinkVersion(null, ARTIFACT_NAME, TEST_VERSION);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null productName");
-
-    result = service.resolveBestMatchSymlinkVersion(PORTAL, null, TEST_VERSION);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null artifactName");
-
-    result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, null);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null version");
-
-    result = service.resolveBestMatchSymlinkVersion(StringUtils.EMPTY, ARTIFACT_NAME, TEST_VERSION);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for empty productName");
-  }
-
-  @Test
   void testFindBestMatchVersionProductNotFound() {
     String productId = NON_EXISTENT_PRODUCT;
 

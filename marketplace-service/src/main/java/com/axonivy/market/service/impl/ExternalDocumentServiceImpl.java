@@ -433,7 +433,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       bestMatchVersion = version;
     } else {
       bestMatchVersion = resolveBestMatchSymlinkVersion(productName, artifactName, version);
-      if (bestMatchVersion == null) {
+      if (ObjectUtils.isEmpty(bestMatchVersion)) {
         bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
       }
     }
@@ -456,9 +456,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version) {
-    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
-      return EMPTY;
-    }
     String bestMatchVersion = VersionFactory.getBestMatchMajorVersion(majorVersions, version);
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
