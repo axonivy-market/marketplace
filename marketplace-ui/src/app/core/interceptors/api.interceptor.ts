@@ -54,7 +54,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
-  let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.API_URL);
+  let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
   if (isPlatformServer(platformId)) {
     apiURL = injector.get(API_INTERNAL_URL, environment.apiInternalUrl);
   }

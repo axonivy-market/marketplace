@@ -50,17 +50,17 @@ export class AuthService {
   ) {
     this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
 
-    this.BASE_URL = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.API_URL);
-    this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_API_URL) + '/user';
+    this.BASE_URL = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+    this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_API_URL) + '/user';
 
     const win = this.windowRef.nativeWindow;
-    const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_OAUTH_CALLBACK);
+    const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK);
     this.githubOAuthCallbackUrl = (win?.location?.origin ?? '') + callbackPath;
   }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
-    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.GITHUB_OAUTH_APP_CLIENT_ID);
+    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
     const authUrl = `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${state}`;
 
     const win = this.windowRef.nativeWindow;
@@ -166,7 +166,7 @@ export class AuthService {
     const currentDate = new Date();
 
     const diffTime = Math.abs(expDate.getTime() - currentDate.getTime());
-    const dayInMilliseconds = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.DAY_IN_MILLISECONDS);
+    const dayInMilliseconds = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_DAY_IN_MILLISECONDS);
     return Math.ceil(diffTime / dayInMilliseconds);
   }
 

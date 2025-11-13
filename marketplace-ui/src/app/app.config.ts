@@ -27,8 +27,8 @@ export const appConfig: ApplicationConfig = {
     provideMatomo(() => {
         const configService = inject(RuntimeConfigService);
         return {
-          siteId: configService.get(RUNTIME_CONFIG_KEYS.MATOMO_SITE_ID),
-          trackerUrl: configService.get(RUNTIME_CONFIG_KEYS.MATOMO_TRACKER_URL)
+          siteId: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_SITE_ID),
+          trackerUrl: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_TRACKER_URL)
         };
       },
       withRouter()
