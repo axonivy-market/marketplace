@@ -536,7 +536,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
           .thenReturn(StringUtils.EMPTY);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID);
+      String result = service.resolveBestMatchSymlinkVersion(VERSION_INVALID);
 
       assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is blank");
     }
@@ -548,7 +548,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
           .thenReturn(null);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID);
+      String result = service.resolveBestMatchSymlinkVersion(VERSION_INVALID);
       assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is null");
     }
   }
@@ -559,7 +559,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(majorVersions, TEST_VERSION_12_5))
           .thenReturn(TEST_VERSION);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5);
+      String result = service.resolveBestMatchSymlinkVersion(TEST_VERSION_12_5);
 
       assertNotNull(result, "Should return symlink path");
       assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
