@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -317,14 +318,18 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         return;
       }
       if (!Files.exists(enPath)) {
-        try {
-          var target = Path.of(CommonConstants.DOT_SEPARATOR);
-          prepareDirectoryForSymlinkPath(enPath);
-          Files.createSymbolicLink(enPath, target);
-        } catch (IOException e) {
-          log.error("Cannot create symlink for doc/en: {}", e.getMessage());
-        }
+        createSymlinkForDocLanguage(enPath);
       }
+    }
+  }
+
+  private void createSymlinkForDocLanguage(Path enPath) {
+    try {
+      var target = Path.of(CommonConstants.DOT_SEPARATOR);
+      prepareDirectoryForSymlinkPath(enPath);
+      Files.createSymbolicLink(enPath, target);
+    } catch (IOException e) {
+      log.error("Cannot create symlink for doc/en: {}", e.getMessage());
     }
   }
 
@@ -419,30 +424,28 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     DocumentLanguage extractLanguage = extractLanguage(path);
     DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
-    String redirectURL = EMPTY;
+    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
+      return null;
+    }
+
+    String bestMatchVersion;
     if (isDevOrLatest(version)) {
-      redirectURL = handleDevOrLatest(productName, artifactName, version, language);
+      bestMatchVersion = version;
     } else {
-      String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
-      if (bestMatchVersionPath == null) {
-        redirectURL = fallbackFindBestMatchVersion(productName, artifactName, version, language);
+      bestMatchVersion = resolveBestMatchSymlinkVersion(productName, artifactName, version);
+      if (bestMatchVersion == null) {
+        bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
       }
     }
+    String redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
     return isSymlinkExisting(redirectURL) ? redirectURL : null;
   }
 
-  private String findBestMatchSymlink(String productName, String artifactName, String version,
-      DocumentLanguage language) {
-    return resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-  }
-
-  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
-      DocumentLanguage language) {
+  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version) {
     String productId = getProductName(productName);
     String bestMatchVersion = fallbackFindBestMatchVersion(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
-      return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
-          language);
+      return bestMatchVersion;
     }
     return null;
   }
@@ -452,16 +455,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private String handleDevOrLatest(String productName, String artifactName, String version,
-      DocumentLanguage language) {
-    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
-      return null;
-    }
-    return DocPathUtils.generatePath(productName, artifactName, version, language);
-  }
-
-  public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
-      DocumentLanguage language) {
+  public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return EMPTY;
     }
@@ -469,7 +463,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
-    return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
+    return bestMatchVersion;
   }
 
   private boolean isRequestPathUnsafe(String input) {
