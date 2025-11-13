@@ -453,12 +453,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return null;
   }
 
-  private static boolean isDevOrLatest(String version) {
+  private boolean isDevOrLatest(String version) {
     return Arrays.stream(new String[]{DevelopmentVersion.DEV.getCode(), DevelopmentVersion.LATEST.getCode()})
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private static String handleDevOrLatest(String productName, String artifactName, String version,
+  private String handleDevOrLatest(String productName, String artifactName, String version,
       DocumentLanguage language) {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
@@ -482,7 +482,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
   }
 
-  private static boolean isRequestPathUnsafe(String input) {
+  private boolean isRequestPathUnsafe(String input) {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
       return true;
     }
@@ -490,7 +490,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return input.contains(String.join(EMPTY, forbiddenPathParts));
   }
 
-  private static boolean isSymlinkExisting(String symlinkPath) {
+  private boolean isSymlinkExisting(String symlinkPath) {
     try {
       String folderPath = DirectoryConstants.DATA_DIR + symlinkPath;
       return Files.exists(Paths.get(folderPath), LinkOption.NOFOLLOW_LINKS);
