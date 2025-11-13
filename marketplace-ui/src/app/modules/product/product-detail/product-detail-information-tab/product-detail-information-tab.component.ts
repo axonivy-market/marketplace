@@ -11,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { SHOW_DEV_VERSION, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
+import { PRODUCT_DETAIL_TABS, SHOW_DEV_VERSION, TAB_PREFIX, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
@@ -167,10 +167,21 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   addVersionParamToRoute(selectedVersion: string) {
     this.router
       .navigate([], {
+        fragment: this.getTabFragment(this.route.snapshot.fragment),
         relativeTo: this.route,
         queryParams: { [ROUTER.VERSION]: selectedVersion },
         queryParamsHandling: 'merge'
       })
       .then();
+  }
+
+  getTabFragment(fragment: string | null): string {
+    const isValidTab = PRODUCT_DETAIL_TABS.some(
+      tab => tab.tabId === fragment
+    );
+    if (isValidTab && fragment) {
+      return fragment;
+    }
+    return PRODUCT_DETAIL_TABS[0].value;
   }
 }
