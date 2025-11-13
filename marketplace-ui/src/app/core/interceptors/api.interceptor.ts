@@ -13,7 +13,9 @@ import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rx
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
+import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
+import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -32,7 +34,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
-  const injector = inject(Injector);
   const transferState = inject(TransferState);
   const key = makeStateKey<unknown>(req.urlWithParams);
 
@@ -51,13 +52,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     loadingService.showLoading(req.context.get(LoadingComponent));
   }
 
-  let apiURL = environment.apiUrl;
+  const injector = inject(Injector);
+  const runtimeConfig = inject(RuntimeConfigService);
+  let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
   if (isPlatformServer(platformId)) {
-    try {
-      apiURL = injector.get(API_INTERNAL_URL, apiURL);
-    } catch (e) {
-      console.info('SSR Interceptor ERROR: Could not inject API_INTERNAL_URL: ', e);
-    }
+    apiURL = injector.get(API_INTERNAL_URL, environment.apiInternalUrl);
   }
   let requestURL = req.url;
   if (!requestURL.includes(apiURL)) {
