@@ -419,24 +419,21 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     DocumentLanguage extractLanguage = extractLanguage(path);
     DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
+    String redirectURL = EMPTY;
     if (isDevOrLatest(version)) {
-      return handleDevOrLatest(productName, artifactName, version, language);
+      redirectURL = handleDevOrLatest(productName, artifactName, version, language);
+    } else {
+      String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
+      if (bestMatchVersionPath == null) {
+        redirectURL = fallbackFindBestMatchVersion(productName, artifactName, version, language);
+      }
     }
-
-    String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
-    if (bestMatchVersionPath != null) {
-      return bestMatchVersionPath;
-    }
-    return fallbackFindBestMatchVersion(productName, artifactName, version, language);
+    return isSymlinkExisting(redirectURL) ? redirectURL : null;
   }
 
   private String findBestMatchSymlink(String productName, String artifactName, String version,
       DocumentLanguage language) {
-    String symlinkPath = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-    if (StringUtils.isNotBlank(symlinkPath) && isSymlinkExisting(symlinkPath)) {
-      return symlinkPath;
-    }
-    return null;
+    return resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
   }
 
   private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
@@ -444,11 +441,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String productId = getProductName(productName);
     String bestMatchVersion = fallbackFindBestMatchVersion(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
-      String updatedPath = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
+      return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
           language);
-      if (isSymlinkExisting(updatedPath)) {
-        return updatedPath;
-      }
     }
     return null;
   }
@@ -463,11 +457,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
-    String updatedPath = DocPathUtils.generatePath(productName, artifactName, version, language);
-    if (isSymlinkExisting(updatedPath)) {
-      return updatedPath;
-    }
-    return null;
+    return DocPathUtils.generatePath(productName, artifactName, version, language);
   }
 
   public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
