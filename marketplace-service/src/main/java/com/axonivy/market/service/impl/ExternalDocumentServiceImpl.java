@@ -328,7 +328,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private static boolean validatePathOutsideCacheRoot(Path path) {
+  private boolean validatePathOutsideCacheRoot(Path path) {
     var cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     var normalizedPath = path.toAbsolutePath().normalize();
     return !normalizedPath.startsWith(cacheRoot);
