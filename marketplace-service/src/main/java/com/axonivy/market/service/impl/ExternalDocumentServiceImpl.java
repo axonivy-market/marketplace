@@ -317,18 +317,22 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         return;
       }
       if (!Files.exists(enPath)) {
-        try {
-          var target = Path.of(CommonConstants.DOT_SEPARATOR);
-          prepareDirectoryForSymlinkPath(enPath);
-          Files.createSymbolicLink(enPath, target);
-        } catch (IOException e) {
-          log.error("Cannot create symlink for doc/en: {}", e.getMessage());
-        }
+        createSymlinkForDocLanguage(enPath);
       }
     }
   }
 
-  private static boolean validatePathOutsideCacheRoot(Path path) {
+  private void createSymlinkForDocLanguage(Path enPath) {
+    try {
+      var target = Path.of(CommonConstants.DOT_SEPARATOR);
+      prepareDirectoryForSymlinkPath(enPath);
+      Files.createSymbolicLink(enPath, target);
+    } catch (IOException e) {
+      log.error("Cannot create symlink for doc/en: {}", e.getMessage());
+    }
+  }
+
+  private boolean validatePathOutsideCacheRoot(Path path) {
     var cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     var normalizedPath = path.toAbsolutePath().normalize();
     return !normalizedPath.startsWith(cacheRoot);
@@ -419,66 +423,46 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     DocumentLanguage extractLanguage = extractLanguage(path);
     DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
+    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
+      return null;
+    }
+
+    String bestMatchVersion;
     if (isDevOrLatest(version)) {
-      return handleDevOrLatest(productName, artifactName, version, language);
+      bestMatchVersion = version;
+    } else {
+      bestMatchVersion = resolveBestMatchSymlinkVersion(version);
+      if (ObjectUtils.isEmpty(bestMatchVersion)) {
+        bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
+      }
     }
-
-    String bestMatchVersionPath = findBestMatchSymlink(productName, artifactName, version, language);
-    if (bestMatchVersionPath != null) {
-      return bestMatchVersionPath;
-    }
-    return fallbackFindBestMatchVersion(productName, artifactName, version, language);
+    String redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
+    return isSymlinkExisting(redirectURL) ? redirectURL : null;
   }
 
-  private String findBestMatchSymlink(String productName, String artifactName, String version,
-      DocumentLanguage language) {
-    String symlinkPath = resolveBestMatchSymlinkVersion(productName, artifactName, version, language);
-    if (StringUtils.isNotBlank(symlinkPath) && isSymlinkExisting(symlinkPath)) {
-      return symlinkPath;
-    }
-    return null;
-  }
-
-  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version,
-      DocumentLanguage language) {
+  private String fallbackFindBestMatchVersion(String productName, String artifactName, String version) {
     String productId = getProductName(productName);
     String bestMatchVersion = fallbackFindBestMatchVersion(productId, version);
     if (StringUtils.isNoneBlank(productName, artifactName, bestMatchVersion)) {
-      String updatedPath = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion,
-          language);
-      if (isSymlinkExisting(updatedPath)) {
-        return updatedPath;
-      }
+      return bestMatchVersion;
     }
     return null;
   }
 
-  private static boolean isDevOrLatest(String version) {
+  private boolean isDevOrLatest(String version) {
     return Arrays.stream(new String[]{DevelopmentVersion.DEV.getCode(), DevelopmentVersion.LATEST.getCode()})
         .anyMatch(devVersion -> StringUtils.equalsIgnoreCase(version, devVersion));
   }
 
-  private static String handleDevOrLatest(String productName, String artifactName, String version,
-      DocumentLanguage language) {
-    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
-      return null;
-    }
-    return DocPathUtils.generatePath(productName, artifactName, version, language);
-  }
-
-  public String resolveBestMatchSymlinkVersion(String productName, String artifactName, String version,
-      DocumentLanguage language) {
-    if (StringUtils.isAnyBlank(productName, artifactName, version)) {
-      return EMPTY;
-    }
+  public String resolveBestMatchSymlinkVersion(String version) {
     String bestMatchVersion = VersionFactory.getBestMatchMajorVersion(majorVersions, version);
     if (StringUtils.isBlank(bestMatchVersion)) {
       return EMPTY;
     }
-    return DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
+    return bestMatchVersion;
   }
 
-  private static boolean isRequestPathUnsafe(String input) {
+  private boolean isRequestPathUnsafe(String input) {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
       return true;
     }
