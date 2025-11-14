@@ -1081,16 +1081,6 @@ describe('ProductDetailComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
   });
 
-  it('should get tab value from fragment', () => {
-    const tabValue = component.getTabValueFromFragment('tab-description');
-    expect(tabValue).toBe('description');
-  });
-
-  it('should return default tab value if fragment is invalid', () => {
-    const tabValue = component.getTabValueFromFragment('tab-invalid');
-    expect(tabValue).toBe(PRODUCT_DETAIL_TABS[0].value);
-  });
-
   it('should call setActiveTab with correct tab value from fragment', () => {
     spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();

@@ -143,25 +143,21 @@ export const SORT_TYPES: ItemDropdown<SortOption>[] = [
 export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   {
     activeClass: "activeTab === 'description'",
-    tabId: 'tab-description',
     value: 'description',
     label: 'common.product.detail.description'
   },
   {
     activeClass: "activeTab === 'demo'",
-    tabId: 'tab-demo',
     value: 'demo',
     label: 'common.product.detail.demo'
   },
   {
     activeClass: "activeTab === 'setup'",
-    tabId: 'tab-setup',
     value: 'setup',
     label: 'common.product.detail.installationGuide'
   },
   {
     activeClass: "activeTab === 'dependency'",
-    tabId: 'tab-dependency',
     value: 'dependency',
     label: 'common.product.detail.maven.label'
   },
