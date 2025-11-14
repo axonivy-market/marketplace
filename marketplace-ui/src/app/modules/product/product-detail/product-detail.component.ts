@@ -34,7 +34,6 @@ import {
   OG_TITLE_KEY,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
-  TAB_PREFIX,
   UNESCAPE_GITHUB_CONTENT_REGEX,
   VERSION
 } from '../../../shared/constants/common.constant';
