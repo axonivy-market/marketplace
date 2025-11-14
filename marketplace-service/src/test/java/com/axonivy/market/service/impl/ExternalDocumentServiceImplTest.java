@@ -328,24 +328,38 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlDevVersion() {
-    String path = String.join(CommonConstants.SLASH,
-        BASE_PATH + DEV_VERSION,
-        DOC_DIR,
-        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should return valid path for dev version");
-    assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String path = String.join(CommonConstants.SLASH,
+          BASE_PATH + DEV_VERSION, DOC_DIR,
+          DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+      String result = service.resolveBestMatchRedirectUrl(path);
+
+      assertNotNull(result, "Should return valid path for dev version");
+      assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
+      assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
+      assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
   }
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    String path = String.join(CommonConstants.SLASH,
-        BASE_PATH + LATEST_VERSION,
-        DOC_DIR,
-        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
-    String result = service.resolveBestMatchRedirectUrl(path);
-    assertNotNull(result, "Should return valid path for latest version");
-    assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String path = String.join(CommonConstants.SLASH,
+          BASE_PATH + LATEST_VERSION, DOC_DIR,
+          DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+      String result = service.resolveBestMatchRedirectUrl(path);
+
+      assertNotNull(result, "Should return valid path for latest version");
+      assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+      assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
+      assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
   }
 
   @Test
@@ -522,8 +536,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
           .thenReturn(StringUtils.EMPTY);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
-          DocumentLanguage.ENGLISH);
+      String result = service.resolveBestMatchSymlinkVersion(VERSION_INVALID);
 
       assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is blank");
     }
@@ -535,9 +548,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.get(majorVersions, VERSION_INVALID))
           .thenReturn(null);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, VERSION_INVALID,
-          DocumentLanguage.ENGLISH);
-
+      String result = service.resolveBestMatchSymlinkVersion(VERSION_INVALID);
       assertEquals(StringUtils.EMPTY, result, "Should return empty string when bestMatchVersion is null");
     }
   }
@@ -548,32 +559,11 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(majorVersions, TEST_VERSION_12_5))
           .thenReturn(TEST_VERSION);
 
-      String result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
-          DocumentLanguage.ENGLISH);
+      String result = service.resolveBestMatchSymlinkVersion(TEST_VERSION_12_5);
 
       assertNotNull(result, "Should return symlink path");
-      assertTrue(result.contains(PORTAL), "Should contain product name");
       assertTrue(result.contains(TEST_VERSION), "Should contain matched version");
     }
-  }
-
-  @Test
-  void testResolveBestMatchSymlinkVersionMissingParameters() {
-    String result = service.resolveBestMatchSymlinkVersion(null, ARTIFACT_NAME, TEST_VERSION,
-        DocumentLanguage.ENGLISH);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null productName");
-
-    result = service.resolveBestMatchSymlinkVersion(PORTAL, null, TEST_VERSION,
-        DocumentLanguage.ENGLISH);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null artifactName");
-
-    result = service.resolveBestMatchSymlinkVersion(PORTAL, ARTIFACT_NAME, null,
-        DocumentLanguage.ENGLISH);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for null version");
-
-    result = service.resolveBestMatchSymlinkVersion(StringUtils.EMPTY, ARTIFACT_NAME, TEST_VERSION,
-        DocumentLanguage.ENGLISH);
-    assertEquals(StringUtils.EMPTY, result, "Should return empty string for empty productName");
   }
 
   @Test
@@ -596,22 +586,29 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
-    String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
-        DOC_DIR, CommonConstants.INDEX_HTML);
-    String result = service.resolveBestMatchRedirectUrl(devPath);
-    String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-        PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-    assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
 
-    String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
-        DOC_DIR, CommonConstants.INDEX_HTML);
-    result = service.resolveBestMatchRedirectUrl(latestPath);
-    String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-        PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-    assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
+          DOC_DIR, CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
 
-    result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
-    assertNull(result, "Should return null for invalid path components");
+      String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
+          DOC_DIR, CommonConstants.INDEX_HTML);
+      result = service.resolveBestMatchRedirectUrl(latestPath);
+      String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(false);
+      result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
+      assertNull(result, "Should return null for invalid path components");
+    }
   }
 
   @Test
@@ -717,7 +714,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
          MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
+      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq(TEST_VERSION_12_5)))
           .thenReturn(TEST_VERSION);
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
@@ -728,7 +725,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertNotNull(result, "Should return path when symlink exists");
       String expectedPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
           ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-      assertTrue(result.contains(expectedPath), "Should return updated path with best match version");
+      assertEquals(expectedPath, result, "Should return updated path with best match version");
     }
   }
 
