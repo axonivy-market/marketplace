@@ -175,6 +175,7 @@ describe('ProductDetailVersionActionComponent', () => {
     // Expectations
     expect(router.navigate).toHaveBeenCalledWith([], {
       relativeTo: route,
+      fragment: 'description',
       queryParams: { [ROUTER.VERSION]: version },
       queryParamsHandling: 'merge'
     });

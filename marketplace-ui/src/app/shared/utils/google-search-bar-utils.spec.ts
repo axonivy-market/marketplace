@@ -2,7 +2,6 @@ import { Renderer2 } from '@angular/core';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from './google-search-bar.utils';
-import { environment } from '../../../environments/environment';
 import {
   GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE,
   GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
