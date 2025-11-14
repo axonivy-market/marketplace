@@ -37,7 +37,10 @@ pipeline {
         MARKET_SCHEDULING_TASK_DOCUMENTS_CRON = credentials('MARKET_SCHEDULING_TASK_DOCUMENTS_CRON')
         MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON = credentials('MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON')
         MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON = credentials('MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON')
-
+        MARKET_API_INTERNAL_URL = credentials('MARKET_API_INTERNAL_URL')
+        MARKET_DAY_IN_MILLISECONDS = credentials('MARKET_DAY_IN_MILLISECONDS')
+        MARKET_MATOMO_SITE_ID = credentials('MARKET_MATOMO_SITE_ID')
+        MARKET_MATOMO_TRACKER_URL = credentials('MARKET_MATOMO_TRACKER_URL')
     }
 
     stages {
@@ -76,6 +79,10 @@ pipeline {
                     git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
                     sh """
                         ENV_FILE='./marketplace-build/.env'
+                        sed -i "s|^MARKET_API_INTERNAL_URL=.*\$|MARKET_API_INTERNAL_URL=${env.MARKET_API_INTERNAL_URL}|" \$ENV_FILE
+                        sed -i "s|^MARKET_DAY_IN_MILLISECONDS=.*\$|MARKET_DAY_IN_MILLISECONDS=${env.MARKET_DAY_IN_MILLISECONDS}|" \$ENV_FILE
+                        sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
+                        sed -i "s|^MARKET_MATOMO_TRACKER_URL=.*\$|MARKET_MATOMO_TRACKER_URL=${env.MARKET_MATOMO_TRACKER_URL}|" \$ENV_FILE
                         sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
                         sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
                         sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
