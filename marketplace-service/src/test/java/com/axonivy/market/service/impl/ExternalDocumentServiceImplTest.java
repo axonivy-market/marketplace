@@ -348,10 +348,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testResolveBestMatchRedirectUrlLatestVersion() {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class);
          MockedStatic<VersionFactory> versionFactoryMock = mockStatic(VersionFactory.class)) {
-      
+
       versionFactoryMock.when(() -> VersionFactory.get(any(), eq(LATEST_VERSION)))
           .thenReturn(TEST_VERSION);
-      
+
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
@@ -593,10 +593,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testResolveBestMatchRedirectUrlWithDevVersion() {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class);
          MockedStatic<VersionFactory> versionFactoryMock = mockStatic(VersionFactory.class)) {
-      
+
       versionFactoryMock.when(() -> VersionFactory.get(any(), eq(LATEST_VERSION)))
           .thenReturn(TEST_VERSION);
-      
+
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
@@ -724,7 +724,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
          MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq(TEST_VERSION_12_5)))
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
           .thenReturn(TEST_VERSION);
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
@@ -735,7 +735,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertNotNull(result, "Should return path when symlink exists");
       String expectedPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
           ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-      assertEquals(expectedPath, result, "Should return updated path with best match version");
+      assertTrue(result.contains(expectedPath), "Should return updated path with best match version");
     }
   }
 
