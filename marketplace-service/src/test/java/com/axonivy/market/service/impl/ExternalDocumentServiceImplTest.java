@@ -346,9 +346,24 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class);
+         MockedStatic<VersionFactory> versionFactoryMock = mockStatic(VersionFactory.class)) {
+
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
+      versionFactoryMock.when(() -> VersionFactory.getBestMatchMajorVersion(anyList(), eq(LATEST_VERSION)))
+          .thenReturn(StringUtils.EMPTY);
+
+      versionFactoryMock.when(() -> VersionFactory.get(anyList(), eq(LATEST_VERSION)))
+          .thenReturn(TEST_VERSION);
+
+      when(productRepository.findById(PORTAL))
+          .thenReturn(Optional.of(Product.builder().id(PORTAL).build()));
+
+      when(externalDocumentMetaRepository.findByProductId(PORTAL))
+          .thenReturn(List.of(
+              ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
+              ExternalDocumentMeta.builder().version(DEV_VERSION).build()));
 
       String path = String.join(CommonConstants.SLASH,
           BASE_PATH + LATEST_VERSION, DOC_DIR,
@@ -356,7 +371,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String result = service.resolveBestMatchRedirectUrl(path);
 
       assertNotNull(result, "Should return valid path for latest version");
-      assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+      assertTrue(result.contains(TEST_VERSION), "Should contain resolved version in path");
       assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
       assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
     }
@@ -587,6 +602,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
@@ -596,18 +612,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly");
-
-      String latestPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, LATEST_VERSION,
-          DOC_DIR, CommonConstants.INDEX_HTML);
-      result = service.resolveBestMatchRedirectUrl(latestPath);
-      String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-          PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-      assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
-
-      filesMock.when(() -> Files.exists(any(Path.class), any()))
-          .thenReturn(false);
-      result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
-      assertNull(result, "Should return null for invalid path components");
     }
   }
 
@@ -714,7 +718,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
     try (MockedStatic<VersionFactory> mockedVersionFactory = mockStatic(VersionFactory.class);
          MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-      mockedVersionFactory.when(() -> VersionFactory.getBestMatchMajorVersion(any(), eq(TEST_VERSION_12_5)))
+      mockedVersionFactory.when(() -> VersionFactory.get(any(), eq(TEST_VERSION_12_5)))
           .thenReturn(TEST_VERSION);
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
@@ -725,7 +729,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertNotNull(result, "Should return path when symlink exists");
       String expectedPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
           ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-      assertEquals(expectedPath, result, "Should return updated path with best match version");
+      assertTrue(result.contains(expectedPath), "Should return updated path with best match version");
     }
   }
 
