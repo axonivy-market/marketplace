@@ -20,8 +20,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
+import { RouteUtils } from '../../../../shared/utils/route.utils';
 const SELECTED_VERSION = 'selectedVersion';
-const PRODUCT_DETAIL = 'productDetail';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
 const BRANCH = 'master';
@@ -167,6 +167,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   addVersionParamToRoute(selectedVersion: string) {
     this.router
       .navigate([], {
+        fragment: RouteUtils.getTabFragment(this.route.snapshot.fragment),
         relativeTo: this.route,
         queryParams: { [ROUTER.VERSION]: selectedVersion },
         queryParamsHandling: 'merge'
