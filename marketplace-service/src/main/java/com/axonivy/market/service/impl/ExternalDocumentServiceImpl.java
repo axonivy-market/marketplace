@@ -240,16 +240,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (latestSupportedDocVersions.containsKey(version)) {
       String mappedVersion = latestSupportedDocVersions.get(version);
       String symlinkVersion = StringUtils.defaultIfBlank(mappedVersion, version);
-      handleSymlinkAndBuild(location, artifact, productId, symlinkVersion);
+      createSymlinkForMajorVersion(Paths.get(location), symlinkVersion);
     }
-    buildDocumentWithLanguage(location, artifact, productId, version);
-  }
-
-  private void handleSymlinkAndBuild(String location, Artifact artifact, String productId, String majorVersion) {
-    String majorLocation = createSymlinkForMajorVersion(Paths.get(location), majorVersion);
-    if (StringUtils.isNotBlank(majorLocation)) {
-      buildDocumentWithLanguage(majorLocation, artifact, productId, majorVersion);
-    }
+    buildDocumentWithLanguage(location, artifact, productId, version, latestSupportedDocVersions);
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
@@ -300,13 +293,22 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version) {
+  private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version,
+      Map<String, String> latestSupportedDocVersions) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
       relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
         ExternalDocumentMeta meta = buildDocumentMeta(link, language, artifact, productId, version);
         externalDocumentMetaRepo.save(meta);
+
+        if (latestSupportedDocVersions.containsKey(version)) {
+          String majorVersion = latestSupportedDocVersions.get(version);
+          String majorLink = link.replace(version, majorVersion);
+          ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
+          externalDocumentMetaRepo.save(majorMeta);
+        }
+
       });
     } else {
       ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
