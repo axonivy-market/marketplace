@@ -308,7 +308,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
           externalDocumentMetaRepo.save(majorMeta);
         }
-
       });
     } else {
       ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
