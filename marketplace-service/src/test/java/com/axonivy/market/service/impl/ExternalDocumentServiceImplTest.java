@@ -346,7 +346,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlLatestVersion() {
-    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class);
+         MockedStatic<VersionFactory> versionFactoryMock = mockStatic(VersionFactory.class)) {
+      
+      versionFactoryMock.when(() -> VersionFactory.get(any(), eq(LATEST_VERSION)))
+          .thenReturn(TEST_VERSION);
+      
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
@@ -356,7 +361,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String result = service.resolveBestMatchRedirectUrl(path);
 
       assertNotNull(result, "Should return valid path for latest version");
-      assertTrue(result.contains(LATEST_VERSION), "Should contain latest in path");
+      assertTrue(result.contains(TEST_VERSION), "Should contain resolved version in path");
       assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
       assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
     }
@@ -586,7 +591,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlWithDevVersion() {
-    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class);
+         MockedStatic<VersionFactory> versionFactoryMock = mockStatic(VersionFactory.class)) {
+      
+      versionFactoryMock.when(() -> VersionFactory.get(any(), eq(LATEST_VERSION)))
+          .thenReturn(TEST_VERSION);
+      
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
@@ -601,13 +611,13 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
           DOC_DIR, CommonConstants.INDEX_HTML);
       result = service.resolveBestMatchRedirectUrl(latestPath);
       String expectedLatestResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-          PORTAL, ARTIFACT_NAME, LATEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
-      assertEquals(expectedLatestResult, result, "Should handle latest version correctly");
+          PORTAL, ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedLatestResult, result, "Should handle latest version correctly by resolving to actual version");
 
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(false);
-      result = service.resolveBestMatchRedirectUrl(RELATIVE_DOC_LOCATION_EN);
-      assertNull(result, "Should return null for invalid path components");
+      result = service.resolveBestMatchRedirectUrl(RELATIVE_WORKING_LOCATION_EN);
+      assertNull(result, "Should return null when symlink doesn't exist");
     }
   }
 
