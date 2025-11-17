@@ -43,6 +43,7 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize, take } from 'rxjs/operators';
+import { RouteUtils } from '../../../../shared/utils/route.utils';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
@@ -187,6 +188,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     const extractedVersion = selectedVersion.replace(VERSION.displayPrefix, '');
     this.router
       .navigate([], {
+        fragment: RouteUtils.getTabFragment(this.route.snapshot.fragment),
         relativeTo: this.route,
         queryParams: { [ROUTER.VERSION]: extractedVersion },
         queryParamsHandling: 'merge'

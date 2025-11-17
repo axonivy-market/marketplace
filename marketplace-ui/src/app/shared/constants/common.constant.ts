@@ -143,25 +143,21 @@ export const SORT_TYPES: ItemDropdown<SortOption>[] = [
 export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   {
     activeClass: "activeTab === 'description'",
-    tabId: 'tab-description',
     value: 'description',
     label: 'common.product.detail.description'
   },
   {
     activeClass: "activeTab === 'demo'",
-    tabId: 'tab-demo',
     value: 'demo',
     label: 'common.product.detail.demo'
   },
   {
     activeClass: "activeTab === 'setup'",
-    tabId: 'tab-setup',
     value: 'setup',
     label: 'common.product.detail.installationGuide'
   },
   {
     activeClass: "activeTab === 'dependency'",
-    tabId: 'tab-dependency',
     value: 'dependency',
     label: 'common.product.detail.maven.label'
   },
@@ -335,7 +331,6 @@ export const FEEDBACK_APPROVAL_SESSION_TOKEN = 'feedback-approval-token';
 
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
-export const TAB_PREFIX = 'tab-';
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
 
 // Open Graph Meta Tags
