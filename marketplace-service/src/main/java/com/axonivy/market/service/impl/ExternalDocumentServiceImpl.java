@@ -428,8 +428,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     String bestMatchVersion;
-    if (DevelopmentVersion.of(version) != null) {
-      bestMatchVersion = resolveDevOrLatestVersion(version);
+    if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(version)) {
+      bestMatchVersion = version;
     } else {
       bestMatchVersion = resolveBestMatchSymlinkVersion(version);
       if (ObjectUtils.isEmpty(bestMatchVersion)) {
@@ -447,13 +447,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return bestMatchVersion;
     }
     return null;
-  }
-
-  private String resolveDevOrLatestVersion(String version) {
-    if (version.equals(DevelopmentVersion.LATEST.getCode())) {
-      return VersionFactory.get(majorVersions, version);
-    }
-    return version;
   }
 
   public String resolveBestMatchSymlinkVersion(String version) {
