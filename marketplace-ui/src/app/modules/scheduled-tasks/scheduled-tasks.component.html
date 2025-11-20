@@ -1,0 +1,39 @@
+<div class="scheduled-tasks">
+  <h2>Scheduled Tasks</h2>
+  <table class="table table-sm table-striped" *ngIf="tasks$ | async as tasks">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Cron</th>
+        <th>Running</th>
+        <th>Last Start</th>
+        <th>Last End</th>
+        <th>Last Success End</th>
+        <th>Success</th>
+        <th>Next Execution</th>
+        <th>Error</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of tasks">
+        <td>{{ t.id }}</td>
+        <td><code>{{ t.cronExpression || '-' }}</code></td>
+        <td>
+          <span [class.text-success]="t.running" [class.text-muted]="!t.running">
+            {{ t.running ? 'RUNNING' : 'IDLE' }}
+          </span>
+        </td>
+        <td>{{ formatDate(t.lastStart) }}</td>
+        <td>{{ formatDate(t.lastEnd) }}</td>
+        <td>{{ formatDate(t.lastSuccessEnd) }}</td>
+        <td [class.text-success]="t.lastSuccess" [class.text-danger]="!t.lastSuccess">
+          {{ t.lastSuccess ? 'OK' : 'FAIL' }}
+        </td>
+        <td>{{ formatDate(t.nextExecution) }}</td>
+        <td class="text-truncate" style="max-width:200px" [title]="t.lastError">{{ t.lastError || '' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p>
+  <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p>
+</div>

@@ -47,6 +47,10 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
+    path: 'scheduled-tasks',
+    loadComponent: () => import('./modules/scheduled-tasks/scheduled-tasks.component').then(m => m.ScheduledTasksComponent)
+  },
+  {
     path: 'monitoring/:repo/:workflow',
     loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },

@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 
@@ -30,16 +31,18 @@ public class ScheduledTasks {
   private final ExternalDocumentService externalDocumentService;
   private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
+  private final ScheduledTaskRegistry scheduledTaskRegistry;
+  private final Environment environment;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
-    run(() -> productService.syncLatestDataFromMarketRepo(false),
+    execute("syncDataForProductFromGitHubRepo", SYNC_PRODUCTS_CRON, () -> productService.syncLatestDataFromMarketRepo(false),
         "Product from GitHub repo");
   }
 
   @Scheduled(cron = SYNC_DOCUMENTS_CRON)
   public void syncDataForProductDocuments() {
-    run(() -> {
+    execute("syncDataForProductDocuments", SYNC_DOCUMENTS_CRON, () -> {
       for (var product : productRepo.findAllProductsHaveDocument()) {
         externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
       }
@@ -48,13 +51,14 @@ public class ScheduledTasks {
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductMavenDependencies() {
-    run(() -> productDependencyService.syncIARDependenciesForProducts(false, null),
+    execute("syncDataForProductMavenDependencies", SYNC_PRODUCTS_CRON,
+        () -> productDependencyService.syncIARDependenciesForProducts(false, null),
         "Product maven dependencies");
   }
 
   @Scheduled(cron = SYNC_PRODUCT_RELEASE_NOTES_CRON)
   public void syncDataForProductReleases() {
-    run(() -> {
+    execute("syncDataForProductReleases", SYNC_PRODUCT_RELEASE_NOTES_CRON, () -> {
       try {
         productDetailsController.syncLatestReleasesForProducts();
       } catch (IOException e) {
@@ -65,7 +69,7 @@ public class ScheduledTasks {
 
   @Scheduled(cron = SYNC_GITHUB_REPOS)
   public void syncDataForGithubRepos() {
-    run(() -> {
+    execute("syncDataForGithubRepos", SYNC_GITHUB_REPOS, () -> {
       try {
         githubReposService.loadAndStoreTestReports();
       } catch (IOException e) {
@@ -74,14 +78,35 @@ public class ScheduledTasks {
     }, "Github repositories");
   }
 
-  private static void run(Runnable runnable, String schedulingTaskName) {
+  private void execute(String methodName, String cronPlaceholder, Runnable runnable, String schedulingTaskName) {
+    String id = this.getClass().getSimpleName() + "#" + methodName;
+    String cronExpression = resolveCron(cronPlaceholder);
+    scheduledTaskRegistry.beforeExecute(id, cronExpression);
     String threadName = Thread.currentThread().getName();
     var stopWatch = new StopWatch();
     stopWatch.start();
     log.warn("Thread {}: Started sync data for the '{}'", threadName, schedulingTaskName);
-    runnable.run();
-    stopWatch.stop();
-    log.warn("Thread {}: Ended sync data for the '{}' in [{}] millisecond(s)", threadName, schedulingTaskName,
-        stopWatch.getTime());
+    try {
+      runnable.run();
+      scheduledTaskRegistry.afterSuccess(id);
+    } catch (Exception e) {
+      scheduledTaskRegistry.afterFailure(id, e);
+      throw e;
+    } finally {
+      stopWatch.stop();
+      log.warn("Thread {}: Ended sync data for the '{}' in [{}] millisecond(s)", threadName, schedulingTaskName,
+          stopWatch.getTime());
+    }
+  }
+
+  private String resolveCron(String placeholder) {
+    if (placeholder == null) {
+      return null;
+    }
+    if (placeholder.startsWith("${") && placeholder.endsWith("}")) {
+      String key = placeholder.substring(2, placeholder.length() - 1);
+      return environment.getProperty(key);
+    }
+    return placeholder;
   }
 }
