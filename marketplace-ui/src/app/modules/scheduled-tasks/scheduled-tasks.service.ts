@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, switchMap } from 'rxjs';
+import { Observable, interval, switchMap, concat } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ScheduledTaskInfo } from '../../shared/models/scheduled-task-info.model';
 
@@ -15,5 +15,10 @@ export class ScheduledTasksService {
 
   poll(ms: number): Observable<ScheduledTaskInfo[]> {
     return interval(ms).pipe(switchMap(() => this.list()));
+  }
+
+  pollWithImmediate(ms: number): Observable<ScheduledTaskInfo[]> {
+    // Emit immediately then continue at interval
+    return concat(this.list(), this.poll(ms));
   }
 }

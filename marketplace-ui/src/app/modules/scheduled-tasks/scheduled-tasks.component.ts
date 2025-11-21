@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { ScheduledTasksService } from './scheduled-tasks.service';
 import { ScheduledTaskInfo } from '../../shared/models/scheduled-task-info.model';
 import { Observable } from 'rxjs';
@@ -7,9 +8,10 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-scheduled-tasks',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './scheduled-tasks.component.html',
-  styleUrls: ['./scheduled-tasks.component.scss']
+  styleUrls: ['./scheduled-tasks.component.scss'],
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class ScheduledTasksComponent implements OnInit {
   private readonly service = inject(ScheduledTasksService);
@@ -17,12 +19,12 @@ export class ScheduledTasksComponent implements OnInit {
   tasks$!: Observable<ScheduledTaskInfo[]>;
 
   ngOnInit() {
-    // polling stream
-    this.tasks$ = this.service.poll(this.refreshMs);
+    this.tasks$ = this.service.pollWithImmediate(this.refreshMs);
   }
 
   formatDate(value?: string | null): string {
     if (!value) return '';
-    return new Date(value).toLocaleString();
+    const date = new Date(value);
+    return date.toLocaleString();
   }
 }

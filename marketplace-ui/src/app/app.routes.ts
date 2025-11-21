@@ -9,6 +9,7 @@ import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
+import { ScheduledTasksComponent } from './modules/scheduled-tasks/scheduled-tasks.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -47,8 +48,8 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'scheduled-tasks',
-    loadComponent: () => import('./modules/scheduled-tasks/scheduled-tasks.component').then(m => m.ScheduledTasksComponent)
+    path: 'admin',
+    component: ScheduledTasksComponent
   },
   {
     path: 'monitoring/:repo/:workflow',

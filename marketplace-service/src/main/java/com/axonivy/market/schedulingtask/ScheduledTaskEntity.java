@@ -1,24 +1,24 @@
 package com.axonivy.market.schedulingtask;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-
-import java.time.Instant;
-
-import static com.axonivy.market.constants.EntityConstants.WORKFLOW_INFORMATION;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
-public class ScheduledTaskInfo {
+@Builder
+@Entity
+@Table(name = "scheduled_task")
+public class ScheduledTaskEntity {
+  @Id
   private String id; // ClassName#methodName
   private Instant lastEnd; // end time of last execution (success or failure)
   private Instant lastSuccessEnd; // end time of last successful execution
