@@ -204,12 +204,21 @@ export class ProductDetailComponent implements AfterViewInit {
     this.productDetailService.productId.set(productId);
 
     if (version) {
-      this.productService
+      const productSub = this.productService
         .getProductDetailsWithVersion(productId, version)
-        .subscribe(updatedProductDetail => {
-          this.productDetail.set(updatedProductDetail);
-          this.processProductDetail(productId, updatedProductDetail);
+        .subscribe({
+          next: updatedProductDetail => {
+            this.productDetail.set(updatedProductDetail);
+            this.processProductDetail(productId, updatedProductDetail);
+          },
+          error: () => {
+            const productDetail: ProductDetail = this.route.snapshot.data[
+              ROUTER.PRODUCT_DETAIL
+            ] as ProductDetail;
+            this.processProductDetail(productId, productDetail);
+          }
         });
+      this.subscriptions.push(productSub);
     } else {
       const productDetail: ProductDetail = this.route.snapshot.data[
         ROUTER.PRODUCT_DETAIL
