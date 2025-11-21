@@ -35,7 +35,8 @@ import {
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   UNESCAPE_GITHUB_CONTENT_REGEX,
-  VERSION
+  VERSION,
+  VERSION_PARAM
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
@@ -195,13 +196,32 @@ export class ProductDetailComponent implements AfterViewInit {
       });
     }
   }
-
   ngOnInit(): void {
-    const productId = this.route.snapshot.params[ROUTER.ID];
+    const productId: string = this.route.snapshot.params[ROUTER.ID];
+    const version: string | null =
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ??
+      '';
     this.productDetailService.productId.set(productId);
-    const productDetail = this.route.snapshot.data[
-      ROUTER.PRODUCT_DETAIL
-    ] as ProductDetail;
+
+    if (version) {
+      this.productService
+        .getProductDetailsWithVersion(productId, version)
+        .subscribe(updatedProductDetail => {
+          this.productDetail.set(updatedProductDetail);
+          this.processProductDetail(productId, updatedProductDetail);
+        });
+    } else {
+      const productDetail: ProductDetail = this.route.snapshot.data[
+        ROUTER.PRODUCT_DETAIL
+      ] as ProductDetail;
+      this.processProductDetail(productId, productDetail);
+    }
+  }
+
+  private processProductDetail(
+    productId: string,
+    productDetail: ProductDetail
+  ): void {
     this.criteria.productId = productId;
     this.handleProductDetailLoad(productId, productDetail);
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
