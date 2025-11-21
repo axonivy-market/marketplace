@@ -10,7 +10,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of, Observable } from 'rxjs';
@@ -142,7 +142,10 @@ describe('ProductDetailComponent', () => {
           useValue: {
             snapshot: {
               params: { id: products[0].id },
-              data: { productDetail: MOCK_PRODUCT_DETAIL }
+              data: { productDetail: MOCK_PRODUCT_DETAIL },
+              queryParamMap: convertToParamMap({
+                version: ''
+              })
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
