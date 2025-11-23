@@ -1,0 +1,38 @@
+<button class="burger" (click)="toggleSidebar()" [attr.title]="isOpen ? 'Thu nhỏ menu' : 'Mở rộng menu'" aria-label="Toggle sidebar" [attr.aria-expanded]="isOpen" aria-controls="app-sidebar">
+  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+    <rect y="5" width="24" height="2"></rect>
+    <rect y="11" width="24" height="2"></rect>
+    <rect y="17" width="24" height="2"></rect>
+  </svg>
+</button>
+
+<aside id="app-sidebar" class="sidebar" [class.open]="isOpen" aria-label="Sidebar navigation">
+  <div class="top-section">
+    <button class="new-btn" [attr.title]="!isOpen ? 'New Item' : null">
+      <span class="icon" aria-hidden="true">＋</span>
+      <span class="label" *ngIf="isOpen">New Item</span>
+    </button>
+  </div>
+
+  <div class="menu">
+    <ng-container *ngFor="let item of menu">
+      <a
+        class="item"
+        *ngIf="!item.children"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [attr.title]="!isOpen ? item.label : null"
+      >
+        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="label" *ngIf="isOpen">{{ item.label }}</span>
+      </a>
+    </ng-container>
+  </div>
+
+  <div class="footer">
+    <a class="item" [attr.title]="!isOpen ? 'My Profile' : null">
+      <span class="icon" aria-hidden="true">👤</span>
+      <span class="label" *ngIf="isOpen">My Profile</span>
+    </a>
+  </div>
+</aside>

@@ -9,7 +9,7 @@ import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
-import { ScheduledTasksComponent } from './modules/scheduled-tasks/scheduled-tasks.component';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -32,24 +32,31 @@ export const routes: Routes = [
 
   // Static pages
   {
-    path: 'security-monitor',
-    component: SecurityMonitorComponent
-  },
-  {
     path: 'release-preview',
     component: ReleasePreviewComponent
-  },
-  {
-    path: 'feedback-approval',
-    component: FeedbackApprovalComponent
   },
   {
     path: 'monitoring',
     component: MonitoringDashboardComponent
   },
   {
-    path: 'admin',
-    component: ScheduledTasksComponent
+    path: 'octopus',
+    component: AdminDashboardComponent,
+    children: [
+      {
+        path: 'security-monitor',
+        component: SecurityMonitorComponent
+      },
+      {
+        path: 'feedback-approval',
+        component: FeedbackApprovalComponent
+      },
+      {
+        path: '', // default child route
+        redirectTo: '', // optional default behavior
+        pathMatch: 'full'
+      }
+    ]
   },
   {
     path: 'monitoring/:repo/:workflow',

@@ -1,6 +1,7 @@
-<div class="scheduled-tasks">
+<app-side-menu></app-side-menu>
+<div class="admin-dashboard container-fluid" *ngIf="showScheduledTasks">
   <h2>Scheduled Tasks</h2>
-  <table class="table table-sm table-striped" *ngIf="tasks$ | async as tasks">
+  <table class="table table-sm table-striped" >
     <thead>
       <tr>
         <th>Id</th>
@@ -15,7 +16,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let t of tasks">
+      <!-- <tr *ngFor="let t of tasks">
         <td>{{ t.id }}</td>
         <td><code>{{ t.cronExpression || '-' }}</code></td>
         <td>
@@ -31,9 +32,10 @@
         </td>
         <td>{{ formatDate(t.nextExecution) }}</td>
         <td class="text-truncate" style="max-width:200px" [title]="t.lastError">{{ t.lastError || '' }}</td>
-      </tr>
+      </tr> -->
     </tbody>
   </table>
-  <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p>
-  <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p>
+  <!-- <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p> -->
+  <!-- <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p> -->
 </div>
+<router-outlet></router-outlet>
