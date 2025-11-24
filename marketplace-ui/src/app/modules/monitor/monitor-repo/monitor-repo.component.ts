@@ -30,6 +30,7 @@ import {
   DESCENDING,
   DEV_BUILD,
   E2E_BUILD,
+  FOCUSED_TAB,
   MARKET_BASE_URL,
   NAME_COLUMN,
   REPORT_MODE,
@@ -97,6 +98,10 @@ export class MonitoringRepoComponent implements OnInit {
     }
 
     this.loadRepositories(this.criteria);
+
+    if (this.initialFilter) {
+      this.activeTab = this.displayedRepositories[0]?.focused ? FOCUSED_TAB : STANDARD_TAB;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
