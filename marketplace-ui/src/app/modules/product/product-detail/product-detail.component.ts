@@ -221,7 +221,7 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  private handleProductDetailOnInit(productId: string): void {
+  handleProductDetailOnInit(productId: string): void {
      const productDetail: ProductDetail = this.route.snapshot.data[
        ROUTER.PRODUCT_DETAIL
      ] as ProductDetail;

@@ -809,6 +809,20 @@ describe('ProductDetailComponent', () => {
     );
   });
 
+ it('should call handleProductDetailOnInit when version is empty', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.snapshot.queryParamMap = convertToParamMap({ version: '' });
+
+    fixture = TestBed.createComponent(ProductDetailComponent);
+    component = fixture.componentInstance;
+
+    const spy = spyOn(component, 'handleProductDetailOnInit').and.callThrough();
+
+    fixture.detectChanges();
+
+    expect(spy).toHaveBeenCalled();
+ });
+
   it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
