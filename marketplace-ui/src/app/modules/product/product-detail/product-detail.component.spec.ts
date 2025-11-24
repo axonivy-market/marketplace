@@ -144,7 +144,7 @@ describe('ProductDetailComponent', () => {
               params: { id: products[0].id },
               data: { productDetail: MOCK_PRODUCT_DETAIL },
               queryParamMap: convertToParamMap({
-                version: ''
+                version: MOCK_PRODUCT_DETAIL.productModuleContent.version
               })
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
@@ -891,8 +891,8 @@ describe('ProductDetailComponent', () => {
 
     // Now assert utility labels
     rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
-    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
-      'common.feedback.rateFeedbackForUtilityBtnLabel'
+    expect(rateConnector.childNodes[0].nativeNode.textContent.trim()).toContain(
+      'common.feedback.rateFeedbackForConnectorBtnLabel'
     );
 
     rateConnectorEmptyText = fixture.debugElement.query(
@@ -900,7 +900,7 @@ describe('ProductDetailComponent', () => {
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForUtilityLabel');
+    ).toContain('common.feedback.noFeedbackForConnectorLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {

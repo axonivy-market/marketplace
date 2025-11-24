@@ -212,19 +212,20 @@ export class ProductDetailComponent implements AfterViewInit {
             this.processProductDetail(productId, updatedProductDetail);
           },
           error: () => {
-            const productDetail: ProductDetail = this.route.snapshot.data[
-              ROUTER.PRODUCT_DETAIL
-            ] as ProductDetail;
-            this.processProductDetail(productId, productDetail);
+            this.handleProductDetailOnInit(productId);
           }
         });
       this.subscriptions.push(productSub);
     } else {
-      const productDetail: ProductDetail = this.route.snapshot.data[
-        ROUTER.PRODUCT_DETAIL
-      ] as ProductDetail;
-      this.processProductDetail(productId, productDetail);
+      this.handleProductDetailOnInit(productId);
     }
+  }
+
+  private handleProductDetailOnInit(productId: string): void {
+     const productDetail: ProductDetail = this.route.snapshot.data[
+       ROUTER.PRODUCT_DETAIL
+     ] as ProductDetail;
+     this.processProductDetail(productId, productDetail);
   }
 
   private processProductDetail(
