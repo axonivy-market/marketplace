@@ -35,14 +35,14 @@ import java.util.List;
 import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
-class GlobalExceptionHandlerTest {
+class GlobalExceptionHandlersTest {
 
   @InjectMocks
-  private GlobalExceptionHandler globalExceptionHandler;
+  private GlobalExceptionHandlers globalExceptionHandler;
 
   @BeforeEach
   public void setUp() {
-    globalExceptionHandler = new GlobalExceptionHandler();
+    globalExceptionHandler = new GlobalExceptionHandlers();
   }
 
   @Test
@@ -57,10 +57,10 @@ class GlobalExceptionHandlerTest {
         bindingResult
     );
 
-    GlobalExceptionHandler handlers = new GlobalExceptionHandler();
+    GlobalExceptionHandlers handlers = new GlobalExceptionHandlers();
 
     // Use reflection to access the protected method
-    Method method = GlobalExceptionHandler.class.getDeclaredMethod(
+    Method method = GlobalExceptionHandlers.class.getDeclaredMethod(
         "handleMethodArgumentNotValid",
         MethodArgumentNotValidException.class, HttpHeaders.class, HttpStatusCode.class, WebRequest.class);
     method.setAccessible(true);
@@ -90,10 +90,10 @@ class GlobalExceptionHandlerTest {
 
     when(bindingResult.hasErrors()).thenReturn(false);
 
-    GlobalExceptionHandler handlers = new GlobalExceptionHandler();
+    GlobalExceptionHandlers handlers = new GlobalExceptionHandlers();
 
     // Use reflection to access the protected method
-    Method method = GlobalExceptionHandler.class.getDeclaredMethod(
+    Method method = GlobalExceptionHandlers.class.getDeclaredMethod(
         "handleMethodArgumentNotValid",
         MethodArgumentNotValidException.class, HttpHeaders.class, HttpStatusCode.class, WebRequest.class);
     method.setAccessible(true);
@@ -175,7 +175,7 @@ class GlobalExceptionHandlerTest {
   }
   @Test
   void testHandleInvalidZipEntry() {
-    GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    GlobalExceptionHandlers handler = new GlobalExceptionHandlers();
     InvalidZipEntryException exception = new InvalidZipEntryException("Missing required file: README.md");
 
     ResponseEntity<Map<String, String>> response = handler.handleInvalidZipEntry(exception);
