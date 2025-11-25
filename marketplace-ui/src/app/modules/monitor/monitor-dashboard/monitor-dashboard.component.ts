@@ -13,7 +13,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from '../monitor-repo/monitor-repo.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -39,7 +39,7 @@ export class MonitoringDashboardComponent implements OnInit {
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
   route = inject(ActivatedRoute);
-
+  router = inject(Router);
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = signal<string>(FOCUSED_TAB);
@@ -65,5 +65,11 @@ export class MonitoringDashboardComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
+    let queryParams = { isFocused: tab === FOCUSED_TAB ? 'true' : 'false' };
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 }
