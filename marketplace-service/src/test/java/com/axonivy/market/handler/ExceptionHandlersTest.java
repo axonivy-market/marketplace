@@ -40,7 +40,7 @@ class ExceptionHandlersTest {
   private ExceptionHandlers exceptionHandlers;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     exceptionHandlers = new ExceptionHandlers();
   }
 
