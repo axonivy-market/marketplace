@@ -8,7 +8,6 @@ import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,11 +66,6 @@ public class MarketExceptionHandler {
     errorMessage.setHelpCode(unauthorizedException.getError());
     errorMessage.setMessageDetails(unauthorizedException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
-  }
-
-  @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<String> handleConstraintViolation(ConstraintViolationException ex) {
-    return new ResponseEntity<>("Invalid URL", HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler(InvalidZipEntryException.class)
