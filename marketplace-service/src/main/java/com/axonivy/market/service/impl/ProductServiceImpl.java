@@ -611,7 +611,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepo.getProductByIdAndVersion(id, version);
+    Product product = productRepo.getProductByIdAndVersion(id, version);
+    if (product != null ) {
+      GithubRepo repo = githubRepo.findByNameOrProductId(EMPTY, id);
+      boolean isFocused = productRepo != null && Boolean.TRUE.equals(repo.getFocused());
+      product.setIsFocused(isFocused);
+    }
+    return product;
   }
 
   public void transferComputedDataFromDB(Product product) {

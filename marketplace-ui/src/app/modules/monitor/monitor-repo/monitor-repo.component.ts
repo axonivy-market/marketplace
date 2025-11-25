@@ -3,7 +3,6 @@ import {
   EventEmitter,
   inject,
   Input,
-  model,
   OnDestroy,
   OnInit,
   Output,
