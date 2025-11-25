@@ -64,23 +64,10 @@ describe('MonitoringDashboardComponent', () => {
       );
       expect(component['route'].queryParams.subscribe).toHaveBeenCalled();
     });
-
-    it('should set initialFilter and activeTab when query param "search" exists', () => {
-      const route = TestBed.inject(ActivatedRoute);
-      (route as any).queryParams = of({ search: 'test-repo' });
-
-      component.ngOnInit();
-
-      expect(component.initialFilter()).toBe('test-repo');
-      expect(component.activeTab).toBe(component.STANDARD_TAB);
-    });
   });
 
   it('should change active tab when setActiveTab() is called', () => {
-    component.activeTab = component.FOCUSED_TAB;
-
     component.setActiveTab(component.STANDARD_TAB);
-
     expect(component.activeTab).toBe(component.STANDARD_TAB);
   });
 });

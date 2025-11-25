@@ -70,7 +70,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   readonly COLUMN_E2E = E2E_BUILD;
 
   @Input() tabKey!: string;
-  @Input() initialFilter = '';
   @Input() activeTab = '';
   searchTextChanged = new Subject<string>();
   @Output() searchChange = new EventEmitter<string>();
@@ -100,9 +99,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-    if (this.initialFilter) {
-      this.criteria.search = this.initialFilter;
-    }
     this.criteria.isFocused = this.activeTab == STANDARD_TAB ? 'false' : 'true';
     this.subscriptions.push(
       this.searchTextChanged
@@ -131,11 +127,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activeTab'] && !changes['activeTab'].firstChange) {
-      this.resetDefaultPage();
-      this.updateCriteriaAndLoad();
-    }
-    if (changes['initialFilter'] && !changes['initialFilter'].firstChange) {
-      this.criteria.search = this.initialFilter;
       this.resetDefaultPage();
       this.updateCriteriaAndLoad();
     }

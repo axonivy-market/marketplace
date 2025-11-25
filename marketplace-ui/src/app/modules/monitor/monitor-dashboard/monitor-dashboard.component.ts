@@ -44,14 +44,9 @@ export class MonitoringDashboardComponent implements OnInit {
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = signal<string>(FOCUSED_TAB);
 
-  initialFilter = signal<string>('');
-
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.subscribe(params => {
-        if (params['search']) {
-          this.initialFilter.set(params['search']);
-        }
         if (params['isFocused']) {
           this.activeTab.set(
             params['isFocused'] === 'true' ? FOCUSED_TAB : STANDARD_TAB
