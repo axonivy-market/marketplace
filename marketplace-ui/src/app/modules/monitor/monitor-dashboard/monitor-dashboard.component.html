@@ -24,7 +24,7 @@
             <a id="focused-tab" class="nav-link tab-title border-0 bg-transparent active" role="tab" [ngClass]="{
                   'text-secondary': themeService.isDarkMode(),
                   'text-dark': !themeService.isDarkMode(),
-                  active: activeTab === FOCUSED_TAB
+                  active: activeTab() === FOCUSED_TAB
                 }" data-bs-toggle="tab" data-bs-target="#focused" (click)="setActiveTab(FOCUSED_TAB)">
               {{ 'common.monitor.dashboard.tabTitle.focused' | translate }}
             </a>
@@ -34,7 +34,7 @@
             <a id="standard-tab" class="nav-link tab-title border-0 bg-transparent" role="tab" [ngClass]="{
                   'text-secondary': themeService.isDarkMode(),
                   'text-dark': !themeService.isDarkMode(),
-                  active: activeTab === STANDARD_TAB
+                  active: activeTab() === STANDARD_TAB
                 }" data-bs-toggle="tab" data-bs-target="#standard" (click)="setActiveTab(STANDARD_TAB)">
               {{ 'common.monitor.dashboard.tabTitle.standard' | translate }}
             </a>
@@ -44,11 +44,11 @@
 
       <div class="tab-content col-12 default-cursor">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="focused-tab"
-             [ngClass]="{ 'show active': activeTab === FOCUSED_TAB }"></div>
+             [ngClass]="{ 'show active': activeTab() === FOCUSED_TAB }"></div>
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="standard-tab"
-             [ngClass]="{ 'show active': activeTab === STANDARD_TAB }">
+             [ngClass]="{ 'show active': activeTab() === STANDARD_TAB }">
         </div>
-        <app-monitor-repo [activeTab]="activeTab"
+        <app-monitor-repo [activeTab]="activeTab()"
                           [initialFilter]="initialFilter()" tabKey="standard" />
       </div>
     </div>

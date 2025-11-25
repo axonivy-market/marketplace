@@ -42,7 +42,7 @@ export class MonitoringDashboardComponent implements OnInit {
 
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
-  activeTab = FOCUSED_TAB;
+  activeTab = signal<string>(FOCUSED_TAB);
 
   initialFilter = signal<string>('');
 
@@ -51,7 +51,11 @@ export class MonitoringDashboardComponent implements OnInit {
       this.route.queryParams.subscribe(params => {
         if (params['search']) {
           this.initialFilter.set(params['search']);
-          this.activeTab = STANDARD_TAB;
+        }
+        if (params['isFocused']) {
+          this.activeTab.set(
+            params['isFocused'] === 'true' ? FOCUSED_TAB : STANDARD_TAB
+          );
         }
       });
       this.pageTitleService.setTitleOnLangChange(
@@ -61,6 +65,6 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   setActiveTab(tab: string): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
   }
 }

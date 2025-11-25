@@ -7,6 +7,7 @@ import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
@@ -25,6 +26,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -106,6 +108,7 @@ public class ProductServiceImpl implements ProductService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
+  private final GithubRepoRepository githubRepo;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
@@ -540,7 +543,9 @@ public class ProductServiceImpl implements ProductService {
 
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
-
+      GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,id);
+      boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
+      productItem.setIsFocused(isFocused);
       return productItem;
     }).orElse(null);
   }
@@ -563,6 +568,10 @@ public class ProductServiceImpl implements ProductService {
 
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
+
+      GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,id);
+      boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
+      productItem.setIsFocused(isFocused);
 
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;

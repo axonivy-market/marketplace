@@ -156,7 +156,8 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     if (this.repoName) {
       this.router.navigate(['/monitoring'], {
         queryParams: {
-          search: this.repoName
+          search: this.repoName,
+          isFocused: this.productDetail.isFocusedProduct
         }
       });
     } else {

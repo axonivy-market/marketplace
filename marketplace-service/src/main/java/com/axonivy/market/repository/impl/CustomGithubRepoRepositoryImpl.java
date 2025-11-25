@@ -75,10 +75,10 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
   }
 
   private static String getFocusQuery(Boolean isFocused) {
-    String focusQuery = StringUtils.EMPTY;
+    String focusQuery;
     if (BooleanUtils.isTrue(isFocused)) {
       focusQuery = "WHERE r.focused = true ";
-    } else if (BooleanUtils.isFalse(isFocused)) {
+    } else {
       focusQuery = "WHERE r.focused IS NULL ";
     }
     return focusQuery;

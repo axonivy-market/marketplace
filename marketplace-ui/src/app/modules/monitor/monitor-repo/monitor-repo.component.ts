@@ -3,6 +3,8 @@ import {
   EventEmitter,
   inject,
   Input,
+  model,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges
@@ -37,6 +39,9 @@ import {
   STANDARD_TAB
 } from '../../../shared/constants/common.constant';
 import { MonitoringCriteria } from '../../../shared/models/criteria.model';
+import { debounceTime, Subject, Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+const SEARCH_DEBOUNCE_TIME = 500;
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
@@ -58,7 +63,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
-export class MonitoringRepoComponent implements OnInit {
+export class MonitoringRepoComponent implements OnInit, OnDestroy {
   readonly COLUMN_NAME = NAME_COLUMN;
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
@@ -67,8 +72,9 @@ export class MonitoringRepoComponent implements OnInit {
   @Input() tabKey!: string;
   @Input() initialFilter = '';
   @Input() activeTab = '';
+  searchTextChanged = new Subject<string>();
   @Output() searchChange = new EventEmitter<string>();
-
+  subscriptions: Subscription[] = [];
   mode: Record<string, RepoMode> = {};
   workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
   page = 1;
@@ -87,21 +93,40 @@ export class MonitoringRepoComponent implements OnInit {
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   githubService = inject(GithubService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-
     if (this.initialFilter) {
       this.criteria.search = this.initialFilter;
     }
+    this.criteria.isFocused = this.activeTab == STANDARD_TAB ? 'false' : 'true';
+    this.subscriptions.push(
+      this.searchTextChanged
+        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+        .subscribe(value => {
+          this.criteria = {
+            ...this.criteria,
+            search: value
+          };
+          this.loadRepositories(this.criteria);
 
+          let queryParams: { search: string | null } = { search: null };
+          if (value) {
+            queryParams = { search: this.criteria.search };
+          }
+
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParamsHandling: 'merge',
+            queryParams
+          });
+        })
+    );
     this.loadRepositories(this.criteria);
-
-    if (this.initialFilter) {
-      this.activeTab = this.displayedRepositories[0]?.focused ? FOCUSED_TAB : STANDARD_TAB;
-    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -122,11 +147,7 @@ export class MonitoringRepoComponent implements OnInit {
   }
 
   updateCriteriaAndLoad() {
-    if (this.activeTab !== STANDARD_TAB) {
-      this.criteria.isFocused = 'true';
-    } else {
-      this.criteria.isFocused = '';
-    }
+    this.criteria.isFocused = this.activeTab == STANDARD_TAB ? 'false' : 'true';
     this.criteria.pageable.size = this.pageSize;
     this.criteria.pageable.page = this.page - 1;
     this.loadRepositories(this.criteria);
@@ -136,6 +157,7 @@ export class MonitoringRepoComponent implements OnInit {
     this.page = 1;
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
+    this.searchTextChanged.next(searchString);
     this.criteria.search = searchString;
     this.loadRepositories(this.criteria);
   }
@@ -203,6 +225,10 @@ export class MonitoringRepoComponent implements OnInit {
       }
     });
   }
-
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
+  }
   protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
 }

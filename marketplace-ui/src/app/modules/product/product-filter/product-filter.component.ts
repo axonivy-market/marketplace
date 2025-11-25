@@ -22,9 +22,8 @@ import { HistoryService } from '../../../core/services/history/history.service';
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
-export class ProductFilterComponent implements OnChanges {
+export class ProductFilterComponent {
   @Input() isProductHomepage = false;
-  @Input() initialSearchText = '';
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();
@@ -86,7 +85,7 @@ export class ProductFilterComponent implements OnChanges {
 
 
       // Update search text
-      this.searchText = queryParams['search'] || this.initialSearchText || '';
+      this.searchText = queryParams['search'] || '';
       this.historyService.lastSearchText.set(this.searchText);
 
       this.router.navigate([], {
@@ -95,19 +94,6 @@ export class ProductFilterComponent implements OnChanges {
         queryParams
       });
     });
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    const searchTextChange = changes['initialSearchText'];
-    // Update searchText only if the initialSearchText input has changed, 
-    // the new value is non-empty, and the current searchText is empty.
-    const shouldUpdateSearchText =
-      searchTextChange?.currentValue !== searchTextChange?.previousValue &&
-      this.initialSearchText && !this.searchText;
-    if (shouldUpdateSearchText) {
-      this.searchText = this.initialSearchText;
-      this.onSearchChanged(this.initialSearchText);
-    }
   }
 
   onSelectType(type: ItemDropdown<TypeOption>) {
