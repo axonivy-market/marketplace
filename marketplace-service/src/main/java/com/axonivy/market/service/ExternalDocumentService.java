@@ -13,7 +13,7 @@ public interface ExternalDocumentService {
 
   ExternalDocumentMeta findExternalDocument(String productId, String version);
 
-  String findBestMatchVersion(String productId, String version);
+  String resolveBestMatchRedirectUrl(String path);
 
   DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version, String language, String host);
 }

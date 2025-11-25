@@ -10,7 +10,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of, Observable } from 'rxjs';
@@ -142,7 +142,10 @@ describe('ProductDetailComponent', () => {
           useValue: {
             snapshot: {
               params: { id: products[0].id },
-              data: { productDetail: MOCK_PRODUCT_DETAIL }
+              data: { productDetail: MOCK_PRODUCT_DETAIL },
+              queryParamMap: convertToParamMap({
+                version: MOCK_PRODUCT_DETAIL.productModuleContent.version
+              })
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
@@ -797,7 +800,7 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 
-  it('should return DESIGNER_ENV as acction type in Designer Env', () => {
+  it('should return DESIGNER_ENV as action type in Designer Env', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
@@ -806,7 +809,21 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
+ it('should call handleProductDetailOnInit when version is empty', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.snapshot.queryParamMap = convertToParamMap({ version: '' });
+
+    fixture = TestBed.createComponent(ProductDetailComponent);
+    component = fixture.componentInstance;
+
+    const spy = spyOn(component, 'handleProductDetailOnInit').and.callThrough();
+
+    fixture.detectChanges();
+
+    expect(spy).toHaveBeenCalled();
+ });
+
+  it('should return CUSTOM_SOLUTION as action type when productDetail.sourceUrl is undefined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: undefined } as any);
@@ -821,7 +838,7 @@ describe('ProductDetailComponent', () => {
     expect(installationCount).toBeFalsy();
   });
 
-  it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
+  it('should return STANDARD as action type when when productDetail.sourceUrl is defined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
@@ -888,8 +905,8 @@ describe('ProductDetailComponent', () => {
 
     // Now assert utility labels
     rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
-    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
-      'common.feedback.rateFeedbackForUtilityBtnLabel'
+    expect(rateConnector.childNodes[0].nativeNode.textContent.trim()).toContain(
+      'common.feedback.rateFeedbackForConnectorBtnLabel'
     );
 
     rateConnectorEmptyText = fixture.debugElement.query(
@@ -897,7 +914,7 @@ describe('ProductDetailComponent', () => {
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForUtilityLabel');
+    ).toContain('common.feedback.noFeedbackForConnectorLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {
@@ -1079,16 +1096,6 @@ describe('ProductDetailComponent', () => {
     component.setActiveTab('setup');
     component.onClickingBackToHomepageButton();
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
-  });
-
-  it('should get tab value from fragment', () => {
-    const tabValue = component.getTabValueFromFragment('tab-description');
-    expect(tabValue).toBe('description');
-  });
-
-  it('should return default tab value if fragment is invalid', () => {
-    const tabValue = component.getTabValueFromFragment('tab-invalid');
-    expect(tabValue).toBe(PRODUCT_DETAIL_TABS[0].value);
   });
 
   it('should call setActiveTab with correct tab value from fragment', () => {

@@ -34,9 +34,9 @@ import {
   OG_TITLE_KEY,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
-  TAB_PREFIX,
   UNESCAPE_GITHUB_CONTENT_REGEX,
-  VERSION
+  VERSION,
+  VERSION_PARAM
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
@@ -77,6 +77,7 @@ import { full } from 'markdown-it-emoji';
 import { ChangeLogCriteria } from '../../../shared/models/criteria.model';
 import { Link } from '../../../shared/models/apis/link.model';
 import { Page } from '../../../shared/models/apis/page.model';
+import { RouteUtils } from '../../../shared/utils/route.utils';
 
 export interface DetailTab {
   activeClass: string;
@@ -177,10 +178,8 @@ export class ProductDetailComponent implements AfterViewInit {
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
-    this.activeTab = window.location.hash.split('#tab-')[1];
-    if (this.activeTab === undefined) {
-      this.activeTab = DEFAULT_ACTIVE_TAB;
-    }
+    this.activeTab = window.location.hash;
+    this.activeTab ??= DEFAULT_ACTIVE_TAB;
     this.updateDropdownSelection();
   }
 
@@ -197,13 +196,42 @@ export class ProductDetailComponent implements AfterViewInit {
       });
     }
   }
-
   ngOnInit(): void {
-    const productId = this.route.snapshot.params[ROUTER.ID];
+    const productId: string = this.route.snapshot.params[ROUTER.ID];
+    const version: string | null =
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ??
+      '';
     this.productDetailService.productId.set(productId);
-    const productDetail = this.route.snapshot.data[
-      ROUTER.PRODUCT_DETAIL
-    ] as ProductDetail;
+
+    if (version) {
+      const productSub = this.productService
+        .getProductDetailsWithVersion(productId, version)
+        .subscribe({
+          next: updatedProductDetail => {
+            this.productDetail.set(updatedProductDetail);
+            this.processProductDetail(productId, updatedProductDetail);
+          },
+          error: () => {
+            this.handleProductDetailOnInit(productId);
+          }
+        });
+      this.subscriptions.push(productSub);
+    } else {
+      this.handleProductDetailOnInit(productId);
+    }
+  }
+
+  handleProductDetailOnInit(productId: string): void {
+     const productDetail: ProductDetail = this.route.snapshot.data[
+       ROUTER.PRODUCT_DETAIL
+     ] as ProductDetail;
+     this.processProductDetail(productId, productDetail);
+  }
+
+  private processProductDetail(
+    productId: string,
+    productDetail: ProductDetail
+  ): void {
     this.criteria.productId = productId;
     this.handleProductDetailLoad(productId, productDetail);
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
@@ -475,7 +503,7 @@ export class ProductDetailComponent implements AfterViewInit {
 
   setActiveTab(tab: string): void {
     this.router.navigate([], {
-      fragment: TAB_PREFIX + tab,
+      fragment: tab,
       queryParamsHandling: 'preserve',
       replaceUrl: true
     });
@@ -684,21 +712,10 @@ export class ProductDetailComponent implements AfterViewInit {
   navigateToProductDetailsWithTabFragment(): void {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
-        const tabValue = this.getTabValueFromFragment(fragment);
+        const tabValue = RouteUtils.getTabFragment(fragment);
         this.setActiveTab(tabValue);
       })
     );
-  }
-
-  getTabValueFromFragment(fragment: string | null): string {
-    const isValidTab = this.displayedTabsSignal().some(
-      tab => tab.tabId === fragment
-    );
-    const tabId = fragment?.replace(TAB_PREFIX, '');
-    if (isValidTab && tabId) {
-      return tabId;
-    }
-    return PRODUCT_DETAIL_TABS[0].value;
   }
 
   ngOnDestroy(): void {

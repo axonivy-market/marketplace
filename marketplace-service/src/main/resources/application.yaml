@@ -1,0 +1,91 @@
+server:
+  port: '8080'
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: '${SESSION_COOKIE_SECURE}'
+  tomcat:
+    connection-timeout: 240000ms
+    threads:
+      max: '200'
+    max-swallow-size: '-1'
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: '${POSTGRES_HOST_URL}'
+    username: '${POSTGRES_USERNAME}'
+    password: '${POSTGRES_PASSWORD}'
+  jpa:
+    show-sql: '${SHOW_SQL}'
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  mvc:
+    async:
+      request-timeout: '240000'
+  servlet:
+    multipart:
+      enabled: 'true'
+      max-file-size: 20MB
+      max-request-size: 20MB
+  jackson:
+    serialization:
+      indent_output: 'true'
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+
+logging:
+  file:
+    path: '${LOGGING_FILE_PATH}'
+  level:
+    org:
+      springframework:
+        web: warn
+      hibernate:
+        SQL: '${LOGGING_SQL_LEVEL:INFO}'
+loggable:
+  log-path: '${MARKET_LOG_PATH}'
+
+jwt:
+  secret: '${MARKET_JWT_SECRET_KEY}'
+  expiration: '365'
+
+market:
+  environment: '${MARKET_ENVIRONMENT}'
+  legacy:
+    installation:
+      counts:
+        path: /app/data/market-installation.json
+  scheduling:
+    products-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_CRON}'
+    github-repos-cron: '${MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}'
+    documents-cron: '${MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}'
+    products-release-notes-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}'
+  limited:
+    request-paths: '${MARKET_LIMITED_REQUEST_PATHS}'
+  cors:
+    allowed:
+      origin:
+        patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
+        maxAge: '3600'
+  github:
+    oauth2-clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
+    oauth2-clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
+    token: '${MARKET_GITHUB_TOKEN}'
+    market:
+      branch: '${MARKET_GITHUB_MARKET_BRANCH}'
+  allowed:
+    click-capacity: '${MARKET_CLICK_LIMIT}'
+
+axon:
+  ivy:
+    developer:
+      url: 'https://developer.axonivy.com'

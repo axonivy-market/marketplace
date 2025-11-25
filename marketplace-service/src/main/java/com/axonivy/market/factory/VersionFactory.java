@@ -78,11 +78,12 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion,
-      List<String> majorVersions) {
-    String bestMatchVersion = get(versions, requestedVersion);
-    Map<String, String> latestSupportedDocVersions = getMapMajorVersionToLatestVersion(versions, majorVersions);
-    return latestSupportedDocVersions.getOrDefault(bestMatchVersion, bestMatchVersion);
+  public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion) {
+    return Optional.ofNullable(versions).stream()
+        .flatMap(List::stream)
+        .filter(Objects::nonNull)
+        .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1))
+        .filter(ver -> ver.startsWith(requestedVersion)).findAny().orElse(EMPTY);
   }
 
   public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions,
