@@ -1,12 +1,13 @@
-<button class="burger" (click)="toggleSidebar()" [attr.title]="isOpen ? 'Thu nhỏ menu' : 'Mở rộng menu'" aria-label="Toggle sidebar" [attr.aria-expanded]="isOpen" aria-controls="app-sidebar">
-  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-    <rect y="5" width="24" height="2"></rect>
-    <rect y="11" width="24" height="2"></rect>
-    <rect y="17" width="24" height="2"></rect>
-  </svg>
-</button>
 
 <aside id="app-sidebar" class="sidebar" [class.open]="isOpen" aria-label="Sidebar navigation">
+  <button (click)="toggleSidebar()" [attr.title]="isOpen ? 'Thu nhỏ menu' : 'Mở rộng menu'" aria-label="Toggle sidebar" [attr.aria-expanded]="isOpen" aria-controls="app-sidebar">
+    <!-- <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+      <rect y="5" width="24" height="2"></rect>
+      <rect y="11" width="24" height="2"></rect>
+      <rect y="17" width="24" height="2"></rect>
+    </svg> -->
+    <i class="bi bi-list header__menu-button"></i>
+  </button>
   <div class="top-section">
    
   </div>

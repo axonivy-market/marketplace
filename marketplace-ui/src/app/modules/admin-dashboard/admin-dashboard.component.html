@@ -1,89 +1,98 @@
 @if (isAuthenticated) {
   <app-side-menu></app-side-menu>
-  @if (showScheduledTasks) {
+  @if (showSyncJob) {
     <div class="table-responsive">
       <table class="table">
         <thead>
           <tr>
+            <th>Action</th>
             <th>Sync Job</th>
-            <th>Cron Expression</th>
             <th>Status</th>
-            <th>Last run</th>
-            <th>Next scheduled run</th>
-            <th>Actions</th>
+            <th>Triggered</th>
+            <th>Completed</th>
+            <th>Message</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let t of tasks$ | async">
-            <td>{{ t.name }}</td>
+          <tr *ngFor="let job of jobs">
+      <!-- <div class="sync-one-product mt-3">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <label class="m-0" for="sync-product-id">Product ID</label>
+          <input
+            id="sync-product-id"
+            class="form-control form-control-sm flex-grow-0"
+            [(ngModel)]="productId"
+            placeholder="portal" />
+          <label class="m-0" for="sync-market-path">Market Path</label>
+          <input
+            id="sync-market-path"
+            class="form-control form-control-sm flex-grow-1"
+            [(ngModel)]="marketItemPath"
+            placeholder="market/connector/portal" />
+          <div class="form-check m-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="overridePathToggle"
+              [(ngModel)]="overrideMarketItemPath" />
+            <label class="form-check-label" for="overridePathToggle">Override path</label>
+          </div>
+        </div>
+      </div> -->
             <td>
-              <code>{{ t.cronExpression || '-' }}</code>
+              <button
+                class="btn btn-sm btn-primary"
+                (click)="trigger(job)"
+                [disabled]="job.status === 'RUNNING'">
+                Sync
+              </button>
             </td>
+            <td>{{ job.label }}</td>
             <td>
-              {{ t.status }}
+              <span [ngClass]="getStatusClass(job.status)">
+                {{ job.status ? (job.status | titlecase) : '-' }}
+              </span>
             </td>
-            <td>
-              <p class="text-primary m-0 created-date-column">
-                {{ t.lastStart | date: 'short' }}
-              </p>
-            </td>
-            <td>
-              <p class="text-primary m-0 created-date-column">
-                {{ t.nextExecution | date: 'short' }}
-              </p>
-            </td>
-            <td class="action-buttons fixed-width">
-              <div id="sync-button">
-                <p
-                  class="mb-0 text-center"
-                  [lang]="languageService.selectedLanguage()">
-                  {{ 'common.approval.approveBtnLabel' | translate }}
-                </p>
+            <td>{{ job.triggeredAt ? (job.triggeredAt | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
+            <td>{{ job.completedAt ? (job.completedAt | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
+            <td class="message-cell">
+              <div>{{ job.message || '-' }}</div>
+              <div class="small text-muted" *ngIf="job.reference">
+                Ref: {{ job.reference }}
               </div>
             </td>
           </tr>
         </tbody>
       </table>
-      <!-- <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p> -->
-      <!-- <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p> -->
     </div>
   }
-  <router-outlet></router-outlet>
 } @else {
   <div class="token-container">
     <div class="header">
-      <h2 class="text-primary text-center">
-        {{ 'common.approval.pageTitle' | translate }}
-      </h2>
+      <h2 class="text-primary text-center">Admin Dashboard</h2>
       <h3 class="text-primary text-center">
-        {{ 'common.approval.description' | translate }}
+        Enter token to access sync functions
       </h3>
     </div>
     <div class="token-input-container">
-      <h3 class="text-primary">
-        {{ 'common.approval.enterToken' | translate }}
-      </h3>
+      <h3 class="text-primary">Token</h3>
       <div>
         <input
           id="token-input"
           type="password"
           [(ngModel)]="token"
-          [attr.placeholder]="
-            'common.approval.enterTokenPlaceholder' | translate
-          " />
+          placeholder="Enter token" />
         <button
           class="btn-primary"
           (click)="onSubmit()"
           [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-          {{ 'common.approval.proceedBtnLabel' | translate }}
+          Proceed
         </button>
         @if (errorMessage) {
           <div class="error-message">{{ errorMessage }}</div>
         }
       </div>
     </div>
-    <!-- <app-loading-spinner
-      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-      [key]="LoadingComponentId.FEEDBACK_APPROVAL" /> -->
   </div>
 }
+<router-outlet></router-outlet>

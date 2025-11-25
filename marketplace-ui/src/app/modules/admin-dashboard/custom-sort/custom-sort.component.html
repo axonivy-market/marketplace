@@ -1,0 +1,37 @@
+
+<app-side-menu></app-side-menu>
+ <span>
+  The UI allows users to modify the 
+<b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace (https://market.axonivy.com/).
+ </span>
+<div class="example-container">
+
+  <h2>To do</h2>
+  <div
+    cdkDropList
+    #todoList="cdkDropList"
+    [cdkDropListData]="sortingExtensions"
+    [cdkDropListConnectedTo]="[doneList]"
+    class="example-list"
+    (cdkDropListDropped)="drop($event)">
+    @for (item of sortingExtensions; track item) {
+      <div class="example-box" cdkDrag>{{item}}</div>
+    }
+  </div>
+</div>
+<div class="example-container">
+  <h2>Done</h2>
+  <div
+    cdkDropList
+    #doneList="cdkDropList"
+    [cdkDropListData]="allExtensions"
+    [cdkDropListConnectedTo]="[todoList]"
+    class="example-list"
+    (cdkDropListDropped)="drop($event)">
+    @for (item of allExtensions; track item) {
+      <div class="example-box" cdkDrag>{{item}}</div>
+    }
+  </div>
+</div>
+
+<router-outlet></router-outlet>

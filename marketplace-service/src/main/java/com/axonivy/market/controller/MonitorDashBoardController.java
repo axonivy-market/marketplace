@@ -2,12 +2,14 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.PostgresDBConstants;
+import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
+import com.axonivy.market.service.SyncJobExecutionService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
-  private final PagedResourcesAssembler<GithubReposModel> pagedResourcesAssembler;
+  private final SyncJobExecutionService syncJobExecutionService;
 
   @GetMapping(REPOS_REPORT)
   public ResponseEntity<List<TestStepsModel>> getTestReport(
@@ -65,8 +66,15 @@ public class MonitorDashBoardController {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    githubReposService.loadAndStoreTestReports();
-    return ResponseEntity.ok("Repositories loaded successfully.");
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_GITHUB_MONITOR, null);
+    try {
+      githubReposService.loadAndStoreTestReports();
+      syncJobExecutionService.markSuccess(execution, "Repositories loaded successfully.");
+      return ResponseEntity.ok("Repositories loaded successfully.");
+    } catch (Exception ex) {
+      syncJobExecutionService.markFailure(execution, ex.getMessage());
+      throw ex;
+    }
   }
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)

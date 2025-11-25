@@ -4,12 +4,14 @@ import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.SyncJobExecutionService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,6 +56,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final ProductDependencyService productDependencyService;
+  private final SyncJobExecutionService syncJobExecutionService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -96,20 +99,29 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var stopWatch = new StopWatch();
-    stopWatch.start();
-    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
-    var message = new Message();
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    if (ObjectUtils.isEmpty(syncedProductIds)) {
-      message.setMessageDetails("Data is already up to date, nothing to sync");
-    } else {
-      stopWatch.stop();
-      message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
-          stopWatch.getTime()));
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_PRODUCTS, null);
+    var stopWatch = StopWatch.createStarted();
+    try {
+      List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
+      var message = new Message();
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+      message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+      if (ObjectUtils.isEmpty(syncedProductIds)) {
+        message.setMessageDetails("Data is already up to date, nothing to sync");
+      } else {
+        message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+            stopWatch.getTime()));
+      }
+      syncJobExecutionService.markSuccess(execution, message.getMessageDetails());
+      return new ResponseEntity<>(message, HttpStatus.OK);
+    } catch (Exception ex) {
+      syncJobExecutionService.markFailure(execution, ex.getMessage());
+      throw ex;
+    } finally {
+      if (stopWatch.isStarted() && !stopWatch.isStopped()) {
+        stopWatch.stop();
+      }
     }
-    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
@@ -126,23 +138,32 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_ONE_PRODUCT, productId);
     var message = new Message();
-    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
-        overrideMarketItemPath) && CollectionUtils.isEmpty(
-        axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
-      message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
-      message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
-      return new ResponseEntity<>(message, HttpStatus.OK);
-    }
+    try {
+      if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
+          overrideMarketItemPath) && CollectionUtils.isEmpty(
+          axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
+        message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
+        message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
+        syncJobExecutionService.markFailure(execution, message.getMessageDetails());
+        return new ResponseEntity<>(message, HttpStatus.OK);
+      }
 
-    var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
-    if (isSuccess) {
-      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-      message.setMessageDetails("Sync successfully!");
-    } else {
-      message.setMessageDetails("Sync unsuccessfully!");
+      var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
+      if (isSuccess) {
+        message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+        message.setMessageDetails("Sync successfully!");
+        syncJobExecutionService.markSuccess(execution, message.getMessageDetails());
+      } else {
+        message.setMessageDetails("Sync unsuccessfully!");
+        syncJobExecutionService.markFailure(execution, message.getMessageDetails());
+      }
+      return new ResponseEntity<>(message, HttpStatus.OK);
+    } catch (Exception ex) {
+      syncJobExecutionService.markFailure(execution, ex.getMessage());
+      throw ex;
     }
-    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)

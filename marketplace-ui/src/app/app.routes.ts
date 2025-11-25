@@ -10,6 +10,7 @@ import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboar
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -50,6 +51,10 @@ export const routes: Routes = [
       {
         path: 'feedback-approval',
         component: FeedbackApprovalComponent
+      },
+      {
+        path: 'sorting',
+        component: CustomSortComponent
       },
       {
         path: '', // default child route

@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, Observable, of, firstValueFrom } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
@@ -11,6 +11,9 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { SortOption } from '../../shared/enums/sort-option.enum';
+import { TypeOption } from '../../shared/enums/type-option.enum';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -136,5 +139,38 @@ export class ProductService {
           return of(productReleasesApiResponse);
         })
       );
+  }
+
+  async fetchAllProductIds(pageSize = 200, language: Language = Language.EN): Promise<string[]> {
+    const ids: string[] = [];
+    let page = 0;
+    let totalPages = 1;
+    try {
+      do {
+        const criteria: Criteria = {
+          search: '',
+          sort: SortOption.STANDARD,
+          type: TypeOption.All_TYPES,
+          language,
+          isRESTClientEditor: false,
+          pageable: {
+            page,
+            size: pageSize
+          }
+        };
+        const response = await firstValueFrom(this.findProductsByCriteria(criteria));
+        const products = response?._embedded?.products ?? [];
+        ids.push(...products.map(product => product.id).filter(Boolean));
+        const pageInfo = response?.page;
+        if (!pageInfo) {
+          break;
+        }
+        totalPages = pageInfo.totalPages;
+        page = pageInfo.number + 1;
+      } while (page < totalPages);
+    } catch (error) {
+      console.warn('fetchAllProductIds failed', error);
+    }
+    return ids;
   }
 }
