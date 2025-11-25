@@ -87,7 +87,6 @@ export class ProductFilterComponent {
       // Update search text
       this.searchText = queryParams['search'] || '';
       this.historyService.lastSearchText.set(this.searchText);
-
       this.router.navigate([], {
         relativeTo: this.route,
         queryParamsHandling: '',

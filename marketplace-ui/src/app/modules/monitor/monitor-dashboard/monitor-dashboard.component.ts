@@ -43,6 +43,7 @@ export class MonitoringDashboardComponent implements OnInit {
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
   activeTab = signal<string>(FOCUSED_TAB);
+  initialSearch = signal<string>('');
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -51,6 +52,9 @@ export class MonitoringDashboardComponent implements OnInit {
           this.activeTab.set(
             params['isFocused'] === 'true' ? FOCUSED_TAB : STANDARD_TAB
           );
+        }
+        if (params['search']) {
+          this.initialSearch.set(params['search']);
         }
       });
       this.pageTitleService.setTitleOnLangChange(
