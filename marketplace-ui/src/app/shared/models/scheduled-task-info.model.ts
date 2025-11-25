@@ -1,11 +1,9 @@
 export interface ScheduledTaskInfo {
-  id: string;
+  name: string;
   cronExpression?: string | null;
-  lastStart?: string | null;
-  lastEnd?: string | null;
-  lastSuccessEnd?: string | null;
-  nextExecution?: string | null;
+  lastStart: Date;
+  lastEnd: Date;
+  status: 'RUNNING' | 'SUCCESS' | 'FAILED';
+  nextExecution?: Date;
   running: boolean;
-  lastSuccess: boolean;
-  lastError?: string | null;
 }

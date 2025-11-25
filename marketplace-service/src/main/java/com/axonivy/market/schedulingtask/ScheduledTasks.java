@@ -31,7 +31,7 @@ public class ScheduledTasks {
   private final ExternalDocumentService externalDocumentService;
   private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
-  private final ScheduledTaskRegistry scheduledTaskRegistry;
+  private final ScheduledTaskServiceImpl scheduledTaskService;
   private final Environment environment;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
@@ -79,18 +79,17 @@ public class ScheduledTasks {
   }
 
   private void execute(String methodName, String cronPlaceholder, Runnable runnable, String schedulingTaskName) {
-    String id = this.getClass().getSimpleName() + "#" + methodName;
     String cronExpression = resolveCron(cronPlaceholder);
-    scheduledTaskRegistry.beforeExecute(id, cronExpression);
+    scheduledTaskService.beforeExecute(methodName, cronExpression);
     String threadName = Thread.currentThread().getName();
     var stopWatch = new StopWatch();
     stopWatch.start();
     log.warn("Thread {}: Started sync data for the '{}'", threadName, schedulingTaskName);
     try {
       runnable.run();
-      scheduledTaskRegistry.afterSuccess(id);
+      scheduledTaskService.afterSuccess(methodName);
     } catch (Exception e) {
-      scheduledTaskRegistry.afterFailure(id, e);
+      scheduledTaskService.afterFailure(methodName, e);
       throw e;
     } finally {
       stopWatch.stop();

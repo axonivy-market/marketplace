@@ -8,10 +8,7 @@
 
 <aside id="app-sidebar" class="sidebar" [class.open]="isOpen" aria-label="Sidebar navigation">
   <div class="top-section">
-    <button class="new-btn" [attr.title]="!isOpen ? 'New Item' : null">
-      <span class="icon" aria-hidden="true">＋</span>
-      <span class="label" *ngIf="isOpen">New Item</span>
-    </button>
+   
   </div>
 
   <div class="menu">
@@ -30,9 +27,6 @@
   </div>
 
   <div class="footer">
-    <a class="item" [attr.title]="!isOpen ? 'My Profile' : null">
-      <span class="icon" aria-hidden="true">👤</span>
-      <span class="label" *ngIf="isOpen">My Profile</span>
-    </a>
+   <!-- <app-header></app-header> -->
   </div>
 </aside>

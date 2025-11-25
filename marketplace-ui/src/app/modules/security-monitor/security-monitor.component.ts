@@ -42,6 +42,7 @@ export class SecurityMonitorComponent {
   ngOnInit(): void {
     if (this.isBrowser) {
       this.loadSessionData();
+      this.fetchSecurityDetails();
       this.pageTitleService.setTitleOnLangChange('common.security.pageTitle');
     }
   }

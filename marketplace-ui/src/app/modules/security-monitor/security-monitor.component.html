@@ -3,101 +3,128 @@
     <h2>GitHub Repository Security Monitor</h2>
     <h3>Keep track of your repositories' security status at a glance.</h3>
   </div>
-  @if (isAuthenticated) {
-    <div class="header">
-      <h3><a class="reload-link" title="Reload data" (click)="onSubmit()">Reload Data</a></h3>
-    </div>
-    <div class="repo-grid">
-      @for (repo of repos; track $index) {
-        <div class="repo-card">
-          <div class="repo-header">
-            <h3 (click)="navigateToRepoPage(repo.repoName, 'security')">{{ repo.repoName }}</h3>
-            <span class="visibility text-capitalize">{{ repo.visibility }}</span>
-            @if (repo.archived) {
-              <span class="archived">Archived</span>
-            }
-          </div>
-          <div class="repo-info">
-            <p><span class="icon">🤖</span><span><a (click)="navigateToRepoPage(repo.repoName, 'dependabot')">Dependabot</a>:</span>
-              @if (repo.dependabot.status == 'DISABLED') {
-                <span class="badge none">Disabled</span>
-              }
-              @else if (repo.dependabot.status == 'NO_PERMISSION') {
-                <span class="badge no-permission">No permission</span>
-              }
-              @else if (hasAlerts(repo.dependabot.alerts)) {
-                @for (alert of alertKeys(repo.dependabot.alerts); track $index) {
-                  <span [ngClass]="['badge', alert]">
-                    {{ repo.dependabot.alerts[alert] }} {{ alert }}
-                  </span>
-                }
-              }
-              @else {
-                <span class="badge active">No vulnerabilities</span>
-              }
-            </p>
-            <p><span class="icon">🖥️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'codeScanning')">Code Scanning</a>:</span>
-              @if (repo.codeScanning.status == 'DISABLED') {
-                <span class="badge none">Disabled</span>
-              }
-              @else if (repo.codeScanning.status == 'NO_PERMISSION') {
-                <span class="badge no-permission">No permission</span>
-              }
-              @else if (hasAlerts(repo.codeScanning.alerts)) {
-                @for (alert of alertKeys(repo.codeScanning.alerts); track $index) {
-                  <span [ngClass]="['badge', alert]">
-                    {{ repo.codeScanning.alerts[alert] }} {{ alert }}
-                  </span>
-                }
-              }
-              @else {
-                <span class="badge active">No vulnerabilities</span>
-              }
-            </p>
-            <p><span class="icon">🔑</span><span><a (click)="navigateToRepoPage(repo.repoName, 'secretScanning')">Secret Scanning</a>:</span>
-              @if (repo.secretScanning.status == 'DISABLED') {
-                <span class="badge none">Disabled</span>
-              }
-              @else if (repo.secretScanning.status == 'NO_PERMISSION') {
-                <span class="badge no-permission">No permission</span>
-              }
-              @else if (repo.secretScanning.numberOfAlerts) {
-                <span class="badge critical">
-                  {{ repo.secretScanning.numberOfAlerts }} alerts
+  <div class="header">
+    <h3>
+      <a class="reload-link" title="Reload data" (click)="onSubmit()">
+        Reload Data
+      </a>
+    </h3>
+  </div>
+  <div class="repo-grid">
+    @for (repo of repos; track $index) {
+      <div class="repo-card">
+        <div class="repo-header">
+          <h3 (click)="navigateToRepoPage(repo.repoName, 'security')">
+            {{ repo.repoName }}
+          </h3>
+          <span class="visibility text-capitalize">{{ repo.visibility }}</span>
+          @if (repo.archived) {
+            <span class="archived">Archived</span>
+          }
+        </div>
+        <div class="repo-info">
+          <p>
+            <span class="icon">🤖</span>
+            <span>
+              <a (click)="navigateToRepoPage(repo.repoName, 'dependabot')">
+                Dependabot
+              </a>
+              :
+            </span>
+            @if (repo.dependabot.status == 'DISABLED') {
+              <span class="badge none">Disabled</span>
+            } @else if (repo.dependabot.status == 'NO_PERMISSION') {
+              <span class="badge no-permission">No permission</span>
+            } @else if (hasAlerts(repo.dependabot.alerts)) {
+              @for (alert of alertKeys(repo.dependabot.alerts); track $index) {
+                <span [ngClass]="['badge', alert]">
+                  {{ repo.dependabot.alerts[alert] }} {{ alert }}
                 </span>
               }
-              @else {
-                <span class="badge active">No vulnerabilities</span>
+            } @else {
+              <span class="badge active">No vulnerabilities</span>
+            }
+          </p>
+          <p>
+            <span class="icon">🖥️</span>
+            <span>
+              <a (click)="navigateToRepoPage(repo.repoName, 'codeScanning')">
+                Code Scanning
+              </a>
+              :
+            </span>
+            @if (repo.codeScanning.status == 'DISABLED') {
+              <span class="badge none">Disabled</span>
+            } @else if (repo.codeScanning.status == 'NO_PERMISSION') {
+              <span class="badge no-permission">No permission</span>
+            } @else if (hasAlerts(repo.codeScanning.alerts)) {
+              @for (
+                alert of alertKeys(repo.codeScanning.alerts);
+                track $index
+              ) {
+                <span [ngClass]="['badge', alert]">
+                  {{ repo.codeScanning.alerts[alert] }} {{ alert }}
+                </span>
               }
-            </p>
-            <p><span class="icon">🚧</span><span><a (click)="navigateToRepoPage(repo.repoName, 'branches')">Branch Protection</a>:</span>
-              @if (repo.branchProtectionEnabled) {
-                <span class="badge active">Enabled</span>
-              }
-              @else {
-                <span class="badge none">Disabled</span>
-              }
-            </p>
-            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'lastCommit', repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
-          </div>
+            } @else {
+              <span class="badge active">No vulnerabilities</span>
+            }
+          </p>
+          <p>
+            <span class="icon">🔑</span>
+            <span>
+              <a (click)="navigateToRepoPage(repo.repoName, 'secretScanning')">
+                Secret Scanning
+              </a>
+              :
+            </span>
+            @if (repo.secretScanning.status == 'DISABLED') {
+              <span class="badge none">Disabled</span>
+            } @else if (repo.secretScanning.status == 'NO_PERMISSION') {
+              <span class="badge no-permission">No permission</span>
+            } @else if (repo.secretScanning.numberOfAlerts) {
+              <span class="badge critical">
+                {{ repo.secretScanning.numberOfAlerts }} alerts
+              </span>
+            } @else {
+              <span class="badge active">No vulnerabilities</span>
+            }
+          </p>
+          <p>
+            <span class="icon">🚧</span>
+            <span>
+              <a (click)="navigateToRepoPage(repo.repoName, 'branches')">
+                Branch Protection
+              </a>
+              :
+            </span>
+            @if (repo.branchProtectionEnabled) {
+              <span class="badge active">Enabled</span>
+            } @else {
+              <span class="badge none">Disabled</span>
+            }
+          </p>
+          <p>
+            <span class="icon">⏱️</span>
+            <span>
+              <a
+                (click)="
+                  navigateToRepoPage(
+                    repo.repoName,
+                    'lastCommit',
+                    repo.lastCommitSHA
+                  )
+                ">
+                Last Commit
+              </a>
+              :
+            </span>
+            {{ formatCommitDate(repo.lastCommitDate) }}
+          </p>
         </div>
-      }
-    </div>
-  }
-  @else {
-    <div class="token-input-container">
-      <h3>Please enter your token to access the security page.</h3>
-      <div>
-        <input type="password" [(ngModel)]="token" placeholder="Enter your token" />
-        <button  class="btn-primary" (click)="onSubmit()" [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-          Proceed
-        </button>
-        @if (errorMessage) {
-          <div class="error-message">{{ errorMessage }}</div>
-        }
       </div>
-    </div>
-  }
+    }
+  </div>
   <app-loading-spinner
     containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
     [key]="LoadingComponentId.SECURITY_MONITOR" />

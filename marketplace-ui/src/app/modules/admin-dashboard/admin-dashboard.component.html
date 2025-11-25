@@ -1,41 +1,89 @@
-<app-side-menu></app-side-menu>
-<div class="admin-dashboard container-fluid" *ngIf="showScheduledTasks">
-  <h2>Scheduled Tasks</h2>
-  <table class="table table-sm table-striped" >
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>Cron</th>
-        <th>Running</th>
-        <th>Last Start</th>
-        <th>Last End</th>
-        <th>Last Success End</th>
-        <th>Success</th>
-        <th>Next Execution</th>
-        <th>Error</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- <tr *ngFor="let t of tasks">
-        <td>{{ t.id }}</td>
-        <td><code>{{ t.cronExpression || '-' }}</code></td>
-        <td>
-          <span [class.text-success]="t.running" [class.text-muted]="!t.running">
-            {{ t.running ? 'RUNNING' : 'IDLE' }}
-          </span>
-        </td>
-        <td>{{ formatDate(t.lastStart) }}</td>
-        <td>{{ formatDate(t.lastEnd) }}</td>
-        <td>{{ formatDate(t.lastSuccessEnd) }}</td>
-        <td [class.text-success]="t.lastSuccess" [class.text-danger]="!t.lastSuccess">
-          {{ t.lastSuccess ? 'OK' : 'FAIL' }}
-        </td>
-        <td>{{ formatDate(t.nextExecution) }}</td>
-        <td class="text-truncate" style="max-width:200px" [title]="t.lastError">{{ t.lastError || '' }}</td>
-      </tr> -->
-    </tbody>
-  </table>
-  <!-- <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p> -->
-  <!-- <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p> -->
-</div>
-<router-outlet></router-outlet>
+@if (isAuthenticated) {
+  <app-side-menu></app-side-menu>
+  @if (showScheduledTasks) {
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Sync Job</th>
+            <th>Cron Expression</th>
+            <th>Status</th>
+            <th>Last run</th>
+            <th>Next scheduled run</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tasks$ | async">
+            <td>{{ t.name }}</td>
+            <td>
+              <code>{{ t.cronExpression || '-' }}</code>
+            </td>
+            <td>
+              {{ t.status }}
+            </td>
+            <td>
+              <p class="text-primary m-0 created-date-column">
+                {{ t.lastStart | date: 'short' }}
+              </p>
+            </td>
+            <td>
+              <p class="text-primary m-0 created-date-column">
+                {{ t.nextExecution | date: 'short' }}
+              </p>
+            </td>
+            <td class="action-buttons fixed-width">
+              <div id="sync-button">
+                <p
+                  class="mb-0 text-center"
+                  [lang]="languageService.selectedLanguage()">
+                  {{ 'common.approval.approveBtnLabel' | translate }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- <p *ngIf="(tasks$ | async)?.length === 0">No task data yet.</p> -->
+      <!-- <p class="small text-muted">Auto-refresh every {{ refreshMs/1000 }}s.</p> -->
+    </div>
+  }
+  <router-outlet></router-outlet>
+} @else {
+  <div class="token-container">
+    <div class="header">
+      <h2 class="text-primary text-center">
+        {{ 'common.approval.pageTitle' | translate }}
+      </h2>
+      <h3 class="text-primary text-center">
+        {{ 'common.approval.description' | translate }}
+      </h3>
+    </div>
+    <div class="token-input-container">
+      <h3 class="text-primary">
+        {{ 'common.approval.enterToken' | translate }}
+      </h3>
+      <div>
+        <input
+          id="token-input"
+          type="password"
+          [(ngModel)]="token"
+          [attr.placeholder]="
+            'common.approval.enterTokenPlaceholder' | translate
+          " />
+        <button
+          class="btn-primary"
+          (click)="onSubmit()"
+          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+          {{ 'common.approval.proceedBtnLabel' | translate }}
+        </button>
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+      </div>
+    </div>
+    <!-- <app-loading-spinner
+      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      [key]="LoadingComponentId.FEEDBACK_APPROVAL" /> -->
+  </div>
+}

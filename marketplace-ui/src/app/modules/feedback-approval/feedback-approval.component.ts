@@ -84,20 +84,6 @@ export class FeedbackApprovalComponent {
     });
   }
 
-  onSubmit(): void {
-    this.errorMessage = '';
-    if (!this.token) {
-      this.handleMissingToken();
-      return;
-    }
-    this.fetchFeedbacks();
-  }
-
-  private handleMissingToken(): void {
-    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-    this.isAuthenticated = false;
-  }
-
   fetchFeedbacks(): void {
     this.isLoading = true;
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);

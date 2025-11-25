@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { HeaderComponent } from "../header/header.component";
 
 interface MenuItem {
   icon: string;
@@ -14,7 +15,7 @@ interface MenuItem {
 @Component({
   selector: 'app-side-menu',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HeaderComponent],
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss']
 })

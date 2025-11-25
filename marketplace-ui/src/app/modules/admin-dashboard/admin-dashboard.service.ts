@@ -1,24 +1,15 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, switchMap, concat } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
 import { ScheduledTaskInfo } from '../../shared/models/scheduled-task-info.model';
+import { API_URI } from '../../shared/constants/api.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ScheduledTasksService {
-  private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl + '/api/scheduled-tasks';
+  constructor(private readonly http: HttpClient) {}
 
-  list(): Observable<ScheduledTaskInfo[]> {
-    return this.http.get<ScheduledTaskInfo[]>(this.baseUrl);
-  }
-
-  poll(ms: number): Observable<ScheduledTaskInfo[]> {
-    return interval(ms).pipe(switchMap(() => this.list()));
-  }
-
-  pollWithImmediate(ms: number): Observable<ScheduledTaskInfo[]> {
-    // Emit immediately then continue at interval
-    return concat(this.list(), this.poll(ms));
+  getScheduledTask(): Observable<ScheduledTaskInfo[]> {
+    const url = `${API_URI.SCHEDULED_TASK}`;
+    return this.http.get<ScheduledTaskInfo[]>(url);
   }
 }

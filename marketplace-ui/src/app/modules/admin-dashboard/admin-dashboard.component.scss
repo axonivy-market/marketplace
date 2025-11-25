@@ -1,2 +1,31 @@
-.scheduled-tasks table td, .scheduled-tasks table th { vertical-align: middle; }
-.scheduled-tasks code { font-size: 0.75rem; }
+th {
+  height: 4.5rem;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 140%;
+  vertical-align: middle;
+}
+
+td {
+  height: 5rem;
+  vertical-align: middle;
+}
+
+#sync-button {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #{white};
+  cursor: pointer;
+  background-color: var(--product-feedback-approve-button-color);
+  margin-right: 1.1rem;
+  vertical-align: middle;
+}
+
+#sync-button::ng-deep {
+  vertical-align: middle;
+}
+
+#sync-button:hover {
+  opacity: 0.8;
+}
