@@ -53,8 +53,8 @@ export class MonitoringDashboardComponent implements OnInit {
             params['isFocused'] === 'true' ? FOCUSED_TAB : STANDARD_TAB
           );
         }
-        if (params['search']) {
-          this.initialSearch.set(params['search']);
+        if (params['repoSearch']) {
+          this.initialSearch.set(params['repoSearch']);
         }
       });
       this.pageTitleService.setTitleOnLangChange(
