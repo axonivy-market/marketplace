@@ -223,5 +223,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
       sub.unsubscribe();
     });
   }
+
   protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
 }
