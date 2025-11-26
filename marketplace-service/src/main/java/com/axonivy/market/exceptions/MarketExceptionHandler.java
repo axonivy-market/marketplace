@@ -79,7 +79,7 @@ public class MarketExceptionHandler {
   @ExceptionHandler(IOException.class)
   public ResponseEntity<Object> handleIOException(IOException ex) {
     Map<String, String> body = new HashMap<>();
-    body.put("message", "Sorry, there was a problem processing your request. Please try again or contact support if the issue persists.");
+    body.put("message", "Sorry, there was a problem processing your request. Please try again or contact support");
     body.put("error", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
   }

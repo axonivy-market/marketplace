@@ -45,7 +45,7 @@ class MarketExceptionHandlerTest {
     assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
         "Expected HTTP 400 BAD_REQUEST");
     Message errorMessage = (Message) responseEntity.getBody();
-    assertNotNull(errorMessage);
+    assertNotNull(errorMessage, "Expected error message body to be not null");
     assertEquals(errorMessageText, errorMessage.getMessageDetails(),
         "Expected error message details to be " + errorMessageText);
   }
@@ -110,6 +110,5 @@ class MarketExceptionHandlerTest {
     var responseEntity = exceptionHandler.handleIOException(ioException);
     assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
         "Expected HTTP 400 BAD_REQUEST");
-    assertTrue(true, "Placeholder test for IOException handling");
   }
 }

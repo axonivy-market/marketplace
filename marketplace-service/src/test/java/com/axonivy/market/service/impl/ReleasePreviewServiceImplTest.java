@@ -179,8 +179,10 @@ class ReleasePreviewServiceImplTest {
   @Test
   void testUpdateImagesWithDownloadUrlNullPath() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-        releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL)
+            releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL),
+        "Should throw error if unzipped folder path is null"
     );
-    assertEquals("Unzipped folder Path must not be null", exception.getMessage());
+    assertEquals("Unzipped folder Path must not be null", exception.getMessage(),
+      "Exception message should indicate null unzipped folder path");
   }
 }
