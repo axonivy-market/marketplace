@@ -128,6 +128,8 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private ArtifactRepository artifactRepo;
   @Mock
+  private GithubRepoRepository githubRepoRepository;
+  @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
   private FileDownloadService fileDownloadService;
