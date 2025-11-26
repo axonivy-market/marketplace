@@ -534,6 +534,12 @@ public class ProductServiceImpl implements ProductService {
     return mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
+  private void updateFocusedStatusForProduct(Product product) {
+    GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,product.getId());
+    boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
+    product.setIsFocused(isFocused);
+  }
+
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
@@ -543,9 +549,7 @@ public class ProductServiceImpl implements ProductService {
 
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
-      GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,id);
-      boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
-      productItem.setIsFocused(isFocused);
+      updateFocusedStatusForProduct(product);
       return productItem;
     }).orElse(null);
   }
@@ -568,11 +572,7 @@ public class ProductServiceImpl implements ProductService {
 
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
-
-      GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,id);
-      boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
-      productItem.setIsFocused(isFocused);
-
+      updateFocusedStatusForProduct(product);
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
@@ -613,9 +613,7 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     Product product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null ) {
-      GithubRepo repo = githubRepo.findByNameOrProductId(EMPTY, id);
-      boolean isFocused = productRepo != null && Boolean.TRUE.equals(repo.getFocused());
-      product.setIsFocused(isFocused);
+      updateFocusedStatusForProduct(product);
     }
     return product;
   }
