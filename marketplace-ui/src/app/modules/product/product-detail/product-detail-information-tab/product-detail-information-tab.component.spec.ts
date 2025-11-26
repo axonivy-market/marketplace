@@ -309,12 +309,13 @@ describe('ProductDetailInformationTabComponent', () => {
 
     it('should navigate to /monitoring with repo name in query params when onBadgeClick is called and productDetail has id', () => {
       component.repoName = 'test-repo';
+      component.productDetail = { isFocusedProduct: true } as ProductDetail;
       const navigateSpy = spyOn(component.router, 'navigate');
 
       component.onBadgeClick();
 
       expect(navigateSpy).toHaveBeenCalledWith(['/monitoring'], {
-        queryParams: { search: 'test-repo' }
+        queryParams: { repoSearch: 'test-repo', isFocused: true }
       });
     });
 

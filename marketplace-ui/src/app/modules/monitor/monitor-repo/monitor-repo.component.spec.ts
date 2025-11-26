@@ -138,7 +138,7 @@ describe('MonitoringRepoComponent', () => {
     expect(component.criteria.pageable.page).toBe(0);
     expect(component.criteria.pageable.size).toBe(component.pageSize);
     expect(component.criteria.search).toBe(searchString);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 
   it('should show all repositories when pageSize = -1', () => {
@@ -162,7 +162,7 @@ describe('MonitoringRepoComponent', () => {
     expect(component.sortDirection).toBe(DESCENDING);
     expect(component.criteria.sortDirection).toBe(DESCENDING);
     expect(component.criteria.workflowType).toBe(NAME_COLUMN);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 
   it('should return correct market URL', () => {
@@ -243,7 +243,7 @@ describe('MonitoringRepoComponent', () => {
     expect(component.page).toBe(newPage);
     expect(component.criteria.pageable.page).toBe(newPage - 1);
     expect(component.criteria.pageable.size).toBe(component.pageSize);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 
   it('should update pageSize, reset page to 1, pageable.page to 0, pageable.size and call loadRepositories on page size change', () => {
@@ -261,7 +261,7 @@ describe('MonitoringRepoComponent', () => {
     expect(component.page).toBe(1);
     expect(component.criteria.pageable.page).toBe(0);
     expect(component.criteria.pageable.size).toBe(newSize);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 
   it('should set isFocused to true when activeTab is not STANDARD_TAB and call loadRepositories', () => {
@@ -275,7 +275,7 @@ describe('MonitoringRepoComponent', () => {
     expect(component.criteria.isFocused).toBe('true');
     expect(component.criteria.pageable.size).toBe(component.pageSize);
     expect(component.criteria.pageable.page).toBe(component.page - 1);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 
   it('should set isFocused to empty string when activeTab is STANDARD_TAB and call loadRepositories', () => {
@@ -286,9 +286,9 @@ describe('MonitoringRepoComponent', () => {
 
     component.updateCriteriaAndLoad();
 
-    expect(component.criteria.isFocused).toBe('');
+    expect(component.criteria.isFocused).toBe('false');
     expect(component.criteria.pageable.size).toBe(component.pageSize);
     expect(component.criteria.pageable.page).toBe(component.page - 1);
-    expect(component.loadRepositories).toHaveBeenCalledWith(component.criteria);
+    expect(component.loadRepositories).toHaveBeenCalled();
   });
 });

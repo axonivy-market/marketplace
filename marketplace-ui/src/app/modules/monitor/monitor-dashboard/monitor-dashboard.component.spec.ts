@@ -68,6 +68,6 @@ describe('MonitoringDashboardComponent', () => {
 
   it('should change active tab when setActiveTab() is called', () => {
     component.setActiveTab(component.STANDARD_TAB);
-    expect(component.activeTab).toBe(component.STANDARD_TAB);
+    expect(component.activeTab()).toBe(component.STANDARD_TAB);
   });
 });
