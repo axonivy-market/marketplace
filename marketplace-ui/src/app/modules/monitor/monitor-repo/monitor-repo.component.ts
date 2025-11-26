@@ -162,7 +162,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     this.criteria.pageable.size = this.pageSize;
     this.searchTextChanged.next(searchString);
     this.criteria.search = searchString;
-    this.loadRepositories();
   }
 
   onPageChange(newPage: number) {
@@ -221,12 +220,14 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   }
 
   loadRepositories(): void {
-    this.githubService.getRepositories(this.criteria).subscribe({
-      next: data => {
-        this.displayedRepositories = data?._embedded?.githubRepos || [];
-        this.totalElements = data.page?.totalElements ?? 0;
-      }
-    });
+    this.subscriptions.push(
+      this.githubService.getRepositories(this.criteria).subscribe({
+        next: data => {
+          this.displayedRepositories = data?._embedded?.githubRepos || [];
+          this.totalElements = data.page?.totalElements ?? 0;
+        }
+      })
+    );
   }
 
   ngOnDestroy(): void {
