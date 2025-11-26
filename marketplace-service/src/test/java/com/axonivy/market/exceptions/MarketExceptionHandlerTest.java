@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -101,5 +102,14 @@ class MarketExceptionHandlerTest {
         "Message should start with expected prefix");
     assertTrue(response.getBody().get("message").endsWith(", skipped this file"),
         "Message should end with expected suffix");
+  }
+
+  @Test
+  void testHandleIoException() {
+    var ioException = mock(IOException.class);
+    var responseEntity = exceptionHandler.handleIOException(ioException);
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST");
+    assertTrue(true, "Placeholder test for IOException handling");
   }
 }

@@ -34,19 +34,13 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
-  @Override
-  public ReleasePreview extract(MultipartFile file, String baseUrl) {
-    try {
-      ZipSafetyScanner.analyze(file);
-      FileUtils.unzip(file, PREVIEW_DIR);
-    } catch (IOException e) {
-      log.info("#extract Error extracting zip file, message: {}", e.getMessage());
-      return null;
-    }
+  public ReleasePreview extract(MultipartFile file, String baseUrl) throws IOException {
+    ZipSafetyScanner.analyze(file);
+    FileUtils.unzip(file, PREVIEW_DIR);
     return extractReadme(baseUrl, PREVIEW_DIR);
   }
 
-  public ReleasePreview extractReadme(String baseUrl, String location) {
+  public ReleasePreview extractReadme(String baseUrl, String location) throws IOException {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
     try (Stream<Path> readmePathStream = Files.walk(Paths.get(location))) {
       List<Path> readmeFiles = readmePathStream.filter(Files::isRegularFile)
@@ -59,15 +53,14 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
         processReadme(readmeFile, moduleContents, baseUrl, location);
       }
       return ReleasePreview.from(moduleContents);
-    } catch (IOException e) {
-      log.error("Cannot get README file's content from folder {}: {}",
-          PREVIEW_DIR, e.getMessage());
-      return null;
     }
   }
 
   public String updateImagesWithDownloadUrl(String unzippedFolderPath,
-      String readmeContents, String baseUrl) {
+      String readmeContents, String baseUrl) throws IOException {
+    if (unzippedFolderPath == null) {
+      throw new IllegalArgumentException("Unzipped folder Path must not be null");
+    }
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
@@ -84,9 +77,6 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
             imageUrls.put(imageFileName, downloadURLFormat);
           });
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-    } catch (Exception e) {
-      log.error("#updateImagesWithDownloadUrl: Error update image url: {}", e.getMessage());
-      return null;
     }
   }
 

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,4 +76,11 @@ public class MarketExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
   }
 
+  @ExceptionHandler(IOException.class)
+  public ResponseEntity<Object> handleIOException(IOException ex) {
+    Map<String, String> body = new HashMap<>();
+    body.put("message", "Sorry, there was a problem processing your request. Please try again or contact support if the issue persists.");
+    body.put("error", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+  }
 }

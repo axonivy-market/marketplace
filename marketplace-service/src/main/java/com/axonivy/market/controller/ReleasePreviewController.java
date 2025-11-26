@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import java.io.IOException;
 
 import static com.axonivy.market.constants.RequestMappingConstants.RELEASE_PREVIEW;
 
@@ -28,7 +29,7 @@ public class ReleasePreviewController {
 
   @PostMapping
   @Operation(hidden = true)
-  public ResponseEntity<Object> extractZipFile(@RequestParam(value = "file") MultipartFile file) {
+  public ResponseEntity<Object> extractZipFile(@RequestParam(value = "file") MultipartFile file) throws IOException {
     var baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     ReleasePreview preview = previewService.extract(file, baseUrl);
     if (preview == null) {

@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -44,7 +46,7 @@ class ReleasePreviewControllerTest {
   }
 
   @Test
-  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() {
+  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() throws IOException {
     try (MockedStatic<ServletUriComponentsBuilder> mockedStatic = mockStatic(ServletUriComponentsBuilder.class)) {
       ServletUriComponentsBuilder mockServletBuilder = mock(ServletUriComponentsBuilder.class);
       UriComponents mockUriComponents = mock(UriComponents.class);
@@ -67,7 +69,7 @@ class ReleasePreviewControllerTest {
   }
 
   @Test
-  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() {
+  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() throws IOException {
     try (MockedStatic<ServletUriComponentsBuilder> mockedStatic = mockStatic(ServletUriComponentsBuilder.class)) {
       ServletUriComponentsBuilder mockServletBuilder = mock(ServletUriComponentsBuilder.class);
       UriComponents mockUriComponents = mock(UriComponents.class);

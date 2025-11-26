@@ -47,16 +47,13 @@ public class FileUtils {
     }
   }
 
-  public static void unzipArtifact(InputStream inputStream, File unzipDir) {
-    try (var zis = new ZipInputStream(inputStream)) {
+  public static void unzipArtifact(InputStream inputStream, File unzipDir) throws IOException {
+    var zis = new ZipInputStream(inputStream);
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
         processZipEntry(zis, entry, unzipDir);
         zis.closeEntry();
       }
-    } catch (IOException e) {
-      log.error("Error unzipping artifact: {}", e.getMessage());
-    }
   }
 
   private static void processZipEntry(ZipInputStream zis, ZipEntry entry, File unzipDir) throws IOException {
@@ -99,12 +96,7 @@ public class FileUtils {
   public static void unzip(InputStreamSource file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
-
-    try {
-      unzipArtifact(file.getInputStream(), extractDir);
-    } catch (IOException | IllegalStateException e) {
-      throw new IOException("Error unzipping file", e);
-    }
+    unzipArtifact(file.getInputStream(), extractDir);
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {
