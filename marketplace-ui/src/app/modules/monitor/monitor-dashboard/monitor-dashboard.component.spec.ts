@@ -98,18 +98,22 @@ describe('MonitoringDashboardComponent', () => {
     );
   });
 
-  it('should set activeTab and initialSearch from query params on init', async () => {
+  it('should set activeTab and initialSearch from query params on init', () => {
     const mockActivatedRoute = {
       queryParams: of({ isFocused: 'true', repoSearch: 'test-repo' })
     };
-    TestBed.overrideProvider(ActivatedRoute, { useValue: mockActivatedRoute });
-    await TestBed.compileComponents();
-    fixture = TestBed.createComponent(MonitoringDashboardComponent);
-    component = fixture.componentInstance;
 
-    component.ngOnInit();
+    // Manually inject the mocked route for this test
+    const injectedRoute = TestBed.inject(ActivatedRoute) as any;
+    injectedRoute.queryParams = mockActivatedRoute.queryParams;
 
-    expect(component.activeTab()).toBe(component.FOCUSED_TAB);
-    expect(component.initialSearch()).toBe('test-repo');
+    // Create a new component instance with updated route
+    const testFixture = TestBed.createComponent(MonitoringDashboardComponent);
+    const testComponent = testFixture.componentInstance;
+
+    testComponent.ngOnInit();
+
+    expect(testComponent.activeTab()).toBe(testComponent.FOCUSED_TAB);
+    expect(testComponent.initialSearch()).toBe('test-repo');
   });
 });
