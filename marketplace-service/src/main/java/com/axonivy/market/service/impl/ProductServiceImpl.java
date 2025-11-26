@@ -7,7 +7,6 @@ import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
@@ -64,14 +63,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.*;
@@ -477,7 +472,7 @@ public class ProductServiceImpl implements ProductService {
       return;
     }
 
-    var lastUpdated = getLastUpdatedDate(document);
+    var lastUpdated = MetadataReaderUtils.getLastUpdatedDate(document);
     if (ObjectUtils.isEmpty(product.getNewestPublishedDate()) || lastUpdated.after(product.getNewestPublishedDate())) {
       String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
       product.setNewestPublishedDate(lastUpdated);
@@ -500,14 +495,6 @@ public class ProductServiceImpl implements ProductService {
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
     }
-  }
-
-  private static Date getLastUpdatedDate(Document document) {
-    var lastUpdatedFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
-    var newestPublishedDate =
-        LocalDateTime.parse(Objects.requireNonNull(MetadataReaderUtils.getElementValue(document,
-            MavenConstants.LAST_UPDATED_TAG)), lastUpdatedFormatter);
-    return Date.from(newestPublishedDate.atZone(ZoneOffset.UTC).toInstant());
   }
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
