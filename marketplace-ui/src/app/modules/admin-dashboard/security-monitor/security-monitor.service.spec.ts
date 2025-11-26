@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { SecurityMonitorService } from './security-monitor.service';
-import { environment } from '../../../environments/environment';
-import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
+import { environment } from '../../../../environments/environment';
+import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('SecurityMonitorService', () => {

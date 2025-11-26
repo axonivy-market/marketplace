@@ -8,6 +8,8 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { SideMenuComponent } from "../../../shared/components/side-menu/side-menu.component";
 import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
+import { AdminDashboardService } from '../admin-dashboard.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-custom-sort',
@@ -39,14 +41,31 @@ export class CustomSortComponent implements OnInit {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   private readonly productService = inject(ProductService);
+  private readonly adminDashboardService = inject(AdminDashboardService);
 
-  sortingExtensions = ['avs'];
+  sortingExtensions: string[] = [];
   allExtensions: string[] = [];
+  searchTerm = '';
+  isSaving = false;
+  sortSuccessMessage = '';
+  sortErrorMessage = '';
 
   private readonly PAGE_SIZE = 200;
 
   ngOnInit(): void {
     void this.loadAllProductIds();
+  }
+
+  get filteredAvailableExtensions(): string[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.allExtensions;
+    }
+    return this.allExtensions.filter((id) => id.toLowerCase().includes(term));
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -62,6 +81,33 @@ export class CustomSortComponent implements OnInit {
         event.currentIndex
       );
     }
+  }
+
+  sortMarketExtensions(): void {
+    this.sortSuccessMessage = '';
+    this.sortErrorMessage = '';
+
+    if (this.sortingExtensions.length === 0) {
+      this.sortErrorMessage = 'Please drag at least one extension into the sorted list before saving.';
+      return;
+    }
+
+    this.isSaving = true;
+
+    this.adminDashboardService
+      .sortMarketExtensions(this.sortingExtensions, 'alphabetically')
+      .pipe(finalize(() => {
+        this.isSaving = false;
+      }))
+      .subscribe({
+        next: () => {
+          this.sortSuccessMessage = 'Sorting saved successfully.';
+        },
+        error: (error) => {
+          console.error('Failed to persist custom sorting', error);
+          this.sortErrorMessage = 'Saving the sorting failed. Please try again.';
+        }
+      });
   }
 
   private async loadAllProductIds(): Promise<void> {

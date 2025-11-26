@@ -29,41 +29,6 @@ The following guides illustrate how to use some features concretely:
 
 ### Access Swagger URL: http://{your-host}/swagger-ui/index.html
 
-### Scheduled Task Monitoring Endpoint
-
-The service now exposes runtime information for all `@Scheduled` tasks.
-
-Endpoint: `GET /api/scheduled-tasks`
-
-Returned fields per task:
-* `id` - Identifier in form `ClassName#methodName`
-* `cronExpression` - Resolved cron string (if configured)
-* `lastStart` / `lastEnd` - Timestamps of the most recent execution
-* `lastSuccessEnd` - Timestamp when the last successful run finished
-* `nextExecution` - Next expected run time (cron only)
-* `running` - Whether the task is currently executing
-* `lastSuccess` - Success flag for the last execution
-* `lastError` - Error message of the last failure (if any)
-
-Example response:
-```json
-[
-  {
-    "id": "ScheduledTasks#syncDataForProductFromGitHubRepo",
-    "cronExpression": "0 0/30 * * * *",
-    "lastStart": "2025-11-20T09:00:00Z",
-    "lastEnd": "2025-11-20T09:00:12Z",
-    "lastSuccessEnd": "2025-11-20T09:00:12Z",
-    "nextExecution": "2025-11-20T09:30:00Z",
-    "running": false,
-    "lastSuccess": true,
-    "lastError": null
-  }
-]
-```
-
-You can integrate this endpoint with monitoring dashboards or periodically poll it to verify scheduler health.
-
 ### Install Lombok for Eclipse IDE
 
 * Download lombok here https://projectlombok.org/download

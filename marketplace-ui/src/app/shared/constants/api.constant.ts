@@ -14,6 +14,7 @@ export const API_URI = {
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
   SCHEDULED_TASK: `${API}/scheduled-task`,
+  SECURITY_MONITOR: `${API}/security-monitor`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

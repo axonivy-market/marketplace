@@ -1,37 +1,140 @@
-
 <app-side-menu></app-side-menu>
- <span>
-  The UI allows users to modify the 
-<b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace (https://market.axonivy.com/).
- </span>
-<div class="example-container">
 
-  <h2>To do</h2>
-  <div
-    cdkDropList
-    #todoList="cdkDropList"
-    [cdkDropListData]="sortingExtensions"
-    [cdkDropListConnectedTo]="[doneList]"
-    class="example-list"
-    (cdkDropListDropped)="drop($event)">
-    @for (item of sortingExtensions; track item) {
-      <div class="example-box" cdkDrag>{{item}}</div>
-    }
-  </div>
-</div>
-<div class="example-container">
-  <h2>Done</h2>
-  <div
-    cdkDropList
-    #doneList="cdkDropList"
-    [cdkDropListData]="allExtensions"
-    [cdkDropListConnectedTo]="[todoList]"
-    class="example-list"
-    (cdkDropListDropped)="drop($event)">
-    @for (item of allExtensions; track item) {
-      <div class="example-box" cdkDrag>{{item}}</div>
-    }
-  </div>
-</div>
+<section class="custom-sort">
+  <p class="intro-text">
+    The UI allows users to modify the
+    <b>default sorting order</b>
+    of Market extensions displayed on the Axon Ivy Marketplace
+    <a
+      href="https://market.axonivy.com/"
+      target="_blank"
+      rel="noopener noreferrer">
+      https://market.axonivy.com/
+    </a>
+    .
+  </p>
 
-<router-outlet></router-outlet>
+  <div class="table-grid" [class.loading]="isLoading">
+    <div class="table-card">
+      <header class="table-header">
+        <div class="title-group">
+          <h2>Sorted Extensions</h2>
+          <span class="badge">{{ sortingExtensions.length }}</span>
+        </div>
+      </header>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Extension ID</th>
+            </tr>
+          </thead>
+          <tbody
+            cdkDropList
+            #todoList="cdkDropList"
+            [cdkDropListData]="sortingExtensions"
+            [cdkDropListConnectedTo]="[doneList]"
+            cdkDropListOrientation="vertical"
+            (cdkDropListDropped)="drop($event)">
+            @if (sortingExtensions.length === 0) {
+              <tr class="empty-row">
+                <td colspan="2">
+                  Drag extensions here to define the default order.
+                </td>
+              </tr>
+            }
+            @for (item of sortingExtensions; track item; let index = $index) {
+              <tr cdkDrag>
+                <td class="index">{{ index + 1 }}</td>
+                <td>
+                  <span class="extension-id">{{ item }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <header class="table-header">
+        <div class="title-group">
+          <h2>Available Extensions</h2>
+          <span class="badge">{{ filteredAvailableExtensions.length }} / {{ allExtensions.length }}</span>
+        </div>
+        <div class="search-box">
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Search extensions"
+            autocomplete="off"
+            [(ngModel)]="searchTerm"
+          />
+          @if (searchTerm) {
+            <button type="button" class="clear-button" (click)="clearSearch()">Clear</button>
+          }
+        </div>
+      </header>
+      <div class="table-scroll available-list">
+        <table>
+          <thead>
+            <tr>
+              <th>Extension ID</th>
+            </tr>
+          </thead>
+          <tbody
+            cdkDropList
+            #doneList="cdkDropList"
+            [cdkDropListData]="allExtensions"
+            [cdkDropListConnectedTo]="[todoList]"
+            cdkDropListOrientation="vertical"
+            (cdkDropListDropped)="drop($event)">
+            @if (filteredAvailableExtensions.length === 0) {
+              <tr class="empty-row">
+                <td>No extensions available.</td>
+              </tr>
+            }
+            @for (item of filteredAvailableExtensions; track item) {
+              <tr cdkDrag>
+                <td>
+                  <span>{{ item }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+    <div class="actions">
+    <button
+      type="button"
+      class="primary-button"
+      (click)="sortMarketExtensions()"
+      [disabled]="isSaving || sortingExtensions.length === 0"
+    >
+      @if (isSaving) {
+        Sorting...
+      } @else {
+        Sort
+      }
+    </button>
+    <span class="hint">Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.</span>
+  </div>
+
+  @if (sortSuccessMessage) {
+    <div class="feedback success">{{ sortSuccessMessage }}</div>
+  }
+
+  @if (sortErrorMessage) {
+    <div class="feedback error">{{ sortErrorMessage }}</div>
+  }
+
+  @if (isLoading) {
+    <div class="loading-state">Loading extensions...</div>
+  }
+
+  <router-outlet></router-outlet>
+</section>

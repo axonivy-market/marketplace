@@ -3,7 +3,7 @@ import { GithubCallbackComponent } from './auth/github-callback/github-callback.
 import { ErrorPageComponent } from './shared/components/error-page/error-page.component';
 import { RedirectPageComponent } from './shared/components/redirect-page/redirect-page.component';
 import { ERROR_PAGE } from './shared/constants/common.constant';
-import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
+import { SecurityMonitorComponent } from './modules/admin-dashboard/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';

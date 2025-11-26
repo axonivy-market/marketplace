@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { FEEDBACK_APPROVAL_SESSION_TOKEN } from '../../shared/constants/common.constant';
+import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 
 export type SyncJobKey =
   | 'syncProducts'
@@ -36,7 +37,10 @@ export class AdminDashboardService {
   ) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token = this.sessionStorageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    const token =
+      this.sessionStorageRef.session?.getItem(
+        FEEDBACK_APPROVAL_SESSION_TOKEN
+      ) ?? '';
     if (!token) {
       return new HttpHeaders();
     }
@@ -45,38 +49,84 @@ export class AdminDashboardService {
 
   syncProducts(resetSync: boolean = false): Observable<SyncResponse> {
     const params = new HttpParams().set('resetSync', String(resetSync));
-    return this.http.put<SyncResponse>(`${API_URI.PRODUCT}/sync`, {}, {
-      params,
-      headers: this.getAuthHeaders()
-    });
+    return this.http.put<SyncResponse>(
+      `${API_URI.PRODUCT}/sync`,
+      {},
+      {
+        params,
+        headers: this.getAuthHeaders()
+      }
+    );
   }
 
-  syncOneProduct(id: string, marketItemPath: string, overrideMarketItemPath?: boolean): Observable<SyncResponse> {
+  syncOneProduct(
+    id: string,
+    marketItemPath: string,
+    overrideMarketItemPath?: boolean
+  ): Observable<SyncResponse> {
     let params = new HttpParams().set('marketItemPath', marketItemPath);
     if (overrideMarketItemPath != null) {
-      params = params.set('overrideMarketItemPath', String(overrideMarketItemPath));
+      params = params.set(
+        'overrideMarketItemPath',
+        String(overrideMarketItemPath)
+      );
     }
-    return this.http.put<SyncResponse>(`${API_URI.PRODUCT}/sync/${id}`, {}, {
-      params,
-      headers: this.getAuthHeaders()
-    });
+    return this.http.put<SyncResponse>(
+      `${API_URI.PRODUCT}/sync/${id}`,
+      {},
+      {
+        params,
+        headers: this.getAuthHeaders()
+      }
+    );
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<void>(
+      `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
   }
 
   syncGithubMonitor(): Observable<string> {
-    return this.http.put(`${API_URI.GITHUB_REPORT}/sync`, {}, {
-      responseType: 'text',
-      headers: this.getAuthHeaders()
-    });
+    return this.http.put(
+      `${API_URI.GITHUB_REPORT}/sync`,
+      {},
+      {
+        responseType: 'text',
+        headers: this.getAuthHeaders()
+      }
+    );
   }
 
   fetchSyncJobExecutions(): Observable<SyncJobExecutionDto[]> {
     return this.http.get<SyncJobExecutionDto[]>(API_URI.SCHEDULED_TASK, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  sortMarketExtensions(
+    orderedList: string[],
+    remainderRule = 'alphabetically'
+  ): Observable<void> {
+    const body = {
+      orderedListOfProducts: orderedList,
+      ruleForRemainder: remainderRule
+    };
+
+    return this.http.post<void>(
+      `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`,
+      body,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
+  }
+
+  getSecurityDetails(): Observable<ProductSecurityInfo[]> {
+    return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
       headers: this.getAuthHeaders()
     });
   }

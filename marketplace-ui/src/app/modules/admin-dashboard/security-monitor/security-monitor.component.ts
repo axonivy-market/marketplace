@@ -8,13 +8,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { SecurityMonitorService } from './security-monitor.service';
-import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
-import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { PageTitleService } from '../../shared/services/page-title.service';
-import { ThemeService } from '../../core/services/theme/theme.service';
+import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
+import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { AdminDashboardService } from '../admin-dashboard.service';
 
 @Component({
   selector: 'app-security-monitor',
@@ -26,12 +26,10 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 })
 export class SecurityMonitorComponent {
   themeService = inject(ThemeService);
-  isAuthenticated = false;
-  token = '';
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];
   protected LoadingComponentId = LoadingComponentId;
-  private readonly securityMonitorService = inject(SecurityMonitorService);
+  private readonly service = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
   isBrowser: boolean;
 
@@ -48,13 +46,6 @@ export class SecurityMonitorComponent {
   }
 
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
-    if (!this.token) {
-      this.handleMissingToken();
-      return;
-    }
-
-    this.errorMessage = '';
     this.fetchSecurityDetails();
   }
 
@@ -63,22 +54,15 @@ export class SecurityMonitorComponent {
       const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
-        this.isAuthenticated = true;
       }
-    } catch (error) {
-      this.clearSessionData();
+    } catch {
+      // Ignore JSON parse errors
     }
   }
 
-  private handleMissingToken(): void {
-    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-    this.isAuthenticated = false;
-    this.clearSessionData();
-  }
-
   private fetchSecurityDetails(): void {
-    this.securityMonitorService
-      .getSecurityDetails(this.token)
+    this.service
+      .getSecurityDetails()
       .subscribe({
         next: data => this.handleSuccess(data),
         error: (err: HttpErrorResponse) => this.handleError(err)
@@ -87,8 +71,6 @@ export class SecurityMonitorComponent {
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
-    this.isAuthenticated = true;
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
     sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
   }
 
@@ -98,13 +80,6 @@ export class SecurityMonitorComponent {
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
-    this.isAuthenticated = false;
-    this.clearSessionData();
-  }
-
-  private clearSessionData(): void {
-    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN);
-    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
