@@ -1,33 +1,23 @@
 
 <aside id="app-sidebar" class="sidebar" [class.open]="isOpen" aria-label="Sidebar navigation">
-  <button (click)="toggleSidebar()" [attr.title]="isOpen ? 'Thu nhỏ menu' : 'Mở rộng menu'" aria-label="Toggle sidebar" [attr.aria-expanded]="isOpen" aria-controls="app-sidebar">
-    <!-- <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-      <rect y="5" width="24" height="2"></rect>
-      <rect y="11" width="24" height="2"></rect>
-      <rect y="17" width="24" height="2"></rect>
-    </svg> -->
-    <i class="bi bi-list header__menu-button"></i>
-  </button>
   <div class="top-section">
-   
   </div>
 
   <div class="menu">
     <ng-container *ngFor="let item of menu">
       <a
-        class="item"
+        class="item text-decoration-none"
         *ngIf="!item.children"
         [routerLink]="item.route"
         routerLinkActive="active"
         [attr.title]="!isOpen ? item.label : null"
       >
-        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="icon" aria-hidden="true" [ngClass]="item.icon"></span>
         <span class="label" *ngIf="isOpen">{{ item.label }}</span>
       </a>
     </ng-container>
   </div>
 
   <div class="footer">
-   <!-- <app-header></app-header> -->
   </div>
 </aside>

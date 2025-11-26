@@ -9,11 +9,11 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LanguageService } from '../../../core/services/language/language.service';
-import { Feedback } from '../../../shared/models/feedback.model';
-import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
-import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { MultilingualismPipe } from '../../../../shared/pipes/multilingualism.pipe';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
+import { Feedback } from '../../../../shared/models/feedback.model';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-feedback-table',

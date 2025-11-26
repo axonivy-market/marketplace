@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, ViewChild, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, finalize } from 'rxjs';
 import { AdminDashboardService, SyncResponse, SyncJobExecutionDto, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
 import { SideMenuComponent } from '../../shared/components/side-menu/side-menu.component';
+import { HeaderComponent } from '../../shared/components/header/header.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
@@ -33,6 +34,7 @@ interface SyncJobRow {
   imports: [
     CommonModule,
     FormsModule,
+    HeaderComponent,
     SideMenuComponent,
     RouterModule,
     TranslateModule
@@ -49,6 +51,7 @@ export class AdminDashboardComponent implements OnInit {
   errorMessage = '';
   isAuthenticated = false;
   isLoading = false;
+  isSidebarOpen = false;
   jobs: SyncJobRow[] = [
     { key: 'syncProducts', label: 'Sync all products' },
     { key: 'syncOneProduct', label: 'Sync one product' },
@@ -62,9 +65,17 @@ export class AdminDashboardComponent implements OnInit {
   showSyncJob = true;
 
   languageService = inject(LanguageService);
-    themeService = inject(ThemeService);
+  themeService = inject(ThemeService);
+  @ViewChild(SideMenuComponent) private readonly sideMenu?: SideMenuComponent;
+
   constructor(private readonly storageRef: SessionStorageRef) {}
   ngOnInit() {
+    try {
+      const storedSidebarState = localStorage.getItem('sidebarOpen');
+      if (storedSidebarState !== null) {
+        this.isSidebarOpen = storedSidebarState === 'true';
+      }
+    } catch {}
     this.token =
       this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
@@ -245,5 +256,18 @@ export class AdminDashboardComponent implements OnInit {
   private handleMissingToken(): void {
     this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
     this.isAuthenticated = false;
+  }
+
+  onMenuToggle(): void {
+    if (!this.sideMenu) {
+      return;
+    }
+    const currentState = this.sideMenu.isOpen;
+    const nextState = !currentState;
+    this.sideMenu.setOpen(nextState);
+  }
+
+  onSidebarStateChanged(open: boolean): void {
+    this.isSidebarOpen = open;
   }
 }

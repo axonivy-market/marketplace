@@ -1,25 +1,26 @@
-<app-side-menu></app-side-menu>
-
 <section class="custom-sort">
-  <p class="intro-text">
-    The UI allows users to modify the
-    <b>default sorting order</b>
-    of Market extensions displayed on the Axon Ivy Marketplace
-    <a
-      href="https://market.axonivy.com/"
-      target="_blank"
-      rel="noopener noreferrer">
-      https://market.axonivy.com/
-    </a>
-    .
-  </p>
+  <div class="row col-md-12">
+    <div class="d-sm-block help-text">
+      <h3
+        class="text-secondary"
+        [lang]="languageService.selectedLanguage()"
+        [innerHTML]="
+          translateService.get('common.admin.customSort.helpText') | async
+        "></h3>
+    </div>
+  </div>
 
   <div class="table-grid" [class.loading]="isLoading">
     <div class="table-card">
       <header class="table-header">
         <div class="title-group">
-          <h2>Sorted Extensions</h2>
+          <h2 class="text-primary" [lang]="languageService.selectedLanguage()">
+            {{ 'common.admin.customSort.sortedExtensions' | translate }}
+          </h2>
           <span class="badge">{{ sortingExtensions.length }}</span>
+        </div>
+        <div class="search-box search-box--placeholder" aria-hidden="true">
+          <input type="search" class="search-input" disabled tabindex="-1" />
         </div>
       </header>
       <div class="table-scroll">
@@ -27,7 +28,11 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Extension ID</th>
+              <th
+                class="text-primary"
+                [lang]="languageService.selectedLanguage()">
+                {{ 'common.admin.customSort.extensionId' | translate }}
+              </th>
             </tr>
           </thead>
           <tbody
@@ -36,7 +41,8 @@
             [cdkDropListData]="sortingExtensions"
             [cdkDropListConnectedTo]="[doneList]"
             cdkDropListOrientation="vertical"
-            (cdkDropListDropped)="drop($event)">
+            (cdkDropListDropped)="drop($event)"
+            (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
             @if (sortingExtensions.length === 0) {
               <tr class="empty-row">
                 <td colspan="2">
@@ -45,11 +51,28 @@
               </tr>
             }
             @for (item of sortingExtensions; track item; let index = $index) {
-              <tr cdkDrag>
+              <tr
+                cdkDrag
+                (cdkDragStarted)="setDragPreviewWidth($event)"
+                (cdkDragEnded)="resetDragPreviewWidth($event)">
                 <td class="index">{{ index + 1 }}</td>
                 <td>
                   <span class="extension-id">{{ item }}</span>
                 </td>
+                <ng-template cdkDragPreview>
+                  <div class="drag-preview">
+                    <span class="index">{{ index + 1 }}</span>
+                    <span class="extension-id">{{ item }}</span>
+                  </div>
+                </ng-template>
+                <ng-template cdkDragPlaceholder>
+                  <tr class="drag-placeholder">
+                    <td class="index">{{ index + 1 }}</td>
+                    <td>
+                      <span class="extension-id">{{ item }}</span>
+                    </td>
+                  </tr>
+                </ng-template>
               </tr>
             }
           </tbody>
@@ -60,8 +83,13 @@
     <div class="table-card">
       <header class="table-header">
         <div class="title-group">
-          <h2>Available Extensions</h2>
-          <span class="badge">{{ filteredAvailableExtensions.length }} / {{ allExtensions.length }}</span>
+          <h2 class="text-primary" [lang]="languageService.selectedLanguage()">
+            {{ 'common.admin.customSort.availableExtensions' | translate }}
+          </h2>
+          <span class="badge">
+            {{ filteredAvailableExtensions.length }} /
+            {{ allExtensions.length }}
+          </span>
         </div>
         <div class="search-box">
           <input
@@ -69,18 +97,18 @@
             class="search-input"
             placeholder="Search extensions"
             autocomplete="off"
-            [(ngModel)]="searchTerm"
-          />
-          @if (searchTerm) {
-            <button type="button" class="clear-button" (click)="clearSearch()">Clear</button>
-          }
+            [(ngModel)]="searchTerm" />
         </div>
       </header>
       <div class="table-scroll available-list">
         <table>
           <thead>
             <tr>
-              <th>Extension ID</th>
+              <th
+                class="text-primary"
+                [lang]="languageService.selectedLanguage()">
+                {{ 'common.admin.customSort.extensionId' | translate }}
+              </th>
             </tr>
           </thead>
           <tbody
@@ -89,17 +117,37 @@
             [cdkDropListData]="allExtensions"
             [cdkDropListConnectedTo]="[todoList]"
             cdkDropListOrientation="vertical"
-            (cdkDropListDropped)="drop($event)">
+            (cdkDropListDropped)="drop($event)"
+            (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
             @if (filteredAvailableExtensions.length === 0) {
               <tr class="empty-row">
-                <td>No extensions available.</td>
+                <td
+                  class="text-primary"
+                  [lang]="languageService.selectedLanguage()">
+                  {{ 'common.admin.customSort.noExtensions' | translate }}
+                </td>
               </tr>
             }
             @for (item of filteredAvailableExtensions; track item) {
-              <tr cdkDrag>
+              <tr
+                cdkDrag
+                (cdkDragStarted)="setDragPreviewWidth($event)"
+                (cdkDragEnded)="resetDragPreviewWidth($event)">
                 <td>
                   <span>{{ item }}</span>
                 </td>
+                <ng-template cdkDragPreview>
+                  <div class="drag-preview">
+                    <span class="extension-id">{{ item }}</span>
+                  </div>
+                </ng-template>
+                <ng-template cdkDragPlaceholder>
+                  <tr class="drag-placeholder">
+                    <td colspan="2">
+                      <span class="extension-id">{{ item }}</span>
+                    </td>
+                  </tr>
+                </ng-template>
               </tr>
             }
           </tbody>
@@ -108,20 +156,23 @@
     </div>
   </div>
 
-    <div class="actions">
+  <div class="actions">
     <button
       type="button"
-      class="primary-button"
+      [lang]="languageService.selectedLanguage()"
+      class="btn border-0 sort-button text-center"
+      [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
       (click)="sortMarketExtensions()"
       [disabled]="isSaving || sortingExtensions.length === 0"
-    >
+      data-toggle="tooltip"
+      title="Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.">
       @if (isSaving) {
-        Sorting...
+        <i class="fa fa-spinner fa-spin me-2"></i>
+        {{ 'common.admin.customSort.sortingLabel' | translate }}
       } @else {
-        Sort
+        {{ 'common.admin.customSort.sortLabel' | translate }}
       }
     </button>
-    <span class="hint">Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.</span>
   </div>
 
   @if (sortSuccessMessage) {
@@ -135,6 +186,4 @@
   @if (isLoading) {
     <div class="loading-state">Loading extensions...</div>
   }
-
-  <router-outlet></router-outlet>
 </section>

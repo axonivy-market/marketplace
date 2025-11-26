@@ -1,12 +1,11 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, inject, OnInit, Renderer2, ViewEncapsulation } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { SideMenuComponent } from "../../../shared/components/side-menu/side-menu.component";
-import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragEnd, CdkDragEnter, CdkDragStart, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
@@ -19,7 +18,6 @@ import { finalize } from 'rxjs/operators';
     FormsModule,
     RouterModule,
     TranslateModule,
-    SideMenuComponent,
     DragDropModule
 ],
   templateUrl: './custom-sort.component.html',
@@ -40,8 +38,11 @@ export class CustomSortComponent implements OnInit {
 
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
+  translateService = inject(TranslateService);
   private readonly productService = inject(ProductService);
   private readonly adminDashboardService = inject(AdminDashboardService);
+  private readonly renderer = inject(Renderer2);
+  private readonly document = inject(DOCUMENT);
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
@@ -81,6 +82,29 @@ export class CustomSortComponent implements OnInit {
         event.currentIndex
       );
     }
+  }
+
+  setDragPreviewWidth(event: CdkDragStart<string>): void {
+    this.applyPreviewWidth(event.source.element.nativeElement.getBoundingClientRect().width);
+  }
+
+  resetDragPreviewWidth(_: CdkDragEnd<string>): void {
+    const root = this.document?.documentElement;
+    if (root) {
+      this.renderer.removeStyle(root, '--drag-preview-width');
+    }
+  }
+
+  adjustPreviewWidthOnEnter(event: CdkDragEnter<string[]>): void {
+    this.applyPreviewWidth(event.container.element.nativeElement.getBoundingClientRect().width);
+  }
+
+  private applyPreviewWidth(width: number): void {
+    const root = this.document?.documentElement;
+    if (!root || width <= 0) {
+      return;
+    }
+    this.renderer.setStyle(root, '--drag-preview-width', `${width}px`);
   }
 
   sortMarketExtensions(): void {

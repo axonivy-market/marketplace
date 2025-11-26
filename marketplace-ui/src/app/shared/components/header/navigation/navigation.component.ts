@@ -26,7 +26,7 @@ export class NavigationComponent {
     this.checkMediaSize();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkMediaSize();
   }

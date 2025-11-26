@@ -1,7 +1,7 @@
 <div
   class="app-container"
   [ngClass]="{ 'header-mobile-container': !this.isMobileMenuCollapsed }">
-  @if (!routingQueryParamService.isDesignerEnv()) {
+  @if (!routingQueryParamService.isDesignerEnv() && !isAdminRoute) {
     <header
       class="d-flex align-items-center"
       [ngClass]="{ 'header-mobile': !this.isMobileMenuCollapsed }">
@@ -12,9 +12,13 @@
     </header>
   }
   <main>
-    <div class="container">
+    @if (isAdminRoute) {
       <router-outlet />
-    </div>
+    } @else {
+      <div class="container">
+        <router-outlet />
+      </div>
+    }
     <app-back-to-top></app-back-to-top>
   </main>
   @if (!routingQueryParamService.isDesignerEnv()) {

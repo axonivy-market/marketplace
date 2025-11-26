@@ -1,71 +1,99 @@
 @if (isAuthenticated) {
-  <app-side-menu></app-side-menu>
-  @if (showSyncJob) {
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Action</th>
-            <th>Sync Job</th>
-            <th>Status</th>
-            <th>Triggered</th>
-            <th>Completed</th>
-            <th>Message</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let job of jobs">
-      <!-- <div class="sync-one-product mt-3">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <label class="m-0" for="sync-product-id">Product ID</label>
-          <input
-            id="sync-product-id"
-            class="form-control form-control-sm flex-grow-0"
-            [(ngModel)]="productId"
-            placeholder="portal" />
-          <label class="m-0" for="sync-market-path">Market Path</label>
-          <input
-            id="sync-market-path"
-            class="form-control form-control-sm flex-grow-1"
-            [(ngModel)]="marketItemPath"
-            placeholder="market/connector/portal" />
-          <div class="form-check m-0">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="overridePathToggle"
-              [(ngModel)]="overrideMarketItemPath" />
-            <label class="form-check-label" for="overridePathToggle">Override path</label>
+  <div class="container"></div>
+  <div class="admin-layout" [class.sidebar-open]="isSidebarOpen">
+    <app-side-menu (openChange)="onSidebarStateChanged($event)"></app-side-menu>
+    <div class="admin-main">
+      <app-header (menuToggle)="onMenuToggle()"></app-header>
+
+      <div class="admin-main__content">
+        @if (showSyncJob) {
+          <div class="table-responsive admin-main__table">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th
+                    class="text-primar"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.action' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.syncJob' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.status' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.lastRun' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.completed' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.message' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let job of jobs">
+                  <td>
+                    <button
+                      type="button"
+                      [lang]="languageService.selectedLanguage()"
+                      class="btn border-0 sync-button text-center"
+                      [ngClass]="
+                        themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
+                      "
+                      (click)="trigger(job)"
+                      [disabled]="job.status === 'RUNNING'">
+                      Sync
+                    </button>
+                  </td>
+                  <td>{{ job.label }}</td>
+                  <td>
+                    <span [ngClass]="getStatusClass(job.status)">
+                      {{ job.status ? (job.status | titlecase) : '' }}
+                    </span>
+                  </td>
+                  <td>
+                    {{
+                      job.triggeredAt
+                        ? (job.triggeredAt | date: 'dd.MM.yyyy HH:mm')
+                        : ''
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      job.completedAt
+                        ? (job.completedAt | date: 'dd.MM.yyyy HH:mm')
+                        : ''
+                    }}
+                  </td>
+                  <td class="message-cell">
+                    <div>{{ job.message || '' }}</div>
+                    <div class="small text-muted" *ngIf="job.reference">
+                      Ref: {{ job.reference }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div> -->
-            <td>
-              <button
-                class="btn btn-sm btn-primary"
-                (click)="trigger(job)"
-                [disabled]="job.status === 'RUNNING'">
-                Sync
-              </button>
-            </td>
-            <td>{{ job.label }}</td>
-            <td>
-              <span [ngClass]="getStatusClass(job.status)">
-                {{ job.status ? (job.status | titlecase) : '-' }}
-              </span>
-            </td>
-            <td>{{ job.triggeredAt ? (job.triggeredAt | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
-            <td>{{ job.completedAt ? (job.completedAt | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
-            <td class="message-cell">
-              <div>{{ job.message || '-' }}</div>
-              <div class="small text-muted" *ngIf="job.reference">
-                Ref: {{ job.reference }}
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        }
+
+        <router-outlet></router-outlet>
+      </div>
     </div>
-  }
+  </div>
 } @else {
   <div class="token-container">
     <div class="header">
@@ -95,4 +123,3 @@
     </div>
   </div>
 }
-<router-outlet></router-outlet>

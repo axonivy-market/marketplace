@@ -52,7 +52,7 @@ describe('AppComponent', () => {
 
     // Mock WindowRef and DocumentRef
     const windowRefMock = jasmine.createSpyObj('WindowRef', ['toString'], {
-      nativeWindow: window
+      nativeWindow: globalThis as unknown as Window
     });
     
     const documentRefMock = jasmine.createSpyObj('DocumentRef', ['toString'], {
@@ -153,7 +153,7 @@ describe('AppComponent', () => {
 
     expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
 
-    const headerComputedStyle = window.getComputedStyle(appElement);
+    const headerComputedStyle = globalThis.getComputedStyle(appElement);
     expect(headerComputedStyle.overflow).toBe('hidden');
   });
 
@@ -174,5 +174,16 @@ describe('AppComponent', () => {
     const navigationError = new NavigationError(1, '/a-trust/test-url', 'Error message');
     routerEventsSubject.next(navigationError);
     expect(router.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
+  });
+
+  it('should hide global header and container on admin routes', () => {
+    component.isAdminRoute = true;
+    fixture.detectChanges();
+
+    const headerElement = fixture.debugElement.query(By.css('header'));
+    expect(headerElement).toBeNull();
+
+    const containerElement = fixture.debugElement.query(By.css('main .container'));
+    expect(containerElement).toBeNull();
   });
 });

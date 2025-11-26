@@ -2,6 +2,7 @@ import {
   Component,
   Inject,
   inject,
+  OnInit,
   PLATFORM_ID,
   ViewEncapsulation
 } from '@angular/core';
@@ -24,7 +25,7 @@ import { AdminDashboardService } from '../admin-dashboard.service';
   styleUrls: ['./security-monitor.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class SecurityMonitorComponent {
+export class SecurityMonitorComponent implements OnInit{
   themeService = inject(ThemeService);
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];

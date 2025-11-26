@@ -5,12 +5,13 @@ import { RedirectPageComponent } from './shared/components/redirect-page/redirec
 import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/admin-dashboard/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
-import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
+import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
+import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -55,6 +56,10 @@ export const routes: Routes = [
       {
         path: 'sorting',
         component: CustomSortComponent
+      },
+      {
+        path: 'quick-access',
+        component: QuickAccessComponent
       },
       {
         path: '', // default child route

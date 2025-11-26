@@ -1,8 +1,7 @@
 // Side menu component: collapsible like YouTube
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { HeaderComponent } from "../header/header.component";
 
 interface MenuItem {
   icon: string;
@@ -15,25 +14,25 @@ interface MenuItem {
 @Component({
   selector: 'app-side-menu',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss']
 })
-export class SideMenuComponent {
+export class SideMenuComponent implements OnInit {
   // Sidebar open state (persisted in localStorage)
   isOpen = false;
+  @Output() openChange = new EventEmitter<boolean>();
 
   menu: MenuItem[] = [
-    { icon: '📊', label: 'Sync jobs', route: '/octopus' },
-    { icon: '📊', label: 'Security Monitor', route: '/octopus/security-monitor' },
-    { icon: '📊', label: 'Feedback Approval', route: '/octopus/feedback-approval' },
-    { icon: '📊', label: 'Sorting', route: '/octopus/sorting' },
-    { icon: '⚙️', label: 'Quick Access', route: '/octopus/settings' }
+    { icon: 'bi bi-arrow-repeat', label: 'Sync jobs', route: '/octopus' },
+    { icon: 'bi bi-shield-shaded', label: 'Security Monitor', route: '/octopus/security-monitor' },
+    { icon: 'bi bi-chat-dots', label: 'Feedback Approval', route: '/octopus/feedback-approval' },
+    { icon: 'bi bi-sort-alpha-up', label: 'Sorting', route: '/octopus/sorting' },
+    { icon: 'bi bi-skip-forward', label: 'Quick Access', route: '/octopus/quick-access' }
   ];
 
   toggleSidebar() {
-    this.isOpen = !this.isOpen;
-    try { localStorage.setItem('sidebarOpen', String(this.isOpen)); } catch {}
+    this.setOpen(!this.isOpen);
   }
 
   toggleSubmenu(item: MenuItem) {
@@ -52,5 +51,28 @@ export class SideMenuComponent {
         // navigation end hook (keep minimal to satisfy linter)
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.emitChange();
+  }
+
+  setOpen(open: boolean): void {
+    if (this.isOpen === open) {
+      return;
+    }
+    this.isOpen = open;
+    this.persistState();
+    this.emitChange();
+  }
+
+  private persistState(): void {
+    try {
+      localStorage.setItem('sidebarOpen', String(this.isOpen));
+    } catch {}
+  }
+
+  private emitChange(): void {
+    this.openChange.emit(this.isOpen);
   }
 }

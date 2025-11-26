@@ -1,14 +1,3 @@
-.help-text {
-  line-height: 110%;
-  margin-top: 3.2rem;
-  margin-bottom: 3.2rem;
-  cursor: default;
-}
-
-::ng-deep .help-text a {
-  color: var(--ivy-primary-bg);
-}
-
 :host {
   display: block;
 }
@@ -18,21 +7,47 @@
   color: var(--text-primary-color, #111827);
 }
 
+.intro-text {
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary-color, #4b5563);
+}
+
 .actions {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-top: 1.25rem;
   flex-wrap: wrap;
+}
 
-  .sort-button {
-    padding: 5px 16px;
-    gap: 6px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 16.8px;
-  }
+.primary-button {
+  padding: 0.65rem 1.25rem;
+  border-radius: 9999px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-inverse-color, #ffffff);
+  background-color: var(--accent-primary-color, #2563eb);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.primary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--text-tertiary-color, #6b7280);
 }
 
 .feedback {
@@ -85,7 +100,6 @@
   align-items: center;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-neutral-color, #d1d5db);
-  min-height: 4.25rem;
 }
 
 .table-header {
@@ -117,7 +131,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-inverse-color, #ffffff);
-  background-color: var(--ivy-primary-bg);
+  background-color: var(--accent-primary-color, #2563eb);
 }
 
 .search-box {
@@ -143,8 +157,19 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
-.search-box--placeholder {
-  visibility: hidden;
+.clear-button {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: var(--surface-secondary-color, #f3f4f6);
+  color: var(--text-secondary-color, #4b5563);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clear-button:hover {
+  background-color: var(--surface-tertiary-color, #e5e7eb);
 }
 
 .table-scroll {
@@ -212,52 +237,17 @@ tr.cdk-drag-placeholder {
   border: 2px dashed rgba(37, 99, 235, 0.4);
 }
 
-.drag-placeholder td {
-  border: 0;
-  padding: 0.75rem 1rem;
-}
-
-.drag-placeholder .index {
-  width: 3rem;
-}
-
-.drag-placeholder .extension-id {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 :host ::ng-deep .cdk-drag-preview {
   box-sizing: border-box;
-  padding: 0;
   border-radius: 0.5rem;
   border: 1px solid rgba(37, 99, 235, 0.35);
   background-color: var(--surface-primary-color, #ffffff);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.24);
-}
-
-.drag-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: var(--drag-preview-width, 320px);
-  min-width: 320px;
   padding: 0.75rem 1rem;
 }
 
-.drag-preview .index {
-  flex: 0 0 3rem;
-  font-weight: 600;
-  color: var(--text-secondary-color, #4b5563);
-}
-
-.drag-preview .extension-id {
-  flex: 1;
+:host ::ng-deep .cdk-drag-preview .extension-id {
   color: inherit;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 :host ::ng-deep .cdk-drag-animating {
