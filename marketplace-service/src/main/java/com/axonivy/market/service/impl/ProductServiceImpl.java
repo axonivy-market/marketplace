@@ -535,8 +535,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    GithubRepo productRepo = githubRepo.findByNameOrProductId(EMPTY ,product.getId());
-    boolean isFocused = productRepo != null && Boolean.TRUE.equals(productRepo.getFocused());
+    var repo = githubRepo.findByNameOrProductId(EMPTY ,product.getId());
+    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
     product.setIsFocused(isFocused);
   }
 
@@ -611,7 +611,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    Product product = productRepo.getProductByIdAndVersion(id, version);
+    var product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null ) {
       updateFocusedStatusForProduct(product);
     }

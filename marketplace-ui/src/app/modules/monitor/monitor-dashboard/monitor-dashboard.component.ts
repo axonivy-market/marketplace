@@ -49,9 +49,13 @@ export class MonitoringDashboardComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.subscribe(params => {
         if (params['isFocused']) {
-          this.activeTab.set(
-            params['isFocused'] === 'true' ? FOCUSED_TAB : STANDARD_TAB
-          );
+          let focusedTab;
+          if (params['isFocused'] === 'true') {
+            focusedTab = FOCUSED_TAB;
+          } else {
+            focusedTab = STANDARD_TAB;
+          }
+          this.activeTab.set(focusedTab);
         }
         if (params['repoSearch']) {
           this.initialSearch.set(params['repoSearch']);
@@ -65,7 +69,13 @@ export class MonitoringDashboardComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
-    let queryParams = { isFocused: tab === FOCUSED_TAB ? 'true' : 'false' };
+    let isFocusedProduct;
+    if (tab === FOCUSED_TAB) {
+      isFocusedProduct = 'true';
+    } else {
+      isFocusedProduct = 'false';
+    }
+    const queryParams = { isFocused: isFocusedProduct };
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',

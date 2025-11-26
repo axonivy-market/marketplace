@@ -98,7 +98,13 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-    this.criteria.isFocused = this.activeTab == STANDARD_TAB ? 'false' : 'true';
+    let isFocusedProduct;
+    if (this.activeTab === STANDARD_TAB) {
+      isFocusedProduct = 'false';
+    } else {
+      isFocusedProduct = 'true';
+    }
+    this.criteria.isFocused = isFocusedProduct;
     this.criteria.search = this.initialSearch;
     this.subscriptions.push(
       this.searchTextChanged
@@ -138,7 +144,13 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   }
 
   updateCriteriaAndLoad() {
-    this.criteria.isFocused = this.activeTab == STANDARD_TAB ? 'false' : 'true';
+    let isFocusedProduct;
+    if (this.activeTab === STANDARD_TAB) {
+      isFocusedProduct = 'false';
+    } else {
+      isFocusedProduct = 'true';
+    }
+    this.criteria.isFocused = isFocusedProduct;
     this.criteria.pageable.size = this.pageSize;
     this.criteria.pageable.page = this.page - 1;
     this.loadRepositories();
@@ -218,9 +230,9 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => {
+    for (const sub of this.subscriptions) {
       sub.unsubscribe();
-    });
+    }
   }
 
   protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
