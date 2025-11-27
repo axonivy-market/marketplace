@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -14,6 +14,7 @@ import { MatomoAction, MatomoCategory, MatomoTracker } from '../../../shared/enu
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HistoryService } from '../../../core/services/history/history.service';
+import { PAGE, QUERY_PARAM_KEY, SEARCH_KEY } from '../../../shared/constants/query.params.constant';
 
 @Component({
   selector: 'app-product-filter',
@@ -22,8 +23,8 @@ import { HistoryService } from '../../../core/services/history/history.service';
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
-export class ProductFilterComponent {
-  @Input() isProductHomepage = false;
+export class ProductFilterComponent implements OnInit {
+  @Input() currentPage = PAGE.HOME;
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();
@@ -44,55 +45,73 @@ export class ProductFilterComponent {
   route = inject(ActivatedRoute);
   router = inject(Router);
   historyService = inject(HistoryService);
+  PAGE = PAGE;
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit() {
     this.route.queryParams.subscribe(params => {
       const queryParams = { ...params };
-
-      // Update type value, remove invalid type from query params if any
-      const validTypeValues = Object.values(TypeOption);
-      const type = queryParams['type'];
-      const isValidType = validTypeValues.includes(type);
-
-      if (!isValidType) {
-        delete queryParams['type'];
-        this.typeValue = FILTER_TYPES[0].value;
-      } else {
-        this.typeValue = type;
+      let searchKey = SEARCH_KEY.SEARCH;
+      switch (this.currentPage) {
+        case PAGE.HOME:
+          this.handleQueryParamsForHomePage(queryParams);
+          break;
+        case PAGE.MONITOR:
+          searchKey = SEARCH_KEY.REPO_SEARCH;
+          break;
+        default:
+          break;
       }
-      this.historyService.lastSearchType.set(this.typeValue);
-
-
-      const selectedType = this.types.find(t => t.value === this.typeValue);
-      if (selectedType) {
-        this.selectedTypeLabel = CommonUtils.getLabel(selectedType.value, this.types);
-      }
-
-      // Update sort value, remove invalid sort from query params if any
-      const validSortValues = Object.values(SortOption);
-      const sort = queryParams['sort'];
-      const isValidSort = validSortValues.includes(sort);
-
-      let sortValue;
-      if (!isValidSort) {
-        delete queryParams['sort'];
-        sortValue = SortOption.STANDARD;
-      } else {
-        sortValue = sort;
-      }
-      this.selectedSortLabel = CommonUtils.getLabel(sortValue, this.sorts);
-      this.historyService.lastSortOption.set(sortValue);
-
 
       // Update search text
-      this.searchText = queryParams['search'] || '';
-      this.historyService.lastSearchText.set(this.searchText);
+      this.searchText = queryParams[searchKey] || '';
+      if (this.currentPage === PAGE.HOME) {
+        this.historyService.lastSearchText.set(this.searchText);
+      }
       this.router.navigate([], {
         relativeTo: this.route,
         queryParamsHandling: '',
         queryParams
       });
     });
+  }
+  handleQueryParamsForHomePage(queryParams: { [key: string]: any }) {
+    // Update type value, remove invalid type from query params if any
+    const validTypeValues = Object.values(TypeOption);
+    const type = queryParams[QUERY_PARAM_KEY.TYPE];
+    const isValidType = validTypeValues.includes(type);
+
+    if (!isValidType) {
+      delete queryParams[QUERY_PARAM_KEY.TYPE];
+      this.typeValue = FILTER_TYPES[0].value;
+    } else {
+      this.typeValue = type;
+    }
+    this.historyService.lastSearchType.set(this.typeValue);
+
+    const selectedType = this.types.find(t => t.value === this.typeValue);
+    if (selectedType) {
+      this.selectedTypeLabel = CommonUtils.getLabel(
+        selectedType.value,
+        this.types
+      );
+    }
+
+    // Update sort value, remove invalid sort from query params if any
+    const validSortValues = Object.values(SortOption);
+    const sort = queryParams[QUERY_PARAM_KEY.SORT];
+    const isValidSort = validSortValues.includes(sort);
+
+    let sortValue;
+    if (!isValidSort) {
+      delete queryParams[QUERY_PARAM_KEY.SORT];
+      sortValue = SortOption.STANDARD;
+    } else {
+      sortValue = sort;
+    }
+    this.selectedSortLabel = CommonUtils.getLabel(sortValue, this.sorts);
+    this.historyService.lastSortOption.set(sortValue);
   }
 
   onSelectType(type: ItemDropdown<TypeOption>) {

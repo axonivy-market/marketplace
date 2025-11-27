@@ -39,6 +39,7 @@ import {
 import { MonitoringCriteria } from '../../../shared/models/criteria.model';
 import { debounceTime, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PAGE } from '../../../shared/constants/query.params.constant';
 const SEARCH_DEBOUNCE_TIME = 500;
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
@@ -93,6 +94,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   githubService = inject(GithubService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  PAGE = PAGE;
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {
@@ -116,9 +118,9 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
           };
           this.loadRepositories();
 
-          let queryParams: { search: string | null } = { search: null };
+          let queryParams: { repoSearch: string | null } = { repoSearch: null };
           if (value) {
-            queryParams = { search: this.criteria.search };
+            queryParams = { repoSearch: this.criteria.search };
           }
 
           this.router.navigate([], {
