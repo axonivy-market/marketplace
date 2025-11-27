@@ -6,12 +6,12 @@ export const QUERY_PARAM_KEY = {
   REPO_SEARCH: 'repoSearch',
   CODE: 'code',
   STATE: 'state',
-  PRODUCT_TYPE: 'productType',
+  ACTIVE_TAB: 'activeTab',
   ID: 'id',
   SEARCH_PAGE: 'searchPage'
 };
 
-export const PRODUCT_TYPE = { 
+export const ACTIVE_TAB = { 
     STANDARD: 'standard',
     FOCUSED: 'focused'
 }

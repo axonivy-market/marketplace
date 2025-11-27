@@ -12,6 +12,7 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from '../monitor-repo/monitor-repo.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { QUERY_PARAM_KEY } from '../../../shared/constants/query.params.constant';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -44,17 +45,11 @@ export class MonitoringDashboardComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.subscribe(params => {
-        if (params['isFocused']) {
-          let focusedTab;
-          if (params['isFocused'] === 'true') {
-            focusedTab = FOCUSED_TAB;
-          } else {
-            focusedTab = STANDARD_TAB;
-          }
-          this.activeTab.set(focusedTab);
+        if (params[QUERY_PARAM_KEY.ACTIVE_TAB]) {
+          this.activeTab.set(params[QUERY_PARAM_KEY.ACTIVE_TAB]);
         }
-        if (params['repoSearch']) {
-          this.initialSearch.set(params['repoSearch']);
+        if (params[QUERY_PARAM_KEY.REPO_SEARCH]) {
+          this.initialSearch.set(params[QUERY_PARAM_KEY.REPO_SEARCH]);
         }
       });
       this.pageTitleService.setTitleOnLangChange(
@@ -65,13 +60,7 @@ export class MonitoringDashboardComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
-    let isFocusedProduct;
-    if (tab === FOCUSED_TAB) {
-      isFocusedProduct = 'true';
-    } else {
-      isFocusedProduct = 'false';
-    }
-    const queryParams = { isFocused: isFocusedProduct };
+    const queryParams = { activeTab: tab };
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
