@@ -11,8 +11,6 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from '../monitor-repo/monitor-repo.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -23,7 +21,6 @@ import { ActivatedRoute, Router } from '@angular/router';
     TranslateModule,
     NgbTooltipModule,
     MonitoringRepoComponent,
-    LoadingSpinnerComponent
   ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
@@ -32,7 +29,6 @@ export class MonitoringDashboardComponent implements OnInit {
   readonly FOCUSED_TAB = FOCUSED_TAB;
   readonly STANDARD_TAB = STANDARD_TAB;
 
-  protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);

@@ -40,6 +40,8 @@ import { MonitoringCriteria } from '../../../shared/models/criteria.model';
 import { debounceTime, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PAGE } from '../../../shared/constants/query.params.constant';
+import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 const SEARCH_DEBOUNCE_TIME = 500;
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
@@ -57,8 +59,9 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     NgbTypeaheadModule,
     NgbPaginationModule,
     ProductFilterComponent,
-    RepoTestResultComponent
-  ],
+    RepoTestResultComponent,
+    LoadingSpinnerComponent
+],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
@@ -79,6 +82,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   page = 1;
   pageSize = 10;
   totalElements = 0;
+  protected LoadingComponentId = LoadingComponentId;
   sortColumn = this.COLUMN_NAME;
   sortDirection = ASCENDING;
   displayedRepositories: Repository[] = [];
@@ -163,7 +167,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
     this.searchTextChanged.next(searchString);
-    this.criteria.search = searchString;
+    // this.criteria.search = searchString;
   }
 
   onPageChange(newPage: number) {
