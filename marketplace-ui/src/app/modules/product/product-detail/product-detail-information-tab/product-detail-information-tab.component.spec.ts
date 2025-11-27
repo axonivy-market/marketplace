@@ -315,7 +315,7 @@ describe('ProductDetailInformationTabComponent', () => {
       component.onBadgeClick();
 
       expect(navigateSpy).toHaveBeenCalledWith(['/monitoring'], {
-        queryParams: { repoSearch: 'test-repo', isFocused: true }
+        queryParams: { repoSearch: 'test-repo',  activeTab: 'focused' }
       });
     });
 

@@ -83,7 +83,7 @@ describe('MonitoringDashboardComponent', () => {
       jasmine.objectContaining({
         relativeTo: component['route'],
         queryParamsHandling: 'merge',
-        queryParams: { isFocused: 'true' }
+        queryParams: { activeTab: 'focused' }
       })
     );
 
@@ -93,14 +93,14 @@ describe('MonitoringDashboardComponent', () => {
       jasmine.objectContaining({
         relativeTo: component['route'],
         queryParamsHandling: 'merge',
-        queryParams: { isFocused: 'false' }
+        queryParams: { activeTab: 'standard' }
       })
     );
   });
 
   it('should set activeTab and initialSearch from query params on init', () => {
     const mockActivatedRoute = {
-      queryParams: of({ isFocused: 'true', repoSearch: 'test-repo' })
+      queryParams: of({ activeTab: 'standard', repoSearch: 'test-repo' })
     };
 
     // Manually inject the mocked route for this test
@@ -113,7 +113,7 @@ describe('MonitoringDashboardComponent', () => {
 
     testComponent.ngOnInit();
 
-    expect(testComponent.activeTab()).toBe(testComponent.FOCUSED_TAB);
+    expect(testComponent.activeTab()).toBe(testComponent.STANDARD_TAB);
     expect(testComponent.initialSearch()).toBe('test-repo');
   });
 });

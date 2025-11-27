@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { SimpleChanges } from '@angular/core';
 import { clear } from 'node:console';
+import { PAGE } from '../../../shared/constants/query.params.constant';
 
 declare const viewport: Viewport;
 
@@ -40,7 +41,7 @@ describe('ProductFilterComponent', () => {
     component = fixture.componentInstance;
     activatedRoute = TestBed.inject(ActivatedRoute);
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    component.isProductHomepage = true;
+    component.currentPage = PAGE.HOME;
     fixture.detectChanges();
   });
 
@@ -257,7 +258,7 @@ describe('ProductFilterComponent', () => {
   })
 
   it('should render filter section when isProductHomepage is true', () => {
-    component.isProductHomepage = true;
+    component.currentPage = PAGE.HOME;
     fixture.detectChanges();
 
     const filterContainer = fixture.debugElement.query(
@@ -272,7 +273,7 @@ describe('ProductFilterComponent', () => {
   });
 
   it('should NOT render filter section when isProductHomepage is false', () => {
-    component.isProductHomepage = false;
+    component.currentPage = PAGE.MONITOR;
     fixture.detectChanges();
 
     const filterContainer = fixture.debugElement.query(
