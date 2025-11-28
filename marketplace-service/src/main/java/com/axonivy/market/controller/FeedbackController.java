@@ -45,7 +45,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static com.axonivy.market.model.FeedbackModel.addModelLinks;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -178,9 +178,5 @@ public class FeedbackController {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
-  }
-
-  private static void addModelLinks(FeedbackModel model, Feedback feedback){
-    model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
   }
 }

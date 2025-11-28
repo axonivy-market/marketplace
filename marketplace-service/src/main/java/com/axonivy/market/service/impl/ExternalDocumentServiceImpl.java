@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.util.DocPathUtils.*;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -73,6 +73,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   @PostConstruct
   public void init() {
     majorVersions = axonIvyClient.getDocumentVersions();
+  }
+
+  public List<String> determineProductIdsForSync(String productId) {
+    if (ObjectUtils.isNotEmpty(productId)) {
+      return List.of(productId);
+    }
+    return findAllProductsHaveDocument().stream()
+        .map(Product::getId)
+        .toList();
   }
 
   @Override

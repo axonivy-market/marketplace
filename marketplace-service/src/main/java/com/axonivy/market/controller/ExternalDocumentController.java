@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
@@ -26,8 +25,6 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @RestController
@@ -49,11 +46,7 @@ public class ExternalDocumentController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    var model = ExternalDocumentModel.builder().productId(externalDocument.getProductId())
-        .version(externalDocument.getVersion()).relativeLink(externalDocument.getRelativeLink())
-        .artifactName(externalDocument.getArtifactName()).build();
-    model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
-
+    var model = ExternalDocumentModel.from(externalDocument);
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
@@ -63,7 +56,7 @@ public class ExternalDocumentController {
     String responseURL = ERROR_PAGE_404;
     String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
     if (redirectUrl != null) {
-        responseURL = redirectUrl;
+      responseURL = redirectUrl;
     }
     return response.location(URI.create(responseURL)).build();
   }
@@ -80,16 +73,10 @@ public class ExternalDocumentController {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    List<String> productIds;
-    if (ObjectUtils.isNotEmpty(productId)) {
-      productIds = List.of(productId);
-    } else {
-      productIds = externalDocumentService.findAllProductsHaveDocument().stream()
-          .map(Product::getId).toList();
-    }
-    var message = new Message();
+    List<String> productIds = externalDocumentService.determineProductIdsForSync(productId);
+
     if (ObjectUtils.isEmpty(productIds)) {
-      message.setHelpText("Nothing to be synced");
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
 
@@ -97,8 +84,7 @@ public class ExternalDocumentController {
       externalDocumentService.syncDocumentForProduct(id, resetSync, version);
     }
 
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), null);
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 

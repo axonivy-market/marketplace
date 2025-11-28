@@ -1,5 +1,7 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.controller.ExternalDocumentController;
+import com.axonivy.market.entity.ExternalDocumentMeta;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -32,4 +37,14 @@ public class ExternalDocumentModel extends RepresentationModel<ExternalDocumentM
       example = "/market-cache/portal/portal-guide/10.0.12/doc/index.html")
   private String relativeLink;
 
+  public static ExternalDocumentModel from(ExternalDocumentMeta externalDocument) {
+    var model = ExternalDocumentModel.builder()
+        .productId(externalDocument.getProductId())
+        .version(externalDocument.getVersion())
+        .relativeLink(externalDocument.getRelativeLink())
+        .artifactName(externalDocument.getArtifactName())
+        .build();
+         model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(externalDocument.getProductId(), externalDocument.getVersion())).withSelfRel());
+    return model;
+  }
 }
