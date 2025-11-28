@@ -344,6 +344,7 @@ describe('ProductDetailInformationTabComponent', () => {
 
     it('should not navigate when onBadgeClick is called and productDetail is missing repoName', () => {
       component.repoName = '';
+      component.productDetail = { isFocusedProduct: false } as ProductDetail;
       const navigateSpy = spyOn(component.router, 'navigate');
 
       component.onBadgeClick();
