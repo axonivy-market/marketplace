@@ -89,3 +89,15 @@ axon:
   ivy:
     developer:
       url: 'https://developer.axonivy.com'
+
+matomo:
+  tracker:
+    api-endpoint: "http://marketplace.server.ivy-cloud.com:8085/matomo.php"
+    default-site-id: 1
+    enabled: true
+    connect-timeout: 10s
+    socket-timeout: 30s
+    user-agent: "MatomoJavaClient"
+    log-failed-tracking: true
+    disable-ssl-cert-validation: true
+    thread-pool-size: 2
