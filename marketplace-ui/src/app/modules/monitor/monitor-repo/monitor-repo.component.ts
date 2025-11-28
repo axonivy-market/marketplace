@@ -167,7 +167,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
     this.searchTextChanged.next(searchString);
-    // this.criteria.search = searchString;
   }
 
   onPageChange(newPage: number) {

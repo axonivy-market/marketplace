@@ -154,11 +154,17 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     );
   }
   onBadgeClick() {
+    let focusedTab;
+    if (this.productDetail.isFocusedProduct) {
+      focusedTab = ACTIVE_TAB.FOCUSED;
+    } else {
+      focusedTab = ACTIVE_TAB.STANDARD;
+    }
     if (this.repoName) {
       this.router.navigate(['/monitoring'], {
         queryParams: {
           repoSearch: this.repoName,
-          activeTab: this.productDetail.isFocusedProduct ? ACTIVE_TAB.FOCUSED : ACTIVE_TAB.STANDARD
+          activeTab: focusedTab
         }
       });
     } else {

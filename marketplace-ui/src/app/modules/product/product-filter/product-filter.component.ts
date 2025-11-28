@@ -33,7 +33,7 @@ export class ProductFilterComponent implements OnInit {
   protected MatomoTracker = MatomoTracker;
 
   selectedTypeLabel: string = CommonUtils.getLabel(FILTER_TYPES[0].value, FILTER_TYPES);
-  selectedSortLabel: string = CommonUtils.getLabel(SORT_TYPES[0].value, SORT_TYPES);
+  selectedSortLabel: string = CommonUtils.getLabel(SORT_TYPES[0].value,SORT_TYPES);
   types = FILTER_TYPES;
   sorts = SORT_TYPES;
   searchText = '';
@@ -54,9 +54,44 @@ export class ProductFilterComponent implements OnInit {
       const queryParams = { ...params };
       let searchKey = SEARCH_KEY.SEARCH;
       switch (this.currentPage) {
-        case PAGE.HOME:
-          this.handleQueryParamsForHomePage(queryParams);
-          break;
+        case PAGE.HOME: // Update type value, remove invalid type from query params if any
+        {
+          const validTypeValues = Object.values(TypeOption);
+          const type = queryParams[QUERY_PARAM_KEY.TYPE];
+          const isValidType = validTypeValues.includes(type);
+
+          if (!isValidType) {
+            delete queryParams[QUERY_PARAM_KEY.TYPE];
+            this.typeValue = FILTER_TYPES[0].value;
+          } else {
+            this.typeValue = type;
+          }
+          this.historyService.lastSearchType.set(this.typeValue);
+
+          const selectedType = this.types.find(t => t.value === this.typeValue);
+          if (selectedType) {
+            this.selectedTypeLabel = CommonUtils.getLabel(
+              selectedType.value,
+              this.types
+            );
+          }
+
+          // Update sort value, remove invalid sort from query params if any
+          const validSortValues = Object.values(SortOption);
+          const sort = queryParams[QUERY_PARAM_KEY.SORT];
+          const isValidSort = validSortValues.includes(sort);
+
+          let sortValue;
+          if (!isValidSort) {
+            delete queryParams[QUERY_PARAM_KEY.SORT];
+            sortValue = SortOption.STANDARD;
+          } else {
+            sortValue = sort;
+          }
+          this.selectedSortLabel = CommonUtils.getLabel(sortValue, this.sorts);
+          this.historyService.lastSortOption.set(sortValue);
+        }
+        break;
         case PAGE.MONITOR:
           searchKey = SEARCH_KEY.REPO_SEARCH;
           break;
@@ -75,43 +110,6 @@ export class ProductFilterComponent implements OnInit {
         queryParams
       });
     });
-  }
-  handleQueryParamsForHomePage(queryParams: { [key: string]: any }) {
-    // Update type value, remove invalid type from query params if any
-    const validTypeValues = Object.values(TypeOption);
-    const type = queryParams[QUERY_PARAM_KEY.TYPE];
-    const isValidType = validTypeValues.includes(type);
-
-    if (!isValidType) {
-      delete queryParams[QUERY_PARAM_KEY.TYPE];
-      this.typeValue = FILTER_TYPES[0].value;
-    } else {
-      this.typeValue = type;
-    }
-    this.historyService.lastSearchType.set(this.typeValue);
-
-    const selectedType = this.types.find(t => t.value === this.typeValue);
-    if (selectedType) {
-      this.selectedTypeLabel = CommonUtils.getLabel(
-        selectedType.value,
-        this.types
-      );
-    }
-
-    // Update sort value, remove invalid sort from query params if any
-    const validSortValues = Object.values(SortOption);
-    const sort = queryParams[QUERY_PARAM_KEY.SORT];
-    const isValidSort = validSortValues.includes(sort);
-
-    let sortValue;
-    if (!isValidSort) {
-      delete queryParams[QUERY_PARAM_KEY.SORT];
-      sortValue = SortOption.STANDARD;
-    } else {
-      sortValue = sort;
-    }
-    this.selectedSortLabel = CommonUtils.getLabel(sortValue, this.sorts);
-    this.historyService.lastSortOption.set(sortValue);
   }
 
   onSelectType(type: ItemDropdown<TypeOption>) {
