@@ -29,7 +29,7 @@
       (searchChange)="onSearchChanged($event)"
       (filterChange)="onFilterChange($event)"
       (sortChange)="onSortChange($event)"
-      [isProductHomepage] = "true"></app-product-filter></div>
+      [currentPage] = "PAGE.HOME"></app-product-filter></div>
   }
 
   @if (products().length > 0) {

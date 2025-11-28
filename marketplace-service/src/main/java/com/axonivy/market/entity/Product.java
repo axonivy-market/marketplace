@@ -99,6 +99,8 @@ public class Product extends AbstractAuditableEntity<String> {
   private boolean isMavenDropins;
   @Transient
   private String compatibilityRange;
+  @Transient
+  private Boolean isFocused;
 
   @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)

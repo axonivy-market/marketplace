@@ -39,6 +39,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
+import { PAGE } from '../../shared/constants/query.params.constant';
 const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
@@ -84,6 +85,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   isBrowser: boolean;
 
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
+  PAGE = PAGE;
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -110,7 +112,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
         if (isParamChanged) {
           this.criteria = {
             ...this.criteria,
-            nextPageHref: '',
+            nextPageHref: ''
           };
           this.loadProductItems(true);
         }
@@ -149,7 +151,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if(this.isBrowser) {
+    if (this.isBrowser) {
       this.setupIntersectionObserver();
     }
   }
@@ -185,7 +187,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   onSortChange(selectedSort: SortOption) {
     let queryParams = null;
     if (SortOption.STANDARD !== selectedSort) {
-      queryParams = { sort:selectedSort };
+      queryParams = { sort: selectedSort };
     } else {
       queryParams = { sort: null };
     }

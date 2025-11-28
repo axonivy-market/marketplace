@@ -21,6 +21,7 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
+import { ACTIVE_TAB } from '../../../../shared/constants/query.params.constant';
 const SELECTED_VERSION = 'selectedVersion';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
@@ -153,10 +154,17 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     );
   }
   onBadgeClick() {
+    let focusedTab;
+    if (this.productDetail.isFocusedProduct) {
+      focusedTab = ACTIVE_TAB.FOCUSED;
+    } else {
+      focusedTab = ACTIVE_TAB.STANDARD;
+    }
     if (this.repoName) {
       this.router.navigate(['/monitoring'], {
         queryParams: {
-          search: this.repoName
+          repoSearch: this.repoName,
+          activeTab: focusedTab
         }
       });
     } else {

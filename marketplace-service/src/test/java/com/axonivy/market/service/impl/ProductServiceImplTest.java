@@ -5,6 +5,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
@@ -127,6 +128,8 @@ class ProductServiceImplTest extends BaseSetup {
   private VersionService versionService;
   @Mock
   private ArtifactRepository artifactRepo;
+  @Mock
+  private GithubRepoRepository githubRepoRepository;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
@@ -564,10 +567,12 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetailByIdAndVersion() {
-
+    GithubRepo mockGithubRepo = new GithubRepo();
+    mockGithubRepo.setName(MOCK_PRODUCT_REPOSITORY_NAME);
+    mockGithubRepo.setFocused(true);
     Product mockProduct = mockResultReturn.getContent().get(0);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-
+    when(githubRepoRepository.findByNameOrProductId(StringUtils.EMPTY,mockProduct.getId())).thenReturn(mockGithubRepo);
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(mockProduct, result,
