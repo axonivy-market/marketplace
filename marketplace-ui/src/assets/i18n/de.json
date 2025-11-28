@@ -274,7 +274,7 @@
         "all": "Alle"
       },
       "workflow": {
-        "label": "Staat",
+        "label": "Status",
         "status": {
           "active": "Aktiv",
           "disabled_inactivity": "Deaktiviert",
