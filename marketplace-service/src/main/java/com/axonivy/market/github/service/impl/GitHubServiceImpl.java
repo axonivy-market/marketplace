@@ -60,7 +60,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;

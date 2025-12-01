@@ -99,17 +99,14 @@ public class ProductController {
     var stopWatch = new StopWatch();
     stopWatch.start();
     List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
-    var message = new Message();
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    if (ObjectUtils.isEmpty(syncedProductIds)) {
-      message.setMessageDetails("Data is already up to date, nothing to sync");
-    } else {
-      stopWatch.stop();
-      message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
-          stopWatch.getTime()));
-    }
-    return new ResponseEntity<>(message, HttpStatus.OK);
+    stopWatch.stop();
+    String messageDetails = ObjectUtils.isEmpty(syncedProductIds) 
+        ? "Data is already up to date, nothing to sync"
+        : String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+        stopWatch.getTime());
+    
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), messageDetails);
+    return ResponseEntity.ok(message);
   }
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
@@ -126,23 +123,23 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var message = new Message();
-    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
-        overrideMarketItemPath) && CollectionUtils.isEmpty(
-        axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
-      message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
-      message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
-      return new ResponseEntity<>(message, HttpStatus.OK);
+    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)
+        && CollectionUtils.isEmpty(axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), null,
+          ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
+      return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
 
     var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
     if (isSuccess) {
-      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-      message.setMessageDetails("Sync successfully!");
+      var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
+          "Sync successfully!");
+      return ResponseEntity.ok(message);
     } else {
-      message.setMessageDetails("Sync unsuccessfully!");
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(),
+          "Failed to sync product: " + productId);
+      return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
-    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)
@@ -153,15 +150,16 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var message = new Message();
     var isSuccess = productService.syncFirstPublishedDateOfAllProducts();
     if (isSuccess) {
-      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-      message.setMessageDetails("Sync successfully!");
+      var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
+          "First published dates synced successfully for all products");
+      return ResponseEntity.ok(message);
     } else {
-      message.setMessageDetails("Sync unsuccessfully!");
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), 
+          "No products found to sync");
+      return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
-    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @SuppressWarnings("unchecked")
@@ -180,13 +178,16 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var message = new Message();
-    int syncIds = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
-    if (syncIds > 0) {
-      message.setMessageDetails("Synced %d artifact(s)".formatted(syncIds));
+    int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
+
+    if (syncedCount > 0) {
+      var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
+          String.format("Synced %d artifact(s)", syncedCount));
       return ResponseEntity.status(HttpStatus.OK).body(message);
+    } else {
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), 
+          "Nothing to sync");
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
-    message.setMessageDetails("Nothing to sync");
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
   }
 }

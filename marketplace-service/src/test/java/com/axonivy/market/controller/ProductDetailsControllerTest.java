@@ -137,34 +137,6 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void testBestMatchProductDetailsWithVersionWithWrongProductId() {
-    when(productService.fetchBestMatchProductDetail(anyString(), anyString())).thenReturn(
-        null);
-
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
-        WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
-
-    verify(productService, times(1)).fetchBestMatchProductDetail(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
-  }
-
-  @Test
-  void testProductDetailsWithWrongProductId() {
-    when(productService.fetchProductDetail(anyString(), anyBoolean())).thenReturn(
-        null);
-
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(
-        WRONG_PRODUCT_ID, false);
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
-
-    verify(productService, times(1)).fetchProductDetail(WRONG_PRODUCT_ID, false);
-  }
-
-  @Test
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     when(versionService.getArtifactsAndVersionToDisplay(anyString(), anyBoolean(),

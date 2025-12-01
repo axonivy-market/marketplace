@@ -12,9 +12,11 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -534,15 +536,18 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
+    if (product == null) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id);
+    }
 
-      return productItem;
-    }).orElse(null);
+    int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+    product.setInstallationCount(installationCount);
+
+    String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+    product.setCompatibilityRange(compatibilityRange);
+
+    return product;
   }
 
   @Override
@@ -557,16 +562,19 @@ public class ProductServiceImpl implements ProductService {
     } else {
       product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
     }
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
+    if (product == null) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+          "Product not found with id: " + id + (StringUtils.isNotBlank(version) ? " and version: " + version : ""));
+    }
+    int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+    product.setInstallationCount(installationCount);
 
-      productItem.setBestMatchVersion(bestMatchVersion);
-      return productItem;
-    }).orElse(null);
+    String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+    product.setCompatibilityRange(compatibilityRange);
+
+    product.setBestMatchVersion(bestMatchVersion);
+    return product;
   }
 
   @Override
@@ -685,19 +693,15 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public boolean syncFirstPublishedDateOfAllProducts() {
-    try {
-      List<Product> products = productRepo.findAll();
-      if (!CollectionUtils.isEmpty(products)) {
-        for (Product product : products) {
-          updateFirstPublishedDateOfProduct(product);
-        }
+    List<Product> products = productRepo.findAll();
+    if (!CollectionUtils.isEmpty(products)) {
+      for (Product product : products) {
+        updateFirstPublishedDateOfProduct(product);
       }
       log.info("sync FirstPublishedDate of all products is finished!");
       return true;
-    } catch (Exception e) {
-      log.error(e);
-      return false;
     }
+    return false;
   }
 
   private void updateFirstPublishedDateOfProduct(Product product) {

@@ -88,9 +88,6 @@ public class ProductDetailsController {
       @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
-    if (productDetail == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
     return new ResponseEntity<>(model, HttpStatus.OK);
@@ -125,9 +122,6 @@ public class ProductDetailsController {
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
     var productDetail = productService.fetchProductDetail(id, isShowDevVersion);
-    if (productDetail == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     addModelLinks(model, productDetail, StringUtils.EMPTY, BY_ID);
     return new ResponseEntity<>(model, HttpStatus.OK);
