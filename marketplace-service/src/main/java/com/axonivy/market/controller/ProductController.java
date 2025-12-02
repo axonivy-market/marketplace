@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.logging.TrackApiCallFromNeo;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.MatomoService;
@@ -58,6 +59,7 @@ public class ProductController {
   private final ProductDependencyService productDependencyService;
   private final MatomoService matomoService;
   @GetMapping()
+  @TrackApiCallFromNeo(("Get all products"))
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -80,8 +82,7 @@ public class ProductController {
       @RequestParam(name = IS_REST_CLIENT) @Parameter(
           description = "Option to render the website in the REST Client Editor of Designer",
           in = ParameterIn.QUERY) Boolean isRESTClient,
-      @ParameterObject Pageable pageable, HttpServletRequest httpServletRequest) {
-    matomoService.trackEventAsync(httpServletRequest);
+      @ParameterObject Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
