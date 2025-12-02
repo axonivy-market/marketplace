@@ -110,15 +110,10 @@
       <artifactId>h2</artifactId>
       <scope>test</scope> <!-- Only for testing -->
     </dependency>
-<!--    <dependency>-->
-<!--       <groupId>org.piwik.java.tracking</groupId>-->
-<!--       <artifactId>matomo-java-tracker</artifactId>-->
-<!--       <version>3.4.0</version>-->
-<!--    </dependency>-->
       <dependency>
           <groupId>org.piwik.java.tracking</groupId>
           <artifactId>matomo-java-tracker-spring-boot-starter</artifactId>
-          <version>3.4.0</version> <!-- replace with your desired version -->
+          <version>3.4.0</version>
       </dependency>
   </dependencies>
 

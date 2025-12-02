@@ -81,44 +81,44 @@ class ProductControllerTest extends BaseSetup {
     assembler = new ProductModelAssembler();
   }
 
-//  @Test
-//  void testFindProductsAsEmpty() {
-//    PageRequest pageable = PageRequest.of(0, 20);
-//    Page<Product> mockProducts = new PageImpl<>(List.of(), pageable, 0);
-//    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
-//    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-//    var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", false, pageable);
-//
-//    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
-//    assertTrue(result.hasBody(), "Expected response to have a body");
-//    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
-//        "Expected response body to contain 0 products");
-//  }
-//
-//  @Test
-//  void testFindProducts() {
-//    PageRequest pageable = PageRequest.of(0, 20, Sort.by(Order.by(SortOption.ALPHABETICALLY.getOption())));
-//    Product mockProduct = createProductMock();
-//
-//    Page<Product> mockProducts = new PageImpl<>(List.of(mockProduct), pageable, 1);
-//    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
-//    assembler = new ProductModelAssembler();
-//    var mockProductModel = assembler.toModel(mockProduct);
-//    var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
-//    when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-//    var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", false, pageable);
-//
-//    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
-//    assertTrue(result.hasBody(), "Expected response to have a body");
-//    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
-//        "Expected response body size to be 1");
-//    assertEquals(PRODUCT_NAME_SAMPLE,
-//        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()),
-//        "Expected product English name to be " + PRODUCT_NAME_SAMPLE);
-//    assertEquals(PRODUCT_NAME_DE_SAMPLE,
-//        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()),
-//        "Expected product German name to be " + PRODUCT_NAME_DE_SAMPLE);
-//  }
+  @Test
+  void testFindProductsAsEmpty() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    Page<Product> mockProducts = new PageImpl<>(List.of(), pageable, 0);
+    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
+    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", false, pageable);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(result.hasBody(), "Expected response to have a body");
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Expected response body to contain 0 products");
+  }
+
+  @Test
+  void testFindProducts() {
+    PageRequest pageable = PageRequest.of(0, 20, Sort.by(Order.by(SortOption.ALPHABETICALLY.getOption())));
+    Product mockProduct = createProductMock();
+
+    Page<Product> mockProducts = new PageImpl<>(List.of(mockProduct), pageable, 1);
+    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
+    assembler = new ProductModelAssembler();
+    var mockProductModel = assembler.toModel(mockProduct);
+    var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
+    when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", false, pageable);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(result.hasBody(), "Expected response to have a body");
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
+        "Expected response body size to be 1");
+    assertEquals(PRODUCT_NAME_SAMPLE,
+        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()),
+        "Expected product English name to be " + PRODUCT_NAME_SAMPLE);
+    assertEquals(PRODUCT_NAME_DE_SAMPLE,
+        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()),
+        "Expected product German name to be " + PRODUCT_NAME_DE_SAMPLE);
+  }
 
   @Test
   void testSyncProductsSuccess() {
