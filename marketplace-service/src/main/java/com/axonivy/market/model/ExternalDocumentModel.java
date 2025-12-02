@@ -38,13 +38,11 @@ public class ExternalDocumentModel extends RepresentationModel<ExternalDocumentM
   private String relativeLink;
 
   public static ExternalDocumentModel from(ExternalDocumentMeta externalDocument) {
-    var model = ExternalDocumentModel.builder()
+    return ExternalDocumentModel.builder()
         .productId(externalDocument.getProductId())
         .version(externalDocument.getVersion())
         .relativeLink(externalDocument.getRelativeLink())
         .artifactName(externalDocument.getArtifactName())
         .build();
-         model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(externalDocument.getProductId(), externalDocument.getVersion())).withSelfRel());
-    return model;
   }
 }

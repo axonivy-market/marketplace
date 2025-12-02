@@ -25,6 +25,8 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @RestController
@@ -47,6 +49,7 @@ public class ExternalDocumentController {
     }
 
     var model = ExternalDocumentModel.from(externalDocument);
+    model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
