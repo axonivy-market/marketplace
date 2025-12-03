@@ -4,6 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ProductComponent } from '../product/product.component';
 import { Router } from '@angular/router';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { FaviconService } from '../../shared/services/favicon.service';
 
 @Component({
   selector: 'app-home',
@@ -17,8 +18,10 @@ export class HomeComponent {
   titleService = inject(Title);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+    faviconService = inject(FaviconService);
 
   ngOnInit(): void {
+    this.faviconService.setFavicon("favicon.ico");
     this.pageTitleService.setTitleOnLangChange('common.branch');
   }
 }
