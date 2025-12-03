@@ -92,6 +92,6 @@ axon:
 
 matomo:
   tracker:
-    api-endpoint: '${MARKET_MATOMO_TRACKER_URL}'
+    api-endpoint: '${MARKET_SERVER_MATOMO_TRACKER_URL}'
     default-site-id: '${MARKET_MATOMO_SITE_ID}'
     enabled: true
