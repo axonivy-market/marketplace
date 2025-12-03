@@ -92,12 +92,6 @@ axon:
 
 matomo:
   tracker:
-    api-endpoint: "http://marketplace.server.ivy-cloud.com:8085/matomo.php"
-    default-site-id: 1
+    api-endpoint: '${MARKET_MATOMO_TRACKER_URL}'
+    default-site-id: '${MARKET_MATOMO_SITE_ID}'
     enabled: true
-#    connect-timeout: 10s
-#    socket-timeout: 30s
-#    user-agent: "MatomoJavaClient"
-#    log-failed-tracking: true
-#    disable-ssl-cert-validation: true
-#    thread-pool-size: 2
