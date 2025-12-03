@@ -23,6 +23,7 @@ import java.util.List;
 public class TrackApiCallFromNeoAspect {
   @Value("${market.cors.allowed.origin.patterns}")
   private String marketCorsAllowedOriginPatterns;
+
   private final MatomoService matomoService;
   private List<String> allowedOrigins;
 
@@ -60,26 +61,5 @@ public class TrackApiCallFromNeoAspect {
     regex = regex.replace("*", ".*");
     // Match the entire string
     return "^" + regex + "$";
-  }
-
-  public String getClientIp(HttpServletRequest request) {
-    String ip = null;
-
-    // Standard proxy headers
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      // X-Forwarded-For can contain multiple IPs: client, proxy1, proxy2
-      ip = xForwardedFor.split(",")[0].trim();
-    }
-
-    if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getHeader("X-Real-IP");
-    }
-
-    if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getRemoteAddr();
-    }
-
-    return ip;
   }
 }
