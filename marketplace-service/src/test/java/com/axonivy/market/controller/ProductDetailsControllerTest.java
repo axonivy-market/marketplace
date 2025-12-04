@@ -258,7 +258,6 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testGetLatestArtifactDownloadUrl() {
     String mockDownloadUrl = "https://market.axonivy.com";
-        "Expected HTTP 404 NOT_FOUND when no download URL is returned");
     when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
         anyString())).thenReturn(mockDownloadUrl);
     var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
