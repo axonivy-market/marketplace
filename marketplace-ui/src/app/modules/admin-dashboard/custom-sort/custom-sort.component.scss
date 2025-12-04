@@ -1,21 +1,10 @@
-.help-text {
-  line-height: 110%;
-  margin-top: 3.2rem;
-  margin-bottom: 3.2rem;
-  cursor: default;
-}
-
 ::ng-deep .help-text a {
   color: var(--ivy-primary-bg);
 }
 
-:host {
-  display: block;
-}
-
-.custom-sort {
-  padding: 1.5rem 2rem;
-  color: var(--text-primary-color, #111827);
+.sort-container {
+  flex-direction: row;
+  margin-top: 9rem;
 }
 
 .actions {
@@ -24,6 +13,7 @@
   gap: 1rem;
   margin-top: 1.25rem;
   flex-wrap: wrap;
+  justify-content: flex-start;
 
   .sort-button {
     padding: 5px 16px;
@@ -36,20 +26,36 @@
 }
 
 .feedback {
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 9999px;
   font-size: 0.9rem;
+  line-height: 1.2;
 }
 
 .feedback.success {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #065f46;
+  background-color: var(--product-feedback-approve-button-color);
+  color: #{white};
 }
 
 .feedback.error {
-  background-color: rgba(248, 113, 113, 0.2);
-  color: #7f1d1d;
+  background-color: var(--product-feedback-reject-button-color);
+  color: #{white};
+}
+
+.feedback .icon {
+  display: inline-flex;
+  width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  color: #{white};
 }
 
 .loading-state {
@@ -72,7 +78,7 @@
 .table-card {
   border: 1px solid var(--border-neutral-color, #d1d5db);
   border-radius: 0.75rem;
-  background-color: var(--surface-primary-color, #ffffff);
+  background-color: transparent;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   display: flex;
   flex-direction: column;
@@ -262,4 +268,34 @@ tr.cdk-drag-placeholder {
 
 :host ::ng-deep .cdk-drag-animating {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.approval {
+  line-height: 110%;
+  margin-top: 7.2rem;
+  margin-bottom: 3.2rem;
+  cursor: default;
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.about {
+  line-height: 130%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+.contribute-link-container {
+  line-height: 140%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
 }

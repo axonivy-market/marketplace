@@ -301,8 +301,8 @@
         "message": "Message"
       },
       "customSort": {
-        "pageTitle": "Admin Dashboard - Custom Sort Extensions",
-        "description": "Manage the default sorting order of Market extensions displayed on the Axon Ivy Marketplace.",
+        "title": "Custom Sort Extensions",
+        "description": "Manage how market extensions are sorted.",
         "helpText": "The UI allows users to modify the <b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
         "sortedExtensions": "Sorted Extensions",
         "availableExtensions": "Available Extensions",
