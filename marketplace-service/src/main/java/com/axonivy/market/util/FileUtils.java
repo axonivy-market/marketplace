@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +98,12 @@ public class FileUtils {
   public static void unzip(InputStreamSource file, String location) throws IOException {
     var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
-    unzipArtifact(file.getInputStream(), extractDir);
+    try {
+      unzipArtifact(file.getInputStream(), extractDir);
+    } catch (IOException | IllegalStateException e) {
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
+          "Failed to unzip file at location: " + location + " due to " + e.getMessage());
+    }
   }
 
   private static void createDirectoryFromFile(File file) throws IOException {

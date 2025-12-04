@@ -8,6 +8,8 @@ import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
@@ -139,9 +141,16 @@ public class ProductContentServiceImpl implements ProductContentService {
   public List<String> getDependencyUrls(String productId, String artifactId, String version) {
     List<ProductDependency> productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
         productId, artifactId, version);
-    return Stream.concat(productDependencies.stream().map(ProductDependency::getDownloadUrl),
+    
+    List<String> dependencyUrls = Stream.concat(productDependencies.stream().map(ProductDependency::getDownloadUrl),
         productDependencies.stream().flatMap(product -> product.getDependencies().stream()).map(
             ProductDependency::getDownloadUrl)).toList();
+
+    if (dependencyUrls.isEmpty()) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No dependencies found for product " + productId);
+    }
+
+    return dependencyUrls;
   }
 
   @Override

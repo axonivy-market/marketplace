@@ -2,6 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
 import com.axonivy.market.util.FileUtils;
@@ -34,10 +36,14 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
-  public ReleasePreview extract(MultipartFile file, String baseUrl) throws IOException {
-    ZipSafetyScanner.analyze(file);
-    FileUtils.unzip(file, PREVIEW_DIR);
-    return extractReadme(baseUrl, PREVIEW_DIR);
+  public ReleasePreview extract(MultipartFile file, String baseUrl) {
+    try {
+      ZipSafetyScanner.analyze(file);
+      FileUtils.unzip(file, PREVIEW_DIR);
+      return extractReadme(baseUrl, PREVIEW_DIR);
+    } catch (IOException e) {
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
+    }
   }
 
   public ReleasePreview extractReadme(String baseUrl, String location) throws IOException {
@@ -53,13 +59,15 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
         processReadme(readmeFile, moduleContents, baseUrl, location);
       }
       return ReleasePreview.from(moduleContents);
+    } catch (IOException e) {
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Failed to extract README files");
     }
   }
 
   public String updateImagesWithDownloadUrl(String unzippedFolderPath,
       String readmeContents, String baseUrl) throws IOException {
     if (unzippedFolderPath == null) {
-      throw new IllegalArgumentException("Unzipped folder Path must not be null");
+      throw new FileProcessingException(ErrorCode.INVALID_PATH.getCode(), "Unzipped folder path is null");
     }
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
@@ -82,16 +90,20 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
       String baseUrl, String location) throws IOException {
-    var readmeContents = Files.readString(readmeFile);
-    if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-      readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
+    try {
+      var readmeContents = Files.readString(readmeFile);
+      if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+        readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
+      }
+      var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+      ProductContentUtils.mappingDescriptionSetupAndDemo(
+          moduleContents,
+          readmeFile.getFileName().toString(),
+          readmeContentsModel
+      );
+    } catch (IOException e) {
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Failed to process README file: " + readmeFile.getFileName());
     }
-    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    ProductContentUtils.mappingDescriptionSetupAndDemo(
-        moduleContents,
-        readmeFile.getFileName().toString(),
-        readmeContentsModel
-    );
   }
 
 }

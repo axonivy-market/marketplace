@@ -1,5 +1,7 @@
 package com.axonivy.market.exceptions;
 
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -76,11 +78,25 @@ public class MarketExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
   }
 
+  @ExceptionHandler(FileProcessingException.class)
+  public ResponseEntity<Object> handleFileProcess(FileProcessingException fileProcessingException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(fileProcessingException.getCode());
+    errorMessage.setMessageDetails(fileProcessingException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
   @ExceptionHandler(IOException.class)
-  public ResponseEntity<Object> handleIOException(IOException ex) {
-    Map<String, String> body = new HashMap<>();
-    body.put("message", "Sorry, there was a problem processing your request. Please try again or contact support");
-    body.put("error", ex.getMessage());
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+  public ResponseEntity<Message> handleIOException(IOException ex) {
+    var message = new Message(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+        ErrorCode.INTERNAL_EXCEPTION.getHelpText(), ex.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<Message> handleIllegalArgumentException(IllegalArgumentException ex) {
+    var message = new Message(ErrorCode.ARGUMENT_BAD_REQUEST.getCode(), ex.getMessage(),
+        ErrorCode.ARGUMENT_BAD_REQUEST.getHelpText());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
   }
 }

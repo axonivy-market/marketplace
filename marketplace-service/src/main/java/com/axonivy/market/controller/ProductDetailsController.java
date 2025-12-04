@@ -4,7 +4,6 @@ import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -25,11 +24,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
@@ -43,12 +40,10 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static com.axonivy.market.model.ProductDetailModel.addModelLinks;
 
 @AllArgsConstructor
 @RestController
@@ -172,13 +167,7 @@ public class ProductDetailsController {
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY,
           example = "ivy-demos-app.zip") String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
-    HttpStatusCode statusCode;
-    if (StringUtils.isBlank(downloadUrl)) {
-      statusCode = HttpStatus.NOT_FOUND;
-    } else {
-      statusCode = HttpStatus.OK;
-    }
-    return new ResponseEntity<>(downloadUrl, statusCode);
+    return new ResponseEntity<>(downloadUrl, HttpStatus.OK);
   }
 
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
@@ -249,28 +238,4 @@ public class ProductDetailsController {
     return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
         MediaType.APPLICATION_OCTET_STREAM).body(streamingBody);
   }
-
-  private void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
-    String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
-      var link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-              product.getBestMatchVersion(), version)).withSelfRel();
-      model.setMetaProductJsonUrl(link.getHref());
-    }
-    model.add(getSelfLinkForProduct(productId, version, path));
-  }
-
-  public Link getSelfLinkForProduct(String productId, String version, String path) {
-    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
-    selfLinkWithVersion = switch (path) {
-      case BEST_MATCH_BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-      case BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
-    };
-    return linkTo(selfLinkWithVersion).withSelfRel();
-  }
-
 }

@@ -1,5 +1,6 @@
 package com.axonivy.market.exceptions;
 
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -106,8 +107,24 @@ class MarketExceptionHandlerTest {
 
   @Test
   void testHandleIoException() {
-    var ioException = mock(IOException.class);
+    var fileProcessingException = mock(FileProcessingException.class);
+    var responseEntity = exceptionHandler.handleFileProcess(fileProcessingException);
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST");
+  }
+
+  @Test
+  void testHandleIOException() {
+    IOException ioException = new IOException("File read error");
     var responseEntity = exceptionHandler.handleIOException(ioException);
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode(),
+        "Expected HTTP 500 INTERNAL_SERVER_ERROR");
+  }
+
+  @Test
+  void testHandleIllegalArgumentException() {
+    IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Invalid argument");
+    var responseEntity = exceptionHandler.handleIllegalArgumentException(illegalArgumentException);
     assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
         "Expected HTTP 400 BAD_REQUEST");
   }

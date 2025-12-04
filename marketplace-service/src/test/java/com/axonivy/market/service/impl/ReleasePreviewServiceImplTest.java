@@ -1,5 +1,7 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.ZipSafetyScanner;
@@ -141,9 +143,9 @@ class ReleasePreviewServiceImplTest {
   void testExtractReadmeIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(tempDirectory))
-          .thenThrow(new IOException("Simulated IOException"));
+          .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
-      assertThrows(IOException.class, () ->
+      assertThrows(FileProcessingException.class, () ->
               releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()),
           "Should throw IOException if walking readme directory fails"
       );
@@ -171,18 +173,18 @@ class ReleasePreviewServiceImplTest {
     try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenThrow(new IOException());
     }
-    assertThrows(IOException.class,
+    assertThrows(FileProcessingException.class,
         () -> releasePreviewService.extract(mockMultipartFile, tempDirectory.toString()),
         "Should throw error if unzipping file failed");
   }
 
   @Test
   void testUpdateImagesWithDownloadUrlNullPath() {
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+    FileProcessingException exception = assertThrows(FileProcessingException.class, () ->
             releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL),
         "Should throw error if unzipped folder path is null"
     );
-    assertEquals("Unzipped folder Path must not be null", exception.getMessage(),
+    assertEquals("Unzipped folder path is null", exception.getMessage(),
       "Exception message should indicate null unzipped folder path");
   }
 }
