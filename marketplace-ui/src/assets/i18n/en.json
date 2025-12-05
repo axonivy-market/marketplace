@@ -293,23 +293,48 @@
     },
     "admin": {
       "sync": {
-        "action": "Action",
+        "pageTitle": "Sync Jobs",
+        "title": "Sync Jobs",
+        "description": "Manage sync jobs.",
+        "helpText": "Sync jobs keep marketplace data up-to-date by regularly fetching updates from external sources. Administrators can track their status and ensure the latest information is reflected in the marketplace.",
+        "action": "Actions",
         "syncJob": "Sync Job",
         "status": "Status",
-        "lastRun": "Last run",
-        "completed": "Completed",
-        "message": "Message"
+        "lastRun": "Last run at",
+        "completed": "Completed at",
+        "message": "Message",
+        "syncLabel": "Sync",
+        "syncingLabel": "Syncing..."
       },
       "customSort": {
+        "pageTitle": "Custom Sort",
         "title": "Custom Sort Extensions",
         "description": "Manage how market extensions are sorted.",
         "helpText": "The UI allows users to modify the <b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
         "sortedExtensions": "Sorted Extensions",
         "availableExtensions": "Available Extensions",
+        "searchPlaceholder": "Search an extension",
         "extensionId": "Extension ID",
+        "order": "Order",
+        "dragAndDropHint": "Drag and drop extensions between the two lists to customize their display order on the marketplace. Extensions in the 'Sorted Extensions' list will appear first, following the default sorting order, while those in the 'Available Extensions' list will be shown afterward in alphabetical order.",
+        "dragHint": "Drag and drop here.",
         "noExtensions": "No extensions available.",
+        "sortHint": "Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.",
         "sortLabel": "Sort",
-        "sortingLabel": "Sorting..."
+        "sortingLabel": "Sorting...",
+        "sortSuccessMessage": "Sorting saved successfully.",
+        "sortErrorMessage": "Saving the sorting failed. Please try again.",
+        "loadingLabel": "Loading extensions..."
+      },
+      "quickAccess": {
+        "pageTitle": "Quick Access",
+        "title": "Quick Access Links",
+        "description": "Manage quick access links.",
+        "helpText": "Configure the most frequently used pages or external links that should appear as quick access shortcuts on the Admin Dashboard. Administrators can add, edit, or remove links to help navigate efficiently.",
+        "monitoring": "Monitoring: Access the monitoring dashboard for build pipelines and test results.",
+        "montoringNote": "Please check daily to ensure all extensions are healthy.",
+        "releasePreview": "Release Preview: Quickly preview extensions' details by uploading a ZIP file with a README.md.",
+        "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace."
       }
     }
   }

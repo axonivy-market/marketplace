@@ -9,6 +9,7 @@ import { CdkDragDrop, CdkDragEnd, CdkDragEnter, CdkDragStart, DragDropModule, tr
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
+import { PageTitleService } from '../../../shared/services/page-title.service';
 
 @Component({
   selector: 'app-custom-sort',
@@ -26,19 +27,10 @@ import { finalize } from 'rxjs/operators';
 })
 
 export class CustomSortComponent implements OnInit {
-  token = '';
-  errorMessage = '';
-  isAuthenticated = false;
-  isLoading = false;
-
-  productId = '';
-  marketItemPath = '';
-  overrideMarketItemPath = false;
-  showSyncJob = true;
-
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
+  pageTitleService = inject(PageTitleService);
   private readonly productService = inject(ProductService);
   private readonly adminDashboardService = inject(AdminDashboardService);
   private readonly renderer = inject(Renderer2);
@@ -46,6 +38,9 @@ export class CustomSortComponent implements OnInit {
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
+    isLoading = false;
+
+  productId = '';
   searchTerm = '';
   isSaving = false;
   sortSuccessMessage = '';
@@ -54,7 +49,8 @@ export class CustomSortComponent implements OnInit {
   private readonly PAGE_SIZE = 200;
 
   ngOnInit(): void {
-    void this.loadAllProductIds();
+    this.loadAllProductIds();
+    this.pageTitleService.setTitleOnLangChange('common.admin.customSort.pageTitle');
   }
 
   get filteredAvailableExtensions(): string[] {
@@ -110,12 +106,6 @@ export class CustomSortComponent implements OnInit {
   sortMarketExtensions(): void {
     this.sortSuccessMessage = '';
     this.sortErrorMessage = '';
-
-    if (this.sortingExtensions.length === 0) {
-      this.sortErrorMessage = 'Please drag at least one extension into the sorted list before saving.';
-      return;
-    }
-
     this.isSaving = true;
 
     this.adminDashboardService
@@ -125,11 +115,10 @@ export class CustomSortComponent implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.sortSuccessMessage = 'Sorting saved successfully.';
+          this.sortSuccessMessage = this.translateService.instant('common.admin.customSort.sortSuccessMessage');
         },
-        error: (error) => {
-          console.error('Failed to persist custom sorting', error);
-          this.sortErrorMessage = 'Saving the sorting failed. Please try again.';
+        error: () => {
+          this.sortErrorMessage = this.translateService.instant('common.admin.customSort.sortErrorMessage');
         }
       });
   }
@@ -139,8 +128,7 @@ export class CustomSortComponent implements OnInit {
     try {
       const ids = await this.productService.fetchAllProductIds(this.PAGE_SIZE);
       this.allExtensions = ids;
-    } catch (error) {
-      console.warn('Failed to load product ids', error);
+    } catch {
       this.allExtensions = [];
     } finally {
       this.isLoading = false;

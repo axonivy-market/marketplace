@@ -1,8 +1,6 @@
 <div class="container">
   <div class="row col-md-12">
-    <h1
-      class="text-primary approval"
-      [lang]="languageService.selectedLanguage()">
+    <h1 class="text-primary title" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.admin.customSort.title') | async }}
     </h1>
     <div class="introduction-container">
@@ -11,10 +9,18 @@
           {{
             translateService.get('common.admin.customSort.description') | async
           }}
+          <span class="hint-icon">
+                <i
+                  class="bi bi-info-circle"
+                  [title]="
+                    translateService.get(
+                      'common.admin.customSort.dragAndDropHint'
+                    ) | async
+                  "></i>
+              </span>
         </h3>
       </div>
-      <div
-        class="d-sm-block align-items-center contribute-link-container flex-fill">
+      <div class="d-sm-block align-items-center help-text-container flex-fill">
         <h4
           [lang]="languageService.selectedLanguage()"
           class="text-secondary help-text"
@@ -49,7 +55,11 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th
+                    class="text-primary order-column"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.customSort.order' | translate }}
+                  </th>
                   <th
                     class="text-primary"
                     [lang]="languageService.selectedLanguage()">
@@ -68,7 +78,7 @@
                 @if (sortingExtensions.length === 0) {
                   <tr class="empty-row">
                     <td colspan="2">
-                      Drag extensions here to define the default order.
+                      {{ 'common.admin.customSort.dragHint' | translate }}
                     </td>
                   </tr>
                 }
@@ -123,7 +133,11 @@
               <input
                 type="search"
                 class="search-input"
-                placeholder="Search extensions"
+                [placeholder]="
+                  translateService.get(
+                    'common.admin.customSort.searchPlaceholder'
+                  ) | async
+                "
                 autocomplete="off"
                 [(ngModel)]="searchTerm" />
             </div>
@@ -193,7 +207,9 @@
           (click)="sortMarketExtensions()"
           [disabled]="isSaving || sortingExtensions.length === 0"
           data-toggle="tooltip"
-          title="Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.">
+          [title]="
+            translateService.get('common.admin.customSort.sortHint') | async
+          ">
           @if (isSaving) {
             <i class="fa fa-spinner fa-spin me-2"></i>
             {{ 'common.admin.customSort.sortingLabel' | translate }}
@@ -218,7 +234,8 @@
       </div>
 
       @if (isLoading) {
-        <div class="loading-state">Loading extensions...</div>
+        <div class="loading-state">
+          {{ 'common.admin.customSort.loadingLabel' | translate }}</div>
       }
     </section>
   </div>

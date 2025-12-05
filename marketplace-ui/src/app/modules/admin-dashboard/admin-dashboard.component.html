@@ -1,125 +1,152 @@
-@if (isAuthenticated) {
-  <div class="container"></div>
-  <div class="admin-layout" [class.sidebar-open]="isSidebarOpen">
-    <app-side-menu (openChange)="onSidebarStateChanged($event)"></app-side-menu>
-    <div class="admin-main">
-      <app-header (menuToggle)="onMenuToggle()"></app-header>
+<div class="container">
+  @if (isAuthenticated) {
+    <div class="admin-layout" [class.sidebar-open]="isSidebarOpen">
+      <app-side-menu
+        (openChange)="onSidebarStateChanged($event)"></app-side-menu>
+      <div class="admin-main">
+        <app-header (menuToggle)="onMenuToggle()"></app-header>
 
-      <div class="admin-main__content">
-        @if (showSyncJob) {
-          <div class="table-responsive admin-main__table">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th
-                    class="text-primar"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.action' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.syncJob' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.status' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.lastRun' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.completed' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.message' | translate }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let job of jobs">
-                  <td>
-                    <button
-                      type="button"
-                      [lang]="languageService.selectedLanguage()"
-                      class="btn border-0 sync-button text-center"
-                      [ngClass]="
-                        themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
-                      "
-                      (click)="trigger(job)"
-                      [disabled]="job.status === 'RUNNING'">
-                      Sync
-                    </button>
-                  </td>
-                  <td>{{ job.label }}</td>
-                  <td>
-                    <span [ngClass]="getStatusClass(job.status)">
-                      {{ job.status ? (job.status | titlecase) : '' }}
-                    </span>
-                  </td>
-                  <td>
+        <div class="admin-main__content">
+          @if (showSyncJob) {
+            <div class="row col-md-12">
+              <h1
+                class="text-primary title"
+                [lang]="languageService.selectedLanguage()">
+                {{ translateService.get('common.admin.sync.title') | async }}
+              </h1>
+              <div class="introduction-container">
+                <div class="d-sm-block about">
+                  <h3 class="text-secondary">
                     {{
-                      job.triggeredAt
-                        ? (job.triggeredAt | date: 'dd.MM.yyyy HH:mm')
-                        : ''
+                      translateService.get('common.admin.sync.description')
+                        | async
                     }}
-                  </td>
-                  <td>
-                    {{
-                      job.completedAt
-                        ? (job.completedAt | date: 'dd.MM.yyyy HH:mm')
-                        : ''
-                    }}
-                  </td>
-                  <td class="message-cell">
-                    <div>{{ job.message || '' }}</div>
-                    <div class="small text-muted" *ngIf="job.reference">
-                      Ref: {{ job.reference }}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        }
+                  </h3>
+                </div>
+                <div
+                  class="d-sm-block align-items-center help-text-container flex-fill">
+                  <h4
+                    [lang]="languageService.selectedLanguage()"
+                    class="text-secondary help-text"
+                    [innerHTML]="
+                      translateService.get('common.admin.sync.helpText') | async
+                    "></h4>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive admin-main__table">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.action' | translate }}
+                    </th>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.syncJob' | translate }}
+                    </th>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.status' | translate }}
+                    </th>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.lastRun' | translate }}
+                    </th>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.completed' | translate }}
+                    </th>
+                    <th
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.sync.message' | translate }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let job of jobs">
+                    <td>
+                      <button
+                        type="button"
+                        [lang]="languageService.selectedLanguage()"
+                        class="btn border-0 sync-button text-center"
+                        [ngClass]="
+                          themeService.isDarkMode()
+                            ? 'btn-light'
+                            : 'btn-primary'
+                        "
+                        (click)="trigger(job)"
+                        [disabled]="(loadingJobKey && loadingJobKey !== job.key) || job.status === 'RUNNING'">
+                        @if (loadingJobKey === job.key) {
+                          <i class="fa fa-spinner fa-spin me-2"></i>
+                          {{ 'common.admin.sync.syncingLabel' | translate }}
+                        } @else {
+                          {{ 'common.admin.sync.syncLabel' | translate }}
+                        }
+                      </button>
+                    </td>
+                    <td>{{ job.label }}</td>
+                    <td>
+                      <span [ngClass]="getStatusClass(job.status)">
+                        {{ job.status }}
+                      </span>
+                    </td>
+                    <td>
+                      {{ job.triggeredAt | date: 'short' }}
+                    </td>
+                    <td>
+                      {{ job.completedAt | date: 'short' }}
+                    </td>
+                    <td class="message-cell">
+                      <div>{{ job.message }}</div>
+                      <div class="small text-muted" *ngIf="job.reference">
+                        Ref: {{ job.reference }}
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          }
 
-        <router-outlet></router-outlet>
+          <router-outlet></router-outlet>
+        </div>
       </div>
     </div>
-  </div>
-} @else {
-  <div class="token-container">
-    <div class="header">
-      <h2 class="text-primary text-center">Admin Dashboard</h2>
-      <h3 class="text-primary text-center">
-        Enter token to access sync functions
-      </h3>
-    </div>
-    <div class="token-input-container">
-      <h3 class="text-primary">Token</h3>
-      <div>
-        <input
-          id="token-input"
-          type="password"
-          [(ngModel)]="token"
-          placeholder="Enter token" />
-        <button
-          class="btn-primary"
-          (click)="onSubmit()"
-          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-          Proceed
-        </button>
-        @if (errorMessage) {
-          <div class="error-message">{{ errorMessage }}</div>
-        }
+  } @else {
+    <div class="token-container">
+      <div class="header">
+        <h2 class="text-primary text-center">Admin Dashboard</h2>
+        <h3 class="text-primary text-center">
+          Enter token to access sync functions
+        </h3>
+      </div>
+      <div class="token-input-container">
+        <h3 class="text-primary">Token</h3>
+        <div>
+          <input
+            id="token-input"
+            type="password"
+            [(ngModel)]="token"
+            placeholder="Enter token" />
+          <button
+            class="btn-primary"
+            (click)="onSubmit()"
+            [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+            Proceed
+          </button>
+          @if (errorMessage) {
+            <div class="error-message">{{ errorMessage }}</div>
+          }
+        </div>
       </div>
     </div>
-  </div>
-}
+  }
+</div>

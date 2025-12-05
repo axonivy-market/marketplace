@@ -6,7 +6,7 @@ import { filter, finalize } from 'rxjs';
 import { AdminDashboardService, SyncResponse, SyncJobExecutionDto, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
 import { SideMenuComponent } from '../../shared/components/side-menu/side-menu.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
@@ -17,6 +17,7 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { API_URI } from '../../shared/constants/api.constant';
+import { PageTitleService } from '../../shared/services/page-title.service';
 
 interface SyncJobRow {
   key: SyncJobKey;
@@ -51,6 +52,7 @@ export class AdminDashboardComponent implements OnInit {
   errorMessage = '';
   isAuthenticated = false;
   isLoading = false;
+  loadingJobKey: SyncJobKey | null = null;
   isSidebarOpen = false;
   jobs: SyncJobRow[] = [
     { key: 'syncProducts', label: 'Sync all products' },
@@ -61,14 +63,17 @@ export class AdminDashboardComponent implements OnInit {
   productId = '';
   marketItemPath = '';
   overrideMarketItemPath = false;
-  API_URI = API_URI; // expose constants for template
+  API_URI = API_URI;
   showSyncJob = true;
 
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
+  translateService = inject(TranslateService);
+  pageTitleService = inject(PageTitleService);
   @ViewChild(SideMenuComponent) private readonly sideMenu?: SideMenuComponent;
 
   constructor(private readonly storageRef: SessionStorageRef) {}
+
   ngOnInit() {
     try {
       const storedSidebarState = localStorage.getItem('sidebarOpen');
@@ -81,11 +86,11 @@ export class AdminDashboardComponent implements OnInit {
     if (this.token) {
       this.isAuthenticated = true;
       this.fetchFeedbacks();
+      this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
     }
   }
 
   private updateVisibility(url: string) {
-    // Always show jobs table now
      this.showSyncJob = /^\/octopus\/?(\?.*)?$/.test(url);
   }
 
@@ -115,12 +120,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   trigger(job: SyncJobRow) {
+    this.loadingJobKey = job.key;
     job.status = 'RUNNING';
     job.triggeredAt = new Date();
     job.completedAt = undefined;
     job.message = undefined;
     job.reference = undefined;
-    console.log('Triggering job:', job.key);
 
     if (job.key === 'syncProducts') {
       this.isLoading = true;
@@ -129,6 +134,7 @@ export class AdminDashboardComponent implements OnInit {
         .pipe(
           finalize(() => {
             this.isLoading = false;
+            this.loadingJobKey = null;
           })
         )
         .subscribe({
@@ -137,6 +143,7 @@ export class AdminDashboardComponent implements OnInit {
             const shouldReload = !(err instanceof HttpErrorResponse) || err.status !== UNAUTHORIZED;
             this.handleFailure(job, err, shouldReload);
             this.handleError(err);
+            this.loadingJobKey = null;
           }
         });
     } else if (job.key === 'syncOneProduct') {
@@ -148,20 +155,25 @@ export class AdminDashboardComponent implements OnInit {
       }
       this.service
         .syncOneProduct(this.productId.trim(), this.marketItemPath.trim(), this.overrideMarketItemPath)
+        .pipe(finalize(() => { this.loadingJobKey = null; }))
         .subscribe({
           next: res => this.handleSuccess(job, res),
           error: err => this.handleFailure(job, err)
         });
     } else if (job.key === 'syncLatestReleasesForProducts') {
-      this.service.syncLatestReleasesForProducts().subscribe({
-        next: () => this.handleSuccess(job, { messageDetails: 'Release notes synced' }),
-        error: err => this.handleFailure(job, err)
-      });
+      this.service.syncLatestReleasesForProducts()
+        .pipe(finalize(() => { this.loadingJobKey = null; }))
+        .subscribe({
+          next: () => this.handleSuccess(job, { messageDetails: 'Release notes synced' }),
+          error: err => this.handleFailure(job, err)
+        });
     } else if (job.key === 'syncGithubMonitor') {
-      this.service.syncGithubMonitor().subscribe({
-        next: res => this.handleSuccess(job, { messageDetails: res }),
-        error: err => this.handleFailure(job, err)
-      });
+      this.service.syncGithubMonitor()
+        .pipe(finalize(() => { this.loadingJobKey = null; }))
+        .subscribe({
+          next: res => this.handleSuccess(job, { messageDetails: res }),
+          error: err => this.handleFailure(job, err)
+        });
     }
   }
 

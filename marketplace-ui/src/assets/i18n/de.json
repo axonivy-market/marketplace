@@ -293,23 +293,48 @@
     },
     "admin": {
       "sync": {
-        "action": "Action",
-        "syncJob": "Sync Job",
+        "pageTitle": "Synchronisierungsaufträge",
+        "title": "Synchronisierungsaufträge",
+        "description": "Verwalten Sie Synchronisierungsaufträge.",
+        "helpText": "Synchronisierungsaufträge halten die Marktplatzdaten aktuell, indem regelmäßig Updates aus externen Quellen abgerufen werden. Administratoren können ihren Status verfolgen und sicherstellen, dass die neuesten Informationen im Marktplatz angezeigt werden.",
+        "action": "Aktionen",
+        "syncJob": "Synchronisierungsauftrag",
         "status": "Status",
-        "lastRun": "Last run",
-        "completed": "Completed",
-        "message": "Message"
+        "lastRun": "Letzte Ausführung um",
+        "completed": "Abgeschlossen um",
+        "message": "Nachricht",
+        "syncLabel": "Synchronisieren",
+        "syncingLabel": "Synchronisierung läuft..."
       },
       "customSort": {
-        "title": "Custom Sort Extensions",
-        "description": "Manage how market extensions are sorted.",
-        "helpText": "The UI allows users to modify the <b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
-        "sortedExtensions": "Sorted Extensions",
-        "availableExtensions": "Available Extensions",
-        "extensionId": "Extension ID",
-        "noExtensions": "No extensions available.",
-        "sortLabel": "Sort",
-        "sortingLabel": "Sorting..."
+        "pageTitle": "Benutzerdefinierte Sortierung",
+        "title": "Benutzerdefinierte Sortierung von Erweiterungen",
+        "description": "Verwalten Sie die Sortierung der Markterweiterungen.",
+        "helpText": "Die Benutzeroberfläche ermöglicht es, die <b>Standardsortierung</b> der auf dem Axon Ivy Marketplace angezeigten Erweiterungen anzupassen <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
+        "sortedExtensions": "Sortierte Erweiterungen",
+        "availableExtensions": "Verfügbare Erweiterungen",
+        "searchPlaceholder": "Erweiterung suchen",
+        "extensionId": "Erweiterungs-ID",
+        "order": "Reihenfolge",
+        "dragAndDropHint": "Ziehen Sie Erweiterungen per Drag & Drop zwischen die beiden Listen, um ihre Anzeige­reihenfolge im Marketplace anzupassen. Erweiterungen in der Liste „Sortierte Erweiterungen“ werden zuerst gemäß der Standardsortierung angezeigt, während die in „Verfügbare Erweiterungen“ anschließend in alphabetischer Reihenfolge erscheinen.",
+        "dragHint": "Hierher ziehen.",
+        "noExtensions": "Keine Erweiterungen verfügbar.",
+        "sortHint": "Nur die sortierte Liste wird gespeichert; die übrigen Erweiterungen folgen der alphabetischen Reihenfolge.",
+        "sortLabel": "Sortieren",
+        "sortingLabel": "Sortierung...",
+        "sortSuccessMessage": "Sortierung erfolgreich gespeichert.",
+        "sortErrorMessage": "Speichern der Sortierung fehlgeschlagen. Bitte versuche es erneut.",
+        "loadingLabel": "Erweiterungen werden geladen..."
+      },
+      "quickAccess": {
+        "pageTitle": "Schnellzugriff",
+        "title": "Schnellzugriffslinks",
+        "description": "Verwalten Sie die Schnellzugriffe.",
+        "helpText": "Konfigurieren Sie häufig verwendete Seiten oder externe Links, die als Schnellzugriffe im Admin-Dashboard angezeigt werden sollen. Administratoren können Links hinzufügen, bearbeiten oder entfernen, um eine effiziente Navigation zu ermöglichen.",
+        "monitoring": "Monitoring: Zugriff auf das Monitoring-Dashboard für Build-Pipelines und Testergebnisse.",
+        "montoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",
+        "releasePreview": "Release-Vorschau: Schnelle Vorschau der Erweiterungsdetails durch Hochladen einer ZIP-Datei mit einer README.md.",
+        "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen."
       }
     }
   }
