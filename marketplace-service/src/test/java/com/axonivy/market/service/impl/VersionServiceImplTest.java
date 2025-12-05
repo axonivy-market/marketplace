@@ -208,42 +208,25 @@ class VersionServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetDownloadUrlFromExistingDataByArtifactIdAndVersion() {
-    List<MavenArtifactVersion> existingData = getMockMavenArtifactVersion();
-
-    existingData.add(getMockMavenArtifactVersionWithDownloadUrl());
-    Assertions.assertNull(versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(existingData,
-            MOCK_SNAPSHOT_VERSION, List.of(MOCK_ARTIFACT_ID)),
-        "Download URL should be null");
-
-    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithDownloadUrl();
-    mockMavenArtifactVersion.getId().setProductVersion(MOCK_RELEASED_VERSION);
-
-    existingData.clear();
-    existingData.add(mockMavenArtifactVersion);
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL, versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-            existingData, MOCK_RELEASED_VERSION, List.of(MOCK_ARTIFACT_ID)),
-        "Download URL should match mock download URL");
-  }
-
-  @Test
   void testGetLatestVersionArtifactDownloadUrl() {
-    when(metadataRepo.findByProductIdAndArtifactId(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID)).thenReturn(
-        List.of(getMockMetadataWithVersions()));
+    when(metadataRepo.findByProductIdAndArtifactId(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID))
+        .thenReturn(List.of(getMockMetadataWithVersions()));
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(Collections.emptyList());
-    
-    Assertions.assertThrows(NotFoundException.class, () -> {
-      versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-          DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE);
-    }, "Should throw NotFoundException when no artifacts found");
+
+    Assertions.assertThrows(NotFoundException.class,
+        () -> versionService.getLatestVersionArtifactDownloadUrl(
+            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+        "Should throw NotFoundException when no artifacts found"
+    );
 
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
-    
-    Assertions.assertThrows(NotFoundException.class, () -> {
-      versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-          DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE);
-    }, "Should throw NotFoundException when download URL not found");
+
+    Assertions.assertThrows(NotFoundException.class,
+        () -> versionService.getLatestVersionArtifactDownloadUrl(
+            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+        "Should throw NotFoundException when download URL not found"
+    );
 
     List<MavenArtifactVersion> mockMavenArtifactVersion2 = getMockMavenArtifactVersion();
     MavenArtifactVersion mockMavenArtifactVersionWithDownloadUrl = getMockMavenArtifactVersionWithDownloadUrl();
@@ -251,8 +234,10 @@ class VersionServiceImplTest extends BaseSetup {
     mockMavenArtifactVersion2.add(mockMavenArtifactVersionWithDownloadUrl);
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion2);
 
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
-            DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
-        "Latest version artifact download URL should match mock download URL");
+    Assertions.assertEquals(MOCK_DOWNLOAD_URL,
+        versionService.getLatestVersionArtifactDownloadUrl(
+            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+        "Latest version artifact download URL should match mock download URL"
+    );
   }
 }

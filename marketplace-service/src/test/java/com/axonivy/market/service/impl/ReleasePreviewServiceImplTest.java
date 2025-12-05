@@ -145,8 +145,8 @@ class ReleasePreviewServiceImplTest {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
-      assertThrows(FileProcessingException.class, () ->
-              releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()),
+      assertThrows(FileProcessingException.class,
+          () -> releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()),
           "Should throw IOException if walking readme directory fails"
       );
     }
@@ -180,11 +180,11 @@ class ReleasePreviewServiceImplTest {
 
   @Test
   void testUpdateImagesWithDownloadUrlNullPath() {
-    FileProcessingException exception = assertThrows(FileProcessingException.class, () ->
-            releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL),
+    FileProcessingException exception = assertThrows(FileProcessingException.class,
+        () -> releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL),
         "Should throw error if unzipped folder path is null"
     );
     assertEquals("Unzipped folder path is null", exception.getMessage(),
-      "Exception message should indicate null unzipped folder path");
+        "Exception message should indicate null unzipped folder path");
   }
 }
