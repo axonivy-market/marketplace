@@ -20,6 +20,7 @@ import java.io.IOException;
 public class ScheduledTasks {
 
   private static final String SYNC_PRODUCTS_CRON = "${market.scheduling.products-cron}";
+  private static final String SYNC_PRODUCTS_DEPENDENCY_CRON = "${market.scheduling.products-dependency-cron}";
   private static final String SYNC_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
   private static final String SYNC_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
   private static final String SYNC_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
@@ -46,7 +47,7 @@ public class ScheduledTasks {
     }, "Product document");
   }
 
-  @Scheduled(cron = SYNC_PRODUCTS_CRON)
+  @Scheduled(cron = SYNC_PRODUCTS_DEPENDENCY_CRON)
   public void syncDataForProductMavenDependencies() {
     run(() -> productDependencyService.syncIARDependenciesForProducts(false, null),
         "Product maven dependencies");
