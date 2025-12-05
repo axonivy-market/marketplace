@@ -19,7 +19,7 @@ import static com.axonivy.market.constants.LoggingConstants.MARKET_WEBSITE;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TrackApiCallFromNeoAspectTest {
+class TrackApiCallFromNeoAspectTest {
   @Mock
   private MatomoService matomoService;
 

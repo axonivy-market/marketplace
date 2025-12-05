@@ -60,6 +60,30 @@ class MatomoServiceImplTest {
   }
 
   @Test
+  void testTrackEventAsyncWithProductDetails() {
+    HttpServletRequest req = mock(HttpServletRequest.class);
+
+    when(req.getRequestURL()).thenReturn(new StringBuffer("https://market.axonivy.com/marketplace-service/api/product-details/ups-connector/12.0.9/bestmatch"));
+    when(req.getHeader("user-agent")).thenReturn("ChromeBrowser");
+    when(req.getHeader("Referer")).thenReturn("https://market.axonivy.com");
+
+    matomoService.trackEventAsync(req);
+
+    var captor = org.mockito.ArgumentCaptor.forClass(MatomoRequest.class);
+    verify(matomoTracker, times(1)).sendRequestAsync(captor.capture());
+
+    MatomoRequest matomoReq = captor.getValue();
+
+    Assertions.assertEquals("https://market.axonivy.com/marketplace-service/api/product-details/ups-connector/12.0.9/bestmatch",
+            matomoReq.getActionUrl(),
+            "Action URL should contain query parameters when present"
+    );
+    Assertions.assertEquals( "https://market.axonivy.com", matomoReq.getReferrerUrl(),
+            "Referer header should be correctly forwarded"
+    );
+  }
+
+  @Test
   void testTrackEventAsyncNoQueryParams() {
     HttpServletRequest req = mock(HttpServletRequest.class);
 
