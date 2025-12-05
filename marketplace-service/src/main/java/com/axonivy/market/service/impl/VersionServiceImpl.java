@@ -127,7 +127,8 @@ public class VersionServiceImpl implements VersionService {
     String artifactId = artifactParts[0];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(metadataList)) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No metadata found for product '" + productId + "' and artifact '" + artifactId + "'");
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+          "No metadata found for product '" + productId + "' and artifact '" + artifactId + "'");
     }
 
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
@@ -149,7 +150,8 @@ public class VersionServiceImpl implements VersionService {
     String fileType = artifactParts[artifactParts.length - 1];
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
-      throw new InvalidParamException(ErrorCode.ARGUMENT_BAD_REQUEST, "File type mismatch. Expected: " + fileType + ", found: " + downloadUrl);
+      throw new InvalidParamException(ErrorCode.ARGUMENT_BAD_REQUEST,
+          "File type mismatch. Expected: " + fileType + ", found: " + downloadUrl);
     }
     return downloadUrl;
   }

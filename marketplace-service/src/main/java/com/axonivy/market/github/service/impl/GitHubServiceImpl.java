@@ -196,7 +196,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException {
+  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
+      String orgName) throws IOException {
     try {
       var gitHub = getGitHub(accessToken);
       GHOrganization organization = gitHub.getOrganization(orgName);

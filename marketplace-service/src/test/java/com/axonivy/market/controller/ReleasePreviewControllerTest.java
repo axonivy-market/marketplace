@@ -46,7 +46,7 @@ class ReleasePreviewControllerTest {
   }
 
   @Test
-  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() throws IOException {
+  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() {
     try (MockedStatic<ServletUriComponentsBuilder> mockedStatic = mockStatic(ServletUriComponentsBuilder.class)) {
       ServletUriComponentsBuilder mockServletBuilder = mock(ServletUriComponentsBuilder.class);
       UriComponents mockUriComponents = mock(UriComponents.class);
@@ -69,7 +69,7 @@ class ReleasePreviewControllerTest {
   }
 
   @Test
-  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() throws IOException {
+  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() {
     try (MockedStatic<ServletUriComponentsBuilder> mockedStatic = mockStatic(ServletUriComponentsBuilder.class)) {
       ServletUriComponentsBuilder mockServletBuilder = mock(ServletUriComponentsBuilder.class);
       UriComponents mockUriComponents = mock(UriComponents.class);

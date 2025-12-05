@@ -42,7 +42,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       FileUtils.unzip(file, PREVIEW_DIR);
       return extractReadme(baseUrl, PREVIEW_DIR);
     } catch (IOException e) {
-      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
+          ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
     }
   }
 
@@ -102,7 +103,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
           readmeContentsModel
       );
     } catch (IOException e) {
-      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Failed to process README file: " + readmeFile.getFileName());
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
+          "Failed to process README file: " + readmeFile.getFileName());
     }
   }
 
