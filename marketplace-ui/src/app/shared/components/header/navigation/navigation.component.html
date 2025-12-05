@@ -7,25 +7,36 @@
 
   <!-- Navigation -->
   <ul class="navbar-nav">
-    @for (item of navItems; track item.label) {
-      @let isHomePage = item.link === '/';
+    @for (item of this.items; track item.label) {
       <li class="nav-item">
-        @if (isHomePage) {
-          <a [lang]="languageService.selectedLanguage()" class="nav-link text-primary active"
-            aria-current="page"
-            [routerLink]="item.link" >
-            {{ item.label | translate }}
-          </a>
+        @let isHomePage = item.link === '/';
+        @let isSyncPage = item.link === '/octopus';
+        @let isInternal = item.link.startsWith('/');
+        @if (isInternal) {
+          <span #rla="routerLinkActive" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.link === '/' || item.link === '/octopus' }">
+            <a [lang]="languageService.selectedLanguage()" class="nav-link"
+               [ngClass]="{
+                 'text-primary': isMobileMode() || rla.isActive,
+                 'text-secondary': !isMobileMode() && !rla.isActive,
+            active: isHomePage || rla.isActive }"
+             aria-current="page"
+               [routerLink]="item.link" >
+              {{ item.label | translate }}
+            </a>
+            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': rla.isActive }"></div>
+          </span>
         } @else {
           <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
             'text-primary': isMobileMode(),
-            'text-secondary': !isMobileMode(),
-            active: isHomePage }" aria-current="page"
+            'text-secondary': !isMobileMode()
+          }" aria-current="page"
             [href]="item.link" >
-          {{ item.label | translate }}
+            {{ item.label | translate }}
           </a>
+          <!-- External links are never router-active -->
+          <div class="active-line d-none"></div>
         }
-        <div class="active-line d-none" [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
       </li>
     }
   </ul>

@@ -35,6 +35,29 @@ export const NAV_ITEMS: NavItem[] = [
   }
 ];
 
+export const ADMIN_NAV_ITEMS: NavItem[] = [
+  {
+    label: 'common.nav.sync',
+    link: '/octopus'
+  },
+  {
+    label: 'common.nav.security',
+    link: '/octopus/security-monitor'
+  },
+  {
+    label: 'common.nav.feedbackApproval',
+    link: '/octopus/feedback-approval'
+  },
+  {
+    label: 'common.nav.customSort',
+    link: '/octopus/sorting'
+  },
+  {
+    label: 'common.nav.quickAccess',
+    link: '/octopus/quick-access'
+  }
+];
+
 export const SOCIAL_MEDIA_LINK = [
   {
     styleClass: 'fa-brands fa-linkedin-in',

@@ -28,10 +28,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
-  isAdminRoute = false;
 
   constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {
-    this.updateAdminState(this.router.url);
   }
 
   ngOnInit(): void {
@@ -41,7 +39,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
       if (event instanceof NavigationEnd) {
         const url = event.urlAfterRedirects ?? event.url;
-        this.updateAdminState(url);
       }
     });
 
@@ -57,9 +54,5 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer, this.windowRef, this.documentRef);
-  }
-
-  private updateAdminState(url: string): void {
-    this.isAdminRoute = url.startsWith('/octopus');
   }
 }

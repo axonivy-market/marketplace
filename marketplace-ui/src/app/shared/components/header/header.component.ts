@@ -62,14 +62,6 @@ export class HeaderComponent {
     this.menuToggle.emit();
   }
 
-  get shouldShowNavigation(): boolean {
-    return this.showNavigation && !this.isAdminRoute;
-  }
-
-  get shouldShowMenuToggle(): boolean {
-    return this.showMenuToggle || this.isAdminRoute;
-  }
-
   private updateAdminState(url: string): void {
     this.isAdminRoute = url.startsWith('/octopus');
   }

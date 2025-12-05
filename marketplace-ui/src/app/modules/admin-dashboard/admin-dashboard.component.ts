@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, ViewChild, inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, finalize } from 'rxjs';
 import { AdminDashboardService, SyncResponse, SyncJobExecutionDto, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
-import { SideMenuComponent } from '../../shared/components/side-menu/side-menu.component';
-import { HeaderComponent } from '../../shared/components/header/header.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
@@ -35,8 +33,6 @@ interface SyncJobRow {
   imports: [
     CommonModule,
     FormsModule,
-    HeaderComponent,
-    SideMenuComponent,
     RouterModule,
     TranslateModule
   ],
@@ -70,7 +66,6 @@ export class AdminDashboardComponent implements OnInit {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  @ViewChild(SideMenuComponent) private readonly sideMenu?: SideMenuComponent;
 
   constructor(private readonly storageRef: SessionStorageRef) {}
 
@@ -268,18 +263,5 @@ export class AdminDashboardComponent implements OnInit {
   private handleMissingToken(): void {
     this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
     this.isAuthenticated = false;
-  }
-
-  onMenuToggle(): void {
-    if (!this.sideMenu) {
-      return;
-    }
-    const currentState = this.sideMenu.isOpen;
-    const nextState = !currentState;
-    this.sideMenu.setOpen(nextState);
-  }
-
-  onSidebarStateChanged(open: boolean): void {
-    this.isSidebarOpen = open;
   }
 }

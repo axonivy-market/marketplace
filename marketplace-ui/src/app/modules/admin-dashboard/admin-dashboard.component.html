@@ -1,11 +1,6 @@
 <div class="container">
   @if (isAuthenticated) {
-    <div class="admin-layout" [class.sidebar-open]="isSidebarOpen">
-      <app-side-menu
-        (openChange)="onSidebarStateChanged($event)"></app-side-menu>
-      <div class="admin-main">
-        <app-header (menuToggle)="onMenuToggle()"></app-header>
-
+    <div [class.sidebar-open]="isSidebarOpen">
         <div class="admin-main__content">
           @if (showSyncJob) {
             <div class="row col-md-12">
@@ -76,7 +71,7 @@
                       <button
                         type="button"
                         [lang]="languageService.selectedLanguage()"
-                        class="btn border-0 sync-button text-center"
+                        class="btn border-0 mb-0 sync-button text-center"
                         [ngClass]="
                           themeService.isDarkMode()
                             ? 'btn-light'
@@ -117,7 +112,6 @@
           }
 
           <router-outlet></router-outlet>
-        </div>
       </div>
     </div>
   } @else {

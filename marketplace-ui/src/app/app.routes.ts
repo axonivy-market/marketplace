@@ -59,11 +59,6 @@ export const routes: Routes = [
       {
         path: 'quick-access',
         component: QuickAccessComponent
-      },
-      {
-        path: '', // default child route
-        redirectTo: '', // optional default behavior
-        pathMatch: 'full'
       }
     ]
   },

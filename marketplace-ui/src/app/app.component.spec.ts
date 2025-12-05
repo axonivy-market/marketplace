@@ -177,7 +177,6 @@ describe('AppComponent', () => {
   });
 
   it('should hide global header and container on admin routes', () => {
-    component.isAdminRoute = true;
     fixture.detectChanges();
 
     const headerElement = fixture.debugElement.query(By.css('header'));
