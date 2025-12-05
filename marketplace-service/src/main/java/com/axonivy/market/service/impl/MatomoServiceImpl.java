@@ -26,9 +26,15 @@ public class MatomoServiceImpl implements MatomoService {
 
   @Override
   public void trackEventAsync(HttpServletRequest httpServletRequest) {
-    String baseUrl = httpServletRequest.getRequestURL().toString();
-    String query = httpServletRequest.getQueryString();
-    String requestUrl = query != null ? baseUrl + "?" + query : baseUrl;
+    var baseUrl = httpServletRequest.getRequestURL().toString();
+    var query = httpServletRequest.getQueryString();
+    String requestUrl;
+
+    if (Strings.isNotBlank(query)) {
+      requestUrl = baseUrl + "?" + query;
+    } else {
+      requestUrl = baseUrl;
+    }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
@@ -36,14 +42,14 @@ public class MatomoServiceImpl implements MatomoService {
         .referrerUrl(referrerUrl)
         .build();
 
-    matomoTracker.sendRequestAsync(req).exceptionally(ex -> {
+    matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });
   }
 
   private String resolvePageViewName(String requestUrl, String referrerUrl) {
-    String prefix = String.format("[%s]", referrerUrl);
+    var prefix = String.format("[%s]", referrerUrl);
     if (requestUrl.contains(PRODUCT_DETAILS_PREFIX)) {
       String productId = extractProductId(requestUrl);
       return prefix + SPACE_SEPARATOR + productId;
@@ -56,7 +62,7 @@ public class MatomoServiceImpl implements MatomoService {
     if (idx == -1) {
       return Strings.EMPTY;
     }
-    String after = url.substring(idx + PRODUCT_DETAILS_PREFIX.length());
+    var after = url.substring(idx + PRODUCT_DETAILS_PREFIX.length());
     return after.split(SLASH)[0];
   }
 }

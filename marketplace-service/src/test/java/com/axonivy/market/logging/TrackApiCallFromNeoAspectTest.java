@@ -39,7 +39,7 @@ public class TrackApiCallFromNeoAspectTest {
   }
 
   @Test
-  void testTrackEventAsync_WhenOriginAllowed_AndRequestedByNotMarketWebsite() {
+  void testTrackEventAsyncWhenOriginAllowedAndRequestedByNotMarketWebsite() {
     HttpServletRequest request = mock(HttpServletRequest.class);
 
     when(request.getHeader(REQUESTED_BY)).thenReturn("ivy");
@@ -55,7 +55,7 @@ public class TrackApiCallFromNeoAspectTest {
   }
 
   @Test
-  void testShouldNotTrack_WhenRequestedByIsMarketWebsite() {
+  void testShouldNotTrackWhenRequestedByIsMarketWebsite() {
     HttpServletRequest request = mock(HttpServletRequest.class);
 
     when(request.getHeader(REQUESTED_BY)).thenReturn(MARKET_WEBSITE);
@@ -71,7 +71,7 @@ public class TrackApiCallFromNeoAspectTest {
   }
 
   @Test
-  void testShouldNotTrack_WhenNoRequestContext() {
+  void testShouldNotTrackWhenNoRequestContext() {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(null);
 
     aspect.afterTrackedApiCall(mock(JoinPoint.class));

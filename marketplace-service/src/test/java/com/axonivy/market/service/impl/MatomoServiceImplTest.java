@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MatomoServiceImplTest {
+class MatomoServiceImplTest {
   private MatomoTracker matomoTracker;
   private MatomoServiceImpl matomoService;
 
@@ -23,15 +23,14 @@ public class MatomoServiceImplTest {
   void setUp() {
     matomoTracker = mock(MatomoTracker.class);
 
-    // Prepare default stub for async call
     when(matomoTracker.sendRequestAsync(any(MatomoRequest.class)))
-        .thenReturn(CompletableFuture.completedFuture(null));
+            .thenReturn(CompletableFuture.completedFuture(null));
 
     matomoService = new MatomoServiceImpl(matomoTracker);
   }
 
   @Test
-  void testTrackEventAsync_WithQueryParams() {
+  void testTrackEventAsyncWithQueryParams() {
     HttpServletRequest req = mock(HttpServletRequest.class);
 
     when(req.getRequestURL()).thenReturn(new StringBuffer("https://market.axonivy.com/marketplace-service/product"));
@@ -41,21 +40,27 @@ public class MatomoServiceImplTest {
 
     matomoService.trackEventAsync(req);
 
-    // capture argument
     var captor = org.mockito.ArgumentCaptor.forClass(MatomoRequest.class);
     verify(matomoTracker, times(1)).sendRequestAsync(captor.capture());
 
     MatomoRequest matomoReq = captor.getValue();
 
-    // Validate final URL
-    assert matomoReq.getActionUrl().equals(
-        "https://market.axonivy.com/marketplace-service/product?type=all&sort=standard");
-    assert matomoReq.getHeaderUserAgent().equals("ChromeBrowser");
-    assert matomoReq.getReferrerUrl().equals("https://market.axonivy.com");
+    Assertions.assertEquals(
+            "https://market.axonivy.com/marketplace-service/product?type=all&sort=standard", matomoReq.getActionUrl(),
+            "Action URL should contain query parameters when present"
+    );
+
+    Assertions.assertEquals("ChromeBrowser", matomoReq.getHeaderUserAgent(),
+            "User-Agent header should be correctly forwarded"
+    );
+
+    Assertions.assertEquals( "https://market.axonivy.com", matomoReq.getReferrerUrl(),
+            "Referer header should be correctly forwarded"
+    );
   }
 
   @Test
-  void testTrackEventAsync_NoQueryParams() {
+  void testTrackEventAsyncNoQueryParams() {
     HttpServletRequest req = mock(HttpServletRequest.class);
 
     when(req.getRequestURL()).thenReturn(new StringBuffer("https://market.axonivy.com/marketplace-service/product"));
@@ -70,8 +75,16 @@ public class MatomoServiceImplTest {
 
     MatomoRequest matomoReq = captor.getValue();
 
-    Assertions.assertEquals("https://market.axonivy.com/marketplace-service/product", matomoReq.getActionUrl());
-    Assertions.assertEquals("ChromeBrowser", matomoReq.getHeaderUserAgent());
-    Assertions.assertNull(matomoReq.getReferrerUrl());
+    Assertions.assertEquals("https://market.axonivy.com/marketplace-service/product", matomoReq.getActionUrl(),
+            "Action URL should not contain query parameters when they are null"
+    );
+
+    Assertions.assertEquals("ChromeBrowser", matomoReq.getHeaderUserAgent(),
+            "User-Agent header should be forwarded correctly even without query parameters"
+    );
+
+    Assertions.assertNull(matomoReq.getReferrerUrl(),
+            "Referrer URL should be null when request contains no Referer header"
+    );
   }
 }
