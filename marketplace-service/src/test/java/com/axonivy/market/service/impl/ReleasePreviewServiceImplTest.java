@@ -145,8 +145,9 @@ class ReleasePreviewServiceImplTest {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
+      String tempDirPath = tempDirectory.toString();
       assertThrows(FileProcessingException.class,
-          () -> releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString()),
+          () -> releasePreviewService.extractReadme(BASE_URL, tempDirPath),
           "Should throw IOException if walking readme directory fails"
       );
     }
@@ -173,8 +174,9 @@ class ReleasePreviewServiceImplTest {
     try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenThrow(new IOException());
     }
+    String tempDirPath = tempDirectory.toString();
     assertThrows(FileProcessingException.class,
-        () -> releasePreviewService.extract(mockMultipartFile, tempDirectory.toString()),
+        () -> releasePreviewService.extract(mockMultipartFile, tempDirPath),
         "Should throw error if unzipping file failed");
   }
 

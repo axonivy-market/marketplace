@@ -213,9 +213,12 @@ class VersionServiceImplTest extends BaseSetup {
         .thenReturn(List.of(getMockMetadataWithVersions()));
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(Collections.emptyList());
 
+    String productId = MOCK_PRODUCT_ID;
+    String versionCode = DevelopmentVersion.LATEST.getCode();
+    String downloadFile = MOCK_ARTIFACT_DOWNLOAD_FILE;
+
     Assertions.assertThrows(NotFoundException.class,
-        () -> versionService.getLatestVersionArtifactDownloadUrl(
-            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+        () -> versionService.getLatestVersionArtifactDownloadUrl(productId, versionCode, downloadFile),
         "Should throw NotFoundException when no artifacts found"
     );
 
@@ -223,8 +226,7 @@ class VersionServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
 
     Assertions.assertThrows(NotFoundException.class,
-        () -> versionService.getLatestVersionArtifactDownloadUrl(
-            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
+        () -> versionService.getLatestVersionArtifactDownloadUrl(productId, versionCode, downloadFile),
         "Should throw NotFoundException when download URL not found"
     );
 
@@ -234,10 +236,10 @@ class VersionServiceImplTest extends BaseSetup {
     mockMavenArtifactVersion2.add(mockMavenArtifactVersionWithDownloadUrl);
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion2);
 
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL,
-        versionService.getLatestVersionArtifactDownloadUrl(
-            MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE),
-        "Latest version artifact download URL should match mock download URL"
-    );
+    String actualUrl = versionService.getLatestVersionArtifactDownloadUrl(
+        MOCK_PRODUCT_ID, DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE);
+
+    Assertions.assertEquals(MOCK_DOWNLOAD_URL, actualUrl,
+        "Latest version artifact download URL should match mock download URL");
   }
 }
