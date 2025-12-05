@@ -5,6 +5,7 @@ import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.logging.TrackApiCallFromNeo;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -81,6 +82,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
+  @TrackApiCallFromNeo
   @Operation(summary = "Find best match product detail by product id and version.",
       description = "get product detail by it product id and version")
   public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
@@ -135,6 +137,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(VERSIONS_BY_ID)
+  @TrackApiCallFromNeo
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String id,
@@ -148,6 +151,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
+  @TrackApiCallFromNeo
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
