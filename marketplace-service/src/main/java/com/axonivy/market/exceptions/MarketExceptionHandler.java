@@ -99,4 +99,11 @@ public class MarketExceptionHandler {
         ErrorCode.ARGUMENT_BAD_REQUEST.getHelpText());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
   }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<Message> handleGenericException(Exception ex) {
+    var message = new Message(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+        "An unexpected error occurred", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+  }
 }

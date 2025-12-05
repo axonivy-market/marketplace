@@ -123,6 +123,8 @@ public class ProductDetailsController {
   }
 
   @GetMapping(VERSIONS_BY_ID)
+  @Operation(summary = "Get product versions by product id",
+      description = "Get all product versions by product id")
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String id,
@@ -192,6 +194,8 @@ public class ProductDetailsController {
   }
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
+  @Operation(summary = "Sync latest releases from GitHub for all products",
+      description = "Sync latest releases from GitHub for all products")
   public void syncLatestReleasesForProducts() throws IOException {
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();

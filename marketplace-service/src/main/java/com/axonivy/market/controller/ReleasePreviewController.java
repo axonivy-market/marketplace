@@ -23,7 +23,6 @@ import static com.axonivy.market.constants.RequestMappingConstants.RELEASE_PREVI
 @Tag(name = "Release Preview Controller", description = "API to extract zip file and return README data.")
 @AllArgsConstructor
 public class ReleasePreviewController {
-
   private final ReleasePreviewService previewService;
 
   @PostMapping
