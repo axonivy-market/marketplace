@@ -55,6 +55,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final ProductDependencyService productDependencyService;
+
   @GetMapping()
   @TrackApiCallFromNeo
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",

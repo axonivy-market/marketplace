@@ -11,11 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import static com.axonivy.market.constants.CommonConstants.REFERER;
 import static com.axonivy.market.constants.CommonConstants.REQUESTED_BY;
 import static com.axonivy.market.constants.LoggingConstants.MARKET_WEBSITE;
 import static org.mockito.Mockito.*;
@@ -33,9 +31,6 @@ public class TrackApiCallFromNeoAspectTest {
   @BeforeEach
   void setup() {
     requestContextHolderMock = mockStatic(RequestContextHolder.class);
-    ReflectionTestUtils.setField(aspect, "marketCorsAllowedOriginPatterns",
-        "https://neo.example.com");
-    aspect.init();
   }
 
   @AfterEach
@@ -47,8 +42,7 @@ public class TrackApiCallFromNeoAspectTest {
   void testTrackEventAsync_WhenOriginAllowed_AndRequestedByNotMarketWebsite() {
     HttpServletRequest request = mock(HttpServletRequest.class);
 
-    when(request.getHeader(REQUESTED_BY)).thenReturn("Ivy");
-    when(request.getHeader(REFERER)).thenReturn("https://neo.example.com");
+    when(request.getHeader(REQUESTED_BY)).thenReturn("ivy");
 
     ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
     when(attributes.getRequest()).thenReturn(request);
@@ -65,7 +59,6 @@ public class TrackApiCallFromNeoAspectTest {
     HttpServletRequest request = mock(HttpServletRequest.class);
 
     when(request.getHeader(REQUESTED_BY)).thenReturn(MARKET_WEBSITE);
-    when(request.getHeader(REFERER)).thenReturn("https://market.axonivy.com");
 
     ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
     when(attributes.getRequest()).thenReturn(request);

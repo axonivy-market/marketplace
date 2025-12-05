@@ -36,7 +36,7 @@ public class MatomoServiceImplTest {
 
     when(req.getRequestURL()).thenReturn(new StringBuffer("https://market.axonivy.com/marketplace-service/product"));
     when(req.getQueryString()).thenReturn("type=all&sort=standard");
-    when(req.getHeader("User-Agent")).thenReturn("ChromeBrowser");
+    when(req.getHeader("user-agent")).thenReturn("ChromeBrowser");
     when(req.getHeader("Referer")).thenReturn("https://market.axonivy.com");
 
     matomoService.trackEventAsync(req);
@@ -60,7 +60,7 @@ public class MatomoServiceImplTest {
 
     when(req.getRequestURL()).thenReturn(new StringBuffer("https://market.axonivy.com/marketplace-service/product"));
     when(req.getQueryString()).thenReturn(null);
-    when(req.getHeader("User-Agent")).thenReturn("ChromeBrowser");
+    when(req.getHeader("user-agent")).thenReturn("ChromeBrowser");
     when(req.getHeader("Referer")).thenReturn(null);
 
     matomoService.trackEventAsync(req);
@@ -72,6 +72,6 @@ public class MatomoServiceImplTest {
 
     Assertions.assertEquals("https://market.axonivy.com/marketplace-service/product", matomoReq.getActionUrl());
     Assertions.assertEquals("ChromeBrowser", matomoReq.getHeaderUserAgent());
-    Assertions.assertNull(req.getHeader("Referer"));
+    Assertions.assertNull(matomoReq.getReferrerUrl());
   }
 }
