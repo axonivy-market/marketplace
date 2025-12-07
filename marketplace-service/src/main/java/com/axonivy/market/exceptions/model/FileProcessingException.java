@@ -1,6 +1,5 @@
 package com.axonivy.market.exceptions.model;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,10 +20,5 @@ public class FileProcessingException extends RuntimeException {
   public FileProcessingException(ErrorCode errorCode) {
     this.code = errorCode.getCode();
     this.message = errorCode.getHelpText();
-  }
-
-  public FileProcessingException(ErrorCode errorCode, String additionalMessage) {
-    this.code = errorCode.getCode();
-    this.message = errorCode.getHelpText() + CommonConstants.DASH_SEPARATOR + additionalMessage;
   }
 }
