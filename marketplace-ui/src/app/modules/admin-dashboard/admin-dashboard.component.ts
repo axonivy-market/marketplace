@@ -16,6 +16,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { ProductService } from '../../modules/product/product.service';
 
 interface SyncJobRow {
   key: SyncJobKey;
@@ -61,13 +62,15 @@ export class AdminDashboardComponent implements OnInit {
   overrideMarketItemPath = false;
   API_URI = API_URI;
   showSyncJob = true;
+  showSyncOneProductDialog = false;
+  productIds: string[] = [];
 
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
 
-  constructor(private readonly storageRef: SessionStorageRef) {}
+  constructor(private readonly storageRef: SessionStorageRef, private readonly productService: ProductService) {}
 
   ngOnInit() {
     try {
@@ -82,6 +85,7 @@ export class AdminDashboardComponent implements OnInit {
       this.isAuthenticated = true;
       this.fetchFeedbacks();
       this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+      this.loadAllProductIds();
     }
   }
 
@@ -114,6 +118,14 @@ export class AdminDashboardComponent implements OnInit {
     this.loadSyncJobExecutions();
   }
 
+  private async loadAllProductIds(): Promise<void> {
+    try {
+      this.productIds = await this.productService.fetchAllProductIds();
+    } catch (e) {
+      console.warn('Failed to load product IDs', e);
+    }
+  }
+
   trigger(job: SyncJobRow) {
     this.loadingJobKey = job.key;
     job.status = 'RUNNING';
@@ -142,19 +154,10 @@ export class AdminDashboardComponent implements OnInit {
           }
         });
     } else if (job.key === 'syncOneProduct') {
-      if (!this.productId || !this.marketItemPath) {
-        job.status = 'FAILED';
-        job.completedAt = new Date();
-        job.message = 'Product ID & path required';
-        return;
-      }
-      this.service
-        .syncOneProduct(this.productId.trim(), this.marketItemPath.trim(), this.overrideMarketItemPath)
-        .pipe(finalize(() => { this.loadingJobKey = null; }))
-        .subscribe({
-          next: res => this.handleSuccess(job, res),
-          error: err => this.handleFailure(job, err)
-        });
+      // Open dialog to collect product parameters
+      this.loadingJobKey = null;
+      job.status = undefined;
+      this.showSyncOneProductDialog = true;
     } else if (job.key === 'syncLatestReleasesForProducts') {
       this.service.syncLatestReleasesForProducts()
         .pipe(finalize(() => { this.loadingJobKey = null; }))
@@ -170,6 +173,44 @@ export class AdminDashboardComponent implements OnInit {
           error: err => this.handleFailure(job, err)
         });
     }
+  }
+
+  confirmSyncOneProduct(): void {
+    const job = this.jobs.find(j => j.key === 'syncOneProduct');
+    if (!job) {
+      return;
+    }
+    this.errorMessage = '';
+    if (!this.productId || !this.marketItemPath) {
+      job.status = 'FAILED';
+      job.completedAt = new Date();
+      job.message = 'Product ID & marketItemPath required';
+      return;
+    }
+    this.loadingJobKey = job.key;
+    job.status = 'RUNNING';
+    job.triggeredAt = new Date();
+    this.service
+      .syncOneProduct(
+        this.productId.trim(),
+        this.marketItemPath.trim(),
+        this.overrideMarketItemPath
+      )
+      .pipe(finalize(() => { this.loadingJobKey = null; }))
+      .subscribe({
+        next: res => {
+          this.showSyncOneProductDialog = false;
+          this.handleSuccess(job, res);
+        },
+        error: err => {
+          this.showSyncOneProductDialog = false;
+          this.handleFailure(job, err);
+        }
+      });
+  }
+
+  cancelSyncOneProduct(): void {
+    this.showSyncOneProductDialog = false;
   }
 
   private handleSuccess(job: SyncJobRow, res: SyncResponse) {
@@ -210,6 +251,10 @@ export class AdminDashboardComponent implements OnInit {
       job.message = execution.message ?? undefined;
       job.reference = execution.reference ?? undefined;
     }
+  }
+
+  get anyJobRunning(): boolean {
+    return this.jobs.some(j => j.status === 'RUNNING');
   }
 
   getStatusClass(status?: SyncJobStatus): string {

@@ -78,8 +78,8 @@
                             : 'btn-primary'
                         "
                         (click)="trigger(job)"
-                        [disabled]="(loadingJobKey && loadingJobKey !== job.key) || job.status === 'RUNNING'">
-                        @if (loadingJobKey === job.key) {
+                        [disabled]="anyJobRunning">
+                        @if (loadingJobKey === job.key || job.status === 'RUNNING') {
                           <i class="fa fa-spinner fa-spin me-2"></i>
                           {{ 'common.admin.sync.syncingLabel' | translate }}
                         } @else {
@@ -109,6 +109,45 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Sync One Product Dialog -->
+            @if (showSyncOneProductDialog) {
+              <div class="modal-backdrop"></div>
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Sync One Product</h5>
+                    <button type="button" class="btn-close" (click)="cancelSyncOneProduct()"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label" for="sync-product-id">Product ID</label>
+                      <select id="sync-product-id" class="form-select" [(ngModel)]="productId">
+                        <option [ngValue]="''" disabled selected>Select a product</option>
+                        <option *ngFor="let id of productIds" [ngValue]="id">{{id}}</option>
+                      </select>
+                      <small class="text-muted">Pick a product ID to sync</small>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label" for="sync-market-path">Market Item Path</label>
+                      <input id="sync-market-path" class="form-control" [(ngModel)]="marketItemPath" placeholder="e.g. market/demos/html-dialog/" />
+                      <small class="text-muted">Example: market/demos/html-dialog/</small>
+                    </div>
+                    <div class="form-check mb-2">
+                      <input id="overridePath" type="checkbox" class="form-check-input" [(ngModel)]="overrideMarketItemPath" />
+                      <label for="overridePath" class="form-check-label">Override marketItemPath</label>
+                    </div>
+                    <div class="alert alert-info">
+                      Full request: <code>PUT {{API_URI.PRODUCT}}/sync/{{productId}}?marketItemPath={{marketItemPath}}&overrideMarketItemPath={{overrideMarketItemPath}}</code>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-secondary" (click)="cancelSyncOneProduct()">Cancel</button>
+                    <button class="btn btn-primary" (click)="confirmSyncOneProduct()" [disabled]="!productId || !marketItemPath">Sync</button>
+                  </div>
+                </div>
+              </div>
+            }
           }
 
           <router-outlet></router-outlet>
