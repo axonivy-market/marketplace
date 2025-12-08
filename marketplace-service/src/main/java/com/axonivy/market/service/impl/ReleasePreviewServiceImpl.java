@@ -36,6 +36,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
 
+  @Override
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
       ZipSafetyScanner.analyze(file);

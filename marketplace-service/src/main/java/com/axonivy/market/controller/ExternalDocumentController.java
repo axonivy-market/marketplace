@@ -50,6 +50,7 @@ public class ExternalDocumentController {
 
     var model = ExternalDocumentModel.from(externalDocument);
     model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
+
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
