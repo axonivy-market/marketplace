@@ -1,6 +1,7 @@
 package com.axonivy.market.logging;
 
 import static com.axonivy.market.constants.CommonConstants.*;
+
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
@@ -16,7 +17,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class TrackApiCallFromNeoAspect {
   private final MatomoService matomoService;
 
-  public TrackApiCallFromNeoAspect(MatomoService matomoService) {this.matomoService = matomoService;}
+  public TrackApiCallFromNeoAspect(MatomoService matomoService) {
+    this.matomoService = matomoService;
+  }
 
   @AfterReturning("@annotation(TrackApiCallFromNeo)")
   public void afterTrackedApiCall(JoinPoint joinPoint) {

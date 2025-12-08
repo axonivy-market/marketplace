@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
@@ -59,7 +60,7 @@ public class MatomoServiceImpl implements MatomoService {
 
   private String extractProductId(String url) {
     int idx = url.indexOf(PRODUCT_DETAILS_PREFIX);
-    if (idx == -1) {
+    if (idx == StringUtils.INDEX_NOT_FOUND) {
       return Strings.EMPTY;
     }
     var after = url.substring(idx + PRODUCT_DETAILS_PREFIX.length());
