@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   Signal,
   ViewEncapsulation
 } from '@angular/core';
@@ -22,7 +23,7 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
 import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
-import { ERROR_MESSAGES, FEEDBACK_APPROVAL_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { ERROR_MESSAGES, ADMIN_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
 
 @Component({
@@ -33,7 +34,7 @@ import { FeedbackApproval } from '../../../shared/models/feedback-approval.model
   styleUrls: ['./feedback-approval.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class FeedbackApprovalComponent {
+export class FeedbackApprovalComponent implements OnInit {
   authService = inject(AuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
@@ -61,7 +62,7 @@ export class FeedbackApprovalComponent {
   constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    this.token = this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     this.fetchFeedbacks();
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
   }
@@ -108,7 +109,7 @@ export class FeedbackApprovalComponent {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
     this.isAuthenticated = false;
-    sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {

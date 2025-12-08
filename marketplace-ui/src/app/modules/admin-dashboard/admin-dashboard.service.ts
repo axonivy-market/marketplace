@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
-import { FEEDBACK_APPROVAL_SESSION_TOKEN } from '../../shared/constants/common.constant';
+import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
+import { LoadingComponent } from '../../core/interceptors/api.interceptor';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 export type SyncJobKey =
   | 'syncProducts'
@@ -39,7 +41,7 @@ export class AdminDashboardService {
   private getAuthHeaders(): HttpHeaders {
     const token =
       this.sessionStorageRef.session?.getItem(
-        FEEDBACK_APPROVAL_SESSION_TOKEN
+        ADMIN_SESSION_TOKEN
       ) ?? '';
     if (!token) {
       return new HttpHeaders();
@@ -103,7 +105,11 @@ export class AdminDashboardService {
 
   fetchSyncJobExecutions(): Observable<SyncJobExecutionDto[]> {
     return this.http.get<SyncJobExecutionDto[]>(API_URI.SCHEDULED_TASK, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
+      context: new HttpContext().set(
+                LoadingComponent,
+                LoadingComponentId.ADMIN_DASHBOARD
+              )
     });
   }
 

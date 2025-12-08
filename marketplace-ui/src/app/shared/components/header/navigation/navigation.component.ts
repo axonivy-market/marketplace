@@ -42,7 +42,6 @@ export class NavigationComponent {
   }
 
   get items(): NavItem[] {
-    console.log('isAdmin in nav ', this.isAdmin);
     return this.isAdmin ? this.adminNavItems : this.navItems;
   }
 }

@@ -221,11 +221,6 @@
       "reviewDate": "Datum des Reviews",
       "approveBtnLabel": "Genehmigen",
       "rejectBtnLabel": "Ablehnen",
-      "pageTitle": "Einfache Verwaltung der Feedback Genehmigung",
-      "description": "Stelle  sicher, dass nur das beste Feedback weitergeleitet wird.",
-      "enterToken": "Bitte gebe Deinen Token ein, um auf das Feedback Approval zuzugreifen.",
-      "enterTokenPlaceholder": "Gebe Deinen Token ein",
-      "proceedBtnLabel": "Weiter",
       "noFeedbacks": "Keine Feedback verfügbar."
     },
     "security": {
@@ -297,6 +292,12 @@
       }
     },
     "admin": {
+      "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
+      "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu.",
+      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen.", 
+      "enterTokenPlaceholder": "Gebe Deinen Token ein",
+      "proceedBtnLabel": "Weiter",
+      "extensionId": "Erweiterungs-ID",
       "sync": {
         "pageTitle": "Synchronisierungsaufträge",
         "title": "Synchronisierungsaufträge",
@@ -309,7 +310,12 @@
         "completed": "Abgeschlossen um",
         "message": "Nachricht",
         "syncLabel": "Synchronisieren",
-        "syncingLabel": "Synchronisierung läuft..."
+        "syncingLabel": "Synchronisierung läuft...",
+        "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zum Synchronisieren.",
+        "marketItemPath": "Pfad des Marketplace-Elements",
+        "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
+        "overrideMarketItemPath": "Aktuellen Marketplace-Pfad überschreiben",
+        "cancelLabel": "Abbrechen"
       },
       "customSort": {
         "pageTitle": "Benutzerdefinierte Sortierung",
@@ -319,7 +325,6 @@
         "sortedExtensions": "Sortierte Erweiterungen",
         "availableExtensions": "Verfügbare Erweiterungen",
         "searchPlaceholder": "Erweiterung suchen",
-        "extensionId": "Erweiterungs-ID",
         "order": "Reihenfolge",
         "dragAndDropHint": "Ziehen Sie Erweiterungen per Drag & Drop zwischen die beiden Listen, um ihre Anzeige­reihenfolge im Marketplace anzupassen. Erweiterungen in der Liste „Sortierte Erweiterungen“ werden zuerst gemäß der Standardsortierung angezeigt, während die in „Verfügbare Erweiterungen“ anschließend in alphabetischer Reihenfolge erscheinen.",
         "dragHint": "Hierher ziehen.",

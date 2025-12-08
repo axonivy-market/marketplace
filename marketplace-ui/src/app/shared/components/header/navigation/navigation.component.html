@@ -14,7 +14,7 @@
         @let isInternal = item.link.startsWith('/');
         @if (isInternal) {
           <span #rla="routerLinkActive" routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.link === '/' || item.link === '/octopus' }">
+                [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
             <a [lang]="languageService.selectedLanguage()" class="nav-link"
                [ngClass]="{
                  'text-primary': isMobileMode() || rla.isActive,

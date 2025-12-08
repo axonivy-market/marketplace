@@ -221,11 +221,6 @@
       "reviewDate": "Review Date",
       "approveBtnLabel": "Approve",
       "rejectBtnLabel": "Reject",
-      "pageTitle": "Effortless Feedback Approval Management",
-      "description": "Ensure only the best feedback moves forward.",
-      "enterToken": "Please enter your token to access the feedback approval page.",
-      "enterTokenPlaceholder": "Enter your token",
-      "proceedBtnLabel": "Proceed",
       "noFeedbacks": "No feedbacks available."
     },
     "security": {
@@ -297,6 +292,12 @@
       }
     },
     "admin": {
+      "pageTitle": "Effortless Admin Dashboard Access",
+      "description": "Quickly reach essential administrative tools and configurations.",
+      "enterToken": "Please enter your token to access the admin dashboard.",
+      "enterTokenPlaceholder": "Enter your token",
+      "proceedBtnLabel": "Proceed",
+      "extensionId": "Extension ID",
       "sync": {
         "pageTitle": "Sync Jobs",
         "title": "Sync Jobs",
@@ -309,7 +310,12 @@
         "completed": "Completed at",
         "message": "Message",
         "syncLabel": "Sync",
-        "syncingLabel": "Syncing..."
+        "syncingLabel": "Syncing...",
+        "chooseExtensionIdHint": "Choose an extension ID to sync.",
+        "marketItemPath": "Market Item Path",
+        "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
+        "overrideMarketItemPath": "Override Current Market Item Path",
+        "cancelLabel": "Cancel"
       },
       "customSort": {
         "pageTitle": "Custom Sort",
@@ -319,7 +325,6 @@
         "sortedExtensions": "Sorted Extensions",
         "availableExtensions": "Available Extensions",
         "searchPlaceholder": "Search an extension",
-        "extensionId": "Extension ID",
         "order": "Order",
         "dragAndDropHint": "Drag and drop extensions between the two lists to customize their display order on the marketplace. Extensions in the 'Sorted Extensions' list will appear first, following the default sorting order, while those in the 'Available Extensions' list will be shown afterward in alphabetical order.",
         "dragHint": "Drag and drop here.",

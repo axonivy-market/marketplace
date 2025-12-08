@@ -1,185 +1,230 @@
 <div class="container">
   @if (isAuthenticated) {
     <div [class.sidebar-open]="isSidebarOpen">
-        <div class="admin-main__content">
-          @if (showSyncJob) {
-            <div class="row col-md-12">
-              <h1
-                class="text-primary title"
-                [lang]="languageService.selectedLanguage()">
-                {{ translateService.get('common.admin.sync.title') | async }}
-              </h1>
-              <div class="introduction-container">
-                <div class="d-sm-block about">
-                  <h3 class="text-secondary">
-                    {{
-                      translateService.get('common.admin.sync.description')
-                        | async
-                    }}
-                  </h3>
-                </div>
-                <div
-                  class="d-sm-block align-items-center help-text-container flex-fill">
-                  <h4
-                    [lang]="languageService.selectedLanguage()"
-                    class="text-secondary help-text"
-                    [innerHTML]="
-                      translateService.get('common.admin.sync.helpText') | async
-                    "></h4>
-                </div>
+      <div class="admin-main__content">
+        @if (showSyncJob) {
+          <div class="row col-md-12">
+            <h1
+              class="text-primary title"
+              [lang]="languageService.selectedLanguage()">
+              {{ translateService.get('common.admin.sync.title') | async }}
+            </h1>
+            <div class="introduction-container">
+              <div class="d-sm-block about">
+                <h3 class="text-secondary">
+                  {{
+                    translateService.get('common.admin.sync.description')
+                      | async
+                  }}
+                </h3>
+              </div>
+              <div
+                class="d-sm-block align-items-center help-text-container flex-fill">
+                <h4
+                  [lang]="languageService.selectedLanguage()"
+                  class="text-secondary help-text"
+                  [innerHTML]="
+                    translateService.get('common.admin.sync.helpText') | async
+                  "></h4>
               </div>
             </div>
-            <div class="table-responsive admin-main__table">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.action' | translate }}
-                    </th>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.syncJob' | translate }}
-                    </th>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.status' | translate }}
-                    </th>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.lastRun' | translate }}
-                    </th>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.completed' | translate }}
-                    </th>
-                    <th
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.sync.message' | translate }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let job of jobs">
-                    <td>
-                      <button
-                        type="button"
-                        [lang]="languageService.selectedLanguage()"
-                        class="btn border-0 mb-0 sync-button text-center"
-                        [ngClass]="
-                          themeService.isDarkMode()
-                            ? 'btn-light'
-                            : 'btn-primary'
-                        "
-                        (click)="trigger(job)"
-                        [disabled]="anyJobRunning">
-                        @if (loadingJobKey === job.key || job.status === 'RUNNING') {
-                          <i class="fa fa-spinner fa-spin me-2"></i>
-                          {{ 'common.admin.sync.syncingLabel' | translate }}
-                        } @else {
-                          {{ 'common.admin.sync.syncLabel' | translate }}
-                        }
-                      </button>
-                    </td>
-                    <td>{{ job.label }}</td>
-                    <td>
-                      <span [ngClass]="getStatusClass(job.status)">
-                        {{ job.status }}
-                      </span>
-                    </td>
-                    <td>
-                      {{ job.triggeredAt | date: 'short' }}
-                    </td>
-                    <td>
-                      {{ job.completedAt | date: 'short' }}
-                    </td>
-                    <td class="message-cell">
-                      <div>{{ job.message }}</div>
-                      <div class="small text-muted" *ngIf="job.reference">
-                        Ref: {{ job.reference }}
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          </div>
+          <div class="table-responsive admin-main__table">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.action' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.syncJob' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.status' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.lastRun' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.completed' | translate }}
+                  </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.message' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let job of jobs">
+                  <td>
+                    <button
+                      type="button"
+                      [lang]="languageService.selectedLanguage()"
+                      class="btn border-0 mb-0 sync-button text-center"
+                      [ngClass]="
+                        themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
+                      "
+                      (click)="trigger(job)"
+                      [disabled]="anyJobRunning">
+                      @if (
+                        loadingJobKey === job.key || job.status === 'RUNNING'
+                      ) {
+                        <i class="fa fa-spinner fa-spin me-2"></i>
+                        {{ 'common.admin.sync.syncingLabel' | translate }}
+                      } @else {
+                        {{ 'common.admin.sync.syncLabel' | translate }}
+                      }
+                    </button>
+                  </td>
+                  <td>{{ job.label }}</td>
+                  <td>
+                    <span [ngClass]="getStatusClass(job.status)">
+                      {{ job.status }}
+                    </span>
+                  </td>
+                  <td>
+                    {{ job.triggeredAt | date: 'short' }}
+                  </td>
+                  <td>
+                    {{ job.completedAt | date: 'short' }}
+                  </td>
+                  <td class="message-cell">
+                    <div>{{ job.message }}</div>
+                    <div class="small text-muted" *ngIf="job.reference">
+                      Ref: {{ job.reference }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-            <!-- Sync One Product Dialog -->
-            @if (showSyncOneProductDialog) {
-              <div class="modal-backdrop"></div>
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Sync One Product</h5>
-                    <button type="button" class="btn-close" (click)="cancelSyncOneProduct()"></button>
+          <!-- Sync One Product Dialog -->
+          @if (showSyncOneProductDialog) {
+            <div class="modal-backdrop"></div>
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                  <h5 class="modal-title">Sync One Product</h5>
+                  <button
+                    type="button"
+                    class="btn-close ms-auto"
+                    (click)="cancelSyncOneProduct()"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label" for="sync-extension-id">
+                      {{ 'common.admin.extensionId' | translate }}
+                    </label>
+                    <select
+                      id="sync-extension-id"
+                      class="form-select"
+                      [(ngModel)]="productId">
+                      <option *ngFor="let id of productIds" [ngValue]="id">
+                        {{ id }}
+                      </option>
+                    </select>
+                    <small class="text-muted">
+                      {{
+                        'common.admin.sync.chooseExtensionIdHint' | translate
+                      }}
+                    </small>
                   </div>
-                  <div class="modal-body">
-                    <div class="mb-3">
-                      <label class="form-label" for="sync-product-id">Product ID</label>
-                      <select id="sync-product-id" class="form-select" [(ngModel)]="productId">
-                        <option [ngValue]="''" disabled selected>Select a product</option>
-                        <option *ngFor="let id of productIds" [ngValue]="id">{{id}}</option>
-                      </select>
-                      <small class="text-muted">Pick a product ID to sync</small>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label" for="sync-market-path">Market Item Path</label>
-                      <input id="sync-market-path" class="form-control" [(ngModel)]="marketItemPath" placeholder="e.g. market/demos/html-dialog/" />
-                      <small class="text-muted">Example: market/demos/html-dialog/</small>
-                    </div>
-                    <div class="form-check mb-2">
-                      <input id="overridePath" type="checkbox" class="form-check-input" [(ngModel)]="overrideMarketItemPath" />
-                      <label for="overridePath" class="form-check-label">Override marketItemPath</label>
-                    </div>
-                    <div class="alert alert-info">
-                      Full request: <code>PUT {{API_URI.PRODUCT}}/sync/{{productId}}?marketItemPath={{marketItemPath}}&overrideMarketItemPath={{overrideMarketItemPath}}</code>
-                    </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="sync-market-path">
+                      {{ 'common.admin.sync.marketItemPath' | translate }}
+                    </label>
+                    <input
+                      id="sync-market-path"
+                      class="form-control"
+                      [(ngModel)]="marketItemPath" />
+                    <small class="text-muted">
+                      {{
+                        'common.admin.sync.chooseMarketItemPathHint' | translate
+                      }}
+                    </small>
                   </div>
-                  <div class="modal-footer">
-                    <button class="btn btn-secondary" (click)="cancelSyncOneProduct()">Cancel</button>
-                    <button class="btn btn-primary" (click)="confirmSyncOneProduct()" [disabled]="!productId || !marketItemPath">Sync</button>
+                  <div class="form-check mb-2">
+                    <input
+                      id="overridePath"
+                      type="checkbox"
+                      class="form-check-input"
+                      [(ngModel)]="overrideMarketItemPath" />
+                    <label for="overridePath" class="form-check-label">
+                      {{
+                        'common.admin.sync.overrideMarketItemPath' | translate
+                      }}
+                    </label>
                   </div>
                 </div>
+                <div class="modal-footer">
+                  <button
+                    class="btn btn-secondary me-2"
+                    (click)="cancelSyncOneProduct()">
+                    {{ 'common.admin.sync.cancelLabel' | translate }}
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    (click)="confirmSyncOneProduct()"
+                    [disabled]="!productId || !marketItemPath">
+                    {{ 'common.admin.sync.syncLabel' | translate }}
+                  </button>
+                </div>
               </div>
-            }
+            </div>
           }
+        }
 
-          <router-outlet></router-outlet>
+        <router-outlet></router-outlet>
       </div>
     </div>
   } @else {
     <div class="token-container">
       <div class="header">
-        <h2 class="text-primary text-center">Admin Dashboard</h2>
+        <h2 class="text-primary text-center">
+          {{ 'common.admin.pageTitle' | translate }}
+        </h2>
         <h3 class="text-primary text-center">
-          Enter token to access sync functions
+          {{ 'common.admin.description' | translate }}
         </h3>
       </div>
       <div class="token-input-container">
-        <h3 class="text-primary">Token</h3>
+        <h3 class="text-primary">
+          {{ 'common.admin.enterToken' | translate }}
+        </h3>
         <div>
           <input
             id="token-input"
             type="password"
             [(ngModel)]="token"
-            placeholder="Enter token" />
+            [attr.placeholder]="
+              'common.admin.enterTokenPlaceholder' | translate
+            " />
           <button
             class="btn-primary"
             (click)="onSubmit()"
             [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-            Proceed
+            {{ 'common.admin.proceedBtnLabel' | translate }}
           </button>
           @if (errorMessage) {
             <div class="error-message">{{ errorMessage }}</div>
           }
         </div>
       </div>
+      <app-loading-spinner
+      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      [key]="LoadingComponentId.ADMIN_DASHBOARD" />
     </div>
   }
 </div>

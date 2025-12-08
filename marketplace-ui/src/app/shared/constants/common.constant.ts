@@ -310,7 +310,7 @@ export const MAX_FEEDBACK_LENGTH =250;
 
 export const SECURITY_MONITOR_SESSION_KEYS = {
   DATA: 'security-monitor-data',
-  TOKEN: 'security-monitor-token',
+  TOKEN: 'admin-session-token',
 };
 
 export const ERROR_MESSAGES = {
@@ -350,7 +350,7 @@ export const UTF8 = 'utf8';
 
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
-export const FEEDBACK_APPROVAL_SESSION_TOKEN = 'feedback-approval-token';
+export const ADMIN_SESSION_TOKEN = 'admin-session-token';
 
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 

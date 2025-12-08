@@ -8,7 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
-  FEEDBACK_APPROVAL_SESSION_TOKEN,
+  ADMIN_SESSION_TOKEN,
   UNAUTHORIZED
 } from '../../shared/constants/common.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
@@ -17,6 +17,8 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface SyncJobRow {
   key: SyncJobKey;
@@ -35,7 +37,8 @@ interface SyncJobRow {
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslateModule
+    TranslateModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
@@ -43,8 +46,15 @@ interface SyncJobRow {
 })
 
 export class AdminDashboardComponent implements OnInit {
-  service = inject(AdminDashboardService);
   private readonly router = inject(Router);
+  protected LoadingComponentId = LoadingComponentId;
+
+  service = inject(AdminDashboardService);
+  languageService = inject(LanguageService);
+  themeService = inject(ThemeService);
+  translateService = inject(TranslateService);
+  pageTitleService = inject(PageTitleService);
+
   token = '';
   errorMessage = '';
   isAuthenticated = false;
@@ -65,11 +75,6 @@ export class AdminDashboardComponent implements OnInit {
   showSyncOneProductDialog = false;
   productIds: string[] = [];
 
-  languageService = inject(LanguageService);
-  themeService = inject(ThemeService);
-  translateService = inject(TranslateService);
-  pageTitleService = inject(PageTitleService);
-
   constructor(private readonly storageRef: SessionStorageRef, private readonly productService: ProductService) {}
 
   ngOnInit() {
@@ -80,7 +85,7 @@ export class AdminDashboardComponent implements OnInit {
       }
     } catch {}
     this.token =
-      this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+      this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
       this.fetchFeedbacks();
@@ -106,7 +111,7 @@ export class AdminDashboardComponent implements OnInit {
 
   fetchFeedbacks(): void {
     this.isLoading = true;
-    sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
+    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
     // If future validation is needed, call an auth endpoint here and set isAuthenticated accordingly.
     this.updateVisibility(this.router.url);
     this.router.events
@@ -302,7 +307,7 @@ export class AdminDashboardComponent implements OnInit {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
     this.isAuthenticated = false;
-    sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
 
   private handleMissingToken(): void {
