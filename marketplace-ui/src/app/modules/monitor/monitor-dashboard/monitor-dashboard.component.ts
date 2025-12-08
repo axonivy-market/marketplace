@@ -11,9 +11,8 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MonitoringRepoComponent } from '../monitor-repo/monitor-repo.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { QUERY_PARAM_KEY } from '../../../shared/constants/query.params.constant';
 
 @Component({
   selector: 'app-monitor-dashboard',
@@ -23,7 +22,6 @@ import { ActivatedRoute } from '@angular/router';
     TranslateModule,
     NgbTooltipModule,
     MonitoringRepoComponent,
-    LoadingSpinnerComponent
   ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
@@ -32,26 +30,26 @@ export class MonitoringDashboardComponent implements OnInit {
   readonly FOCUSED_TAB = FOCUSED_TAB;
   readonly STANDARD_TAB = STANDARD_TAB;
 
-  protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
   pageTitleService: PageTitleService = inject(PageTitleService);
   platformId = inject(PLATFORM_ID);
   route = inject(ActivatedRoute);
-
+  router = inject(Router);
   error = '';
   monitoringWikiLink = MONITORING_WIKI_LINK;
-  activeTab = FOCUSED_TAB;
-
-  initialFilter = signal<string>('');
+  activeTab = signal<string>(FOCUSED_TAB);
+  initialSearch = signal<string>('');
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.subscribe(params => {
-        if (params['search']) {
-          this.initialFilter.set(params['search']);
-          this.activeTab = STANDARD_TAB;
+        if (params[QUERY_PARAM_KEY.ACTIVE_TAB]) {
+          this.activeTab.set(params[QUERY_PARAM_KEY.ACTIVE_TAB]);
+        }
+        if (params[QUERY_PARAM_KEY.REPO_SEARCH]) {
+          this.initialSearch.set(params[QUERY_PARAM_KEY.REPO_SEARCH]);
         }
       });
       this.pageTitleService.setTitleOnLangChange(
@@ -61,6 +59,12 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   setActiveTab(tab: string): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
+    const queryParams = { activeTab: tab };
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 }
