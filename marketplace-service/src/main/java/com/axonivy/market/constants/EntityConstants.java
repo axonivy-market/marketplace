@@ -40,5 +40,5 @@ public class EntityConstants {
   public static final String GITHUB_REPO = "github_repo";
   public static final String TEST_STEP = "test_step";
   public static final String WORKFLOW_INFORMATION = "workflow_information";
-  public static final String SYNC_JOB_EXECUTION = "sync_job_execution";
+  public static final String SYNC_JOB_EXECUTION = "sync_job";
 }

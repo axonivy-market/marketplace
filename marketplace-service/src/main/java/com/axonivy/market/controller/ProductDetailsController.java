@@ -213,15 +213,15 @@ public class ProductDetailsController {
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   public void syncLatestReleasesForProducts() throws IOException {
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_RELEASE_NOTES, null);
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_RELEASE_NOTES);
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     try {
-      List<String> productIdList = this.productService.getProductIdList();
-      for (String productId : productIdList) {
+      List<String> productIds = this.productService.getProductIdList();
+      for (String productId : productIds) {
         this.productService.syncGitHubReleaseModels(productId, pageable);
       }
       syncJobExecutionService.markSuccess(execution,
-          "Synced release notes for %d product(s)".formatted(productIdList.size()));
+          "Synced release notes for %d product(s)".formatted(productIds.size()));
     } catch (Exception ex) {
       syncJobExecutionService.markFailure(execution, ex.getMessage());
       throw ex;

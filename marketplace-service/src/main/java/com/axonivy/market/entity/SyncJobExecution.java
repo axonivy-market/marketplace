@@ -2,13 +2,10 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.SyncJobStatus;
 import com.axonivy.market.enums.SyncJobType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,18 +31,14 @@ public class SyncJobExecution extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private SyncJobType jobType;
 
+  private String jobKey;
+
   @Enumerated(EnumType.STRING)
   private SyncJobStatus status;
 
-  @Temporal(TemporalType.TIMESTAMP)
   private Date triggeredAt;
 
-  @Temporal(TemporalType.TIMESTAMP)
   private Date completedAt;
 
-  @Column(length = 1024)
   private String message;
-
-  @Column(length = 255)
-  private String reference;
 }

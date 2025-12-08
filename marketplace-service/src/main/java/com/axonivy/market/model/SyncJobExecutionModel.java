@@ -1,21 +1,34 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.entity.SyncJobExecution;
 import com.axonivy.market.enums.SyncJobStatus;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 
-@Value
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SyncJobExecutionModel {
   String jobKey;
   SyncJobStatus status;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   Date triggeredAt;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   Date completedAt;
   String message;
-  String reference;
+
+  public static SyncJobExecutionModel from(SyncJobExecution execution) {
+    return SyncJobExecutionModel.builder()
+        .jobKey(execution.getJobType().getJobKey())
+        .status(execution.getStatus())
+        .triggeredAt(execution.getTriggeredAt())
+        .completedAt(execution.getCompletedAt())
+        .message(execution.getMessage())
+        .build();
+  }
 }

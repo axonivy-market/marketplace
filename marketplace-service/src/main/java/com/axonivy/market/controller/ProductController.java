@@ -99,7 +99,7 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_PRODUCTS, null);
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_PRODUCTS);
     var stopWatch = StopWatch.createStarted();
     try {
       List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
@@ -138,7 +138,7 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_ONE_PRODUCT, productId);
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_ONE_PRODUCT);
     var message = new Message();
     try {
       if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(

@@ -4,8 +4,8 @@ import com.axonivy.market.entity.SyncJobExecution;
 import com.axonivy.market.enums.SyncJobType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface SyncJobExecutionRepository extends JpaRepository<SyncJobExecution, String> {
-	Optional<SyncJobExecution> findTopByJobTypeOrderByTriggeredAtDesc(SyncJobType jobType);
+	List<SyncJobExecution> findByJobType(SyncJobType jobType);
 }

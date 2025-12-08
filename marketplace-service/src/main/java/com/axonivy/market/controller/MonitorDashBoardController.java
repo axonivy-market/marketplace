@@ -66,7 +66,7 @@ public class MonitorDashBoardController {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_GITHUB_MONITOR, null);
+    var execution = syncJobExecutionService.start(SyncJobType.SYNC_GITHUB_MONITOR);
     try {
       githubReposService.loadAndStoreTestReports();
       syncJobExecutionService.markSuccess(execution, "Repositories loaded successfully.");
