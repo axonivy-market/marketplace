@@ -18,9 +18,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -118,13 +116,5 @@ public class MetadataReaderUtils {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
     return document;
-  }
-
-  public static Date getLastUpdatedDate(Document document) {
-    var lastUpdatedFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
-    var newestPublishedDate =
-        LocalDateTime.parse(Objects.requireNonNull(getElementValue(document,
-            MavenConstants.LAST_UPDATED_TAG)), lastUpdatedFormatter);
-    return Date.from(newestPublishedDate.atZone(ZoneOffset.UTC).toInstant());
   }
 }

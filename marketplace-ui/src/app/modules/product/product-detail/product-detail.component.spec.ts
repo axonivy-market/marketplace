@@ -10,7 +10,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of, Observable } from 'rxjs';
@@ -142,10 +142,7 @@ describe('ProductDetailComponent', () => {
           useValue: {
             snapshot: {
               params: { id: products[0].id },
-              data: { productDetail: MOCK_PRODUCT_DETAIL },
-              queryParamMap: convertToParamMap({
-                version: MOCK_PRODUCT_DETAIL.productModuleContent.version
-              })
+              data: { productDetail: MOCK_PRODUCT_DETAIL }
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
@@ -800,7 +797,7 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 
-  it('should return DESIGNER_ENV as action type in Designer Env', () => {
+  it('should return DESIGNER_ENV as acction type in Designer Env', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
@@ -809,21 +806,7 @@ describe('ProductDetailComponent', () => {
     );
   });
 
- it('should call handleProductDetailOnInit when version is empty', () => {
-    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
-    activatedRoute.snapshot.queryParamMap = convertToParamMap({ version: '' });
-
-    fixture = TestBed.createComponent(ProductDetailComponent);
-    component = fixture.componentInstance;
-
-    const spy = spyOn(component, 'handleProductDetailOnInit').and.callThrough();
-
-    fixture.detectChanges();
-
-    expect(spy).toHaveBeenCalled();
- });
-
-  it('should return CUSTOM_SOLUTION as action type when productDetail.sourceUrl is undefined', () => {
+  it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: undefined } as any);
@@ -838,7 +821,7 @@ describe('ProductDetailComponent', () => {
     expect(installationCount).toBeFalsy();
   });
 
-  it('should return STANDARD as action type when when productDetail.sourceUrl is defined', () => {
+  it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
@@ -905,8 +888,8 @@ describe('ProductDetailComponent', () => {
 
     // Now assert utility labels
     rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
-    expect(rateConnector.childNodes[0].nativeNode.textContent.trim()).toContain(
-      'common.feedback.rateFeedbackForConnectorBtnLabel'
+    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
+      'common.feedback.rateFeedbackForUtilityBtnLabel'
     );
 
     rateConnectorEmptyText = fixture.debugElement.query(
@@ -914,7 +897,7 @@ describe('ProductDetailComponent', () => {
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForConnectorLabel');
+    ).toContain('common.feedback.noFeedbackForUtilityLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {

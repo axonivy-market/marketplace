@@ -8,6 +8,7 @@ import { ReleasePreviewComponent } from './modules/release-preview/release-previ
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
+import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -50,6 +51,23 @@ export const routes: Routes = [
     loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
 
+  // Document, lib and redirect pages order matters
+  {
+    path: 'market-cache/:id/:artifact/:version/doc',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: 'market-cache/:id/:artifact/:version/doc/index.html',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: ':id/:version/doc/index.html',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: ':id/:version/doc',
+    component: ExternalDocumentComponent
+  },
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent

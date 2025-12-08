@@ -272,7 +272,6 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
       href: 'http://localhost:8080/api/product-details/cronjob'
     }
   },
-  isFocusedProduct: false,
   vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
   vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };
@@ -327,7 +326,6 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
       href: 'http://localhost:8082/api/product-details/jira-connector?type=connector'
     }
   },
-  isFocusedProduct: false,
   vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
   vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };

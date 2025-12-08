@@ -62,8 +62,6 @@ public class ProductDetailModel extends ProductModel {
   @Schema(description = "Compatibility", example = "10.0+")
   private String compatibilityRange;
   private boolean isMavenDropins;
-  @Schema(description = "Is the focused product", example = "true")
-  private Boolean isFocusedProduct;
 
   @Override
   public int hashCode() {
@@ -116,7 +114,6 @@ public class ProductDetailModel extends ProductModel {
       }
     }
     model.setMavenDropins(product.isMavenDropins());
-    model.setIsFocusedProduct(product.getIsFocused());
   }
 
   public static void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
