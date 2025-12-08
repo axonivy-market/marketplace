@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.util.ImageUtils;
@@ -91,18 +92,19 @@ public class ProductDetailModel extends ProductModel {
     model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(
         ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
-    if (StringUtils.isNotBlank(product.getVendorImage())) {
-      if (isProduction) {
-        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
-      } else {
-        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
+    if (StringUtils.isBlank(product.getVendorImage()) && StringUtils.isBlank(product.getVendorImageDarkMode())) {
+      model.setVendorImage(MetaConstants.DEFAULT_VENDOR_IMAGE_BLACK);
+      model.setVendorImageDarkMode(MetaConstants.DEFAULT_VENDOR_IMAGE);
+    } else {
+      if (StringUtils.isNotBlank(product.getVendorImage())) {
+        model.setVendorImage(isProduction ?
+            ImageUtils.createImageUrlForProduction(product.getVendorImage()) :
+            ImageUtils.createImageUrl(product.getVendorImage()));
       }
-    }
-    if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      if (isProduction) {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
-      } else {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
+      if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
+        model.setVendorImageDarkMode(isProduction ?
+            ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()) :
+            ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
       }
     }
     model.setMavenDropins(product.isMavenDropins());

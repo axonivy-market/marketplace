@@ -18,8 +18,6 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
@@ -335,7 +333,7 @@ describe('ProductDetailResolver', () => {
   });
 
   describe('setDefaultVendorImage', () => {
-    it('should set default images when both vendor images are missing', () => {
+    it('should handle empty vendor images by using fallback logic', () => {
       const productDetailWithoutVendorImages = {
         ...MOCK_PRODUCT_DETAIL,
         vendorImage: '',
@@ -346,8 +344,9 @@ describe('ProductDetailResolver', () => {
         productDetailWithoutVendorImages
       );
 
-      expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
-      expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
+      // Since both are empty, they remain empty as backend should provide defaults
+      expect(result.vendorImage).toBe('');
+      expect(result.vendorImageDarkMode).toBe('');
     });
 
     it('should use vendorImage for dark mode when dark mode image is missing', () => {

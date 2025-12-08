@@ -572,11 +572,9 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubRepo.setFocused(true);
     Product mockProduct = mockResultReturn.getContent().get(0);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-    when(githubRepoRepository.findByNameOrProductId(StringUtils.EMPTY,mockProduct.getId())).thenReturn(mockGithubRepo);
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
-    assertEquals(mockProduct, result,
-        "Result product should match mock product");
+    assertEquals(mockProduct, result, "Product detail by id and version should match mock product");
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
