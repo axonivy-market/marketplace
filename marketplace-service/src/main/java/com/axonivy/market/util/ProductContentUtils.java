@@ -29,7 +29,7 @@ public final class ProductContentUtils {
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
    * Match exactly Demo or Setup
    */
-  public static final String DEMO_SETUP_TITLE = "(?m)^[#\\s]*##?\\s*(Demo|Setup)\\s*$";
+  public static final String DEMO_SETUP_TITLE = "(?m)^##\\s*(Demo|Setup)\\s*$";
   private static final String HASH = "#";
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
