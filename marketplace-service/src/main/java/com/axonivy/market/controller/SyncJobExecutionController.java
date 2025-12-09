@@ -33,25 +33,24 @@ public class SyncJobExecutionController {
 
   @GetMapping
   @Operation(hidden = true)
-  public ResponseEntity<List<SyncJobExecutionModel>> findLatestExecutions(
+  public ResponseEntity<List<SyncJobExecutionModel>> getAllSyncJobExecutions(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    List<SyncJobExecutionModel> models = syncJobExecutionService.findLatestExecutions();
+    List<SyncJobExecutionModel> models = syncJobExecutionService.getAllSyncJobExecutions();
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
   @GetMapping("/{jobKey}")
   @Operation(hidden = true)
-  public ResponseEntity<SyncJobExecutionModel> findLatestExecutionByJobKey(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @PathVariable String jobKey) {
+  public ResponseEntity<SyncJobExecutionModel> getSyncJobExecutionByKey(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @PathVariable String jobKey) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    SyncJobExecutionModel model = syncJobExecutionService.getLatestExecutionModelByJobKey(jobKey);
-    if(ObjectUtils.isNotEmpty(model)){
+    SyncJobExecutionModel model = syncJobExecutionService.getSyncJobExecutionByKey(jobKey);
+    if (ObjectUtils.isNotEmpty(model)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(model, HttpStatus.OK);

@@ -10,14 +10,13 @@
             translateService.get('common.admin.customSort.description') | async
           }}
           <span class="hint-icon">
-                <i
-                  class="bi bi-info-circle"
-                  [title]="
-                    translateService.get(
-                      'common.admin.customSort.dragAndDropHint'
-                    ) | async
-                  "></i>
-              </span>
+            <i
+              class="bi bi-info-circle"
+              [title]="
+                translateService.get('common.admin.customSort.dragAndDropHint')
+                  | async
+              "></i>
+          </span>
         </h3>
       </div>
       <div class="d-sm-block align-items-center help-text-container flex-fill">
@@ -235,7 +234,8 @@
 
       @if (isLoading) {
         <div class="loading-state">
-          {{ 'common.admin.customSort.loadingLabel' | translate }}</div>
+          {{ 'common.admin.customSort.loadingLabel' | translate }}
+        </div>
       }
     </section>
   </div>

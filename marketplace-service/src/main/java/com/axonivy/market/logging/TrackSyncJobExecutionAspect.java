@@ -25,11 +25,11 @@ public class TrackSyncJobExecutionAspect {
     try {
       execution = syncJobExecutionService.start(jobType);
       Object result = pjp.proceed();
-      syncJobExecutionService.markSuccess(execution, "Sync successfully!");
+      syncJobExecutionService.markStatusSuccess(execution, "Sync successfully!");
       return result;
     } catch (Throwable t) {
       if (execution != null) {
-        syncJobExecutionService.markFailure(execution, t.getMessage());
+        syncJobExecutionService.markStatusFailure(execution, t.getMessage());
       }
       log.error("Sync job {} failed", jobType, t);
       throw t;

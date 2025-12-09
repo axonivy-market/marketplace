@@ -24,21 +24,17 @@ import { DocumentRef } from './core/services/browser/document-ref.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {
-  }
+  constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {}
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationError) {
         this.router.navigate([ERROR_PAGE_PATH]);
-      }
-      if (event instanceof NavigationEnd) {
-        const url = event.urlAfterRedirects ?? event.url;
       }
     });
 

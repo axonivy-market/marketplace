@@ -1,8 +1,6 @@
 <div class="container">
   <div class="row col-md-12">
-    <h1
-      class="text-primary title"
-      [lang]="languageService.selectedLanguage()">
+    <h1 class="text-primary title" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.admin.quickAccess.title') | async }}
     </h1>
     <div class="introduction-container">
@@ -13,8 +11,7 @@
           }}
         </h3>
       </div>
-      <div
-        class="d-sm-block align-items-center help-text-container flex-fill">
+      <div class="d-sm-block align-items-center help-text-container flex-fill">
         <h4
           [lang]="languageService.selectedLanguage()"
           class="text-secondary"
@@ -61,7 +58,7 @@
           rel="noopener noreferrer"
           title="Release Preview Page">
           <div class="qa-card__header">
-            <div class="qa-card__icon" aria-hidden="true" >
+            <div class="qa-card__icon" aria-hidden="true">
               <i class="bi-file-earmark-text text-primary"></i>
             </div>
             <div>

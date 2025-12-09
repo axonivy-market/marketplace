@@ -316,7 +316,13 @@
         "marketItemPath": "Market Item Path",
         "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
         "overrideMarketItemPath": "Override Current Market Item Path",
-        "cancelLabel": "Cancel"
+        "cancelLabel": "Cancel",
+        "jobs": {
+          "syncProducts": "Sync all products",
+          "syncOneProduct": "Sync one product",
+          "syncLatestReleasesForProducts": "Sync product release notes",
+          "syncGithubMonitor": "Sync GitHub monitor"
+        }
       },
       "customSort": {
         "pageTitle": "Custom Sort",

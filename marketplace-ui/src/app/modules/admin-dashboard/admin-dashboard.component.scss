@@ -54,14 +54,14 @@
   margin-top: 9rem;
 }
 
-  .sort-button {
-    padding: 5px 16px;
-    gap: 6px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 16.8px;
-  }
+.sort-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
 
 th {
   height: 4.5rem;
@@ -132,18 +132,18 @@ td {
   background: var(--bg-color, #fff);
   color: inherit;
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.modal-header, .modal-footer {
+.modal-header,
+.modal-footer {
   padding: 0.75rem 1rem;
-  border-color: rgba(0,0,0,0.1);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .modal-body {
   padding: 1rem;
 }
-
 
 .token-container {
   margin: 20px auto;

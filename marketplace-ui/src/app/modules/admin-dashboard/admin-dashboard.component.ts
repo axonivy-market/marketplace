@@ -2,14 +2,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { filter, finalize } from 'rxjs';
-import { AdminDashboardService, SyncJobExecution, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
+import { EMPTY, filter, finalize, Observable } from 'rxjs';
+import {
+  AdminDashboardService,
+  SyncJobExecution,
+  SyncJobStatus,
+  SyncJobKey
+} from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
   ADMIN_SESSION_TOKEN,
-  UNAUTHORIZED
+  UNAUTHORIZED,
+  SYNC_JOBS
 } from '../../shared/constants/common.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,15 +24,13 @@ import { API_URI } from '../../shared/constants/api.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
-interface SyncJobRow {
-  key: SyncJobKey;
-  label: string;
-  status?: SyncJobStatus;
+export interface SyncJobRow
+  extends Omit<SyncJobExecution, 'triggeredAt' | 'completedAt'> {
+  labelKey: string;
   triggeredAt?: Date;
   completedAt?: Date;
-  message?: string;
-  reference?: string;
 }
 
 @Component({
@@ -43,9 +47,7 @@ interface SyncJobRow {
   styleUrls: ['./admin-dashboard.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-
 export class AdminDashboardComponent implements OnInit {
-
   private readonly router = inject(Router);
 
   service = inject(AdminDashboardService);
@@ -53,19 +55,14 @@ export class AdminDashboardComponent implements OnInit {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  productService = inject(ProductService);
+  protected LoadingComponentId = LoadingComponentId;
 
   token = '';
   errorMessage = '';
   isAuthenticated = false;
-  isLoading = false;
   loadingJobKey: SyncJobKey | null = null;
-  isSidebarOpen = false;
-  jobs: SyncJobRow[] = [
-    { key: 'syncProducts', label: 'Sync all products' },
-    { key: 'syncOneProduct', label: 'Sync one product' },
-    { key: 'syncLatestReleasesForProducts', label: 'Sync product release notes' },
-    { key: 'syncGithubMonitor', label: 'Sync GitHub monitor' }
-  ];
+  jobs = SYNC_JOBS;
   productId = '';
   marketItemPath = '';
   overrideMarketItemPath = false;
@@ -74,22 +71,30 @@ export class AdminDashboardComponent implements OnInit {
   showSyncOneProductDialog = false;
   productIds: string[] = [];
 
-  constructor(private readonly storageRef: SessionStorageRef, private readonly productService: ProductService) {}
+  private readonly syncJobTriggers: Record<SyncJobKey, () => Observable<any>> =
+    {
+      syncProducts: () => this.service.syncProducts(),
+      syncLatestReleasesForProducts: () =>
+        this.service.syncLatestReleasesForProducts(),
+      syncGithubMonitor: () => this.service.syncGithubMonitor(),
+      syncOneProduct: () => EMPTY
+    };
+
+  constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    try {
-      const storedSidebarState = localStorage.getItem('sidebarOpen');
-      if (storedSidebarState !== null) {
-        this.isSidebarOpen = storedSidebarState === 'true';
-      }
-    } catch {}
-    this.token =
-      this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
+    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
-      this.fetchFeedbacks();
-      this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+      this.loadSyncJobExecutions();
       this.loadAllProductIds();
+      this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+      this.updateVisibility(this.router.url);
+      this.router.events
+        .pipe(filter(e => e instanceof NavigationEnd))
+        .subscribe(() => {
+          this.updateVisibility(this.router.url);
+        });
     }
   }
 
@@ -98,27 +103,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onSubmit(): void {
+    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
     this.errorMessage = '';
     if (!this.token) {
       this.handleMissingToken();
       return;
     }
-    // For now treat any non-empty token as authenticated (no server validation yet)
     this.isAuthenticated = true;
-    this.fetchFeedbacks();
-  }
-
-  fetchFeedbacks(): void {
-    this.isLoading = true;
-    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
-    // If future validation is needed, call an auth endpoint here and set isAuthenticated accordingly.
-    this.updateVisibility(this.router.url);
-    this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => {
-        this.updateVisibility(this.router.url);
-      });
-    this.isLoading = false;
     this.loadSyncJobExecutions();
   }
 
@@ -131,78 +122,62 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   trigger(job: SyncJobRow) {
-    this.loadingJobKey = job.key;
-    job.status = 'RUNNING';
-    job.triggeredAt = new Date();
-    job.completedAt = undefined;
-    job.message = undefined;
-    job.reference = undefined;
+    this.loadingJobKey = job.jobKey;
 
-    if (job.key === 'syncProducts') {
-      this.isLoading = true;
-      this.service
-        .syncProducts()
-        .pipe(
-          finalize(() => {
-            this.isLoading = false;
-            this.loadingJobKey = null;
-          })
-        )
-        .subscribe({
-          next: () => this.handleSuccess(job),
-          error: err => {
-            const shouldReload = !(err instanceof HttpErrorResponse) || err.status !== UNAUTHORIZED;
-            this.handleFailure(job, err, shouldReload);
-            this.handleError(err);
-            this.loadingJobKey = null;
-          }
-        });
-    } else if (job.key === 'syncOneProduct') {
-      // Open dialog to collect product parameters
-      this.loadingJobKey = null;
-      job.status = undefined;
+    Object.assign(job, {
+      status: 'RUNNING',
+      triggeredAt: new Date(),
+      completedAt: undefined,
+      message: undefined
+    });
+
+    if (job.jobKey === 'syncOneProduct') {
       this.showSyncOneProductDialog = true;
-    } else if (job.key === 'syncLatestReleasesForProducts') {
-      this.service.syncLatestReleasesForProducts()
-        .pipe(finalize(() => { this.loadingJobKey = null; }))
-        .subscribe({
-          next: () => this.handleSuccess(job),
-          error: err => this.handleFailure(job, err)
-        });
-    } else if (job.key === 'syncGithubMonitor') {
-      this.service.syncGithubMonitor()
-        .pipe(finalize(() => { this.loadingJobKey = null; }))
-        .subscribe({
-          next: res => this.handleSuccess(job),
-          error: err => this.handleFailure(job, err)
-        });
+      this.loadingJobKey = null;
+      return;
     }
+
+    const action = this.syncJobTriggers[job.jobKey];
+
+    action()
+      .pipe(finalize(() => (this.loadingJobKey = null)))
+      .subscribe({
+        next: () => this.handleSuccess(job),
+        error: err => this.handleFailure(job, err)
+      });
   }
 
   confirmSyncOneProduct(): void {
-    const job = this.jobs.find(j => j.key === 'syncOneProduct');
+    const job = this.jobs.find(j => j.jobKey === 'syncOneProduct');
     if (!job) {
       return;
     }
-    this.errorMessage = '';
     if (!this.productId || !this.marketItemPath) {
-      job.status = 'FAILED';
-      job.completedAt = new Date();
-      job.message = 'Product ID & marketItemPath required';
+      Object.assign(job, {
+        status: 'FAILED',
+        completedAt: new Date(),
+        message: 'Product ID & marketItemPath required'
+      });
       return;
     }
-    this.loadingJobKey = job.key;
-    job.status = 'RUNNING';
-    job.triggeredAt = new Date();
+    this.loadingJobKey = job.jobKey;
+    Object.assign(job, {
+      status: 'RUNNING',
+      triggeredAt: new Date()
+    });
     this.service
       .syncOneProduct(
         this.productId.trim(),
         this.marketItemPath.trim(),
         this.overrideMarketItemPath
       )
-      .pipe(finalize(() => { this.loadingJobKey = null; }))
+      .pipe(
+        finalize(() => {
+          this.loadingJobKey = null;
+        })
+      )
       .subscribe({
-        next: res => {
+        next: () => {
           this.showSyncOneProductDialog = false;
           this.handleSuccess(job);
         },
@@ -218,25 +193,27 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleSuccess(job: SyncJobRow) {
-    job.completedAt = new Date();
-    job.status = 'SUCCESS';
-    job.message = 'Success';
+    Object.assign(job, {
+      status: 'SUCCESS',
+      completedAt: new Date(),
+      message: 'Success'
+    });
+
     this.loadSyncJobExecutions();
   }
 
   private handleFailure(job: SyncJobRow, err: unknown, reload = true) {
-    job.completedAt = new Date();
-    job.status = 'FAILED';
-    job.message = this.extractErrorMessage(err);
+    Object.assign(job, {
+      status: 'FAILED',
+      completedAt: new Date(),
+      message: this.extractErrorMessage(err)
+    });
     if (reload && this.isAuthenticated) {
       this.loadSyncJobExecutions();
     }
   }
 
   private loadSyncJobExecutions(): void {
-    if (!this.isAuthenticated) {
-      return;
-    }
     this.service.fetchSyncJobExecutions().subscribe({
       next: executions => this.applySyncJobExecutions(executions),
       error: err => this.handleError(err)
@@ -245,13 +222,17 @@ export class AdminDashboardComponent implements OnInit {
 
   private applySyncJobExecutions(executions: SyncJobExecution[]): void {
     for (const execution of executions) {
-      const job = this.jobs.find(j => j.key === execution.jobKey);
+      const job = this.jobs.find(j => j.jobKey === execution.jobKey);
       if (!job) {
         continue;
       }
       job.status = execution.status;
-      job.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : undefined;
-      job.completedAt = execution.completedAt ? new Date(execution.completedAt) : undefined;
+      job.triggeredAt = execution.triggeredAt
+        ? new Date(execution.triggeredAt)
+        : undefined;
+      job.completedAt = execution.completedAt
+        ? new Date(execution.completedAt)
+        : undefined;
       job.message = execution.message ?? undefined;
     }
   }
@@ -270,27 +251,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private extractErrorMessage(err: unknown): string {
-    if (err instanceof HttpErrorResponse) {
-      if (typeof err.error === 'string') {
-        return err.error;
-      }
-      if (err.error && typeof err.error === 'object' && 'message' in err.error) {
-        const nestedMessage = (err.error as { message?: unknown }).message;
-        if (typeof nestedMessage === 'string') {
-          return nestedMessage;
-        }
-      }
-      return err.message;
+    if (!err) return 'Failed';
+
+    if (typeof err === 'string') return err;
+
+    if (typeof err === 'object') {
+      const obj = err as any;
+      return obj?.error?.message ?? obj?.error ?? obj?.message ?? 'Failed';
     }
-    if (err && typeof err === 'object' && 'message' in (err as { message?: unknown })) {
-      const message = (err as { message?: unknown }).message;
-      if (typeof message === 'string') {
-        return message;
-      }
-    }
-    if (typeof err === 'string') {
-      return err;
-    }
+
     return 'Failed';
   }
 

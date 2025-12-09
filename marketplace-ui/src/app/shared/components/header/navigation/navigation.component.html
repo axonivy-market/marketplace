@@ -15,10 +15,12 @@
         @if (isInternal) {
           <span #routerActive="routerLinkActive" routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
-            <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
+            <a 
+            [lang]="languageService.selectedLanguage()" class="nav-link" 
+            [ngClass]="{
                 'text-primary': isMobileMode() || routerActive.isActive,
                 'text-secondary': !isMobileMode() && !routerActive.isActive,
-            active: isHomePage || routerActive.isActive }"
+                active: isHomePage || routerActive.isActive }"
             aria-current="page"
             [routerLink]="item.link" >
               {{ item.label | translate }}
@@ -26,11 +28,13 @@
             <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div>
           </span>
         } @else {
-          <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
+          <a 
+          [lang]="languageService.selectedLanguage()" class="nav-link" 
+          [ngClass]="{
             'text-primary': isMobileMode(),
-            'text-secondary': !isMobileMode()
-          }" aria-current="page"
-            [href]="item.link" >
+            'text-secondary': !isMobileMode()}"
+          aria-current="page"
+          [href]="item.link" >
             {{ item.label | translate }}
           </a>
           <!-- External links are never router-active -->

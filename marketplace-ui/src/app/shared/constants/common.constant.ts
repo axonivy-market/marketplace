@@ -5,6 +5,7 @@ import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
+import { SyncJobRow } from '../../modules/admin-dashboard/admin-dashboard.component';
 
 export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 
@@ -78,7 +79,7 @@ export const SOCIAL_MEDIA_LINK = [
     styleClass: 'fa-brands fa-youtube',
     title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
-  },
+  }
 ];
 
 export const IVY_FOOTER_LINKS = [
@@ -93,7 +94,7 @@ export const IVY_FOOTER_LINKS = [
   {
     label: 'common.footer.legalNotice',
     link: 'common.footer.legalNoticeUrl'
-  },
+  }
 ];
 
 export const LANGUAGES = [
@@ -295,9 +296,10 @@ export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
 export const SEARCH_URL = 'https://developer.axonivy.com/search';
 export const GITHUB_MARKET_ORG_URL = 'https://github.com/axonivy-market';
-export const SHOW_DEV_VERSION = "showDevVersions";
+export const SHOW_DEV_VERSION = 'showDevVersions';
 export const DEFAULT_VENDOR_IMAGE = '/assets/images/misc/axonivy-logo.svg';
-export const DEFAULT_VENDOR_IMAGE_BLACK = '/assets/images/misc/axonivy-logo-black.svg';
+export const DEFAULT_VENDOR_IMAGE_BLACK =
+  '/assets/images/misc/axonivy-logo-black.svg';
 
 export const SECONDS_IN_A_MINUTE = 60;
 export const MINUTES_IN_A_HOUR = 60;
@@ -306,18 +308,15 @@ export const DAYS_IN_A_WEEK = 7;
 export const DAYS_IN_A_MONTH = 30;
 export const DAYS_IN_A_YEAR = 365;
 
-export const MAX_FEEDBACK_LENGTH =250;
+export const MAX_FEEDBACK_LENGTH = 250;
 
-export const SECURITY_MONITOR_SESSION_KEYS = {
-  DATA: 'security-monitor-data',
-  TOKEN: 'admin-session-token',
-};
+export const SECURITY_MONITOR_SESSION_DATA = 'security-monitor-data';
 
 export const ERROR_MESSAGES = {
   TOKEN_REQUIRED: 'Token is required',
   UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',
-  INVALID_TOKEN: 'The token is invalid, please try again.',
+  INVALID_TOKEN: 'The token is invalid, please try again.'
 };
 
 export const TIME_UNITS = [
@@ -326,7 +325,7 @@ export const TIME_UNITS = [
   { SECONDS: 86400, SINGULAR: 'day', PLURAL: 'days' },
   { SECONDS: 604800, SINGULAR: 'week', PLURAL: 'weeks' },
   { SECONDS: 2592000, SINGULAR: 'month', PLURAL: 'months' },
-  { SECONDS: 31536000, SINGULAR: 'year', PLURAL: 'years' },
+  { SECONDS: 31536000, SINGULAR: 'year', PLURAL: 'years' }
 ];
 
 export const REPO_PAGE_PATHS: Record<string, string> = {
@@ -335,14 +334,14 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
   codeScanning: '/security/code-scanning',
   secretScanning: '/security/secret-scanning',
   branches: '/settings/branches',
-  lastCommit: '/commit/',
+  lastCommit: '/commit/'
 };
 
 export const HASH_SYMBOL = '#';
 export const SRC = 'src';
 export const APP = 'app';
 export const DIST = 'dist';
-export const BROWSER ='browser';
+export const BROWSER = 'browser';
 export const ASSETS = 'assets';
 export const I18N = 'i18n';
 export const JSON_EXTENSION = '.json';
@@ -366,7 +365,8 @@ export const OG_IMAGE_PNG_TYPE = 'image/png';
 // Google constants
 export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID = 'googleCSEScript';
 export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
-export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE = 'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
+export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE =
+  'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
 export const GOOGLE = 'google';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
@@ -386,7 +386,8 @@ export const NAME_COLUMN = 'name';
 export const CI_BUILD = 'CI';
 export const DEV_BUILD = 'DEV';
 export const E2E_BUILD = 'E2E';
-export const MONITORING_WIKI_LINK = 'https://github.com/axonivy-market/market/wiki/c5-Monitoring';
+export const MONITORING_WIKI_LINK =
+  'https://github.com/axonivy-market/market/wiki/c5-Monitoring';
 
 export const ASCENDING = 'asc';
 export const DESCENDING = 'desc';
@@ -397,3 +398,22 @@ export const STANDARD_TAB = 'standard';
 export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';
 export const ALL_ITEMS_PAGE_SIZE = 9999;
+
+export const SYNC_JOBS: SyncJobRow[] = [
+  {
+    jobKey: 'syncProducts',
+    labelKey: 'common.admin.sync.jobs.syncProducts'
+  },
+  {
+    jobKey: 'syncOneProduct',
+    labelKey: 'common.admin.sync.jobs.syncOneProduct'
+  },
+  {
+    jobKey: 'syncLatestReleasesForProducts',
+    labelKey: 'common.admin.sync.jobs.syncLatestReleasesForProducts'
+  },
+  {
+    jobKey: 'syncGithubMonitor',
+    labelKey: 'common.admin.sync.jobs.syncGithubMonitor'
+  }
+];

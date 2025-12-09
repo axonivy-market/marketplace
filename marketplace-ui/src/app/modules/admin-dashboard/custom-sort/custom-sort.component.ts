@@ -1,11 +1,24 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, OnInit, Renderer2, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  Renderer2,
+  ViewEncapsulation
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { CdkDragDrop, CdkDragEnd, CdkDragEnter, CdkDragStart, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDragEnd,
+  CdkDragEnter,
+  CdkDragStart,
+  DragDropModule,
+  transferArrayItem
+} from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
@@ -20,12 +33,11 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
     RouterModule,
     TranslateModule,
     DragDropModule
-],
+  ],
   templateUrl: './custom-sort.component.html',
   styleUrls: ['./custom-sort.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-
 export class CustomSortComponent implements OnInit {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
@@ -38,7 +50,7 @@ export class CustomSortComponent implements OnInit {
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
-    isLoading = false;
+  isLoading = false;
 
   productId = '';
   searchTerm = '';
@@ -50,7 +62,9 @@ export class CustomSortComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAllProductIds();
-    this.pageTitleService.setTitleOnLangChange('common.admin.customSort.pageTitle');
+    this.pageTitleService.setTitleOnLangChange(
+      'common.admin.customSort.pageTitle'
+    );
   }
 
   get filteredAvailableExtensions(): string[] {
@@ -58,7 +72,7 @@ export class CustomSortComponent implements OnInit {
     if (!term) {
       return this.allExtensions;
     }
-    return this.allExtensions.filter((id) => id.toLowerCase().includes(term));
+    return this.allExtensions.filter(id => id.toLowerCase().includes(term));
   }
 
   clearSearch(): void {
@@ -81,7 +95,9 @@ export class CustomSortComponent implements OnInit {
   }
 
   setDragPreviewWidth(event: CdkDragStart<string>): void {
-    this.applyPreviewWidth(event.source.element.nativeElement.getBoundingClientRect().width);
+    this.applyPreviewWidth(
+      event.source.element.nativeElement.getBoundingClientRect().width
+    );
   }
 
   resetDragPreviewWidth(_: CdkDragEnd<string>): void {
@@ -92,7 +108,9 @@ export class CustomSortComponent implements OnInit {
   }
 
   adjustPreviewWidthOnEnter(event: CdkDragEnter<string[]>): void {
-    this.applyPreviewWidth(event.container.element.nativeElement.getBoundingClientRect().width);
+    this.applyPreviewWidth(
+      event.container.element.nativeElement.getBoundingClientRect().width
+    );
   }
 
   private applyPreviewWidth(width: number): void {
@@ -110,15 +128,21 @@ export class CustomSortComponent implements OnInit {
 
     this.adminDashboardService
       .sortMarketExtensions(this.sortingExtensions, 'alphabetically')
-      .pipe(finalize(() => {
-        this.isSaving = false;
-      }))
+      .pipe(
+        finalize(() => {
+          this.isSaving = false;
+        })
+      )
       .subscribe({
         next: () => {
-          this.sortSuccessMessage = this.translateService.instant('common.admin.customSort.sortSuccessMessage');
+          this.sortSuccessMessage = this.translateService.instant(
+            'common.admin.customSort.sortSuccessMessage'
+          );
         },
         error: () => {
-          this.sortErrorMessage = this.translateService.instant('common.admin.customSort.sortErrorMessage');
+          this.sortErrorMessage = this.translateService.instant(
+            'common.admin.customSort.sortErrorMessage'
+          );
         }
       });
   }

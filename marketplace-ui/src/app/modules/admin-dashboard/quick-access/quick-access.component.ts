@@ -29,6 +29,8 @@ export class QuickAccessComponent implements OnInit {
   pageTitleService = inject(PageTitleService);
 
   ngOnInit(): void {
-    this.pageTitleService.setTitleOnLangChange('common.admin.quickAccess.pageTitle');
+    this.pageTitleService.setTitleOnLangChange(
+      'common.admin.quickAccess.pageTitle'
+    );
   }
 }

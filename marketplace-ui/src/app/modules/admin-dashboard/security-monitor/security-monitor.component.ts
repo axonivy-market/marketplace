@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_DATA, TIME_UNITS, UNAUTHORIZED } from '../../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { PageTitleService } from '../../../shared/services/page-title.service';
@@ -52,13 +52,17 @@ export class SecurityMonitorComponent implements OnInit{
 
   private loadSessionData(): void {
     try {
-      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
+      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_DATA);
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
       }
     } catch {
-      // Ignore JSON parse errors
+      this.clearSessionData();
     }
+  }
+
+  private clearSessionData(): void {
+    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_DATA);
   }
 
   private fetchSecurityDetails(): void {
@@ -72,7 +76,7 @@ export class SecurityMonitorComponent implements OnInit{
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
+    sessionStorage.setItem(SECURITY_MONITOR_SESSION_DATA, JSON.stringify(data));
   }
 
   private handleError(err: HttpErrorResponse): void {

@@ -316,7 +316,13 @@
         "marketItemPath": "Pfad des Marketplace-Elements",
         "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
         "overrideMarketItemPath": "Aktuellen Marketplace-Pfad überschreiben",
-        "cancelLabel": "Abbrechen"
+        "cancelLabel": "Abbrechen",
+        "jobs": {
+          "syncProducts": "Alle Produkte synchronisieren",
+          "syncOneProduct": "Ein Produkt synchronisieren",
+          "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
+          "syncGithubMonitor": "GitHub-Monitor synchronisieren"
+        }
       },
       "customSort": {
         "pageTitle": "Benutzerdefinierte Sortierung",

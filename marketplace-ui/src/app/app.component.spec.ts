@@ -52,9 +52,9 @@ describe('AppComponent', () => {
 
     // Mock WindowRef and DocumentRef
     const windowRefMock = jasmine.createSpyObj('WindowRef', ['toString'], {
-      nativeWindow: globalThis as unknown as Window
+      nativeWindow: window
     });
-    
+
     const documentRefMock = jasmine.createSpyObj('DocumentRef', ['toString'], {
       nativeDocument: document
     });
@@ -153,7 +153,7 @@ describe('AppComponent', () => {
 
     expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
 
-    const headerComputedStyle = globalThis.getComputedStyle(appElement);
+    const headerComputedStyle = window.getComputedStyle(appElement);
     expect(headerComputedStyle.overflow).toBe('hidden');
   });
 
@@ -171,7 +171,11 @@ describe('AppComponent', () => {
 
   it('should redirect to "/error-page" on NavigationError', () => {
     // Simulate a NavigationError event
-    const navigationError = new NavigationError(1, '/a-trust/test-url', 'Error message');
+    const navigationError = new NavigationError(
+      1,
+      '/a-trust/test-url',
+      'Error message'
+    );
     routerEventsSubject.next(navigationError);
     expect(router.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
   });
@@ -182,7 +186,9 @@ describe('AppComponent', () => {
     const headerElement = fixture.debugElement.query(By.css('header'));
     expect(headerElement).toBeNull();
 
-    const containerElement = fixture.debugElement.query(By.css('main .container'));
+    const containerElement = fixture.debugElement.query(
+      By.css('main .container')
+    );
     expect(containerElement).toBeNull();
   });
 });

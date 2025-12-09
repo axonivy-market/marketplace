@@ -29,11 +29,7 @@ public class SyncJobExecutionServiceImpl implements SyncJobExecutionService {
 
   @Transactional
   public SyncJobExecution start(SyncJobType jobType) {
-    List<SyncJobExecution> executions = syncJobExecutionRepo.findByJobType(jobType);
-    SyncJobExecution execution = executions.isEmpty()
-        ? SyncJobExecution.builder().jobType(jobType).build()
-        : executions.get(0);
-
+    SyncJobExecution execution = findOrCreate(jobType);
     execution.setStatus(SyncJobStatus.RUNNING);
     execution.setTriggeredAt(new Date());
     execution.setCompletedAt(null);
@@ -43,39 +39,41 @@ public class SyncJobExecutionServiceImpl implements SyncJobExecutionService {
   }
 
   @Transactional
-  public void markSuccess(SyncJobExecution execution, String message) {
-    update(execution, SyncJobStatus.SUCCESS, message);
+  public void markStatusSuccess(SyncJobExecution execution, String message) {
+    updateSyncJob(execution, SyncJobStatus.SUCCESS, message);
   }
 
   @Transactional
-  public void markFailure(SyncJobExecution execution, String message) {
-    update(execution, SyncJobStatus.FAILED, message);
+  public void markStatusFailure(SyncJobExecution execution, String message) {
+    updateSyncJob(execution, SyncJobStatus.FAILED, message);
   }
 
   @Transactional(readOnly = true)
-  public List<SyncJobExecutionModel> findLatestExecutions() {
+  public List<SyncJobExecutionModel> getAllSyncJobExecutions() {
     return Arrays.stream(SyncJobType.values())
-        .map(this::findLatestExecution)
+        .map(syncJobExecutionRepo::findByJobType)
         .flatMap(Optional::stream)
+        .map(SyncJobExecutionModel::from)
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public SyncJobExecutionModel getLatestExecutionModelByJobKey(String jobKey) {
+  public SyncJobExecutionModel getSyncJobExecutionByKey(String jobKey) {
     return SyncJobType.fromJobKey(jobKey)
-        .flatMap(this::findLatestExecution)
+        .flatMap(syncJobExecutionRepo::findByJobType)
+        .map(SyncJobExecutionModel::from)
         .orElse(null);
   }
 
-  @Transactional(readOnly = true)
-  private Optional<SyncJobExecutionModel> findLatestExecution(SyncJobType jobType) {
-    List<SyncJobExecution> executions = syncJobExecutionRepo.findByJobType(jobType);
-    return executions.isEmpty()
-        ? Optional.empty()
-        : Optional.of(SyncJobExecutionModel.from(executions.get(0)));
+  private SyncJobExecution findOrCreate(SyncJobType type) {
+    return syncJobExecutionRepo.findByJobType(type)
+        .orElseGet(() -> SyncJobExecution.builder()
+            .jobType(type)
+            .build()
+        );
   }
 
-  private void update(SyncJobExecution execution, SyncJobStatus status, String message) {
+  private void updateSyncJob(SyncJobExecution execution, SyncJobStatus status, String message) {
     execution.setStatus(status);
     execution.setCompletedAt(new Date());
     execution.setMessage(trim(message));

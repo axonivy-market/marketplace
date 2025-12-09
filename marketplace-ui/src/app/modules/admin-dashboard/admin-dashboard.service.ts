@@ -24,7 +24,7 @@ export type SyncJobStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
 
 export interface SyncJobExecution {
   jobKey: SyncJobKey;
-  status: SyncJobStatus;
+  status?: SyncJobStatus;
   triggeredAt?: string;
   completedAt?: string;
   message?: string;

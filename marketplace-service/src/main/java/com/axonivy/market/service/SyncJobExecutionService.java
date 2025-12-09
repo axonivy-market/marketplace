@@ -8,8 +8,12 @@ import java.util.List;
 
 public interface SyncJobExecutionService {
   SyncJobExecution start(SyncJobType jobType);
-  void markSuccess(SyncJobExecution execution, String message);
-  void markFailure(SyncJobExecution execution, String message);
-  List<SyncJobExecutionModel> findLatestExecutions();
-  SyncJobExecutionModel getLatestExecutionModelByJobKey(String jobKey);
+
+  void markStatusSuccess(SyncJobExecution execution, String message);
+
+  void markStatusFailure(SyncJobExecution execution, String message);
+
+  List<SyncJobExecutionModel> getAllSyncJobExecutions();
+
+  SyncJobExecutionModel getSyncJobExecutionByKey(String jobKey);
 }
