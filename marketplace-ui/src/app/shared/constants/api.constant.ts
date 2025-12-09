@@ -13,7 +13,7 @@ export const API_URI = {
   PREVIEW_RELEASE: `${API}/release-preview`,
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
-  SCHEDULED_TASK: `${API}/scheduled-task`,
+  SYNC_JOB_EXECUTION: `${API}/sync-job-execution`,
   SECURITY_MONITOR: `${API}/security-monitor`
 };
 

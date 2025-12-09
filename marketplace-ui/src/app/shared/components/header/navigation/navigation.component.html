@@ -13,18 +13,17 @@
         @let isSyncPage = item.link === '/octopus';
         @let isInternal = item.link.startsWith('/');
         @if (isInternal) {
-          <span #rla="routerLinkActive" routerLinkActive="active"
+          <span #routerActive="routerLinkActive" routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
-            <a [lang]="languageService.selectedLanguage()" class="nav-link"
-               [ngClass]="{
-                 'text-primary': isMobileMode() || rla.isActive,
-                 'text-secondary': !isMobileMode() && !rla.isActive,
-            active: isHomePage || rla.isActive }"
-             aria-current="page"
-               [routerLink]="item.link" >
+            <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
+                'text-primary': isMobileMode() || routerActive.isActive,
+                'text-secondary': !isMobileMode() && !routerActive.isActive,
+            active: isHomePage || routerActive.isActive }"
+            aria-current="page"
+            [routerLink]="item.link" >
               {{ item.label | translate }}
             </a>
-            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': rla.isActive }"></div>
+            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div>
           </span>
         } @else {
           <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{

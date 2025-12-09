@@ -16,7 +16,7 @@ export type SyncJobKey =
 
 export type SyncJobStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
 
-export interface SyncJobExecutionDto {
+export interface SyncJobExecution {
   jobKey: SyncJobKey;
   status: SyncJobStatus;
   triggeredAt?: string;
@@ -103,8 +103,8 @@ export class AdminDashboardService {
     );
   }
 
-  fetchSyncJobExecutions(): Observable<SyncJobExecutionDto[]> {
-    return this.http.get<SyncJobExecutionDto[]>(API_URI.SCHEDULED_TASK, {
+  fetchSyncJobExecutions(): Observable<SyncJobExecution[]> {
+    return this.http.get<SyncJobExecution[]>(API_URI.SYNC_JOB_EXECUTION, {
       headers: this.getAuthHeaders(),
       context: new HttpContext().set(
                 LoadingComponent,

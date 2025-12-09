@@ -7,6 +7,7 @@ import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.logging.TrackApiCallFromNeo;
+import com.axonivy.market.logging.TrackSyncJobExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -216,19 +217,12 @@ public class ProductDetailsController {
   }
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
+  @TrackSyncJobExecution(SyncJobType.SYNC_RELEASE_NOTES)
   public void syncLatestReleasesForProducts() throws IOException {
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_RELEASE_NOTES);
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
-    try {
-      List<String> productIds = this.productService.getProductIdList();
-      for (String productId : productIds) {
-        this.productService.syncGitHubReleaseModels(productId, pageable);
-      }
-      syncJobExecutionService.markSuccess(execution,
-          "Synced release notes for %d product(s)".formatted(productIds.size()));
-    } catch (Exception ex) {
-      syncJobExecutionService.markFailure(execution, ex.getMessage());
-      throw ex;
+    List<String> productIdList = this.productService.getProductIdList();
+    for (String productId : productIdList) {
+      this.productService.syncGitHubReleaseModels(productId, pageable);
     }
   }
 

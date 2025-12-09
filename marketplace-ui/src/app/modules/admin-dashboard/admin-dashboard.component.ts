@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, finalize } from 'rxjs';
-import { AdminDashboardService, SyncResponse, SyncJobExecutionDto, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
+import { AdminDashboardService, SyncResponse, SyncJobExecution, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
@@ -244,7 +244,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  private applySyncJobExecutions(executions: SyncJobExecutionDto[]): void {
+  private applySyncJobExecutions(executions: SyncJobExecution[]): void {
     for (const execution of executions) {
       const job = this.jobs.find(j => j.key === execution.jobKey);
       if (!job) {

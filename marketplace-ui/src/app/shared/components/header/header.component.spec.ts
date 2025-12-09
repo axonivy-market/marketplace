@@ -26,7 +26,7 @@ describe('HeaderComponent', () => {
   });
 
   it('should toggle the mobile menu on click', () => {
-    const navbarToggler = fixture.debugElement.query(By.css('button.navbar-toggler'));
+    const navbarToggler = fixture.debugElement.query(By.css('.bi.bi-list'));
 
     expect(component.isMobileMenuCollapsed()).toBeTrue();
 
@@ -57,7 +57,7 @@ describe('HeaderComponent', () => {
     const headerActionBeforeShowNavBar = headerAction.getBoundingClientRect();
 
     const menuButton = fixture.debugElement.query(
-      By.css('button.navbar-toggler')
+      By.css('.header__menu-button')
     );
     menuButton.triggerEventHandler('click', null);
     fixture.detectChanges();
@@ -79,7 +79,7 @@ describe('HeaderComponent', () => {
   it('navigation section should display in vertical', () => {
     viewport.set(540);
     const menuButton = fixture.debugElement.query(
-      By.css('button.navbar-toggler')
+      By.css('.header__menu-button')
     );
     menuButton.triggerEventHandler('click', null);
 
@@ -94,7 +94,7 @@ describe('HeaderComponent', () => {
   it('menu button should be in the right side of mobile view', () => {
     viewport.set(540);
     const menuButton = fixture.nativeElement.querySelector(
-      'button.navbar-toggler'
+      '.header__menu-button'
     );
 
     const logo = fixture.nativeElement.querySelector('.logo__image');

@@ -17,7 +17,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export class NavigationComponent {
   @Input() navItems: NavItem[] = NAV_ITEMS;
   @Input() adminNavItems: NavItem[] = ADMIN_NAV_ITEMS;
-  @Input() isAdmin = false;
+  @Input() isAdminPage = false;
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
@@ -42,6 +42,6 @@ export class NavigationComponent {
   }
 
   get items(): NavItem[] {
-    return this.isAdmin ? this.adminNavItems : this.navItems;
+    return this.isAdminPage ? this.adminNavItems : this.navItems;
   }
 }

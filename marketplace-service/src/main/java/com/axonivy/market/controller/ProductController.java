@@ -8,11 +8,11 @@ import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.logging.TrackApiCallFromNeo;
+import com.axonivy.market.logging.TrackSyncJobExecution;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
-import com.axonivy.market.service.SyncJobExecutionService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,7 +57,6 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final ProductDependencyService productDependencyService;
-  private final SyncJobExecutionService syncJobExecutionService;
 
   @GetMapping()
   @TrackApiCallFromNeo
@@ -95,39 +94,32 @@ public class ProductController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
+  @TrackSyncJobExecution(SyncJobType.SYNC_PRODUCTS)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_PRODUCTS);
-    var stopWatch = StopWatch.createStarted();
-    try {
-      List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
-      var message = new Message();
-      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-      message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-      if (ObjectUtils.isEmpty(syncedProductIds)) {
-        message.setMessageDetails("Data is already up to date, nothing to sync");
-      } else {
-        message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
-            stopWatch.getTime()));
-      }
-      syncJobExecutionService.markSuccess(execution, message.getMessageDetails());
-      return new ResponseEntity<>(message, HttpStatus.OK);
-    } catch (Exception ex) {
-      syncJobExecutionService.markFailure(execution, ex.getMessage());
-      throw ex;
-    } finally {
-      if (stopWatch.isStarted() && !stopWatch.isStopped()) {
-        stopWatch.stop();
-      }
+    var stopWatch = new StopWatch();
+    stopWatch.start();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
+    var message = new Message();
+    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
+      message.setMessageDetails("Data is already up to date, nothing to sync");
+    } else {
+      stopWatch.stop();
+      message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+          stopWatch.getTime()));
     }
+    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
+  @TrackSyncJobExecution(SyncJobType.SYNC_ONE_PRODUCT)
   public ResponseEntity<Message> syncOneProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
@@ -140,32 +132,23 @@ public class ProductController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    var execution = syncJobExecutionService.start(SyncJobType.SYNC_ONE_PRODUCT);
     var message = new Message();
-    try {
-      if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
-          overrideMarketItemPath) && CollectionUtils.isEmpty(
-          axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
-        message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
-        message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
-        syncJobExecutionService.markFailure(execution, message.getMessageDetails());
-        return new ResponseEntity<>(message, HttpStatus.OK);
-      }
-
-      var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
-      if (isSuccess) {
-        message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-        message.setMessageDetails("Sync successfully!");
-        syncJobExecutionService.markSuccess(execution, message.getMessageDetails());
-      } else {
-        message.setMessageDetails("Sync unsuccessfully!");
-        syncJobExecutionService.markFailure(execution, message.getMessageDetails());
-      }
+    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
+        overrideMarketItemPath) && CollectionUtils.isEmpty(
+        axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
+      message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
+      message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
       return new ResponseEntity<>(message, HttpStatus.OK);
-    } catch (Exception ex) {
-      syncJobExecutionService.markFailure(execution, ex.getMessage());
-      throw ex;
     }
+
+    var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
+    if (isSuccess) {
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+      message.setMessageDetails("Sync successfully!");
+    } else {
+      message.setMessageDetails("Sync unsuccessfully!");
+    }
+    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
   @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)
