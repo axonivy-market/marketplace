@@ -90,3 +90,9 @@ axon:
   ivy:
     developer:
       url: 'https://developer.axonivy.com'
+
+matomo:
+  tracker:
+    api-endpoint: '${MARKET_SERVER_MATOMO_TRACKER_URL}'
+    default-site-id: '${MARKET_MATOMO_SITE_ID}'
+    enabled: true
