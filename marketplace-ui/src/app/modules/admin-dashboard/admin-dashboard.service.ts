@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpContext,
+  HttpHeaders,
+  HttpParams
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
@@ -7,6 +12,7 @@ import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { RequestParam } from '../../shared/enums/request-param';
 
 export type SyncJobKey =
   | 'syncProducts'
@@ -22,13 +28,6 @@ export interface SyncJobExecution {
   triggeredAt?: string;
   completedAt?: string;
   message?: string;
-  reference?: string;
-}
-
-export interface SyncResponse {
-  helpCode?: string;
-  helpText?: string;
-  messageDetails?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,19 +38,15 @@ export class AdminDashboardService {
   ) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token =
-      this.sessionStorageRef.session?.getItem(
-        ADMIN_SESSION_TOKEN
-      ) ?? '';
-    if (!token) {
-      return new HttpHeaders();
-    }
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const token = this.sessionStorageRef.session?.getItem(ADMIN_SESSION_TOKEN);
+    return token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
   }
 
-  syncProducts(resetSync: boolean = false): Observable<SyncResponse> {
-    const params = new HttpParams().set('resetSync', String(resetSync));
-    return this.http.put<SyncResponse>(
+  syncProducts(resetSync = false): Observable<SyncJobExecution> {
+    const params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
+    return this.http.put<SyncJobExecution>(
       `${API_URI.PRODUCT}/sync`,
       {},
       {
@@ -65,15 +60,18 @@ export class AdminDashboardService {
     id: string,
     marketItemPath: string,
     overrideMarketItemPath?: boolean
-  ): Observable<SyncResponse> {
-    let params = new HttpParams().set('marketItemPath', marketItemPath);
+  ): Observable<SyncJobExecution> {
+    let params = new HttpParams().set(
+      RequestParam.MARKET_ITEM_PATH,
+      marketItemPath
+    );
     if (overrideMarketItemPath != null) {
       params = params.set(
-        'overrideMarketItemPath',
+        RequestParam.OVERRIDE_MARKET_ITEM_PATH,
         String(overrideMarketItemPath)
       );
     }
-    return this.http.put<SyncResponse>(
+    return this.http.put<SyncJobExecution>(
       `${API_URI.PRODUCT}/sync/${id}`,
       {},
       {
@@ -97,7 +95,7 @@ export class AdminDashboardService {
       `${API_URI.GITHUB_REPORT}/sync`,
       {},
       {
-        responseType: 'text',
+        responseType: 'text' as const,
         headers: this.getAuthHeaders()
       }
     );
@@ -107,9 +105,9 @@ export class AdminDashboardService {
     return this.http.get<SyncJobExecution[]>(API_URI.SYNC_JOB_EXECUTION, {
       headers: this.getAuthHeaders(),
       context: new HttpContext().set(
-                LoadingComponent,
-                LoadingComponentId.ADMIN_DASHBOARD
-              )
+        LoadingComponent,
+        LoadingComponentId.ADMIN_DASHBOARD
+      )
     });
   }
 
@@ -133,7 +131,11 @@ export class AdminDashboardService {
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.SECURITY_MONITOR
+      )
     });
   }
 }

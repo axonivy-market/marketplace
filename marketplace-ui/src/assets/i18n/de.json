@@ -303,6 +303,7 @@
         "title": "Synchronisierungsaufträge",
         "description": "Verwalten Sie Synchronisierungsaufträge.",
         "helpText": "Synchronisierungsaufträge halten die Marktplatzdaten aktuell, indem regelmäßig Updates aus externen Quellen abgerufen werden. Administratoren können ihren Status verfolgen und sicherstellen, dass die neuesten Informationen im Marktplatz angezeigt werden.",
+        "number": "Nr.",
         "action": "Aktionen",
         "syncJob": "Synchronisierungsauftrag",
         "status": "Status",

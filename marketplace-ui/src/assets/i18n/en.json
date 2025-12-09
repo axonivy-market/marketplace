@@ -303,6 +303,7 @@
         "title": "Sync Jobs",
         "description": "Manage sync jobs.",
         "helpText": "Sync jobs keep marketplace data up-to-date by regularly fetching updates from external sources. Administrators can track their status and ensure the latest information is reflected in the marketplace.",
+        "number": "No.",
         "action": "Actions",
         "syncJob": "Sync Job",
         "status": "Status",

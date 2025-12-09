@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, finalize } from 'rxjs';
-import { AdminDashboardService, SyncResponse, SyncJobExecution, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
+import { AdminDashboardService, SyncJobExecution, SyncJobStatus, SyncJobKey } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
@@ -17,7 +17,6 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
-import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface SyncJobRow {
@@ -46,8 +45,8 @@ interface SyncJobRow {
 })
 
 export class AdminDashboardComponent implements OnInit {
+
   private readonly router = inject(Router);
-  protected LoadingComponentId = LoadingComponentId;
 
   service = inject(AdminDashboardService);
   languageService = inject(LanguageService);
@@ -95,7 +94,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private updateVisibility(url: string) {
-     this.showSyncJob = /^\/octopus\/?(\?.*)?$/.test(url);
+    this.showSyncJob = /^\/octopus\/?(\?.*)?$/.test(url);
   }
 
   onSubmit(): void {
@@ -150,7 +149,7 @@ export class AdminDashboardComponent implements OnInit {
           })
         )
         .subscribe({
-          next: res => this.handleSuccess(job, res),
+          next: () => this.handleSuccess(job),
           error: err => {
             const shouldReload = !(err instanceof HttpErrorResponse) || err.status !== UNAUTHORIZED;
             this.handleFailure(job, err, shouldReload);
@@ -167,14 +166,14 @@ export class AdminDashboardComponent implements OnInit {
       this.service.syncLatestReleasesForProducts()
         .pipe(finalize(() => { this.loadingJobKey = null; }))
         .subscribe({
-          next: () => this.handleSuccess(job, { messageDetails: 'Release notes synced' }),
+          next: () => this.handleSuccess(job),
           error: err => this.handleFailure(job, err)
         });
     } else if (job.key === 'syncGithubMonitor') {
       this.service.syncGithubMonitor()
         .pipe(finalize(() => { this.loadingJobKey = null; }))
         .subscribe({
-          next: res => this.handleSuccess(job, { messageDetails: res }),
+          next: res => this.handleSuccess(job),
           error: err => this.handleFailure(job, err)
         });
     }
@@ -205,7 +204,7 @@ export class AdminDashboardComponent implements OnInit {
       .subscribe({
         next: res => {
           this.showSyncOneProductDialog = false;
-          this.handleSuccess(job, res);
+          this.handleSuccess(job);
         },
         error: err => {
           this.showSyncOneProductDialog = false;
@@ -218,10 +217,10 @@ export class AdminDashboardComponent implements OnInit {
     this.showSyncOneProductDialog = false;
   }
 
-  private handleSuccess(job: SyncJobRow, res: SyncResponse) {
+  private handleSuccess(job: SyncJobRow) {
     job.completedAt = new Date();
     job.status = 'SUCCESS';
-    job.message = res.messageDetails || 'Success';
+    job.message = 'Success';
     this.loadSyncJobExecutions();
   }
 
@@ -254,12 +253,7 @@ export class AdminDashboardComponent implements OnInit {
       job.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : undefined;
       job.completedAt = execution.completedAt ? new Date(execution.completedAt) : undefined;
       job.message = execution.message ?? undefined;
-      job.reference = execution.reference ?? undefined;
     }
-  }
-
-  get anyJobRunning(): boolean {
-    return this.jobs.some(j => j.status === 'RUNNING');
   }
 
   getStatusClass(status?: SyncJobStatus): string {

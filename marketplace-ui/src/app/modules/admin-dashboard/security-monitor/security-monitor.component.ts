@@ -30,7 +30,7 @@ export class SecurityMonitorComponent implements OnInit{
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];
   protected LoadingComponentId = LoadingComponentId;
-  private readonly service = inject(AdminDashboardService);
+  adminDashboardService = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
   isBrowser: boolean;
 
@@ -62,7 +62,7 @@ export class SecurityMonitorComponent implements OnInit{
   }
 
   private fetchSecurityDetails(): void {
-    this.service
+    this.adminDashboardService
       .getSecurityDetails()
       .subscribe({
         next: data => this.handleSuccess(data),

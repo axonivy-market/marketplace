@@ -5,7 +5,6 @@ import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.model.SyncJobExecutionModel;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface SyncJobExecutionService {
   SyncJobExecution start(SyncJobType jobType);

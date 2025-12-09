@@ -207,3 +207,21 @@ td {
   font-size: 1.2rem;
   width: 100%;
 }
+
+.sync-button {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #{white};
+  cursor: pointer;
+  margin-right: 1.1rem;
+  vertical-align: middle;
+}
+
+.sync-button::ng-deep {
+  vertical-align: middle;
+}
+
+.sync-button:hover {
+  opacity: 0.8;
+}

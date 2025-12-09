@@ -36,7 +36,7 @@
                   <th
                     class="text-primary"
                     [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.sync.action' | translate }}
+                    {{ 'common.admin.sync.number' | translate }}
                   </th>
                   <th
                     class="text-primary"
@@ -63,30 +63,16 @@
                     [lang]="languageService.selectedLanguage()">
                     {{ 'common.admin.sync.message' | translate }}
                   </th>
+                  <th
+                    class="text-primary"
+                    [lang]="languageService.selectedLanguage()">
+                    {{ 'common.admin.sync.action' | translate }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let job of jobs">
-                  <td>
-                    <button
-                      type="button"
-                      [lang]="languageService.selectedLanguage()"
-                      class="btn border-0 mb-0 sync-button text-center"
-                      [ngClass]="
-                        themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
-                      "
-                      (click)="trigger(job)"
-                      [disabled]="anyJobRunning">
-                      @if (
-                        loadingJobKey === job.key || job.status === 'RUNNING'
-                      ) {
-                        <i class="fa fa-spinner fa-spin me-2"></i>
-                        {{ 'common.admin.sync.syncingLabel' | translate }}
-                      } @else {
-                        {{ 'common.admin.sync.syncLabel' | translate }}
-                      }
-                    </button>
-                  </td>
+                <tr *ngFor="let job of jobs; let index = index">
+                  <td>{{ index + 1 }}</td>
                   <td>{{ job.label }}</td>
                   <td>
                     <span [ngClass]="getStatusClass(job.status)">
@@ -100,10 +86,27 @@
                     {{ job.completedAt | date: 'short' }}
                   </td>
                   <td class="message-cell">
-                    <div>{{ job.message }}</div>
-                    <div class="small text-muted" *ngIf="job.reference">
-                      Ref: {{ job.reference }}
-                    </div>
+                    {{ job.message }}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      [lang]="languageService.selectedLanguage()"
+                      class="btn border-0 mb-0 sync-button text-center"
+                      [ngClass]="
+                        themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
+                      "
+                      (click)="trigger(job)"
+                      [disabled]="job.status === 'RUNNING'">
+                      @if (
+                        loadingJobKey === job.key || job.status === 'RUNNING'
+                      ) {
+                        <i class="fa fa-spinner fa-spin me-2"></i>
+                        {{ 'common.admin.sync.syncingLabel' | translate }}
+                      } @else {
+                        {{ 'common.admin.sync.syncLabel' | translate }}
+                      }
+                    </button>
                   </td>
                 </tr>
               </tbody>
