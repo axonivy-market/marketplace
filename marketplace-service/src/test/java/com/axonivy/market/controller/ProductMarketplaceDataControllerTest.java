@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,12 +59,12 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
   @Test
   void testExtractArtifactUrlReturnBadGateWay() {
-    var result = productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
-        MOCK_DOWNLOAD_URL);
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Status code show return bad gateway when it can " + "not " +
-            "forwarding the download stream");
-    assertNull(result.getBody(), "Response body should not be null");
+    when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL))
+        .thenReturn(ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null));
+
+    assertThrows(NotFoundException.class, () -> {
+      productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+    }, "Expected NotFoundException to be thrown when artifact resource is not found");
   }
 
   @Test

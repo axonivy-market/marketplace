@@ -15,6 +15,7 @@ import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FeedbackService;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@AllArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
   private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
   private static final int MIN_STAR = 1;
@@ -42,13 +44,6 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final GithubUserRepository githubUserRepository;
   private final ProductRepository productRepository;
-
-  public FeedbackServiceImpl(FeedbackRepository feedbackRepository, GithubUserRepository githubUserRepository,
-      ProductRepository productRepository) {
-    this.feedbackRepository = feedbackRepository;
-    this.githubUserRepository = githubUserRepository;
-    this.productRepository = productRepository;
-  }
 
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {

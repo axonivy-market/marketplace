@@ -10,17 +10,15 @@ import java.io.Serial;
 @Getter
 @Setter
 @AllArgsConstructor
-public class NoContentException extends RuntimeException {
-
+public class FileProcessingException extends RuntimeException {
   @Serial
   private static final long serialVersionUID = 1L;
-  private static final String SEPARATOR = "-";
 
   private final String code;
   private final String message;
 
-  public NoContentException(ErrorCode errorCode, String additionalMessage) {
+  public FileProcessingException(ErrorCode errorCode) {
     this.code = errorCode.getCode();
-    this.message = errorCode.getHelpText() + SEPARATOR + additionalMessage;
+    this.message = errorCode.getHelpText();
   }
 }

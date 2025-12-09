@@ -10,7 +10,7 @@ import java.util.List;
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
 
-  void loadAndStoreTestRepostsForOneProduct(String productId) throws IOException;
+  void loadAndStoreTestReportsForOneProduct(String productId) throws IOException;
 
   void updateFocusedRepo(List<String> repos);
 

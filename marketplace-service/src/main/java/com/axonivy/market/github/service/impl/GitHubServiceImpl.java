@@ -60,7 +60,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
@@ -197,7 +196,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) {
+  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
+      String orgName) throws IOException {
     try {
       var gitHub = getGitHub(accessToken);
       GHOrganization organization = gitHub.getOrganization(orgName);
@@ -211,7 +211,7 @@ public class GitHubServiceImpl implements GitHubService {
               Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
     } catch (IOException e) {
       log.error(e);
-      return Collections.emptyList();
+      throw new IOException(ErrorCode.INTERNAL_EXCEPTION.getHelpText(), e);
     }
   }
 

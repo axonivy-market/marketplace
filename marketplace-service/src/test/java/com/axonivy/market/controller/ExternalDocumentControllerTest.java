@@ -41,7 +41,6 @@ class ExternalDocumentControllerTest {
   @InjectMocks
   private ExternalDocumentController externalDocumentController;
 
-
   @Test
   void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
@@ -64,9 +63,8 @@ class ExternalDocumentControllerTest {
     var result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
     assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
 
-    var mockProduct = mock(Product.class);
-    when(service.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
-    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
+    when(service.determineProductIdsForSync("portal")).thenReturn(List.of("portal"));
+    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, "portal", null);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
   }
 

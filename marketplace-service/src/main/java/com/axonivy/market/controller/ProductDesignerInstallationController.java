@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,14 +23,11 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController
 @RequestMapping(PRODUCT_DESIGNER_INSTALLATION)
+@AllArgsConstructor
 @Tag(name = "Product Designer Installation Controllers",
     description = "API collection to get designer installation count.")
 public class ProductDesignerInstallationController {
   private final ProductDesignerInstallationService productDesignerInstallationService;
-
-  public ProductDesignerInstallationController(ProductDesignerInstallationService productDesignerInstallationService) {
-    this.productDesignerInstallationService = productDesignerInstallationService;
-  }
 
   @Loggable
   @GetMapping(DESIGNER_INSTALLATION_BY_ID)

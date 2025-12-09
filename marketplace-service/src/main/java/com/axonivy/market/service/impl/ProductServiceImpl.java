@@ -12,9 +12,11 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -25,7 +27,6 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -63,10 +64,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.*;
@@ -103,7 +108,6 @@ public class ProductServiceImpl implements ProductService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
-  private final GithubRepoRepository githubRepo;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
@@ -472,7 +476,7 @@ public class ProductServiceImpl implements ProductService {
       return;
     }
 
-    var lastUpdated = MetadataReaderUtils.getLastUpdatedDate(document);
+    var lastUpdated = getLastUpdatedDate(document);
     if (ObjectUtils.isEmpty(product.getNewestPublishedDate()) || lastUpdated.after(product.getNewestPublishedDate())) {
       String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
       product.setNewestPublishedDate(lastUpdated);
@@ -495,6 +499,14 @@ public class ProductServiceImpl implements ProductService {
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
     }
+  }
+
+  private static Date getLastUpdatedDate(Document document) {
+    var lastUpdatedFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
+    var newestPublishedDate =
+        LocalDateTime.parse(Objects.requireNonNull(MetadataReaderUtils.getElementValue(document,
+            MavenConstants.LAST_UPDATED_TAG)), lastUpdatedFormatter);
+    return Date.from(newestPublishedDate.atZone(ZoneOffset.UTC).toInstant());
   }
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
@@ -521,24 +533,21 @@ public class ProductServiceImpl implements ProductService {
     return mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
-  private void updateFocusedStatusForProduct(Product product) {
-    var repo = githubRepo.findByNameOrProductId(EMPTY ,product.getId());
-    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
-    product.setIsFocused(isFocused);
-  }
-
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
-      return productItem;
-    }).orElse(null);
+    if (product == null) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id);
+    }
+
+    int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+    product.setInstallationCount(installationCount);
+
+    String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+    product.setCompatibilityRange(compatibilityRange);
+
+    return product;
   }
 
   @Override
@@ -553,16 +562,18 @@ public class ProductServiceImpl implements ProductService {
     } else {
       product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
     }
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
-      productItem.setBestMatchVersion(bestMatchVersion);
-      return productItem;
-    }).orElse(null);
+    if (product == null) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id );
+    }
+    int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+    product.setInstallationCount(installationCount);
+
+    String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+    product.setCompatibilityRange(compatibilityRange);
+
+    product.setBestMatchVersion(bestMatchVersion);
+    return product;
   }
 
   @Override
@@ -598,11 +609,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    var product = productRepo.getProductByIdAndVersion(id, version);
-    if (product != null ) {
-      updateFocusedStatusForProduct(product);
-    }
-    return product;
+    return productRepo.getProductByIdAndVersion(id, version);
   }
 
   public void transferComputedDataFromDB(Product product) {
@@ -685,19 +692,15 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public boolean syncFirstPublishedDateOfAllProducts() {
-    try {
-      List<Product> products = productRepo.findAll();
-      if (!CollectionUtils.isEmpty(products)) {
-        for (Product product : products) {
-          updateFirstPublishedDateOfProduct(product);
-        }
+    List<Product> products = productRepo.findAll();
+    if (!CollectionUtils.isEmpty(products)) {
+      for (Product product : products) {
+        updateFirstPublishedDateOfProduct(product);
       }
       log.info("sync FirstPublishedDate of all products is finished!");
       return true;
-    } catch (Exception e) {
-      log.error(e);
-      return false;
     }
+    return false;
   }
 
   private void updateFirstPublishedDateOfProduct(Product product) {

@@ -1,5 +1,7 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.controller.FeedbackController;
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +15,9 @@ import org.springframework.hateoas.server.core.Relation;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -72,4 +77,7 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Is latest approved or pending feedback", example = "true")
   private Boolean isLatest;
 
+  public static void addModelLinks(FeedbackModel model, Feedback feedback){
+    model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
+  }
 }
