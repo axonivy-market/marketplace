@@ -15,7 +15,6 @@ import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.
 import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 import { WindowRef } from './core/services/browser/window-ref.service';
 import { DocumentRef } from './core/services/browser/document-ref.service';
-import { FaviconService } from './shared/services/favicon.service';
 
 @Component({
   selector: 'app-root',

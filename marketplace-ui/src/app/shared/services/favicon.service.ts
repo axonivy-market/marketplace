@@ -6,7 +6,7 @@ import { LINK_REL_ICON, LINK_REL_QUERY } from "../constants/common.constant";
   providedIn: 'root'
 })
 export class FaviconService {
-  constructor(@Inject(DOCUMENT) private document: Document) {}
+  constructor(@Inject(DOCUMENT) private readonly document: Document) {}
   setFavicon(url: string): void {
     let link: HTMLLinkElement | null = this.document.querySelector(LINK_REL_QUERY);
 
