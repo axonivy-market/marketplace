@@ -349,7 +349,7 @@
         "description": "Manage quick access links.",
         "helpText": "Configure the most frequently used pages or external links that should appear as quick access shortcuts on the Admin Dashboard. Administrators can add, edit, or remove links to help navigate efficiently.",
         "monitoring": "Monitoring: Access the monitoring dashboard for build pipelines and test results.",
-        "montoringNote": "Please check daily to ensure all extensions are healthy.",
+        "monitoringNote": "Please check daily to ensure all extensions are healthy.",
         "releasePreview": "Release Preview: Quickly preview extensions' details by uploading a ZIP file with a README.md.",
         "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace."
       }

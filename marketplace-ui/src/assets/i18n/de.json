@@ -349,7 +349,7 @@
         "description": "Verwalten Sie die Schnellzugriffe.",
         "helpText": "Konfigurieren Sie häufig verwendete Seiten oder externe Links, die als Schnellzugriffe im Admin-Dashboard angezeigt werden sollen. Administratoren können Links hinzufügen, bearbeiten oder entfernen, um eine effiziente Navigation zu ermöglichen.",
         "monitoring": "Monitoring: Zugriff auf das Monitoring-Dashboard für Build-Pipelines und Testergebnisse.",
-        "montoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",
+        "monitoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",
         "releasePreview": "Release-Vorschau: Schnelle Vorschau der Erweiterungsdetails durch Hochladen einer ZIP-Datei mit einer README.md.",
         "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen."
       }

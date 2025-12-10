@@ -3,7 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, of, firstValueFrom } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
-import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
+import {
+  ChangeLogCriteria,
+  Criteria
+} from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
@@ -68,10 +71,9 @@ export class ProductService {
     productId: string,
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
-    return this.httpClient
-      .get<ProductDetail>(
-        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-      );
+    return this.httpClient.get<ProductDetail>(
+      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
+    );
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -97,9 +99,15 @@ export class ProductService {
     return this.httpClient.put<number>(url, null);
   }
 
-  sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
+  sendRequestToGetProductVersionsForDesigner(
+    productId: string,
+    showDevVersion: boolean,
+    designerVersion: string
+  ) {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
-    const params = new HttpParams().append('designerVersion', designerVersion).append('isShowDevVersion', showDevVersion);
+    const params = new HttpParams()
+      .append('designerVersion', designerVersion)
+      .append('isShowDevVersion', showDevVersion);
     return this.httpClient.get<VersionAndUrl[]>(url, { params });
   }
 
@@ -114,7 +122,9 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {
+  getProductChangelogs(
+    criteria: ChangeLogCriteria
+  ): Observable<ProductReleasesApiResponse> {
     let requestParams = new HttpParams();
     let url = '';
     if (criteria.nextPageHref) {
@@ -129,8 +139,10 @@ export class ProductService {
     }
     return this.httpClient
       .get<ProductReleasesApiResponse>(url, {
-        context: new HttpContext()
-          .set(LoadingComponent, LoadingComponentId.PRODUCT_CHANGELOG),
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.PRODUCT_CHANGELOG
+        ),
         params: requestParams
       })
       .pipe(
@@ -141,36 +153,37 @@ export class ProductService {
       );
   }
 
-  async fetchAllProductIds(pageSize = 200, language: Language = Language.EN): Promise<string[]> {
+  async fetchAllProductIds(
+    pageSize = 200,
+    language: Language = Language.EN
+  ): Promise<string[]> {
     const ids: string[] = [];
     let page = 0;
     let totalPages = 1;
-    try {
-      do {
-        const criteria: Criteria = {
-          search: '',
-          sort: SortOption.STANDARD,
-          type: TypeOption.All_TYPES,
-          language,
-          isRESTClientEditor: false,
-          pageable: {
-            page,
-            size: pageSize
-          }
-        };
-        const response = await firstValueFrom(this.findProductsByCriteria(criteria));
-        const products = response?._embedded?.products ?? [];
-        ids.push(...products.map(product => product.id).filter(Boolean));
-        const pageInfo = response?.page;
-        if (!pageInfo) {
-          break;
-        }
-        totalPages = pageInfo.totalPages;
-        page = pageInfo.number + 1;
-      } while (page < totalPages);
-    } catch (error) {
-      console.warn('fetchAllProductIds failed', error);
-    }
+    do {
+      const criteria: Criteria = {
+        search: '',
+        sort: SortOption.STANDARD,
+        type: TypeOption.All_TYPES,
+        isRESTClientEditor: false,
+        pageable: {
+          page,
+          size: pageSize
+        },
+        language
+      };
+      const response = await firstValueFrom(
+        this.findProductsByCriteria(criteria)
+      );
+      const products = response?._embedded?.products ?? [];
+      ids.push(...products.map(product => product.id).filter(Boolean));
+      const pageInfo = response?.page;
+      if (!pageInfo) {
+        break;
+      }
+      totalPages = pageInfo.totalPages;
+      page = pageInfo.number + 1;
+    } while (page < totalPages);
     return ids;
   }
 }

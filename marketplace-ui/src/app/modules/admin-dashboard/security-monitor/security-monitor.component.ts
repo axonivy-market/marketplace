@@ -112,7 +112,7 @@ export class SecurityMonitorComponent implements OnInit{
   }
 
   formatCommitDate(date: string): string {
-    const now = new Date().getTime();
+    const now = Date.now();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
 
@@ -131,7 +131,7 @@ export class SecurityMonitorComponent implements OnInit{
       }
     }
 
-    const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
+    const years = Math.floor(diffInSeconds / TIME_UNITS.at(-1)!.SECONDS);
     if (years === 1) {
       return `${years} year ago`;
     } else {

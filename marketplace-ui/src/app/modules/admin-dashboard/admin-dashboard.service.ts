@@ -59,23 +59,15 @@ export class AdminDashboardService {
   syncOneProduct(
     id: string,
     marketItemPath: string,
-    overrideMarketItemPath?: boolean
+    overrideMarketItemPath = false
   ): Observable<SyncJobExecution> {
-    let params = new HttpParams().set(
-      RequestParam.MARKET_ITEM_PATH,
-      marketItemPath
-    );
-    if (overrideMarketItemPath != null) {
-      params = params.set(
-        RequestParam.OVERRIDE_MARKET_ITEM_PATH,
-        String(overrideMarketItemPath)
-      );
-    }
+    const requestParams = new HttpParams()
+      .set(RequestParam.MARKET_ITEM_PATH, marketItemPath)
+      .set(RequestParam.OVERRIDE_MARKET_ITEM_PATH, overrideMarketItemPath);
     return this.http.put<SyncJobExecution>(
       `${API_URI.PRODUCT}/sync/${id}`,
-      {},
       {
-        params,
+        params: requestParams,
         headers: this.getAuthHeaders()
       }
     );

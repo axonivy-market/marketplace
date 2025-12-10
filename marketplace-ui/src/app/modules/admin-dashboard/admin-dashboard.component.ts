@@ -25,13 +25,7 @@ import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-
-export interface SyncJobRow
-  extends Omit<SyncJobExecution, 'triggeredAt' | 'completedAt'> {
-  labelKey: string;
-  triggeredAt?: Date;
-  completedAt?: Date;
-}
+import { SyncJobRow } from '../../shared/models/sync-job-execution.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -71,14 +65,16 @@ export class AdminDashboardComponent implements OnInit {
   showSyncOneProductDialog = false;
   productIds: string[] = [];
 
-  private readonly syncJobTriggers: Record<SyncJobKey, () => Observable<any>> =
-    {
-      syncProducts: () => this.service.syncProducts(),
-      syncLatestReleasesForProducts: () =>
-        this.service.syncLatestReleasesForProducts(),
-      syncGithubMonitor: () => this.service.syncGithubMonitor(),
-      syncOneProduct: () => EMPTY
-    };
+  private readonly syncJobTriggers: Record<
+    SyncJobKey,
+    () => Observable<unknown>
+  > = {
+    syncProducts: () => this.service.syncProducts(),
+    syncLatestReleasesForProducts: () =>
+      this.service.syncLatestReleasesForProducts(),
+    syncGithubMonitor: () => this.service.syncGithubMonitor(),
+    syncOneProduct: () => EMPTY
+  };
 
   constructor(private readonly storageRef: SessionStorageRef) {}
 
@@ -114,11 +110,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private async loadAllProductIds(): Promise<void> {
-    try {
-      this.productIds = await this.productService.fetchAllProductIds();
-    } catch (e) {
-      console.warn('Failed to load product IDs', e);
-    }
+    this.productIds = await this.productService.fetchAllProductIds();
   }
 
   trigger(job: SyncJobRow) {
@@ -127,8 +119,8 @@ export class AdminDashboardComponent implements OnInit {
     Object.assign(job, {
       status: 'RUNNING',
       triggeredAt: new Date(),
-      completedAt: undefined,
-      message: undefined
+      completedAt: null,
+      message: null
     });
 
     if (job.jobKey === 'syncOneProduct') {
@@ -202,11 +194,11 @@ export class AdminDashboardComponent implements OnInit {
     this.loadSyncJobExecutions();
   }
 
-  private handleFailure(job: SyncJobRow, err: unknown, reload = true) {
+  private handleFailure(job: SyncJobRow, reload = true) {
     Object.assign(job, {
       status: 'FAILED',
       completedAt: new Date(),
-      message: this.extractErrorMessage(err)
+      message: 'Failed'
     });
     if (reload && this.isAuthenticated) {
       this.loadSyncJobExecutions();
@@ -223,17 +215,16 @@ export class AdminDashboardComponent implements OnInit {
   private applySyncJobExecutions(executions: SyncJobExecution[]): void {
     for (const execution of executions) {
       const job = this.jobs.find(j => j.jobKey === execution.jobKey);
-      if (!job) {
-        continue;
+      if (job) {
+        job.status = execution.status;
+        job.triggeredAt = execution.triggeredAt
+          ? new Date(execution.triggeredAt)
+          : undefined;
+        job.completedAt = execution.completedAt
+          ? new Date(execution.completedAt)
+          : undefined;
+        job.message = execution.message ?? undefined;
       }
-      job.status = execution.status;
-      job.triggeredAt = execution.triggeredAt
-        ? new Date(execution.triggeredAt)
-        : undefined;
-      job.completedAt = execution.completedAt
-        ? new Date(execution.completedAt)
-        : undefined;
-      job.message = execution.message ?? undefined;
     }
   }
 
@@ -248,19 +239,6 @@ export class AdminDashboardComponent implements OnInit {
       default:
         return '';
     }
-  }
-
-  private extractErrorMessage(err: unknown): string {
-    if (!err) return 'Failed';
-
-    if (typeof err === 'string') return err;
-
-    if (typeof err === 'object') {
-      const obj = err as any;
-      return obj?.error?.message ?? obj?.error ?? obj?.message ?? 'Failed';
-    }
-
-    return 'Failed';
   }
 
   private handleError(err: HttpErrorResponse): void {

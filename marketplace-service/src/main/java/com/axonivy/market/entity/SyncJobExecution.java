@@ -31,8 +31,6 @@ public class SyncJobExecution extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private SyncJobType jobType;
 
-  private String jobKey;
-
   @Enumerated(EnumType.STRING)
   private SyncJobStatus status;
 

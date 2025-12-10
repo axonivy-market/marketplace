@@ -28,6 +28,7 @@ public class SyncJobExecutionServiceImpl implements SyncJobExecutionService {
   private final SyncJobExecutionRepository syncJobExecutionRepo;
 
   @Transactional
+  @Override
   public SyncJobExecution start(SyncJobType jobType) {
     SyncJobExecution execution = findOrCreate(jobType);
     execution.setStatus(SyncJobStatus.RUNNING);
@@ -39,16 +40,19 @@ public class SyncJobExecutionServiceImpl implements SyncJobExecutionService {
   }
 
   @Transactional
+  @Override
   public void markStatusSuccess(SyncJobExecution execution, String message) {
     updateSyncJob(execution, SyncJobStatus.SUCCESS, message);
   }
 
   @Transactional
+  @Override
   public void markStatusFailure(SyncJobExecution execution, String message) {
     updateSyncJob(execution, SyncJobStatus.FAILED, message);
   }
 
   @Transactional(readOnly = true)
+  @Override
   public List<SyncJobExecutionModel> getAllSyncJobExecutions() {
     return Arrays.stream(SyncJobType.values())
         .map(syncJobExecutionRepo::findByJobType)
@@ -58,6 +62,7 @@ public class SyncJobExecutionServiceImpl implements SyncJobExecutionService {
   }
 
   @Transactional(readOnly = true)
+  @Override
   public SyncJobExecutionModel getSyncJobExecutionByKey(String jobKey) {
     return SyncJobType.fromJobKey(jobKey)
         .flatMap(syncJobExecutionRepo::findByJobType)

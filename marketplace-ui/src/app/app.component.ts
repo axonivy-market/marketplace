@@ -3,10 +3,9 @@ import { HeaderComponent } from './shared/components/header/header.component';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
-import { AfterViewInit, Component, OnInit, inject, Renderer2 } from '@angular/core';
+import { Component, inject, Renderer2 } from '@angular/core';
 import {
   ActivatedRoute,
-  NavigationEnd,
   NavigationError,
   Router,
   RouterOutlet,

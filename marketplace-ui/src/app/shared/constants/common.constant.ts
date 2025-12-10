@@ -5,7 +5,7 @@ import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
-import { SyncJobRow } from '../../modules/admin-dashboard/admin-dashboard.component';
+import { SyncJobRow } from '../models/sync-job-execution.model';
 
 export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 

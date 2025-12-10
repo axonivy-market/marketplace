@@ -50,7 +50,7 @@ public class SyncJobExecutionController {
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     SyncJobExecutionModel model = syncJobExecutionService.getSyncJobExecutionByKey(jobKey);
-    if (ObjectUtils.isNotEmpty(model)) {
+    if (ObjectUtils.isEmpty(model)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(model, HttpStatus.OK);
