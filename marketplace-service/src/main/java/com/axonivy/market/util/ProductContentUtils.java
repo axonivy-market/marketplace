@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
 
 public final class ProductContentUtils {
   /*
@@ -84,18 +85,18 @@ public final class ProductContentUtils {
     String demo = Strings.EMPTY;
     String setup = Strings.EMPTY;
 
-    if (demoStart == -1 && setupStart == -1) {
+    if (demoStart == INDEX_NOT_FOUND && setupStart == INDEX_NOT_FOUND) {
       description = removeFirstLine(readmeContents);
     } else if (isDemoFirst(demoStart, setupStart)) {
       description = removeFirstLine(readmeContents.substring(0, demoStart));
       demo = extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN, setupStart);
-      setup = setupStart != -1 ? extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN,
-          -1) : Strings.EMPTY;
+      setup = setupStart != INDEX_NOT_FOUND ? extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN,
+          INDEX_NOT_FOUND) : Strings.EMPTY;
     } else {
       description = removeFirstLine(readmeContents.substring(0, setupStart));
       setup = extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN, demoStart);
-      demo = demoStart != -1 ? extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN,
-          -1) : Strings.EMPTY;
+      demo = demoStart != INDEX_NOT_FOUND ? extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN,
+          INDEX_NOT_FOUND) : Strings.EMPTY;
     }
 
     var model = new ReadmeContentsModel();
@@ -135,7 +136,7 @@ public final class ProductContentUtils {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      if (index != StringUtils.INDEX_NOT_FOUND) {
+      if (index != INDEX_NOT_FOUND) {
         result = text.substring(index + 1).trim();
       } else {
         result = Strings.EMPTY;
