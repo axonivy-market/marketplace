@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
@@ -11,6 +11,10 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import {
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK
+} from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -47,18 +51,24 @@ export class ProductService {
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
-    );
+    return this.httpClient
+      .get<ProductDetail>(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`)
+      .pipe(
+        map((response: ProductDetail) => this.setDefaultVendorImage(response))
+      );
   }
 
   getBestMatchProductDetailsWithVersion(
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
-    );
+    return this.httpClient
+      .get<ProductDetail>(
+        `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+      )
+      .pipe(
+        map((response: ProductDetail) => this.setDefaultVendorImage(response))
+      );
   }
 
   getProductDetails(
@@ -136,5 +146,17 @@ export class ProductService {
           return of(productReleasesApiResponse);
         })
       );
+  }
+  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+    const { vendorImage, vendorImageDarkMode } = productDetail;
+ 
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
+    } else {
+      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
+      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    }
+    return productDetail;
   }
 }

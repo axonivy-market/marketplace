@@ -2,7 +2,7 @@ import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { map, Observable, take, tap } from 'rxjs';
+import { Observable, take, tap } from 'rxjs';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -12,8 +12,6 @@ import { RoutingQueryParamService } from '../../shared/services/routing.query.pa
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
@@ -107,21 +105,6 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
           targetVersion
         );
     }
-    return productDetail$.pipe(
-      map((response: ProductDetail) => this.setDefaultVendorImage(response))
-    );
-  }
-
-  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
-    const { vendorImage, vendorImageDarkMode } = productDetail;
-
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
-      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
-      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    } else {
-      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
-      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
-    }
-    return productDetail;
+    return productDetail$;
   }
 }
