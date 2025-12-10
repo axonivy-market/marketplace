@@ -15,6 +15,11 @@ describe('FaviconService', () => {
     document = TestBed.inject(DOCUMENT);
   });
 
+  afterEach(() => {
+    const links = document.querySelectorAll(LINK_REL_QUERY);
+    links.forEach(link => link.remove());
+  });
+
   it('should create a new favicon link if none exists', () => {
     const url = 'https://example.com/icon.png';
 
