@@ -159,31 +159,37 @@ export class ProductService {
   ): Promise<string[]> {
     const ids: string[] = [];
     let page = 0;
-    let totalPages = 1;
-    do {
-      const criteria: Criteria = {
-        search: '',
-        sort: SortOption.STANDARD,
-        type: TypeOption.All_TYPES,
-        isRESTClientEditor: false,
-        pageable: {
-          page,
-          size: pageSize
-        },
-        language
-      };
+    while (true) {
       const response = await firstValueFrom(
-        this.findProductsByCriteria(criteria)
+        this.findProductsByCriteria({
+          search: '',
+          sort: SortOption.STANDARD,
+          type: TypeOption.All_TYPES,
+          isRESTClientEditor: false,
+          pageable: {
+            page,
+            size: pageSize
+          },
+          language
+        })
       );
-      const products = response?._embedded?.products ?? [];
-      ids.push(...products.map(product => product.id).filter(Boolean));
+
+      const products = response?._embedded?.products;
+      if (products?.length) {
+        for (const product of products) {
+          if (product?.id) {
+            ids.push(product.id);
+          }
+        }
+      }
+
       const pageInfo = response?.page;
-      if (!pageInfo) {
+      if (!pageInfo || pageInfo.number >= pageInfo.totalPages - 1) {
         break;
       }
-      totalPages = pageInfo.totalPages;
+
       page = pageInfo.number + 1;
-    } while (page < totalPages);
+    }
     return ids;
   }
 }

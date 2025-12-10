@@ -11,9 +11,6 @@ import { of } from 'rxjs';
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
   let fixture: ComponentFixture<SecurityMonitorComponent>;
-  let service: jasmine.SpyObj<AdminDashboardService>;
-  let translateService: jasmine.SpyObj<TranslateService>;
-  let pageTitleService: jasmine.SpyObj<PageTitleService>;
 
   beforeEach(async () => {
     const securityMonitorSpy = jasmine.createSpyObj('AdminDashboardService', ['getSecurityDetails']);
@@ -33,7 +30,6 @@ describe('SecurityMonitorComponent', () => {
       ]
     }).compileComponents();
 
-    service = TestBed.inject(AdminDashboardService) as jasmine.SpyObj<AdminDashboardService>;
   });
 
   beforeEach(() => {
