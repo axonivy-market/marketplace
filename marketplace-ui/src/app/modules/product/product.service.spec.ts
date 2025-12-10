@@ -218,7 +218,7 @@ describe('ProductService', () => {
       return true;
     });
 
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe('PUT');
   });
 
   it('sendRequestToGetProductVersionForDesigner', () => {

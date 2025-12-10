@@ -12,6 +12,8 @@ import { RoutingQueryParamService } from '../../shared/services/routing.query.pa
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
@@ -112,8 +114,14 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
 
   setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
-    productDetail.vendorImage = vendorImage || vendorImageDarkMode;
-    productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
+    } else {
+      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
+      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    }
     return productDetail;
   }
 }
