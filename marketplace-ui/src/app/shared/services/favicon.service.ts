@@ -1,5 +1,6 @@
 import { DOCUMENT } from "@angular/common";
 import { Inject, Injectable } from "@angular/core";
+import { LINK_REL_ICON, LINK_REL_QUERY } from "../constants/common.constant";
 
 @Injectable({
   providedIn: 'root'
@@ -7,12 +8,11 @@ import { Inject, Injectable } from "@angular/core";
 export class FaviconService {
   constructor(@Inject(DOCUMENT) private document: Document) {}
   setFavicon(url: string): void {
-    let link: HTMLLinkElement | null = this.document.querySelector('link[rel="icon"]');
+    let link: HTMLLinkElement | null = this.document.querySelector(LINK_REL_QUERY);
 
     if (!link) {
       link = this.document.createElement('link');
-      link.rel = 'icon';
-      link.type = 'image/x-icon'; // Or 'image/png', 'image/gif' based on your favicon type
+      link.rel = LINK_REL_ICON;
       this.document.head.appendChild(link);
     }
     link.href = url;

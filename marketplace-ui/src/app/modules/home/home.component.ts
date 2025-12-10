@@ -5,6 +5,7 @@ import { ProductComponent } from '../product/product.component';
 import { Router } from '@angular/router';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { FaviconService } from '../../shared/services/favicon.service';
+import { DEFAULT_FAVICON_URL } from '../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-home',
@@ -21,7 +22,7 @@ export class HomeComponent {
     faviconService = inject(FaviconService);
 
   ngOnInit(): void {
-    this.faviconService.setFavicon("favicon.ico");
+    this.faviconService.setFavicon(DEFAULT_FAVICON_URL);
     this.pageTitleService.setTitleOnLangChange('common.branch');
   }
 }
