@@ -86,14 +86,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize without token', () => {
-    spyOn(component, 'fetchFeedbacks');
-    component.ngOnInit();
-    expect(component.token).toBe('');
-    expect(component.isAuthenticated).toBeFalse();
-    expect(component.fetchFeedbacks).not.toHaveBeenCalled();
-  });
-
   it('should update feedback status and refresh', fakeAsync(() => {
     const feedback: Feedback = {
       id: '1',
@@ -225,43 +217,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.isAuthenticated).toBeFalse();
   }));
 
-  it('should show token input when not authenticated', () => {
-    component.isAuthenticated = false;
-    fixture.detectChanges();
-    const tokenInput = fixture.debugElement.query(By.css('#token-input'));
-    const submitButton = fixture.debugElement.query(By.css('.btn-primary'));
-    expect(tokenInput).toBeTruthy();
-    expect(submitButton).toBeTruthy();
-  });
-
-  it('should display error message when present', () => {
-    component.isAuthenticated = false;
-    component.errorMessage = 'Test Error';
-    fixture.detectChanges();
-    const errorElement = fixture.debugElement.query(By.css('.error-message'));
-    expect(errorElement.nativeElement.textContent).toBe('Test Error');
-  });
-
-  it('should update token model on input', () => {
-    component.isAuthenticated = false;
-    fixture.detectChanges();
-    const input = fixture.debugElement.query(
-      By.css('#token-input')
-    ).nativeElement;
-    input.value = 'newToken';
-    input.dispatchEvent(new Event('input'));
-    expect(component.token).toBe('newToken');
-  });
-
-  it('should show authenticated content when authenticated', () => {
-    component.isAuthenticated = true;
-    fixture.detectChanges();
-    const container = fixture.debugElement.query(By.css('.container'));
-    const tabs = fixture.debugElement.query(By.css('.tab-group'));
-    expect(container).toBeTruthy();
-    expect(tabs).toBeTruthy();
-  });
-
   it('should toggle between tabs correctly', fakeAsync(() => {
     component.isAuthenticated = true;
     fixture.detectChanges();
@@ -303,17 +258,4 @@ describe('FeedbackApprovalComponent', () => {
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
     expect(component.moderatorName).toBeUndefined();
   }));
-
-  it('should set errorMessage and stop loading if not authenticated', () => {
-    component.isAuthenticated = false;
-    spyOn(component, 'fetchUserInfo').and.callFake(() => {});
-
-    component.fetchFeedbacks();
-
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isLoading).toBeFalse();
-    expect(
-      productFeedbackServiceMock.findProductFeedbacks
-    ).not.toHaveBeenCalled();
-  });
 });

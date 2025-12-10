@@ -5,22 +5,26 @@ import { CommonModule } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { TIME_UNITS } from '../../../shared/constants/common.constant';
 import { PageTitleService } from '../../../shared/services/page-title.service';
+import { AdminDashboardService } from '../admin-dashboard.service';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
   let fixture: ComponentFixture<SecurityMonitorComponent>;
+  let service: jasmine.SpyObj<AdminDashboardService>;
   let translateService: jasmine.SpyObj<TranslateService>;
   let pageTitleService: jasmine.SpyObj<PageTitleService>;
 
   beforeEach(async () => {
+    const securityMonitorSpy = jasmine.createSpyObj('AdminDashboardService', ['getSecurityDetails']);
     const translateSpy = jasmine.createSpyObj('TranslateService', ['get']);
-    const pageTitleSpy = jasmine.createSpyObj('TranslateService', [
+    const pageTitleSpy = jasmine.createSpyObj('PageTitleService', [
       'setTitleOnLangChange'
     ]);
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule],
       providers: [
+        { provide: AdminDashboardService, useValue: securityMonitorSpy },
         { provide: TranslateService, useValue: translateSpy },
         { provide: PageTitleService, useValue: pageTitleSpy }
       ]

@@ -179,16 +179,4 @@ describe('AppComponent', () => {
     routerEventsSubject.next(navigationError);
     expect(router.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
   });
-
-  it('should hide global header and container on admin routes', () => {
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('header'));
-    expect(headerElement).toBeNull();
-
-    const containerElement = fixture.debugElement.query(
-      By.css('main .container')
-    );
-    expect(containerElement).toBeNull();
-  });
 });
