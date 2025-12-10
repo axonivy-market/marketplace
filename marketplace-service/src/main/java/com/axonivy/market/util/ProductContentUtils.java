@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
@@ -99,7 +98,7 @@ public final class ProductContentUtils {
           -1) : Strings.EMPTY;
     }
 
-    ReadmeContentsModel model = new ReadmeContentsModel();
+    var model = new ReadmeContentsModel();
     model.setDescription(description.trim());
     model.setDemo(demo.trim());
     model.setSetup(setup.trim());
@@ -107,7 +106,7 @@ public final class ProductContentUtils {
   }
 
   private static int findSectionStart(Pattern pattern, String content) {
-    Matcher matcher = pattern.matcher(content);
+    var matcher = pattern.matcher(content);
     return matcher.find() ? matcher.start() : -1;
   }
 
@@ -116,7 +115,7 @@ public final class ProductContentUtils {
   }
 
   private static String extractSection(String content, int start, Pattern pattern, int nextSectionStart) {
-    Matcher matcher = pattern.matcher(content);
+    var matcher = pattern.matcher(content);
     if (!matcher.find(start)) {
       return Strings.EMPTY;
     }
