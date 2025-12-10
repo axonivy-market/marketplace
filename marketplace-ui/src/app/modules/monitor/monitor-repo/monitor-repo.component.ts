@@ -3,6 +3,7 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges
@@ -36,6 +37,12 @@ import {
   STANDARD_TAB
 } from '../../../shared/constants/common.constant';
 import { MonitoringCriteria } from '../../../shared/models/criteria.model';
+import { debounceTime, Subject, Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { PAGE } from '../../../shared/constants/query.params.constant';
+import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+const SEARCH_DEBOUNCE_TIME = 500;
 
 export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
@@ -52,27 +59,30 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     NgbTypeaheadModule,
     NgbPaginationModule,
     ProductFilterComponent,
-    RepoTestResultComponent
-  ],
+    RepoTestResultComponent,
+    LoadingSpinnerComponent
+],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
-export class MonitoringRepoComponent implements OnInit {
+export class MonitoringRepoComponent implements OnInit, OnDestroy {
   readonly COLUMN_NAME = NAME_COLUMN;
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
 
   @Input() tabKey!: string;
-  @Input() initialFilter = '';
   @Input() activeTab = '';
+  @Input() initialSearch = '';
+  searchTextChanged = new Subject<string>();
   @Output() searchChange = new EventEmitter<string>();
-
+  subscriptions: Subscription[] = [];
   mode: Record<string, RepoMode> = {};
   workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
   page = 1;
   pageSize = 10;
   totalElements = 0;
+  protected LoadingComponentId = LoadingComponentId;
   sortColumn = this.COLUMN_NAME;
   sortDirection = ASCENDING;
   displayedRepositories: Repository[] = [];
@@ -86,26 +96,49 @@ export class MonitoringRepoComponent implements OnInit {
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   githubService = inject(GithubService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+  PAGE = PAGE;
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {
       this.mode[this.tabKey] = DEFAULT_MODE;
     }
-
-    if (this.initialFilter) {
-      this.criteria.search = this.initialFilter;
+    let isFocusedProduct;
+    if (this.activeTab === STANDARD_TAB) {
+      isFocusedProduct = 'false';
+    } else {
+      isFocusedProduct = 'true';
     }
+    this.criteria.isFocused = isFocusedProduct;
+    this.criteria.search = this.initialSearch;
+    this.subscriptions.push(
+      this.searchTextChanged
+        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+        .subscribe(value => {
+          this.criteria = {
+            ...this.criteria,
+            search: value
+          };
+          this.loadRepositories();
 
-    this.loadRepositories(this.criteria);
+          let queryParams: { repoSearch: string | null } = { repoSearch: null };
+          if (value) {
+            queryParams = { repoSearch: this.criteria.search };
+          }
+
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParamsHandling: 'merge',
+            queryParams
+          });
+        })
+    );
+    this.loadRepositories();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activeTab'] && !changes['activeTab'].firstChange) {
-      this.resetDefaultPage();
-      this.updateCriteriaAndLoad();
-    }
-    if (changes['initialFilter'] && !changes['initialFilter'].firstChange) {
-      this.criteria.search = this.initialFilter;
       this.resetDefaultPage();
       this.updateCriteriaAndLoad();
     }
@@ -117,29 +150,30 @@ export class MonitoringRepoComponent implements OnInit {
   }
 
   updateCriteriaAndLoad() {
-    if (this.activeTab !== STANDARD_TAB) {
-      this.criteria.isFocused = 'true';
+    let isFocusedProduct;
+    if (this.activeTab === STANDARD_TAB) {
+      isFocusedProduct = 'false';
     } else {
-      this.criteria.isFocused = '';
+      isFocusedProduct = 'true';
     }
+    this.criteria.isFocused = isFocusedProduct;
     this.criteria.pageable.size = this.pageSize;
     this.criteria.pageable.page = this.page - 1;
-    this.loadRepositories(this.criteria);
+    this.loadRepositories();
   }
 
   onSearchChanged(searchString: string) {
     this.page = 1;
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
-    this.criteria.search = searchString;
-    this.loadRepositories(this.criteria);
+    this.searchTextChanged.next(searchString);
   }
 
   onPageChange(newPage: number) {
     this.page = newPage;
     this.criteria.pageable.page = newPage - 1;
     this.criteria.pageable.size = this.pageSize;
-    this.loadRepositories(this.criteria);
+    this.loadRepositories();
   }
 
   onPageSizeChanged(newSize: number) {
@@ -147,7 +181,7 @@ export class MonitoringRepoComponent implements OnInit {
     this.page = 1;
     this.criteria.pageable.page = 0;
     this.criteria.pageable.size = this.pageSize;
-    this.loadRepositories(this.criteria);
+    this.loadRepositories();
   }
 
   getMarketUrl(productId: string): string {
@@ -163,7 +197,7 @@ export class MonitoringRepoComponent implements OnInit {
     }
     this.criteria.sortDirection = this.sortDirection;
     this.criteria.workflowType = this.sortColumn;
-    this.loadRepositories(this.criteria);
+    this.loadRepositories();
   }
 
   private toggleSortDirection() {
@@ -190,13 +224,21 @@ export class MonitoringRepoComponent implements OnInit {
     }
   }
 
-  loadRepositories(criteria: MonitoringCriteria): void {
-    this.githubService.getRepositories(criteria).subscribe({
-      next: data => {
-        this.displayedRepositories = data?._embedded?.githubRepos || [];
-        this.totalElements = data.page?.totalElements ?? 0;
-      }
-    });
+  loadRepositories(): void {
+    this.subscriptions.push(
+      this.githubService.getRepositories(this.criteria).subscribe({
+        next: data => {
+          this.displayedRepositories = data?._embedded?.githubRepos || [];
+          this.totalElements = data.page?.totalElements ?? 0;
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    for (const sub of this.subscriptions) {
+      sub.unsubscribe();
+    }
   }
 
   protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;

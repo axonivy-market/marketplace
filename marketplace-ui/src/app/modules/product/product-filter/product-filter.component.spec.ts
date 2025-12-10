@@ -8,6 +8,8 @@ import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { SimpleChanges } from '@angular/core';
+import { clear } from 'node:console';
+import { PAGE } from '../../../shared/constants/query.params.constant';
 
 declare const viewport: Viewport;
 
@@ -39,7 +41,7 @@ describe('ProductFilterComponent', () => {
     component = fixture.componentInstance;
     activatedRoute = TestBed.inject(ActivatedRoute);
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    component.isProductHomepage = true;
+    component.currentPage = PAGE.HOME;
     fixture.detectChanges();
   });
 
@@ -227,47 +229,6 @@ describe('ProductFilterComponent', () => {
     expect(clearSearchTextButton).toBeTruthy();
   });
 
-  describe('ngOnChanges()', () => {
-    it('should NOT update searchText when initialSearchText changes but searchText already has value', () => {
-      spyOn(component, 'onSearchChanged');
-      component.searchText = 'existing-search';
-      component.initialSearchText = '';
-
-      const changes = {
-        initialSearchText: {
-          currentValue: 'test-search',
-          previousValue: '',
-          firstChange: false,
-          isFirstChange: () => false
-        }
-      };
-
-      component.ngOnChanges(changes);
-
-      expect(component.searchText).toBe('existing-search');
-      expect(component.onSearchChanged).not.toHaveBeenCalled();
-    });
-
-    it('should NOT update searchText when initialSearchText is empty', () => {
-      spyOn(component, 'onSearchChanged');
-      component.searchText = '';
-
-      const changes = {
-        initialSearchText: {
-          currentValue: '',
-          previousValue: 'old-search',
-          firstChange: false,
-          isFirstChange: () => false
-        }
-      };
-
-      component.ngOnChanges(changes);
-
-      expect(component.searchText).toBe('');
-      expect(component.onSearchChanged).not.toHaveBeenCalled();
-    });
-  });
-
   describe('onClearSearch()', () => {
     it('should clear searchText when searchText has content', () => {
       component.searchText = 'amazon-connector';
@@ -297,7 +258,7 @@ describe('ProductFilterComponent', () => {
   })
 
   it('should render filter section when isProductHomepage is true', () => {
-    component.isProductHomepage = true;
+    component.currentPage = PAGE.HOME;
     fixture.detectChanges();
 
     const filterContainer = fixture.debugElement.query(
@@ -312,7 +273,7 @@ describe('ProductFilterComponent', () => {
   });
 
   it('should NOT render filter section when isProductHomepage is false', () => {
-    component.isProductHomepage = false;
+    component.currentPage = PAGE.MONITOR;
     fixture.detectChanges();
 
     const filterContainer = fixture.debugElement.query(

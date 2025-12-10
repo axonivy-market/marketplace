@@ -25,6 +25,7 @@ export interface ProductDetail {
   mavenDropins: boolean;
   metaProductJsonUrl?: string;
   compatibilityRange?: string;
+  isFocusedProduct: boolean;
   _links: {
     self: {
       href: string;
