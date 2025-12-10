@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { TIME_UNITS } from '../../../shared/constants/common.constant';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
+import { of } from 'rxjs';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
@@ -21,6 +22,8 @@ describe('SecurityMonitorComponent', () => {
       'setTitleOnLangChange'
     ]);
 
+    securityMonitorSpy.getSecurityDetails.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule],
       providers: [
@@ -29,6 +32,8 @@ describe('SecurityMonitorComponent', () => {
         { provide: PageTitleService, useValue: pageTitleSpy }
       ]
     }).compileComponents();
+
+    service = TestBed.inject(AdminDashboardService) as jasmine.SpyObj<AdminDashboardService>;
   });
 
   beforeEach(() => {
