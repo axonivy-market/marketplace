@@ -13,7 +13,7 @@ import {
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
-import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
+import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT, DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
@@ -300,6 +300,115 @@ describe('ProductService', () => {
     req.flush(null, {
       status: 0,
       statusText: 'Unknown Error'
+    });
+  });
+
+  describe('getProductDetailsWithVersion', () => {
+    it('should apply setDefaultVendorImage transformation to response', () => {
+      const productId = 'portal';
+      const version = '1.0';
+      const mockResponse = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '',
+        vendorImageDarkMode: ''
+      };
+
+      service.getProductDetailsWithVersion(productId, version).subscribe(result => {
+        expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
+        expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
+      });
+
+      const req = httpMock.expectOne(
+        request => request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should use fallback logic when only one image is missing', () => {
+      const productId = 'portal';
+      const version = '1.0';
+      const mockResponse = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '/assets/images/test.svg',
+        vendorImageDarkMode: ''
+      };
+
+      service.getProductDetailsWithVersion(productId, version).subscribe(result => {
+        expect(result.vendorImage).toBe('/assets/images/test.svg');
+        expect(result.vendorImageDarkMode).toBe('/assets/images/test.svg');
+      });
+
+      const req = httpMock.expectOne(
+        request => request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('getBestMatchProductDetailsWithVersion', () => {
+    it('should apply setDefaultVendorImage transformation to response', () => {
+      const productId = 'portal';
+      const version = '1.0';
+      const mockResponse = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '',
+        vendorImageDarkMode: ''
+      };
+
+      service.getBestMatchProductDetailsWithVersion(productId, version).subscribe(result => {
+        expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
+        expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
+      });
+
+      const req = httpMock.expectOne(
+        request => request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should use fallback logic when only dark mode image is missing', () => {
+      const productId = 'portal';
+      const version = '1.0';
+      const mockResponse = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '/assets/images/test-dark.svg',
+        vendorImageDarkMode: ''
+      };
+
+      service.getBestMatchProductDetailsWithVersion(productId, version).subscribe(result => {
+        expect(result.vendorImage).toBe('/assets/images/test-dark.svg');
+        expect(result.vendorImageDarkMode).toBe('/assets/images/test-dark.svg');
+      });
+
+      const req = httpMock.expectOne(
+        request => request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should use fallback logic when only regular image is missing', () => {
+      const productId = 'portal';
+      const version = '1.0';
+      const mockResponse = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '',
+        vendorImageDarkMode: '/assets/images/test-light.svg'
+      };
+
+      service.getBestMatchProductDetailsWithVersion(productId, version).subscribe(result => {
+        expect(result.vendorImage).toBe('/assets/images/test-light.svg');
+        expect(result.vendorImageDarkMode).toBe('/assets/images/test-light.svg');
+      });
+
+      const req = httpMock.expectOne(
+        request => request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
     });
   });
 });

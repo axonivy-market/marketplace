@@ -264,11 +264,6 @@ describe('ProductDetailResolver', () => {
   });
 
   describe('getProductById', () => {
-    beforeEach(() => {
-      spyOn(resolver, 'setDefaultVendorImage').and.returnValue(
-        MOCK_PRODUCT_DETAIL
-      );
-    });
 
     it('should call getProductDetails when no target version', () => {
       routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
@@ -304,23 +299,6 @@ describe('ProductDetailResolver', () => {
       expect(productService.getProductDetails).not.toHaveBeenCalled();
     });
 
-    it('should apply setDefaultVendorImage transformation', () => {
-      const targetVersion = '1.0';
-      routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-        targetVersion
-      );
-
-      productService.getBestMatchProductDetailsWithVersion.and.returnValue(
-        of(MOCK_PRODUCT_DETAIL)
-      );
-
-      resolver.getProductById(products[0].id, false).subscribe();
-
-      expect(resolver.setDefaultVendorImage).toHaveBeenCalledWith(
-        MOCK_PRODUCT_DETAIL
-      );
-    });
-
     it('should return transformed product detail', done => {
       routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
         ''
@@ -334,59 +312,4 @@ describe('ProductDetailResolver', () => {
     });
   });
 
-  describe('setDefaultVendorImage', () => {
-    it('should set default images when both vendor images are missing', () => {
-      const productDetailWithoutVendorImages = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImage: '',
-        vendorImageDarkMode: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutVendorImages
-      );
-
-      expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
-      expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
-    });
-
-    it('should use vendorImage for dark mode when dark mode image is missing', () => {
-      const productDetailWithoutDarkMode = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImageDarkMode: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutDarkMode
-      );
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-      expect(result.vendorImageDarkMode).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-    });
-
-    it('should use dark mode image for regular when regular image is missing', () => {
-      const productDetailWithoutRegularImage = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImage: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutRegularImage
-      );
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImageDarkMode);
-      expect(result.vendorImageDarkMode).toBe(
-        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
-      );
-    });
-
-    it('should keep original images when both are present', () => {
-      const result = resolver.setDefaultVendorImage(MOCK_PRODUCT_DETAIL);
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-      expect(result.vendorImageDarkMode).toBe(
-        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
-      );
-    });
-  });
 });

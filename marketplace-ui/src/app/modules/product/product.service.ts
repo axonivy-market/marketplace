@@ -147,6 +147,7 @@ export class ProductService {
         })
       );
   }
+
   private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
  
