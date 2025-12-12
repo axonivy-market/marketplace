@@ -52,10 +52,7 @@ export class ProductService {
     version: string
   ): Observable<ProductDetail> {
     return this.httpClient
-      .get<ProductDetail>(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`)
-      .pipe(
-        map((response: ProductDetail) => this.setDefaultVendorImage(response))
-      );
+      .get<ProductDetail>(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`);
   }
 
   getBestMatchProductDetailsWithVersion(
@@ -65,9 +62,6 @@ export class ProductService {
     return this.httpClient
       .get<ProductDetail>(
         `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
-      )
-      .pipe(
-        map((response: ProductDetail) => this.setDefaultVendorImage(response))
       );
   }
 
@@ -148,7 +142,7 @@ export class ProductService {
       );
   }
 
-  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
  
     if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
