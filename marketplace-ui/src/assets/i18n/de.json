@@ -39,7 +39,7 @@
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
       "contribute": "Hier findest du Erweiterungen für die Anbindung von  Standard-Softwarelösungen führender Anbieter wie Microsoft, Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder -signierung.",
-      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> implementiere deinen eigenen Konnektor.</a>"
+      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> implementiere deine eigene Erweiterung!</a>"
     },
     "filter": {
       "label": "Filter",
