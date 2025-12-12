@@ -23,13 +23,13 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
 
 public final class ProductContentUtils {
   /*
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
    * Match exactly Demo or Setup
    */
-  public static final String DEMO_SETUP_TITLE = "(?m)^[#\\s]*##?\\s*(Demo|Setup)\\s*$";
   private static final String HASH = "#";
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
@@ -48,8 +48,6 @@ public final class ProductContentUtils {
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
       Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-  public static final Pattern DEMO_SETUP_PATTERN =
-      Pattern.compile(DEMO_SETUP_TITLE);
 
   private ProductContentUtils() {
   }
@@ -80,39 +78,51 @@ public final class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    String[] parts = DEMO_SETUP_PATTERN.split(readmeContents);
-    int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
-    int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
-    String description = Strings.EMPTY;
-    String setup = Strings.EMPTY;
+    int demoStart = findSectionStart(ReadmeConstants.DEMO_PATTERN, readmeContents);
+    int setupStart = findSectionStart(ReadmeConstants.SETUP_PATTERN, readmeContents);
+
+    String description;
     String demo = Strings.EMPTY;
+    String setup = Strings.EMPTY;
 
-    if (parts.length > CommonConstants.ZERO) {
-      description = removeFirstLine(parts[CommonConstants.ZERO]);
+    if (demoStart == INDEX_NOT_FOUND && setupStart == INDEX_NOT_FOUND) {
+      description = removeFirstLine(readmeContents);
+    } else if (isDemoFirst(demoStart, setupStart)) {
+      description = removeFirstLine(readmeContents.substring(0, demoStart));
+      demo = extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN, setupStart);
+      setup = setupStart != INDEX_NOT_FOUND ? extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN,
+          INDEX_NOT_FOUND) : Strings.EMPTY;
+    } else {
+      description = removeFirstLine(readmeContents.substring(0, setupStart));
+      setup = extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN, demoStart);
+      demo = demoStart != INDEX_NOT_FOUND ? extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN,
+          INDEX_NOT_FOUND) : Strings.EMPTY;
     }
 
-    if (parts.length == CommonConstants.TWO) {
-      if (demoIndex != -1) {
-        demo = parts[CommonConstants.ONE];
-      } else {
-        setup = parts[CommonConstants.ONE];
-      }
-    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > CommonConstants.TWO) {
-      if (demoIndex < setupIndex) {
-        demo = parts[CommonConstants.ONE];
-        setup = parts[CommonConstants.TWO];
-      } else {
-        setup = parts[CommonConstants.ONE];
-        demo = parts[CommonConstants.TWO];
-      }
+    var model = new ReadmeContentsModel();
+    model.setDescription(description.trim());
+    model.setDemo(demo.trim());
+    model.setSetup(setup.trim());
+    return model;
+  }
+
+  private static int findSectionStart(Pattern pattern, String content) {
+    var matcher = pattern.matcher(content);
+    return matcher.find() ? matcher.start() : -1;
+  }
+
+  private static boolean isDemoFirst(int demoStart, int setupStart) {
+    return demoStart != -1 && (setupStart == -1 || demoStart < setupStart);
+  }
+
+  private static String extractSection(String content, int start, Pattern pattern, int nextSectionStart) {
+    var matcher = pattern.matcher(content);
+    if (!matcher.find(start)) {
+      return Strings.EMPTY;
     }
-
-    var readmeContentsModel = new ReadmeContentsModel();
-    readmeContentsModel.setDescription(description.trim());
-    readmeContentsModel.setDemo(demo.trim());
-    readmeContentsModel.setSetup(setup.trim());
-
-    return readmeContentsModel;
+    int sectionHeaderEnd = start + matcher.group().length();
+    int end = nextSectionStart != -1 ? nextSectionStart : content.length();
+    return content.substring(sectionHeaderEnd, end).trim();
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
@@ -126,7 +136,7 @@ public final class ProductContentUtils {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      if (index != StringUtils.INDEX_NOT_FOUND) {
+      if (index != INDEX_NOT_FOUND) {
         result = text.substring(index + 1).trim();
       } else {
         result = Strings.EMPTY;
