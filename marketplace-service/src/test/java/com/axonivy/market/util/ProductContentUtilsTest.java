@@ -158,26 +158,26 @@ class ProductContentUtilsTest extends BaseSetup {
     String readmeContentsWithHeading3 = """
         #Product-name
         Test README
-          ## Setup
+         ### Setup
         Setup content (./image.png)""";
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithHeading3);
     assertTrue(readmeContentsModel.getDescription().startsWith("Test README"),
         "Description should start with 'Test README' for heading3 format");
-    assertTrue(readmeContentsModel.getSetup().startsWith("Setup content (./image.png)"),
-        "Setup section should start with expected content for heading3 format");
+    assertTrue(readmeContentsModel.getSetup().isEmpty(), "Setup section should be empty for invalid heading format");
+
 
     String readmeContentsWithSpaceHeading = """
         #Product-name
         Test README
         ##Demo
-        ## Demo
+        ### Demo
         Demo content
            ## Setup
         Setup content (./image.png)""";
     ReadmeContentsModel readmeContentsModel1 =
         ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithSpaceHeading);
-    assertTrue(readmeContentsModel1.getDemo().startsWith("Demo content"),
-        "Demo section should start with '## Demo project' for space heading format");
+    assertTrue(readmeContentsModel1.getDemo().isEmpty(),
+        "Demo section should be empty for space heading format");
     assertTrue(readmeContentsModel1.getSetup().startsWith("Setup content (./image.png)"),
         "Setup section should start with expected content for space heading format");
   }

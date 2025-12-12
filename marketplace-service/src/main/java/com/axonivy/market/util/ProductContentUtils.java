@@ -78,26 +78,16 @@ public final class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    int demoStart = findSectionStart(ReadmeConstants.DEMO_PATTERN, readmeContents);
-    int setupStart = findSectionStart(ReadmeConstants.SETUP_PATTERN, readmeContents);
+    int firstDemoIndex = findSectionStart(ReadmeConstants.DEMO_PATTERN, readmeContents);
+    int firstSetUpIndex = findSectionStart(ReadmeConstants.SETUP_PATTERN, readmeContents);
 
-    String description;
-    String demo = Strings.EMPTY;
-    String setup = Strings.EMPTY;
+    int firstSection = minNonNegative(firstDemoIndex, firstSetUpIndex);
 
-    if (demoStart == INDEX_NOT_FOUND && setupStart == INDEX_NOT_FOUND) {
-      description = removeFirstLine(readmeContents);
-    } else if (isDemoFirst(demoStart, setupStart)) {
-      description = removeFirstLine(readmeContents.substring(0, demoStart));
-      demo = extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN, setupStart);
-      setup = setupStart != INDEX_NOT_FOUND ? extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN,
-          INDEX_NOT_FOUND) : Strings.EMPTY;
-    } else {
-      description = removeFirstLine(readmeContents.substring(0, setupStart));
-      setup = extractSection(readmeContents, setupStart, ReadmeConstants.SETUP_PATTERN, demoStart);
-      demo = demoStart != INDEX_NOT_FOUND ? extractSection(readmeContents, demoStart, ReadmeConstants.DEMO_PATTERN,
-          INDEX_NOT_FOUND) : Strings.EMPTY;
-    }
+    String description = (firstSection == INDEX_NOT_FOUND) ? removeFirstLine(readmeContents) : removeFirstLine(
+        readmeContents.substring(0, firstSection));
+
+    String demo = extractIfExists(readmeContents, firstDemoIndex, ReadmeConstants.DEMO_PATTERN, firstSetUpIndex);
+    String setup = extractIfExists(readmeContents, firstSetUpIndex, ReadmeConstants.SETUP_PATTERN, firstDemoIndex);
 
     var model = new ReadmeContentsModel();
     model.setDescription(description.trim());
@@ -106,23 +96,24 @@ public final class ProductContentUtils {
     return model;
   }
 
+  private static int minNonNegative(int a, int b) {
+    if (a == INDEX_NOT_FOUND) return b;
+    if (b == INDEX_NOT_FOUND) return a;
+    return Math.min(a, b);
+  }
+
+  private static String extractIfExists(String content, int start, Pattern pattern, int nextSectionStart) {
+    if (start == INDEX_NOT_FOUND) return Strings.EMPTY;
+    var matcher = pattern.matcher(content);
+    if (!matcher.find(start)) return Strings.EMPTY;
+    int sectionHeaderEnd = start + matcher.group().length();
+    int end = (nextSectionStart != INDEX_NOT_FOUND && nextSectionStart > start) ? nextSectionStart : content.length();
+    return content.substring(sectionHeaderEnd, end).trim();
+  }
+
   private static int findSectionStart(Pattern pattern, String content) {
     var matcher = pattern.matcher(content);
     return matcher.find() ? matcher.start() : -1;
-  }
-
-  private static boolean isDemoFirst(int demoStart, int setupStart) {
-    return demoStart != -1 && (setupStart == -1 || demoStart < setupStart);
-  }
-
-  private static String extractSection(String content, int start, Pattern pattern, int nextSectionStart) {
-    var matcher = pattern.matcher(content);
-    if (!matcher.find(start)) {
-      return Strings.EMPTY;
-    }
-    int sectionHeaderEnd = start + matcher.group().length();
-    int end = nextSectionStart != -1 ? nextSectionStart : content.length();
-    return content.substring(sectionHeaderEnd, end).trim();
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
