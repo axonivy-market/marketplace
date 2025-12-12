@@ -10,15 +10,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { FaviconService } from '../../shared/services/favicon.service';
+import { DEFAULT_FAVICON_URL } from '../../shared/constants/common.constant';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
+  let faviconServiceSpy: jasmine.SpyObj<FaviconService>;
 
   beforeEach(async () => {
+    faviconServiceSpy = jasmine.createSpyObj('FaviconService', ['setFavicon']);
     await TestBed.configureTestingModule({
       imports: [
-        HomeComponent, 
+        HomeComponent,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
@@ -31,7 +35,8 @@ describe('HomeComponent', () => {
           useValue: {
             queryParams: of({})
           }
-        }
+        },
+        { provide: FaviconService, useValue: faviconServiceSpy }
       ]
     }).compileComponents();
 
@@ -42,5 +47,11 @@ describe('HomeComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should call faviconService.setFavicon on init', () => {
+    expect(faviconServiceSpy.setFavicon).toHaveBeenCalledOnceWith(
+      DEFAULT_FAVICON_URL
+    );
   });
 });
