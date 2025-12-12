@@ -202,6 +202,8 @@ describe('ProductDetailComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductDetailComponent);
     component = fixture.componentInstance;
+    const productService = TestBed.inject(ProductService);
+    spyOn(productService, 'setDefaultVendorImage').and.callThrough();
 
     fixture.detectChanges();
     if ((window.scrollTo as any).calls) {

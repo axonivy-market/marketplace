@@ -208,6 +208,7 @@ export class ProductDetailComponent implements AfterViewInit {
         .getProductDetailsWithVersion(productId, version)
         .subscribe({
           next: updatedProductDetail => {
+            this.productService.setDefaultVendorImage(updatedProductDetail);
             this.productDetail.set(updatedProductDetail);
             this.processProductDetail(productId, updatedProductDetail);
           },
@@ -312,6 +313,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   handleProductDetail(productDetail: ProductDetail): void {
+    this.productService.setDefaultVendorImage(productDetail);
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
