@@ -19,7 +19,7 @@ export class HomeComponent {
   titleService = inject(Title);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-    faviconService = inject(FaviconService);
+  faviconService = inject(FaviconService);
 
   ngOnInit(): void {
     this.faviconService.setFavicon(DEFAULT_FAVICON_URL);
