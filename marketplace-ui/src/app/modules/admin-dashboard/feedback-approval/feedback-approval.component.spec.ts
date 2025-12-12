@@ -7,24 +7,20 @@ import {
 import { FeedbackApprovalComponent } from './feedback-approval.component';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../auth/auth.service';
-import { AppModalService } from '../../shared/services/app-modal.service';
-import { ProductFeedbackService } from '../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
-import { LanguageService } from '../../core/services/language/language.service';
-import { ThemeService } from '../../core/services/theme/theme.service';
+import { AuthService } from '../../../auth/auth.service';
+import { AppModalService } from '../../../shared/services/app-modal.service';
+import { ProductFeedbackService } from '../../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
+import { LanguageService } from '../../../core/services/language/language.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
-import {
-  ERROR_MESSAGES,
-  FEEDBACK_APPROVAL_SESSION_TOKEN,
-  UNAUTHORIZED
-} from '../../shared/constants/common.constant';
-import { Feedback } from '../../shared/models/feedback.model';
+import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
+import { Feedback } from '../../../shared/models/feedback.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FeedbackStatus } from '../../shared/enums/feedback-status.enum';
-import { MOCK_APPROVED_FEEDBACK } from '../../shared/mocks/mock-data';
+import { FeedbackStatus } from '../../../shared/enums/feedback-status.enum';
+import { MOCK_APPROVED_FEEDBACK } from '../../../shared/mocks/mock-data';
 
 describe('FeedbackApprovalComponent', () => {
   let component: FeedbackApprovalComponent;
@@ -90,48 +86,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch feedbacks when token exists', () => {
-    spyOn(component, 'fetchFeedbacks');
-    component.token = 'mockToken';
-    component.onSubmit();
-    expect(component.errorMessage).toBe('');
-    expect(component.fetchFeedbacks).toHaveBeenCalled();
-  });
-
-  it('should initialize without token', () => {
-    spyOn(component, 'fetchFeedbacks');
-    component.ngOnInit();
-    expect(component.token).toBe('');
-    expect(component.isAuthenticated).toBeFalse();
-    expect(component.fetchFeedbacks).not.toHaveBeenCalled();
-  });
-
-  it('should set session token and update authentication state', () => {
-    component.token = 'mockToken';
-    component.fetchFeedbacks();
-    expect(sessionStorage.setItem).toHaveBeenCalledWith(
-      FEEDBACK_APPROVAL_SESSION_TOKEN,
-      'mockToken'
-    );
-    expect(component.isAuthenticated).toBeTrue();
-  });
-
-  it('should handle error and clear session', fakeAsync(() => {
-    productFeedbackServiceMock.findProductFeedbacks.and.returnValue(
-      throwError(() => ({
-        status: UNAUTHORIZED
-      }))
-    );
-    component.token = 'mockToken';
-    component.fetchFeedbacks();
-    tick();
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isAuthenticated).toBeFalse();
-    expect(sessionStorage.removeItem).toHaveBeenCalledWith(
-      FEEDBACK_APPROVAL_SESSION_TOKEN
-    );
-  }));
-
   it('should update feedback status and refresh', fakeAsync(() => {
     const feedback: Feedback = {
       id: '1',
@@ -154,7 +108,7 @@ describe('FeedbackApprovalComponent', () => {
       of(updatedFeedback)
     );
 
-    component.moderatorName = ('TestUser');
+    component.moderatorName = 'TestUser';
     spyOn(component, 'fetchFeedbacks');
     component.onClickReviewButton(feedback, true);
     tick();
@@ -263,52 +217,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.isAuthenticated).toBeFalse();
   }));
 
-  it('should show token input when not authenticated', () => {
-    component.isAuthenticated = false;
-    fixture.detectChanges();
-    const tokenInput = fixture.debugElement.query(By.css('#token-input'));
-    const submitButton = fixture.debugElement.query(By.css('.btn-primary'));
-    expect(tokenInput).toBeTruthy();
-    expect(submitButton).toBeTruthy();
-  });
-
-  it('should display error message when present', () => {
-    component.isAuthenticated = false;
-    component.errorMessage = 'Test Error';
-    fixture.detectChanges();
-    const errorElement = fixture.debugElement.query(By.css('.error-message'));
-    expect(errorElement.nativeElement.textContent).toBe('Test Error');
-  });
-
-  it('should update token model on input', () => {
-    component.isAuthenticated = false;
-    fixture.detectChanges();
-    const input = fixture.debugElement.query(
-      By.css('#token-input')
-    ).nativeElement;
-    input.value = 'newToken';
-    input.dispatchEvent(new Event('input'));
-    expect(component.token).toBe('newToken');
-  });
-
-  it('should show authenticated content when authenticated', () => {
-    component.isAuthenticated = true;
-    fixture.detectChanges();
-    const container = fixture.debugElement.query(By.css('.container'));
-    const tabs = fixture.debugElement.query(By.css('.tab-group'));
-    expect(container).toBeTruthy();
-    expect(tabs).toBeTruthy();
-  });
-
-  it('should trigger onSubmit when submit button clicked', () => {
-    component.isAuthenticated = false;
-    spyOn(component, 'onSubmit');
-    fixture.detectChanges();
-    const button = fixture.debugElement.query(By.css('.btn-primary'));
-    button.triggerEventHandler('click', null);
-    expect(component.onSubmit).toHaveBeenCalled();
-  });
-
   it('should toggle between tabs correctly', fakeAsync(() => {
     component.isAuthenticated = true;
     fixture.detectChanges();
@@ -348,27 +256,6 @@ describe('FeedbackApprovalComponent', () => {
     tick();
 
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
-    expect(component.moderatorName).toBeUndefined(); // ✅ Matches actual behavior
+    expect(component.moderatorName).toBeUndefined();
   }));
-
-  it('should set errorMessage and stop loading if not authenticated', () => {
-    component.isAuthenticated = false;
-    spyOn(component, 'fetchUserInfo').and.callFake(() => {});
-
-    component.fetchFeedbacks();
-
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isLoading).toBeFalse();
-    expect(productFeedbackServiceMock.findProductFeedbacks).not.toHaveBeenCalled();
-  });
-
-  it('should call handleMissingToken and not fetchFeedbacks when token is missing', () => {
-    component.token = '';
-    spyOn(component, 'fetchFeedbacks');
-
-    component.onSubmit();
-
-    expect(component.fetchFeedbacks).not.toHaveBeenCalled();
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.TOKEN_REQUIRED);
-  });
 });

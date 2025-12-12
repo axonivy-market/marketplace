@@ -13,6 +13,8 @@ export const API_URI = {
   PREVIEW_RELEASE: `${API}/release-preview`,
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
+  SYNC_JOB_EXECUTION: `${API}/sync-job-execution`,
+  SECURITY_MONITOR: `${API}/security-monitor`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

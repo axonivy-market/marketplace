@@ -2,8 +2,10 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.PostgresDBConstants;
+import com.axonivy.market.enums.SyncJobType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.logging.TrackSyncJobExecution;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -17,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,6 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
-  private final PagedResourcesAssembler<GithubReposModel> pagedResourcesAssembler;
 
   @GetMapping(REPOS_REPORT)
   public ResponseEntity<List<TestStepsModel>> getTestReport(
@@ -60,6 +60,7 @@ public class MonitorDashBoardController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
+  @TrackSyncJobExecution(SyncJobType.SYNC_GITHUB_MONITOR)
   public ResponseEntity<String> syncGithubMonitor(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);

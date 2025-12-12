@@ -1,21 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject, Input, signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { NAV_ITEMS, SEARCH_URL } from '../../../constants/common.constant';
+import { ADMIN_NAV_ITEMS, NAV_ITEMS, SEARCH_URL } from '../../../constants/common.constant';
 import { NavItem } from '../../../models/nav-item.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { WindowRef } from '../../../../core/services/browser/window-ref.service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [CommonModule, TranslateModule, RouterLink, RouterLinkActive],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss'
 })
 export class NavigationComponent {
   @Input() navItems: NavItem[] = NAV_ITEMS;
+  @Input() adminNavItems: NavItem[] = ADMIN_NAV_ITEMS;
+  @Input() isAdminPage = false;
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
@@ -26,7 +28,7 @@ export class NavigationComponent {
     this.checkMediaSize();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkMediaSize();
   }
@@ -37,5 +39,9 @@ export class NavigationComponent {
       const mediaQuery = win.matchMedia('(max-width: 992px)');
       this.isMobileMode.set(mediaQuery.matches);
     }
+  }
+
+  get items(): NavItem[] {
+    return this.isAdminPage ? this.adminNavItems : this.navItems;
   }
 }
