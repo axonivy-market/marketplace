@@ -92,7 +92,7 @@
                     [lang]="languageService.selectedLanguage()"
                     class="btn border-0 mb-0 sync-button text-center"
                     [ngClass]="
-                      themeService.isDarkMode() ? 'btn-light' : 'btn-primary'
+                      themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'
                     "
                     (click)="trigger(job)"
                     [disabled]="job.status === 'RUNNING'">
@@ -117,7 +117,7 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header justify-content-between">
-                <h5 class="modal-title">Sync One Product</h5>
+                <h5 class="modal-title">{{ 'common.admin.sync.syncOneProductDialog.title' | translate }}</h5>
                 <button
                   type="button"
                   class="btn-close ms-auto"
@@ -137,12 +137,12 @@
                     </option>
                   </select>
                   <small class="text-muted">
-                    {{ 'common.admin.sync.chooseExtensionIdHint' | translate }}
+                    {{ 'common.admin.sync.syncOneProductDialog.chooseExtensionIdHint' | translate }}
                   </small>
                 </div>
                 <div class="mb-3">
                   <label class="form-label" for="sync-market-path">
-                    {{ 'common.admin.sync.marketItemPath' | translate }}
+                    {{ 'common.admin.sync.syncOneProductDialog.marketItemPath' | translate }}
                   </label>
                   <input
                     id="sync-market-path"
@@ -150,7 +150,7 @@
                     [(ngModel)]="marketItemPath" />
                   <small class="text-muted">
                     {{
-                      'common.admin.sync.chooseMarketItemPathHint' | translate
+                      'common.admin.sync.syncOneProductDialog.chooseMarketItemPathHint' | translate
                     }}
                   </small>
                 </div>
@@ -161,7 +161,7 @@
                     class="form-check-input"
                     [(ngModel)]="overrideMarketItemPath" />
                   <label for="overridePath" class="form-check-label">
-                    {{ 'common.admin.sync.overrideMarketItemPath' | translate }}
+                    {{ 'common.admin.sync.syncOneProductDialog.overrideMarketItemPath' | translate }}
                   </label>
                 </div>
               </div>

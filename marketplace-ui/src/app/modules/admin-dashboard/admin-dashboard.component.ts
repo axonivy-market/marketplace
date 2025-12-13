@@ -114,6 +114,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   trigger(job: SyncJobRow) {
+    if (job.jobKey === 'syncOneProduct') {
+      this.showSyncOneProductDialog = true;
+      this.loadingJobKey = null;
+      return;
+    }
+
     this.loadingJobKey = job.jobKey;
 
     Object.assign(job, {
@@ -122,12 +128,6 @@ export class AdminDashboardComponent implements OnInit {
       completedAt: null,
       message: null
     });
-
-    if (job.jobKey === 'syncOneProduct') {
-      this.showSyncOneProductDialog = true;
-      this.loadingJobKey = null;
-      return;
-    }
 
     const action = this.syncJobTriggers[job.jobKey];
 

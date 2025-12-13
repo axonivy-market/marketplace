@@ -312,16 +312,19 @@
         "message": "Message",
         "syncLabel": "Sync",
         "syncingLabel": "Syncing...",
-        "chooseExtensionIdHint": "Choose an extension ID to sync.",
-        "marketItemPath": "Market Item Path",
-        "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
-        "overrideMarketItemPath": "Override Current Market Item Path",
         "cancelLabel": "Cancel",
         "jobs": {
           "syncProducts": "Sync all products",
           "syncOneProduct": "Sync one product",
           "syncLatestReleasesForProducts": "Sync product release notes",
           "syncGithubMonitor": "Sync GitHub monitor"
+        },
+        "syncOneProductDialog": {
+          "title": "Sync One Product",
+          "chooseExtensionIdHint": "Choose an extension ID to sync.",
+          "marketItemPath": "Market Item Path",
+          "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
+          "overrideMarketItemPath": "Override Current Market Item Path"
         }
       },
       "customSort": {

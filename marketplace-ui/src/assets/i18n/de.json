@@ -312,16 +312,19 @@
         "message": "Nachricht",
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft...",
-        "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zum Synchronisieren.",
-        "marketItemPath": "Pfad des Marketplace-Elements",
-        "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
-        "overrideMarketItemPath": "Aktuellen Marketplace-Pfad überschreiben",
         "cancelLabel": "Abbrechen",
         "jobs": {
           "syncProducts": "Alle Produkte synchronisieren",
           "syncOneProduct": "Ein Produkt synchronisieren",
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
           "syncGithubMonitor": "GitHub-Monitor synchronisieren"
+        },
+        "syncOneProductDialog": {
+          "title": "Ein Produkt synchronisieren",
+          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zum Synchronisieren.",
+          "marketItemPath": "Pfad des Marketplace-Elements",
+          "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
+          "overrideMarketItemPath": "Aktuellen Marketplace-Pfad überschreiben"
         }
       },
       "customSort": {
