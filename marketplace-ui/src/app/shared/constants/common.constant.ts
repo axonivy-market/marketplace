@@ -5,7 +5,7 @@ import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
-import { SyncJobRow } from '../models/sync-job-execution.model';
+import { SyncTaskRow } from '../models/sync-task-execution.model';
 
 export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 
@@ -399,21 +399,21 @@ export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';
 export const ALL_ITEMS_PAGE_SIZE = 9999;
 
-export const SYNC_JOBS: SyncJobRow[] = [
+export const SYNC_TASKS: SyncTaskRow[] = [
   {
-    jobKey: 'syncProducts',
-    labelKey: 'common.admin.sync.jobs.syncProducts'
+    key: 'syncProducts',
+    labelKey: 'common.admin.sync.tasks.syncProducts'
   },
   {
-    jobKey: 'syncOneProduct',
-    labelKey: 'common.admin.sync.jobs.syncOneProduct'
+    key: 'syncOneProduct',
+    labelKey: 'common.admin.sync.tasks.syncOneProduct'
   },
   {
-    jobKey: 'syncLatestReleasesForProducts',
-    labelKey: 'common.admin.sync.jobs.syncLatestReleasesForProducts'
+    key: 'syncLatestReleasesForProducts',
+    labelKey: 'common.admin.sync.tasks.syncLatestReleasesForProducts'
   },
   {
-    jobKey: 'syncGithubMonitor',
-    labelKey: 'common.admin.sync.jobs.syncGithubMonitor'
+    key: 'syncGithubMonitor',
+    labelKey: 'common.admin.sync.tasks.syncGithubMonitor'
   }
 ];

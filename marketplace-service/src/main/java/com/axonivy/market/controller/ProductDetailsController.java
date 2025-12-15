@@ -5,9 +5,9 @@ import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.SyncJobType;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.logging.TrackApiCallFromNeo;
-import com.axonivy.market.logging.TrackSyncJobExecution;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -15,7 +15,7 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.service.SyncJobExecutionService;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -65,7 +65,7 @@ public class ProductDetailsController {
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
   private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
-  private final SyncJobExecutionService syncJobExecutionService;
+  private final SyncTaskExecutionService syncTaskExecutionService;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -217,7 +217,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
-  @TrackSyncJobExecution(SyncJobType.SYNC_RELEASE_NOTES)
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public void syncLatestReleasesForProducts() throws IOException {
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();

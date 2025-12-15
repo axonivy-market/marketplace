@@ -17,7 +17,7 @@ import {
   CdkDragEnter,
   CdkDragStart,
   DragDropModule,
-  transferArrayItem
+  moveItemInArray,
 } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
@@ -80,17 +80,53 @@ export class CustomSortComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<string[]>) {
+    const draggedItem = (event.item && (event.item as any).data) as string;
     if (event.previousContainer === event.container) {
-      // same list, you can reorder if you like:
-      // moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      this.handleSameContainerReorder(event);
     } else {
-      // moved from one list to another
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
+      this.handleCrossContainerTransfer(event, draggedItem);
+    }
+  }
+
+  private handleSameContainerReorder(event: CdkDragDrop<string[]>) {
+    if (event.container.id === 'sorted-extensions') {
+      moveItemInArray(this.sortingExtensions, event.previousIndex, event.currentIndex);
+      return;
+    }
+    if (event.container.id === 'available-extensions') {
+      const filtered = this.filteredAvailableExtensions;
+      const prevItem = filtered[event.previousIndex];
+      const currItem = filtered[event.currentIndex];
+      const prevIdxAll = this.allExtensions.indexOf(prevItem);
+      const currIdxAll = this.allExtensions.indexOf(currItem);
+      if (prevIdxAll > -1 && currIdxAll > -1) {
+        moveItemInArray(this.allExtensions, prevIdxAll, currIdxAll);
+      }
+    }
+  }
+
+  private handleCrossContainerTransfer(event: CdkDragDrop<string[]>, draggedItem: string) {
+    if (event.previousContainer.id === 'available-extensions' && event.container.id === 'sorted-extensions') {
+      const idxInAll = this.allExtensions.indexOf(draggedItem);
+      if (idxInAll > -1) {
+        this.allExtensions.splice(idxInAll, 1);
+      }
+      this.sortingExtensions.splice(event.currentIndex, 0, draggedItem);
+      return;
+    }
+    if (event.previousContainer.id === 'sorted-extensions' && event.container.id === 'available-extensions') {
+      const idxSorted = this.sortingExtensions.indexOf(draggedItem);
+      if (idxSorted > -1) {
+        this.sortingExtensions.splice(idxSorted, 1);
+      }
+      const filtered = this.filteredAvailableExtensions;
+      const targetNeighbor = filtered[event.currentIndex];
+      const targetIdxAll = targetNeighbor ? this.allExtensions.indexOf(targetNeighbor) : -1;
+      if (targetIdxAll > -1) {
+        this.allExtensions.splice(targetIdxAll, 0, draggedItem);
+      } else {
+        this.allExtensions.push(draggedItem);
+      }
     }
   }
 

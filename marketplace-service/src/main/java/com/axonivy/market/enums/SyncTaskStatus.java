@@ -1,6 +1,6 @@
 package com.axonivy.market.enums;
 
-public enum SyncJobStatus {
+public enum SyncTaskStatus {
   RUNNING,
   SUCCESS,
   FAILED

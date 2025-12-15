@@ -31,7 +31,7 @@
       "community": "Community",
       "team": "Team",
       "market": "Marktplatz",
-      "sync": "Synchronisierungsaufträge",
+      "sync": "Aufgaben synchronisieren",
       "security": "Sicherheitsmonitor",
       "feedbackApproval": "Feedback-Freigabe",
       "customSort": "Benutzerdefinierte Sortierung",
@@ -299,21 +299,21 @@
       "proceedBtnLabel": "Weiter",
       "extensionId": "Erweiterungs-ID",
       "sync": {
-        "pageTitle": "Synchronisierungsaufträge",
-        "title": "Synchronisierungsaufträge",
-        "description": "Verwalten Sie Synchronisierungsaufträge.",
-        "helpText": "Synchronisierungsaufträge halten die Marktplatzdaten aktuell, indem regelmäßig Updates aus externen Quellen abgerufen werden. Administratoren können ihren Status verfolgen und sicherstellen, dass die neuesten Informationen im Marktplatz angezeigt werden.",
+        "pageTitle": "Synchronisationsaufgaben",
+        "title": "Synchronisationsaufgaben",
+        "description": "Synchronisationsaufgaben verwalten",
+        "helpText": "Synchronisationsaufgaben halten Marktplatzdaten aktuell, indem regelmäßig Aktualisierungen aus externen Quellen abgerufen werden. Administratoren können ihren Status verfolgen und sicherstellen, dass die neuesten Informationen im Marktplatz angezeigt werden.",
         "number": "Nr.",
         "action": "Aktionen",
-        "syncJob": "Synchronisierungsauftrag",
+        "syncTask": "Synchronisationsaufgabe",
         "status": "Status",
-        "lastRun": "Letzte Ausführung um",
-        "completed": "Abgeschlossen um",
+        "lastRun": "Zuletzt ausgeführt am",
+        "completed": "Abgeschlossen am",
         "message": "Nachricht",
         "syncLabel": "Synchronisieren",
-        "syncingLabel": "Synchronisierung läuft...",
+        "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",
-        "jobs": {
+        "tasks": {
           "syncProducts": "Alle Produkte synchronisieren",
           "syncOneProduct": "Ein Produkt synchronisieren",
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
@@ -321,10 +321,10 @@
         },
         "syncOneProductDialog": {
           "title": "Ein Produkt synchronisieren",
-          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zum Synchronisieren.",
-          "marketItemPath": "Pfad des Marketplace-Elements",
+          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zur Synchronisierung aus.",
+          "marketItemPath": "Marktplatz-Elementpfad",
           "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
-          "overrideMarketItemPath": "Aktuellen Marketplace-Pfad überschreiben"
+          "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben"
         }
       },
       "customSort": {

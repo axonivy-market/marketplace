@@ -70,6 +70,7 @@
                 cdkDropList
                 #todoList="cdkDropList"
                 [cdkDropListData]="sortingExtensions"
+                [id]="'sorted-extensions'"
                 [cdkDropListConnectedTo]="[doneList]"
                 cdkDropListOrientation="vertical"
                 (cdkDropListDropped)="drop($event)"
@@ -88,6 +89,7 @@
                 ) {
                   <tr
                     cdkDrag
+                    [cdkDragData]="item"
                     (cdkDragStarted)="setDragPreviewWidth($event)"
                     (cdkDragEnded)="resetDragPreviewWidth($event)">
                     <td class="index">{{ index + 1 }}</td>
@@ -155,7 +157,8 @@
               <tbody
                 cdkDropList
                 #doneList="cdkDropList"
-                [cdkDropListData]="allExtensions"
+                [cdkDropListData]="filteredAvailableExtensions"
+                [id]="'available-extensions'"
                 [cdkDropListConnectedTo]="[todoList]"
                 cdkDropListOrientation="vertical"
                 (cdkDropListDropped)="drop($event)"
@@ -172,6 +175,7 @@
                 @for (item of filteredAvailableExtensions; track item) {
                   <tr
                     cdkDrag
+                    [cdkDragData]="item"
                     (cdkDragStarted)="setDragPreviewWidth($event)"
                     (cdkDragEnded)="resetDragPreviewWidth($event)">
                     <td>

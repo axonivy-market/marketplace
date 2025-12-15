@@ -4,11 +4,11 @@ import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.SyncJobType;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.logging.TrackApiCallFromNeo;
-import com.axonivy.market.logging.TrackSyncJobExecution;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
@@ -94,7 +94,7 @@ public class ProductController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  @TrackSyncJobExecution(SyncJobType.SYNC_PRODUCTS)
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_PRODUCTS)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
@@ -119,7 +119,7 @@ public class ProductController {
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
-  @TrackSyncJobExecution(SyncJobType.SYNC_ONE_PRODUCT)
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_ONE_PRODUCT)
   public ResponseEntity<Message> syncOneProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",

@@ -14,17 +14,17 @@ import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 
-export type SyncJobKey =
+export type SyncTaskKey =
   | 'syncProducts'
   | 'syncOneProduct'
   | 'syncLatestReleasesForProducts'
   | 'syncGithubMonitor';
 
-export type SyncJobStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
+export type SyncTaskStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
 
-export interface SyncJobExecution {
-  jobKey: SyncJobKey;
-  status?: SyncJobStatus;
+export interface SyncTaskExecution {
+  key: SyncTaskKey;
+  status?: SyncTaskStatus;
   triggeredAt?: string;
   completedAt?: string;
   message?: string;
@@ -44,9 +44,9 @@ export class AdminDashboardService {
       : new HttpHeaders();
   }
 
-  syncProducts(resetSync = false): Observable<SyncJobExecution> {
+  syncProducts(resetSync = false): Observable<SyncTaskExecution> {
     const params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
-    return this.http.put<SyncJobExecution>(
+    return this.http.put<SyncTaskExecution>(
       `${API_URI.PRODUCT}/sync`,
       {},
       {
@@ -60,14 +60,15 @@ export class AdminDashboardService {
     id: string,
     marketItemPath: string,
     overrideMarketItemPath = false
-  ): Observable<SyncJobExecution> {
-    const requestParams = new HttpParams()
+  ): Observable<SyncTaskExecution> {
+    const params = new HttpParams()
       .set(RequestParam.MARKET_ITEM_PATH, marketItemPath)
       .set(RequestParam.OVERRIDE_MARKET_ITEM_PATH, overrideMarketItemPath);
-    return this.http.put<SyncJobExecution>(
+    return this.http.put<SyncTaskExecution>(
       `${API_URI.PRODUCT}/sync/${id}`,
+      {},
       {
-        params: requestParams,
+        params,
         headers: this.getAuthHeaders()
       }
     );
@@ -93,8 +94,8 @@ export class AdminDashboardService {
     );
   }
 
-  fetchSyncJobExecutions(): Observable<SyncJobExecution[]> {
-    return this.http.get<SyncJobExecution[]>(API_URI.SYNC_JOB_EXECUTION, {
+  fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
+    return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
       headers: this.getAuthHeaders(),
       context: new HttpContext().set(
         LoadingComponent,

@@ -1,7 +1,7 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.entity.SyncJobExecution;
-import com.axonivy.market.enums.SyncJobStatus;
+import com.axonivy.market.entity.SyncTaskExecution;
+import com.axonivy.market.enums.SyncTaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,16 +15,16 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SyncJobExecutionModel {
-  String jobKey;
-  SyncJobStatus status;
-  Date triggeredAt;
-  Date completedAt;
-  String message;
+public class SyncTaskExecutionModel {
+  private String key;
+  private SyncTaskStatus status;
+  private Date triggeredAt;
+  private Date completedAt;
+  private String message;
 
-  public static SyncJobExecutionModel from(SyncJobExecution execution) {
-    return SyncJobExecutionModel.builder()
-        .jobKey(execution.getJobType().getJobKey())
+  public static SyncTaskExecutionModel from(SyncTaskExecution execution) {
+    return SyncTaskExecutionModel.builder()
+        .key(execution.getType().getKey())
         .status(execution.getStatus())
         .triggeredAt(execution.getTriggeredAt())
         .completedAt(execution.getCompletedAt())

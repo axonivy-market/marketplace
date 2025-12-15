@@ -2,8 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.SyncJobExecutionModel;
-import com.axonivy.market.service.SyncJobExecutionService;
+import com.axonivy.market.model.SyncTaskExecutionModel;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,37 +19,37 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.RequestMappingConstants.SYNC_JOB_EXECUTION;
+import static com.axonivy.market.constants.RequestMappingConstants.SYNC_TASK_EXECUTION;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(SYNC_JOB_EXECUTION)
-@Tag(name = "Sync Job Execution Controller", description = "API to inspect sync job executions")
-public class SyncJobExecutionController {
+@RequestMapping(SYNC_TASK_EXECUTION)
+@Tag(name = "Sync Task Execution Controller", description = "API to inspect sync task executions")
+public class SyncTaskExecutionController {
 
-  private final SyncJobExecutionService syncJobExecutionService;
+  private final SyncTaskExecutionService syncTaskExecutionService;
   private final GitHubService gitHubService;
 
   @GetMapping
   @Operation(hidden = true)
-  public ResponseEntity<List<SyncJobExecutionModel>> getAllSyncJobExecutions(
+  public ResponseEntity<List<SyncTaskExecutionModel>> getAllSyncTaskExecutions(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    List<SyncJobExecutionModel> models = syncJobExecutionService.getAllSyncJobExecutions();
+    List<SyncTaskExecutionModel> models = syncTaskExecutionService.getAllSyncTaskExecutions();
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
   @GetMapping("/{jobKey}")
   @Operation(hidden = true)
-  public ResponseEntity<SyncJobExecutionModel> getSyncJobExecutionByKey(
+  public ResponseEntity<SyncTaskExecutionModel> getSyncTaskExecutionByKey(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @PathVariable String jobKey) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    SyncJobExecutionModel model = syncJobExecutionService.getSyncJobExecutionByKey(jobKey);
+    SyncTaskExecutionModel model = syncTaskExecutionService.getSyncTaskExecutionByKey(jobKey);
     if (ObjectUtils.isEmpty(model)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

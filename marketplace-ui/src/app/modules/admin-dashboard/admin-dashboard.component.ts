@@ -5,9 +5,9 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
-  SyncJobExecution,
-  SyncJobStatus,
-  SyncJobKey
+  SyncTaskExecution,
+  SyncTaskStatus,
+  SyncTaskKey
 } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
@@ -15,7 +15,7 @@ import {
   ERROR_MESSAGES,
   ADMIN_SESSION_TOKEN,
   UNAUTHORIZED,
-  SYNC_JOBS
+  SYNC_TASKS
 } from '../../shared/constants/common.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -25,7 +25,8 @@ import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { SyncJobRow } from '../../shared/models/sync-job-execution.model';
+import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
+import { MarketProduct } from '../../shared/models/product.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -55,18 +56,21 @@ export class AdminDashboardComponent implements OnInit {
   token = '';
   errorMessage = '';
   isAuthenticated = false;
-  loadingJobKey: SyncJobKey | null = null;
-  jobs = SYNC_JOBS;
-  productId = '';
-  marketItemPath = '';
+  loadingJobKey: SyncTaskKey | null = null;
+  jobs = SYNC_TASKS;
   overrideMarketItemPath = false;
   API_URI = API_URI;
-  showSyncJob = true;
+  showSyncTask = true;
   showSyncOneProductDialog = false;
-  productIds: string[] = [];
 
-  private readonly syncJobTriggers: Record<
-    SyncJobKey,
+  products: MarketProduct[] = [];
+  marketDirectory = '';
+  productSearch = '';
+  dropdownOpen = false;
+  filteredProducts: MarketProduct[] = [];
+
+  private readonly syncTaskTriggers: Record<
+    SyncTaskKey,
     () => Observable<unknown>
   > = {
     syncProducts: () => this.service.syncProducts(),
@@ -82,8 +86,7 @@ export class AdminDashboardComponent implements OnInit {
     this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
-      this.loadSyncJobExecutions();
-      this.loadAllProductIds();
+      this.loadSyncTaskExecutions();
       this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
       this.updateVisibility(this.router.url);
       this.router.events
@@ -95,7 +98,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private updateVisibility(url: string) {
-    this.showSyncJob = /^\/octopus\/?(\?.*)?$/.test(url);
+    this.showSyncTask = /^\/octopus\/?(\?.*)?$/.test(url);
   }
 
   onSubmit(): void {
@@ -106,21 +109,44 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
     this.isAuthenticated = true;
-    this.loadSyncJobExecutions();
+    this.loadSyncTaskExecutions();
   }
 
-  private async loadAllProductIds(): Promise<void> {
-    this.productIds = await this.productService.fetchAllProductIds();
+  onProductChange(product: MarketProduct) {
+    this.marketDirectory = product?.marketDirectory ?? '';
   }
 
-  trigger(job: SyncJobRow) {
-    if (job.jobKey === 'syncOneProduct') {
+  openDropdown() {
+    this.dropdownOpen = true;
+    this.filteredProducts = this.products.slice(0, 10);
+  }
+
+  filterProducts() {
+    const value = this.productSearch.toLowerCase();
+
+    this.filteredProducts = this.products
+      .filter(p => p.id.toLowerCase().includes(value))
+      .slice(0, 10);
+
+    this.dropdownOpen = true;
+  }
+
+  selectProduct(product: MarketProduct) {
+    this.productSearch = product.id;
+    this.marketDirectory = product.marketDirectory ?? '';
+
+    this.dropdownOpen = false;
+  }
+
+  async trigger(job: SyncTaskRow) {
+    if (job.key === 'syncOneProduct') {
+      this.products = await this.productService.fetchAllProductsForSync();
       this.showSyncOneProductDialog = true;
       this.loadingJobKey = null;
       return;
     }
 
-    this.loadingJobKey = job.jobKey;
+    this.loadingJobKey = job.key;
 
     Object.assign(job, {
       status: 'RUNNING',
@@ -129,7 +155,7 @@ export class AdminDashboardComponent implements OnInit {
       message: null
     });
 
-    const action = this.syncJobTriggers[job.jobKey];
+    const action = this.syncTaskTriggers[job.key];
 
     action()
       .pipe(finalize(() => (this.loadingJobKey = null)))
@@ -140,11 +166,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   confirmSyncOneProduct(): void {
-    const job = this.jobs.find(j => j.jobKey === 'syncOneProduct');
+    const job = this.jobs.find(j => j.key === 'syncOneProduct');
     if (!job) {
       return;
     }
-    if (!this.productId || !this.marketItemPath) {
+
+    if (!this.productSearch || !this.marketDirectory) {
       Object.assign(job, {
         status: 'FAILED',
         completedAt: new Date(),
@@ -152,15 +179,16 @@ export class AdminDashboardComponent implements OnInit {
       });
       return;
     }
-    this.loadingJobKey = job.jobKey;
+    this.loadingJobKey = job.key;
+    this.showSyncOneProductDialog = false;
     Object.assign(job, {
       status: 'RUNNING',
       triggeredAt: new Date()
     });
     this.service
       .syncOneProduct(
-        this.productId.trim(),
-        this.marketItemPath.trim(),
+        this.productSearch.trim(),
+        this.marketDirectory.trim(),
         this.overrideMarketItemPath
       )
       .pipe(
@@ -170,7 +198,6 @@ export class AdminDashboardComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.showSyncOneProductDialog = false;
           this.handleSuccess(job);
         },
         error: err => {
@@ -182,39 +209,41 @@ export class AdminDashboardComponent implements OnInit {
 
   cancelSyncOneProduct(): void {
     this.showSyncOneProductDialog = false;
+    this.productSearch = '';
+    this.marketDirectory = '';
   }
 
-  private handleSuccess(job: SyncJobRow) {
+  private handleSuccess(job: SyncTaskRow) {
     Object.assign(job, {
       status: 'SUCCESS',
       completedAt: new Date(),
       message: 'Success'
     });
 
-    this.loadSyncJobExecutions();
+    this.loadSyncTaskExecutions();
   }
 
-  private handleFailure(job: SyncJobRow, reload = true) {
+  private handleFailure(job: SyncTaskRow, reload = true) {
     Object.assign(job, {
       status: 'FAILED',
       completedAt: new Date(),
       message: 'Failed'
     });
     if (reload && this.isAuthenticated) {
-      this.loadSyncJobExecutions();
+      this.loadSyncTaskExecutions();
     }
   }
 
-  private loadSyncJobExecutions(): void {
-    this.service.fetchSyncJobExecutions().subscribe({
-      next: executions => this.applySyncJobExecutions(executions),
+  private loadSyncTaskExecutions(): void {
+    this.service.fetchSyncTaskExecutions().subscribe({
+      next: executions => this.applySyncTaskExecutions(executions),
       error: err => this.handleError(err)
     });
   }
 
-  private applySyncJobExecutions(executions: SyncJobExecution[]): void {
+  private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
     for (const execution of executions) {
-      const job = this.jobs.find(j => j.jobKey === execution.jobKey);
+      const job = this.jobs.find(j => j.key === execution.key);
       if (job) {
         job.status = execution.status;
         job.triggeredAt = execution.triggeredAt
@@ -228,7 +257,7 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  getStatusClass(status?: SyncJobStatus): string {
+  getStatusClass(status?: SyncTaskStatus): string {
     switch (status) {
       case 'SUCCESS':
         return 'text-success';

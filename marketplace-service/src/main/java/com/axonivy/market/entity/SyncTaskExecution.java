@@ -1,7 +1,7 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.enums.SyncJobStatus;
-import com.axonivy.market.enums.SyncJobType;
+import com.axonivy.market.enums.SyncTaskStatus;
+import com.axonivy.market.enums.SyncTaskType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,7 +15,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.util.Date;
 
-import static com.axonivy.market.constants.EntityConstants.SYNC_JOB_EXECUTION;
+import static com.axonivy.market.constants.EntityConstants.SYNC_TASK_EXECUTION;
 
 @Getter
 @Setter
@@ -23,16 +23,16 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_JOB_EXECUTION;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = SYNC_JOB_EXECUTION)
-public class SyncJobExecution extends AuditableIdEntity {
+@Table(name = SYNC_TASK_EXECUTION)
+public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
 
   @Enumerated(EnumType.STRING)
-  private SyncJobType jobType;
+  private SyncTaskType type;
 
   @Enumerated(EnumType.STRING)
-  private SyncJobStatus status;
+  private SyncTaskStatus status;
 
   private Date triggeredAt;
 

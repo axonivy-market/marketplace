@@ -17,6 +17,7 @@ import { ProductReleasesApiResponse } from '../../shared/models/apis/product-rel
 import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
+import { MarketProduct } from '../../shared/models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -192,4 +193,49 @@ export class ProductService {
     }
     return ids;
   }
+
+  async fetchAllProductsForSync(
+  pageSize = 200,
+  language: Language = Language.EN
+): Promise<MarketProduct[]> {
+  const productsForSync: MarketProduct[] = [];
+  let page = 0;
+
+  while (true) {
+    const response = await firstValueFrom(
+      this.findProductsByCriteria({
+        search: '',
+        sort: SortOption.STANDARD,
+        type: TypeOption.All_TYPES,
+        isRESTClientEditor: false,
+        pageable: {
+          page,
+          size: pageSize
+        },
+        language
+      })
+    );
+
+    const products = response?._embedded?.products ?? [];
+
+    for (const product of products) {
+      if (product?.id) {
+        productsForSync.push({
+          id: product.id,
+          marketDirectory: product.marketDirectory ?? ''
+        });
+      }
+    }
+
+    const pageInfo = response?.page;
+    if (!pageInfo || pageInfo.number >= pageInfo.totalPages - 1) {
+      break;
+    }
+
+    page = pageInfo.number + 1;
+  }
+
+  return productsForSync;
+}
+
 }
