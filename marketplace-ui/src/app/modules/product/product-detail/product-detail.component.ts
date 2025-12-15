@@ -30,6 +30,7 @@ import { CommonDropdownComponent } from '../../../shared/components/common-dropd
 import {
   DEFAULT_CHANGELOG_PAGEABLE,
   DEFAULT_IMAGE_URL,
+  FAVICON_PNG_TYPE,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
   OG_TITLE_KEY,
   PRODUCT_DETAIL_TABS,
@@ -228,6 +229,8 @@ export class ProductDetailComponent implements AfterViewInit {
        ROUTER.PRODUCT_DETAIL
      ] as ProductDetail;
      this.processProductDetail(productId, productDetail);
+     
+    console.log(productDetail.logoUrl);
   }
 
   private processProductDetail(
@@ -237,7 +240,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.criteria.productId = productId;
     this.handleProductDetailLoad(productId, productDetail);
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
-    this.faviconService.setFavicon(productDetail.logoUrl);
+    this.faviconService.setFavicon(productDetail.logoUrl, FAVICON_PNG_TYPE);
   }
 
   ngAfterViewInit(): void {

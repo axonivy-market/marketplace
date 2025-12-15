@@ -377,5 +377,7 @@ export const ALL_ITEMS_PAGE_SIZE = 9999;
 
 // Favicon constants
 export const DEFAULT_FAVICON_URL = 'favicon.ico';
-export const LINK_REL_ICON = 'icon';
-export const LINK_REL_QUERY = 'link[rel="icon"]';
+export const FAVICON_REL = 'icon';
+export const FAVICON_LINK_REL_QUERY = 'link[rel="icon"]';
+export const FAVICON_DEFAULT_TYPE = 'image/x-icon';
+export const FAVICON_PNG_TYPE = 'image/png';
