@@ -226,8 +226,6 @@ export class ProductDetailComponent implements AfterViewInit {
        ROUTER.PRODUCT_DETAIL
      ] as ProductDetail;
      this.processProductDetail(productId, productDetail);
-     
-    console.log(productDetail.logoUrl);
   }
 
   private processProductDetail(
