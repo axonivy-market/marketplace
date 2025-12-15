@@ -100,10 +100,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     return this.getProductById(productId, isShowDevVersion);
   }
 
-  getProductById(
-    productId: string,
-    isShowDevVersion: boolean
-  ): Observable<ProductDetail> {
+  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
     const targetVersion =
       this.routingQueryParamService.getDesignerVersionFromSessionStorage();
     let productDetail$: Observable<ProductDetail>;
