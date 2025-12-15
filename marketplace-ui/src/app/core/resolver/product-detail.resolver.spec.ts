@@ -240,7 +240,7 @@ describe('ProductDetailResolver', () => {
       );
     });
 
-    fit('should set favicon with product logo URL', () => {
+    it('should set favicon with product logo URL', () => {
       resolver.updateProductMetadata(MOCK_PRODUCT_DETAIL); 
 
       expect(faviconService.setFavicon).toHaveBeenCalledWith(
