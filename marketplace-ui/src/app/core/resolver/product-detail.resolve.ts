@@ -82,7 +82,6 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     }
     this.updateOGTag(OG_IMAGE_KEY, productLogoUrl);
     this.updateOGTag(OG_IMAGE_TYPE_KEY, OG_IMAGE_PNG_TYPE);
-    console.log(productLogoUrl);
 
     this.faviconService.setFavicon(productLogoUrl, FAVICON_PNG_TYPE);
   }
