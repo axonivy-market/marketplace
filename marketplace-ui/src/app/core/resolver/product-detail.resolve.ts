@@ -43,9 +43,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly routingQueryParamService: RoutingQueryParamService,
     private readonly faviconService: FaviconService,
     @Inject(PLATFORM_ID) private readonly platformId: Object,
-    @Optional()
-    @Inject(API_INTERNAL_URL)
-    private readonly apiInternalUrl: string,
+    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string,
     @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string
   ) {}
 
