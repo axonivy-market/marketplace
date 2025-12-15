@@ -16,7 +16,6 @@ import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/c
 
 @Component({
   selector: 'app-error-page-component',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './error-page.component.html',
   styleUrl: './error-page.component.scss'

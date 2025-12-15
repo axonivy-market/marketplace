@@ -13,7 +13,6 @@ import { ProductDetailService } from '../../product-detail.service';
 
 @Component({
   selector: 'app-product-star-rating-panel',
-  standalone: true,
   imports: [
     CommonModule,
     ProductStarRatingNumberComponent,
@@ -25,7 +24,7 @@ import { ProductDetailService } from '../../product-detail.service';
 })
 export class ProductStarRatingPanelComponent {
   isMobileMode = input<boolean>();
-  
+
   @Input() isRenderInModalDialog = false;
   @Output() openAddFeedbackDialog = new EventEmitter<void>();
 

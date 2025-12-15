@@ -6,7 +6,6 @@ import { AppModalService } from '../../../../../shared/services/app-modal.servic
 
 @Component({
   selector: 'app-show-feedbacks-dialog',
-  standalone: true,
   imports: [ProductFeedbacksPanelComponent, ProductStarRatingPanelComponent],
   templateUrl: './show-feedbacks-dialog.component.html',
   styleUrl: './show-feedbacks-dialog.component.scss'

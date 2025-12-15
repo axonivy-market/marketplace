@@ -9,7 +9,6 @@ const ACTIVE = 'active';
 const INACTIVE = 'inactive';
 @Component({
   selector: 'app-language-selection',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './language-selection.component.html',
   styleUrl: './language-selection.component.scss'

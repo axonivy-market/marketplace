@@ -9,7 +9,6 @@ import {
 
 @Component({
   selector: 'app-theme-selection',
-  standalone: true,
   imports: [NgClass],
   templateUrl: './theme-selection.component.html',
   styleUrl: './theme-selection.component.scss'

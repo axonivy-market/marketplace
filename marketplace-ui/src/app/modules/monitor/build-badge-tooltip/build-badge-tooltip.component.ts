@@ -12,7 +12,6 @@ import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-build-badge-tooltip',
-  standalone: true,
   imports: [CommonModule, TranslateModule, NgbTooltipModule],
   templateUrl: './build-badge-tooltip.component.html',
   styleUrl: './build-badge-tooltip.component.scss'

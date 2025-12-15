@@ -48,7 +48,6 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
 @Component({
   selector: 'app-monitor-repo',
-  standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
@@ -61,7 +60,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     ProductFilterComponent,
     RepoTestResultComponent,
     LoadingSpinnerComponent
-],
+  ],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })

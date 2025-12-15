@@ -93,7 +93,6 @@ const GITHUB_BASE_URL = 'https://github.com/';
 
 @Component({
   selector: 'app-product-detail',
-  standalone: true,
   imports: [
     ProductDetailVersionActionComponent,
     CommonModule,
@@ -224,10 +223,10 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   handleProductDetailOnInit(productId: string): void {
-     const productDetail: ProductDetail = this.route.snapshot.data[
-       ROUTER.PRODUCT_DETAIL
-     ] as ProductDetail;
-     this.processProductDetail(productId, productDetail);
+    const productDetail: ProductDetail = this.route.snapshot.data[
+      ROUTER.PRODUCT_DETAIL
+    ] as ProductDetail;
+    this.processProductDetail(productId, productDetail);
   }
 
   private processProductDetail(

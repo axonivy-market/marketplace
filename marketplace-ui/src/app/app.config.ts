@@ -1,5 +1,5 @@
 import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject, provideAppInitializer } from '@angular/core';
 import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
@@ -43,12 +43,10 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (bootstrapLoader: BootstrapLoaderService) => () =>
-        bootstrapLoader.init(),
-      deps: [BootstrapLoaderService],
-      multi: true
-    }
+    provideAppInitializer(() => {
+        const initializerFn = ((bootstrapLoader: BootstrapLoaderService) => () =>
+        bootstrapLoader.init())(inject(BootstrapLoaderService));
+        return initializerFn();
+      })
   ]
 };

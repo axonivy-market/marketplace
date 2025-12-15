@@ -9,7 +9,6 @@ import { DEFAULT_FAVICON_URL } from '../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [ProductComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
