@@ -1,5 +1,5 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, DOCUMENT } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LANGUAGES, DATA_LANGUAGE } from '../../../constants/common.constant';
 import { Language } from '../../../enums/language.enum';

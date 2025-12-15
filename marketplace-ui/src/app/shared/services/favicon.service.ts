@@ -1,5 +1,4 @@
-import { DOCUMENT } from "@angular/common";
-import { Inject, Injectable } from "@angular/core";
+import { Inject, Injectable, DOCUMENT } from "@angular/core";
 import { LINK_REL_ICON, LINK_REL_QUERY } from "../constants/common.constant";
 
 @Injectable({

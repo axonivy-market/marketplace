@@ -1,9 +1,9 @@
+import { DOCUMENT } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ThemeSelectionComponent } from './theme-selection.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { DOCUMENT } from '@angular/common';
 import { Theme } from '../../../enums/theme.enum';
 
 import {

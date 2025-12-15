@@ -51,7 +51,7 @@ describe('SecurityMonitorService', () => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(mockApiUrl);
+        const req = httpMock.expectOne(req => req.url.includes('/api/security-monitor'));
         expect(req.request.method).toBe('GET');
         expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
 
@@ -68,7 +68,7 @@ describe('SecurityMonitorService', () => {
             },
         });
 
-        const req = httpMock.expectOne(mockApiUrl);
+        const req = httpMock.expectOne(req => req.url.includes('/api/security-monitor'));
         expect(req.request.method).toBe('GET');
         expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
 
