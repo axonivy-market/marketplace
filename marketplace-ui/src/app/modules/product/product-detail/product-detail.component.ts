@@ -77,6 +77,7 @@ import { full } from 'markdown-it-emoji';
 import { ChangeLogCriteria } from '../../../shared/models/criteria.model';
 import { Link } from '../../../shared/models/apis/link.model';
 import { Page } from '../../../shared/models/apis/page.model';
+import { FaviconService } from '../../../shared/services/favicon.service';
 import { RouteUtils } from '../../../shared/utils/route.utils';
 
 export interface DetailTab {
@@ -133,6 +134,7 @@ export class ProductDetailComponent implements AfterViewInit {
   loadingService = inject(LoadingService);
   historyService = inject(HistoryService);
   markdownService = inject(MarkdownService);
+  faviconService = inject(FaviconService);
   subscriptions: Subscription[] = [];
   criteria: ChangeLogCriteria = {
     pageable: DEFAULT_CHANGELOG_PAGEABLE,
@@ -237,6 +239,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.criteria.productId = productId;
     this.handleProductDetailLoad(productId, productDetail);
     this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
+    this.faviconService.setFavicon(productDetail.logoUrl);
   }
 
   ngAfterViewInit(): void {
