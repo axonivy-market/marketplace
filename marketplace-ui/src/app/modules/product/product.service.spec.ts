@@ -302,4 +302,59 @@ describe('ProductService', () => {
       statusText: 'Unknown Error'
     });
   });
+  describe('setDefaultVendorImage', () => {
+    it('should set default images when both vendor images are missing', () => {
+      const productDetailWithoutVendorImages = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '',
+        vendorImageDarkMode: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutVendorImages
+      );
+
+      expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
+      expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
+    });
+
+    it('should use vendorImage for dark mode when dark mode image is missing', () => {
+      const productDetailWithoutDarkMode = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImageDarkMode: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutDarkMode
+      );
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+      expect(result.vendorImageDarkMode).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+    });
+
+    it('should use dark mode image for regular when regular image is missing', () => {
+      const productDetailWithoutRegularImage = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutRegularImage
+      );
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImageDarkMode);
+      expect(result.vendorImageDarkMode).toBe(
+        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
+      );
+    });
+
+    it('should keep original images when both are present', () => {
+      const result = service.setDefaultVendorImage(MOCK_PRODUCT_DETAIL);
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+      expect(result.vendorImageDarkMode).toBe(
+        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
+      );
+    });
+  });
 });

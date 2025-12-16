@@ -313,7 +313,6 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   handleProductDetail(productDetail: ProductDetail): void {
-    this.productService.setDefaultVendorImage(productDetail);
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;

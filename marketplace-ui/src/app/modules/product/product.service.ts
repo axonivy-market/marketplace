@@ -51,18 +51,18 @@ export class ProductService {
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return this.httpClient
-      .get<ProductDetail>(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`);
+    return this.httpClient.get<ProductDetail>(
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
+    );
   }
 
   getBestMatchProductDetailsWithVersion(
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return this.httpClient
-      .get<ProductDetail>(
-        `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
-      );
+    return this.httpClient.get<ProductDetail>(
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+    );
   }
 
   getProductDetails(
@@ -145,12 +145,12 @@ export class ProductService {
   setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
  
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
-      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
-      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    } else {
+    if (productDetail.vendorImage || productDetail.vendorImageDarkMode) {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    } else {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
     }
     return productDetail;
   }

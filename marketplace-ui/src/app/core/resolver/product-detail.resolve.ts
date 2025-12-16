@@ -2,7 +2,7 @@ import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { Observable, take, tap } from 'rxjs';
+import { map, Observable, take, tap } from 'rxjs';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -105,6 +105,8 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
           targetVersion
         );
     }
-    return productDetail$;
+    return productDetail$.pipe(
+      map((response: ProductDetail) => this.productService.setDefaultVendorImage(response))
+    );
   }
 }
