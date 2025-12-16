@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
