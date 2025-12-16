@@ -143,6 +143,7 @@ public final class ProductContentUtils {
     } else {
       result = text;
     }
+
     return result;
   }
 

@@ -158,7 +158,7 @@ class ProductContentUtilsTest extends BaseSetup {
     String readmeContentsWithHeading3 = """
         #Product-name
         Test README
-         ### Setup
+        ### Setup
         Setup content (./image.png)""";
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithHeading3);
     assertTrue(readmeContentsModel.getDescription().startsWith("Test README"),
@@ -170,7 +170,7 @@ class ProductContentUtilsTest extends BaseSetup {
         #Product-name
         Test README
         ##Demo
-        ### Demo
+        ### Demo project
         Demo content
            ## Setup
         Setup content (./image.png)""";
