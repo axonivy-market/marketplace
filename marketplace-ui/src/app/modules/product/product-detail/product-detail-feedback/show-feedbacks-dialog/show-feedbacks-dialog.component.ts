@@ -14,7 +14,7 @@ export class ShowFeedbacksDialogComponent {
   activeModal = inject(NgbActiveModal);
   appModalService = inject(AppModalService);
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {

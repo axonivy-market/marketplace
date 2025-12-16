@@ -177,7 +177,7 @@ export class ProductDetailComponent implements AfterViewInit {
 
   private scrollPositions: { [tabId: string]: number } = {};
 
-  @HostListener('window:popstate', ['$event'])
+  @HostListener('window:popstate')
   onPopState() {
     this.activeTab = window.location.hash;
     this.activeTab ??= DEFAULT_ACTIVE_TAB;
@@ -200,8 +200,7 @@ export class ProductDetailComponent implements AfterViewInit {
   ngOnInit(): void {
     const productId: string = this.route.snapshot.params[ROUTER.ID];
     const version: string | null =
-      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ??
-      '';
+      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ?? '';
     this.productDetailService.productId.set(productId);
 
     if (version) {
@@ -564,7 +563,7 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize(): void {
     this.checkMediaSize();
   }
