@@ -43,4 +43,8 @@ export class MockProductService {
   getProductChangelogs(productId: string) {
     return of(MOCK_PRODUCT_RELEASES);
   }
+
+  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+    return productDetail;
+  }
 }

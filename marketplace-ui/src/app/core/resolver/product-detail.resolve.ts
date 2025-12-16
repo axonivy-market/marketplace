@@ -12,8 +12,6 @@ import { RoutingQueryParamService } from '../../shared/services/routing.query.pa
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   FAVICON_PNG_TYPE,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
@@ -117,20 +115,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
         );
     }
     return productDetail$.pipe(
-      map((response: ProductDetail) => this.setDefaultVendorImage(response))
+      map((response: ProductDetail) => this.productService.setDefaultVendorImage(response))
     );
-  }
-
-  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
-    const { vendorImage, vendorImageDarkMode } = productDetail;
-
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
-      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
-      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    } else {
-      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
-      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
-    }
-    return productDetail;
   }
 }
