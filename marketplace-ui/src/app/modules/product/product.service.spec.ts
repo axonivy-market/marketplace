@@ -13,7 +13,7 @@ import {
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
-import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
+import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT, DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
@@ -300,6 +300,61 @@ describe('ProductService', () => {
     req.flush(null, {
       status: 0,
       statusText: 'Unknown Error'
+    });
+  });
+  describe('setDefaultVendorImage', () => {
+    it('should set default images when both vendor images are missing', () => {
+      const productDetailWithoutVendorImages = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: '',
+        vendorImageDarkMode: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutVendorImages
+      );
+
+      expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
+      expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
+    });
+
+    it('should use vendorImage for dark mode when dark mode image is missing', () => {
+      const productDetailWithoutDarkMode = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImageDarkMode: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutDarkMode
+      );
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+      expect(result.vendorImageDarkMode).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+    });
+
+    it('should use dark mode image for regular when regular image is missing', () => {
+      const productDetailWithoutRegularImage = {
+        ...MOCK_PRODUCT_DETAIL,
+        vendorImage: ''
+      };
+
+      const result = service.setDefaultVendorImage(
+        productDetailWithoutRegularImage
+      );
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImageDarkMode);
+      expect(result.vendorImageDarkMode).toBe(
+        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
+      );
+    });
+
+    it('should keep original images when both are present', () => {
+      const result = service.setDefaultVendorImage(MOCK_PRODUCT_DETAIL);
+
+      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
+      expect(result.vendorImageDarkMode).toBe(
+        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
+      );
     });
   });
 });
