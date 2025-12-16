@@ -39,7 +39,7 @@
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
       "contribute": "Here you will find connectors to standard software solutions from leading providers such as Microsoft, Amazon, or Adobe, as well as ready-made process models, business solutions, and practical tools for document processing, storage, or signing.",
-      "link": "Contribute to the community and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\">build your own connector!</a>"
+      "link": "Contribute to the community and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\">build your own market extension!</a>"
     },
     "filter": {
       "label": "Filter",

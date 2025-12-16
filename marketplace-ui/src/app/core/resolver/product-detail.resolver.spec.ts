@@ -18,6 +18,7 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
+  FAVICON_PNG_TYPE,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
@@ -25,6 +26,7 @@ import {
   OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
 import { ProductDetail } from '../../shared/models/product-detail.model';
+import { FaviconService } from '../../shared/services/favicon.service';
 
 const products = MOCK_PRODUCTS._embedded.products;
 
@@ -38,6 +40,7 @@ describe('ProductDetailResolver', () => {
   let productService: jasmine.SpyObj<ProductService>;
   let cookieService: jasmine.SpyObj<CookieService>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let faviconService: jasmine.SpyObj<FaviconService>;
   let activatedRoute: ActivatedRoute;
   let routeSnapshot: ActivatedRouteSnapshot;
 
@@ -67,6 +70,9 @@ describe('ProductDetailResolver', () => {
       'RoutingQueryParamService',
       ['getDesignerVersionFromSessionStorage']
     );
+    const faviconServiceSpy = jasmine.createSpyObj('FaviconService', [
+      'setFavicon'
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -81,6 +87,10 @@ describe('ProductDetailResolver', () => {
         {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamServiceSpy
+        },
+        {
+          provide: FaviconService,
+          useValue: faviconServiceSpy
         },
         {
           provide: ActivatedRoute,
@@ -119,6 +129,9 @@ describe('ProductDetailResolver', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
+    faviconService = TestBed.inject(
+      FaviconService
+    ) as jasmine.SpyObj<FaviconService>;
   });
 
   describe('resolve', () => {
@@ -224,6 +237,15 @@ describe('ProductDetailResolver', () => {
       expect(resolver.updateOGTag).toHaveBeenCalledWith(
         OG_IMAGE_TYPE_KEY,
         OG_IMAGE_PNG_TYPE
+      );
+    });
+
+    it('should set favicon with product logo URL', () => {
+      resolver.updateProductMetadata(MOCK_PRODUCT_DETAIL);
+
+      expect(faviconService.setFavicon).toHaveBeenCalledWith(
+        MOCK_PRODUCT_DETAIL.logoUrl,
+        FAVICON_PNG_TYPE
       );
     });
   });
