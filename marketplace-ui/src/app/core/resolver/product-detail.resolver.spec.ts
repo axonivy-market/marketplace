@@ -18,14 +18,13 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
+import { ProductDetail } from '../../shared/models/product-detail.model';
 
 const products = MOCK_PRODUCTS._embedded.products;
 
@@ -60,7 +59,8 @@ describe('ProductDetailResolver', () => {
     ]);
     const productServiceSpy = jasmine.createSpyObj('ProductService', [
       'getProductDetails',
-      'getBestMatchProductDetailsWithVersion'
+      'getBestMatchProductDetailsWithVersion',
+      'setDefaultVendorImage'
     ]);
     const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get']);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
@@ -304,8 +304,10 @@ describe('ProductDetailResolver', () => {
         ''
       );
       productService.getProductDetails.and.returnValue(of(MOCK_PRODUCT_DETAIL));
+      productService.setDefaultVendorImage.and.callFake((detail: ProductDetail) => detail);
 
       resolver.getProductById(products[0].id, false).subscribe(result => {
+        expect(productService.setDefaultVendorImage).toHaveBeenCalledWith(MOCK_PRODUCT_DETAIL);
         expect(result).toBe(MOCK_PRODUCT_DETAIL);
         done();
       });
