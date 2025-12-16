@@ -121,7 +121,7 @@ public final class ProductContentUtils {
 
   private static int findSectionStart(Pattern pattern, String content) {
     var matcher = pattern.matcher(content);
-    return matcher.find() ? matcher.start() : -1;
+    return matcher.find() ? matcher.start() : INDEX_NOT_FOUND;
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
