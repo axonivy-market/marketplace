@@ -34,5 +34,5 @@ export interface Product {
 
 export interface MarketProduct {
   id: string;
-  marketDirectory: string;
+  marketDirectory?: string;
 }

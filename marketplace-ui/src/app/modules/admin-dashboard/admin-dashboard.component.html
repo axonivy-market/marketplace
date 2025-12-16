@@ -69,22 +69,22 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let job of jobs; let index = index">
+              <tr *ngFor="let syncTask of syncTasks; let index = index">
                 <td>{{ index + 1 }}</td>
-                <td>{{ job.labelKey | translate }}</td>
+                <td>{{ syncTask.labelKey | translate }}</td>
                 <td>
-                  <span [ngClass]="getStatusClass(job.status)">
-                    {{ job.status }}
+                  <span [ngClass]="getStatusClass(syncTask.status)">
+                    {{ syncTask.status }}
                   </span>
                 </td>
                 <td>
-                  {{ job.triggeredAt | date: 'short' }}
+                  {{ syncTask.triggeredAt | date: 'short' }}
                 </td>
                 <td>
-                  {{ job.completedAt | date: 'short' }}
+                  {{ syncTask.completedAt | date: 'short' }}
                 </td>
                 <td class="message-cell">
-                  {{ job.message }}
+                  {{ syncTask.message }}
                 </td>
                 <td>
                   <button
@@ -96,10 +96,11 @@
                         ? 'btn-light text-dark'
                         : 'btn-primary text-light'
                     "
-                    (click)="trigger(job)"
-                    [disabled]="job.status === 'RUNNING'">
+                    (click)="trigger(syncTask)"
+                    [disabled]="syncTask.status === 'RUNNING'">
                     @if (
-                      loadingJobKey === job.key || job.status === 'RUNNING'
+                      loadingSyncTaskKey === syncTask.key ||
+                      syncTask.status === 'RUNNING'
                     ) {
                       <i class="fa fa-spinner fa-spin me-2"></i>
                       {{ 'common.admin.sync.syncingLabel' | translate }}
@@ -137,7 +138,7 @@
                   <div class="dropdown position-relative w-100">
                     <input
                       type="text"
-                      class="form-control dropdown-toggle"
+                      class="sync-extension-id form-control dropdown-toggle"
                       [(ngModel)]="productSearch"
                       (focus)="openDropdown()"
                       (input)="filterProducts()"
@@ -170,7 +171,8 @@
                   <input
                     id="sync-market-path"
                     class="form-control"
-                    [(ngModel)]="marketDirectory" />
+                    [(ngModel)]="marketDirectory"
+                    disabled="true" />
                   <small class="text-muted">
                     {{
                       'common.admin.sync.syncOneProductDialog.chooseMarketItemPathHint'
@@ -201,7 +203,7 @@
                 <button
                   class="btn border-0 btn-primary"
                   (click)="confirmSyncOneProduct()"
-                  [disabled]="!productSearch">
+                  [disabled]="!isValidSyncOneProductValues()">
                   {{ 'common.admin.sync.syncLabel' | translate }}
                 </button>
               </div>
@@ -211,7 +213,7 @@
       }
       <router-outlet></router-outlet>
     </div>
-  } @else {
+  } @else if (!isAuthenticated) {
     <div class="token-container">
       <div class="header">
         <h2 class="text-primary text-center">
@@ -244,9 +246,11 @@
           }
         </div>
       </div>
-      <app-loading-spinner
-        containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-        [key]="LoadingComponentId.ADMIN_DASHBOARD" />
     </div>
+  }
+  @if (isLoading) {
+    <app-loading-spinner
+      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      [key]="LoadingComponentId.ADMIN_DASHBOARD" />
   }
 </div>

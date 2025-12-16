@@ -321,10 +321,11 @@
         },
         "syncOneProductDialog": {
           "title": "Synchronize One Product",
-          "chooseExtensionIdHint": "Choose an extension ID to synchronize.",
+          "chooseExtensionIdHint": "Choose an extension ID to synchronize",
           "marketItemPath": "Market Item Path",
           "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
-          "overrideMarketItemPath": "Override Current Market Item Path"
+          "overrideMarketItemPath": "Override Current Market Item Path",
+          "validationMessage": "Extension ID & marketItemPath required!"
         }
       },
       "customSort": {

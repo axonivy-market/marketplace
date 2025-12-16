@@ -158,8 +158,25 @@ export class ProductService {
     pageSize = 200,
     language: Language = Language.EN
   ): Promise<string[]> {
-    const ids: string[] = [];
+    const products = await this.fetchAllProducts(pageSize, language);
+
+    return products.map(product => product.id);
+  }
+
+  async fetchAllProductsForSync(
+    pageSize = 200,
+    language: Language = Language.EN
+  ): Promise<MarketProduct[]> {
+    return this.fetchAllProducts(pageSize, language);
+  }
+
+  private async fetchAllProducts(
+    pageSize: number,
+    language: Language
+  ): Promise<MarketProduct[]> {
+    const results: MarketProduct[] = [];
     let page = 0;
+
     while (true) {
       const response = await firstValueFrom(
         this.findProductsByCriteria({
@@ -175,12 +192,14 @@ export class ProductService {
         })
       );
 
-      const products = response?._embedded?.products;
-      if (products?.length) {
-        for (const product of products) {
-          if (product?.id) {
-            ids.push(product.id);
-          }
+      const products = response?._embedded?.products ?? [];
+
+      for (const product of products) {
+        if (product?.id) {
+          results.push({
+            id: product.id,
+            marketDirectory: product.marketDirectory
+          });
         }
       }
 
@@ -191,51 +210,7 @@ export class ProductService {
 
       page = pageInfo.number + 1;
     }
-    return ids;
+
+    return results;
   }
-
-  async fetchAllProductsForSync(
-  pageSize = 200,
-  language: Language = Language.EN
-): Promise<MarketProduct[]> {
-  const productsForSync: MarketProduct[] = [];
-  let page = 0;
-
-  while (true) {
-    const response = await firstValueFrom(
-      this.findProductsByCriteria({
-        search: '',
-        sort: SortOption.STANDARD,
-        type: TypeOption.All_TYPES,
-        isRESTClientEditor: false,
-        pageable: {
-          page,
-          size: pageSize
-        },
-        language
-      })
-    );
-
-    const products = response?._embedded?.products ?? [];
-
-    for (const product of products) {
-      if (product?.id) {
-        productsForSync.push({
-          id: product.id,
-          marketDirectory: product.marketDirectory ?? ''
-        });
-      }
-    }
-
-    const pageInfo = response?.page;
-    if (!pageInfo || pageInfo.number >= pageInfo.totalPages - 1) {
-      break;
-    }
-
-    page = pageInfo.number + 1;
-  }
-
-  return productsForSync;
-}
-
 }

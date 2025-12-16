@@ -2,10 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.PostgresDBConstants;
-import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -60,7 +58,6 @@ public class MonitorDashBoardController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
   public ResponseEntity<String> syncGithubMonitor(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);

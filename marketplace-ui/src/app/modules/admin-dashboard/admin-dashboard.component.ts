@@ -6,7 +6,6 @@ import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
-  SyncTaskStatus,
   SyncTaskKey
 } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -27,7 +26,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
+import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 
+const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -44,30 +45,35 @@ import { MarketProduct } from '../../shared/models/product.model';
 })
 export class AdminDashboardComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly service = inject(AdminDashboardService);
+  private readonly productService = inject(ProductService);
+  private readonly storageRef = inject(SessionStorageRef);
 
-  service = inject(AdminDashboardService);
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  productService = inject(ProductService);
+
   protected LoadingComponentId = LoadingComponentId;
+  API_URI = API_URI;
 
   token = '';
-  errorMessage = '';
   isAuthenticated = false;
-  loadingJobKey: SyncTaskKey | null = null;
-  jobs = SYNC_TASKS;
-  overrideMarketItemPath = false;
-  API_URI = API_URI;
+  isLoading = false;
+  errorMessage = '';
+
   showSyncTask = true;
+  loadingSyncTaskKey: SyncTaskKey | null = null;
   showSyncOneProductDialog = false;
 
+  syncTasks = SYNC_TASKS;
   products: MarketProduct[] = [];
-  marketDirectory = '';
-  productSearch = '';
-  dropdownOpen = false;
   filteredProducts: MarketProduct[] = [];
+
+  productSearch = '';
+  marketDirectory = '';
+  overrideMarketItemPath = false;
+  dropdownOpen = false;
 
   private readonly syncTaskTriggers: Record<
     SyncTaskKey,
@@ -80,202 +86,60 @@ export class AdminDashboardComponent implements OnInit {
     syncOneProduct: () => EMPTY
   };
 
-  constructor(private readonly storageRef: SessionStorageRef) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
+
     if (this.token) {
-      this.isAuthenticated = true;
-      this.loadSyncTaskExecutions();
-      this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+      this.verifyTokenAndLoad();
       this.updateVisibility(this.router.url);
+
       this.router.events
         .pipe(filter(e => e instanceof NavigationEnd))
-        .subscribe(() => {
-          this.updateVisibility(this.router.url);
-        });
+        .subscribe(() => this.updateVisibility(this.router.url));
     }
   }
 
-  private updateVisibility(url: string) {
+  private updateVisibility(url: string): void {
     this.showSyncTask = /^\/octopus\/?(\?.*)?$/.test(url);
   }
 
   onSubmit(): void {
-    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
     this.errorMessage = '';
+
     if (!this.token) {
       this.handleMissingToken();
       return;
     }
-    this.isAuthenticated = true;
-    this.loadSyncTaskExecutions();
+
+    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
+    this.verifyTokenAndLoad();
   }
 
-  onProductChange(product: MarketProduct) {
-    this.marketDirectory = product?.marketDirectory ?? '';
-  }
+  private verifyTokenAndLoad(): void {
+    this.isLoading = true;
 
-  openDropdown() {
-    this.dropdownOpen = true;
-    this.filteredProducts = this.products.slice(0, 10);
-  }
-
-  filterProducts() {
-    const value = this.productSearch.toLowerCase();
-
-    this.filteredProducts = this.products
-      .filter(p => p.id.toLowerCase().includes(value))
-      .slice(0, 10);
-
-    this.dropdownOpen = true;
-  }
-
-  selectProduct(product: MarketProduct) {
-    this.productSearch = product.id;
-    this.marketDirectory = product.marketDirectory ?? '';
-
-    this.dropdownOpen = false;
-  }
-
-  async trigger(job: SyncTaskRow) {
-    if (job.key === 'syncOneProduct') {
-      this.products = await this.productService.fetchAllProductsForSync();
-      this.showSyncOneProductDialog = true;
-      this.loadingJobKey = null;
-      return;
-    }
-
-    this.loadingJobKey = job.key;
-
-    Object.assign(job, {
-      status: 'RUNNING',
-      triggeredAt: new Date(),
-      completedAt: null,
-      message: null
-    });
-
-    const action = this.syncTaskTriggers[job.key];
-
-    action()
-      .pipe(finalize(() => (this.loadingJobKey = null)))
-      .subscribe({
-        next: () => this.handleSuccess(job),
-        error: err => this.handleFailure(job, err)
-      });
-  }
-
-  confirmSyncOneProduct(): void {
-    const job = this.jobs.find(j => j.key === 'syncOneProduct');
-    if (!job) {
-      return;
-    }
-
-    if (!this.productSearch || !this.marketDirectory) {
-      Object.assign(job, {
-        status: 'FAILED',
-        completedAt: new Date(),
-        message: 'Product ID & marketItemPath required'
-      });
-      return;
-    }
-    this.loadingJobKey = job.key;
-    this.showSyncOneProductDialog = false;
-    Object.assign(job, {
-      status: 'RUNNING',
-      triggeredAt: new Date()
-    });
-    this.service
-      .syncOneProduct(
-        this.productSearch.trim(),
-        this.marketDirectory.trim(),
-        this.overrideMarketItemPath
-      )
-      .pipe(
-        finalize(() => {
-          this.loadingJobKey = null;
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.handleSuccess(job);
-        },
-        error: err => {
-          this.showSyncOneProductDialog = false;
-          this.handleFailure(job, err);
-        }
-      });
-  }
-
-  cancelSyncOneProduct(): void {
-    this.showSyncOneProductDialog = false;
-    this.productSearch = '';
-    this.marketDirectory = '';
-  }
-
-  private handleSuccess(job: SyncTaskRow) {
-    Object.assign(job, {
-      status: 'SUCCESS',
-      completedAt: new Date(),
-      message: 'Success'
-    });
-
-    this.loadSyncTaskExecutions();
-  }
-
-  private handleFailure(job: SyncTaskRow, reload = true) {
-    Object.assign(job, {
-      status: 'FAILED',
-      completedAt: new Date(),
-      message: 'Failed'
-    });
-    if (reload && this.isAuthenticated) {
-      this.loadSyncTaskExecutions();
-    }
-  }
-
-  private loadSyncTaskExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => this.applySyncTaskExecutions(executions),
-      error: err => this.handleError(err)
+      next: executions => {
+        this.isAuthenticated = true;
+        this.applySyncTaskExecutions(executions);
+        this.pageTitleService.setTitleOnLangChange(
+          'common.admin.sync.pageTitle'
+        );
+        this.isLoading = false;
+      },
+      error: err => {
+        this.isLoading = false;
+        this.handleAuthError(err);
+      }
     });
   }
 
-  private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
-    for (const execution of executions) {
-      const job = this.jobs.find(j => j.key === execution.key);
-      if (job) {
-        job.status = execution.status;
-        job.triggeredAt = execution.triggeredAt
-          ? new Date(execution.triggeredAt)
-          : undefined;
-        job.completedAt = execution.completedAt
-          ? new Date(execution.completedAt)
-          : undefined;
-        job.message = execution.message ?? undefined;
-      }
-    }
-  }
+  private handleAuthError(err: HttpErrorResponse): void {
+    this.errorMessage =
+      err.status === UNAUTHORIZED
+        ? ERROR_MESSAGES.INVALID_TOKEN
+        : ERROR_MESSAGES.FETCH_FAILURE;
 
-  getStatusClass(status?: SyncTaskStatus): string {
-    switch (status) {
-      case 'SUCCESS':
-        return 'text-success';
-      case 'FAILED':
-        return 'text-danger';
-      case 'RUNNING':
-        return 'text-warning';
-      default:
-        return '';
-    }
-  }
-
-  private handleError(err: HttpErrorResponse): void {
-    if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-    } else {
-      this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
-    }
     this.isAuthenticated = false;
     sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
@@ -283,5 +147,187 @@ export class AdminDashboardComponent implements OnInit {
   private handleMissingToken(): void {
     this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
     this.isAuthenticated = false;
+  }
+
+  // Synchronize
+  async trigger(syncTask: SyncTaskRow): Promise<void> {
+    if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
+      await this.openSyncOneProductDialog();
+      return;
+    }
+
+    this.runSyncTask(syncTask);
+  }
+
+  private runSyncTask(syncTask: SyncTaskRow): void {
+    this.setSyncTaskRunning(syncTask);
+
+    this.syncTaskTriggers[syncTask.key]()
+      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
+      .subscribe({
+        next: () => this.handleSyncTaskSuccess(syncTask),
+        error: () => this.handleSyncTaskFailure(syncTask)
+      });
+  }
+
+  private setSyncTaskRunning(syncTask: SyncTaskRow): void {
+    this.loadingSyncTaskKey = syncTask.key;
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.RUNNING,
+      triggeredAt: new Date(),
+      completedAt: null,
+      message: null
+    });
+  }
+
+  private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.SUCCESS,
+      completedAt: new Date(),
+      message: 'Success'
+    });
+
+    this.reloadExecutions();
+  }
+
+  private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.FAILED,
+      completedAt: new Date(),
+      message: 'Failed'
+    });
+
+    if (this.isAuthenticated) {
+      this.reloadExecutions();
+    }
+  }
+
+  private reloadExecutions(): void {
+    this.service.fetchSyncTaskExecutions().subscribe({
+      next: executions => this.applySyncTaskExecutions(executions),
+      error: err => this.handleAuthError(err)
+    });
+  }
+
+  private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
+    executions.forEach(execution => {
+      const syncTask = this.syncTasks.find(t => t.key === execution.key);
+      if (!syncTask) {
+        return;
+      }
+
+      syncTask.status = execution.status;
+      syncTask.triggeredAt = execution.triggeredAt
+        ? new Date(execution.triggeredAt)
+        : undefined;
+      syncTask.completedAt = execution.completedAt
+        ? new Date(execution.completedAt)
+        : undefined;
+      syncTask.message = execution.message ?? undefined;
+    });
+  }
+
+  getStatusClass(status?: SyncTaskStatus): string {
+    switch (status) {
+      case SyncTaskStatus.SUCCESS:
+        return 'text-success';
+      case SyncTaskStatus.FAILED:
+        return 'text-danger';
+      case SyncTaskStatus.RUNNING:
+        return 'text-warning';
+      default:
+        return '';
+    }
+  }
+
+  // Synchronize one product dialog
+  private async openSyncOneProductDialog(): Promise<void> {
+    this.products = await this.productService.fetchAllProductsForSync();
+    this.filteredProducts = this.products.slice(0, 10);
+    this.showSyncOneProductDialog = true;
+  }
+
+  confirmSyncOneProduct(): void {
+    const syncTask = this.syncTasks.find(
+      syncTask => syncTask.key === SYNC_ONE_PRODUCT_KEY
+    );
+    if (!syncTask || !this.isValidSyncOneProductValues()) {
+      this.markSyncOneProductFailed(syncTask);
+      return;
+    }
+
+    this.executeSyncOneProduct(syncTask);
+  }
+
+  isValidSyncOneProductValues(): boolean {
+    const matchedProduct = this.products.some(
+      product => product.id === this.productSearch
+    );
+    return matchedProduct && !!this.marketDirectory;
+  }
+
+  private executeSyncOneProduct(syncTask: SyncTaskRow): void {
+    this.setSyncTaskRunning(syncTask);
+    this.showSyncOneProductDialog = false;
+
+    this.service
+      .syncOneProduct(
+        this.productSearch,
+        this.marketDirectory.trim(),
+        this.overrideMarketItemPath
+      )
+      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
+      .subscribe({
+        next: () => this.handleSyncTaskSuccess(syncTask),
+        error: () => this.handleSyncTaskFailure(syncTask)
+      });
+  }
+
+  private markSyncOneProductFailed(syncTask?: SyncTaskRow): void {
+    if (!syncTask) {
+      return;
+    }
+
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.FAILED,
+      completedAt: new Date(),
+      message: this.translateService.instant(
+        'common.admin.sync.syncOneProductDialog.validationMessage'
+      )
+    });
+  }
+
+  cancelSyncOneProduct(): void {
+    this.showSyncOneProductDialog = false;
+    this.productSearch = '';
+    this.marketDirectory = '';
+    this.overrideMarketItemPath = false;
+  }
+
+  // Product search dropdown in sync one product dialog
+  openDropdown(): void {
+    this.dropdownOpen = true;
+    this.filteredProducts = this.products.slice(0, 10);
+  }
+
+  filterProducts(): void {
+    const value = this.productSearch.toLowerCase();
+
+    this.filteredProducts = this.products
+      .filter(product => product.id.toLowerCase().includes(value))
+      .slice(0, 10);
+
+    // Clear the market directory if ID input does not match any product IDs
+    if (!this.isValidSyncOneProductValues()) {
+      this.marketDirectory = '';
+    }
+
+    this.dropdownOpen = true;
+  }
+
+  selectProduct(product: MarketProduct): void {
+    this.productSearch = product.id;
+    this.marketDirectory = product.marketDirectory ?? '';
+    this.dropdownOpen = false;
   }
 }

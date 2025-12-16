@@ -13,14 +13,13 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
+import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 
 export type SyncTaskKey =
   | 'syncProducts'
   | 'syncOneProduct'
   | 'syncLatestReleasesForProducts'
   | 'syncGithubMonitor';
-
-export type SyncTaskStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;

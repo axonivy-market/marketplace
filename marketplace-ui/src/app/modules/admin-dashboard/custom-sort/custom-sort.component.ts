@@ -17,13 +17,17 @@ import {
   CdkDragEnter,
   CdkDragStart,
   DragDropModule,
-  moveItemInArray,
+  moveItemInArray
 } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
 import { PageTitleService } from '../../../shared/services/page-title.service';
+import { SortOption } from '../../../shared/enums/sort-option.enum';
 
+const PAGE_SIZE = 200;
+const SORTED_ID = 'sorted-extensions';
+const AVAILABLE_ID = 'available-extensions';
 @Component({
   selector: 'app-custom-sort',
   standalone: true,
@@ -43,6 +47,7 @@ export class CustomSortComponent implements OnInit {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+
   private readonly productService = inject(ProductService);
   private readonly adminDashboardService = inject(AdminDashboardService);
   private readonly renderer = inject(Renderer2);
@@ -50,15 +55,13 @@ export class CustomSortComponent implements OnInit {
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
-  isLoading = false;
 
-  productId = '';
   searchTerm = '';
+  isLoading = false;
   isSaving = false;
+
   sortSuccessMessage = '';
   sortErrorMessage = '';
-
-  private readonly PAGE_SIZE = 200;
 
   ngOnInit(): void {
     this.loadAllProductIds();
@@ -79,82 +82,130 @@ export class CustomSortComponent implements OnInit {
     this.searchTerm = '';
   }
 
+  // Drag and drop extension IDs
   drop(event: CdkDragDrop<string[]>) {
-    const draggedItem = (event.item && (event.item as any).data) as string;
+    const item = event.item.data as string;
+
     if (event.previousContainer === event.container) {
-      this.handleSameContainerReorder(event);
+      this.reorderWithinTable(event);
     } else {
-      this.handleCrossContainerTransfer(event, draggedItem);
+      this.transferBetweenTables(event, item);
     }
   }
 
-  private handleSameContainerReorder(event: CdkDragDrop<string[]>) {
-    if (event.container.id === 'sorted-extensions') {
-      moveItemInArray(this.sortingExtensions, event.previousIndex, event.currentIndex);
+  private reorderWithinTable(event: CdkDragDrop<string[]>) {
+    const tableId = event.container.id;
+
+    if (this.isSorted(tableId)) {
+      moveItemInArray(
+        this.sortingExtensions,
+        event.previousIndex,
+        event.currentIndex
+      );
       return;
     }
-    if (event.container.id === 'available-extensions') {
-      const filtered = this.filteredAvailableExtensions;
-      const prevItem = filtered[event.previousIndex];
-      const currItem = filtered[event.currentIndex];
-      const prevIdxAll = this.allExtensions.indexOf(prevItem);
-      const currIdxAll = this.allExtensions.indexOf(currItem);
-      if (prevIdxAll > -1 && currIdxAll > -1) {
-        moveItemInArray(this.allExtensions, prevIdxAll, currIdxAll);
-      }
+
+    if (this.isAvailable(tableId)) {
+      this.reorderAvailableExtensions(event);
     }
   }
 
-  private handleCrossContainerTransfer(event: CdkDragDrop<string[]>, draggedItem: string) {
-    if (event.previousContainer.id === 'available-extensions' && event.container.id === 'sorted-extensions') {
-      const idxInAll = this.allExtensions.indexOf(draggedItem);
-      if (idxInAll > -1) {
-        this.allExtensions.splice(idxInAll, 1);
-      }
-      this.sortingExtensions.splice(event.currentIndex, 0, draggedItem);
+  private reorderAvailableExtensions(event: CdkDragDrop<string[]>) {
+    const filtered = this.filteredAvailableExtensions;
+
+    const fromItem = filtered[event.previousIndex];
+    const toItem = filtered[event.currentIndex];
+
+    const fromIndex = this.allExtensions.indexOf(fromItem);
+    const toIndex = this.allExtensions.indexOf(toItem);
+
+    if (fromIndex > -1 && toIndex > -1) {
+      moveItemInArray(this.allExtensions, fromIndex, toIndex);
+    }
+  }
+
+  private transferBetweenTables(event: CdkDragDrop<string[]>, item: string) {
+    const from = event.previousContainer.id;
+    const to = event.container.id;
+
+    if (this.isAvailable(from) && this.isSorted(to)) {
+      this.moveAvailableToSortedExtensionTable(item, event.currentIndex);
       return;
     }
-    if (event.previousContainer.id === 'sorted-extensions' && event.container.id === 'available-extensions') {
-      const idxSorted = this.sortingExtensions.indexOf(draggedItem);
-      if (idxSorted > -1) {
-        this.sortingExtensions.splice(idxSorted, 1);
-      }
-      const filtered = this.filteredAvailableExtensions;
-      const targetNeighbor = filtered[event.currentIndex];
-      const targetIdxAll = targetNeighbor ? this.allExtensions.indexOf(targetNeighbor) : -1;
-      if (targetIdxAll > -1) {
-        this.allExtensions.splice(targetIdxAll, 0, draggedItem);
-      } else {
-        this.allExtensions.push(draggedItem);
-      }
+
+    if (this.isSorted(from) && this.isAvailable(to)) {
+      this.moveSortedToAvailableExtensionTable(item, event.currentIndex);
     }
+  }
+
+  private moveAvailableToSortedExtensionTable(item: string, index: number) {
+    this.removeFromAvailableExtensionTable(item);
+    this.sortingExtensions.splice(index, 0, item);
+  }
+
+  private moveSortedToAvailableExtensionTable(item: string, index: number) {
+    this.removeFromSortedExtensionTable(item);
+
+    const target = this.filteredAvailableExtensions[index];
+    const insertIndex = target
+      ? this.allExtensions.indexOf(target)
+      : this.allExtensions.length;
+
+    this.allExtensions.splice(insertIndex, 0, item);
+  }
+
+  private removeFromAvailableExtensionTable(item: string) {
+    const idx = this.allExtensions.indexOf(item);
+    if (idx > -1) {
+      this.allExtensions.splice(idx, 1);
+    }
+  }
+
+  private removeFromSortedExtensionTable(item: string) {
+    const idx = this.sortingExtensions.indexOf(item);
+    if (idx > -1) {
+      this.sortingExtensions.splice(idx, 1);
+    }
+  }
+
+  private isSorted(id: string): boolean {
+    return id === SORTED_ID;
+  }
+
+  private isAvailable(id: string): boolean {
+    return id === AVAILABLE_ID;
   }
 
   setDragPreviewWidth(event: CdkDragStart<string>): void {
-    this.applyPreviewWidth(
+    this.setPreviewWidth(
       event.source.element.nativeElement.getBoundingClientRect().width
     );
   }
 
-  resetDragPreviewWidth(_: CdkDragEnd<string>): void {
-    const root = this.document?.documentElement;
-    if (root) {
-      this.renderer.removeStyle(root, '--drag-preview-width');
-    }
-  }
-
   adjustPreviewWidthOnEnter(event: CdkDragEnter<string[]>): void {
-    this.applyPreviewWidth(
+    this.setPreviewWidth(
       event.container.element.nativeElement.getBoundingClientRect().width
     );
   }
 
-  private applyPreviewWidth(width: number): void {
-    const root = this.document?.documentElement;
-    if (!root || width <= 0) {
-      return;
-    }
-    this.renderer.setStyle(root, '--drag-preview-width', `${width}px`);
+  resetDragPreviewWidth(_: CdkDragEnd<string>): void {
+    this.removePreviewWidth();
+  }
+
+  private setPreviewWidth(width: number) {
+    if (width <= 0) return;
+    this.renderer.setStyle(
+      this.document.documentElement,
+      '--drag-preview-width',
+      `${width}px`
+    );
+  }
+
+  private removePreviewWidth() {
+    this.renderer.removeStyle(
+      this.document.documentElement,
+      '--drag-preview-width'
+    );
   }
 
   sortMarketExtensions(): void {
@@ -163,12 +214,8 @@ export class CustomSortComponent implements OnInit {
     this.isSaving = true;
 
     this.adminDashboardService
-      .sortMarketExtensions(this.sortingExtensions, 'alphabetically')
-      .pipe(
-        finalize(() => {
-          this.isSaving = false;
-        })
-      )
+      .sortMarketExtensions(this.sortingExtensions, SortOption.ALPHABETICALLY)
+      .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
           this.sortSuccessMessage = this.translateService.instant(
@@ -186,8 +233,8 @@ export class CustomSortComponent implements OnInit {
   private async loadAllProductIds(): Promise<void> {
     this.isLoading = true;
     try {
-      const ids = await this.productService.fetchAllProductIds(this.PAGE_SIZE);
-      this.allExtensions = ids;
+      this.allExtensions =
+        await this.productService.fetchAllProductIds(PAGE_SIZE);
     } catch {
       this.allExtensions = [];
     } finally {

@@ -10,12 +10,20 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_DATA, TIME_UNITS, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import {
+  GITHUB_MARKET_ORG_URL,
+  REPO_PAGE_PATHS,
+  ERROR_MESSAGES,
+  SECURITY_MONITOR_SESSION_DATA,
+  TIME_UNITS,
+  UNAUTHORIZED
+} from '../../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-security-monitor',
@@ -25,7 +33,7 @@ import { AdminDashboardService } from '../admin-dashboard.service';
   styleUrls: ['./security-monitor.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class SecurityMonitorComponent implements OnInit{
+export class SecurityMonitorComponent implements OnInit {
   themeService = inject(ThemeService);
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];
@@ -33,6 +41,7 @@ export class SecurityMonitorComponent implements OnInit{
   adminDashboardService = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
   isBrowser: boolean;
+  isLoading = false;
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -41,12 +50,14 @@ export class SecurityMonitorComponent implements OnInit{
   ngOnInit(): void {
     if (this.isBrowser) {
       this.loadSessionData();
-      this.fetchSecurityDetails();
       this.pageTitleService.setTitleOnLangChange('common.security.pageTitle');
     }
   }
 
   onSubmit(): void {
+    if (this.isLoading) {
+      return;
+    }
     this.fetchSecurityDetails();
   }
 
@@ -55,6 +66,8 @@ export class SecurityMonitorComponent implements OnInit{
       const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_DATA);
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
+      } else {
+        this.fetchSecurityDetails();
       }
     } catch {
       this.clearSessionData();
@@ -66,12 +79,19 @@ export class SecurityMonitorComponent implements OnInit{
   }
 
   private fetchSecurityDetails(): void {
+    this.isLoading = true;
+
     this.adminDashboardService
-      .getSecurityDetails()
-      .subscribe({
-        next: data => this.handleSuccess(data),
-        error: (err: HttpErrorResponse) => this.handleError(err)
-      });
+    .getSecurityDetails()
+    .pipe(
+      finalize(() => {
+        this.isLoading = false;
+      })
+    )
+    .subscribe({
+      next: data => this.handleSuccess(data),
+      error: err => this.handleError(err)
+    });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
@@ -100,7 +120,11 @@ export class SecurityMonitorComponent implements OnInit{
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
+  navigateToRepoPage(
+    repoName: string,
+    page: keyof typeof REPO_PAGE_PATHS,
+    lastCommitSHA?: string
+  ): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
@@ -121,7 +145,10 @@ export class SecurityMonitorComponent implements OnInit{
     }
 
     for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
-      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
+      if (
+        index < TIME_UNITS.length - 1 &&
+        diffInSeconds < TIME_UNITS[index + 1].SECONDS
+      ) {
         const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
@@ -131,7 +158,9 @@ export class SecurityMonitorComponent implements OnInit{
       }
     }
 
-    const years = Math.floor(diffInSeconds / TIME_UNITS.at(-1)!.SECONDS);
+    const years = Math.floor(
+      diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS
+    );
     if (years === 1) {
       return `${years} year ago`;
     } else {

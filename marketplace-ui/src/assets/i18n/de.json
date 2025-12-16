@@ -321,10 +321,11 @@
         },
         "syncOneProductDialog": {
           "title": "Ein Produkt synchronisieren",
-          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zur Synchronisierung aus.",
+          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zur Synchronisierung aus",
           "marketItemPath": "Marktplatz-Elementpfad",
           "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
-          "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben"
+          "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben",
+          "validationMessage": "Erweiterungs-ID und marketItemPath sind erforderlich!"
         }
       },
       "customSort": {

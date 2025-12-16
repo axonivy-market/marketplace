@@ -4,13 +4,20 @@
     <h3>Keep track of your repositories' security status at a glance.</h3>
   </div>
   <div class="header">
-    <h3>
-      <a class="reload-link" title="Reload data" (click)="onSubmit()">
-        Reload Data
-      </a>
-    </h3>
-  </div>
-  <div class="repo-grid">
+  <h3>
+    <a
+      class="reload-link"
+      title="Reload data"
+      (click)="!isLoading && onSubmit()"
+      [class.disabled]="isLoading"
+      [attr.aria-disabled]="isLoading"
+    >
+      Reload Data
+    </a>
+  </h3>
+</div>
+
+  <div class="repo-grid position-relative">
     @for (repo of repos; track $index) {
       <div class="repo-card">
         <div class="repo-header">
@@ -125,7 +132,7 @@
       </div>
     }
     <app-loading-spinner
-      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      containerClasses="d-flex justify-content-center position-absolute align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
       [key]="LoadingComponentId.SECURITY_MONITOR" />
   </div>
 </div>

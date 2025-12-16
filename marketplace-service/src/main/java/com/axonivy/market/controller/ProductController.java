@@ -94,7 +94,6 @@ public class ProductController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  @TrackSyncTaskExecution(SyncTaskType.SYNC_PRODUCTS)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
