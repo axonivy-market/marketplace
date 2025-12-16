@@ -97,15 +97,23 @@ public final class ProductContentUtils {
   }
 
   private static int minNonNegative(int a, int b) {
-    if (a == INDEX_NOT_FOUND) return b;
-    if (b == INDEX_NOT_FOUND) return a;
+    if (a == INDEX_NOT_FOUND) {
+      return b;
+    }
+    if (b == INDEX_NOT_FOUND) {
+      return a;
+    }
     return Math.min(a, b);
   }
 
   private static String extractIfExists(String content, int start, Pattern pattern, int nextSectionStart) {
-    if (start == INDEX_NOT_FOUND) return Strings.EMPTY;
+    if (start == INDEX_NOT_FOUND) {
+      return Strings.EMPTY;
+    }
     var matcher = pattern.matcher(content);
-    if (!matcher.find(start)) return Strings.EMPTY;
+    if (!matcher.find(start)) {
+      return Strings.EMPTY;
+    }
     int sectionHeaderEnd = start + matcher.group().length();
     int end = (nextSectionStart != INDEX_NOT_FOUND && nextSectionStart > start) ? nextSectionStart : content.length();
     return content.substring(sectionHeaderEnd, end).trim();
@@ -135,7 +143,6 @@ public final class ProductContentUtils {
     } else {
       result = text;
     }
-
     return result;
   }
 
