@@ -82,16 +82,16 @@ export class SecurityMonitorComponent implements OnInit {
     this.isLoading = true;
 
     this.adminDashboardService
-    .getSecurityDetails()
-    .pipe(
-      finalize(() => {
-        this.isLoading = false;
-      })
-    )
-    .subscribe({
-      next: data => this.handleSuccess(data),
-      error: err => this.handleError(err)
-    });
+      .getSecurityDetails()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: data => this.handleSuccess(data),
+        error: err => this.handleError(err)
+      });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
@@ -158,9 +158,11 @@ export class SecurityMonitorComponent implements OnInit {
       }
     }
 
-    const years = Math.floor(
-      diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS
-    );
+    const lastUnit = TIME_UNITS.at(-1);
+    if (!lastUnit) {
+      return '';
+    }
+    const years = Math.floor(diffInSeconds / lastUnit.SECONDS);
     if (years === 1) {
       return `${years} year ago`;
     } else {

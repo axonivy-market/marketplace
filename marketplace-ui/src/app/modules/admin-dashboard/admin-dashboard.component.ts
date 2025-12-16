@@ -249,7 +249,7 @@ export class AdminDashboardComponent implements OnInit {
 
   confirmSyncOneProduct(): void {
     const syncTask = this.syncTasks.find(
-      syncTask => syncTask.key === SYNC_ONE_PRODUCT_KEY
+      t => t.key === SYNC_ONE_PRODUCT_KEY
     );
     if (!syncTask || !this.isValidSyncOneProductValues()) {
       this.markSyncOneProductFailed(syncTask);

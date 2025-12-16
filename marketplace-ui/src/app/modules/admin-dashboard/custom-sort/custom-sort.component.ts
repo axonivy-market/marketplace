@@ -193,7 +193,9 @@ export class CustomSortComponent implements OnInit {
   }
 
   private setPreviewWidth(width: number) {
-    if (width <= 0) return;
+    if (width <= 0) {
+      return;
+    }
     this.renderer.setStyle(
       this.document.documentElement,
       '--drag-preview-width',
