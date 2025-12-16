@@ -1,3 +1,4 @@
+import { FAVICON_DEFAULT_TYPE, FAVICON_DEFAULT_URL } from './../../shared/constants/common.constant';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
@@ -11,7 +12,6 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { FaviconService } from '../../shared/services/favicon.service';
-import { DEFAULT_FAVICON_URL } from '../../shared/constants/common.constant';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -51,7 +51,8 @@ describe('HomeComponent', () => {
 
   it('should call faviconService.setFavicon on init', () => {
     expect(faviconServiceSpy.setFavicon).toHaveBeenCalledOnceWith(
-      DEFAULT_FAVICON_URL
+      FAVICON_DEFAULT_URL,
+      FAVICON_DEFAULT_TYPE
     );
   });
 });
