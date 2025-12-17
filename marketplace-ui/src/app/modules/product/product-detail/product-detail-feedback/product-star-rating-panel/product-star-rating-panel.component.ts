@@ -1,7 +1,6 @@
 import { Component, EventEmitter, inject, Input, input, Output, Signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductStarRatingService } from './product-star-rating.service';
-
 import { StarRatingHighlightDirective } from './star-rating-highlight.directive';
 import {
   ProductStarRatingNumberComponent

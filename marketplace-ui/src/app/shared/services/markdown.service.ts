@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import MarkdownIt from 'markdown-it';
 import { full } from 'markdown-it-emoji';
-import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
+import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 
 @Injectable({
   providedIn: 'root'
