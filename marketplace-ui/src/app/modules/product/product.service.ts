@@ -18,6 +18,10 @@ import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
+import {
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK
+} from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -152,6 +156,19 @@ export class ProductService {
           return of(productReleasesApiResponse);
         })
       );
+  }
+
+  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+    const { vendorImage, vendorImageDarkMode } = productDetail;
+
+    if (productDetail.vendorImage || productDetail.vendorImageDarkMode) {
+      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
+      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    } else {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
+    }
+    return productDetail;
   }
 
   async fetchAllProductIds(

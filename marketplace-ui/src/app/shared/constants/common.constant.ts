@@ -399,6 +399,13 @@ export const DEFAULT_MODE = 'default';
 export const REPORT_MODE = 'report';
 export const ALL_ITEMS_PAGE_SIZE = 9999;
 
+// Favicon constants
+export const FAVICON_DEFAULT_URL = 'favicon.ico';
+export const FAVICON_REL = 'icon';
+export const FAVICON_LINK_REL_QUERY = 'link[rel="icon"]';
+export const FAVICON_DEFAULT_TYPE = 'image/x-icon';
+export const FAVICON_PNG_TYPE = 'image/png';
+
 export const SYNC_TASKS: SyncTaskRow[] = [
   {
     key: 'syncProducts',
