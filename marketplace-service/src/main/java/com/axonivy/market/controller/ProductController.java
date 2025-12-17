@@ -105,7 +105,7 @@ public class ProductController {
     String messageDetails = ObjectUtils.isEmpty(syncedProductIds) 
         ? "Data is already up to date, nothing to sync"
         : String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
-    stopWatch.getTime());
+            stopWatch.getTime());
     
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), messageDetails);
     return ResponseEntity.ok(message);

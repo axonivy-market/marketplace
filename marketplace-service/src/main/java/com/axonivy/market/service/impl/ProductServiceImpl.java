@@ -564,7 +564,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     if (product == null) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id );
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id);
     }
     int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
     product.setInstallationCount(installationCount);

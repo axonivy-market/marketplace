@@ -106,7 +106,7 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void testHandleIoException() {
+  void testHandleFileProcess() {
     var fileProcessingException = mock(FileProcessingException.class);
     var responseEntity = exceptionHandler.handleFileProcess(fileProcessingException);
     assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),

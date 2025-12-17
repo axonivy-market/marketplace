@@ -121,7 +121,7 @@ public class VersionServiceImpl implements VersionService {
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
     String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));
     if (artifactParts.length < 1) {
-      throw new InvalidParamException(ErrorCode.ARGUMENT_BAD_REQUEST, "Invalid artifact format: " + artifact);
+      return StringUtils.EMPTY;
     }
 
     String artifactId = artifactParts[0];

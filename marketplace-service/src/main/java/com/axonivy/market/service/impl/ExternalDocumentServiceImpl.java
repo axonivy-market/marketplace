@@ -75,6 +75,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     majorVersions = axonIvyClient.getDocumentVersions();
   }
 
+  @Override
   public List<String> determineProductIdsForSync(String productId) {
     if (ObjectUtils.isNotEmpty(productId)) {
       return List.of(productId);

@@ -108,7 +108,11 @@ export class ProductService {
     return this.httpClient.get<string>(url, {
       params,
       responseType: 'text' as 'json'
-    });
+    }).pipe(
+       catchError(() => {
+        return of('');
+        })
+    );
   }
 
   getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {

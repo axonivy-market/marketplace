@@ -265,7 +265,7 @@ class ProductDetailsControllerTest extends BaseSetup {
         "Expected HTTP 200 OK when a valid download URL is returned");
     assertEquals(mockDownloadUrl, response.getBody(),
         "Expected response body to contain the download URL");
-        
+
     when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
         anyString())).thenThrow(new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No artifacts found"));
     assertThrows(NotFoundException.class, () -> {
