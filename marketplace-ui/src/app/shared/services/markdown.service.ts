@@ -15,7 +15,9 @@ export class MarkdownService {
       html: true
     });
     this.md.use(full);
-    this.md.use(MarkdownItGitHubAlerts);
+    const githubAlertsPlugin = 
+      MarkdownItGitHubAlerts.default ?? MarkdownItGitHubAlerts;
+    this.md.use(githubAlertsPlugin);
   }
 
   parseMarkdown(markdownText: string): string {
