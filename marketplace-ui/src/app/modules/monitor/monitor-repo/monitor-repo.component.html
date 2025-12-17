@@ -65,7 +65,7 @@
       </thead>
       @if (displayedRepositories.length > 0) {
       <tbody>
-        @for (repo of displayedRepositories; track repo) {
+        @for (repo of displayedRepositories; track repo.productId) {
         <tr>
           <td class="align-middle">
             <p class="name">

@@ -10,124 +10,108 @@
   <div class="container mt-5">
     <form>
       <div class="form-group">
-        <button
-          type="button"
-          class="drag-drop-area d-flex w-100 gap-1 justify-content-center align-items-center text-muted"
-          [class.has-file]="selectedFile"
-          [class.has-error]="errorMessage"
-          (click)="fileInput.click()"
-          [class.dragging]="isDragging"
-          [attr.aria-label]="'common.preview.buttonHint' | translate"
-          (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave($event)"
-          (drop)="onDrop($event)"
-          (keydown)="
-            ($event.key === 'Enter' || $event.key === ' ') && fileInput.click()
-          ">
-          <input
-            #fileInput
-            type="file"
-            id="file-input"
-            (change)="onFileSelected($event)"
-            accept=".zip"
-            hidden />
-            @if (!selectedFile && !errorMessage) {
-            <p class="text-muted m-0" [lang]="languageService.selectedLanguage()">
-              {{ 'common.preview.dragDropText' | translate }}
-            </p>
-            <small class="text-muted hint-text" [lang]="languageService.selectedLanguage()">
-              {{ 'common.preview.onlyZip' | translate: { max: 20 } }}
-            </small>
-            } @else {
-            @if (errorMessage && !selectedFile) {
-            <div class="error-message w-100" [lang]="languageService.selectedLanguage()">
-              {{ errorMessage | translate: { max: 20 } }}
-            </div>
+        <button type="button" class="drag-drop-area d-flex w-100 gap-1 justify-content-center align-items-center text-muted"
+          [class.has-file]="selectedFile" [class.has-error]="errorMessage" (click)="fileInput.click()"
+          [class.dragging]="isDragging" [attr.aria-label]="'common.preview.buttonHint' | translate"
+          (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (keydown)="
+                    ($event.key === 'Enter' || $event.key === ' ') && fileInput.click()
+                  ">
+          <input #fileInput type="file" id="file-input" (change)="onFileSelected($event)" accept=".zip" hidden />
+          @if (!selectedFile && !errorMessage) {
+          <p class="text-muted m-0" [lang]="languageService.selectedLanguage()">
+            {{ 'common.preview.dragDropText' | translate }}
+          </p>
+          <small class="text-muted hint-text" [lang]="languageService.selectedLanguage()">
+            {{ 'common.preview.onlyZip' | translate: { max: 20 } }}
+          </small>
+          } @else {
+          @if (errorMessage && !selectedFile) {
+          <div class="error-message w-100" [lang]="languageService.selectedLanguage()">
+            {{ errorMessage | translate: { max: 20 } }}
+          </div>
+          }
+          @if (selectedFile) {
+          <div class="selected-file d-flex align-items-center gap-2 w-100">
+            <span class="file-name flex-grow-1" [title]="selectedFile.name">
+              {{ selectedFile.name }}
+            </span>
+            @if (selectedFile; as file) {
+            <span class="badge text-secondary fw-normal">
+              {{ fileSizeInMB(file.size) }}
+              {{ 'common.preview.fileSizeUnit' | translate }}
+            </span>
             }
-            @if (selectedFile) {
-            <div class="selected-file d-flex align-items-center gap-2 w-100">
-              <span class="file-name flex-grow-1" [title]="selectedFile.name">
-                {{ selectedFile.name }}
-              </span>
-              @if (selectedFile; as file) {
-              <span class="badge text-secondary fw-normal">
-                {{ fileSizeInMB(file.size) }}
-                {{ 'common.preview.fileSizeUnit' | translate }}
-              </span>
-              }
-            </div>
-            }
-            }
-            </button>
-            <small [lang]="languageService.selectedLanguage()" class="hint-text">
-              <a href="javascript:void(0)" (click)="toggleHint()" class="text-decoration-underline">
-                {{ translateService.get('common.preview.link') | async }}
+          </div>
+          }
+          }
+        </button>
+        <small [lang]="languageService.selectedLanguage()" class="hint-text">
+          <a href="javascript:void(0)" (click)="toggleHint()" class="text-decoration-underline">
+            {{ translateService.get('common.preview.link') | async }}
+          </a>
+        </small>
+      </div>
+    </form>
+    <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
+      <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
+        @if (displayedTabsSignal().length > 0 && !shouldShowHint) {
+        <div class="row-tab d-none d-xl-block col-12">
+          <ul ngbNav class="nav nav-tabs form-tabs">
+            @for (displayedTab of displayedTabsSignal(); track $index) {
+            <li ngbNavItem
+              class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+              <a [lang]="languageService.selectedLanguage()" ngbNavLink class="nav-link tab-title border-0 bg-transparent"
+                [class.active]="activeTab === displayedTab.value" [id]="displayedTab.tabId"
+                (click)="setActiveTab(displayedTab.value)" role="tab" 
+                [ngClass]="{
+                  'text-secondary': themeService.isDarkMode(),
+                  'text-dark': !themeService.isDarkMode()
+                }">
+                {{ displayedTab.label | translate }}
               </a>
-            </small>
-            </div>
-            </form>
-            <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
-              <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
-                @if (displayedTabsSignal().length > 0 && !shouldShowHint) {
-                <div class="row-tab d-none d-xl-block col-12">
-                  <ul ngbNav class="nav nav-tabs form-tabs">
-                    @for (displayedTab of displayedTabsSignal(); track $index) {
-                    <li ngbNavItem
-                      class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-                      <a [lang]="languageService.selectedLanguage()" ngbNavLink class="nav-link tab-title border-0 bg-transparent"
-                        [class.active]="activeTab === displayedTab.value" [id]="displayedTab.tabId" (click)="setActiveTab(displayedTab.value)"
-                        role="tab"
-                        [ngClass]="{
-                          'text-secondary': themeService.isDarkMode(),
-                          'text-dark': !themeService.isDarkMode()
-                        }">
-                        {{ displayedTab.label | translate }}
-                      </a>
-                    </li>
-                    }
-                  </ul>
-                </div>
-                <!-- For smaller screens -->
-                <div class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
-                  <div class="dropdown-row flex-row align-items-center w-100">
-                    <div class="dropdown-container position-relative d-flex align-items-center w-100">
-                      <div id="tab-group-dropdown" class="flex-grow-1 w-100">
-                        <app-common-dropdown [items]="displayedTabsSignal()" [selectedItem]="getSelectedTabLabel() | translate"
-                          buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
-                          (itemSelected)="setActiveTab($event.value)"></app-common-dropdown>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="tab-content col-12 default-cursor">
-                  @for (displayedTab of displayedTabsSignal(); track $index) {
-                  <div class="tab-pane fade show" [class.active]="activeTab === displayedTab.value" [id]="displayedTab.value"
-                    role="tabpanel" [attr.aria-labelledby]="displayedTab.value + '-tab'">
-                    <div class="readme-content"
-                    [innerHtml]="
-                      renderReadmeContent(getReadmeContentValue(displayedTab) | multilingualism: languageService.selectedLanguage())
-                    "></div>
-                  </div>
-                  }
-                </div>
-                } @else if (shouldShowHint) {
-                @if (shouldShowHint) {
-                <div class="hint-content" class="hint-content mt-2 text-secondary" [lang]="languageService.selectedLanguage()"
-                  [innerHTML]="'common.preview.hintContent' | translate"></div>
-                }
-                } @else {
-                <div class="no-tabs d-xl-block col-12">
-                  @if (isUploaded) {
-                  <p [lang]="languageService.selectedLanguage()">
-                    {{ errorMessage }}
-                  </p>
-                  }
-                </div>
-                }
+            </li>
+            }
+          </ul>
+        </div>
+        <!-- For smaller screens -->
+        <div class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
+          <div class="dropdown-row flex-row align-items-center w-100">
+            <div class="dropdown-container position-relative d-flex align-items-center w-100">
+              <div id="tab-group-dropdown" class="flex-grow-1 w-100">
+                <app-common-dropdown [items]="displayedTabsSignal()" [selectedItem]="getSelectedTabLabel() | translate"
+                  buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
+                  (itemSelected)="setActiveTab($event.value)"></app-common-dropdown>
               </div>
             </div>
-            </div>
-            <app-loading-spinner
-              containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-              [key]="LoadingComponentId.RELEASE_PREVIEW" />
-            </div>
+          </div>
+        </div>
+        <div class="tab-content col-12 default-cursor">
+          @for (displayedTab of displayedTabsSignal(); track $index) {
+          <div class="tab-pane fade show" [class.active]="activeTab === displayedTab.value" [id]="displayedTab.value"
+            role="tabpanel" [attr.aria-labelledby]="displayedTab.value + '-tab'">
+            <div class="readme-content" 
+              [innerHtml]="
+                renderReadmeContent(getReadmeContentValue(displayedTab) | multilingualism: languageService.selectedLanguage())
+              "></div>
+          </div>
+          }
+        </div>
+        } @else if (shouldShowHint) {
+        <div class="hint-content mt-2 text-secondary" [lang]="languageService.selectedLanguage()"
+          [innerHTML]="'common.preview.hintContent' | translate"></div>
+        } @else {
+        <div class="no-tabs d-xl-block col-12">
+          @if (isUploaded) {
+          <p [lang]="languageService.selectedLanguage()">
+            {{ errorMessage }}
+          </p>
+          }
+        </div>
+        }
+      </div>
+    </div>
+    </div>
+    <app-loading-spinner
+      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+      [key]="LoadingComponentId.RELEASE_PREVIEW" />
+    </div>

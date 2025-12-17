@@ -25,14 +25,14 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
     provideMatomo(() => {
-        const configService = inject(RuntimeConfigService);
-        return {
-          siteId: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_SITE_ID),
-          trackerUrl: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_TRACKER_URL)
-        };
-      },
-      withRouter()
-    ),
+      const configService = inject(RuntimeConfigService);
+      return {
+        siteId: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_SITE_ID),
+        trackerUrl: configService.get(
+          RUNTIME_CONFIG_KEYS.MARKET_MATOMO_TRACKER_URL
+        )
+      };
+    }, withRouter()),
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
@@ -43,10 +43,6 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    provideAppInitializer(() => {
-        const initializerFn = ((bootstrapLoader: BootstrapLoaderService) => () =>
-        bootstrapLoader.init())(inject(BootstrapLoaderService));
-        return initializerFn();
-      })
+    provideAppInitializer(() => inject(BootstrapLoaderService).init())
   ]
 };

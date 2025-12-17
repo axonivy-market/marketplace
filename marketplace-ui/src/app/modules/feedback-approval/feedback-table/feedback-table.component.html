@@ -30,7 +30,7 @@
     </thead>
     @if (feedbacks.length > 0) {
     <tbody>
-      @for (feedback of feedbacks; track feedback) {
+      @for (feedback of feedbacks; track feedback.id) {
       <tr>
         <td class="username-column">
           <img class="rounded-circle img-avatar img-fit-cover"
