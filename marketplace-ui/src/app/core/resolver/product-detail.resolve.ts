@@ -47,13 +47,16 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
     const productId = route.params[ROUTER.ID];
+    const version = route.queryParamMap.get('version');
     this.productDetailService.productId.set(productId);
 
     this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-    return this.getProductDetailObservable(productId).pipe(
+    return this.getProductDetailObservable(productId, version).pipe(
       take(1),
       tap(productDetail => {
-        this.updateProductMetadata(productDetail);
+        if (productDetail && productDetail.names) {
+          this.updateProductMetadata(productDetail);
+        }
       })
     );
   }
@@ -89,33 +92,38 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     });
   }
 
-  getProductDetailObservable(productId: string): Observable<ProductDetail> {
+  getProductDetailObservable(productId: string, version: string | null): Observable<ProductDetail> {
     const isShowDevVersion = CommonUtils.getCookieValue(
       this.cookieService,
       SHOW_DEV_VERSION,
       false
     );
-    return this.getProductById(productId, isShowDevVersion);
+    const productDetail$ = version
+      ? this.getProductByIdAndVersion(productId, version)
+      : this.getProductById(productId, isShowDevVersion);
+    
+    return productDetail$.pipe(
+      map((response: ProductDetail) => this.productService.setDefaultVendorImage(response))
+    );
   }
 
-  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
+  private getProductByIdAndVersion(productId: string, version: string): Observable<ProductDetail> {
+    return this.productService
+      .getProductDetailsWithVersion(productId, version);
+  }
+
+  private getProductById(productId: string,isShowDevVersion: boolean): Observable<ProductDetail> {
     const targetVersion =
       this.routingQueryParamService.getDesignerVersionFromSessionStorage();
-    let productDetail$: Observable<ProductDetail>;
     if (!targetVersion) {
-      productDetail$ = this.productService.getProductDetails(
+      return this.productService.getProductDetails(
         productId,
         isShowDevVersion
       );
-    } else {
-      productDetail$ =
-        this.productService.getBestMatchProductDetailsWithVersion(
-          productId,
-          targetVersion
-        );
     }
-    return productDetail$.pipe(
-      map((response: ProductDetail) => this.productService.setDefaultVendorImage(response))
+    return this.productService.getBestMatchProductDetailsWithVersion(
+      productId,
+      targetVersion
     );
   }
 }
