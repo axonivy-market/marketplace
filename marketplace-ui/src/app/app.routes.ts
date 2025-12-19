@@ -11,6 +11,7 @@ import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboa
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
+import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 
 export const routes: Routes = [
   // OAuth callback
@@ -43,6 +44,7 @@ export const routes: Routes = [
   {
     path: 'internal-dashboard',
     component: AdminDashboardComponent,
+    canActivate: [AdminAuthGuard],
     children: [
       {
         path: 'security-monitor',

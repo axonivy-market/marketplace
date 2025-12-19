@@ -213,44 +213,12 @@
       }
       <router-outlet></router-outlet>
     </div>
-  } @else if (!isAuthenticated) {
-    <div class="token-container">
-      <div class="header">
-        <h2 class="text-primary text-center">
-          {{ 'common.admin.pageTitle' | translate }}
-        </h2>
-        <h3 class="text-primary text-center">
-          {{ 'common.admin.description' | translate }}
-        </h3>
-      </div>
-      <div class="token-input-container">
-        <h3 class="text-primary">
-          {{ 'common.admin.enterToken' | translate }}
-        </h3>
-        <div>
-          <input
-            id="token-input"
-            type="password"
-            [(ngModel)]="token"
-            [attr.placeholder]="
-              'common.admin.enterTokenPlaceholder' | translate
-            " />
-          <button
-            class="btn-primary"
-            (click)="onSubmit()"
-            [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-            {{ 'common.admin.proceedBtnLabel' | translate }}
-          </button>
-          @if (errorMessage) {
-            <div class="error-message">{{ errorMessage }}</div>
-          }
-        </div>
-      </div>
-    </div>
+  } @else {
+    <app-admin-token
+      [errorMessage]="errorMessage"
+      (submitToken)="onSubmit($event)" />
   }
-  @if (isLoading) {
-    <app-loading-spinner
-      containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
-      [key]="LoadingComponentId.ADMIN_DASHBOARD" />
-  }
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.ADMIN_DASHBOARD" />
 </div>

@@ -26,6 +26,7 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
+import { AdminTokenContainerComponent } from './admin-token.component';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
@@ -36,7 +37,8 @@ const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
     FormsModule,
     RouterModule,
     TranslateModule,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    AdminTokenContainerComponent
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
@@ -57,7 +59,6 @@ export class AdminDashboardComponent implements OnInit {
 
   token = '';
   isAuthenticated = false;
-  isLoading = false;
   errorMessage = '';
 
   showSyncTask = true;
@@ -85,37 +86,45 @@ export class AdminDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
+    this.isAuthenticated = true;
 
-    if (this.token) {
-      this.verifyTokenAndLoad();
-      this.updateVisibility(this.router.url);
+    this.service.fetchSyncTaskExecutions().subscribe({
+      next: executions => {
+        this.applySyncTaskExecutions(executions);
+        this.pageTitleService.setTitleOnLangChange(
+          'common.admin.sync.pageTitle'
+        );
+      },
+      error: err => {
+        this.handleAuthError(err);
+      }
+    });
 
-      this.router.events
-        .pipe(filter(e => e instanceof NavigationEnd))
-        .subscribe(() => this.updateVisibility(this.router.url));
-    }
+    this.updateVisibility(this.router.url);
+
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => this.updateVisibility(this.router.url));
   }
 
   private updateVisibility(url: string): void {
     this.showSyncTask = /^\/internal-dashboard\/?(\?.*)?$/.test(url);
   }
 
-  onSubmit(): void {
+  onSubmit(token: string): void {
+    this.token = token;
     this.errorMessage = '';
 
-    if (!this.token) {
+    if (!token) {
       this.handleMissingToken();
       return;
     }
 
-    sessionStorage.setItem(ADMIN_SESSION_TOKEN, this.token);
+    sessionStorage.setItem(ADMIN_SESSION_TOKEN, token);
     this.verifyTokenAndLoad();
   }
 
   private verifyTokenAndLoad(): void {
-    this.isLoading = true;
-
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
         this.isAuthenticated = true;
@@ -123,10 +132,8 @@ export class AdminDashboardComponent implements OnInit {
         this.pageTitleService.setTitleOnLangChange(
           'common.admin.sync.pageTitle'
         );
-        this.isLoading = false;
       },
       error: err => {
-        this.isLoading = false;
         this.handleAuthError(err);
       }
     });
@@ -246,9 +253,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   confirmSyncOneProduct(): void {
-    const syncTask = this.syncTasks.find(
-      t => t.key === SYNC_ONE_PRODUCT_KEY
-    );
+    const syncTask = this.syncTasks.find(t => t.key === SYNC_ONE_PRODUCT_KEY);
     if (!syncTask || !this.isValidSyncOneProductValues()) {
       this.markSyncOneProductFailed(syncTask);
       return;
