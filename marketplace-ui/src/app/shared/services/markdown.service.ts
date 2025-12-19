@@ -7,7 +7,6 @@ import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
   providedIn: 'root'
 })
 export class MarkdownService {
-
   private readonly md: MarkdownIt;
 
   constructor() {
@@ -15,9 +14,9 @@ export class MarkdownService {
       html: true
     });
     this.md.use(full);
-    const githubAlertsPlugin = 
-      MarkdownItGitHubAlerts.default ?? MarkdownItGitHubAlerts;
-    this.md.use(githubAlertsPlugin);
+    this.md.use(
+      (MarkdownItGitHubAlerts as any).default ?? (MarkdownItGitHubAlerts as any)
+    );
   }
 
   parseMarkdown(markdownText: string): string {

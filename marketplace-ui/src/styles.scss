@@ -1,8 +1,8 @@
 
-@use './assets/scss/custom-style.scss' as *;
-@use './assets/scss/custom-modal-style.scss' as *;
-@use 'bootstrap/scss/bootstrap' as *;
+@import 'bootstrap/scss/bootstrap';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
+@import './assets/scss/custom-style.scss';
+@import './assets/scss/custom-modal-style.scss';
 
 * {
   margin: 0;

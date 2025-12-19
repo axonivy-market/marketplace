@@ -25,9 +25,10 @@ class MockElementRef implements ElementRef {
 
 describe('ProductDetailVersionActionComponent', () => {
   const productId = '123';
+  const _originalApiUrl = environment.apiUrl;
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
-  let  productServiceMock: any;
+  let productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
   let httpMock: HttpTestingController;
@@ -38,7 +39,9 @@ describe('ProductDetailVersionActionComponent', () => {
       'sendRequestToGetInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [
+      'getCookieValue'
+    ]);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -71,6 +74,7 @@ describe('ProductDetailVersionActionComponent', () => {
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
     httpMock = TestBed.inject(HttpTestingController);
+    environment.apiUrl = _originalApiUrl;
   });
 
   it('should create', () => { expect(component).toBeTruthy(); });
