@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
-import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
+import { ADMIN_SESSION_TOKEN, BEARER } from '../../shared/constants/common.constant';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
@@ -39,7 +39,7 @@ export class AdminDashboardService {
   private getAuthHeaders(): HttpHeaders {
     const token = this.sessionStorageRef.session?.getItem(ADMIN_SESSION_TOKEN);
     return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      ? new HttpHeaders({ Authorization: `${BEARER} ${token}` })
       : new HttpHeaders();
   }
 
@@ -84,7 +84,7 @@ export class AdminDashboardService {
 
   syncGithubMonitor(): Observable<string> {
     return this.http.put(
-      `${API_URI.GITHUB_REPORT}/sync`,
+      `${API_URI.SYNC_GITHUB_MONITOR}`,
       {},
       {
         responseType: 'text' as const,

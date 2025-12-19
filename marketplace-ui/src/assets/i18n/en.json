@@ -223,9 +223,6 @@
       "rejectBtnLabel": "Reject",
       "noFeedbacks": "No feedbacks available."
     },
-    "security": {
-      "pageTitle": "Security Monitor"
-    },
     "externalDocument": {
       "pageHeader": "The document of the {{product}} for version {{version}}",
       "helpText": "The document is not ready to render or has not been published. Please try again later."
@@ -328,10 +325,27 @@
           "validationMessage": "Extension ID & marketItemPath required!"
         }
       },
+      "securityMonitor": {
+        "pageTitle": "Security Monitor",
+        "title": "GitHub Repository Security Monitor",
+        "description": "Monitor security vulnerabilities in marketplace extensions",
+        "helpText": "The security monitor helps track security events and alerts from GitHub repositories, including Dependabot alerts, code scanning results, security scanning findings, etc. Administrations can review identified issues and take appropriate actions to ensure the security of marketplace extensions.",
+        "reloadData": "Reload Data",
+        "archived": "Archived",
+        "dependabot": "Dependabot",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "noPermission": "No Permission",
+        "noVulnerabilities": "No Vulnerabilities",
+        "codeScanning": "Code Scanning",
+        "secretScanning": "Secret Scanning",
+        "branchProtection": "Branch Protection",
+        "lastCommit": "Last Commit"
+      },
       "customSort": {
         "pageTitle": "Custom Sort",
         "title": "Custom Sort Extensions",
-        "description": "Manage how market extensions are sorted.",
+        "description": "Manage how market extensions are sorted",
         "helpText": "The UI allows users to modify the <b>default sorting order</b> of Market extensions displayed on the Axon Ivy Marketplace <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
         "sortedExtensions": "Sorted Extensions",
         "availableExtensions": "Available Extensions",
@@ -350,7 +364,7 @@
       "quickAccess": {
         "pageTitle": "Quick Access",
         "title": "Quick Access Links",
-        "description": "Manage quick access links.",
+        "description": "Manage quick access links",
         "helpText": "Configure the most frequently used pages or external links that should appear as quick access shortcuts on the Admin Dashboard. Administrators can add, edit, or remove links to help navigate efficiently.",
         "monitoring": "Monitoring: Access the monitoring dashboard for build pipelines and test results.",
         "monitoringNote": "Please check daily to ensure all extensions are healthy.",

@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.event.ContextClosedEvent;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public class SyncTaskShutdownListener {
 
   private final SyncTaskExecutionRepository syncTaskExecutionRepo;
-  private final SyncTaskExecutionServiceImpl syncTaskExecutionService;
+  private final SyncTaskExecutionService syncTaskExecutionService;
 
   @EventListener(ContextClosedEvent.class)
   public void onShutdown() {

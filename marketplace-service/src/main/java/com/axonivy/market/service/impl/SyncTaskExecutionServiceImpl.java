@@ -81,14 +81,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
     execution.setStatus(status);
     execution.setCompletedAt(new Date());
-    execution.setMessage(trim(message));
+    execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
     syncTaskExecutionRepo.save(execution);
-  }
-
-  private String trim(String message) {
-    if (StringUtils.isBlank(message)) {
-      return null;
-    }
-    return StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH);
   }
 }

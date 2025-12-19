@@ -63,6 +63,6 @@ export class HeaderComponent {
   }
 
   private updateAdminState(url: string): void {
-    this.isAdminRoute = url.startsWith('/octopus');
+    this.isAdminRoute = url.startsWith('/internal-dashboard');
   }
 }

@@ -10,7 +10,7 @@
     @for (item of this.items; track item.label) {
       <li class="nav-item">
         @let isHomePage = item.link === '/';
-        @let isSyncPage = item.link === '/octopus';
+        @let isSyncPage = item.link === '/internal-dashboard';
         @let isInternal = item.link.startsWith('/');
         @if (isInternal) {
           <span #routerActive="routerLinkActive" routerLinkActive="active"

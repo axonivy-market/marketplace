@@ -23,23 +23,28 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
+import { LanguageService } from '../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-security-monitor',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
 export class SecurityMonitorComponent implements OnInit {
   themeService = inject(ThemeService);
-  errorMessage = '';
-  repos: ProductSecurityInfo[] = [];
-  protected LoadingComponentId = LoadingComponentId;
   adminDashboardService = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
+  languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
+  protected LoadingComponentId = LoadingComponentId;
+
+  repos: ProductSecurityInfo[] = [];
+  errorMessage = '';
   isBrowser: boolean;
   isLoading = false;
 
@@ -50,7 +55,9 @@ export class SecurityMonitorComponent implements OnInit {
   ngOnInit(): void {
     if (this.isBrowser) {
       this.loadSessionData();
-      this.pageTitleService.setTitleOnLangChange('common.security.pageTitle');
+      this.pageTitleService.setTitleOnLangChange(
+        'common.admin.securityMonitor.pageTitle'
+      );
     }
   }
 

@@ -1,39 +1,9 @@
-.title {
-  line-height: 110%;
-  margin-top: 7.2rem;
-  margin-bottom: 3.2rem;
-  cursor: default;
-}
-
-.introduction-container {
-  display: flex;
-  flex-direction: row;
-  gap: 3.2rem;
-}
-
-.about {
-  line-height: 130%;
-  width: 50%;
-  flex: none;
-  order: 0;
-  flex-grow: 1;
-
-  .hint-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--ivy-primary-bg);
-    cursor: pointer;
-  }
-}
-
-.help-text-container {
-  line-height: 140%;
-  width: 50%;
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
+.hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ivy-primary-bg);
+  cursor: pointer;
 }
 
 ::ng-deep .help-text a {
@@ -82,17 +52,6 @@
 
 .feedback.error {
   background-color: var(--product-feedback-reject-button-color);
-  color: #{white};
-}
-
-.feedback .icon {
-  display: inline-flex;
-  width: 1.25rem;
-  height: 1.25rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.9rem;
   color: #{white};
 }
 

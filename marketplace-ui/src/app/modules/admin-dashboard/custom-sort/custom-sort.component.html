@@ -1,10 +1,10 @@
 <div class="container">
   <div class="row col-md-12">
-    <h1 class="text-primary title" [lang]="languageService.selectedLanguage()">
+    <h1 class="text-primary admin-title" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.admin.customSort.title') | async }}
     </h1>
     <div class="introduction-container">
-      <div class="d-sm-block about">
+      <div class="d-sm-block admin-about">
         <h3 class="text-secondary">
           {{
             translateService.get('common.admin.customSort.description') | async
@@ -19,7 +19,7 @@
           </span>
         </h3>
       </div>
-      <div class="d-sm-block align-items-center help-text-container flex-fill">
+      <div class="d-sm-block align-items-center admin-help-text-container flex-fill">
         <h4
           [lang]="languageService.selectedLanguage()"
           class="text-secondary help-text"
@@ -223,14 +223,14 @@
 
         @if (sortSuccessMessage) {
           <div class="feedback success">
-            <span class="icon" aria-hidden="true">✔</span>
+            <i class="bi bi-check2"></i>
             <span>{{ sortSuccessMessage }}</span>
           </div>
         }
 
         @if (sortErrorMessage) {
           <div class="feedback error">
-            <span class="icon" aria-hidden="true">⚠</span>
+            <i class="bi bi-exclamation-triangle"></i>
             <span>{{ sortErrorMessage }}</span>
           </div>
         }

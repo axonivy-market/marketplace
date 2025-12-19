@@ -223,9 +223,6 @@
       "rejectBtnLabel": "Ablehnen",
       "noFeedbacks": "Keine Feedback verfügbar."
     },
-    "security": {
-      "pageTitle": "Security Monitor"
-    },
     "externalDocument": {
       "pageHeader": "Das Dokument des {{product}} für die Version {{version}}",
       "helpText": "Das Dokument ist nicht bereit oder wurde noch nicht veröffentlicht. Bitte versuchen Sie es später erneut."
@@ -327,6 +324,23 @@
           "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben",
           "validationMessage": "Erweiterungs-ID und marketItemPath sind erforderlich!"
         }
+      },
+      "securityMonitor": {
+        "pageTitle": "Sicherheitsmonitor",
+        "title": "GitHub-Repository-Sicherheitsmonitor",
+        "description": "Überwachung von Sicherheitslücken in Marketplace-Erweiterungen",
+        "helpText": "Der Sicherheitsmonitor unterstützt bei der Nachverfolgung von Sicherheitsereignissen und Warnmeldungen aus GitHub-Repositories, einschließlich Dependabot-Warnungen, Code-Scanning-Ergebnissen, Secret-Scanning-Funden usw. Administratoren können identifizierte Probleme überprüfen und geeignete Maßnahmen ergreifen, um die Sicherheit der im Marketplace angebotenen Erweiterungen sicherzustellen.",
+        "reloadData": "Daten neu laden",
+        "archived": "Archiviert",
+        "dependabot": "Dependabot",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert",
+        "noPermission": "Keine Berechtigung",
+        "noVulnerabilities": "Keine Sicherheitslücken",
+        "codeScanning": "Code-Scanning",
+        "secretScanning": "Secret-Scanning",
+        "branchProtection": "Branchenschutz",
+        "lastCommit": "Letzter Commit"
       },
       "customSort": {
         "pageTitle": "Benutzerdefinierte Sortierung",

@@ -39,23 +39,23 @@ export const NAV_ITEMS: NavItem[] = [
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.sync',
-    link: '/octopus'
+    link: '/internal-dashboard'
   },
   {
     label: 'common.nav.security',
-    link: '/octopus/security-monitor'
+    link: '/internal-dashboard/security-monitor'
   },
   {
     label: 'common.nav.feedbackApproval',
-    link: '/octopus/feedback-approval'
+    link: '/internal-dashboard/feedback-approval'
   },
   {
     label: 'common.nav.customSort',
-    link: '/octopus/sorting'
+    link: '/internal-dashboard/sorting'
   },
   {
     label: 'common.nav.quickAccess',
-    link: '/octopus/quick-access'
+    link: '/internal-dashboard/quick-access'
   }
 ];
 
@@ -291,6 +291,7 @@ export const ERROR_CODES = [
   GATEWAY_TIMEOUT
 ];
 export const TOKEN_KEY = 'token';
+export const BEARER = 'Bearer';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';

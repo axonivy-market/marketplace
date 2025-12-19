@@ -41,7 +41,7 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'octopus',
+    path: 'internal-dashboard',
     component: AdminDashboardComponent,
     children: [
       {

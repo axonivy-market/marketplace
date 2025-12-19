@@ -19,7 +19,6 @@ import {
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
-import { API_URI } from '../../shared/constants/api.constant';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -55,7 +54,6 @@ export class AdminDashboardComponent implements OnInit {
   pageTitleService = inject(PageTitleService);
 
   protected LoadingComponentId = LoadingComponentId;
-  API_URI = API_URI;
 
   token = '';
   isAuthenticated = false;
@@ -100,7 +98,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private updateVisibility(url: string): void {
-    this.showSyncTask = /^\/octopus\/?(\?.*)?$/.test(url);
+    this.showSyncTask = /^\/internal-dashboard\/?(\?.*)?$/.test(url);
   }
 
   onSubmit(): void {

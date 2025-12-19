@@ -1,18 +1,18 @@
 <div class="container">
   <div class="row col-md-12">
     <h1
-      class="text-primary approval"
+      class="text-primary admin-title"
       [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.approval.approvalTitle') | async }}
     </h1>
     <div class="introduction-container">
-      <div class="d-sm-block about">
+      <div class="d-sm-block admin-about">
         <h3 class="text-secondary">
           {{ translateService.get('common.approval.about') | async }}
         </h3>
       </div>
       <div
-        class="d-sm-block align-items-center contribute-link-container flex-fill">
+        class="d-sm-block align-items-center admin-help-text-container flex-fill">
         <h4
           [lang]="languageService.selectedLanguage()"
           class="text-secondary"
