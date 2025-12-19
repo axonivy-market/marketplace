@@ -39,9 +39,7 @@ describe('ProductDetailVersionActionComponent', () => {
       'sendRequestToGetInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [
-      'getCookieValue'
-    ]);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}

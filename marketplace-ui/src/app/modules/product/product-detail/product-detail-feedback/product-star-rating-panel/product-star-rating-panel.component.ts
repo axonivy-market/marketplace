@@ -5,7 +5,6 @@ import { StarRatingHighlightDirective } from './star-rating-highlight.directive'
 import {
   ProductStarRatingNumberComponent
 } from '../../product-star-rating-number/product-star-rating-number.component';
-
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
 import { LanguageService } from '../../../../../core/services/language/language.service';
 import { ProductDetailService } from '../../product-detail.service';
