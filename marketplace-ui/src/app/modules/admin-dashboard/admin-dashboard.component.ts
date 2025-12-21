@@ -16,7 +16,6 @@ import {
   UNAUTHORIZED,
   SYNC_TASKS
 } from '../../shared/constants/common.constant';
-import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
@@ -26,7 +25,8 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
-import { AdminTokenContainerComponent } from './admin-token.component';
+import { AdminTokenContainerComponent } from './admin-token/admin-token.component';
+import { AdminAuthService } from './admin-auth.service';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
@@ -48,12 +48,12 @@ export class AdminDashboardComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly service = inject(AdminDashboardService);
   private readonly productService = inject(ProductService);
-  private readonly storageRef = inject(SessionStorageRef);
 
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  authService = inject(AdminAuthService);
 
   protected LoadingComponentId = LoadingComponentId;
 
@@ -86,19 +86,11 @@ export class AdminDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.isAuthenticated = true;
+    this.isAuthenticated = this.authService.isAuthenticated();
 
-    this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => {
-        this.applySyncTaskExecutions(executions);
-        this.pageTitleService.setTitleOnLangChange(
-          'common.admin.sync.pageTitle'
-        );
-      },
-      error: err => {
-        this.handleAuthError(err);
-      }
-    });
+    if (this.isAuthenticated) {
+      this.loadExecutions();
+    }
 
     this.updateVisibility(this.router.url);
 
@@ -112,22 +104,19 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onSubmit(token: string): void {
-    this.token = token;
-    this.errorMessage = '';
-
     if (!token) {
-      this.handleMissingToken();
+      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
       return;
     }
 
-    sessionStorage.setItem(ADMIN_SESSION_TOKEN, token);
-    this.verifyTokenAndLoad();
+    this.authService.setToken(token);
+    this.isAuthenticated = true;
+    this.loadExecutions();
   }
 
-  private verifyTokenAndLoad(): void {
+  private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
-        this.isAuthenticated = true;
         this.applySyncTaskExecutions(executions);
         this.pageTitleService.setTitleOnLangChange(
           'common.admin.sync.pageTitle'
@@ -145,13 +134,7 @@ export class AdminDashboardComponent implements OnInit {
         ? ERROR_MESSAGES.INVALID_TOKEN
         : ERROR_MESSAGES.FETCH_FAILURE;
 
-    this.isAuthenticated = false;
-    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
-  }
-
-  private handleMissingToken(): void {
-    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-    this.isAuthenticated = false;
+    this.authService.clearToken();
   }
 
   // Synchronize

@@ -2,13 +2,11 @@ import { Injectable } from '@angular/core';
 import {
   HttpClient,
   HttpContext,
-  HttpHeaders,
   HttpParams
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
-import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
-import { ADMIN_SESSION_TOKEN, BEARER } from '../../shared/constants/common.constant';
+import { AdminAuthService } from './admin-auth.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
@@ -33,15 +31,8 @@ export interface SyncTaskExecution {
 export class AdminDashboardService {
   constructor(
     private readonly http: HttpClient,
-    private readonly sessionStorageRef: SessionStorageRef
+    private readonly adminAuth: AdminAuthService
   ) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.sessionStorageRef.session?.getItem(ADMIN_SESSION_TOKEN);
-    return token
-      ? new HttpHeaders({ Authorization: `${BEARER} ${token}` })
-      : new HttpHeaders();
-  }
 
   syncProducts(resetSync = false): Observable<SyncTaskExecution> {
     const params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
@@ -50,7 +41,7 @@ export class AdminDashboardService {
       {},
       {
         params,
-        headers: this.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -68,7 +59,7 @@ export class AdminDashboardService {
       {},
       {
         params,
-        headers: this.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -77,7 +68,7 @@ export class AdminDashboardService {
     return this.http.get<void>(
       `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
       {
-        headers: this.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -88,14 +79,14 @@ export class AdminDashboardService {
       {},
       {
         responseType: 'text' as const,
-        headers: this.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
 
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
     return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
-      headers: this.getAuthHeaders(),
+      headers: this.adminAuth.getAuthHeaders(),
       context: new HttpContext().set(
         LoadingComponent,
         LoadingComponentId.ADMIN_DASHBOARD
@@ -116,14 +107,14 @@ export class AdminDashboardService {
       `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`,
       body,
       {
-        headers: this.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
-      headers: this.getAuthHeaders(),
+      headers: this.adminAuth.getAuthHeaders(),
       context: new HttpContext().set(
         LoadingComponent,
         LoadingComponentId.SECURITY_MONITOR

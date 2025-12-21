@@ -119,69 +119,6 @@ td {
   border: 0.5px solid #ebebeb;
 }
 
-.token-container {
-  margin: 20px auto;
-  padding: 0 15px;
-}
-
-.header {
-  padding: 20px 0;
-
-  h2 {
-    font-size: 4rem;
-  }
-}
-
-.token-input-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.token-input-container h3 {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-}
-
-.token-input-container span {
-  margin-bottom: 20px;
-  color: #777;
-}
-
-#token-input {
-  padding: 10px;
-  font-size: 1.3rem;
-  margin-bottom: 10px;
-  width: 350px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-#token-input::ng-deep {
-  background-color: var(--ivy-textarea-background-color);
-}
-
-.token-input-container button {
-  padding: 10px 20px;
-  font-size: 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-left: 10px;
-  width: 100px;
-}
-
-.error-message {
-  color: #f44336;
-  font-size: 1.2rem;
-  width: 100%;
-}
-
 .sync-button {
   display: inline-block;
   padding: 5px 10px;
