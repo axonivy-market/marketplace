@@ -12,7 +12,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
-  ADMIN_SESSION_TOKEN,
   UNAUTHORIZED,
   SYNC_TASKS
 } from '../../shared/constants/common.constant';

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Log4j2
@@ -79,6 +80,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
+    Objects.requireNonNull(execution, "SyncTaskExecution must not be null");
     execution.setStatus(status);
     execution.setCompletedAt(new Date());
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
