@@ -70,6 +70,7 @@ market:
     github-repos-cron: '${MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}'
     documents-cron: '${MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}'
     products-release-notes-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}'
+    security-monitor-cron: '${MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON}'
   limited:
     request-paths: '${MARKET_LIMITED_REQUEST_PATHS}'
   cors:

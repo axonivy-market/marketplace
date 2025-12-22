@@ -6,6 +6,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -18,6 +19,7 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
@@ -60,8 +62,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -197,6 +202,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_SECURITY_MONITOR)
   public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) {
     try {
       var gitHub = getGitHub(accessToken);
@@ -213,6 +219,49 @@ public class GitHubServiceImpl implements GitHubService {
       log.error(e);
       return Collections.emptyList();
     }
+  }
+
+  @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_SECURITY_MONITOR)
+  public List<ProductSecurityInfo> getDisabledSecurityDetailsForAllProducts(String accessToken, String orgName) {
+    var allSecurityAlerts = getSecurityDetailsForAllProducts(accessToken, orgName);
+    return allSecurityAlerts.stream()
+        .filter(this::hasDisabledAlert)
+        .sorted(Comparator.comparing(ProductSecurityInfo::getRepoName))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<ProductSecurityInfo> getDisabledSecurityDetailsChangedSince(String accessToken, String orgName,
+      Map<String, Date> lastSeenByRepo) {
+    var current = getDisabledSecurityDetailsForAllProducts(accessToken, orgName);
+    return current.stream()
+        .filter(info -> {
+          Date lastUpdated = info.getAlertsLastUpdated();
+          Date seen = lastSeenByRepo != null ? lastSeenByRepo.get(info.getRepoName()) : null;
+          return lastUpdated != null && (seen == null || lastUpdated.after(seen));
+        })
+        .sorted(Comparator.comparing(ProductSecurityInfo::getRepoName))
+        .collect(Collectors.toList());
+  }
+
+  private boolean hasDisabledAlert(ProductSecurityInfo info) {
+    if (info == null) {
+      return false;
+    }
+    var dependabotDisabled = Optional.ofNullable(info.getDependabot())
+        .map(Dependabot::getStatus)
+        .map(DISABLED::equals)
+        .orElse(false);
+    var secretScanningDisabled = Optional.ofNullable(info.getSecretScanning())
+        .map(SecretScanning::getStatus)
+        .map(DISABLED::equals)
+        .orElse(false);
+    var codeScanningDisabled = Optional.ofNullable(info.getCodeScanning())
+        .map(CodeScanning::getStatus)
+        .map(DISABLED::equals)
+        .orElse(false);
+    return dependabotDisabled || secretScanningDisabled || codeScanningDisabled || !info.isBranchProtectionEnabled();
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
@@ -256,6 +305,15 @@ public class GitHubServiceImpl implements GitHubService {
         accessToken));
     productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization,
         accessToken));
+    Date alertsLastUpdated = Stream.of(
+        Optional.ofNullable(productSecurityInfo.getDependabot()).map(Dependabot::getLastUpdated).orElse(null),
+        Optional.ofNullable(productSecurityInfo.getSecretScanning()).map(SecretScanning::getLastUpdated).orElse(null),
+        Optional.ofNullable(productSecurityInfo.getCodeScanning()).map(CodeScanning::getLastUpdated).orElse(null)
+      )
+      .filter(Objects::nonNull)
+      .max(Date::compareTo)
+      .orElse(null);
+    productSecurityInfo.setAlertsLastUpdated(alertsLastUpdated);
     return productSecurityInfo;
   }
 
@@ -277,6 +335,7 @@ public class GitHubServiceImpl implements GitHubService {
         GitHubConstants.Json.SEVERITY_ADVISORY,
         GitHubConstants.Json.SEVERITY
     ));
+    dependabot.setLastUpdated(maxUpdatedAt(alerts));
     return dependabot;
   }
 
@@ -287,6 +346,7 @@ public class GitHubServiceImpl implements GitHubService {
         GitHubConstants.Json.RULE,
         GitHubConstants.Json.SECURITY_SEVERITY_LEVEL
     ));
+    codeScanning.setLastUpdated(maxUpdatedAt(alerts));
     return codeScanning;
   }
 
@@ -308,6 +368,7 @@ public class GitHubServiceImpl implements GitHubService {
         (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
           secretScanning.setNumberOfAlerts(alerts.size());
+          secretScanning.setLastUpdated(maxUpdatedAt(alerts));
           return secretScanning;
         },
         SecretScanning::new
@@ -357,6 +418,23 @@ public class GitHubServiceImpl implements GitHubService {
     } else if (instance instanceof CodeScanning codeScanning) {
       codeScanning.setStatus(status);
     }
+  }
+
+  private static Date maxUpdatedAt(List<Map<String, Object>> alerts) {
+    return alerts.stream()
+        .map(m -> m.get("updated_at"))
+        .filter(Objects::nonNull)
+        .map(Object::toString)
+        .map(ts -> {
+          try {
+            return Date.from(OffsetDateTime.parse(ts).toInstant());
+          } catch (DateTimeParseException e) {
+            return null;
+          }
+        })
+        .filter(Objects::nonNull)
+        .max(Date::compareTo)
+        .orElse(null);
   }
 
   public ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(

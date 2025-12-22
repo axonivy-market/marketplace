@@ -23,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Date;
 
 public interface GitHubService {
 
@@ -48,6 +50,20 @@ public interface GitHubService {
   void validateUserInOrganizationAndTeam(String accessToken, String team, String org) throws UnauthorizedException;
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
+
+    /**
+     * Returns security details only for repositories with at least one disabled alert
+     * (e.g., Dependabot, Secret Scanning, or Code Scanning marked as DISABLED).
+     * Intended for cronjob notifications.
+     */
+    List<ProductSecurityInfo> getDisabledSecurityDetailsForAllProducts(String accessToken, String orgName);
+
+    /**
+     * Returns disabled alerts that changed since the provided per-repo timestamp.
+     * The map key is repository name, value is the last seen alerts update timestamp.
+     */
+    List<ProductSecurityInfo> getDisabledSecurityDetailsChangedSince(String accessToken, String orgName,
+        Map<String, Date> lastSeenByRepo);
 
   Page<GitHubReleaseModel> getGitHubReleaseModels(List<GHRelease> ghReleases,
       Pageable pageable, String productId, String productRepoName, String productSourceUrl) throws IOException;

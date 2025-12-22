@@ -1,6 +1,8 @@
 package com.axonivy.market.schedulingtask;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.GithubReposService;
@@ -24,6 +26,8 @@ public class ScheduledTasks {
   private static final String SYNC_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
   private static final String SYNC_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
   private static final String SYNC_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
+  private static final String SYNC_SECURITY_MONITOR_CRON = "${market.scheduling.security-monitor-cron}";
+  private static final String SYNC_TOKEN = "${market.github.token}";
 
   private final ProductRepository productRepo;
   private final ProductService productService;
@@ -31,6 +35,7 @@ public class ScheduledTasks {
   private final ExternalDocumentService externalDocumentService;
   private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
+  private final GitHubService gitHubService;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -73,6 +78,13 @@ public class ScheduledTasks {
         log.warn("Sync data failed", e);
       }
     }, "Github repositories");
+  }
+
+  @Scheduled(cron = SYNC_SECURITY_MONITOR_CRON)
+  public void syncDataForSecurityMonitor() {
+    run(() ->
+            gitHubService.getSecurityDetailsForAllProducts(SYNC_TOKEN, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)
+        , "Github repositories security monitor");
   }
 
   private static void run(Runnable runnable, String schedulingTaskName) {

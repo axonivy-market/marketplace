@@ -21,4 +21,6 @@ public class ProductSecurityInfo {
   private Dependabot dependabot;
   private SecretScanning secretScanning;
   private CodeScanning codeScanning;
+  // Max of dependabot/secret/code scanning lastUpdated
+  private Date alertsLastUpdated;
 }

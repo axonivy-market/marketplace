@@ -4,6 +4,7 @@ import com.axonivy.market.enums.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -11,4 +12,5 @@ import lombok.Setter;
 public class SecretScanning {
   private Integer numberOfAlerts;
   private AccessLevel status;
+  private Date lastUpdated;
 }
