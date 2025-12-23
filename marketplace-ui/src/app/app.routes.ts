@@ -12,6 +12,7 @@ import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custo
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
+import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -40,6 +41,10 @@ export const routes: Routes = [
   {
     path: 'monitoring',
     component: MonitoringDashboardComponent
+  },
+  {
+    path: 'request-access',
+    component: AdminTokenComponent
   },
   {
     path: 'internal-dashboard',

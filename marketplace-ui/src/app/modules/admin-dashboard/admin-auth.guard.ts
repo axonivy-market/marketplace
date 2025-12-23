@@ -1,26 +1,20 @@
 import { inject, Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { AdminDashboardService } from './admin-dashboard.service';
-import { Observable } from 'rxjs/internal/Observable';
-import { catchError, map, of } from 'rxjs';
 import { AdminAuthService } from './admin-auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthGuard implements CanActivate {
   adminService = inject(AdminDashboardService);
   authService = inject(AdminAuthService);
+  router = inject(Router);
 
-  canActivate(): Observable<boolean> {
+  canActivate(): boolean {
     if (!this.authService.isAuthenticated()) {
-      return of(true);
+      this.router.navigate(['request-access']);
+      return false;
     }
 
-    return this.adminService.fetchSyncTaskExecutions().pipe(
-      map(() => true),
-      catchError(() => {
-        this.authService.clearToken();
-        return of(true);
-      })
-    );
+    return true;
   }
 }

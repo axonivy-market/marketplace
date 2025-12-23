@@ -24,7 +24,6 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
-import { AdminTokenContainerComponent } from './admin-token/admin-token.component';
 import { AdminAuthService } from './admin-auth.service';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
@@ -36,8 +35,7 @@ const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
     FormsModule,
     RouterModule,
     TranslateModule,
-    LoadingSpinnerComponent,
-    AdminTokenContainerComponent
+    LoadingSpinnerComponent
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
@@ -56,7 +54,6 @@ export class AdminDashboardComponent implements OnInit {
 
   protected LoadingComponentId = LoadingComponentId;
 
-  token = '';
   isAuthenticated = false;
   errorMessage = '';
 
@@ -85,12 +82,7 @@ export class AdminDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.isAuthenticated = this.authService.isAuthenticated();
-
-    if (this.isAuthenticated) {
-      this.loadExecutions();
-    }
-
+    this.loadExecutions();
     this.updateVisibility(this.router.url);
 
     this.router.events
@@ -100,17 +92,6 @@ export class AdminDashboardComponent implements OnInit {
 
   private updateVisibility(url: string): void {
     this.showSyncTask = /^\/internal-dashboard\/?(\?.*)?$/.test(url);
-  }
-
-  onSubmit(token: string): void {
-    if (!token) {
-      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-      return;
-    }
-
-    this.authService.setToken(token);
-    this.isAuthenticated = true;
-    this.loadExecutions();
   }
 
   private loadExecutions(): void {

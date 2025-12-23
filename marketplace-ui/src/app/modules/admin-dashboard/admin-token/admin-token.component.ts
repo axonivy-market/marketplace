@@ -3,6 +3,9 @@ import { Component, EventEmitter, inject, Input, Output, ViewEncapsulation } fro
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
+import { Router } from '@angular/router';
+import { AdminAuthService } from '../admin-auth.service';
+import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-admin-token',
@@ -12,14 +15,21 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
   styleUrls: ['./admin-token.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class AdminTokenContainerComponent {
+export class AdminTokenComponent {
   themeService = inject(ThemeService);
   @Input() errorMessage = '';
-  @Output() submitToken = new EventEmitter<string>();
 
+  authService = inject(AdminAuthService);
+  router = inject(Router);
   token = '';
 
   onSubmit(): void {
-    this.submitToken.emit(this.token);
+    if (!this.token) {
+      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
+      return;
+    }
+
+    this.authService.setToken(this.token);
+    this.router.navigate(['/internal-dashboard']);
   }
 }
