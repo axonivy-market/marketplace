@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommonConstants {
   public static final String REQUESTED_BY = "X-Requested-By";
+  public static final String REFERER = "Referer";
   public static final String USER_AGENT = "user-agent";
   public static final String SLASH = "/";
   public static final String DOT_SEPARATOR = ".";
@@ -35,4 +36,5 @@ public class CommonConstants {
   public static final String ZIP_EXTENSION = ".zip";
   public static final String INDEX_HTML = "index.html";
   public static final String SAFE_PATH_REGEX = "^[a-zA-Z0-9._-]+$";
+  public static final String IVY_HEADER = "ivy";
 }

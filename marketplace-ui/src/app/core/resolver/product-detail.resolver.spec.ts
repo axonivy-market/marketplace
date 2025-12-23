@@ -18,14 +18,15 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
+  FAVICON_PNG_TYPE,
   OG_DESCRIPTION_KEY,
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
+import { ProductDetail } from '../../shared/models/product-detail.model';
+import { FaviconService } from '../../shared/services/favicon.service';
 
 const products = MOCK_PRODUCTS._embedded.products;
 
@@ -39,6 +40,7 @@ describe('ProductDetailResolver', () => {
   let productService: jasmine.SpyObj<ProductService>;
   let cookieService: jasmine.SpyObj<CookieService>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let faviconService: jasmine.SpyObj<FaviconService>;
   let activatedRoute: ActivatedRoute;
   let routeSnapshot: ActivatedRouteSnapshot;
 
@@ -60,13 +62,17 @@ describe('ProductDetailResolver', () => {
     ]);
     const productServiceSpy = jasmine.createSpyObj('ProductService', [
       'getProductDetails',
-      'getBestMatchProductDetailsWithVersion'
+      'getBestMatchProductDetailsWithVersion',
+      'setDefaultVendorImage'
     ]);
     const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get']);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromSessionStorage']
     );
+    const faviconServiceSpy = jasmine.createSpyObj('FaviconService', [
+      'setFavicon'
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -81,6 +87,10 @@ describe('ProductDetailResolver', () => {
         {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamServiceSpy
+        },
+        {
+          provide: FaviconService,
+          useValue: faviconServiceSpy
         },
         {
           provide: ActivatedRoute,
@@ -119,6 +129,9 @@ describe('ProductDetailResolver', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
+    faviconService = TestBed.inject(
+      FaviconService
+    ) as jasmine.SpyObj<FaviconService>;
   });
 
   describe('resolve', () => {
@@ -226,6 +239,15 @@ describe('ProductDetailResolver', () => {
         OG_IMAGE_PNG_TYPE
       );
     });
+
+    it('should set favicon with product logo URL', () => {
+      resolver.updateProductMetadata(MOCK_PRODUCT_DETAIL);
+
+      expect(faviconService.setFavicon).toHaveBeenCalledWith(
+        MOCK_PRODUCT_DETAIL.logoUrl,
+        FAVICON_PNG_TYPE
+      );
+    });
   });
 
   describe('updateOGTag', () => {
@@ -264,11 +286,6 @@ describe('ProductDetailResolver', () => {
   });
 
   describe('getProductById', () => {
-    beforeEach(() => {
-      spyOn(resolver, 'setDefaultVendorImage').and.returnValue(
-        MOCK_PRODUCT_DETAIL
-      );
-    });
 
     it('should call getProductDetails when no target version', () => {
       routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
@@ -304,89 +321,19 @@ describe('ProductDetailResolver', () => {
       expect(productService.getProductDetails).not.toHaveBeenCalled();
     });
 
-    it('should apply setDefaultVendorImage transformation', () => {
-      const targetVersion = '1.0';
-      routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-        targetVersion
-      );
-
-      productService.getBestMatchProductDetailsWithVersion.and.returnValue(
-        of(MOCK_PRODUCT_DETAIL)
-      );
-
-      resolver.getProductById(products[0].id, false).subscribe();
-
-      expect(resolver.setDefaultVendorImage).toHaveBeenCalledWith(
-        MOCK_PRODUCT_DETAIL
-      );
-    });
-
     it('should return transformed product detail', done => {
       routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
         ''
       );
       productService.getProductDetails.and.returnValue(of(MOCK_PRODUCT_DETAIL));
+      productService.setDefaultVendorImage.and.callFake((detail: ProductDetail) => detail);
 
       resolver.getProductById(products[0].id, false).subscribe(result => {
+        expect(productService.setDefaultVendorImage).toHaveBeenCalledWith(MOCK_PRODUCT_DETAIL);
         expect(result).toBe(MOCK_PRODUCT_DETAIL);
         done();
       });
     });
   });
 
-  describe('setDefaultVendorImage', () => {
-    it('should set default images when both vendor images are missing', () => {
-      const productDetailWithoutVendorImages = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImage: '',
-        vendorImageDarkMode: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutVendorImages
-      );
-
-      expect(result.vendorImage).toBe(DEFAULT_VENDOR_IMAGE_BLACK);
-      expect(result.vendorImageDarkMode).toBe(DEFAULT_VENDOR_IMAGE);
-    });
-
-    it('should use vendorImage for dark mode when dark mode image is missing', () => {
-      const productDetailWithoutDarkMode = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImageDarkMode: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutDarkMode
-      );
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-      expect(result.vendorImageDarkMode).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-    });
-
-    it('should use dark mode image for regular when regular image is missing', () => {
-      const productDetailWithoutRegularImage = {
-        ...MOCK_PRODUCT_DETAIL,
-        vendorImage: ''
-      };
-
-      const result = resolver.setDefaultVendorImage(
-        productDetailWithoutRegularImage
-      );
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImageDarkMode);
-      expect(result.vendorImageDarkMode).toBe(
-        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
-      );
-    });
-
-    it('should keep original images when both are present', () => {
-      const result = resolver.setDefaultVendorImage(MOCK_PRODUCT_DETAIL);
-
-      expect(result.vendorImage).toBe(MOCK_PRODUCT_DETAIL.vendorImage);
-      expect(result.vendorImageDarkMode).toBe(
-        MOCK_PRODUCT_DETAIL.vendorImageDarkMode
-      );
-    });
-  });
 });

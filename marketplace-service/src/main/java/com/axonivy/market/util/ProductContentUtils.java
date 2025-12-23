@@ -23,13 +23,13 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
 
 public final class ProductContentUtils {
   /*
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
    * Match exactly Demo or Setup
    */
-  public static final String DEMO_SETUP_TITLE = "(?m)^[#\\s]*##?\\s*(Demo|Setup)\\s*$";
   private static final String HASH = "#";
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
@@ -48,8 +48,6 @@ public final class ProductContentUtils {
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
       Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-  public static final Pattern DEMO_SETUP_PATTERN =
-      Pattern.compile(DEMO_SETUP_TITLE);
 
   private ProductContentUtils() {
   }
@@ -80,39 +78,50 @@ public final class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    String[] parts = DEMO_SETUP_PATTERN.split(readmeContents);
-    int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
-    int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
-    String description = Strings.EMPTY;
-    String setup = Strings.EMPTY;
-    String demo = Strings.EMPTY;
+    int firstDemoIndex = findSectionStart(ReadmeConstants.DEMO_PATTERN, readmeContents);
+    int firstSetUpIndex = findSectionStart(ReadmeConstants.SETUP_PATTERN, readmeContents);
 
-    if (parts.length > CommonConstants.ZERO) {
-      description = removeFirstLine(parts[CommonConstants.ZERO]);
+    int firstSection = minNonNegative(firstDemoIndex, firstSetUpIndex);
+
+    String description = (firstSection == INDEX_NOT_FOUND) ? removeFirstLine(readmeContents) : removeFirstLine(
+        readmeContents.substring(0, firstSection));
+
+    String demo = extractIfExists(readmeContents, firstDemoIndex, ReadmeConstants.DEMO_PATTERN, firstSetUpIndex);
+    String setup = extractIfExists(readmeContents, firstSetUpIndex, ReadmeConstants.SETUP_PATTERN, firstDemoIndex);
+
+    var model = new ReadmeContentsModel();
+    model.setDescription(description.trim());
+    model.setDemo(demo.trim());
+    model.setSetup(setup.trim());
+    return model;
+  }
+
+  private static int minNonNegative(int a, int b) {
+    if (a == INDEX_NOT_FOUND) {
+      return b;
     }
-
-    if (parts.length == CommonConstants.TWO) {
-      if (demoIndex != -1) {
-        demo = parts[CommonConstants.ONE];
-      } else {
-        setup = parts[CommonConstants.ONE];
-      }
-    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > CommonConstants.TWO) {
-      if (demoIndex < setupIndex) {
-        demo = parts[CommonConstants.ONE];
-        setup = parts[CommonConstants.TWO];
-      } else {
-        setup = parts[CommonConstants.ONE];
-        demo = parts[CommonConstants.TWO];
-      }
+    if (b == INDEX_NOT_FOUND) {
+      return a;
     }
+    return Math.min(a, b);
+  }
 
-    var readmeContentsModel = new ReadmeContentsModel();
-    readmeContentsModel.setDescription(description.trim());
-    readmeContentsModel.setDemo(demo.trim());
-    readmeContentsModel.setSetup(setup.trim());
+  private static String extractIfExists(String content, int start, Pattern pattern, int nextSectionStart) {
+    if (start == INDEX_NOT_FOUND) {
+      return Strings.EMPTY;
+    }
+    var matcher = pattern.matcher(content);
+    if (!matcher.find(start)) {
+      return Strings.EMPTY;
+    }
+    int sectionHeaderEnd = start + matcher.group().length();
+    int end = (nextSectionStart != INDEX_NOT_FOUND && nextSectionStart > start) ? nextSectionStart : content.length();
+    return content.substring(sectionHeaderEnd, end).trim();
+  }
 
-    return readmeContentsModel;
+  private static int findSectionStart(Pattern pattern, String content) {
+    var matcher = pattern.matcher(content);
+    return matcher.find() ? matcher.start() : INDEX_NOT_FOUND;
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
@@ -126,7 +135,7 @@ public final class ProductContentUtils {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      if (index != StringUtils.INDEX_NOT_FOUND) {
+      if (index != INDEX_NOT_FOUND) {
         result = text.substring(index + 1).trim();
       } else {
         result = Strings.EMPTY;

@@ -11,6 +11,10 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import {
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK
+} from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -136,5 +140,18 @@ export class ProductService {
           return of(productReleasesApiResponse);
         })
       );
+  }
+
+  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+    const { vendorImage, vendorImageDarkMode } = productDetail;
+ 
+    if (productDetail.vendorImage || productDetail.vendorImageDarkMode) {
+      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
+      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    } else {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
+    }
+    return productDetail;
   }
 }

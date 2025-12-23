@@ -164,10 +164,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       ProductDependency mavenDependency) throws Exception {
     List<Dependency> dependencyModels = extractMavenPOMDependencies(artifact.getDownloadUrl());
     if (ObjectUtils.isEmpty(dependencyModels)) {
-      log.info("No dependency was found for requested artifact {}", artifact.getId().getArtifactId());
+      log.info("No dependency was found for requested artifact {},  version {}", artifact.getId().getArtifactId(),
+          mavenDependency.getVersion());
       return;
     }
-    log.info("Collect IAR dependencies for requested artifact {}", artifact.getId().getArtifactId());
+    log.info("Collect IAR dependencies for requested artifact {}, version {}", artifact.getId().getArtifactId(),
+        mavenDependency.getVersion());
     var totalDependencyLevels = 0;
     collectMavenDependenciesForArtifact(artifact.getId().getProductVersion(), mavenDependency.getDependencies(),
         dependencyModels, totalDependencyLevels);
@@ -210,7 +212,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
       }
 
-      if(!newDependencies.isEmpty()) {
+      if (!newDependencies.isEmpty()) {
         List<ProductDependency> persistedDependencies = productDependencyRepository.saveAll(newDependencies);
         productDependencies.addAll(persistedDependencies);
       }

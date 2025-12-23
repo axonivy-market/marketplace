@@ -66,6 +66,7 @@ market:
         path: /app/data/market-installation.json
   scheduling:
     products-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_CRON}'
+    products-dependency-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON}'
     github-repos-cron: '${MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}'
     documents-cron: '${MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}'
     products-release-notes-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}'
@@ -89,3 +90,9 @@ axon:
   ivy:
     developer:
       url: 'https://developer.axonivy.com'
+
+matomo:
+  tracker:
+    api-endpoint: '${MARKET_SERVER_MATOMO_TRACKER_URL}'
+    default-site-id: '${MARKET_MATOMO_SITE_ID}'
+    enabled: true
