@@ -47,6 +47,8 @@ public class MonitorDashBoardController {
   private final GitHubService gitHubService;
 
   @GetMapping(REPOS_REPORT)
+  @Operation(summary = "Get test report for a product and workflow",
+      description = "Fetches the test report associated with the specified product ID and workflow type.")
   public ResponseEntity<List<TestStepsModel>> getTestReport(
       @PathVariable(PostgresDBConstants.PRODUCT_ID)
       @Parameter(description = "productId", example = "portal", in = ParameterIn.PATH) String productId,
@@ -91,6 +93,8 @@ public class MonitorDashBoardController {
   }
 
   @GetMapping(REPOS)
+  @Operation(summary = "Get all GitHub repositories",
+      description = "Fetches all GitHub repositories with optional filtering, searching, and sorting capabilities.")
   public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
           required = false) Boolean isFocused, @ParameterObject Pageable pageable,
       @RequestParam(value = "search", required = false) String searchText,

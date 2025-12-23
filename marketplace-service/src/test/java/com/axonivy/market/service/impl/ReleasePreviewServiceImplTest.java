@@ -143,7 +143,7 @@ class ReleasePreviewServiceImplTest {
   void testExtractReadmeIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(tempDirectory))
-          .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR, "Simulated IOException"));
+          .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
       String tempDirPath = tempDirectory.toString();
       assertThrows(FileProcessingException.class,

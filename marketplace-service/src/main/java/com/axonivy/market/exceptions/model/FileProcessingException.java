@@ -17,7 +17,7 @@ public class FileProcessingException extends RuntimeException {
   private final String code;
   private final String message;
 
-  public FileProcessingException(ErrorCode errorCode,String helpText) {
+  public FileProcessingException(ErrorCode errorCode) {
     this.code = errorCode.getCode();
     this.message = errorCode.getHelpText();
   }

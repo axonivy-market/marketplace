@@ -38,6 +38,8 @@ public class ExternalDocumentController {
   private final GitHubService gitHubService;
 
   @GetMapping(BY_ID_AND_VERSION)
+  @Operation(summary = "Find external document by product id and version",
+      description = "Finds the external document metadata for the given product id and version.")
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id,
@@ -55,6 +57,8 @@ public class ExternalDocumentController {
   }
 
   @GetMapping(DOCUMENT_BEST_MATCH)
+  @Operation(summary = "Redirect to the best matching external document version",
+      description = "Redirects to the best matching external document version based on the provided path parameter.")
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
     String responseURL = ERROR_PAGE_404;
