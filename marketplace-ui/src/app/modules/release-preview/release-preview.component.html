@@ -131,12 +131,7 @@
                 [attr.aria-labelledby]="displayedTab.value + '-tab'">
                 <div
                   class="readme-content"
-                  [innerHtml]="
-                    renderReadmeContent(
-                      getReadmeContentValue(displayedTab)
-                        | multilingualism: languageService.selectedLanguage()
-                    )
-                  "></div>
+                  [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
               </div>
             }
           </div>

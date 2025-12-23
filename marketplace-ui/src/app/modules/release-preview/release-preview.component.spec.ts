@@ -12,6 +12,7 @@ import {
 } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MOCK_RELEASE_PREVIEW_DATA } from '../../shared/mocks/mock-data';
+import { MarkdownService } from '../../shared/services/markdown.service';
 
 describe('ReleasePreviewComponent', () => {
   let component: ReleasePreviewComponent;
@@ -213,6 +214,34 @@ describe('ReleasePreviewComponent', () => {
     sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
     const result = component.renderReadmeContent(value);
     expect(result).toBe(mockedRenderedHtml);
+  });
+
+  it('should keep collapsible sections when rendering markdown', () => {
+    const markdownService = TestBed.inject(MarkdownService);
+    spyOn(markdownService, 'parseMarkdown').and.callThrough();
+    sanitizerSpy.bypassSecurityTrustHtml.and.callFake(html => html as any);
+    languageService.selectedLanguage.and.returnValue(Language.EN);
+    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+      of({
+        description: {
+          en: '<details><summary>More info</summary><p>Hidden content</p></details>'
+        },
+        demo: {},
+        setup: {}
+      })
+    );
+
+    component.selectedFile = new File(['zip'], 'collapsible.zip', {
+      type: 'application/zip'
+    });
+    component.isZipFile = true;
+
+    component.handlePreviewPage();
+
+    const rendered = component.loadedReadmeContent['description'] as unknown as string;
+    expect(rendered).toContain('<details>');
+    expect(rendered).toContain('<summary>More info</summary>');
+    expect(rendered).toContain('<p>Hidden content</p>');
   });
 
   it('should clear errorMessage for a valid zip within size', () => {

@@ -24,7 +24,7 @@ import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
-import { LoadingSpinnerComponent } from "../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 const DEFAULT_ACTIVE_TAB = 'description';
@@ -37,9 +37,8 @@ const MAX_FILE_SIZE_MB = 20;
     FormsModule,
     CommonDropdownComponent,
     TranslateModule,
-    MultilingualismPipe,
     LoadingSpinnerComponent
-],
+  ],
   templateUrl: './release-preview.component.html',
   styleUrls: ['./release-preview.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -68,6 +67,8 @@ export class ReleasePreviewComponent implements OnInit {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
   });
+  loadedReadmeContent: { [key: string]: SafeHtml } = {};
+
   private readonly sanitizer = inject(DomSanitizer);
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
@@ -160,9 +161,11 @@ export class ReleasePreviewComponent implements OnInit {
     if (!this.selectedFile || !this.isZipFile) {
       return;
     }
+
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
         this.readmeContent.set(response);
+        this.buildRenderedReadme();
         this.isUploaded = true;
         this.shouldShowHint = false;
       },
@@ -211,5 +214,22 @@ export class ReleasePreviewComponent implements OnInit {
   renderReadmeContent(value: string): SafeHtml {
     const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
+  }
+
+  private buildRenderedReadme(): void {
+    this.loadedReadmeContent = {};
+    this.detailTabs.forEach(tab => {
+      const contentValue = this.getReadmeContentValue(tab);
+      if (contentValue) {
+        const value = new MultilingualismPipe().transform(
+          contentValue,
+          this.languageService.selectedLanguage()
+        );
+
+        const html = this.markdownService.parseMarkdown(value);
+        this.loadedReadmeContent[tab.value] =
+          this.sanitizer.bypassSecurityTrustHtml(html);
+      }
+    });
   }
 }
