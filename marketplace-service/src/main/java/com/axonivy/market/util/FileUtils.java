@@ -105,8 +105,7 @@ public class FileUtils {
     try {
       unzipArtifact(file.getInputStream(), extractDir);
     } catch (IOException | IllegalStateException e) {
-      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
-          "Failed to unzip file at location: " + location + " due to " + e.getMessage());
+      throw new IOException("Error unzipping file", e);
     }
   }
 

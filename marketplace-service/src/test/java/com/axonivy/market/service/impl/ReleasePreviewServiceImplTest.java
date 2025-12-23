@@ -180,13 +180,4 @@ class ReleasePreviewServiceImplTest {
         "Should throw error if unzipping file failed");
   }
 
-  @Test
-  void testUpdateImagesWithDownloadUrlNullPath() {
-    FileProcessingException exception = assertThrows(FileProcessingException.class,
-        () -> releasePreviewService.updateImagesWithDownloadUrl(null, README_CONTENT, BASE_URL),
-        "Should throw error if unzipped folder path is null"
-    );
-    assertEquals("Unzipped folder path is null", exception.getMessage(),
-        "Exception message should indicate null unzipped folder path");
-  }
 }

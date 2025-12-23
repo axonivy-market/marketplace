@@ -238,4 +238,14 @@ class FileUtilsTest {
         },
         "Should throw exception when parent directories cannot be created");
   }
+
+  @Test
+  void testUnzipArtifactHandlesIOException() throws IOException {
+    Path tempDir = Files.createTempDirectory("unzipTest");
+    InputStream badStream = mock(InputStream.class);
+    when(badStream.read(any(byte[].class), anyInt(), anyInt())).thenThrow(new IOException("Simulated IO error"));
+    assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()),
+        "Should not throw exception when IO error occurs during unzip");
+    Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
+  }
 }

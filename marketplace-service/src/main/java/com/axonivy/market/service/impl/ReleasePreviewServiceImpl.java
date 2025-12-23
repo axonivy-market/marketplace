@@ -43,6 +43,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       FileUtils.unzip(file, PREVIEW_DIR);
       return extractReadme(baseUrl, PREVIEW_DIR);
     } catch (IOException e) {
+      log.info("#extract Error extracting zip file, message: {}", e.getMessage());
       throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
           ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
     }
@@ -61,16 +62,11 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
         processReadme(readmeFile, moduleContents, baseUrl, location);
       }
       return ReleasePreview.from(moduleContents);
-    } catch (IOException e) {
-      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Failed to extract README files");
     }
   }
 
   public String updateImagesWithDownloadUrl(String unzippedFolderPath,
       String readmeContents, String baseUrl) throws IOException {
-    if (unzippedFolderPath == null) {
-      throw new FileProcessingException(ErrorCode.INVALID_PATH.getCode(), "Unzipped folder path is null");
-    }
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
@@ -92,21 +88,16 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
   public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
       String baseUrl, String location) throws IOException {
-    try {
-      var readmeContents = Files.readString(readmeFile);
-      if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-        readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
-      }
-      var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-      ProductContentUtils.mappingDescriptionSetupAndDemo(
-          moduleContents,
-          readmeFile.getFileName().toString(),
-          readmeContentsModel
-      );
-    } catch (IOException e) {
-      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
-          "Failed to process README file: " + readmeFile.getFileName());
+    var readmeContents = Files.readString(readmeFile);
+    if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+      readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
     }
+    var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+    ProductContentUtils.mappingDescriptionSetupAndDemo(
+        moduleContents,
+        readmeFile.getFileName().toString(),
+        readmeContentsModel
+    );
   }
 
 }

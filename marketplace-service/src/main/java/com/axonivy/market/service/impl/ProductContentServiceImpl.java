@@ -141,16 +141,10 @@ public class ProductContentServiceImpl implements ProductContentService {
   public List<String> getDependencyUrls(String productId, String artifactId, String version) {
     List<ProductDependency> productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
         productId, artifactId, version);
-    
-    List<String> dependencyUrls = Stream.concat(productDependencies.stream().map(ProductDependency::getDownloadUrl),
+
+    return Stream.concat(productDependencies.stream().map(ProductDependency::getDownloadUrl),
         productDependencies.stream().flatMap(product -> product.getDependencies().stream()).map(
             ProductDependency::getDownloadUrl)).toList();
-
-    if (dependencyUrls.isEmpty()) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No dependencies found for product " + productId);
-    }
-
-    return dependencyUrls;
   }
 
   @Override

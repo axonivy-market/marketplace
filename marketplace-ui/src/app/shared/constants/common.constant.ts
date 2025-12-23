@@ -295,7 +295,6 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',
   INVALID_TOKEN: 'The token is invalid, please try again.',
-  FILE_PROCESSING_ERROR: 'Error processing file. Please check the file format.',
   ARTIFACT_NOT_FOUND: 'The requested artifact was not found.',
   PRODUCT_NOT_FOUND: 'Product not found.',
   INVALID_PARAMETER: 'Invalid parameter provided.',
