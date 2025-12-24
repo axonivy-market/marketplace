@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { EMPTY, filter, finalize, Observable } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { EMPTY, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
@@ -42,7 +42,6 @@ const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
   encapsulation: ViewEncapsulation.Emulated
 })
 export class AdminDashboardComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly service = inject(AdminDashboardService);
   private readonly productService = inject(ProductService);
 
@@ -83,15 +82,6 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExecutions();
-    this.updateVisibility(this.router.url);
-
-    this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => this.updateVisibility(this.router.url));
-  }
-
-  private updateVisibility(url: string): void {
-    this.showSyncTask = /^\/internal-dashboard\/?(\?.*)?$/.test(url);
   }
 
   private loadExecutions(): void {

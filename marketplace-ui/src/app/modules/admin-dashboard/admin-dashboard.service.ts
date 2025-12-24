@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpContext,
-  HttpParams
-} from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { AdminAuthService } from './admin-auth.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { LoadingComponent } from '../../core/interceptors/api.interceptor';
+import {
+  ForwardingError,
+  LoadingComponent
+} from '../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
@@ -87,10 +86,7 @@ export class AdminDashboardService {
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
     return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
       headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(
-        LoadingComponent,
-        LoadingComponentId.ADMIN_DASHBOARD
-      )
+      context: new HttpContext().set(ForwardingError, true)
     });
   }
 

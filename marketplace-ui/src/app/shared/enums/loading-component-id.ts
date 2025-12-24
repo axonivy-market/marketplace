@@ -7,6 +7,5 @@ export enum LoadingComponentId {
   FEEDBACK_APPROVAL = 'feedback-approval',
   RELEASE_PREVIEW = 'release-preview',
   PRODUCT_CHANGELOG = 'product-changelog',
-  MONITORING_DASHBOARD = 'monitoring-repo',
-  ADMIN_DASHBOARD = 'admin-dashboard'
+  MONITORING_DASHBOARD = 'monitoring-repo'
 }

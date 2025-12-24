@@ -1,246 +1,239 @@
-<div class="container">
-  <div class="row col-md-12">
-    <h1 class="text-primary admin-title" [lang]="languageService.selectedLanguage()">
-      {{ translateService.get('common.admin.customSort.title') | async }}
-    </h1>
-    <div class="introduction-container">
-      <div class="d-sm-block admin-about">
-        <h3 class="text-secondary">
-          {{
-            translateService.get('common.admin.customSort.description') | async
-          }}
-          <span class="hint-icon">
-            <i
-              class="bi bi-info-circle"
-              [title]="
-                translateService.get('common.admin.customSort.dragAndDropHint')
-                  | async
-              "></i>
-          </span>
-        </h3>
-      </div>
-      <div class="d-sm-block align-items-center admin-help-text-container flex-fill">
-        <h4
-          [lang]="languageService.selectedLanguage()"
-          class="text-secondary help-text"
-          [innerHTML]="
-            translateService.get('common.admin.customSort.helpText') | async
-          "></h4>
-      </div>
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{ translateService.get('common.admin.customSort.title') | async }}
+  </h1>
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{
+          translateService.get('common.admin.customSort.description') | async
+        }}
+        <span class="hint-icon">
+          <i
+            class="bi bi-info-circle"
+            [title]="
+              translateService.get('common.admin.customSort.dragAndDropHint')
+                | async
+            "></i>
+        </span>
+      </h3>
+    </div>
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        [lang]="languageService.selectedLanguage()"
+        class="text-secondary help-text"
+        [innerHTML]="
+          translateService.get('common.admin.customSort.helpText') | async
+        "></h4>
     </div>
   </div>
-  <div class="sort-container">
-    <section>
-      <div class="table-grid" [class.loading]="isLoading">
-        <div class="table-card">
-          <header class="table-header">
-            <div class="title-group">
-              <h2
-                class="text-primary"
-                [lang]="languageService.selectedLanguage()">
-                {{ 'common.admin.customSort.sortedExtensions' | translate }}
-              </h2>
-              <span class="badge">{{ sortingExtensions.length }}</span>
-            </div>
-            <div class="search-box search-box--placeholder" aria-hidden="true">
-              <input
-                type="search"
-                class="search-input"
-                disabled
-                tabindex="-1" />
-            </div>
-          </header>
-          <div class="table-scroll extension-list">
-            <table>
-              <thead>
-                <tr>
-                  <th
-                    class="text-primary order-column"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.customSort.order' | translate }}
-                  </th>
-                  <th
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.extensionId' | translate }}
-                  </th>
+</div>
+<div class="sort-container">
+  <section>
+    <div class="table-grid" [class.loading]="isLoading">
+      <div class="table-card">
+        <header class="table-header">
+          <div class="title-group">
+            <h2
+              class="text-primary"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.admin.customSort.sortedExtensions' | translate }}
+            </h2>
+            <span class="badge">{{ sortingExtensions.length }}</span>
+          </div>
+          <div class="search-box search-box--placeholder" aria-hidden="true">
+            <input type="search" class="search-input" disabled tabindex="-1" />
+          </div>
+        </header>
+        <div class="table-scroll extension-list">
+          <table>
+            <thead>
+              <tr>
+                <th
+                  class="text-primary order-column"
+                  [lang]="languageService.selectedLanguage()">
+                  {{ 'common.admin.customSort.order' | translate }}
+                </th>
+                <th
+                  class="text-primary"
+                  [lang]="languageService.selectedLanguage()">
+                  {{ 'common.admin.extensionId' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              cdkDropList
+              #todoList="cdkDropList"
+              [cdkDropListData]="sortingExtensions"
+              [id]="'sorted-extensions'"
+              [cdkDropListConnectedTo]="[doneList]"
+              cdkDropListOrientation="vertical"
+              (cdkDropListDropped)="drop($event)"
+              (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
+              @if (sortingExtensions.length === 0) {
+                <tr class="empty-row">
+                  <td colspan="2">
+                    {{ 'common.admin.customSort.dragHint' | translate }}
+                  </td>
                 </tr>
-              </thead>
-              <tbody
-                cdkDropList
-                #todoList="cdkDropList"
-                [cdkDropListData]="sortingExtensions"
-                [id]="'sorted-extensions'"
-                [cdkDropListConnectedTo]="[doneList]"
-                cdkDropListOrientation="vertical"
-                (cdkDropListDropped)="drop($event)"
-                (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
-                @if (sortingExtensions.length === 0) {
-                  <tr class="empty-row">
-                    <td colspan="2">
-                      {{ 'common.admin.customSort.dragHint' | translate }}
-                    </td>
-                  </tr>
-                }
-                @for (
-                  item of sortingExtensions;
-                  track item;
-                  let index = $index
-                ) {
-                  <tr
-                    cdkDrag
-                    [cdkDragData]="item"
-                    (cdkDragStarted)="setDragPreviewWidth($event)"
-                    (cdkDragEnded)="resetDragPreviewWidth($event)">
-                    <td class="index">{{ index + 1 }}</td>
-                    <td>
+              }
+              @for (item of sortingExtensions; track item; let index = $index) {
+                <tr
+                  cdkDrag
+                  [cdkDragData]="item"
+                  (cdkDragStarted)="setDragPreviewWidth($event)"
+                  (cdkDragEnded)="resetDragPreviewWidth($event)">
+                  <td class="index">{{ index + 1 }}</td>
+                  <td>
+                    <span class="extension-id">{{ item }}</span>
+                  </td>
+                  <ng-template cdkDragPreview>
+                    <div class="drag-preview">
+                      <span class="index">{{ index + 1 }}</span>
                       <span class="extension-id">{{ item }}</span>
-                    </td>
-                    <ng-template cdkDragPreview>
-                      <div class="drag-preview">
-                        <span class="index">{{ index + 1 }}</span>
+                    </div>
+                  </ng-template>
+                  <ng-template cdkDragPlaceholder>
+                    <tr class="drag-placeholder">
+                      <td class="index">{{ index + 1 }}</td>
+                      <td>
                         <span class="extension-id">{{ item }}</span>
-                      </div>
-                    </ng-template>
-                    <ng-template cdkDragPlaceholder>
-                      <tr class="drag-placeholder">
-                        <td class="index">{{ index + 1 }}</td>
-                        <td>
-                          <span class="extension-id">{{ item }}</span>
-                        </td>
-                      </tr>
-                    </ng-template>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        <div class="table-card">
-          <header class="table-header">
-            <div class="title-group">
-              <h2
-                class="text-primary"
-                [lang]="languageService.selectedLanguage()">
-                {{ 'common.admin.customSort.availableExtensions' | translate }}
-              </h2>
-              <span class="badge">
-                {{ filteredAvailableExtensions.length }} /
-                {{ allExtensions.length }}
-              </span>
-            </div>
-            <div class="search-box">
-              <input
-                type="search"
-                class="search-input"
-                [placeholder]="
-                  translateService.get(
-                    'common.admin.customSort.searchPlaceholder'
-                  ) | async
-                "
-                autocomplete="off"
-                [(ngModel)]="searchTerm" />
-            </div>
-          </header>
-          <div class="table-scroll extension-list">
-            <table>
-              <thead>
-                <tr>
-                  <th
+      <div class="table-card">
+        <header class="table-header">
+          <div class="title-group">
+            <h2
+              class="text-primary"
+              [lang]="languageService.selectedLanguage()">
+              {{ 'common.admin.customSort.availableExtensions' | translate }}
+            </h2>
+            <span class="badge">
+              {{ filteredAvailableExtensions.length }} /
+              {{ allExtensions.length }}
+            </span>
+          </div>
+          <div class="search-box">
+            <input
+              type="search"
+              class="search-input"
+              [placeholder]="
+                translateService.get(
+                  'common.admin.customSort.searchPlaceholder'
+                ) | async
+              "
+              autocomplete="off"
+              [(ngModel)]="searchTerm" />
+          </div>
+        </header>
+        <div class="table-scroll extension-list">
+          <table>
+            <thead>
+              <tr>
+                <th
+                  class="text-primary"
+                  [lang]="languageService.selectedLanguage()">
+                  {{ 'common.admin.extensionId' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              cdkDropList
+              #doneList="cdkDropList"
+              [cdkDropListData]="filteredAvailableExtensions"
+              [id]="'available-extensions'"
+              [cdkDropListConnectedTo]="[todoList]"
+              cdkDropListOrientation="vertical"
+              (cdkDropListDropped)="drop($event)"
+              (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
+              @if (filteredAvailableExtensions.length === 0) {
+                <tr class="empty-row">
+                  <td
                     class="text-primary"
                     [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.extensionId' | translate }}
-                  </th>
+                    {{ 'common.admin.customSort.noExtensions' | translate }}
+                  </td>
                 </tr>
-              </thead>
-              <tbody
-                cdkDropList
-                #doneList="cdkDropList"
-                [cdkDropListData]="filteredAvailableExtensions"
-                [id]="'available-extensions'"
-                [cdkDropListConnectedTo]="[todoList]"
-                cdkDropListOrientation="vertical"
-                (cdkDropListDropped)="drop($event)"
-                (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
-                @if (filteredAvailableExtensions.length === 0) {
-                  <tr class="empty-row">
-                    <td
-                      class="text-primary"
-                      [lang]="languageService.selectedLanguage()">
-                      {{ 'common.admin.customSort.noExtensions' | translate }}
-                    </td>
-                  </tr>
-                }
-                @for (item of filteredAvailableExtensions; track item) {
-                  <tr
-                    cdkDrag
-                    [cdkDragData]="item"
-                    (cdkDragStarted)="setDragPreviewWidth($event)"
-                    (cdkDragEnded)="resetDragPreviewWidth($event)">
-                    <td>
-                      <span>{{ item }}</span>
-                    </td>
-                    <ng-template cdkDragPreview>
-                      <div class="drag-preview">
+              }
+              @for (item of filteredAvailableExtensions; track item) {
+                <tr
+                  cdkDrag
+                  [cdkDragData]="item"
+                  (cdkDragStarted)="setDragPreviewWidth($event)"
+                  (cdkDragEnded)="resetDragPreviewWidth($event)">
+                  <td>
+                    <span>{{ item }}</span>
+                  </td>
+                  <ng-template cdkDragPreview>
+                    <div class="drag-preview">
+                      <span class="extension-id">{{ item }}</span>
+                    </div>
+                  </ng-template>
+                  <ng-template cdkDragPlaceholder>
+                    <tr class="drag-placeholder">
+                      <td colspan="2">
                         <span class="extension-id">{{ item }}</span>
-                      </div>
-                    </ng-template>
-                    <ng-template cdkDragPlaceholder>
-                      <tr class="drag-placeholder">
-                        <td colspan="2">
-                          <span class="extension-id">{{ item }}</span>
-                        </td>
-                      </tr>
-                    </ng-template>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
 
-      <div class="actions">
-        <button
-          type="button"
-          [lang]="languageService.selectedLanguage()"
-          class="btn border-0 sort-button text-center"
-          [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
-          (click)="sortMarketExtensions()"
-          [disabled]="isSaving || sortingExtensions.length === 0"
-          data-toggle="tooltip"
-          [title]="
-            translateService.get('common.admin.customSort.sortHint') | async
-          ">
-          @if (isSaving) {
-            <i class="fa fa-spinner fa-spin me-2"></i>
-            {{ 'common.admin.customSort.sortingLabel' | translate }}
-          } @else {
-            {{ 'common.admin.customSort.sortLabel' | translate }}
-          }
-        </button>
-
-        @if (sortSuccessMessage) {
-          <div class="feedback success">
-            <i class="bi bi-check2"></i>
-            <span>{{ sortSuccessMessage }}</span>
-          </div>
+    <div class="actions">
+      <button
+        type="button"
+        [lang]="languageService.selectedLanguage()"
+        class="btn border-0 sort-button text-center"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+        (click)="sortMarketExtensions()"
+        [disabled]="isSaving || sortingExtensions.length === 0"
+        data-toggle="tooltip"
+        [title]="
+          translateService.get('common.admin.customSort.sortHint') | async
+        ">
+        @if (isSaving) {
+          <i class="fa fa-spinner fa-spin me-2"></i>
+          {{ 'common.admin.customSort.sortingLabel' | translate }}
+        } @else {
+          {{ 'common.admin.customSort.sortLabel' | translate }}
         }
+      </button>
 
-        @if (sortErrorMessage) {
-          <div class="feedback error">
-            <i class="bi bi-exclamation-triangle"></i>
-            <span>{{ sortErrorMessage }}</span>
-          </div>
-        }
-      </div>
-
-      @if (isLoading) {
-        <div class="loading-state">
-          {{ 'common.admin.customSort.loadingLabel' | translate }}
+      @if (sortSuccessMessage) {
+        <div class="feedback success">
+          <i class="bi bi-check2"></i>
+          <span>{{ sortSuccessMessage }}</span>
         </div>
       }
-    </section>
-  </div>
+
+      @if (sortErrorMessage) {
+        <div class="feedback error">
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>{{ sortErrorMessage }}</span>
+        </div>
+      }
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">
+        {{ 'common.admin.customSort.loadingLabel' | translate }}
+      </div>
+    }
+  </section>
 </div>

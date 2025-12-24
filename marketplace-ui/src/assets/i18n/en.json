@@ -369,7 +369,9 @@
         "monitoring": "Monitoring: Access the monitoring dashboard for build pipelines and test results.",
         "monitoringNote": "Please check daily to ensure all extensions are healthy.",
         "releasePreview": "Release Preview: Quickly preview extensions' details by uploading a ZIP file with a README.md.",
-        "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace."
+        "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace.",
+        "monitoringTitle": "Monitoring Page",
+        "releasePreviewTitle": "Release Preview Page"
       }
     }
   }

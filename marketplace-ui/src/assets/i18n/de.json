@@ -369,7 +369,9 @@
         "monitoring": "Monitoring: Zugriff auf das Monitoring-Dashboard für Build-Pipelines und Testergebnisse.",
         "monitoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",
         "releasePreview": "Release-Vorschau: Schnelle Vorschau der Erweiterungsdetails durch Hochladen einer ZIP-Datei mit einer README.md.",
-        "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen."
+        "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
+        "monitoringTitle": "Überwachungsseite",
+        "releasePreviewTitle": "Release-Vorschauseite"
       }
     }
   }
