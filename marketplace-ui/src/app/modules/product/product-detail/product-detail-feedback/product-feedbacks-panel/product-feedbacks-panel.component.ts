@@ -25,7 +25,6 @@ interface CustomElement extends HTMLElement {
 
 @Component({
   selector: 'app-product-feedbacks-panel',
-  standalone: true,
   imports: [
     CommonModule,
     ProductFeedbackComponent,

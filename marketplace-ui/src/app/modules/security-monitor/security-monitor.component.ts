@@ -18,7 +18,6 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-security-monitor',
-  standalone: true,
   imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],

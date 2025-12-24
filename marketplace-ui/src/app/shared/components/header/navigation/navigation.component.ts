@@ -9,7 +9,6 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-navigation',
-  standalone: true,
   imports: [CommonModule, TranslateModule, RouterLink],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss'
@@ -26,7 +25,7 @@ export class NavigationComponent {
     this.checkMediaSize();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkMediaSize();
   }

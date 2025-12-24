@@ -16,7 +16,6 @@ const MAX_ELEMENTS = 6;
 
 @Component({
   selector: 'app-product-detail-feedback',
-  standalone: true,
   imports: [
     ProductStarRatingPanelComponent,
     ProductFeedbacksPanelComponent,
