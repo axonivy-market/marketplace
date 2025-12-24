@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SecurityMonitorComponent } from './security-monitor.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { TIME_UNITS } from '../../../shared/constants/common.constant';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
@@ -13,8 +13,9 @@ describe('SecurityMonitorComponent', () => {
   let fixture: ComponentFixture<SecurityMonitorComponent>;
 
   beforeEach(async () => {
-    const securityMonitorSpy = jasmine.createSpyObj('AdminDashboardService', ['getSecurityDetails']);
-    const translateSpy = jasmine.createSpyObj('TranslateService', ['get']);
+    const securityMonitorSpy = jasmine.createSpyObj('AdminDashboardService', [
+      'getSecurityDetails'
+    ]);
     const pageTitleSpy = jasmine.createSpyObj('PageTitleService', [
       'setTitleOnLangChange'
     ]);
@@ -22,14 +23,12 @@ describe('SecurityMonitorComponent', () => {
     securityMonitorSpy.getSecurityDetails.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
-      imports: [CommonModule, FormsModule],
+      imports: [CommonModule, FormsModule, TranslateModule.forRoot()],
       providers: [
         { provide: AdminDashboardService, useValue: securityMonitorSpy },
-        { provide: TranslateService, useValue: translateSpy },
         { provide: PageTitleService, useValue: pageTitleSpy }
       ]
     }).compileComponents();
-
   });
 
   beforeEach(() => {
