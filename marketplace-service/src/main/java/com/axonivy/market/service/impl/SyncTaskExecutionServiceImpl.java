@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +34,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   public SyncTaskExecution start(SyncTaskType jobType) {
     SyncTaskExecution execution = findOrCreate(jobType);
     execution.setStatus(SyncTaskStatus.RUNNING);
-    execution.setTriggeredAt(new Date());
+    execution.setTriggeredAt(LocalDate.now());
     execution.setCompletedAt(null);
     execution.setMessage(null);
 
@@ -82,7 +83,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
     Objects.requireNonNull(execution, "SyncTaskExecution must not be null");
     execution.setStatus(status);
-    execution.setCompletedAt(new Date());
+    execution.setCompletedAt(LocalDate.now());
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
     syncTaskExecutionRepo.save(execution);
   }

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
-import java.util.Date;
+import java.time.LocalDate;
 
 import static com.axonivy.market.constants.EntityConstants.SYNC_TASK_EXECUTION;
 
@@ -34,9 +34,9 @@ public class SyncTaskExecution extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private SyncTaskStatus status;
 
-  private Date triggeredAt;
+  private LocalDate triggeredAt;
 
-  private Date completedAt;
+  private LocalDate completedAt;
 
   private String message;
 }

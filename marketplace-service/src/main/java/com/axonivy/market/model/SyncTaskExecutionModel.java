@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,8 +18,8 @@ import java.util.Date;
 public class SyncTaskExecutionModel {
   private String key;
   private SyncTaskStatus status;
-  private Date triggeredAt;
-  private Date completedAt;
+  private LocalDate triggeredAt;
+  private LocalDate completedAt;
   private String message;
 
   public static SyncTaskExecutionModel from(SyncTaskExecution execution) {

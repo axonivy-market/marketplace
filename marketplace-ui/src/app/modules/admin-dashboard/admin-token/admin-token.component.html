@@ -24,13 +24,12 @@
       <button
         type="submit"
         class="btn-primary"
-        [disabled]="tokenForm.invalid"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
         {{ 'common.admin.proceedBtnLabel' | translate }}
       </button>
+      @if (errorMessage) {
+        <div class="error-message">{{ errorMessage }}</div>
+      }
     </form>
-    @if (errorMessage) {
-      <div class="error-message">{{ errorMessage }}</div>
-    }
   </div>
 </div>

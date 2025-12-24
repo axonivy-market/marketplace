@@ -25,7 +25,6 @@ import { finalize } from 'rxjs/operators';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 
-const PAGE_SIZE = 200;
 const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
 @Component({
@@ -236,7 +235,7 @@ export class CustomSortComponent implements OnInit {
     this.isLoading = true;
     try {
       this.allExtensions =
-        await this.productService.fetchAllProductIds(PAGE_SIZE);
+        await this.productService.fetchAllProductIds();
     } catch {
       this.allExtensions = [];
     } finally {

@@ -17,10 +17,10 @@ import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
 })
 export class AdminTokenComponent {
   themeService = inject(ThemeService);
-  @Input() errorMessage = '';
-
   authService = inject(AdminAuthService);
   router = inject(Router);
+
+  errorMessage = '';
   token = '';
 
   onSubmit(): void {

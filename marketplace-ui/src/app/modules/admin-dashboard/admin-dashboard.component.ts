@@ -19,7 +19,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
@@ -34,8 +33,7 @@ const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslateModule,
-    LoadingSpinnerComponent
+    TranslateModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
