@@ -16,6 +16,7 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -482,8 +483,9 @@ class ProductServiceImplTest extends BaseSetup {
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
-    Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertNull(result, "Product should be null");
+    assertThrows(NotFoundException.class, () -> {
+      productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    }, "Should throw exception when product is null");
   }
 
   @Test
@@ -572,11 +574,10 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubRepo.setFocused(true);
     Product mockProduct = mockResultReturn.getContent().get(0);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-    when(githubRepoRepository.findByNameOrProductId(StringUtils.EMPTY,mockProduct.getId())).thenReturn(mockGithubRepo);
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(mockProduct, result,
-        "Result product should match mock product");
+        "Product detail by id and version should match mock product");
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
@@ -790,15 +791,15 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testSyncFirstPublishedDateWithFindingAllProductsFailed() {
     when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be failed");
+    assertThrows(MockitoException.class, () -> productService.syncFirstPublishedDateOfAllProducts(),
+        "Should throw exception when finding all products fails");
   }
 
   @Test
   void testSyncFirstPublishedDateForNoProduct() {
     when(productRepo.findAll()).thenReturn(new ArrayList<>());
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be successful with no product synced");
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be failed (no products to sync)");
   }
 
   @Test
@@ -811,8 +812,8 @@ class ProductServiceImplTest extends BaseSetup {
         new IOException("Mocked IOException"));
     when(productRepo.save(mockProduct)).thenThrow(
         new MockitoException("Mocked IOException"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be failed");
+    assertThrows(MockitoException.class, () -> productService.syncFirstPublishedDateOfAllProducts(),
+        "Should throw exception when syncing first published date of all products fails");
   }
 
   @Test

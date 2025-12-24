@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.SECURITY_MONITOR;
@@ -28,7 +29,7 @@ public class SecurityMonitorController {
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<Object> getGitHubMarketplaceSecurity(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
