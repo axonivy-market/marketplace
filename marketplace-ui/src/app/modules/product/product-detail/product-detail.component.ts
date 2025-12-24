@@ -197,27 +197,8 @@ export class ProductDetailComponent implements AfterViewInit {
   }
   ngOnInit(): void {
     const productId: string = this.route.snapshot.params[ROUTER.ID];
-    const version: string | null =
-      this.route.snapshot.queryParamMap.get(VERSION_PARAM) ?? '';
     this.productDetailService.productId.set(productId);
-
-    if (version) {
-      const productSub = this.productService
-        .getProductDetailsWithVersion(productId, version)
-        .subscribe({
-          next: updatedProductDetail => {
-            this.productService.setDefaultVendorImage(updatedProductDetail);
-            this.productDetail.set(updatedProductDetail);
-            this.processProductDetail(productId, updatedProductDetail);
-          },
-          error: () => {
-            this.handleProductDetailOnInit(productId);
-          }
-        });
-      this.subscriptions.push(productSub);
-    } else {
-      this.handleProductDetailOnInit(productId);
-    }
+    this.handleProductDetailOnInit(productId);
   }
 
   handleProductDetailOnInit(productId: string): void {
