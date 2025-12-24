@@ -212,7 +212,7 @@ export class ReleasePreviewComponent implements OnInit {
   }
 
   private renderReadmeContent(): void {
-    this.detailTabs.forEach(tab => {
+    for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
       if (contentValue) {
         const translatedContent =
@@ -227,6 +227,6 @@ export class ReleasePreviewComponent implements OnInit {
         this.loadedReadmeContent[tab.value] =
           this.sanitizer.bypassSecurityTrustHtml(renderedHtml);
       }
-    });
+    }
   }
 }
