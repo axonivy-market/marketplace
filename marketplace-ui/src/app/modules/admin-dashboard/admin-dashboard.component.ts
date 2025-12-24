@@ -39,9 +39,8 @@ const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
   encapsulation: ViewEncapsulation.Emulated
 })
 export class AdminDashboardComponent implements OnInit {
-  private readonly service = inject(AdminDashboardService);
-  private readonly productService = inject(ProductService);
-
+  service = inject(AdminDashboardService);
+  productService = inject(ProductService);
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
