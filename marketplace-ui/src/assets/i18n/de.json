@@ -346,7 +346,7 @@
         "pageTitle": "Benutzerdefinierte Sortierung",
         "title": "Benutzerdefinierte Sortierung von Erweiterungen",
         "description": "Verwalten Sie die Sortierung der Markterweiterungen",
-        "helpText": "Die Benutzeroberfläche ermöglicht es, die <b>Standardsortierung</b> der auf dem Axon Ivy Marketplace angezeigten Erweiterungen anzupassen <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
+        "helpText": "Die Benutzeroberfläche ermöglicht es, die <b>Standardsortierung</b> der auf dem <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">Axon Ivy Marketplace</a> angezeigten Erweiterungen anzupassen.",
         "sortedExtensions": "Sortierte Erweiterungen",
         "availableExtensions": "Verfügbare Erweiterungen",
         "searchPlaceholder": "Erweiterung suchen",

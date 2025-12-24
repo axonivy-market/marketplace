@@ -23,6 +23,7 @@ import {
   DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../shared/constants/common.constant';
 
+const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   httpClient = inject(HttpClient);
@@ -172,7 +173,7 @@ export class ProductService {
   }
 
   async fetchAllProductIds(
-    pageSize = 200,
+    pageSize = PAGE_SIZE,
     language: Language = Language.EN
   ): Promise<string[]> {
     const products = await this.fetchAllProducts(pageSize, language);
@@ -181,7 +182,7 @@ export class ProductService {
   }
 
   async fetchAllProductsForSync(
-    pageSize = 200,
+    pageSize = PAGE_SIZE,
     language: Language = Language.EN
   ): Promise<MarketProduct[]> {
     return this.fetchAllProducts(pageSize, language);
