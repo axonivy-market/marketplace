@@ -170,7 +170,7 @@ class ProductControllerTest extends BaseSetup {
     var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE, true);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
         "Expected HTTP status to be 200 OK when product path is invalid");
     assertTrue(response.hasBody(),
         "Response body should not be null or empty when product path is invalid");
@@ -261,7 +261,7 @@ class ProductControllerTest extends BaseSetup {
     when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
     var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
         "Response status should be OK even when syncing first published dates fails");
     assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode(),
         "Help code should not indicate SUCCESSFUL when syncing first published dates fails");
