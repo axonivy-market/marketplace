@@ -34,9 +34,9 @@ public class SyncTaskExecution extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private SyncTaskStatus status;
 
-  private LocalDate triggeredAt;
+  private transient LocalDate triggeredAt;
 
-  private LocalDate completedAt;
+  private transient LocalDate completedAt;
 
   private String message;
 }
