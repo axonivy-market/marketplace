@@ -205,7 +205,7 @@
     "showMore": "Mehr anzeigen",
     "approval": {
       "approvalTitle": "Feedback Genehmigung",
-      "about": "Bitte überprüfe und genehmige das Feedback.",
+      "about": "Bitte überprüfe und genehmige das Feedback",
       "instruction": "Das Feedback muss unserem <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> entsprechen.",
       "reviewFeedback": "Feedback Review",
       "history": "Historie",
@@ -290,7 +290,7 @@
     },
     "admin": {
       "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
-      "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu.",
+      "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu",
       "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen.", 
       "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
@@ -345,7 +345,7 @@
       "customSort": {
         "pageTitle": "Benutzerdefinierte Sortierung",
         "title": "Benutzerdefinierte Sortierung von Erweiterungen",
-        "description": "Verwalten Sie die Sortierung der Markterweiterungen.",
+        "description": "Verwalten Sie die Sortierung der Markterweiterungen",
         "helpText": "Die Benutzeroberfläche ermöglicht es, die <b>Standardsortierung</b> der auf dem Axon Ivy Marketplace angezeigten Erweiterungen anzupassen <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">https://market.axonivy.com/</a>.",
         "sortedExtensions": "Sortierte Erweiterungen",
         "availableExtensions": "Verfügbare Erweiterungen",
@@ -364,7 +364,7 @@
       "quickAccess": {
         "pageTitle": "Schnellzugriff",
         "title": "Schnellzugriffslinks",
-        "description": "Verwalten Sie die Schnellzugriffe.",
+        "description": "Verwalten Sie die Schnellzugriffe",
         "helpText": "Konfigurieren Sie häufig verwendete Seiten oder externe Links, die als Schnellzugriffe im Admin-Dashboard angezeigt werden sollen. Administratoren können Links hinzufügen, bearbeiten oder entfernen, um eine effiziente Navigation zu ermöglichen.",
         "monitoring": "Monitoring: Zugriff auf das Monitoring-Dashboard für Build-Pipelines und Testergebnisse.",
         "monitoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",

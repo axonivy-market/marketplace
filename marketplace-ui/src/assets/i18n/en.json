@@ -205,7 +205,7 @@
     "showMore": "Show more",
     "approval": {
       "approvalTitle": "Feedback Approval",
-      "about": "Please review the feedback from a user.",
+      "about": "Please review the feedback from a user",
       "instruction": "The feedback given should follow our <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> to be approved.",
       "reviewFeedback": "Review Feedback",
       "history": "History",
@@ -290,7 +290,7 @@
     },
     "admin": {
       "pageTitle": "Effortless Admin Dashboard Access",
-      "description": "Quickly reach essential administrative tools and configurations.",
+      "description": "Quickly reach essential administrative tools and configurations",
       "enterToken": "Please enter your token to access the admin dashboard.",
       "enterTokenPlaceholder": "Enter your token",
       "proceedBtnLabel": "Proceed",
