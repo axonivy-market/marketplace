@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.ExternalDocumentService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -26,6 +27,8 @@ public class DocumentLanguageController {
   private final ExternalDocumentService externalDocumentService;
 
   @GetMapping(DOCUMENT_VERSION_LANGUAGE)
+  @Operation(summary = "Get document info by artifact, version and language",
+      description = "Retrieve document information based on the specified artifact, version, and language.")
   public ResponseEntity<DocumentInfoResponse> getDocumentByVersionAndLanguage(@PathVariable String artifact,
       @PathVariable String version, @PathVariable String language) {
     var host = ServletUriComponentsBuilder.fromCurrentRequestUri().replacePath(null).build().toUriString();

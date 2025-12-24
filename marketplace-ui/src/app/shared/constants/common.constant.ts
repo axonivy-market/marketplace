@@ -317,7 +317,11 @@ export const ERROR_MESSAGES = {
   TOKEN_REQUIRED: 'Token is required',
   UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',
-  INVALID_TOKEN: 'The token is invalid, please try again.'
+  INVALID_TOKEN: 'The token is invalid, please try again.',
+  ARTIFACT_NOT_FOUND: 'The requested artifact was not found.',
+  PRODUCT_NOT_FOUND: 'Product not found.',
+  INVALID_PARAMETER: 'Invalid parameter provided.',
+  MISSING_HEADER: 'Missing required header.',
 };
 
 export const TIME_UNITS = [
