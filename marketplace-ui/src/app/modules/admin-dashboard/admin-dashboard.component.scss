@@ -48,6 +48,27 @@ td {
   vertical-align: middle;
 }
 
+.sync-column {
+  width: 82px;
+}
+
+.sync-task-column {
+  width: 200px;
+}
+
+.date-column {
+  width: 140px;
+}
+
+.action-column {
+  width: 200px;
+}
+
+.content-column {
+  white-space: normal;
+  word-break: break-word;
+}
+
 #sync-button {
   display: inline-block;
   padding: 5px 10px;
