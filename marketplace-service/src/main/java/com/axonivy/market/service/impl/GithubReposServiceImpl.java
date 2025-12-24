@@ -78,7 +78,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public void loadAndStoreTestRepostsForOneProduct(String productId) {
+  public void loadAndStoreTestReportsForOneProduct(String productId) {
     var product = productRepository.findById(productId).orElse(null);
     if (ObjectUtils.isEmpty(product)) {
       log.error("There is no this product {} to sync for monitoring page", productId);

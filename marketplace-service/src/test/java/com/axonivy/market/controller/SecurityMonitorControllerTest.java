@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +34,7 @@ class SecurityMonitorControllerTest {
   private SecurityMonitorController securityMonitorController;
 
   @Test
-  void testGetGitHubMarketplaceSecurity() {
+  void testGetGitHubMarketplaceSecurity() throws IOException {
     String mockToken = "Bearer sample-token";
     ProductSecurityInfo product1 = new ProductSecurityInfo("product1", false, "public", true, new Date(), "abc123",
         null, null, null);
