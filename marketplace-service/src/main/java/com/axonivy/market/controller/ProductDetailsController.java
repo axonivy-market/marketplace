@@ -12,7 +12,6 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.service.SyncTaskExecutionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -42,7 +41,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -59,7 +57,6 @@ public class ProductDetailsController {
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
   private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
-  private final SyncTaskExecutionService syncTaskExecutionService;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
