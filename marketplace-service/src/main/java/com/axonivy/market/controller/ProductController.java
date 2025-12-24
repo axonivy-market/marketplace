@@ -102,10 +102,13 @@ public class ProductController {
     stopWatch.start();
     List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
     stopWatch.stop();
-    String messageDetails = ObjectUtils.isEmpty(syncedProductIds) 
-        ? "Data is already up to date, nothing to sync"
-        : String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
-            stopWatch.getTime());
+    String messageDetails;
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
+      messageDetails = "Data is already up to date, nothing to sync";
+    } else {
+      messageDetails = String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+        stopWatch.getTime());
+    }
     
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), messageDetails);
     return ResponseEntity.ok(message);
