@@ -1,5 +1,5 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, DOCUMENT } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LANGUAGES, DATA_LANGUAGE } from '../../../constants/common.constant';
 import { Language } from '../../../enums/language.enum';
@@ -9,7 +9,6 @@ const ACTIVE = 'active';
 const INACTIVE = 'inactive';
 @Component({
   selector: 'app-language-selection',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './language-selection.component.html',
   styleUrl: './language-selection.component.scss'

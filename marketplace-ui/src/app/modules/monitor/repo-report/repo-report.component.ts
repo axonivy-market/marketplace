@@ -8,7 +8,6 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-repo-report',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './repo-report.component.html',
   styleUrl: './repo-report.component.scss'

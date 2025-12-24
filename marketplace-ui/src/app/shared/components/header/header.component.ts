@@ -10,7 +10,6 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

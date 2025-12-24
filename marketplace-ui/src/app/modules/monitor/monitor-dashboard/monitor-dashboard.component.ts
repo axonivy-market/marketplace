@@ -16,12 +16,11 @@ import { QUERY_PARAM_KEY } from '../../../shared/constants/query.params.constant
 
 @Component({
   selector: 'app-monitor-dashboard',
-  standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
     NgbTooltipModule,
-    MonitoringRepoComponent,
+    MonitoringRepoComponent
   ],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'

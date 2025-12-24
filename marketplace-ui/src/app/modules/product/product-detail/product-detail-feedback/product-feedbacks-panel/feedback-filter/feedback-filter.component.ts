@@ -18,7 +18,6 @@ import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-t
 
 @Component({
   selector: 'app-feedback-filter',
-  standalone: true,
   imports: [FormsModule, TranslateModule, CommonDropdownComponent],
   templateUrl: './feedback-filter.component.html',
   styleUrl: './feedback-filter.component.scss'

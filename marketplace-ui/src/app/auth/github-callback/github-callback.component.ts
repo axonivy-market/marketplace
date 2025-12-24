@@ -5,7 +5,6 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-github-callback',
-  standalone: true,
   imports: [],
   template: ''
 })

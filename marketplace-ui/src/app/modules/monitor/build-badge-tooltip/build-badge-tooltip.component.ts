@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,8 +11,7 @@ import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-build-badge-tooltip',
-  standalone: true,
-  imports: [CommonModule, TranslateModule, NgbTooltipModule],
+  imports: [TranslateModule, NgbTooltipModule],
   templateUrl: './build-badge-tooltip.component.html',
   styleUrl: './build-badge-tooltip.component.scss'
 })

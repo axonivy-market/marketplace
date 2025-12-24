@@ -2,7 +2,7 @@
   <!-- Search Bar -->
   <div class="feature-bar d-flex align-items-center justify-content-between">
     <app-product-filter class="flex-grow-1 h-100" (searchChange)="onSearchChanged($event)"
-      [currentPage]="PAGE.MONITOR"></app-product-filter>
+    [currentPage]="PAGE.MONITOR"></app-product-filter>
 
     <!-- Mode Toggle -->
     <div class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">
@@ -65,29 +65,32 @@
       </thead>
       @if (displayedRepositories.length > 0) {
       <tbody>
-        <tr *ngFor="let repo of displayedRepositories">
+        @for (repo of displayedRepositories; track repo.productId) {
+        <tr>
           <td class="align-middle">
             <p class="name">
-              <a *ngIf="repo.productId; else noLink" id="product-name" [href]="getMarketUrl(repo.productId)"
-                target="_blank" rel="noopener noreferrer">
+              @if (repo.productId) {
+              <a id="product-name" [href]="getMarketUrl(repo.productId)" target="_blank" rel="noopener noreferrer">
                 {{ repo.repoName }}
               </a>
-              <ng-template #noLink>
-                <span class="no-link">{{ repo.repoName }}</span>
-              </ng-template>
+              } @else {
+              <span class="no-link">{{ repo.repoName }}</span>
+              }
             </p>
           </td>
-          <td *ngFor="let workflowType of workflowKeys"
-            [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
+          @for (workflowType of workflowKeys; track workflowType) {
+          <td [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
             <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)"
               [repository]="repo" [mode]="mode[tabKey]"></app-repo-test-result>
           </td>
+          }
           <td class="align-middle">
             <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
               <i class="fa fa-external-link" aria-hidden="true"></i>
             </a>
           </td>
         </tr>
+        }
       </tbody>
       } @else if (displayedRepositories.length == 0) {
       <tbody>
@@ -102,12 +105,11 @@
       }
     </table>
   </div>
-
   <!-- Pagination -->
-  <div class="d-flex justify-content-between py-2" *ngIf="totalElements > 0">
+  @if (totalElements > 0) {
+  <div class="d-flex justify-content-between py-2">
     <ngb-pagination [collectionSize]="totalElements" [(page)]="this.page" [pageSize]="this.pageSize"
       (pageChange)="onPageChange($event)"></ngb-pagination>
-
     <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
       <option [ngValue]="10">
         {{ 'common.monitor.pagination.tenItems' | translate }}
@@ -120,4 +122,5 @@
       </option>
     </select>
   </div>
+  }
 </div>

@@ -6,8 +6,10 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  PLATFORM_ID,
   SimpleChanges
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -40,7 +42,7 @@ import { MonitoringCriteria } from '../../../shared/models/criteria.model';
 import { debounceTime, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PAGE } from '../../../shared/constants/query.params.constant';
-import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -48,7 +50,6 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
 
 @Component({
   selector: 'app-monitor-repo',
-  standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
@@ -61,7 +62,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
     ProductFilterComponent,
     RepoTestResultComponent,
     LoadingSpinnerComponent
-],
+  ],
   templateUrl: './monitor-repo.component.html',
   styleUrl: './monitor-repo.component.scss'
 })
@@ -98,6 +99,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   githubService = inject(GithubService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  platformId = inject(PLATFORM_ID);
   PAGE = PAGE;
 
   ngOnInit() {
@@ -112,33 +114,33 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     }
     this.criteria.isFocused = isFocusedProduct;
     this.criteria.search = this.initialSearch;
-    this.subscriptions.push(
-      this.searchTextChanged
-        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-        .subscribe(value => {
-          this.criteria = {
-            ...this.criteria,
-            search: value
-          };
-          this.loadRepositories();
-
-          let queryParams: { repoSearch: string | null } = { repoSearch: null };
-          if (value) {
-            queryParams = { repoSearch: this.criteria.search };
-          }
-
-          this.router.navigate([], {
-            relativeTo: this.route,
-            queryParamsHandling: 'merge',
-            queryParams
-          });
-        })
-    );
-    this.loadRepositories();
+    if (isPlatformBrowser(this.platformId)) {
+      this.subscriptions.push(
+        this.searchTextChanged
+          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+          .subscribe(value => {
+            this.criteria = {
+              ...this.criteria,
+              search: value
+            };
+            this.loadRepositories();
+            let queryParams: { repoSearch: string | null } = { repoSearch: null };
+            if (value) {
+              queryParams = { repoSearch: this.criteria.search };
+            }
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParamsHandling: 'merge',
+              queryParams
+            });
+          })
+      );
+      this.loadRepositories();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['activeTab'] && !changes['activeTab'].firstChange) {
+    if (changes['activeTab'] && !changes['activeTab'].firstChange && isPlatformBrowser(this.platformId)) {
       this.resetDefaultPage();
       this.updateCriteriaAndLoad();
     }
