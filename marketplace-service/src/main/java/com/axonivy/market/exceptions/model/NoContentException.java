@@ -23,4 +23,5 @@ public class NoContentException extends RuntimeException {
     this.code = errorCode.getCode();
     this.message = errorCode.getHelpText() + SEPARATOR + additionalMessage;
   }
+
 }
