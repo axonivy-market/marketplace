@@ -165,7 +165,7 @@ export class ReleasePreviewComponent implements OnInit {
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
         this.readmeContent.set(response);
-        this.buildRenderedReadme();
+        this.renderReadmeContent();
         this.isUploaded = true;
         this.shouldShowHint = false;
       },
@@ -211,24 +211,21 @@ export class ReleasePreviewComponent implements OnInit {
     return this.readmeContent()?.[value] ?? null;
   }
 
-  renderReadmeContent(value: string): SafeHtml {
-    const result = this.markdownService.parseMarkdown(value);
-    return this.sanitizer.bypassSecurityTrustHtml(result);
-  }
-
-  private buildRenderedReadme(): void {
-    this.loadedReadmeContent = {};
+  private renderReadmeContent(): void {
     this.detailTabs.forEach(tab => {
       const contentValue = this.getReadmeContentValue(tab);
       if (contentValue) {
-        const value = new MultilingualismPipe().transform(
-          contentValue,
-          this.languageService.selectedLanguage()
-        );
+        const translatedContent =
+          new MultilingualismPipe().transform(
+            contentValue,
+            this.languageService.selectedLanguage()
+          ) || '';
 
-        const html = this.markdownService.parseMarkdown(value);
+        const renderedHtml = this.markdownService.parseMarkdown(
+          translatedContent
+        );
         this.loadedReadmeContent[tab.value] =
-          this.sanitizer.bypassSecurityTrustHtml(html);
+          this.sanitizer.bypassSecurityTrustHtml(renderedHtml);
       }
     });
   }
