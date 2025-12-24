@@ -19,7 +19,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { ProductService } from '../../modules/product/product.service';
-import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
@@ -48,8 +47,6 @@ export class AdminDashboardComponent implements OnInit {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   authService = inject(AdminAuthService);
-
-  protected LoadingComponentId = LoadingComponentId;
 
   isAuthenticated = false;
   errorMessage = '';
