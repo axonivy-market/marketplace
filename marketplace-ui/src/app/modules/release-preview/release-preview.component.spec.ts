@@ -211,7 +211,7 @@ describe('ReleasePreviewComponent', () => {
   it('should render and sanitize readme content', () => {
     const markdownService = TestBed.inject(MarkdownService);
     spyOn(markdownService, 'parseMarkdown').and.callThrough();
-    sanitizerSpy.bypassSecurityTrustHtml.and.callFake(html => html as any);
+    sanitizerSpy.sanitize.and.callFake((_ctx, html) => html as string);
     languageService.selectedLanguage.and.returnValue(Language.EN);
     spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
       of({

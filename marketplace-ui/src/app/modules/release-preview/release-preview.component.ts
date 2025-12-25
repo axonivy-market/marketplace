@@ -6,7 +6,8 @@ import {
   WritableSignal,
   computed,
   signal,
-  OnInit
+  OnInit,
+  SecurityContext
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -214,19 +215,23 @@ export class ReleasePreviewComponent implements OnInit {
   private renderReadmeContent(): void {
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
-      if (contentValue) {
-        const translatedContent =
-          new MultilingualismPipe().transform(
-            contentValue,
-            this.languageService.selectedLanguage()
-          ) || '';
+      if (!contentValue) continue;
 
-        const renderedHtml = this.markdownService.parseMarkdown(
-          translatedContent
-        );
-        this.loadedReadmeContent[tab.value] =
-          this.sanitizer.bypassSecurityTrustHtml(renderedHtml);
-      }
+      const translatedContent =
+        new MultilingualismPipe().transform(
+          contentValue,
+          this.languageService.selectedLanguage()
+        ) || '';
+
+      const renderedHtml =
+        this.markdownService.parseMarkdown(translatedContent);
+
+      const sanitizedHtml = this.sanitizer.sanitize(
+        SecurityContext.HTML,
+        renderedHtml
+      );
+
+      this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
     }
   }
 }
