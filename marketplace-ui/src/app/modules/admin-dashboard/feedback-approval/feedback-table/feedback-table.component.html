@@ -30,7 +30,8 @@
     </thead>
     @if (feedbacks.length > 0) {
     <tbody>
-      <tr *ngFor="let feedback of feedbacks">
+      @for (feedback of feedbacks; track feedback.id) {
+      <tr>
         <td class="username-column">
           <img class="rounded-circle img-avatar img-fit-cover"
             [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'" alt="Github user avatar" />
@@ -75,6 +76,7 @@
         </td>
         }
       </tr>
+      }
     </tbody>
     }
     @else if(feedbacks.length == 0 && !isLoading) {

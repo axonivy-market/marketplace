@@ -1,5 +1,5 @@
 import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject, provideAppInitializer } from '@angular/core';
 import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
@@ -25,14 +25,14 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
     provideMatomo(() => {
-        const configService = inject(RuntimeConfigService);
-        return {
-          siteId: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_SITE_ID),
-          trackerUrl: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_TRACKER_URL)
-        };
-      },
-      withRouter()
-    ),
+      const configService = inject(RuntimeConfigService);
+      return {
+        siteId: configService.get(RUNTIME_CONFIG_KEYS.MARKET_MATOMO_SITE_ID),
+        trackerUrl: configService.get(
+          RUNTIME_CONFIG_KEYS.MARKET_MATOMO_TRACKER_URL
+        )
+      };
+    }, withRouter()),
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
@@ -43,12 +43,6 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (bootstrapLoader: BootstrapLoaderService) => () =>
-        bootstrapLoader.init(),
-      deps: [BootstrapLoaderService],
-      multi: true
-    }
+    provideAppInitializer(() => inject(BootstrapLoaderService).init())
   ]
 };

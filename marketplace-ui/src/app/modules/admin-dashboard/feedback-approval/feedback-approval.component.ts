@@ -28,7 +28,6 @@ import { FeedbackApproval } from '../../../shared/models/feedback-approval.model
 
 @Component({
   selector: 'app-feedback-approval',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, FeedbackTableComponent, LoadingSpinnerComponent],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],

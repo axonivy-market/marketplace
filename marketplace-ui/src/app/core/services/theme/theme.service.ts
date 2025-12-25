@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { Inject, Injectable, signal, WritableSignal, DOCUMENT } from '@angular/core';
 import { Theme } from '../../../shared/enums/theme.enum';
 import { DATA_THEME } from '../../../shared/constants/common.constant';
 

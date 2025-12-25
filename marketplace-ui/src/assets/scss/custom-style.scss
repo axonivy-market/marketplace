@@ -1,13 +1,9 @@
-// Required
-@import 'bootstrap/scss/functions';
-@import 'bootstrap/scss/variables';
-@import 'bootstrap/scss/mixins';
-
 @font-face {
   font-family: Inter;
   src: url(../fonts/inter.ttf) format('truetype');
 }
 
+$white: #ffffff;
 $ivyLatestReleaseBorderColor: #238636;
 $ivyLatestReleaseColor: #3fb950;
 $ivyApproveButtonColor: #47c46b;
@@ -84,7 +80,7 @@ p {
   --ivy-secondary-border-color-up-arrow: #0000001a;
   --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
   --active-tab-indicator-color: #{$ivyPrimaryTextColorLight};
-  --info-dropdown-bg: #ffffff;
+  --info-dropdown-bg: #{$white};
   --info-dropdown-border: #0000001a;
 
   --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
@@ -306,7 +302,7 @@ p {
     svg {
       width: 1.6rem;
       height: 1.6rem;
-      fill: white;
+      fill: #{$white};
     }
   }
 

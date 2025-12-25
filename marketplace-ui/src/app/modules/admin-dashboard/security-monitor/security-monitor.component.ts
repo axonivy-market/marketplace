@@ -29,7 +29,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
 
 @Component({
   selector: 'app-security-monitor',
-  standalone: true,
   imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],
