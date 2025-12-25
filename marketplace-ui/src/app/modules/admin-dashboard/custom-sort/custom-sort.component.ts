@@ -12,11 +12,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import {
+  CdkDrag,
   CdkDragDrop,
   CdkDragEnd,
   CdkDragEnter,
+  CdkDragPlaceholder,
+  CdkDragPreview,
   CdkDragStart,
-  DragDropModule,
+  CdkDropList,
   moveItemInArray
 } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
@@ -29,13 +32,15 @@ const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
 @Component({
   selector: 'app-custom-sort',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     RouterModule,
     TranslateModule,
-    DragDropModule
+    CdkDrag,
+    CdkDropList,
+    CdkDragPlaceholder,
+    CdkDragPreview
   ],
   templateUrl: './custom-sort.component.html',
   styleUrls: ['./custom-sort.component.scss'],

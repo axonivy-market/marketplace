@@ -9,7 +9,6 @@ import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-admin-token',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './admin-token.component.html',
   styleUrls: ['./admin-token.component.scss'],

@@ -27,7 +27,6 @@ import { AdminAuthService } from './admin-auth.service';
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

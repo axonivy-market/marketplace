@@ -65,47 +65,49 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let syncTask of syncTasks; let index = index">
-            <td>{{ index + 1 }}</td>
-            <td>{{ syncTask.labelKey | translate }}</td>
-            <td>
-              <span [ngClass]="getStatusClass(syncTask.status)">
-                {{ syncTask.status }}
-              </span>
-            </td>
-            <td>
-              {{ syncTask.triggeredAt | date: 'short' }}
-            </td>
-            <td>
-              {{ syncTask.completedAt | date: 'short' }}
-            </td>
-            <td class="message-cell">
-              {{ syncTask.message }}
-            </td>
-            <td class="text-center">
-              <button
-                type="button"
-                [lang]="languageService.selectedLanguage()"
-                class="btn border-0 mb-0 sync-button text-center"
-                [ngClass]="
-                  themeService.isDarkMode()
-                    ? 'btn-light text-dark'
-                    : 'btn-primary text-light'
-                "
-                (click)="trigger(syncTask)"
-                [disabled]="syncTask.status === 'RUNNING'">
-                @if (
-                  loadingSyncTaskKey === syncTask.key ||
-                  syncTask.status === 'RUNNING'
-                ) {
-                  <i class="fa fa-spinner fa-spin me-2"></i>
-                  {{ 'common.admin.sync.syncingLabel' | translate }}
-                } @else {
-                  {{ 'common.admin.sync.syncLabel' | translate }}
-                }
-              </button>
-            </td>
-          </tr>
+          @for (syncTask of syncTasks; track $index) {
+            <tr>
+              <td>{{ $index + 1 }}</td>
+              <td>{{ syncTask.labelKey | translate }}</td>
+              <td>
+                <span [ngClass]="getStatusClass(syncTask.status)">
+                  {{ syncTask.status }}
+                </span>
+              </td>
+              <td>
+                {{ syncTask.triggeredAt | date: 'short' }}
+              </td>
+              <td>
+                {{ syncTask.completedAt | date: 'short' }}
+              </td>
+              <td class="message-cell">
+                {{ syncTask.message }}
+              </td>
+              <td class="text-center">
+                <button
+                  type="button"
+                  [lang]="languageService.selectedLanguage()"
+                  class="btn border-0 mb-0 sync-button text-center"
+                  [ngClass]="
+                    themeService.isDarkMode()
+                      ? 'btn-light text-dark'
+                      : 'btn-primary text-light'
+                  "
+                  (click)="trigger(syncTask)"
+                  [disabled]="syncTask.status === 'RUNNING'">
+                  @if (
+                    loadingSyncTaskKey === syncTask.key ||
+                    syncTask.status === 'RUNNING'
+                  ) {
+                    <i class="fa fa-spinner fa-spin me-2"></i>
+                    {{ 'common.admin.sync.syncingLabel' | translate }}
+                  } @else {
+                    {{ 'common.admin.sync.syncLabel' | translate }}
+                  }
+                </button>
+              </td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -142,15 +144,17 @@
                     ) | async
                   "
                   autocomplete="off" />
-                <ul
-                  class="dropdown-menu show w-100"
-                  *ngIf="dropdownOpen && filteredProducts.length">
-                  @for (product of filteredProducts; track $index) {
-                    <li class="dropdown-item" (click)="selectProduct(product)">
-                      {{ product.id }}
-                    </li>
-                  }
-                </ul>
+                @if (dropdownOpen && filteredProducts.length) {
+                  <ul class="dropdown-menu show w-100">
+                    @for (product of filteredProducts; track $index) {
+                      <li
+                        class="dropdown-item"
+                        (click)="selectProduct(product)">
+                        {{ product.id }}
+                      </li>
+                    }
+                  </ul>
+                }
               </div>
             </div>
             <div class="mb-3">

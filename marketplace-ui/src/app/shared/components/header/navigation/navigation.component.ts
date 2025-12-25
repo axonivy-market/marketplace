@@ -5,11 +5,11 @@ import { ADMIN_NAV_ITEMS, NAV_ITEMS, SEARCH_URL } from '../../../constants/commo
 import { NavItem } from '../../../models/nav-item.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { WindowRef } from '../../../../core/services/browser/window-ref.service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-navigation',
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [CommonModule, TranslateModule, RouterLink, RouterLinkActive],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss'
 })
