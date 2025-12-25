@@ -95,7 +95,7 @@ export class ProductService {
 
   sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    return this.httpClient.put<number>(url, null);
+    return this.httpClient.get<number>(url);
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
@@ -112,7 +112,11 @@ export class ProductService {
     return this.httpClient.get<string>(url, {
       params,
       responseType: 'text' as 'json'
-    });
+    }).pipe(
+       catchError(() => {
+        return of('');
+        })
+    );
   }
 
   getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {

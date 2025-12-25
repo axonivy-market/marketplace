@@ -55,7 +55,6 @@ const RESPONSE = 'response';
 
 @Component({
   selector: 'app-product-detail-version-action',
-  standalone: true,
   imports: [
     CommonModule,
     TranslateModule,

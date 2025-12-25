@@ -32,7 +32,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
 const MAX_FILE_SIZE_MB = 20;
 @Component({
   selector: 'app-release-preview',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

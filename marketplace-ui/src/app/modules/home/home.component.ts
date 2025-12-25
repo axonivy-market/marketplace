@@ -12,7 +12,6 @@ import {
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [ProductComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

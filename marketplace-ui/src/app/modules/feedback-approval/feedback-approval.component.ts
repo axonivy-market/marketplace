@@ -31,7 +31,6 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 @Component({
   selector: 'app-feedback-approval',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, FeedbackTableComponent, LoadingSpinnerComponent],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],

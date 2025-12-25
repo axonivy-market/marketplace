@@ -17,7 +17,6 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 @Component({
   selector: 'app-feedback-table',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, MultilingualismPipe, LoadingSpinnerComponent],
   templateUrl: './feedback-table.component.html',
   styleUrls: ['./feedback-table.component.scss'],

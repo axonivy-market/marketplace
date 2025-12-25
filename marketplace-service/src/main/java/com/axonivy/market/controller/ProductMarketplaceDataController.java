@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
@@ -28,12 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.util.Optional;
-
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping(PRODUCT_MARKETPLACE_DATA)
@@ -63,23 +61,22 @@ public class ProductMarketplaceDataController {
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<StreamingResponseBody> getArtifactResourceStream(@PathVariable(ID) String productId,
-      @PathVariable(ARTIFACT_ID)  String artifactId, @PathVariable(VERSION) String version) {
+      @PathVariable(ARTIFACT_ID) String artifactId, @PathVariable(VERSION) String version) {
     ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.getProductArtifactStream(productId,
         artifactId, version);
-    var bodyOptional = Optional.ofNullable(resourceResponse).filter(
-        response -> response.getStatusCode().is2xxSuccessful()).map(ResponseEntity::getBody);
-    if (bodyOptional.isEmpty()) {
-      log.warn("Failed to retrieve file from artifact: {}.", artifactId);
-      return ResponseEntity.notFound().build();
+    if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+      throw new NotFoundException(ErrorCode.ARTIFACT_NOT_FOUND.getCode(), "Failed to retrieve artifact: " + artifactId);
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(
-        productId, bodyOptional.get(), outputStream);
+        productId, resourceResponse.getBody(), outputStream);
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION,
         "attachment").body(streamingBody);
   }
 
   @Loggable
-  @PutMapping(INSTALLATION_COUNT_BY_ID)
+  @GetMapping(INSTALLATION_COUNT_BY_ID)
+  @Operation(summary = "Get installation count by product id.",
+      description = "Get installation count by product id.")
   public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID) String id) {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
     return new ResponseEntity<>(result, HttpStatus.OK);
