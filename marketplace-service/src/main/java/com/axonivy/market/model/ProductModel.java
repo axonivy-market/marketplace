@@ -42,6 +42,9 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   private String type;
   @Schema(description = "Tags of product", example = "[\"helper\"]")
   private List<String> tags;
+  @Schema(description = "Extension folder directory in market repository",
+      example = "market/connector/adobe-acrobat-sign-connector/")
+  private String marketDirectory;
 
   @Override
   public int hashCode() {
@@ -62,6 +65,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
     model.setShortDescriptions(product.getShortDescriptions());
     model.setType(product.getType());
     model.setTags(product.getTags());
+    model.setMarketDirectory(product.getMarketDirectory());
 
     var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     model.setLogoUrl(logoLink.getHref());

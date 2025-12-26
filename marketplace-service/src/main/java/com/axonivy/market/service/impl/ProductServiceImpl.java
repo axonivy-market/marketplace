@@ -15,6 +15,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
@@ -24,6 +25,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
@@ -131,6 +133,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_PRODUCTS)
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
@@ -740,6 +743,7 @@ public class ProductServiceImpl implements ProductService {
 
   @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
   }

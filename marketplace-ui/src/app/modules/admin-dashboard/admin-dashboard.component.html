@@ -1,0 +1,213 @@
+<div class="admin-main__content">
+  @if (showSyncTask) {
+    <div class="row col-md-12">
+      <h1
+        class="text-primary admin-title"
+        [lang]="languageService.selectedLanguage()">
+        {{ translateService.get('common.admin.sync.title') | async }}
+      </h1>
+      <div class="introduction-container">
+        <div class="d-sm-block admin-about">
+          <h3 class="text-secondary">
+            {{ translateService.get('common.admin.sync.description') | async }}
+          </h3>
+        </div>
+        <div
+          class="d-sm-block align-items-center admin-help-text-container flex-fill">
+          <h4
+            [lang]="languageService.selectedLanguage()"
+            class="text-secondary help-text"
+            [innerHTML]="
+              translateService.get('common.admin.sync.helpText') | async
+            "></h4>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive admin-main__table">
+      <table class="table">
+        <thead>
+          <tr>
+            <th
+              class="text-primary sync-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.number' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary sync-task-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.syncTask' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary sync-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.status' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary date-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.lastRun' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary date-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.completed' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary content-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.message' | translate }}</h5>
+            </th>
+            <th
+              class="text-primary text-center action-column"
+              [lang]="languageService.selectedLanguage()">
+              <h5>{{ 'common.admin.sync.action' | translate }}</h5>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (syncTask of syncTasks; track $index) {
+            <tr>
+              <td>{{ $index + 1 }}</td>
+              <td>{{ syncTask.labelKey | translate }}</td>
+              <td>
+                <span [ngClass]="getStatusClass(syncTask.status)">
+                  {{ syncTask.status }}
+                </span>
+              </td>
+              <td>
+                {{ syncTask.triggeredAt | date: 'short' }}
+              </td>
+              <td>
+                {{ syncTask.completedAt | date: 'short' }}
+              </td>
+              <td class="message-cell">
+                {{ syncTask.message }}
+              </td>
+              <td class="text-center">
+                <button
+                  type="button"
+                  [lang]="languageService.selectedLanguage()"
+                  class="btn border-0 mb-0 sync-button text-center"
+                  [ngClass]="
+                    themeService.isDarkMode()
+                      ? 'btn-light text-dark'
+                      : 'btn-primary text-light'
+                  "
+                  (click)="trigger(syncTask)"
+                  [disabled]="syncTask.status === 'RUNNING'">
+                  @if (
+                    loadingSyncTaskKey === syncTask.key ||
+                    syncTask.status === 'RUNNING'
+                  ) {
+                    <i class="fa fa-spinner fa-spin me-2"></i>
+                    {{ 'common.admin.sync.syncingLabel' | translate }}
+                  } @else {
+                    {{ 'common.admin.sync.syncLabel' | translate }}
+                  }
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sync One Product Dialog -->
+    @if (showSyncOneProductDialog) {
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header justify-content-between">
+            <h5 class="modal-title">
+              {{ 'common.admin.sync.syncOneProductDialog.title' | translate }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close ms-auto"
+              (click)="cancelSyncOneProduct()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label" for="sync-extension-id">
+                {{ 'common.admin.extensionId' | translate }}
+              </label>
+              <div class="dropdown position-relative w-100">
+                <input
+                  type="text"
+                  class="sync-extension-id form-control dropdown-toggle"
+                  [(ngModel)]="productSearch"
+                  (focus)="openDropdown()"
+                  (input)="filterProducts()"
+                  [placeholder]="
+                    translateService.get(
+                      'common.admin.sync.syncOneProductDialog.chooseExtensionIdHint'
+                    ) | async
+                  "
+                  autocomplete="off" />
+                @if (dropdownOpen && filteredProducts.length) {
+                  <ul class="dropdown-menu show w-100">
+                    @for (product of filteredProducts; track $index) {
+                      <li
+                        class="dropdown-item"
+                        (click)="selectProduct(product)">
+                        {{ product.id }}
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="sync-market-path">
+                {{
+                  'common.admin.sync.syncOneProductDialog.marketItemPath'
+                    | translate
+                }}
+              </label>
+              <input
+                id="sync-market-path"
+                class="form-control"
+                [(ngModel)]="marketDirectory"
+                disabled="true" />
+              <small class="text-muted">
+                {{
+                  'common.admin.sync.syncOneProductDialog.chooseMarketItemPathHint'
+                    | translate
+                }}
+              </small>
+            </div>
+            <div class="form-check mb-2">
+              <input
+                id="overridePath"
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="overrideMarketItemPath" />
+              <label for="overridePath" class="form-check-label">
+                {{
+                  'common.admin.sync.syncOneProductDialog.overrideMarketItemPath'
+                    | translate
+                }}
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-cancel btn-secondary me-2"
+              (click)="cancelSyncOneProduct()">
+              {{ 'common.admin.sync.cancelLabel' | translate }}
+            </button>
+            <button
+              class="btn border-0 btn-primary"
+              (click)="confirmSyncOneProduct()"
+              [disabled]="!isValidSyncOneProductValues()">
+              {{ 'common.admin.sync.syncLabel' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+  <router-outlet
+    (activate)="showSyncTask = false"
+    (deactivate)="showSyncTask = true"></router-outlet>
+</div>

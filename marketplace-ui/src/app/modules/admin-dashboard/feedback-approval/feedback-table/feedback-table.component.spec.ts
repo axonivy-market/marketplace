@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FeedbackTableComponent } from './feedback-table.component';
-import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { FeedbackStatus } from '../../../shared/enums/feedback-status.enum';
-import { MOCK_FEEDBACKS } from '../../../shared/mocks/mock-data';
+import { LanguageService } from '../../../../core/services/language/language.service';
+import { MOCK_FEEDBACKS } from '../../../../shared/mocks/mock-data';
+import { FeedbackStatus } from '../../../../shared/enums/feedback-status.enum';
 
 describe('FeedbackTableComponent', () => {
   let component: FeedbackTableComponent;

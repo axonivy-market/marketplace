@@ -2,37 +2,50 @@ import {
   Component,
   Inject,
   inject,
+  OnInit,
   PLATFORM_ID,
   ViewEncapsulation
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { SecurityMonitorService } from './security-monitor.service';
-import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
-import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { PageTitleService } from '../../shared/services/page-title.service';
-import { ThemeService } from '../../core/services/theme/theme.service';
+import { ProductSecurityInfo } from '../../../shared/models/product-security-info-model';
+import {
+  GITHUB_MARKET_ORG_URL,
+  REPO_PAGE_PATHS,
+  ERROR_MESSAGES,
+  SECURITY_MONITOR_SESSION_DATA,
+  TIME_UNITS,
+  UNAUTHORIZED
+} from '../../../shared/constants/common.constant';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { AdminDashboardService } from '../admin-dashboard.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
+import { LanguageService } from '../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-security-monitor',
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class SecurityMonitorComponent {
+export class SecurityMonitorComponent implements OnInit {
   themeService = inject(ThemeService);
-  isAuthenticated = false;
-  token = '';
-  errorMessage = '';
-  repos: ProductSecurityInfo[] = [];
-  protected LoadingComponentId = LoadingComponentId;
-  private readonly securityMonitorService = inject(SecurityMonitorService);
+  adminDashboardService = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
+  languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
+  protected LoadingComponentId = LoadingComponentId;
+
+  repos: ProductSecurityInfo[] = [];
+  errorMessage = '';
   isBrowser: boolean;
+  isLoading = false;
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -41,53 +54,55 @@ export class SecurityMonitorComponent {
   ngOnInit(): void {
     if (this.isBrowser) {
       this.loadSessionData();
-      this.pageTitleService.setTitleOnLangChange('common.security.pageTitle');
+      this.pageTitleService.setTitleOnLangChange(
+        'common.admin.securityMonitor.pageTitle'
+      );
     }
   }
 
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
-    if (!this.token) {
-      this.handleMissingToken();
+    if (this.isLoading) {
       return;
     }
-
-    this.errorMessage = '';
     this.fetchSecurityDetails();
   }
 
   private loadSessionData(): void {
     try {
-      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
+      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_DATA);
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
-        this.isAuthenticated = true;
+      } else {
+        this.fetchSecurityDetails();
       }
-    } catch (error) {
+    } catch {
       this.clearSessionData();
     }
   }
 
-  private handleMissingToken(): void {
-    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-    this.isAuthenticated = false;
-    this.clearSessionData();
+  private clearSessionData(): void {
+    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_DATA);
   }
 
   private fetchSecurityDetails(): void {
-    this.securityMonitorService
-      .getSecurityDetails(this.token)
+    this.isLoading = true;
+
+    this.adminDashboardService
+      .getSecurityDetails()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
       .subscribe({
         next: data => this.handleSuccess(data),
-        error: (err: HttpErrorResponse) => this.handleError(err)
+        error: err => this.handleError(err)
       });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
-    this.isAuthenticated = true;
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
+    sessionStorage.setItem(SECURITY_MONITOR_SESSION_DATA, JSON.stringify(data));
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -96,13 +111,6 @@ export class SecurityMonitorComponent {
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
-    this.isAuthenticated = false;
-    this.clearSessionData();
-  }
-
-  private clearSessionData(): void {
-    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN);
-    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
@@ -118,7 +126,11 @@ export class SecurityMonitorComponent {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
+  navigateToRepoPage(
+    repoName: string,
+    page: keyof typeof REPO_PAGE_PATHS,
+    lastCommitSHA?: string
+  ): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
@@ -130,7 +142,7 @@ export class SecurityMonitorComponent {
   }
 
   formatCommitDate(date: string): string {
-    const now = new Date().getTime();
+    const now = Date.now();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
 
@@ -139,7 +151,10 @@ export class SecurityMonitorComponent {
     }
 
     for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
-      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
+      if (
+        index < TIME_UNITS.length - 1 &&
+        diffInSeconds < TIME_UNITS[index + 1].SECONDS
+      ) {
         const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
@@ -149,7 +164,11 @@ export class SecurityMonitorComponent {
       }
     }
 
-    const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
+    const lastUnit = TIME_UNITS.at(-1);
+    if (!lastUnit) {
+      return '';
+    }
+    const years = Math.floor(diffInSeconds / lastUnit.SECONDS);
     if (years === 1) {
       return `${years} year ago`;
     } else {
