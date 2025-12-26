@@ -23,6 +23,9 @@ import { Location } from '@angular/common';
 import { ProductDetailComponent } from './product-detail/product-detail.component';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+
+declare const viewport: Viewport;
 
 describe('ProductComponent', () => {
   let component: ProductComponent;
@@ -307,6 +310,28 @@ describe('ProductComponent', () => {
     flush();
     expect(location.path()).toBe('/amazon-comprehend');
   }));
+
+  it('should render product cards with three-column base grid', () => {
+    const productCardComponent = fixture.debugElement.query(
+      By.css('.product-card')
+    ).nativeElement as HTMLDivElement;
+
+    expect(productCardComponent.classList).toContain('col-xxl-4');
+  });
+
+  it('should render product cards with four columns on wide screens', () => {
+    viewport.set(1920);
+
+    const productCard = fixture.nativeElement.querySelector(
+      '.product-card'
+    ) as HTMLElement;
+
+    const computedStyle = getComputedStyle(productCard);
+    expect(computedStyle.flexBasis).toBe('25%');
+    expect(computedStyle.maxWidth).toBe('25%');
+
+    viewport.reset();
+  });
 
   it('should set query params back to criteria', fakeAsync(() => {
     spyOn(component.router, 'navigate');
