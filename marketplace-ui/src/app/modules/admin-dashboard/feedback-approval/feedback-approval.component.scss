@@ -1,0 +1,53 @@
+.feedback-container {
+  flex-direction: row;
+  margin-top: 9.6rem;
+}
+
+.nav-tabs {
+  gap: 2rem;
+}
+
+.nav-tabs a:hover {
+  cursor: pointer;
+}
+
+.nav-item {
+  gap: 10px;
+
+  a {
+    font-weight: 400;
+    font-size: 2.2rem;
+
+    color: var(--active-tab-indicator-color);
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+
+  a.text-secondary.active {
+    color: #{white} !important;
+  }
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--active-tab-indicator-color);
+  z-index: 1;
+}
+
+.tab-group {
+  gap: 40px;
+
+  .tab-content {
+    .tab-pane {
+      opacity: 1;
+      transition: none;
+    }
+  }
+}

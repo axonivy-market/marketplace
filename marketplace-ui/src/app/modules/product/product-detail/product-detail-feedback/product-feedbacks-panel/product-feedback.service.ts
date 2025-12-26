@@ -20,7 +20,8 @@ import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
-  FEEDBACK_APPROVAL_SESSION_TOKEN,
+  ADMIN_SESSION_TOKEN,
+  BEARER,
   FEEDBACK_SORT_TYPES,
   NOT_FOUND_ERROR_CODE,
   TOKEN_KEY,
@@ -65,8 +66,8 @@ export class ProductFeedbackService {
     page: number = this.page(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
-    const token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const token = sessionStorage.getItem(ADMIN_SESSION_TOKEN);
+    const headers = new HttpHeaders().set('Authorization', `${BEARER} ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -100,7 +101,7 @@ export class ProductFeedbackService {
             response.status === NOT_FOUND_ERROR_CODE &&
             response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
-            sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+            sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
           }
           return throwError(() => response);
         })
@@ -130,7 +131,7 @@ export class ProductFeedbackService {
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
       'X-Authorization',
-      `Bearer ${this.authService.getToken()}`
+      `${BEARER} ${this.authService.getToken()}`
     );
     return this.http
       .post<Feedback>(FEEDBACK_API_URL, feedback, {

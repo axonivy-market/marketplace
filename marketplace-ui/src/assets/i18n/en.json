@@ -31,6 +31,11 @@
       "community": "Community",
       "team": "Team",
       "market": "Market",
+      "sync": "Sync Tasks",
+      "security": "Security Monitor",
+      "feedbackApproval": "Feedback Approval",
+      "customSort": "Custom Sort",
+      "quickAccess": "Quick Access",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Login with GitHub",
@@ -200,7 +205,7 @@
     "showMore": "Show more",
     "approval": {
       "approvalTitle": "Feedback Approval",
-      "about": "Please review the feedback from a user.",
+      "about": "Please review the feedback from a user",
       "instruction": "The feedback given should follow our <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> to be approved.",
       "reviewFeedback": "Review Feedback",
       "history": "History",
@@ -216,15 +221,7 @@
       "reviewDate": "Review Date",
       "approveBtnLabel": "Approve",
       "rejectBtnLabel": "Reject",
-      "pageTitle": "Effortless Feedback Approval Management",
-      "description": "Ensure only the best feedback moves forward.",
-      "enterToken": "Please enter your token to access the feedback approval page.",
-      "enterTokenPlaceholder": "Enter your token",
-      "proceedBtnLabel": "Proceed",
       "noFeedbacks": "No feedbacks available."
-    },
-    "security": {
-      "pageTitle": "Security Monitor"
     },
     "externalDocument": {
       "pageHeader": "The document of the {{product}} for version {{version}}",
@@ -289,6 +286,92 @@
           "disabled_unknown": "Disabled unknown: The workflow is disabled for an unknown reason. Check configuration or repository permissions.",
           "deleted": "Deleted: The workflow file has been deleted from the repository and cannot run."
         }
+      }
+    },
+    "admin": {
+      "pageTitle": "Effortless Admin Dashboard Access",
+      "description": "Quickly reach essential administrative tools and configurations",
+      "enterToken": "Please enter your token to access the admin dashboard.",
+      "enterTokenPlaceholder": "Enter your token",
+      "proceedBtnLabel": "Proceed",
+      "extensionId": "Extension ID",
+      "sync": {
+        "pageTitle": "Synchronization Tasks",
+        "title": "Synchronization Tasks",
+        "description": "Manage synchronization tasks",
+        "helpText": "Synchronization tasks keep marketplace data up-to-date by regularly fetching updates from external sources. Administrators can track their status and ensure the latest information is reflected in the marketplace.",
+        "number": "No.",
+        "action": "Actions",
+        "syncTask": "Synchronization Task",
+        "status": "Status",
+        "lastRun": "Last run at",
+        "completed": "Completed at",
+        "message": "Message",
+        "syncLabel": "Synchronize",
+        "syncingLabel": "Synchronizing...",
+        "cancelLabel": "Cancel",
+        "tasks": {
+          "syncProducts": "Synchronize all products",
+          "syncOneProduct": "Synchronize one product",
+          "syncLatestReleasesForProducts": "Synchronize product release notes",
+          "syncGithubMonitor": "Synchronize GitHub monitor"
+        },
+        "syncOneProductDialog": {
+          "title": "Synchronize One Product",
+          "chooseExtensionIdHint": "Choose an extension ID to synchronize",
+          "marketItemPath": "Market Item Path",
+          "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
+          "overrideMarketItemPath": "Override Current Market Item Path",
+          "validationMessage": "Extension ID & marketItemPath required!"
+        }
+      },
+      "securityMonitor": {
+        "pageTitle": "Security Monitor",
+        "title": "GitHub Repository Security Monitor",
+        "description": "Monitor security vulnerabilities in marketplace extensions",
+        "helpText": "The security monitor helps track security events and alerts from GitHub repositories, including Dependabot alerts, code scanning results, security scanning findings, etc. Administrations can review identified issues and take appropriate actions to ensure the security of marketplace extensions.",
+        "reloadData": "Reload Data",
+        "archived": "Archived",
+        "dependabot": "Dependabot",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "noPermission": "No Permission",
+        "noVulnerabilities": "No Vulnerabilities",
+        "codeScanning": "Code Scanning",
+        "secretScanning": "Secret Scanning",
+        "branchProtection": "Branch Protection",
+        "lastCommit": "Last Commit"
+      },
+      "customSort": {
+        "pageTitle": "Custom Sort",
+        "title": "Custom Sort Extensions",
+        "description": "Manage how market extensions are sorted",
+        "helpText": "The UI allows users to modify the <b>default sorting order</b> of Market extensions displayed on the <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">Axon Ivy Marketplace</a>.",
+        "sortedExtensions": "Sorted Extensions",
+        "availableExtensions": "Available Extensions",
+        "searchPlaceholder": "Search an extension",
+        "order": "Order",
+        "dragAndDropHint": "Drag and drop extensions between the two lists to customize their display order on the marketplace. Extensions in the 'Sorted Extensions' list will appear first, following the default sorting order, while those in the 'Available Extensions' list will be shown afterward in alphabetical order.",
+        "dragHint": "Drag and drop here.",
+        "noExtensions": "No extensions available.",
+        "sortHint": "Only the ordered list will be persisted; remaining extensions follow the alphabetical rule.",
+        "sortLabel": "Sort",
+        "sortingLabel": "Sorting...",
+        "sortSuccessMessage": "Sorting saved successfully.",
+        "sortErrorMessage": "Saving the sorting failed. Please try again.",
+        "loadingLabel": "Loading extensions..."
+      },
+      "quickAccess": {
+        "pageTitle": "Quick Access",
+        "title": "Quick Access Links",
+        "description": "Manage quick access links",
+        "helpText": "Configure the most frequently used pages or external links that should appear as quick access shortcuts on the Admin Dashboard. Administrators can add, edit, or remove links to help navigate efficiently.",
+        "monitoring": "Monitoring: Access the monitoring dashboard for build pipelines and test results.",
+        "monitoringNote": "Please check daily to ensure all extensions are healthy.",
+        "releasePreview": "Release Preview: Quickly preview extensions' details by uploading a ZIP file with a README.md.",
+        "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace.",
+        "monitoringTitle": "Monitoring Page",
+        "releasePreviewTitle": "Release Preview Page"
       }
     }
   }

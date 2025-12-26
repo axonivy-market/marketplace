@@ -1,0 +1,160 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 240ms ease;
+  margin-left: 72px;
+}
+
+.admin-layout.sidebar-open .admin-main {
+  margin-left: 260px;
+}
+
+.admin-main__content {
+  flex: 1;
+}
+
+.admin-main__table {
+  flex-direction: row;
+  margin-top: 9rem;
+}
+
+.sort-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+tbody, button {
+  font-size: 1.2rem;
+}
+
+th h5 {
+  font-weight: 600;
+  line-height: 140%;
+  vertical-align: middle;
+}
+
+td {
+  height: 5rem;
+  vertical-align: middle;
+}
+
+.sync-column {
+  width: 82px;
+}
+
+.sync-task-column {
+  width: 200px;
+}
+
+.date-column {
+  width: 140px;
+}
+
+.action-column {
+  width: 250px;
+}
+
+.content-column {
+  white-space: normal;
+  word-break: break-word;
+}
+
+#sync-button {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #{white};
+  cursor: pointer;
+  background-color: var(--product-feedback-approve-button-color);
+  margin-right: 1.1rem;
+  vertical-align: middle;
+}
+
+#sync-button::ng-deep {
+  vertical-align: middle;
+}
+
+#sync-button:hover {
+  opacity: 0.8;
+}
+
+.message-cell {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.sync-one-product {
+  label {
+    font-weight: 500;
+  }
+
+  .form-control-sm {
+    min-width: 12rem;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  width: 90%;
+  max-width: 640px;
+}
+
+.modal-content {
+  background-color: var(--bs-body-bg);
+  z-index: 1000;
+  color: inherit;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header,
+.modal-footer {
+  padding: 0.75rem 1rem;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+.btn-cancel {
+  border: 0.5px solid #ebebeb;
+}
+
+.sync-button {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 1.1rem;
+  vertical-align: middle;
+}
+
+.sync-button::ng-deep {
+  vertical-align: middle;
+}
+
+.sync-button:hover {
+  opacity: 0.8;
+}
