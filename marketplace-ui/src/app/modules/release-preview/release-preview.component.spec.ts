@@ -12,6 +12,7 @@ import {
 } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MOCK_RELEASE_PREVIEW_DATA } from '../../shared/mocks/mock-data';
+import { MarkdownService } from '../../shared/services/markdown.service';
 
 describe('ReleasePreviewComponent', () => {
   let component: ReleasePreviewComponent;
@@ -185,7 +186,7 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should handle successful file upload', () => {
-    const mockResponse = MOCK_RELEASE_PREVIEW_DATA
+    const mockResponse = MOCK_RELEASE_PREVIEW_DATA;
     spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
       of(mockResponse)
     );
@@ -207,12 +208,36 @@ describe('ReleasePreviewComponent', () => {
     expect(component.activeTab).toBe('setup');
   });
 
-  it('should render readme content as safe HTML', () => {
-    const value = '**This is a test**';
-    const mockedRenderedHtml = '<strong>This is a test</strong>';
-    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
-    const result = component.renderReadmeContent(value);
-    expect(result).toBe(mockedRenderedHtml);
+  it('should render and sanitize readme content', () => {
+    const markdownService = TestBed.inject(MarkdownService);
+    spyOn(markdownService, 'parseMarkdown').and.callThrough();
+    sanitizerSpy.sanitize.and.callFake((_ctx, html) => html as string);
+    languageService.selectedLanguage.and.returnValue(Language.EN);
+    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+      of({
+        description: {
+          en: '<details><summary>More description</summary><strong>This is a test</strong></details>'
+        },
+        setup: {
+          en: '<details><summary>How to setup</summary><p>This is a setup test</p></details>'
+        },
+        demo: {}
+      })
+    );
+
+    component.selectedFile = new File(['zip'], 'asana-connector-product.zip', {
+      type: 'application/zip'
+    });
+    component.isZipFile = true;
+
+    component.handlePreviewPage();
+
+    const descriptionHtml = component.loadedReadmeContent[
+      'description'
+    ] as unknown as string;
+    expect(descriptionHtml).toContain('<details>');
+    expect(descriptionHtml).toContain('<summary>More description</summary>');
+    expect(descriptionHtml).toContain('<strong>This is a test</strong>');
   });
 
   it('should clear errorMessage for a valid zip within size', () => {
@@ -275,5 +300,4 @@ describe('ReleasePreviewComponent', () => {
     expect(component.selectedFile?.name).toBe('fixed.zip');
     expect(component.isZipFile).toBeTrue();
   });
-
 });
