@@ -133,8 +133,7 @@
             "codeCoverage": true,
             "polyfills": [
               "zone.js",
-              "zone.js/testing",
-              "src/test-setup.ts"
+              "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
