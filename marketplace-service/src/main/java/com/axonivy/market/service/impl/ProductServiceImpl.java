@@ -531,8 +531,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    var repo = githubRepo.findByNameOrProductId(EMPTY, product.getId());
-    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
+    var repos = githubRepo.findByNameOrProductId(EMPTY, product.getId());
+    boolean isFocused = repos != null && repos.stream().anyMatch(repo -> Boolean.TRUE.equals(repo.getFocused()));
     product.setIsFocused(isFocused);
   }
 

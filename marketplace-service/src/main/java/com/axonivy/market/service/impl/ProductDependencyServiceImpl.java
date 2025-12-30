@@ -120,13 +120,21 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   }
 
   private void deleteProductDependencies(List<ProductDependency> productDependencies) {
-    if (ObjectUtils.isEmpty(productDependencies)) {
-      return;
+    try {
+      Optional.ofNullable(productDependencies).stream().flatMap(List::stream)
+          .filter(dependency -> dependency.getId() != null)
+          .map(dependency -> {
+            dependency.setDependencies(new HashSet<>());
+            return dependency;
+          })
+          .forEach(dependency -> {
+            log.warn("Deleting product dependencies for productId: {}, artifactId: {}, version: {}",
+            dependency.getProductId(), dependency.getArtifactId(), dependency.getVersion());
+            productDependencyRepository.delete(dependency);
+          });
+    } catch(Exception e) {
+        log.error("Got issue during delete product dependencies - {}", e.getMessage());
     }
-    for (var productDependency : productDependencies) {
-      productDependency.setDependencies(new HashSet<>());
-    }
-    productDependencyRepository.deleteAll(productDependencies);
   }
 
   private int createNewProductDependencyForArtifact(MavenArtifactVersion artifact, ProductDependency productDependency,
