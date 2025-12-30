@@ -37,8 +37,8 @@ public class MarketplaceServiceApplication {
   @Async
   @EventListener(ApplicationStartedEvent.class)
   public void startInitializeSystem() {
-//    List<String> productIds = syncProductData();
-//    syncExternalDocumentData(productIds);
+    List<String> productIds = syncProductData();
+    syncExternalDocumentData(productIds);
   }
 
   private List<String> syncProductData() {
