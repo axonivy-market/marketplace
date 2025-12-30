@@ -616,6 +616,21 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testResolveBestMatchRedirectUrlWithDevVersionAndNoArtifactName() {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, DEV_VERSION, DOC_DIR,
+          CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    }
+  }
+
+  @Test
   void testResolveBestMatchRedirectUrlWithNonExistentSymlinks() {
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
     when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(Collections.emptyList());

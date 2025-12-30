@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,4 +24,6 @@ public enum DevelopmentVersion {
     }
     return null;
   }
+
+  public final static List<DevelopmentVersion> DYNAMIC_DEVELOPMENT_VERSIONS = List.of(DEV, NIGHTLY);
 }

@@ -18,6 +18,9 @@ public final class DocPathUtils {
   private static final int ARTIFACT_INDEX = 2;
   public static final String DOC_FACTORY_DOC = "docfactory";
   public static final String DOC_FACTORY_ID = "doc-factory";
+  public static final String DOC_EXTENSION = "-doc";
+  public static final String PORTAL_ID = "portal";
+  public static final String GUIDE_EXTENSION = "-guide";
 
   private DocPathUtils() {
   }
@@ -25,11 +28,14 @@ public final class DocPathUtils {
   /**
    * Extract the productId from a path like:
    * /portal/portal-guide/13.1.1/doc/_images/dashboard1.png -> portal
+   * /doc-factory/doc-factory-doc/13.2.1 -> docfactory
    */
   public static String extractProductId(String path) {
     var matcher = PATH_PATTERN.matcher(path);
     if (matcher.matches()) {
-      return matcher.group(VERSION_INDEX);
+      String productId = matcher.group(VERSION_INDEX);
+      return StringUtils.isNotBlank(productId) && productId.equalsIgnoreCase(DOC_FACTORY_ID) ?
+          DOC_FACTORY_DOC: productId;
     }
     return null;
   }
@@ -83,6 +89,25 @@ public final class DocPathUtils {
       return matcher.group(ARTIFACT_INDEX);
     }
     return null;
+  }
+
+  /**
+   * Create the artifact name by product Name
+   * portal -> portal-guide
+   * docfactory -> doc-factory-doc
+   * doc-factory -> doc-factory-doc
+   */
+  public static String createArtifactNameByProductName(String productName) {
+    if (StringUtils.isBlank(productName)) {
+      return null;
+    }
+
+    String lowerCaseProductName = productName.toLowerCase();
+    return switch (lowerCaseProductName) {
+      case PORTAL_ID -> PORTAL_ID + GUIDE_EXTENSION;
+      case DOC_FACTORY_DOC -> DOC_FACTORY_ID + DOC_EXTENSION;
+      default -> lowerCaseProductName + DOC_EXTENSION;
+    };
   }
 
   /**

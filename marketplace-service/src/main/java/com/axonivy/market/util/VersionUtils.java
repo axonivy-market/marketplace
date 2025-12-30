@@ -6,6 +6,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.key.MavenArtifactKey;
+import com.axonivy.market.enums.DevelopmentVersion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  // Common semantic versioning pattern: 1, 1.2, 1.2.3, 1.2.3.4, 1.2.3.4.5, 1.2.3-beta, 1.2.3-beta.1, etc.
+  private static final String VERSION_REGEX = "^[0-9]+(\\.[0-9]+){0,5}(-[A-Za-z0-9.]+)?$";
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
 
@@ -157,6 +160,10 @@ public class VersionUtils {
     return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
   }
 
+  public static boolean isVersion(String versionStr) {
+      return versionStr != null && versionStr.matches(VERSION_REGEX);
+  }
+
   public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
     String versionRangeSuffix = PLUS;
     if (BooleanUtils.isTrue(isDeprecatedProduct)) {
@@ -177,5 +184,19 @@ public class VersionUtils {
     int firstDot = version.indexOf(DOT_SEPARATOR);
     int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
     return version.substring(0, secondDot);
+  }
+
+  public static boolean isDevelopmentVersion(String version) {
+    if (StringUtils.isBlank(version)) {
+      return false;
+    }
+
+    for (var dv : DevelopmentVersion.values()) {
+      if (version.startsWith(dv.getCode()) || version.endsWith(dv.getCode())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

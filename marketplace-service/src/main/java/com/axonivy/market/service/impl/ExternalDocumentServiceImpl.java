@@ -431,6 +431,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String productName = extractProductId(path);
     String artifactName = extractArtifactName(path);
     String version = extractVersion(path);
+    // If the path does not include artifactName, the artifactName will be created by productName
+    // path = /portal/13.1.1/doc -> artifactName = portal-guide & version = 13.1.1
+    if (VersionUtils.isVersion(artifactName) || VersionUtils.isDevelopmentVersion(artifactName)) {
+      version = artifactName;
+      artifactName = createArtifactNameByProductName(productName);
+    }
+
     DocumentLanguage extractLanguage = extractLanguage(path);
     DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
@@ -442,6 +449,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(version)) {
       bestMatchVersion = version;
     } else {
+      version = getVersionNumberFromDynamicDevelopmentVersions(version);
       bestMatchVersion = resolveBestMatchSymlinkVersion(version);
       if (ObjectUtils.isEmpty(bestMatchVersion)) {
         bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
@@ -449,6 +457,27 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     String redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
     return isSymlinkExisting(redirectURL) ? redirectURL : null;
+  }
+
+  private String getVersionNumberFromDynamicDevelopmentVersions(String version) {
+    String result = version;
+    for (DevelopmentVersion dv : DevelopmentVersion.DYNAMIC_DEVELOPMENT_VERSIONS) {
+      result = getVersionNumberFromDevelopmentVersion(result, dv.getCode());
+    }
+
+    return version;
+  }
+
+  private String getVersionNumberFromDevelopmentVersion(String version, String developmentVersion) {
+    if (StringUtils.isBlank(version)) {
+      return EMPTY;
+    }
+
+    if (version.startsWith(developmentVersion) || version.endsWith(developmentVersion)) {
+      return version.replace(developmentVersion, EMPTY).replace(CommonConstants.DASH_SEPARATOR, EMPTY);
+    }
+
+    return version;
   }
 
   private String fallbackFindBestMatchVersion(String productName, String artifactName, String version) {

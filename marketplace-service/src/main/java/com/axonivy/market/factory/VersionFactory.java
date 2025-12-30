@@ -61,8 +61,8 @@ public class VersionFactory {
     // Redirect to the newest version for special keywords
     var version = DevelopmentVersion.of(requestedVersion);
 
-    // Get latest released version if requested version is 'latest'
-    if (version == DevelopmentVersion.LATEST) {
+    // Get latest released version if requested version is 'latest' or 'sprint'
+    if (version == DevelopmentVersion.LATEST || version == DevelopmentVersion.SPRINT) {
       return sortedVersions.stream().filter(VersionUtils::isReleasedVersion)
           .findFirst().orElse(null);
     }
