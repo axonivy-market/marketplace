@@ -446,8 +446,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     String bestMatchVersion;
-    if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(version)) {
-      bestMatchVersion = version;
+    if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
+        version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
+      bestMatchVersion = DevelopmentVersion.DEV.getCode();
     } else {
       version = getVersionNumberFromDynamicDevelopmentVersions(version);
       bestMatchVersion = resolveBestMatchSymlinkVersion(version);

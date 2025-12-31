@@ -60,6 +60,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
   private static final String NIGHTLY_VERSION = "nightly";
+  private static final String NIGHTLY_TEN_VERSION = "nightly-10.0";
   private static final String LATEST_VERSION = "latest";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH =
@@ -642,18 +643,24 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String nightlyPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
           DOC_DIR);
       String result = service.resolveBestMatchRedirectUrl(nightlyPath);
-      String expectedResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME);
-      assertTrue(StringUtils.contains(result, expectedResult),
-          "Should generate a nightly version for doc-factory correctly");
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(),
+          CommonConstants.INDEX_HTML);
+      assertTrue(StringUtils.contains(result, expectedDevResult),
+          "Should handle dev version correctly for doc-factory");
 
       String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION,
           DOC_DIR);
       result = service.resolveBestMatchRedirectUrl(devPath);
-      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
-          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(),
-          CommonConstants.INDEX_HTML);
-      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly for doc-factory");
+
+      String nightlyTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, NIGHTLY_TEN_VERSION,
+          DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(nightlyTenPath);
+      String expectedNightlyTenResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY,
+          DirectoryConstants.CACHE_DIR, DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME);
+      assertTrue(StringUtils.contains(result, expectedNightlyTenResult),
+          "Should handle nightly ten version correctly for doc-factory");
     }
   }
 
