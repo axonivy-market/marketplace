@@ -59,6 +59,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String ARTIFACT_NAME = "portal-guide";
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
+  private static final String TEN_DEV_VERSION = "10.0-dev";
   private static final String NIGHTLY_VERSION = "nightly";
   private static final String NIGHTLY_TEN_VERSION = "nightly-10.0";
   private static final String LATEST_VERSION = "latest";
@@ -637,8 +638,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testResolveBestMatchRedirectUrlForDocFactoryWithoutArtifactName() {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
-      filesMock.when(() -> Files.exists(any(Path.class), any()))
-          .thenReturn(true);
+      filesMock.when(() -> Files.exists(any(Path.class), any())).thenReturn(true);
 
       String nightlyPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
           DOC_DIR);
@@ -649,10 +649,14 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertTrue(StringUtils.contains(result, expectedDevResult),
           "Should handle dev version correctly for doc-factory");
 
-      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION,
-          DOC_DIR);
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION, DOC_DIR);
       result = service.resolveBestMatchRedirectUrl(devPath);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly for doc-factory");
+
+      String devTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, TEN_DEV_VERSION,
+          DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(devTenPath);
+      assertFalse(StringUtils.contains(result, DEV_VERSION), "Should not include dev version");
 
       String nightlyTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, NIGHTLY_TEN_VERSION,
           DOC_DIR);
