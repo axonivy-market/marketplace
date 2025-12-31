@@ -51,12 +51,15 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String INDEX_FILE = "/index.html";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + INDEX_FILE;
   private static final String RELATIVE_DOC_LOCATION_EN = RELATIVE_WORKING_LOCATION_EN + INDEX_FILE;
-
+  private static final String DOC_FACTORY_DOC = "docfactory";
+  private static final String DOC_FACTORY_ARTIFACT_NAME = "doc-factory-doc";
+  private static final String DOC_FACTORY_ID = "doc-factory";
   private static final String PORTAL = "portal";
 
   private static final String ARTIFACT_NAME = "portal-guide";
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
+  private static final String NIGHTLY_VERSION = "nightly";
   private static final String LATEST_VERSION = "latest";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH =
@@ -626,6 +629,30 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String result = service.resolveBestMatchRedirectUrl(devPath);
       String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlForDocFactoryWithoutArtifactName() {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String nightlyPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
+          DOC_DIR);
+      String result = service.resolveBestMatchRedirectUrl(nightlyPath);
+      String expectedResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME);
+      assertTrue(StringUtils.contains(result, expectedResult),
+          "Should generate a nightly version for doc-factory correctly");
+
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION,
+          DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(devPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(),
+          CommonConstants.INDEX_HTML);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly");
     }
   }
