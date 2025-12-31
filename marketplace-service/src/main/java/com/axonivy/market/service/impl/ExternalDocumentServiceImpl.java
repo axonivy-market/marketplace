@@ -466,7 +466,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       result = getVersionNumberFromDevelopmentVersion(result, dv.getCode());
     }
 
-    return version;
+    return result;
   }
 
   private String getVersionNumberFromDevelopmentVersion(String version, String developmentVersion) {

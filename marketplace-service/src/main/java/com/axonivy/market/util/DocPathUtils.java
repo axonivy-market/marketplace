@@ -6,6 +6,7 @@ import com.axonivy.market.enums.DocumentLanguage;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -102,7 +103,7 @@ public final class DocPathUtils {
       return null;
     }
 
-    String lowerCaseProductName = productName.toLowerCase();
+    String lowerCaseProductName = productName.toLowerCase(Locale.ENGLISH);
     return switch (lowerCaseProductName) {
       case PORTAL_ID -> PORTAL_ID + GUIDE_EXTENSION;
       case DOC_FACTORY_DOC -> DOC_FACTORY_ID + DOC_EXTENSION;

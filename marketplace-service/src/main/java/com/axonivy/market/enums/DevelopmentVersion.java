@@ -14,6 +14,8 @@ public enum DevelopmentVersion {
 
   DEV("dev"), NIGHTLY("nightly"), SPRINT("sprint"), LATEST("latest");
 
+  public static final List<DevelopmentVersion> DYNAMIC_DEVELOPMENT_VERSIONS = List.of(DEV, NIGHTLY);
+
   private String code;
 
   public static DevelopmentVersion of(String versionNumber) {
@@ -25,5 +27,5 @@ public enum DevelopmentVersion {
     return null;
   }
 
-  public final static List<DevelopmentVersion> DYNAMIC_DEVELOPMENT_VERSIONS = List.of(DEV, NIGHTLY);
+
 }
