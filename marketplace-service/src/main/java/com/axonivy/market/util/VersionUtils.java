@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +32,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   // Common semantic versioning pattern: 1, 1.2, 1.2.3, 1.2.3.4, 1.2.3.4.5, 1.2.3-beta, 1.2.3-beta.1, etc.
-  private static final String VERSION_REGEX = "^\\d+(\\.\\d+){0,5}(-[A-Za-z0-9.]+)?$";
+  private static final String VERSION_REGEX = "^\\d+(\\.\\d+){0,5}(-[\\p{L}\\p{N}.]+)?$";
   private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
