@@ -176,21 +176,23 @@
 }
 
 .readme-content ::ng-deep {
-  h1 {
-    font-size: 24px;
-  }
-
-  h2 {
-    font-size: 22px;
-  }
-
   h3 {
-    font-size: 20px;
+    font-size: 2.8rem;
+  }
+
+  h4 {
+    font-size: 2.2rem;
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 2rem;
+    font-weight: 600;
   }
 
   p,
-  ul, li {
-    font-size: 18px;
+  ul, li, details {
+    font-size: 1.6rem;
     font-weight: 400;
     color: var(--ivy-text-primary-color);
   }
