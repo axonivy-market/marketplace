@@ -4,9 +4,11 @@ import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.logging.TrackApiCallFromNeo;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
@@ -116,6 +118,7 @@ public class ProductController {
 
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_ONE_PRODUCT)
   public ResponseEntity<Message> syncOneProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",

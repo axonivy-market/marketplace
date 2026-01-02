@@ -1,9 +1,12 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, Observable, of, firstValueFrom } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
-import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
+import {
+  ChangeLogCriteria,
+  Criteria
+} from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { LoadingComponent } from '../../core/interceptors/api.interceptor';
@@ -11,11 +14,16 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { SortOption } from '../../shared/enums/sort-option.enum';
+import { TypeOption } from '../../shared/enums/type-option.enum';
+import { Language } from '../../shared/enums/language.enum';
+import { MarketProduct } from '../../shared/models/product.model';
 import {
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../shared/constants/common.constant';
 
+const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   httpClient = inject(HttpClient);
@@ -69,10 +77,9 @@ export class ProductService {
     productId: string,
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
-    return this.httpClient
-      .get<ProductDetail>(
-        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-      );
+    return this.httpClient.get<ProductDetail>(
+      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
+    );
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -98,9 +105,15 @@ export class ProductService {
     return this.httpClient.get<number>(url);
   }
 
-  sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
+  sendRequestToGetProductVersionsForDesigner(
+    productId: string,
+    showDevVersion: boolean,
+    designerVersion: string
+  ) {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
-    const params = new HttpParams().append('designerVersion', designerVersion).append('isShowDevVersion', showDevVersion);
+    const params = new HttpParams()
+      .append('designerVersion', designerVersion)
+      .append('isShowDevVersion', showDevVersion);
     return this.httpClient.get<VersionAndUrl[]>(url, { params });
   }
 
@@ -119,7 +132,9 @@ export class ProductService {
     );
   }
 
-  getProductChangelogs(criteria: ChangeLogCriteria): Observable<ProductReleasesApiResponse> {
+  getProductChangelogs(
+    criteria: ChangeLogCriteria
+  ): Observable<ProductReleasesApiResponse> {
     let requestParams = new HttpParams();
     let url = '';
     if (criteria.nextPageHref) {
@@ -134,8 +149,10 @@ export class ProductService {
     }
     return this.httpClient
       .get<ProductReleasesApiResponse>(url, {
-        context: new HttpContext()
-          .set(LoadingComponent, LoadingComponentId.PRODUCT_CHANGELOG),
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.PRODUCT_CHANGELOG
+        ),
         params: requestParams
       })
       .pipe(
@@ -148,7 +165,7 @@ export class ProductService {
 
   setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
- 
+
     if (productDetail.vendorImage || productDetail.vendorImageDarkMode) {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
@@ -157,5 +174,65 @@ export class ProductService {
       productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
     }
     return productDetail;
+  }
+
+  async fetchAllProductIds(
+    pageSize = PAGE_SIZE,
+    language: Language = Language.EN
+  ): Promise<string[]> {
+    const products = await this.fetchAllProducts(pageSize, language);
+
+    return products.map(product => product.id);
+  }
+
+  async fetchAllProductsForSync(
+    pageSize = PAGE_SIZE,
+    language: Language = Language.EN
+  ): Promise<MarketProduct[]> {
+    return this.fetchAllProducts(pageSize, language);
+  }
+
+  private async fetchAllProducts(
+    pageSize: number,
+    language: Language
+  ): Promise<MarketProduct[]> {
+    const results: MarketProduct[] = [];
+    let page = 0;
+
+    while (true) {
+      const response = await firstValueFrom(
+        this.findProductsByCriteria({
+          search: '',
+          sort: SortOption.STANDARD,
+          type: TypeOption.All_TYPES,
+          isRESTClientEditor: false,
+          pageable: {
+            page,
+            size: pageSize
+          },
+          language
+        })
+      );
+
+      const products = response?._embedded?.products ?? [];
+
+      for (const product of products) {
+        if (product?.id) {
+          results.push({
+            id: product.id,
+            marketDirectory: product.marketDirectory
+          });
+        }
+      }
+
+      const pageInfo = response?.page;
+      if (!pageInfo || pageInfo.number >= pageInfo.totalPages - 1) {
+        break;
+      }
+
+      page = pageInfo.number + 1;
+    }
+
+    return results;
   }
 }

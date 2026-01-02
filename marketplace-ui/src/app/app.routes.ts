@@ -3,11 +3,16 @@ import { GithubCallbackComponent } from './auth/github-callback/github-callback.
 import { ErrorPageComponent } from './shared/components/error-page/error-page.component';
 import { RedirectPageComponent } from './shared/components/redirect-page/redirect-page.component';
 import { ERROR_PAGE } from './shared/constants/common.constant';
-import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
+import { SecurityMonitorComponent } from './modules/admin-dashboard/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
-import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
+import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
+import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
+import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
+import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -30,20 +35,39 @@ export const routes: Routes = [
 
   // Static pages
   {
-    path: 'security-monitor',
-    component: SecurityMonitorComponent
-  },
-  {
     path: 'release-preview',
     component: ReleasePreviewComponent
   },
   {
-    path: 'feedback-approval',
-    component: FeedbackApprovalComponent
-  },
-  {
     path: 'monitoring',
     component: MonitoringDashboardComponent
+  },
+  {
+    path: 'request-access',
+    component: AdminTokenComponent
+  },
+  {
+    path: 'internal-dashboard',
+    component: AdminDashboardComponent,
+    canActivate: [AdminAuthGuard],
+    children: [
+      {
+        path: 'security-monitor',
+        component: SecurityMonitorComponent
+      },
+      {
+        path: 'feedback-approval',
+        component: FeedbackApprovalComponent
+      },
+      {
+        path: 'sorting',
+        component: CustomSortComponent
+      },
+      {
+        path: 'quick-access',
+        component: QuickAccessComponent
+      }
+    ]
   },
   {
     path: 'monitoring/:repo/:workflow',

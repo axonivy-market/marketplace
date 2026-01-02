@@ -29,7 +29,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
-  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
 

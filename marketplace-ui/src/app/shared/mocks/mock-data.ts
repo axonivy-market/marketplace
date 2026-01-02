@@ -26,6 +26,7 @@ export const MOCK_PRODUCTS = {
           'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend/logo.png',
         type: 'connector',
         tags: ['AI'],
+        marketDirectory: 'market/connector/amazon-comprehend/',
         _links: {
           self: {
             href: 'http://localhost:8080/marketplace-service/api/product-details/amazon-comprehend?type=connector'
@@ -72,6 +73,7 @@ export const MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS = {
         logoUrl: '',
         type: 'connector',
         tags: ['AI'],
+        marketDirectory: 'market/connector/amazon-comprehend/',
         _links: {
           self: {
             href: 'http://localhost:8080/marketplace-service/api/product-details/amazon-comprehend?type=connector'
@@ -119,6 +121,7 @@ export const MOCK_PRODUCTS_FILTER_CONNECTOR = {
           'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend/logo.png',
         type: 'connector',
         tags: ['AI'],
+        marketDirectory: 'market/connector/amazon-comprehend/',
         _links: {
           self: {
             href: 'http://localhost:8080/marketplace-service/api/product-details/amazon-comprehend?type=connector'
