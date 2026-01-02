@@ -1,0 +1,91 @@
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{ translateService.get('common.admin.quickAccess.title') | async }}
+  </h1>
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{
+          translateService.get('common.admin.quickAccess.description') | async
+        }}
+      </h3>
+    </div>
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        [lang]="languageService.selectedLanguage()"
+        class="text-secondary"
+        [innerHTML]="
+          translateService.get('common.admin.quickAccess.helpText') | async
+        "></h4>
+    </div>
+  </div>
+</div>
+<div class="quick-access-container">
+  <section class="quick-access">
+    <div class="qa-grid">
+      <a
+        class="qa-card qa-card__link"
+        href="https://market.axonivy.com/monitoring"
+        target="_blank"
+        rel="noopener noreferrer"
+        [title]="
+          translateService.get('common.admin.quickAccess.monitoringTitle')
+            | async
+        ">
+        <div class="qa-card__header">
+          <div class="qa-card__icon" aria-hidden="true">
+            <i class="bi bi-battery-charging text-primary"></i>
+          </div>
+          <div>
+            <p class="qa-card__title text-primary">
+              {{
+                translateService.get('common.admin.quickAccess.monitoring')
+                  | async
+              }}
+            </p>
+            <p class="qa-card__hint text-secondary">
+              {{
+                translateService.get('common.admin.quickAccess.monitoringNote')
+                  | async
+              }}
+            </p>
+          </div>
+        </div>
+      </a>
+
+      <a
+        class="qa-card qa-card__link"
+        href="https://market.axonivy.com/release-preview"
+        target="_blank"
+        rel="noopener noreferrer"
+        [title]="
+          translateService.get('common.admin.quickAccess.releasePreviewTitle')
+            | async
+        ">
+        <div class="qa-card__header">
+          <div class="qa-card__icon" aria-hidden="true">
+            <i class="bi-file-earmark-text text-primary"></i>
+          </div>
+          <div>
+            <p class="qa-card__title text-primary">
+              {{
+                translateService.get('common.admin.quickAccess.releasePreview')
+                  | async
+              }}
+            </p>
+            <p class="qa-card__hint text-secondary">
+              {{
+                translateService.get(
+                  'common.admin.quickAccess.releasePreviewNote'
+                ) | async
+              }}
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+</div>

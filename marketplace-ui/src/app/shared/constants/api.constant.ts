@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 
 const API = 'api';
+const SYNC = 'sync';
 
 export const API_URI = {
   APP: '/',
@@ -13,6 +14,9 @@ export const API_URI = {
   PREVIEW_RELEASE: `${API}/release-preview`,
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
+  SYNC_GITHUB_MONITOR: `${API}/monitor-dashboard/${SYNC}`,
+  SYNC_TASK_EXECUTION: `${API}/sync-task-execution`,
+  SECURITY_MONITOR: `${API}/security-monitor`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

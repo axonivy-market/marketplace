@@ -342,6 +342,36 @@ p {
   color: #858585 !important;
 }
 
+.admin-title {
+  line-height: 110%;
+  margin-top: 7.2rem;
+  margin-bottom: 3.2rem;
+  cursor: default;
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.admin-about {
+  line-height: 130%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+.admin-help-text-container {
+  line-height: 140%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
 @media (max-width: 568px) {
   code {
     font-size: 0.7rem;

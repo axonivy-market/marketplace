@@ -7,25 +7,39 @@
 
   <!-- Navigation -->
   <ul class="navbar-nav">
-    @for (item of navItems; track item.label) {
-      @let isHomePage = item.link === '/';
+    @for (item of this.items; track item.label) {
       <li class="nav-item">
-        @if (isHomePage) {
-          <a [lang]="languageService.selectedLanguage()" class="nav-link text-primary active"
+        @let isHomePage = item.link === '/';
+        @let isSyncPage = item.link === '/internal-dashboard';
+        @let isInternal = item.link.startsWith('/');
+        @if (isInternal) {
+          <span #routerActive="routerLinkActive" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
+            <a 
+            [lang]="languageService.selectedLanguage()" class="nav-link" 
+            [ngClass]="{
+                'text-primary': isMobileMode() || routerActive.isActive,
+                'text-secondary': !isMobileMode() && !routerActive.isActive,
+                active: isHomePage || routerActive.isActive }"
             aria-current="page"
             [routerLink]="item.link" >
+              {{ item.label | translate }}
+            </a>
+            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div>
+          </span>
+        } @else {
+          <a 
+          [lang]="languageService.selectedLanguage()" class="nav-link" 
+          [ngClass]="{
+            'text-primary': isMobileMode(),
+            'text-secondary': !isMobileMode()}"
+          aria-current="page"
+          [href]="item.link" >
             {{ item.label | translate }}
           </a>
-        } @else {
-          <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
-            'text-primary': isMobileMode(),
-            'text-secondary': !isMobileMode(),
-            active: isHomePage }" aria-current="page"
-            [href]="item.link" >
-          {{ item.label | translate }}
-          </a>
+          <!-- External links are never router-active -->
+          <div class="active-line d-none"></div>
         }
-        <div class="active-line d-none" [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
       </li>
     }
   </ul>

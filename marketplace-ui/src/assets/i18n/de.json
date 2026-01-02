@@ -31,6 +31,11 @@
       "community": "Community",
       "team": "Team",
       "market": "Marktplatz",
+      "sync": "Aufgaben synchronisieren",
+      "security": "Sicherheitsmonitor",
+      "feedbackApproval": "Feedback-Freigabe",
+      "customSort": "Benutzerdefinierte Sortierung",
+      "quickAccess": "Schnellzugriff",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
@@ -200,7 +205,7 @@
     "showMore": "Mehr anzeigen",
     "approval": {
       "approvalTitle": "Feedback Genehmigung",
-      "about": "Bitte überprüfe und genehmige das Feedback.",
+      "about": "Bitte überprüfe und genehmige das Feedback",
       "instruction": "Das Feedback muss unserem <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> entsprechen.",
       "reviewFeedback": "Feedback Review",
       "history": "Historie",
@@ -216,15 +221,7 @@
       "reviewDate": "Datum des Reviews",
       "approveBtnLabel": "Genehmigen",
       "rejectBtnLabel": "Ablehnen",
-      "pageTitle": "Einfache Verwaltung der Feedback Genehmigung",
-      "description": "Stelle  sicher, dass nur das beste Feedback weitergeleitet wird.",
-      "enterToken": "Bitte gebe Deinen Token ein, um auf das Feedback Approval zuzugreifen.",
-      "enterTokenPlaceholder": "Gebe Deinen Token ein",
-      "proceedBtnLabel": "Weiter",
       "noFeedbacks": "Keine Feedback verfügbar."
-    },
-    "security": {
-      "pageTitle": "Security Monitor"
     },
     "externalDocument": {
       "pageHeader": "Das Dokument des {{product}} für die Version {{version}}",
@@ -289,6 +286,92 @@
           "disabled_unknown": "Deaktiviert (unbekannt): Der Workflow ist aus unbekannten Gründen deaktiviert. Überprüfen Sie die Konfiguration oder die Berechtigungen des Repositories.",
           "deleted": "Gelöscht: Die Workflow-Datei wurde aus dem Repository gelöscht und kann nicht ausgeführt werden."
         }
+      }
+    },
+    "admin": {
+      "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
+      "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu",
+      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen.", 
+      "enterTokenPlaceholder": "Gebe Deinen Token ein",
+      "proceedBtnLabel": "Weiter",
+      "extensionId": "Erweiterungs-ID",
+      "sync": {
+        "pageTitle": "Synchronisationsaufgaben",
+        "title": "Synchronisationsaufgaben",
+        "description": "Synchronisationsaufgaben verwalten",
+        "helpText": "Synchronisationsaufgaben halten Marktplatzdaten aktuell, indem regelmäßig Aktualisierungen aus externen Quellen abgerufen werden. Administratoren können ihren Status verfolgen und sicherstellen, dass die neuesten Informationen im Marktplatz angezeigt werden.",
+        "number": "Nr.",
+        "action": "Aktionen",
+        "syncTask": "Synchronisationsaufgabe",
+        "status": "Status",
+        "lastRun": "Zuletzt ausgeführt am",
+        "completed": "Abgeschlossen am",
+        "message": "Nachricht",
+        "syncLabel": "Synchronisieren",
+        "syncingLabel": "Synchronisierung läuft …",
+        "cancelLabel": "Abbrechen",
+        "tasks": {
+          "syncProducts": "Alle Produkte synchronisieren",
+          "syncOneProduct": "Ein Produkt synchronisieren",
+          "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
+          "syncGithubMonitor": "GitHub-Monitor synchronisieren"
+        },
+        "syncOneProductDialog": {
+          "title": "Ein Produkt synchronisieren",
+          "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zur Synchronisierung aus",
+          "marketItemPath": "Marktplatz-Elementpfad",
+          "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
+          "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben",
+          "validationMessage": "Erweiterungs-ID und marketItemPath sind erforderlich!"
+        }
+      },
+      "securityMonitor": {
+        "pageTitle": "Sicherheitsmonitor",
+        "title": "GitHub-Repository-Sicherheitsmonitor",
+        "description": "Überwachung von Sicherheitslücken in Marketplace-Erweiterungen",
+        "helpText": "Der Sicherheitsmonitor unterstützt bei der Nachverfolgung von Sicherheitsereignissen und Warnmeldungen aus GitHub-Repositories, einschließlich Dependabot-Warnungen, Code-Scanning-Ergebnissen, Secret-Scanning-Funden usw. Administratoren können identifizierte Probleme überprüfen und geeignete Maßnahmen ergreifen, um die Sicherheit der im Marketplace angebotenen Erweiterungen sicherzustellen.",
+        "reloadData": "Daten neu laden",
+        "archived": "Archiviert",
+        "dependabot": "Dependabot",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert",
+        "noPermission": "Keine Berechtigung",
+        "noVulnerabilities": "Keine Sicherheitslücken",
+        "codeScanning": "Code-Scanning",
+        "secretScanning": "Secret-Scanning",
+        "branchProtection": "Branchenschutz",
+        "lastCommit": "Letzter Commit"
+      },
+      "customSort": {
+        "pageTitle": "Benutzerdefinierte Sortierung",
+        "title": "Benutzerdefinierte Sortierung von Erweiterungen",
+        "description": "Verwalten Sie die Sortierung der Markterweiterungen",
+        "helpText": "Die Benutzeroberfläche ermöglicht es, die <b>Standardsortierung</b> der auf dem <a class=\"link-opacity-100\" href=\"https://market.axonivy.com\">Axon Ivy Marketplace</a> angezeigten Erweiterungen anzupassen.",
+        "sortedExtensions": "Sortierte Erweiterungen",
+        "availableExtensions": "Verfügbare Erweiterungen",
+        "searchPlaceholder": "Erweiterung suchen",
+        "order": "Reihenfolge",
+        "dragAndDropHint": "Ziehen Sie Erweiterungen per Drag & Drop zwischen die beiden Listen, um ihre Anzeige­reihenfolge im Marketplace anzupassen. Erweiterungen in der Liste „Sortierte Erweiterungen“ werden zuerst gemäß der Standardsortierung angezeigt, während die in „Verfügbare Erweiterungen“ anschließend in alphabetischer Reihenfolge erscheinen.",
+        "dragHint": "Hierher ziehen.",
+        "noExtensions": "Keine Erweiterungen verfügbar.",
+        "sortHint": "Nur die sortierte Liste wird gespeichert; die übrigen Erweiterungen folgen der alphabetischen Reihenfolge.",
+        "sortLabel": "Sortieren",
+        "sortingLabel": "Sortierung...",
+        "sortSuccessMessage": "Sortierung erfolgreich gespeichert.",
+        "sortErrorMessage": "Speichern der Sortierung fehlgeschlagen. Bitte versuche es erneut.",
+        "loadingLabel": "Erweiterungen werden geladen..."
+      },
+      "quickAccess": {
+        "pageTitle": "Schnellzugriff",
+        "title": "Schnellzugriffslinks",
+        "description": "Verwalten Sie die Schnellzugriffe",
+        "helpText": "Konfigurieren Sie häufig verwendete Seiten oder externe Links, die als Schnellzugriffe im Admin-Dashboard angezeigt werden sollen. Administratoren können Links hinzufügen, bearbeiten oder entfernen, um eine effiziente Navigation zu ermöglichen.",
+        "monitoring": "Monitoring: Zugriff auf das Monitoring-Dashboard für Build-Pipelines und Testergebnisse.",
+        "monitoringNote": "Bitte täglich überprüfen, um sicherzustellen, dass alle Erweiterungen fehlerfrei sind.",
+        "releasePreview": "Release-Vorschau: Schnelle Vorschau der Erweiterungsdetails durch Hochladen einer ZIP-Datei mit einer README.md.",
+        "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
+        "monitoringTitle": "Überwachungsseite",
+        "releasePreviewTitle": "Release-Vorschauseite"
       }
     }
   }
