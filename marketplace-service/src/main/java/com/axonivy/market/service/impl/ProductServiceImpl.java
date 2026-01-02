@@ -67,14 +67,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.*;
@@ -610,7 +606,12 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
-    if (product != null ) {
+    if (product != null) {
+      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+      product.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+      product.setCompatibilityRange(compatibilityRange);
       updateFocusedStatusForProduct(product);
     }
     return product;

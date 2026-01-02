@@ -569,6 +569,11 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetailByIdAndVersion() {
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+      mockProductMarketplaceData.getInstallationCount());
+    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
+      .thenReturn(mockVersionAndUrlModels());
     GithubRepo mockGithubRepo = new GithubRepo();
     mockGithubRepo.setName(MOCK_PRODUCT_REPOSITORY_NAME);
     mockGithubRepo.setFocused(true);
@@ -578,7 +583,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     assertEquals(mockProduct, result,
         "Product detail by id and version should match mock product");
+    assertEquals(mockProductMarketplaceData.getInstallationCount(), result.getInstallationCount(),
+      "Installation count should be populated for versioned product detail");
+    assertEquals("10.0+", result.getCompatibilityRange(),
+      "Compatibility range should be computed for versioned product detail");
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    verify(versionService).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
   }
 
   @Test
