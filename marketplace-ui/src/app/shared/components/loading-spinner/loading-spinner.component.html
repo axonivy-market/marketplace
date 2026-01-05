@@ -1,9 +1,7 @@
 @if (isLoading()) {
-  <div [className]="containerClasses">
-    <div class="d-flex justify-content-center position-fixed top-50" data-title="dot-stretching">
-      <div class="stage">
-        <div class="dot-stretching"></div>
-      </div>
+  <div [className]="'d-flex justify-content-center ' + containerClasses" data-title="dot-stretching">
+    <div class="stage">
+      <div class="dot-stretching"></div>
     </div>
   </div>
 }
