@@ -120,7 +120,7 @@ export class ProductFeedbackService {
             this.allFeedbacks().find(f => f.id === partialUpdatedFeedback.id);
 
           const updatedFeedback: Feedback = {
-            ...existingFeedback!,
+            ...(existingFeedback ?? ({} as Feedback)),
             ...partialUpdatedFeedback
           };
 
