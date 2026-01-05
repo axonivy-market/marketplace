@@ -12,7 +12,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize, switchMap } from 'rxjs';
+import { EMPTY, finalize, switchMap, tap, Observable } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
@@ -66,39 +66,43 @@ export class FeedbackApprovalComponent implements OnInit {
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
   }
 
-  fetchUserInfo(): void {
-    this.authService.getUserInfo(this.token).pipe(
-      switchMap(() => this.authService.getDisplayNameFromAccessToken(this.token))
-    ).subscribe({
-      next: name => {
-        this.isAuthenticated = !!name;
-      },
-      error: err => this.handleError(err)
-    });
-  }
-
   fetchFeedbacks(): void {
-    this.fetchUserInfo();
-    if (!this.isAuthenticated) {
+    if (!this.token) {
       this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-      this.isLoading = false;
+      this.isAuthenticated = false;
       return;
     }
-    this.productFeedbackService
-      .findProductFeedbacks()
+
+    this.isLoading = true;
+    this.fetchUserInfo()
       .pipe(
+        switchMap(name => {
+          if (!name) {
+            this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+            return EMPTY;
+          }
+          this.errorMessage = '';
+          return this.productFeedbackService.findProductFeedbacks();
+        }),
         finalize(() => {
           this.isLoading = false;
         })
       )
-      .subscribe({
-        next: () => {
-          this.isAuthenticated = true;
-        },
-        error: err => {
-          this.handleError(err);
-        }
-      });
+      .subscribe();
+  }
+
+  fetchUserInfo(): Observable<string | null> {
+    return this.authService
+      .getUserInfo(this.token)
+      .pipe(
+        switchMap(() =>
+          this.authService.getDisplayNameFromAccessToken(this.token)
+        ),
+        tap(name => {
+          this.isAuthenticated = !!name;
+          this.moderatorName = name;
+        })
+      );
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -108,6 +112,7 @@ export class FeedbackApprovalComponent implements OnInit {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
     this.isAuthenticated = false;
+    this.moderatorName = null;
     sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
 
@@ -121,9 +126,17 @@ export class FeedbackApprovalComponent implements OnInit {
         userId: feedback.userId,
         isApproved
       };
+      this.isLoading = true;
       this.productFeedbackService
         .updateFeedbackStatus(approvalRequest)
-        .subscribe(() => this.fetchFeedbacks());
+        .pipe(
+          finalize(() => {
+            this.isLoading = false;
+          })
+        )
+        .subscribe({
+          error: err => this.handleError(err)
+      });
     }
   }
 
