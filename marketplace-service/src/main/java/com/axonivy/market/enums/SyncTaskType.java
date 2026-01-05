@@ -12,7 +12,8 @@ public enum SyncTaskType {
   SYNC_PRODUCTS("syncProducts"),
   SYNC_ONE_PRODUCT("syncOneProduct"),
   SYNC_RELEASE_NOTES("syncLatestReleasesForProducts"),
-  SYNC_GITHUB_MONITOR("syncGithubMonitor");
+  SYNC_GITHUB_MONITOR("syncGithubMonitor"),
+  SYNC_SECURITY_MONITOR("syncSecurityMonitor");
 
   private final String key;
 

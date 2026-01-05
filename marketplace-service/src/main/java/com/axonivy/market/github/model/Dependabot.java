@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.Map;
 
 @Getter
@@ -13,4 +14,5 @@ import java.util.Map;
 public class Dependabot {
   private Map<String, Integer> alerts;
   private AccessLevel status;
+  private Date lastUpdated;
 }

@@ -314,7 +314,8 @@
           "syncProducts": "Synchronize all products",
           "syncOneProduct": "Synchronize one product",
           "syncLatestReleasesForProducts": "Synchronize product release notes",
-          "syncGithubMonitor": "Synchronize GitHub monitor"
+          "syncGithubMonitor": "Synchronize GitHub monitor",
+          "syncSecurityMonitor": "Synchronize Security monitor"
         },
         "syncOneProductDialog": {
           "title": "Synchronize One Product",
