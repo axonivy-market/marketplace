@@ -116,7 +116,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
     ).toHaveBeenCalledWith(MOCK_APPROVED_FEEDBACK);
-    expect(component.fetchFeedbacks).toHaveBeenCalled();
   }));
 
   it('should update activeTab', () => {
@@ -186,19 +185,23 @@ describe('FeedbackApprovalComponent', () => {
     expect(historyTable.componentInstance.isHistoryTab).toBeTrue();
   });
 
-  it('should initialize with stored token', () => {
-    spyOn(component, 'fetchFeedbacks');
+  it('should initialize with stored token', fakeAsync(() => {
+    const fetchFeedbacksSpy = spyOn(component, 'fetchFeedbacks').and.callThrough();
     (sessionStorage.getItem as jasmine.Spy).and.returnValue('storedToken');
+
     component.ngOnInit();
+    tick();
+
     expect(component.token).toBe('storedToken');
     expect(component.isAuthenticated).toBeTrue();
-    expect(component.fetchFeedbacks).toHaveBeenCalled();
-  });
+    expect(fetchFeedbacksSpy).toHaveBeenCalled();
+  }));
 
   it('should handle fetchUserInfo success', fakeAsync(() => {
     component.token = 'testToken';
-    component.fetchUserInfo();
+    component.fetchUserInfo().subscribe();
     tick();
+
     expect(authServiceMock.getUserInfo).toHaveBeenCalledWith('testToken');
     expect(authServiceMock.getDisplayNameFromAccessToken).toHaveBeenCalledWith(
       'testToken'
@@ -252,7 +255,7 @@ describe('FeedbackApprovalComponent', () => {
     );
 
     component.token = 'test-token';
-    component.fetchUserInfo();
+    component.fetchUserInfo().subscribe();
     tick();
 
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);

@@ -12,7 +12,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, finalize, switchMap, tap, Observable } from 'rxjs';
+import { EMPTY, catchError, finalize, of, switchMap, tap, Observable } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
@@ -84,6 +84,10 @@ export class FeedbackApprovalComponent implements OnInit {
           this.errorMessage = '';
           return this.productFeedbackService.findProductFeedbacks();
         }),
+        catchError(err => {
+          this.handleError(err);
+          return EMPTY;
+        }),
         finalize(() => {
           this.isLoading = false;
         })
@@ -101,6 +105,10 @@ export class FeedbackApprovalComponent implements OnInit {
         tap(name => {
           this.isAuthenticated = !!name;
           this.moderatorName = name;
+        }),
+        catchError(err => {
+          this.handleError(err);
+          return of(null);
         })
       );
   }
