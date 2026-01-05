@@ -57,6 +57,7 @@ describe('FooterComponent', () => {
 
   it('navbar should not display in mobile screen', () => {
     viewport.set(540);
+    fixture.detectChanges();
 
     const mobileSearch = fixture.debugElement.query(By.css('.footer__navbar'));
 
