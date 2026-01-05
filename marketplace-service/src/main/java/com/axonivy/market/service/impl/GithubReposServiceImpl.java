@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.aspect.TrackSyncTaskExecution;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
@@ -9,7 +10,6 @@ import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;

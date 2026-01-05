@@ -1,14 +1,12 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.aspect.Authorized;
+import com.axonivy.market.aspect.Loggable;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,14 +22,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(PRODUCT_MARKETPLACE_DATA)
@@ -40,17 +36,12 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Validated
 @Log4j2
 public class ProductMarketplaceDataController {
-  private final GitHubService gitHubService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
 
+  @Authorized
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
-  public ResponseEntity<Message> createCustomSortProducts(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  public ResponseEntity<Message> createCustomSortProducts(@RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
     productMarketplaceDataService.addCustomSortProduct(productCustomSortRequest);
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
         "Custom product sort order added successfully");

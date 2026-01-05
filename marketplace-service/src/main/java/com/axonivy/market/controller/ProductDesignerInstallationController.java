@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.logging.Loggable;
+import com.axonivy.market.aspect.Loggable;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.service.ProductDesignerInstallationService;
 import io.swagger.v3.oas.annotations.Operation;

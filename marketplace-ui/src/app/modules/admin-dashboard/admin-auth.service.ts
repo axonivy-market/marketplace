@@ -4,11 +4,13 @@ import {
   ADMIN_SESSION_TOKEN,
   BEARER
 } from '../../shared/constants/common.constant';
-import { HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
+  private readonly httpClient = inject(HttpClient);
 
   get token(): string | null {
     return this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? null;
@@ -16,6 +18,13 @@ export class AdminAuthService {
 
   setToken(token: string): void {
     this.storageRef.session?.setItem(ADMIN_SESSION_TOKEN, token);
+  }
+
+  validateToken(token:string): Observable<any> {
+    this.setToken('');
+    return this.httpClient.put('auth/github/validation', {}, {
+      headers: this.createAuthHeader(token)
+    });
   }
 
   clearToken(): void {
@@ -31,8 +40,12 @@ export class AdminAuthService {
       return new HttpHeaders();
     }
 
+    return this.createAuthHeader(this.token);
+  }
+
+  private createAuthHeader(token: string): HttpHeaders {
     return new HttpHeaders({
-      Authorization: `${BEARER} ${this.token}`
+      Authorization: `${BEARER} ${token}`
     });
   }
 }

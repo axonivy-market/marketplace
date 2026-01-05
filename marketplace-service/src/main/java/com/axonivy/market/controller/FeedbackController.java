@@ -1,9 +1,8 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aspect.Authorized;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -56,9 +55,7 @@ public class FeedbackController {
 
   private final FeedbackService feedbackService;
   private final JwtService jwtService;
-  private final GitHubService gitHubService;
   private final FeedbackModelAssembler feedbackModelAssembler;
-
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
   @GetMapping(PRODUCT_BY_ID)
@@ -109,14 +106,10 @@ public class FeedbackController {
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedbacks), HttpStatus.OK);
   }
 
+  @Authorized
   @GetMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
-  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @ParameterObject Pageable pageable) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
     Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -136,6 +129,7 @@ public class FeedbackController {
     return ResponseEntity.ok(model);
   }
 
+  @Authorized
   @PostMapping
   @Operation(summary = "Create user feedback",
       description = "Save user feedback of product with their token from Github account.")
@@ -147,15 +141,7 @@ public class FeedbackController {
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
       @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456",
           in = ParameterIn.HEADER) String bearerToken) {
-    String token = AuthorizationUtils.getBearerToken(bearerToken);
-
-    // Validate the token
-    if (token == null || !jwtService.validateToken(token)) {
-      // Unauthorized if token is missing or invalid
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    var claims = jwtService.getClaimsFromToken(token);
+    var claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(bearerToken));
     var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
 
     var location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())

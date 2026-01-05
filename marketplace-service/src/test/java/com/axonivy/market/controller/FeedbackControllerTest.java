@@ -72,7 +72,7 @@ class FeedbackControllerTest extends BaseSetup {
   @BeforeEach
   void setup() {
     feedbackModelAssembler = new FeedbackModelAssembler(githubUserService);
-    feedbackController = new FeedbackController(service, jwtService, gitHubService, feedbackModelAssembler,
+    feedbackController = new FeedbackController(service, jwtService, feedbackModelAssembler,
         pagedResourcesAssembler);
   }
 
@@ -152,7 +152,6 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindAllFeedbacks() {
     PageRequest pageable = PageRequest.of(0, 20);
     Feedback mockFeedback = createFeedbackMock();
-    String authHeader = "Bearer sample-token";
     GithubUser mockGithubUser = createUserMock();
 
     Page<Feedback> mockFeedbacks = new PageImpl<>(List.of(mockFeedback), pageable, 1);
@@ -162,7 +161,7 @@ class FeedbackControllerTest extends BaseSetup {
     var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
 
-    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+    var result = feedbackController.findAllFeedbacks(pageable);
 
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when all feedbacks are retrieved.");
@@ -178,12 +177,10 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindAllFeedbacksEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<Feedback> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-    String authHeader = "Bearer sample-token";
-
     when(service.findAllFeedbacks(pageable)).thenReturn(emptyPage);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
 
-    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+    var result = feedbackController.findAllFeedbacks(pageable);
 
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when no feedbacks are found.");

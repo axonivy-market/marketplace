@@ -2,6 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
+import com.axonivy.market.util.validator.AuthorizationUtils;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -41,6 +43,17 @@ public class JwtServiceImpl implements JwtService {
         .signWith(SignatureAlgorithm.HS512, secret).compact();
   }
 
+  @Override
+  public String generateJWTFromGitHubToken(String accessToken) {
+    return Jwts.builder()
+        .setSubject("MarketInternalToken")
+        .claim("accessToken", accessToken)
+        .setIssuedAt(new Date())
+        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
+        .signWith(SignatureAlgorithm.HS512, secret)
+        .compact();
+  }
+
   public boolean validateToken(String token) {
     try {
       getClaimsJws(token);
@@ -58,5 +71,12 @@ public class JwtServiceImpl implements JwtService {
 
   public Jws<Claims> getClaimsJws(String token) {
     return Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+  }
+
+  @Override
+  public String getRawAccessToken(String jwtToken) {
+    var token = AuthorizationUtils.getBearerToken(jwtToken);
+    Claims claims = getClaimsFromToken(token);
+    return claims.get("accessToken", String.class);
   }
 }

@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aspect.Authorized;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
@@ -58,36 +59,30 @@ public class MonitorDashBoardController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<String> syncGithubMonitor(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
+  @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   public ResponseEntity<String> syncOneGithubMonitor(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) throws IOException {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.loadAndStoreTestReportsForOneProduct(id);
     return ResponseEntity.ok("Repository loaded successfully.");
   }
 
+  @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
   public ResponseEntity<String> updateFocusedRepo(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(REPOS) List<String> repos) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }

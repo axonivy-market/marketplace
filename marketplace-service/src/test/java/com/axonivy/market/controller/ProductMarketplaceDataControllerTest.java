@@ -33,8 +33,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   @Test
   void testCreateCustomSortProducts() {
     ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
-    var response = productMarketplaceDataController.createCustomSortProducts(AUTHORIZATION_HEADER,
-        mockProductCustomSortRequest);
+    var response = productMarketplaceDataController.createCustomSortProducts(mockProductCustomSortRequest);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Expected response status code: " + response.getStatusCode() + " to match HTTP status 200 OK");

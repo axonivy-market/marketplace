@@ -50,7 +50,6 @@ class ProductControllerTest extends BaseSetup {
       "uncover information in unstructured data.";
   private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning " +
       "to uncover information in unstructured data. DE";
-  private static final String INVALID_AUTHORIZATION_HEADER = "Bearer invalid_token";
 
   @Mock
   private ProductService service;
@@ -124,7 +123,7 @@ class ProductControllerTest extends BaseSetup {
   void testSyncProductsSuccess() {
     when(service.syncLatestDataFromMarketRepo(false)).thenReturn(List.of());
 
-    var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
+    var response = productController.syncProducts(false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
     assertTrue(response.hasBody(),  "Expected response to have a body");
@@ -138,7 +137,7 @@ class ProductControllerTest extends BaseSetup {
   void testSyncProductsWithResetSuccess() {
     when(service.syncLatestDataFromMarketRepo(true)).thenReturn(List.of("portal"));
 
-    var response = productController.syncProducts(AUTHORIZATION_HEADER, true);
+    var response = productController.syncProducts(true);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
     assertTrue(response.hasBody(), "Expected response to have a body");
@@ -155,7 +154,7 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false),
+        () -> productController.syncProducts(false),
         "Expected UnauthorizedException to be thrown when token is invalid");
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
@@ -167,7 +166,7 @@ class ProductControllerTest extends BaseSetup {
     Product product = new Product();
     product.setId("a-trust");
     when(axonIvyMarketRepoService.getMarketItemByPath(any(String.class))).thenReturn(new ArrayList<>());
-    var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+    var response = productController.syncOneProduct(PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE, true);
 
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
@@ -187,7 +186,7 @@ class ProductControllerTest extends BaseSetup {
     contents.add(content);
     when(axonIvyMarketRepoService.getMarketItemByPath(any(String.class))).thenReturn(contents);
     when(service.syncOneProduct(any(String.class), any(String.class), any(Boolean.class))).thenReturn(true);
-    var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+    var response = productController.syncOneProduct(PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE, true);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
@@ -205,7 +204,7 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncOneProduct(INVALID_AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+        () -> productController.syncOneProduct(PRODUCT_ID_SAMPLE,
             PRODUCT_PATH_SAMPLE, false),
         "Expected UnauthorizedException when syncing product with an invalid token");
 
@@ -249,7 +248,7 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncFirstPublishedDateOfAllProducts(INVALID_AUTHORIZATION_HEADER),
+        () -> productController.syncFirstPublishedDateOfAllProducts(),
         "Calling syncFirstPublishedDateOfAllProducts with an invalid token should throw UnauthorizedException");
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
@@ -259,7 +258,7 @@ class ProductControllerTest extends BaseSetup {
   @Test
   void testSyncFirstPublishedDateOfAllProductsFailed() {
     when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
-    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    var response = productController.syncFirstPublishedDateOfAllProducts();
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
         "Response status should be OK even when syncing first published dates fails");
@@ -270,7 +269,7 @@ class ProductControllerTest extends BaseSetup {
   @Test
   void testSyncFirstPublishedDateOfAllProductsSuccess() {
     when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(true);
-    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    var response = productController.syncFirstPublishedDateOfAllProducts();
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be OK when syncing first published dates succeeds");
@@ -282,7 +281,7 @@ class ProductControllerTest extends BaseSetup {
   void testSyncProductArtifactsSuccess() {
     when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(5);
 
-    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
+    var response = productController.syncProductArtifacts(false, null);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be OK when product artifacts are successfully synced");
@@ -296,7 +295,7 @@ class ProductControllerTest extends BaseSetup {
   void testSyncProductArtifactsNothingToSync() {
     when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(0);
 
-    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
+    var response = productController.syncProductArtifacts(false, null);
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
         "Response status should be NO_CONTENT when there are no artifacts to sync");
@@ -313,7 +312,7 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false, null),
+        () -> productController.syncProductArtifacts(false, null),
         "Expected UnauthorizedException when using an invalid authorization token");
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),

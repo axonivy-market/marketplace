@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aspect.Authorized;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
@@ -26,13 +27,12 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class SecurityMonitorController {
   private final GitHubService gitHubService;
 
+  @Authorized
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<Object> getGitHubMarketplaceSecurity(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     List<ProductSecurityInfo> securityInfoList = gitHubService.getSecurityDetailsForAllProducts(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     return ResponseEntity.ok(securityInfoList);

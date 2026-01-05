@@ -1,10 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.aspect.Authorized;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.service.SyncTaskExecutionService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,26 +27,21 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class SyncTaskExecutionController {
 
   private final SyncTaskExecutionService syncTaskExecutionService;
-  private final GitHubService gitHubService;
 
+  @Authorized
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<List<SyncTaskExecutionModel>> getAllSyncTaskExecutions(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     List<SyncTaskExecutionModel> models = syncTaskExecutionService.getAllSyncTaskExecutions();
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
+  @Authorized
   @GetMapping("/{jobKey}")
   @Operation(hidden = true)
   public ResponseEntity<SyncTaskExecutionModel> getSyncTaskExecutionByKey(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @PathVariable String jobKey) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     SyncTaskExecutionModel model = syncTaskExecutionService.getSyncTaskExecutionByKey(jobKey);
     if (ObjectUtils.isEmpty(model)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);

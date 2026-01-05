@@ -61,4 +61,4 @@ public interface GitHubService {
   GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException;
 
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
-  }
+}
