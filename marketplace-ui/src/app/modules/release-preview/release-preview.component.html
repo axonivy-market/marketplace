@@ -90,9 +90,7 @@
           <div class="tab-pane fade show" [class.active]="activeTab === displayedTab.value" [id]="displayedTab.value"
             role="tabpanel" [attr.aria-labelledby]="displayedTab.value + '-tab'">
             <div class="readme-content" 
-              [innerHtml]="
-                renderReadmeContent(getReadmeContentValue(displayedTab) | multilingualism: languageService.selectedLanguage())
-              "></div>
+              [innerHtml]="loadedReadmeContent[activeTab]"></div>
           </div>
           }
         </div>
