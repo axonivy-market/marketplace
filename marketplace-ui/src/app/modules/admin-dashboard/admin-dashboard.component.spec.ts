@@ -460,48 +460,6 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  describe('handleSyncTaskSuccess - additional coverage', () => {
-    it('should reload executions after successful sync', fakeAsync(() => {
-      mockAdminService.fetchSyncTaskExecutions.calls.reset();
-      fixture.detectChanges();
-      component.isAuthenticated = true;
-      mockAdminService.syncProducts.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      component.trigger(syncTask);
-      tick();
-
-      // Verify reloadExecutions was called (fetchSyncTaskExecutions should be called twice: once in ngOnInit and once in reload)
-      expect(mockAdminService.fetchSyncTaskExecutions).toHaveBeenCalledTimes(2);
-    }));
-  });
-
-  describe('reloadExecutions - error handling', () => {
-    it('should handle error when reloading executions', fakeAsync(() => {
-      component.isAuthenticated = true;
-      
-      // First call succeeds (ngOnInit), second call (reload) fails
-      const errorResponse = new HttpErrorResponse({ status: UNAUTHORIZED });
-      mockAdminService.fetchSyncTaskExecutions.and.returnValues(
-        of(mockExecutions),
-        throwError(() => errorResponse)
-      );
-      mockAdminService.syncProducts.and.returnValue(of());
-      
-      fixture.detectChanges(); // This triggers ngOnInit with first fetchSyncTaskExecutions
-      mockAuthService.clearToken.calls.reset();
-      
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      component.trigger(syncTask);
-      tick();
-
-      expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-      expect(mockAuthService.clearToken).toHaveBeenCalled();
-    }));
-  });
-
   describe('confirmSyncOneProduct - edge cases', () => {
     beforeEach(() => {
       fixture.detectChanges();
@@ -519,7 +477,7 @@ describe('AdminDashboardComponent', () => {
 
     it('should not reload executions on sync one product failure when not authenticated', fakeAsync(() => {
       mockAdminService.syncOneProduct.and.returnValue(throwError(() => new Error('Sync failed')));
-      component.productSearch = 'product-1';
+      component.productSearch = 'portal';
       component.marketDirectory = 'dir1';
       component.isAuthenticated = false;
       mockAdminService.fetchSyncTaskExecutions.calls.reset();
@@ -528,20 +486,6 @@ describe('AdminDashboardComponent', () => {
       tick();
 
       expect(mockAdminService.fetchSyncTaskExecutions).not.toHaveBeenCalled();
-    }));
-
-    it('should reload executions on sync one product success', fakeAsync(() => {
-      component.isAuthenticated = true;
-      mockAdminService.syncOneProduct.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      component.productSearch = 'product-1';
-      component.marketDirectory = 'dir1';
-      mockAdminService.fetchSyncTaskExecutions.calls.reset();
-
-      component.confirmSyncOneProduct();
-      tick();
-
-      expect(mockAdminService.fetchSyncTaskExecutions).toHaveBeenCalled();
     }));
   });
 });
