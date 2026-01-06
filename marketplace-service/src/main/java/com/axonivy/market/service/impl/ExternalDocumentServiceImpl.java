@@ -42,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,7 +51,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.util.DocPathUtils.*;
-import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -97,29 +97,26 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return;
     }
     List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
-    List<String> releasedVersions = getValidReleaseVersionsFromProduct(product.getReleasedVersions(), version);
+    List<String> releasedVersions = product.getReleasedVersions();
     if (isNotEmpty(docArtifacts) && isNotEmpty(releasedVersions)) {
-      downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts);
+        downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
+            version);
     }
-  }
-
-  private static List<String> getValidReleaseVersionsFromProduct(List<String> releaseVersions, String version) {
-    if (isEmpty(version)) {
-      return Optional.ofNullable(releaseVersions).stream().flatMap(List::stream)
-          .filter(VersionUtils::isValidFormatReleasedVersion).distinct().toList();
-    }
-    return List.of(version);
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
-      List<String> releasedVersions, List<Artifact> docArtifacts) {
+      List<String> releasedVersions, List<Artifact> docArtifacts, String needToBeSyncedVersion) {
     if (isResetSync) {
-      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
-          Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
+      if (StringUtils.isBlank(needToBeSyncedVersion)) {
+        externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
+            Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
+      } else {
+        externalDocumentMetaRepo.deleteByProductIdAndVersion(productId, needToBeSyncedVersion);
+      }
     }
 
     for (Artifact artifact : docArtifacts) {
-      createExternalDocumentMetaForProduct(productId, isResetSync, artifact, releasedVersions);
+      createExternalDocumentMetaForProduct(productId, isResetSync, artifact, releasedVersions, needToBeSyncedVersion);
     }
   }
 
@@ -199,22 +196,31 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
-      List<String> releasedVersions) {
-    List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
-    log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
+      List<String> releasedVersions, String needToBeSyncedVersion) {
+    List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
+        getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
+
     // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
           "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
       return;
     }
+
     Map<String, String> latestSupportedDocVersions = VersionFactory
         .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
-
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
-    for (String version : missingVersions) {
-      handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions);
-    }
+
+    Map<String, String> needToBeSyncedDocVersionMap = new HashMap<>();
+    latestSupportedDocVersions.forEach((majorVersion, version) -> {
+      if (needToBeSyncedDocVersions.contains(version)) {
+        needToBeSyncedDocVersionMap.put(majorVersion, version);
+      }
+    });
+
+    needToBeSyncedDocVersionMap.forEach((majorVersion, version) ->
+        handleDocumentMeta(productId, artifact, majorVersion, version, isResetSync)
+    );
   }
 
   public boolean shouldDownloadDocAndUnzipToShareFolder() {
@@ -234,25 +240,32 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         }
       }
       missingVersions = releasedVersions.stream().filter(version -> !existedDocMetaVersions.contains(version)).toList();
+      log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
     }
+
     return missingVersions;
   }
 
-  private void handleDocumentMeta(String productId, Artifact artifact, String version,
-      boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
-    // Switch to nexus repo for artifact
-    artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
-    String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-    String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+  private void handleDocumentMeta(String productId, Artifact artifact, String majorVersion, String version,
+      boolean isResetSync) {
+    if (StringUtils.isAnyBlank(majorVersion, version)) {
+      return;
+    }
+
+    String location = getLocationByArtifactAndVersion(artifact, version, isResetSync);
     if (StringUtils.isBlank(location)) {
       return;
     }
-    if (latestSupportedDocVersions.containsKey(version)) {
-      String mappedVersion = latestSupportedDocVersions.get(version);
-      String symlinkVersion = StringUtils.defaultIfBlank(mappedVersion, version);
-      createSymlinkForMajorVersion(Paths.get(location), symlinkVersion);
-    }
-    buildDocumentWithLanguage(location, artifact, productId, version, latestSupportedDocVersions);
+
+    createSymlinkForMajorVersion(Paths.get(location), majorVersion);
+    buildDocumentWithLanguage(location, artifact, productId, version, majorVersion);
+  }
+
+  private String getLocationByArtifactAndVersion(Artifact artifact, String version, boolean isResetSync) {
+    // Switch to nexus repo for artifact
+    artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
+    String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
+    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
@@ -304,7 +317,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version,
-      Map<String, String> latestSupportedDocVersions) {
+      String majorVersion) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
@@ -312,12 +325,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         ExternalDocumentMeta meta = buildDocumentMeta(link, language, artifact, productId, version);
         externalDocumentMetaRepo.save(meta);
 
-        if (latestSupportedDocVersions.containsKey(version)) {
-          String majorVersion = latestSupportedDocVersions.get(version);
-          String majorLink = link.replace(version, majorVersion);
-          ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
-          externalDocumentMetaRepo.save(majorMeta);
-        }
+        String majorLink = link.replace(version, majorVersion);
+        ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
+        externalDocumentMetaRepo.save(majorMeta);
       });
     } else {
       ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
