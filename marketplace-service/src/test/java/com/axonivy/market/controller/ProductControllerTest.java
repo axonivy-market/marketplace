@@ -7,7 +7,6 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ProductDependencyService;
@@ -148,20 +147,6 @@ class ProductControllerTest extends BaseSetup {
   }
 
   @Test
-  void testSyncProductsInvalidToken() {
-    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
-
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProducts(false),
-        "Expected UnauthorizedException to be thrown when token is invalid");
-
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
-        "Expected exception message to be '" + ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText());
-  }
-
-  @Test
   void testSyncOneProductInvalidProductPath() {
     Product product = new Product();
     product.setId("a-trust");
@@ -198,21 +183,6 @@ class ProductControllerTest extends BaseSetup {
   }
 
   @Test
-  void testSyncOneProductInvalidToken() {
-    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
-
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncOneProduct(PRODUCT_ID_SAMPLE,
-            PRODUCT_PATH_SAMPLE, false),
-        "Expected UnauthorizedException when syncing product with an invalid token");
-
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
-        "Exception message should match the expected unauthorized help text");
-  }
-
-  @Test
   void testGetBearerTokenWithValidHeader() {
     String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
     assertEquals("valid_token", token,
@@ -239,20 +209,6 @@ class ProductControllerTest extends BaseSetup {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
-  }
-
-  @Test
-  void testSyncFirstPublishedDateOfAllProductsInvalidToken() {
-    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
-
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncFirstPublishedDateOfAllProducts(),
-        "Calling syncFirstPublishedDateOfAllProducts with an invalid token should throw UnauthorizedException");
-
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
-        "UnauthorizedException message should match the expected help text for unauthorized GitHub users");
   }
 
   @Test
@@ -303,19 +259,5 @@ class ProductControllerTest extends BaseSetup {
         "Response should still contain a body even when there are no artifacts to sync");
     assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails(),
         "Response message should indicate that there was nothing to sync");
-  }
-
-  @Test
-  void testSyncProductArtifactsInvalidToken() {
-    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
-
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductArtifacts(false, null),
-        "Expected UnauthorizedException when using an invalid authorization token");
-
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage(),
-        "Exception message should match the unauthorized help text");
   }
 }

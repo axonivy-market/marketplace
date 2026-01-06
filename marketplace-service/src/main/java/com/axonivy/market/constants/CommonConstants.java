@@ -37,8 +37,4 @@ public class CommonConstants {
   public static final String INDEX_HTML = "index.html";
   public static final String SAFE_PATH_REGEX = "^[a-zA-Z0-9._-]+$";
   public static final String IVY_HEADER = "ivy";
-  public static final String NAME = "name";
-  public static final String USERNAME = "username";
-  public static final String ACCESS_TOKEN = "accessToken";
-  public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
 }

@@ -1,12 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
-import com.axonivy.market.service.JwtService;
+import com.axonivy.market.service.OAuth2Service;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,19 +15,15 @@ import org.springframework.http.ResponseEntity;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
 
-  @Mock
-  private GitHubService gitHubService;
+  private static final String JWT_TOKEN = "sampleJwtToken";
 
   @Mock
-  private JwtService jwtService;
-
+  private OAuth2Service oAuth2Service;
   @InjectMocks
   private OAuth2Controller oAuth2Controller;
 
@@ -44,84 +36,39 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLoginSuccess() throws Exception {
-    String accessToken = "sampleAccessToken";
-    GithubUser githubUser = createUserMock();
-    String jwtToken = "sampleJwtToken";
-
-    when(gitHubService.getAccessToken(any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
-    when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(githubUser);
-    when(jwtService.generateToken(githubUser, accessToken)).thenReturn(jwtToken);
-
+  void testGitHubLoginSuccess() {
+    when(oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode)).thenReturn(JWT_TOKEN);
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
     assertEquals(200, response.getStatusCode().value(),
         "Response status should be 200 OK when GitHub login succeeds");
-    assertEquals(Map.of("token", jwtToken), response.getBody(),
+    assertEquals(Map.of("token", JWT_TOKEN), response.getBody(),
         "Response body should contain the generated JWT token");
   }
 
   @Test
-  void testGitHubLoginOauth2ExchangeCodeException() throws Exception {
-    when(gitHubService.getAccessToken(any(), any())).thenThrow(
-        new Oauth2ExchangeCodeException("invalid_grant", "Invalid authorization code"));
-
+  void testGitHubLoginOauth2ExchangeCodeException() {
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
-        "Response status should be 400 BAD_REQUEST when OAuth2 exchange fails");
-
-    Map<String, String> body = (Map<String, String>) response.getBody();
-
-    assertEquals("invalid_grant", body.get(CommonConstants.ERROR),
-        "Response body should contain the correct error code from the exception");
-    assertEquals("Invalid authorization code", body.get(CommonConstants.MESSAGE),
-        "Response body should contain the correct error message from the exception");
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
+        "Response status should be 401 UNAUTHORIZED when OAuth2 exchange fails");
   }
 
   @Test
-  void testGitHubLoginGeneralException() throws Exception {
-    when(gitHubService.getAccessToken(any(), any())).thenThrow(new RuntimeException("Unexpected error"));
+  void testRequestAccessSuccess() {
+    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(JWT_TOKEN);
+    ResponseEntity<?> response = oAuth2Controller.requestAccess(JWT_TOKEN);
 
-    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
-        "Response status should be 400 BAD_REQUEST when a general exception occurs");
-
-    Map<String, String> body = (Map<String, String>) response.getBody();
-
-    assertTrue(body.containsKey(CommonConstants.MESSAGE),
-        "Response body should contain a 'message' key when an exception occurs");
-    assertEquals("Unexpected error", body.get(CommonConstants.MESSAGE),
-        "Response body should include the exception message");
+    assertEquals(200, response.getStatusCode().value(),
+        "Response status should be 200 OK when GitHub login succeeds");
+    assertEquals(Map.of("token", JWT_TOKEN), response.getBody(),
+        "Response body should contain the generated JWT token");
   }
 
   @Test
-  void testGitHubLoginEmptyAuthorizationCode() {
-    oauth2AuthorizationCode.setCode(null);
+  void testRequestAccessEmptyAuthorizationCode() {
+    ResponseEntity<?> response = oAuth2Controller.requestAccess("");
 
-    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
-        "Response status should be 400 BAD REQUEST when authorization code is empty.");
-    Map<String, String> body = (Map<String, String>) response.getBody();
-    assertTrue(body.containsKey(CommonConstants.MESSAGE),
-        "Response body should contain a 'message' key indicating the error.");
-  }
-
-  private GithubUser createUserMock() {
-    GithubUser githubUser = new GithubUser();
-    githubUser.setId("userId");
-    githubUser.setUsername("username");
-    githubUser.setName("User Name");
-    githubUser.setAvatarUrl("http://avatar.url");
-    githubUser.setProvider("github");
-    return githubUser;
-  }
-
-  private GitHubAccessTokenResponse createGitHubAccessTokenResponseMock() {
-    GitHubAccessTokenResponse gitHubAccessTokenResponse = new GitHubAccessTokenResponse();
-    gitHubAccessTokenResponse.setAccessToken("sampleAccessToken");
-    return gitHubAccessTokenResponse;
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
+        "Response status should be 401 UNAUTHORIZED when authorization code is empty.");
   }
 }

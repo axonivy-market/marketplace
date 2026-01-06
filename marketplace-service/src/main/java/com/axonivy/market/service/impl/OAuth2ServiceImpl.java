@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
 
   @Override
   public String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode) {
-    String errorMessage;
     try {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
           gitHubProperty);
@@ -37,12 +35,11 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       return jwtService.generateToken(githubUser, accessToken);
     } catch (Oauth2ExchangeCodeException e) {
       log.error("Login Github failed: ", e);
-      errorMessage = e.getErrorDescription();
+      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), e.getErrorDescription());
     } catch (Exception e) {
       log.error("Error getting authentication token: ", e);
-      errorMessage = e.getMessage();
+      throw new Oauth2ExchangeCodeException(HttpStatus.INTERNAL_SERVER_ERROR.name(), e.getMessage());
     }
-    throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), errorMessage);
   }
 
   @Override

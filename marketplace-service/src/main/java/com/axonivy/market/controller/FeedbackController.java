@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import io.jsonwebtoken.Claims;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -62,9 +62,7 @@ public class FeedbackController {
     @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading", parameters = {
             @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
             @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
-            @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting "
-                    +
-                    "order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true) })
+            @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true) })
     public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(
             @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String productId,
             @ParameterObject Pageable pageable) {
@@ -128,11 +126,9 @@ public class FeedbackController {
     public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
             HttpServletRequest request) {
         String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
-        var claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(token));
-        var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
-
-        var location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
-                .toUri();
+        Claims claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(token));
+        Feedback newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+        var location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId()).toUri();
 
         return ResponseEntity.created(location).build();
     }

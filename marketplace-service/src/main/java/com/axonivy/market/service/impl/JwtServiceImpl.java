@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
@@ -34,19 +34,21 @@ public class JwtServiceImpl implements JwtService {
   @Value("${jwt.expiration}")
   private long expiration;
 
+  @Override
   public String generateToken(GithubUser githubUser, String accessToken) {
     Map<String, Object> claims = new HashMap<>();
-    claims.put(CommonConstants.NAME, githubUser.getName());
-    claims.put(CommonConstants.USERNAME, githubUser.getUsername());
-    claims.put(CommonConstants.ACCESS_TOKEN, accessToken);
+    claims.put(GitHubConstants.NAME, githubUser.getName());
+    claims.put(GitHubConstants.USERNAME, githubUser.getUsername());
+    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
     return createNewJWTCompactToken(githubUser.getId(), claims);
   }
 
   @Override
   public String generateJWTFromGitHubToken(String accessToken) {
-    return createNewJWTCompactToken(CommonConstants.ADMIN_SESSION_TOKEN, Map.of(CommonConstants.ACCESS_TOKEN, accessToken));
+    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, Map.of(GitHubConstants.ACCESS_TOKEN, accessToken));
   }
 
+  @Override
   public boolean validateToken(String token) {
     try {
       getClaimsJws(token);
@@ -58,6 +60,7 @@ public class JwtServiceImpl implements JwtService {
     }
   }
 
+  @Override
   public Claims getClaimsFromToken(String token) {
     return getClaimsJws(token).getBody();
   }
@@ -70,7 +73,7 @@ public class JwtServiceImpl implements JwtService {
   public String getRawAccessToken(String jwtToken) {
     var token = AuthorizationUtils.getBearerToken(jwtToken);
     Claims claims = getClaimsFromToken(token);
-    return claims.get(CommonConstants.ACCESS_TOKEN, String.class);
+    return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
   }
 
   private String createNewJWTCompactToken(String subject, Map<String, Object> claims) {

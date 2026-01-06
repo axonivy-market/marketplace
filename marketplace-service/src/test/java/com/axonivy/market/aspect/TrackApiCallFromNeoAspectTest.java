@@ -1,4 +1,4 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aspect;
 
 import com.axonivy.market.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.service.MatomoService;
