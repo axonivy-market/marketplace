@@ -46,7 +46,6 @@ class FeedbackControllerTest extends BaseSetup {
   private static final String FEEDBACK_ID_SAMPLE = "feedback-id";
   private static final String USER_ID_SAMPLE = "user-id";
   private static final String USER_NAME_SAMPLE = "Test User";
-  private static final String TOKEN_SAMPLE = "token-sample";
 
   @Mock
   private FeedbackService service;
@@ -224,8 +223,7 @@ class FeedbackControllerTest extends BaseSetup {
     Claims mockClaims = createMockClaims();
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    when(jwtService.validateToken(TOKEN_SAMPLE)).thenReturn(true);
-    when(jwtService.getClaimsFromToken(TOKEN_SAMPLE)).thenReturn(mockClaims);
+    when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
     var result = feedbackController.createFeedback(mockFeedbackModel, request);
