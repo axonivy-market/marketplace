@@ -43,13 +43,13 @@ class SyncTaskExecutionControllerTest {
       doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
           TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
       ResponseEntity<List<SyncTaskExecutionModel>> response = controller.getAllSyncTaskExecutions(BEARER_TOKEN);
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals(models, response.getBody());
+      assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for getAllSyncTaskExecutions");
+      assertEquals(models, response.getBody(), "Response body should match the expected models");
     }
   }
 
   @Test
-  void testGetSyncTaskExecutionByKey_found() {
+  void testGetSyncTaskExecutionByKeyFound() {
     SyncTaskExecutionModel model = new SyncTaskExecutionModel();
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(model);
     try (MockedStatic<AuthorizationUtils> utils = mockStatic(AuthorizationUtils.class)) {
@@ -57,21 +57,21 @@ class SyncTaskExecutionControllerTest {
       doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
           TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
       ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(BEARER_TOKEN, JOB_KEY);
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals(model, response.getBody());
+      assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for found SyncTaskExecution");
+      assertEquals(model, response.getBody(), "Response body should match the expected model");
     }
   }
 
   @Test
-  void testGetSyncTaskExecutionByKey_notFound() {
+  void testGetSyncTaskExecutionByKeyNotFound() {
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(null);
     try (MockedStatic<AuthorizationUtils> utils = mockStatic(AuthorizationUtils.class)) {
       utils.when(() -> AuthorizationUtils.getBearerToken(BEARER_TOKEN)).thenReturn(TOKEN);
       doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
           TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
       ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(BEARER_TOKEN, JOB_KEY);
-      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-      assertNull(response.getBody());
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(), "Status should be NOT_FOUND for missing SyncTaskExecution");
+      assertNull(response.getBody(), "Response body should be null when not found");
     }
   }
 }

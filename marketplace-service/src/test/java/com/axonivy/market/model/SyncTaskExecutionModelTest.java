@@ -24,29 +24,29 @@ class SyncTaskExecutionModelTest {
                 .completedAt(MOCK_LOCAL_DATE)
                 .message(MESSAGE)
                 .build();
-        assertEquals(KEY, model.getKey());
-        assertEquals(SyncTaskStatus.SUCCESS, model.getStatus());
-        assertEquals(MOCK_LOCAL_DATE, model.getTriggeredAt());
-        assertEquals(MOCK_LOCAL_DATE, model.getCompletedAt());
-        assertEquals(MESSAGE, model.getMessage());
+        assertEquals(KEY, model.getKey(), "Key should match the input key");
+        assertEquals(SyncTaskStatus.SUCCESS, model.getStatus(), "Status should be SUCCESS");
+        assertEquals(MOCK_LOCAL_DATE, model.getTriggeredAt(), "TriggeredAt should match the input date");
+        assertEquals(MOCK_LOCAL_DATE, model.getCompletedAt(), "CompletedAt should match the input date");
+        assertEquals(MESSAGE, model.getMessage(), "Message should match the input message");
     }
 
     @Test
     void testNoArgsAndAllArgsConstructors() {
         SyncTaskExecutionModel noArgs = new SyncTaskExecutionModel();
-        assertNull(noArgs.getKey());
-        assertNull(noArgs.getStatus());
-        assertNull(noArgs.getTriggeredAt());
-        assertNull(noArgs.getCompletedAt());
-        assertNull(noArgs.getMessage());
+        assertNull(noArgs.getKey(), "Key should be null for no-args constructor");
+        assertNull(noArgs.getStatus(), "Status should be null for no-args constructor");
+        assertNull(noArgs.getTriggeredAt(), "TriggeredAt should be null for no-args constructor");
+        assertNull(noArgs.getCompletedAt(), "CompletedAt should be null for no-args constructor");
+        assertNull(noArgs.getMessage(), "Message should be null for no-args constructor");
 
         SyncTaskExecutionModel allArgs = new SyncTaskExecutionModel(
                 KEY, SyncTaskStatus.FAILED, MOCK_LOCAL_DATE, MOCK_LOCAL_DATE, MESSAGE);
-        assertEquals(KEY, allArgs.getKey());
-        assertEquals(SyncTaskStatus.FAILED, allArgs.getStatus());
-        assertEquals(MOCK_LOCAL_DATE, allArgs.getTriggeredAt());
-        assertEquals(MOCK_LOCAL_DATE, allArgs.getCompletedAt());
-        assertEquals(MESSAGE, allArgs.getMessage());
+        assertEquals(KEY, allArgs.getKey(), "Key should match the input key");
+        assertEquals(SyncTaskStatus.FAILED, allArgs.getStatus(), "Status should be FAILED");
+        assertEquals(MOCK_LOCAL_DATE, allArgs.getTriggeredAt(), "TriggeredAt should match the input date");
+        assertEquals(MOCK_LOCAL_DATE, allArgs.getCompletedAt(), "CompletedAt should match the input date");
+        assertEquals(MESSAGE, allArgs.getMessage(), "Message should match the input message");
     }
 
     @Test
@@ -59,10 +59,10 @@ class SyncTaskExecutionModelTest {
         execution.setMessage(DONE);
 
         SyncTaskExecutionModel model = SyncTaskExecutionModel.from(execution);
-        assertEquals(SyncTaskType.SYNC_PRODUCTS.getKey(), model.getKey());
-        assertEquals(SyncTaskStatus.SUCCESS, model.getStatus());
-        assertEquals(MOCK_LOCAL_DATE, model.getTriggeredAt());
-        assertEquals(MOCK_LOCAL_DATE, model.getCompletedAt());
-        assertEquals(DONE, model.getMessage());
+        assertEquals(SyncTaskType.SYNC_PRODUCTS.getKey(), model.getKey(), "Key should match the type's key");
+        assertEquals(SyncTaskStatus.SUCCESS, model.getStatus(), "Status should be SUCCESS");
+        assertEquals(MOCK_LOCAL_DATE, model.getTriggeredAt(), "TriggeredAt should match the input date");
+        assertEquals(MOCK_LOCAL_DATE, model.getCompletedAt(), "CompletedAt should match the input date");
+        assertEquals(DONE, model.getMessage(), "Message should match the input message");
     }
 }

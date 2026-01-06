@@ -25,7 +25,7 @@ class TrackSyncTaskExecutionAspectTest {
   }
 
   @Test
-  void testAroundSyncTask_success() throws Throwable {
+  void testAroundSyncTaskSuccess() throws Throwable {
     SyncTaskExecution execution = new SyncTaskExecution();
     when(track.value()).thenReturn(SyncTaskType.SYNC_PRODUCTS);
     when(syncTaskExecutionService.start(SyncTaskType.SYNC_PRODUCTS)).thenReturn(execution);
@@ -33,23 +33,21 @@ class TrackSyncTaskExecutionAspectTest {
 
     Object result = aspect.aroundSyncTask(pjp, track);
 
-    assertEquals("result", result);
+    assertEquals("result", result, "Result should match the value returned by pjp.proceed()");
     verify(syncTaskExecutionService).markStatusSuccess(execution, "Sync successfully!");
     verify(syncTaskExecutionService, never()).markStatusFailure(any(), any());
   }
 
   @Test
-  void testAroundSyncTask_failure() throws Throwable {
+  void testAroundSyncTaskFailure() throws Throwable {
     SyncTaskExecution execution = new SyncTaskExecution();
     when(track.value()).thenReturn(SyncTaskType.SYNC_PRODUCTS);
     when(syncTaskExecutionService.start(SyncTaskType.SYNC_PRODUCTS)).thenReturn(execution);
     String FAILED_MESSAGE = "fail";
     when(pjp.proceed()).thenThrow(new RuntimeException(FAILED_MESSAGE));
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
-      aspect.aroundSyncTask(pjp, track);
-    });
-    assertEquals(FAILED_MESSAGE, thrown.getMessage());
+    RuntimeException thrown = assertThrows(RuntimeException.class, () -> aspect.aroundSyncTask(pjp, track), "Should throw RuntimeException when pjp.proceed() fails");
+    assertEquals(FAILED_MESSAGE, thrown.getMessage(), "Exception message should match the thrown message");
     verify(syncTaskExecutionService).markStatusFailure(execution, FAILED_MESSAGE);
     verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());
   }

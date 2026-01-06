@@ -29,32 +29,32 @@ class SyncTaskExecutionServiceImplTest {
   }
 
   @Test
-  void testStart_createsNewExecution() {
+  void testStartCreatesNewExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     when(repo.findByType(type)).thenReturn(Optional.empty());
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
-    assertEquals(type, result.getType());
-    assertEquals(SyncTaskStatus.RUNNING, result.getStatus());
-    assertNotNull(result.getTriggeredAt());
-    assertNull(result.getCompletedAt());
-    assertNull(result.getMessage());
+    assertEquals(type, result.getType(), "Type should match the input type");
+    assertEquals(SyncTaskStatus.RUNNING, result.getStatus(), "Status should be RUNNING after start");
+    assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
+    assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
+    assertNull(result.getMessage(), "Message should be null after start");
   }
 
   @Test
-  void testStart_updatesExistingExecution() {
+  void testStartUpdatesExistingExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existing = SyncTaskExecution.builder().type(type).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existing));
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
-    assertEquals(type, result.getType());
-    assertEquals(SyncTaskStatus.RUNNING, result.getStatus());
-    assertNotNull(result.getTriggeredAt());
-    assertNull(result.getCompletedAt());
-    assertNull(result.getMessage());
+    assertEquals(type, result.getType(), "Type should match the input type");
+    assertEquals(SyncTaskStatus.RUNNING, result.getStatus(), "Status should be RUNNING after start");
+    assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
+    assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
+    assertNull(result.getMessage(), "Message should be null after start");
   }
 
   @Test
@@ -62,9 +62,9 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusSuccess(execution, MESSAGE);
-    assertEquals(SyncTaskStatus.SUCCESS, execution.getStatus());
-    assertNotNull(execution.getCompletedAt());
-    assertEquals(MESSAGE, execution.getMessage());
+    assertEquals(SyncTaskStatus.SUCCESS, execution.getStatus(), "Status should be SUCCESS after markStatusSuccess");
+    assertNotNull(execution.getCompletedAt(), "CompletedAt should not be null after markStatusSuccess");
+    assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
   }
 
   @Test
@@ -72,9 +72,9 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusFailure(execution, MESSAGE);
-    assertEquals(SyncTaskStatus.FAILED, execution.getStatus());
-    assertNotNull(execution.getCompletedAt());
-    assertEquals(MESSAGE, execution.getMessage());
+    assertEquals(SyncTaskStatus.FAILED, execution.getStatus(), "Status should be FAILED after markStatusFailure");
+    assertNotNull(execution.getCompletedAt(), "CompletedAt should not be null after markStatusFailure");
+    assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
   }
 
   @Test
@@ -82,33 +82,31 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusSuccess(execution, LONG_MESSAGE);
-    assertTrue(execution.getMessage().length() <= 1024);
+    assertTrue(execution.getMessage().length() <= 1024, "Message should be abbreviated to 1024 characters");
   }
 
   @Test
-  void testGetAllSyncTaskExecutions_empty() {
+  void testGetAllSyncTaskExecutionsEmpty() {
     when(repo.findByType(any())).thenReturn(Optional.empty());
     List<SyncTaskExecutionModel> result = service.getAllSyncTaskExecutions();
-    assertTrue(result.isEmpty() || result.stream().allMatch(Objects::isNull));
+    assertTrue(result.isEmpty() || result.stream().allMatch(Objects::isNull), "Result should be empty or all null");
   }
 
   @Test
-  void testGetSyncTaskExecutionByKey_notFound() {
+  void testGetSyncTaskExecutionByKeyNotFound() {
     when(repo.findByType(SyncTaskType.SYNC_PRODUCTS)).thenReturn(Optional.empty());
     SyncTaskExecutionModel result = service.getSyncTaskExecutionByKey(SyncTaskType.SYNC_PRODUCTS.getKey());
-    assertNull(result);
+    assertNull(result, "Result should be null if not found");
   }
 
   @Test
-  void testGetSyncTaskExecutionByKey_invalidKey() {
+  void testGetSyncTaskExecutionByKeyInvalidKey() {
     SyncTaskExecutionModel result = service.getSyncTaskExecutionByKey("invalid-key");
-    assertNull(result);
+    assertNull(result, "Result should be null for invalid key");
   }
 
   @Test
-  void testUpdateSyncTask_nullExecutionThrows() {
-    assertThrows(NullPointerException.class, () -> {
-      service.markStatusSuccess(null, MESSAGE);
-    });
+  void testUpdateSyncTaskNullExecutionThrows() {
+    assertThrows(NullPointerException.class, () -> service.markStatusSuccess(null, MESSAGE), "Should throw NullPointerException if execution is null");
   }
 }
