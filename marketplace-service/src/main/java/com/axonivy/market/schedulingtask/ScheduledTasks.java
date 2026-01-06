@@ -2,13 +2,16 @@ package com.axonivy.market.schedulingtask;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.GithubReposService;
+import com.axonivy.market.service.NotificationService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +21,7 @@ import java.io.IOException;
 
 @Log4j2
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ScheduledTasks {
 
   private static final String SYNC_PRODUCTS_CRON = "${market.scheduling.products-cron}";
@@ -27,7 +30,6 @@ public class ScheduledTasks {
   private static final String SYNC_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
   private static final String SYNC_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
   private static final String SYNC_SECURITY_MONITOR_CRON = "${market.scheduling.security-monitor-cron}";
-  private static final String SYNC_TOKEN = "${market.github.token}";
 
   private final ProductRepository productRepo;
   private final ProductService productService;
@@ -36,6 +38,11 @@ public class ScheduledTasks {
   private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
   private final GitHubService gitHubService;
+  private final DisabledSecurityEventFactory eventFactory;
+  private final NotificationService notificationService;
+
+  @Value("${market.github.token}")
+  private String syncToken;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -85,7 +92,15 @@ public class ScheduledTasks {
     run(() ->
         {
           try {
-            gitHubService.getSecurityDetailsForAllProducts(SYNC_TOKEN, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+            var securityInfos =
+                gitHubService.getSecurityDetailsForAllProducts(syncToken,
+                    GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+
+            var disabledEvents = securityInfos.stream()
+                .flatMap(info -> eventFactory.from(info).stream())
+                .toList();
+
+            notificationService.notify(disabledEvents);
           } catch (IOException e) {
             throw new RuntimeException(e);
           }

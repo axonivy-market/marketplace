@@ -35,6 +35,19 @@ spring:
   jackson:
     serialization:
       indent_output: 'true'
+  mail:
+    host: '${MAIL_HOST_URL}'
+    port: '${MAIL_PORT}'
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+    from: '${FROM_MAIL}'
+    to: '${TO_MAIL}'
 
 springdoc:
   swagger-ui:

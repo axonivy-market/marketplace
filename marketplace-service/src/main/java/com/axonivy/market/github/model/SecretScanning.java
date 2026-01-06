@@ -5,13 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-
 @Getter
 @Setter
 @NoArgsConstructor
 public class SecretScanning {
   private Integer numberOfAlerts;
   private AccessLevel status;
-  private Date lastUpdated;
 }

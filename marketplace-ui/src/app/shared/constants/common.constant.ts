@@ -427,9 +427,5 @@ export const SYNC_TASKS: SyncTaskRow[] = [
   {
     key: 'syncGithubMonitor',
     labelKey: 'common.admin.sync.tasks.syncGithubMonitor'
-  },
-  {
-    key: 'syncSecurityMonitor',
-    labelKey: 'common.admin.sync.tasks.syncSecurityMonitor'
   }
 ];

@@ -16,8 +16,7 @@ export type SyncTaskKey =
   | 'syncProducts'
   | 'syncOneProduct'
   | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor'
-  | 'syncSecurityMonitor';
+  | 'syncGithubMonitor';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;

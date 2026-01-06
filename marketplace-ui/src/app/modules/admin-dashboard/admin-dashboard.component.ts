@@ -70,7 +70,6 @@ export class AdminDashboardComponent implements OnInit {
     syncLatestReleasesForProducts: () =>
       this.service.syncLatestReleasesForProducts(),
     syncGithubMonitor: () => this.service.syncGithubMonitor(),
-    syncSecurityMonitor: () => this.service.getSecurityDetails(),
     syncOneProduct: () => EMPTY
   };
 
