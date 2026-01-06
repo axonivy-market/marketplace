@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ExternalDocumentService;
 import org.apache.commons.lang3.ObjectUtils;
@@ -21,13 +20,10 @@ import static com.axonivy.market.constants.RequestMappingConstants.ERROR_PAGE_40
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ExternalDocumentControllerTest {
-
-  private static final String TOKEN = "token";
 
   private static final String VERSION = "13.1.1";
   private static final String PORTAL = "portal";
@@ -60,11 +56,11 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testSyncDocumentForProduct() {
-    var result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
+    var result = externalDocumentController.syncDocumentForProduct(true, null, null);
     assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
 
     when(service.determineProductIdsForSync("portal")).thenReturn(List.of("portal"));
-    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, "portal", null);
+    result = externalDocumentController.syncDocumentForProduct(true, "portal", null);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
   }
 

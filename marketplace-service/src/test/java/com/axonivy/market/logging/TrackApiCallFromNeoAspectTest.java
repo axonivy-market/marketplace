@@ -1,6 +1,6 @@
 package com.axonivy.market.logging;
 
-import com.axonivy.market.aspect.TrackApiCallFromNeoAspect;
+import com.axonivy.market.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;

@@ -6,6 +6,7 @@ import {
 } from '../../shared/constants/common.constant';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_URI } from '../../shared/constants/api.constant';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
@@ -20,9 +21,9 @@ export class AdminAuthService {
     this.storageRef.session?.setItem(ADMIN_SESSION_TOKEN, token);
   }
 
-  validateToken(token:string): Observable<any> {
+  requestAccessToken(token:string): Observable<any> {
     this.setToken('');
-    return this.httpClient.put('auth/github/validation', {}, {
+    return this.httpClient.post(API_URI.GITHUB_REQUEST_ACCESS , {}, {
       headers: this.createAuthHeader(token)
     });
   }

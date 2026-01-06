@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
@@ -35,23 +36,15 @@ public class JwtServiceImpl implements JwtService {
 
   public String generateToken(GithubUser githubUser, String accessToken) {
     Map<String, Object> claims = new HashMap<>();
-    claims.put("name", githubUser.getName());
-    claims.put("username", githubUser.getUsername());
-    claims.put("accessToken", accessToken);
-    return Jwts.builder().setClaims(claims).setSubject(githubUser.getId()).setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
-        .signWith(SignatureAlgorithm.HS512, secret).compact();
+    claims.put(CommonConstants.NAME, githubUser.getName());
+    claims.put(CommonConstants.USERNAME, githubUser.getUsername());
+    claims.put(CommonConstants.ACCESS_TOKEN, accessToken);
+    return createNewJWTCompactToken(githubUser.getId(), claims);
   }
 
   @Override
   public String generateJWTFromGitHubToken(String accessToken) {
-    return Jwts.builder()
-        .setSubject("MarketInternalToken")
-        .claim("accessToken", accessToken)
-        .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
-        .signWith(SignatureAlgorithm.HS512, secret)
-        .compact();
+    return createNewJWTCompactToken(CommonConstants.ADMIN_SESSION_TOKEN, Map.of(CommonConstants.ACCESS_TOKEN, accessToken));
   }
 
   public boolean validateToken(String token) {
@@ -77,6 +70,16 @@ public class JwtServiceImpl implements JwtService {
   public String getRawAccessToken(String jwtToken) {
     var token = AuthorizationUtils.getBearerToken(jwtToken);
     Claims claims = getClaimsFromToken(token);
-    return claims.get("accessToken", String.class);
+    return claims.get(CommonConstants.ACCESS_TOKEN, String.class);
+  }
+
+  private String createNewJWTCompactToken(String subject, Map<String, Object> claims) {
+    return Jwts.builder()
+        .setClaims(claims)
+        .setSubject(subject)
+        .setIssuedAt(new Date())
+        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
+        .signWith(SignatureAlgorithm.HS512, secret)
+        .compact();
   }
 }

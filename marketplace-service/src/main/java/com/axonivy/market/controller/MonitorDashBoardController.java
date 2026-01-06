@@ -1,15 +1,13 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aspect.Authorized;
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -45,7 +43,6 @@ public class MonitorDashBoardController {
 
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
-  private final GitHubService gitHubService;
 
   @GetMapping(REPOS_REPORT)
   @Operation(summary = "Get test report for a product and workflow",

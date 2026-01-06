@@ -1,6 +1,6 @@
 package com.axonivy.market.logging;
 
-import com.axonivy.market.aspect.LoggableAspect;
+import com.axonivy.market.aop.aspect.LoggableAspect;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;

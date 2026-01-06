@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aspect.Authorized;
-import com.axonivy.market.aspect.Loggable;
+import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.annotation.Loggable;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.Message;

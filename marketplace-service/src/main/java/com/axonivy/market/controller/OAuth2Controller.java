@@ -25,7 +25,7 @@ import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_LOGIN;
-import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_VALIDATION;
+import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_REQUEST_ACCESS;
 import static org.springframework.http.HttpHeaders.*;
 
 import org.springframework.web.bind.annotation.PutMapping;
@@ -52,9 +52,9 @@ public class OAuth2Controller {
     return new ResponseEntity<>(Map.of(GitHubConstants.Json.TOKEN, jwt), HttpStatus.OK);
   }
 
-  @PutMapping(GITHUB_VALIDATION)
+  @PostMapping(GITHUB_REQUEST_ACCESS)
   @Hidden
-  public ResponseEntity<Map<String, String>> validateToken(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+  public ResponseEntity<Map<String, String>> requestAccess(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String jwt = oAuth2Service.validateTokenAndGenerateJWT(authorizationHeader);
     return new ResponseEntity<>(Map.of(GitHubConstants.Json.TOKEN, jwt), HttpStatus.OK);
   }

@@ -6,7 +6,6 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Router } from '@angular/router';
 import { AdminAuthService } from '../admin-auth.service';
 import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
-import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-admin-token',
@@ -20,41 +19,42 @@ export class AdminTokenComponent implements OnInit {
   authService = inject(AdminAuthService);
   router = inject(Router);
 
-  token = '';
+  filledToken = '';
   tokenControl = new FormControl('');
   errorMessage = '';
   isProcessing = false;
   isButtonDisabled = true;
 
   ngOnInit(): void {
-    this.token = this.authService.token ?? '';
-    this.tokenControl.setValue(this.token, { emitEvent: false });
+    this.tokenControl.setValue('', { emitEvent: false });
 
     this.tokenControl.valueChanges.subscribe(newValue => {
-      this.isButtonDisabled = this.isProcessing || !newValue || newValue === this.token;
+      this.isButtonDisabled = this.isProcessing || !newValue || newValue === this.filledToken;
     });
   }
 
   onSubmit(): void {
-    const token = this.tokenControl.value;
-    if (this.isButtonDisabled || !token) {
+    this.filledToken = this.tokenControl.value ?? '';
+    if (this.isButtonDisabled || !this.filledToken) {
       this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
       return;
     }
 
     this.isProcessing = true;
+    this.tokenControl.disable();
     
-    this.authService.validateToken(token).subscribe({
-      next: (jwt) => {
+    this.authService.requestAccessToken(this.filledToken).subscribe({
+      next: (jwtObject) => {
         this.errorMessage = '';
-        this.authService.setToken(jwt);
+        this.authService.setToken(jwtObject.token);
         this.isProcessing = false;
+        this.tokenControl.enable();
         this.router.navigate(['/internal-dashboard']);
       },
       error: (e) => {
         this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
         this.isProcessing = false;
-        this.token = this.tokenControl.value ?? '';
+        this.tokenControl.enable();
         this.tokenControl.markAsPristine();
         this.isButtonDisabled = true;
       }

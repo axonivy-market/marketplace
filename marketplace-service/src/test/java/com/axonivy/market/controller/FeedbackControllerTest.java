@@ -228,7 +228,7 @@ class FeedbackControllerTest extends BaseSetup {
     when(jwtService.getClaimsFromToken(TOKEN_SAMPLE)).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
-    var result = feedbackController.createFeedback(mockFeedbackModel, "Bearer " + TOKEN_SAMPLE);
+    var result = feedbackController.createFeedback(mockFeedbackModel, request);
 
     assertEquals(HttpStatus.CREATED, result.getStatusCode(),
         "Response status should be 201 CREATED when a new feedback is successfully created.");

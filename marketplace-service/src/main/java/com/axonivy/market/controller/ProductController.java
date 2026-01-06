@@ -1,14 +1,13 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aspect.Authorized;
-import com.axonivy.market.aspect.TrackApiCallFromNeo;
-import com.axonivy.market.aspect.TrackSyncTaskExecution;
+import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
