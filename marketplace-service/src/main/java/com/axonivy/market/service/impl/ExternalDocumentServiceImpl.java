@@ -30,6 +30,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -42,9 +43,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -211,15 +212,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
-    Map<String, String> needToBeSyncedDocVersionMap = new HashMap<>();
-    latestSupportedDocVersions.forEach((majorVersion, version) -> {
-      if (needToBeSyncedDocVersions.contains(version)) {
-        needToBeSyncedDocVersionMap.put(majorVersion, version);
-      }
-    });
-
-    needToBeSyncedDocVersionMap.forEach((majorVersion, version) ->
-        handleDocumentMeta(productId, artifact, majorVersion, version, isResetSync)
+    needToBeSyncedDocVersions.forEach(version ->
+        handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
     );
   }
 
@@ -246,9 +240,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return missingVersions;
   }
 
-  private void handleDocumentMeta(String productId, Artifact artifact, String majorVersion, String version,
-      boolean isResetSync) {
-    if (StringUtils.isAnyBlank(majorVersion, version)) {
+  private void handleDocumentMeta(String productId, Artifact artifact, String version,
+      boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
+    if (StringUtils.isBlank(version)) {
       return;
     }
 
@@ -257,15 +251,35 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return;
     }
 
-    createSymlinkForMajorVersion(Paths.get(location), majorVersion);
-    buildDocumentWithLanguage(location, artifact, productId, version, majorVersion);
+    List<String> matchedMajorVersions = getMatchedMajorVersions(latestSupportedDocVersions, version);
+    createSymlinkForMajorVersions(Paths.get(location), matchedMajorVersions);
+    buildDocumentWithLanguage(location, artifact, productId, version, matchedMajorVersions);
   }
 
+  private List<String> getMatchedMajorVersions(Map<String, String> latestSupportedDocVersions,
+      String specifiedVersion) {
+    if (CollectionUtils.isEmpty(latestSupportedDocVersions)) {
+      return Collections.emptyList();
+    }
+
+    return latestSupportedDocVersions.entrySet()
+        .stream()
+        .filter(docVersion -> Objects.equals(docVersion.getValue(), specifiedVersion))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+  }
   private String getLocationByArtifactAndVersion(Artifact artifact, String version, boolean isResetSync) {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
     return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+  }
+
+  private void createSymlinkForMajorVersions(Path versionFolder, List<String> majorVersions) {
+    if (versionFolder == null || CollectionUtils.isEmpty(majorVersions)) {
+      return;
+    }
+    majorVersions.forEach(majorVersion -> createSymlinkForMajorVersion(versionFolder, majorVersion));
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
@@ -317,21 +331,21 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version,
-      String majorVersion) {
+      List<String> majorVersions) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
       relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
-        ExternalDocumentMeta meta = buildDocumentMeta(link, language, artifact, productId, version);
-        externalDocumentMetaRepo.save(meta);
-
-        String majorLink = link.replace(version, majorVersion);
-        ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
-        externalDocumentMetaRepo.save(majorMeta);
+        buildExternalDocumentMetaWithLanguage(link, language, artifact, productId, version);
+        if(!CollectionUtils.isEmpty(majorVersions)) {
+          majorVersions.forEach(majorVersion -> {
+            String majorLink = link.replace(version, majorVersion);
+            buildExternalDocumentMetaWithLanguage(majorLink, language, artifact, productId, majorVersion);
+          });
+        }
       });
     } else {
-      ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
-      externalDocumentMetaRepo.save(meta);
+      buildExternalDocumentMetaWithLanguage(location, DocumentLanguage.ENGLISH, artifact, productId, version);
       var docPath = Paths.get(location);
       var enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
       if (validatePathOutsideCacheRoot(enPath)) {
@@ -341,6 +355,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         createSymlinkForDocLanguage(enPath);
       }
     }
+  }
+
+  private void buildExternalDocumentMetaWithLanguage(String location, DocumentLanguage language,
+      Artifact artifact, String productId, String version) {
+    ExternalDocumentMeta meta = buildDocumentMeta(location, language, artifact, productId, version);
+    externalDocumentMetaRepo.save(meta);
   }
 
   private void createSymlinkForDocLanguage(Path enPath) {

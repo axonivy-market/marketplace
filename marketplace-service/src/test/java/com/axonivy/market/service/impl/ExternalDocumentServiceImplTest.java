@@ -57,6 +57,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String PORTAL = "portal";
 
   private static final String ARTIFACT_NAME = "portal-guide";
+  private static final String TEN_VERSION = "10.0";
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
   private static final String TEN_DEV_VERSION = "10.0-dev";
@@ -71,7 +72,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final Product EMPTY_PRODUCT = new Product();
   private static final String HOST = "http://localhost:8080";
 
-  private final List<String> majorVersions = List.of(TEST_VERSION_12_5, TEST_VERSION, "13.1", DEV_VERSION);
+  private final List<String> majorVersions = List.of(TEN_VERSION, TEST_VERSION_12_5, TEST_VERSION, "13.2", DEV_VERSION);
 
   @MockBean
   ProductRepository productRepository;
@@ -232,7 +233,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Product mockPortal(boolean isEmptyArtifacts) {
     return Product.builder().id(PORTAL)
         .artifacts(isEmptyArtifacts ? List.of() : List.of(mockPortalMavenArtifact()))
-        .releasedVersions(List.of("8.0.0", TEST_VERSION))
+        .releasedVersions(List.of("8.0.0", "10.0.0", TEST_VERSION, "12.5.0", "13.2.0.1", "14.0.0"))
         .build();
   }
 
