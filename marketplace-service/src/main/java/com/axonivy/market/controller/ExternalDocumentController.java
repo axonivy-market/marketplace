@@ -7,6 +7,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -85,6 +86,11 @@ public class ExternalDocumentController {
 
     if (ObjectUtils.isEmpty(productIds)) {
       var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), null);
+      return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
+    }
+
+    if (!VersionUtils.isVersion(version)) {
+      var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
 
