@@ -336,7 +336,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (!relativeLinkWithLanguage.isEmpty()) {
       relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
         buildExternalDocumentMetaWithLanguage(link, language, artifact, productId, version);
-        if(!CollectionUtils.isEmpty(majorVersions)) {
+        if (!CollectionUtils.isEmpty(majorVersions)) {
           majorVersions.forEach((String majorVersion) -> {
             String majorLink = link.replace(version, majorVersion);
             buildExternalDocumentMetaWithLanguage(majorLink, language, artifact, productId, majorVersion);
