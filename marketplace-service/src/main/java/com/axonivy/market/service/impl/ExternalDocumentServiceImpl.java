@@ -198,9 +198,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions, String needToBeSyncedVersion) {
-    List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
-        getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
-
     // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
@@ -212,6 +209,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
+    List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
+        getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
     needToBeSyncedDocVersions.forEach(version ->
         handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
     );
@@ -266,7 +265,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .stream()
         .filter(docVersion -> Objects.equals(docVersion.getValue(), specifiedVersion))
         .map(Map.Entry::getKey)
-        .collect(Collectors.toList());
+        .toList();
   }
   private String getLocationByArtifactAndVersion(Artifact artifact, String version, boolean isResetSync) {
     // Switch to nexus repo for artifact
@@ -338,7 +337,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
         buildExternalDocumentMetaWithLanguage(link, language, artifact, productId, version);
         if(!CollectionUtils.isEmpty(majorVersions)) {
-          majorVersions.forEach(majorVersion -> {
+          majorVersions.forEach((String majorVersion) -> {
             String majorLink = link.replace(version, majorVersion);
             buildExternalDocumentMetaWithLanguage(majorLink, language, artifact, productId, majorVersion);
           });
