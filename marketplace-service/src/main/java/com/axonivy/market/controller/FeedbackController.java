@@ -42,6 +42,8 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @AllArgsConstructor
@@ -84,6 +86,7 @@ public class FeedbackController {
       @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String id) {
         var feedback = feedbackService.findFeedback(id);
         var model = feedbackModelAssembler.toModel(feedback);
+        model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
         return ResponseEntity.ok(model);
     }
 
@@ -117,6 +120,7 @@ public class FeedbackController {
             @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
         var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
         var model = feedbackModelAssembler.toModel(feedback);
+        model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
         return ResponseEntity.ok(model);
     }
 

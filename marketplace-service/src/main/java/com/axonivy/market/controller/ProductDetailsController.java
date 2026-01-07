@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -71,7 +73,8 @@ public class ProductDetailsController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    model.add(linkTo(methodOn(ProductDetailsController.class).findProductDetailsByVersion(id, version)).withSelfRel());
+    var findProductDetailsMethod = methodOn(this.getClass()).findProductDetailsByVersion(id, version);
+    model.add(linkTo(findProductDetailsMethod).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
@@ -86,12 +89,11 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    
-    var link = linkTo(methodOn(ProductDetailsController.class).findProductJsonContent(id,
-        productDetail.getBestMatchVersion(), version)).withSelfRel();
-    model.setMetaProductJsonUrl(link.getHref());
-    
-    model.add(linkTo(methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(id, version)).withSelfRel());
+    var findProductJsonLink = methodOn(this.getClass()).findProductJsonContent(id,
+        productDetail.getBestMatchVersion(), version);
+    model.setMetaProductJsonUrl(linkTo(findProductJsonLink).withSelfRel().getHref());
+    var findBestMatchLink = methodOn(this.getClass()).findBestMatchProductDetailsByVersion(id, version);
+    model.add(linkTo(findBestMatchLink).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
@@ -125,7 +127,8 @@ public class ProductDetailsController {
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
     var productDetail = productService.fetchProductDetail(id, isShowDevVersion);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    model.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(id, false)).withSelfRel());
+    var findDetailsMethod = methodOn(this.getClass()).findProductDetails(id, false);
+    model.add(linkTo(findDetailsMethod).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
