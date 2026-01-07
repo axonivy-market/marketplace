@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,7 +90,7 @@ public class ExternalDocumentController {
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
 
-    if (!VersionUtils.isVersion(version)) {
+    if (StringUtils.isNotBlank(version) && !VersionUtils.isVersion(version)) {
       var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
