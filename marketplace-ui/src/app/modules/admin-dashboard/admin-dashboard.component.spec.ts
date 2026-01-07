@@ -447,7 +447,6 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set isAuthenticated flag when successfully authenticated', () => {
-      // This tests the isAuthenticated flag that affects reloadExecutions behavior
       component.isAuthenticated = true;
       mockAdminService.syncProducts.and.returnValue(of());
       mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));

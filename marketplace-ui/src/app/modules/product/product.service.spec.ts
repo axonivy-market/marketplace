@@ -243,7 +243,7 @@ describe('ProductService', () => {
     req.flush([{ version: '10.0.2' }, { version: '10.0.1' }, { version: '10.0.0' }]);
   });
 
-  it('getLatestArtifactDownloadUrl', () => {
+  it('getLatestArtifactDownloadUrl should return download url', () => {
     const productId = 'bpmn-statistic';
     const version = 'dev';
     const artifact = 'bpmn-statistic.zip';
@@ -253,6 +253,32 @@ describe('ProductService', () => {
         'https://maven.axonivy.com/com/axonivy/utils/bpmn-statistic/10.0.20/bpmn-statistic.zip'
       );
     });
+
+    const req = httpMock.expectOne(request => {
+      return (
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/artifact` &&
+        request.params.get('version') === version &&
+        request.params.get('artifact') === artifact
+      );
+    });
+    expect(req.request.method).toBe('GET');
+    req.flush('https://maven.axonivy.com/com/axonivy/utils/bpmn-statistic/10.0.20/bpmn-statistic.zip');
+  });
+
+  it('getLatestArtifactDownloadUrl should return empty string on error', () => {
+    const productId = 'bpmn-statistic';
+    const version = 'dev';
+    const artifact = 'bpmn-statistic.zip';
+
+    service.getLatestArtifactDownloadUrl(productId, version, artifact).subscribe(response => {
+      expect(response).toBe('');
+    });
+
+    const req = httpMock.expectOne(request => {
+      return request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/artifact`;
+    });
+    expect(req.request.method).toBe('GET');
+    req.flush(null, { status: 404, statusText: 'Not Found' });
   });
 
   it('getProductChangelogs', () => {
@@ -275,6 +301,29 @@ describe('ProductService', () => {
       request =>
         request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/releases`
     );
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+
+  it('getProductChangelogs should use nextPageHref when provided', () => {
+    const productId = 'portal';
+    const nextPageUrl = 'http://localhost:8080/marketplace-service/api/product/portal/releases?page=1&size=10';
+    const mockResponse: ProductReleasesApiResponse = MOCK_PRODUCT_RELEASES;
+
+    const changelogCriteria: ChangeLogCriteria = {
+      productId: productId,
+      nextPageHref: nextPageUrl,
+      pageable: DEFAULT_CHANGELOG_PAGEABLE
+    };
+
+    service.getProductChangelogs(changelogCriteria).subscribe(response => {
+      let productReleaseModelList = response._embedded.gitHubReleaseModelList;
+      expect(productReleaseModelList.length).toEqual(
+        mockResponse._embedded.gitHubReleaseModelList.length
+      );
+    });
+
+    const req = httpMock.expectOne(nextPageUrl);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
@@ -355,6 +404,243 @@ describe('ProductService', () => {
       expect(result.vendorImageDarkMode).toBe(
         MOCK_PRODUCT_DETAIL.vendorImageDarkMode
       );
+    });
+  });
+
+  it('getBestMatchProductDetailsWithVersion should return a product detail', () => {
+    const productId = 'jira-connector';
+    const version = '10.0.10';
+
+    service.getBestMatchProductDetailsWithVersion(productId, version).subscribe(data => {
+      expect(data).toEqual(MOCK_PRODUCT_DETAIL);
+    });
+
+    const req = httpMock.expectOne(request => {
+      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`);
+      return true;
+    });
+    expect(req.request.method).toBe('GET');
+    req.flush(MOCK_PRODUCT_DETAIL);
+  });
+
+  it('getProductDetails should return a product detail with showDevVersion=true', () => {
+    const productId = 'jira-connector';
+    const isShowDevVersion = true;
+
+    service.getProductDetails(productId, isShowDevVersion).subscribe(data => {
+      expect(data).toEqual(MOCK_PRODUCT_DETAIL);
+    });
+
+    const req = httpMock.expectOne(request => {
+      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`);
+      return true;
+    });
+    expect(req.request.method).toBe('GET');
+    req.flush(MOCK_PRODUCT_DETAIL);
+  });
+
+  it('getProductDetails should return a product detail with showDevVersion=false', () => {
+    const productId = 'jira-connector';
+    const isShowDevVersion = false;
+
+    service.getProductDetails(productId, isShowDevVersion).subscribe(data => {
+      expect(data).toEqual(MOCK_PRODUCT_DETAIL);
+    });
+
+    const req = httpMock.expectOne(request => {
+      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`);
+      return true;
+    });
+    expect(req.request.method).toBe('GET');
+    req.flush(MOCK_PRODUCT_DETAIL);
+  });
+
+  describe('fetchAllProductIds', () => {
+    it('should fetch all product IDs from single page', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' },
+            { id: 'product-2', marketDirectory: 'dir2' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductIds();
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual(['product-1', 'product-2']);
+    });
+
+    it('should filter out products without IDs', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' },
+            { id: null, marketDirectory: 'dir2' },
+            { id: 'product-3', marketDirectory: 'dir3' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductIds();
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual(['product-1', 'product-3']);
+    });
+
+    it('should handle empty response', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: []
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductIds();
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual([]);
+    });
+
+    it('should use custom page size and language', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductIds(50, Language.DE);
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT &&
+        request.params.get('size') === '50' &&
+        request.params.get('language') === Language.DE
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual(['product-1']);
+    });
+  });
+
+  describe('fetchAllProductsForSync', () => {
+    it('should fetch all products with marketDirectory from single page', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' },
+            { id: 'product-2', marketDirectory: 'dir2' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductsForSync();
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual([
+        { id: 'product-1', marketDirectory: 'dir1' },
+        { id: 'product-2', marketDirectory: 'dir2' }
+      ]);
+    });
+
+    it('should handle products with undefined marketDirectory', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' },
+            { id: 'product-2', marketDirectory: undefined },
+            { id: 'product-3', marketDirectory: 'dir3' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductsForSync();
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual([
+        { id: 'product-1', marketDirectory: 'dir1' },
+        { id: 'product-2', marketDirectory: undefined },
+        { id: 'product-3', marketDirectory: 'dir3' }
+      ]);
+    });
+
+    it('should use custom page size and language', async () => {
+      const mockResponse = {
+        _embedded: {
+          products: [
+            { id: 'product-1', marketDirectory: 'dir1' }
+          ]
+        },
+        page: {
+          number: 0,
+          totalPages: 1
+        }
+      };
+
+      const promise = service.fetchAllProductsForSync(100, Language.DE);
+
+      const req = httpMock.expectOne(request =>
+        request.url === API_URI.PRODUCT &&
+        request.params.get('size') === '100' &&
+        request.params.get('language') === Language.DE
+      );
+      req.flush(mockResponse);
+
+      const result = await promise;
+      expect(result).toEqual([
+        { id: 'product-1', marketDirectory: 'dir1' }
+      ]);
     });
   });
 });
