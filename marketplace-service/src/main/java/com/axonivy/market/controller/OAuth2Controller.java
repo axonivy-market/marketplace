@@ -40,7 +40,8 @@ public class OAuth2Controller {
   }
 
   @PostMapping(GITHUB_REQUEST_ACCESS)
-  public ResponseEntity<Map<String, String>> requestAccess(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+  public ResponseEntity<Map<String, String>> requestAccess(@RequestHeader(value = AUTHORIZATION)
+    String authorizationHeader) {
     String jwt = oAuth2Service.validateTokenAndGenerateJWT(authorizationHeader);
     return responseJWTData(jwt);
   }

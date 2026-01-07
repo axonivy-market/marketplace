@@ -45,7 +45,8 @@ public class JwtServiceImpl implements JwtService {
 
   @Override
   public String generateJWTFromGitHubToken(String accessToken) {
-    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, Map.of(GitHubConstants.ACCESS_TOKEN, accessToken));
+    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN,
+        Map.of(GitHubConstants.ACCESS_TOKEN, accessToken));
   }
 
   @Override
@@ -72,7 +73,7 @@ public class JwtServiceImpl implements JwtService {
   @Override
   public String getRawAccessToken(String jwtToken) {
     var token = AuthorizationUtils.getBearerToken(jwtToken);
-    Claims claims = getClaimsFromToken(token);
+    var claims = getClaimsFromToken(token);
     return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
   }
 

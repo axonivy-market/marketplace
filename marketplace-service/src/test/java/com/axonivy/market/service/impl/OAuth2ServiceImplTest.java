@@ -61,10 +61,12 @@ class OAuth2ServiceImplTest {
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
-        () -> oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode));
+        () -> oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode),
+        "Response status should be 400 BAD_REQUEST when OAuth2 exchange code fails");
 
-    assertEquals("BAD_REQUEST", exception.getError());
-    assertEquals("Invalid authorization code", exception.getErrorDescription());
+    assertEquals("BAD_REQUEST", exception.getError(), "Response error should be BAD_REQUEST");
+    assertEquals("Invalid authorization code", exception.getErrorDescription(),
+      "Error description should match");
   }
 
   @Test
@@ -73,7 +75,8 @@ class OAuth2ServiceImplTest {
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
-        () -> oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode));
+        () -> oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode),
+        "Response status should be 500 INTERNAL_SERVER_ERROR when a general exception occurs");
 
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.name(), exception.getError(),
         "Response status should be 500 INTERNAL_SERVER_ERROR when a general exception occurs");
@@ -97,7 +100,8 @@ class OAuth2ServiceImplTest {
 
     UnauthorizedException exception = assertThrows(
         UnauthorizedException.class,
-        () -> oAuth2Service.validateTokenAndGenerateJWT(mockToken));
+        () -> oAuth2Service.validateTokenAndGenerateJWT(mockToken),
+        "Response status should be 401 UNAUTHORIZED when a general exception occurs");
     assertEquals("Unexpected error", exception.getMessage(),
         "Response status should be 401 UNAUTHORIZED when a general exception occurs");
   }

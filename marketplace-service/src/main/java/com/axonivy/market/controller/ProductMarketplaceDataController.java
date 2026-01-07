@@ -41,7 +41,8 @@ public class ProductMarketplaceDataController {
   @Authorized
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
-  public ResponseEntity<Message> createCustomSortProducts(@RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
+  public ResponseEntity<Message> createCustomSortProducts(@RequestBody @Valid
+    ProductCustomSortRequest productCustomSortRequest) {
     productMarketplaceDataService.addCustomSortProduct(productCustomSortRequest);
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
         "Custom product sort order added successfully");

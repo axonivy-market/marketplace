@@ -1,5 +1,6 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.controller.FeedbackController;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -11,6 +12,9 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @Component
@@ -25,7 +29,9 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
   @Override
   public FeedbackModel toModel(Feedback feedback) {
     var resource = new FeedbackModel();
-    return createResource(resource, feedback);
+    createResource(resource, feedback);
+    addModelLinks(resource, feedback);
+    return resource;
   }
 
   public List<FeedbackModel> toModel(List<Feedback> feedbacks) {
@@ -65,4 +71,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     return model;
   }
 
+  private void addModelLinks(FeedbackModel model, Feedback feedback) {
+    model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
+  }
 }

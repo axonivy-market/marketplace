@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -82,9 +81,8 @@ public class ProductController {
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
-    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
-    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
-    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+    var pageResources = pagedResourcesAssembler.toModel(results, assembler);
+    return ResponseEntity.ok(pageResources);
   }
 
   @Authorized
@@ -111,11 +109,12 @@ public class ProductController {
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   @TrackSyncTaskExecution(SyncTaskType.SYNC_ONE_PRODUCT)
-  public ResponseEntity<Message> syncOneProduct(@PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
-          in = ParameterIn.PATH) String productId,
+  public ResponseEntity<Message> syncOneProduct(@PathVariable(ID)
+        @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
+        in = ParameterIn.PATH) String productId,
       @RequestParam(value = MARKET_ITEM_PATH) @Parameter(
-          description = "Item folder path of the market in https://github.com/axonivy-market/market",
-          example = "market/connector/a-trust") String marketItemPath,
+        description = "Item folder path of the market in https://github.com/axonivy-market/market",
+        example = "market/connector/a-trust") String marketItemPath,
       @RequestParam(value = OVERRIDE_MARKET_ITEM_PATH, required = false) Boolean overrideMarketItemPath) {
     if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)
         && CollectionUtils.isEmpty(axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
@@ -156,20 +155,20 @@ public class ProductController {
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
-    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+    return ResponseEntity.ok(emptyPagedModel);
   }
 
   @Authorized
   @Operation(hidden = true)
   @PutMapping(SYNC_ZIP_ARTIFACTS)
-  public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync,
-      @RequestParam(value = ID, required = false) String productId) {
+  public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
+      Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
     int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
 
     if (syncedCount > 0) {
       var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
           String.format("Synced %d artifact(s)", syncedCount));
-      return ResponseEntity.status(HttpStatus.OK).body(message);
+      return ResponseEntity.ok(message);
     } else {
       var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), 
           "Nothing to sync");

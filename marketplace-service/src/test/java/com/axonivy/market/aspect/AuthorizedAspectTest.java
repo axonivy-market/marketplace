@@ -51,7 +51,8 @@ class AuthorizedAspectTest {
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn(null);
     
     assertThrows(Oauth2ExchangeCodeException.class, 
-        () -> authorizedAspect.validateAuthorization(joinPoint));
+        () -> authorizedAspect.validateAuthorization(joinPoint),
+        "Should throw Oauth2ExchangeCodeException when no authorization header is present");
   }
   
   @Test
@@ -62,7 +63,7 @@ class AuthorizedAspectTest {
     
     Object result = authorizedAspect.validateAuthorization(joinPoint);
     
-    assertEquals("success", result);
+    assertEquals("success", result, "Should return the result from proceed when authorized");
     verify(joinPoint).proceed();
   }
 }
