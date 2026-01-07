@@ -487,4 +487,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
     return false;
   }
+
+  public Optional<ExternalDocumentMeta> getDocumentByName(String name) {
+      if (name == null || name.isBlank()) {
+          return Optional.empty();
+      }
+      return externalDocumentMetaRepo.findAll().stream()
+              .filter(doc -> name.equals(doc.getVersion()))
+              .findFirst();
+  }
 }
+
