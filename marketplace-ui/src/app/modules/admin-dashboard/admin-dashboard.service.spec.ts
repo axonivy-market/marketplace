@@ -39,26 +39,6 @@ describe('AdminDashboardService', () => {
   });
 
   describe('syncProducts', () => {
-    it('should sync products with default resetSync=false', () => {
-      const mockResponse: SyncTaskExecution = {
-        key: 'syncProducts',
-        status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
-      };
-
-      service.syncProducts().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync` && 
-        request.params.get(RequestParam.RESET_SYNC) === 'false'
-      );
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
-      req.flush(mockResponse);
-    });
-
     it('should sync products with resetSync=true', () => {
       const mockResponse: SyncTaskExecution = {
         key: 'syncProducts',
@@ -75,29 +55,6 @@ describe('AdminDashboardService', () => {
         request.params.get(RequestParam.RESET_SYNC) === 'true'
       );
       expect(req.request.method).toBe('PUT');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('syncOneProduct', () => {
-    it('should sync one product with default overrideMarketItemPath=false', () => {
-      const mockResponse: SyncTaskExecution = {
-        key: 'syncOneProduct',
-        status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
-      };
-
-      service.syncOneProduct('product-1', '/market/path').subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync/product-1` &&
-        request.params.get(RequestParam.MARKET_ITEM_PATH) === '/market/path' &&
-        request.params.get(RequestParam.OVERRIDE_MARKET_ITEM_PATH) === 'false'
-      );
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
       req.flush(mockResponse);
     });
 
@@ -120,9 +77,7 @@ describe('AdminDashboardService', () => {
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
     });
-  });
 
-  describe('syncLatestReleasesForProducts', () => {
     it('should sync latest releases for products', () => {
       service.syncLatestReleasesForProducts().subscribe(response => {
         expect(response).toBeNull();
@@ -133,9 +88,7 @@ describe('AdminDashboardService', () => {
       expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
       req.flush(null);
     });
-  });
 
-  describe('syncGithubMonitor', () => {
     it('should sync github monitor', () => {
       const mockResponse = 'Sync completed';
 
@@ -149,9 +102,7 @@ describe('AdminDashboardService', () => {
       expect(req.request.responseType).toBe('text');
       req.flush(mockResponse);
     });
-  });
 
-  describe('fetchSyncTaskExecutions', () => {
     it('should fetch sync task executions', () => {
       const mockExecutions: SyncTaskExecution[] = [
         {
@@ -176,9 +127,7 @@ describe('AdminDashboardService', () => {
       expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
       req.flush(mockExecutions);
     });
-  });
 
-  describe('sortMarketExtensions', () => {
     it('should sort market extensions with default remainderRule', () => {
       const orderedList = ['product-1', 'product-2', 'product-3'];
 

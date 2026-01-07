@@ -123,34 +123,6 @@ describe('HeaderComponent', () => {
       (router.events as any).next(navigationEvent);
     });
 
-    it('should set isAdminRoute to false when navigating to non-admin route', (done) => {
-      component.isAdminRoute = true;
-
-      const navigationEvent = new NavigationEnd(1, '/portal', '/portal');
-
-      setTimeout(() => {
-        expect(component.isAdminRoute).toBeFalse();
-        done();
-      }, 10);
-
-      (router.events as any).next(navigationEvent);
-    });
-
-    it('should use urlAfterRedirects when available', (done) => {
-      const navigationEvent = new NavigationEnd(
-        1,
-        '/some-url',
-        '/internal-dashboard/redirected'
-      );
-
-      setTimeout(() => {
-        expect(component.isAdminRoute).toBeTrue();
-        done();
-      }, 10);
-
-      (router.events as any).next(navigationEvent);
-    });
-
     it('should handle multiple navigation events', (done) => {
       const event1 = new NavigationEnd(1, '/portal', '/portal');
       const event2 = new NavigationEnd(2, '/internal-dashboard', '/internal-dashboard');

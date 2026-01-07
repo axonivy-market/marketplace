@@ -80,4 +80,51 @@ describe('SecurityMonitorComponent', () => {
     const result = component.formatCommitDate(oneMinuteAgo);
     expect(result).toBe('1 minute ago');
   });
+
+  it('should return "1 year ago" for dates exactly 1 year ago', () => {
+    const oneYearAgo = new Date(
+      new Date().getTime() - 365 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const result = component.formatCommitDate(oneYearAgo);
+    expect(result).toBe('1 year ago');
+  });
+
+  it('should return "2 years ago" for dates 2 years ago', () => {
+    const twoYearsAgo = new Date(
+      new Date().getTime() - 2 * 365 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const result = component.formatCommitDate(twoYearsAgo);
+    expect(result).toBe('2 years ago');
+  });
+
+  it('should return empty string when TIME_UNITS is empty', () => {
+    const originalUnits = [...TIME_UNITS];
+    TIME_UNITS.length = 0;
+
+    const oneYearAgo = new Date(
+      new Date().getTime() - 365 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const result = component.formatCommitDate(oneYearAgo);
+    
+    expect(result).toBe('');
+
+    TIME_UNITS.push(...originalUnits);
+  });
+
+  it('should clear session data', () => {
+    spyOn(sessionStorage, 'removeItem');
+    
+    component['clearSessionData']();
+    
+    expect(sessionStorage.removeItem).toHaveBeenCalledWith('security-monitor-data');
+  });
+
+  it('should call clearSessionData when loadSessionData throws error', () => {
+    spyOn(sessionStorage, 'getItem').and.throwError('Parse error');
+    spyOn(sessionStorage, 'removeItem');
+    
+    component['loadSessionData']();
+    
+    expect(sessionStorage.removeItem).toHaveBeenCalledWith('security-monitor-data');
+  });
 });

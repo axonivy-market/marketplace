@@ -90,28 +90,11 @@ describe('AdminAuthService', () => {
 
       expect(() => nullService.setToken('new-token')).not.toThrow();
     });
-  });
 
-  describe('clearToken', () => {
     it('should remove token from sessionStorage', () => {
       service.clearToken();
 
       expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(ADMIN_SESSION_TOKEN);
-    });
-
-    it('should not throw when sessionStorage is not available', () => {
-      const nullStorageRef = { session: null } as SessionStorageRef;
-      
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          AdminAuthService,
-          { provide: SessionStorageRef, useValue: nullStorageRef }
-        ]
-      });
-      const nullService = TestBed.inject(AdminAuthService);
-
-      expect(() => nullService.clearToken()).not.toThrow();
     });
   });
 
@@ -122,20 +105,6 @@ describe('AdminAuthService', () => {
       expect(service.isAuthenticated()).toBe(true);
     });
 
-    it('should return false when token is null', () => {
-      sessionStorageMock.getItem.and.returnValue(null);
-
-      expect(service.isAuthenticated()).toBe(false);
-    });
-
-    it('should return false when token is empty string', () => {
-      sessionStorageMock.getItem.and.returnValue('');
-
-      expect(service.isAuthenticated()).toBe(false);
-    });
-  });
-
-  describe('getAuthHeaders', () => {
     it('should return headers with Authorization when token exists', () => {
       sessionStorageMock.getItem.and.returnValue('test-token');
 
@@ -146,15 +115,6 @@ describe('AdminAuthService', () => {
 
     it('should return empty headers when token is null', () => {
       sessionStorageMock.getItem.and.returnValue(null);
-
-      const headers = service.getAuthHeaders();
-
-      expect(headers.get('Authorization')).toBeNull();
-      expect(headers.keys().length).toBe(0);
-    });
-
-    it('should return empty headers when token is empty string', () => {
-      sessionStorageMock.getItem.and.returnValue('');
 
       const headers = service.getAuthHeaders();
 

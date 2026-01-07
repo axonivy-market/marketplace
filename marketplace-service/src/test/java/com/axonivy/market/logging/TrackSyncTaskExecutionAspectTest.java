@@ -6,6 +6,7 @@ import com.axonivy.market.service.SyncTaskExecutionService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -46,7 +47,8 @@ class TrackSyncTaskExecutionAspectTest {
     String fail = "fail";
     when(pjp.proceed()).thenThrow(new RuntimeException(fail));
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, () -> aspect.aroundSyncTask(pjp, track), "Should throw RuntimeException when pjp.proceed() fails");
+    RuntimeException thrown = assertThrows(RuntimeException.class, () -> aspect.aroundSyncTask(pjp, track),
+        "Should throw RuntimeException when pjp.proceed() fails");
     assertEquals(fail, thrown.getMessage(), "Exception message should match the thrown message");
     verify(syncTaskExecutionService).markStatusFailure(execution, fail);
     verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());

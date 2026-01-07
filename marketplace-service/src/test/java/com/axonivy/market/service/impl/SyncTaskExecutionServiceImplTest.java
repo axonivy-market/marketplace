@@ -107,6 +107,7 @@ class SyncTaskExecutionServiceImplTest {
 
   @Test
   void testUpdateSyncTaskNullExecutionThrows() {
-    assertThrows(NullPointerException.class, () -> service.markStatusSuccess(null, MESSAGE), "Should throw NullPointerException if execution is null");
+    assertThrows(NullPointerException.class, () -> service.markStatusSuccess(null, MESSAGE),
+        "Should throw NullPointerException if execution is null");
   }
 }
