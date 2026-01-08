@@ -109,6 +109,4 @@ class NotificationServiceImplTest {
 
     verify(mailSender).send(any(SimpleMailMessage.class));
   }
-
-
 }
