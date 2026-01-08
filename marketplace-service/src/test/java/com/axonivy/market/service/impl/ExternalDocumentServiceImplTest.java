@@ -112,7 +112,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     prepareProductDataForSyncTest();
     doReturn(false).when(service).shouldDownloadDocAndUnzipToShareFolder();
 
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).save(any());
   }
@@ -145,7 +145,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testSyncDocumentForProductButCannotExtractToShareFolder() throws IOException {
     prepareProductDataForSyncTest();
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
   }
@@ -163,7 +163,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testSyncDocumentForProductIdAndVersion() throws IOException {
     prepareProductDataForSyncTest();
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
   }
