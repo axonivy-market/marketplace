@@ -11,8 +11,10 @@ import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.enums.DocumentLanguage;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.DocumentInfoResponse;
+import com.axonivy.market.model.Message;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -29,6 +31,8 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -97,8 +101,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       log.warn("Cannot find the product for document sync {}", productId);
       return;
     }
+
     List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
     List<String> releasedVersions = product.getReleasedVersions();
+    if (StringUtils.isNotBlank(version) && !releasedVersions.contains(version)) {
+      return;
+    }
+
     if (isNotEmpty(docArtifacts) && isNotEmpty(releasedVersions)) {
         downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
             version);
@@ -106,9 +115,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
-      List<String> releasedVersions, List<Artifact> docArtifacts, String needToBeSyncedVersion) {
+      List<String> releasedVersions, List<Artifact> docArtifacts, String forceSyncedVersion) {
     if (isResetSync) {
-      deleteExternalDocumentMetaRepo(productId, releasedVersions, needToBeSyncedVersion);
+      deleteExternalDocumentMetaRepo(productId, releasedVersions, forceSyncedVersion);
     }
 
     // Skip download doc to share folder on develop mode
@@ -123,8 +132,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
     for (Artifact artifact : docArtifacts) {
-      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
-          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
+      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(forceSyncedVersion) ?
+          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(forceSyncedVersion);
       needToBeSyncedDocVersions.forEach(version ->
           handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
       );
@@ -408,10 +417,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public Map<DocumentLanguage, String> getRelativePathWithLanguage(String location) {
-    if (!isValidMarketCachePath(location)) {
-      return Map.of();
-    }
-
     var shareFolder = new File(location);
     if (!shareFolder.isDirectory()) {
       return Map.of();
@@ -429,19 +434,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
             DocumentLanguage::fromCode,
             name -> location + CommonConstants.SLASH + name
         ));
-  }
-
-  private boolean isValidMarketCachePath(String location) {
-    try {
-      Path baseDir = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
-      // Resolve and normalize input path
-      Path shareFolderPath = Paths.get(location).toAbsolutePath().normalize();
-      // Check the location is within the allowed base directory
-      return shareFolderPath.startsWith(baseDir);
-    } catch (InvalidPathException e) {
-      log.error("Invalid path for the location {}: {}", location, e.getMessage());
-      return false;
-    }
   }
 
   private String getShareFolderLocationByArtifactAndVersion(Artifact artifact, String version) {
