@@ -211,7 +211,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncWithExceptionDuringCompute() throws IOException {
+  void testSyncWithExceptionDuringCompute() {
     var mockProduct = Product.builder().id(MOCK_PRODUCT_ID).listed(true).build();
     when(productRepository.findAll()).thenReturn(List.of(mockProduct));
 
@@ -252,8 +252,9 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     doThrow(new RuntimeException("Delete failed")).when(productDependencyRepository).delete(any());
 
     assertDoesNotThrow(() -> {
-      productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
-    });
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
+      },
+    "Expected no exception thrown during sync even if delete fails");
 
     verify(productDependencyRepository).delete(any(ProductDependency.class));
   }
@@ -289,7 +290,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     assertThrows(Exception.class, () -> {
       productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
-    });
+    },
+    "Expected exception when safe threshold of dependencies is exceeded");
   }
 
   @Test
@@ -330,7 +332,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadPOMFileWithHttpClientErrorException() throws Exception {
+  void testDownloadPOMFileWithHttpClientErrorException() {
     var mockProductDependency = ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
         .version(MOCK_VERSION)
@@ -345,11 +347,12 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     assertThrows(Exception.class, () -> {
       productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
-    });
+    },
+    "Expected exception when downloading POM file fails with HttpClientErrorException");
   }
 
   @Test
-  void testComputeIARDependenciesWithInvalidPOMContent() throws Exception {
+  void testComputeIARDependenciesWithInvalidPOMContent() {
     var mockProductDependency = ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
         .version(MOCK_VERSION)
@@ -364,7 +367,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     assertThrows(Exception.class, () -> {
       productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
-    });
+    },
+    "Expected exception when POM content is invalid");
   }
 
   @Test
