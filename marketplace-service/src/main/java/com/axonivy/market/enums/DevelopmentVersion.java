@@ -26,6 +26,4 @@ public enum DevelopmentVersion {
     }
     return null;
   }
-
-
 }

@@ -274,26 +274,39 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
-    Path testDir = tempDir.resolve(PORTAL);
+    Path testDir = Paths.get(DirectoryConstants.DATA_CACHE_DIR).resolve("TEST_PRODUCT");
     Files.createDirectories(testDir);
-    Files.createDirectory(testDir.resolve(DocumentLanguage.ENGLISH.getCode()));
-    Files.createDirectory(testDir.resolve(DocumentLanguage.JAPANESE.getCode()));
-    Files.createDirectory(testDir.resolve(PORTAL));
-
+    Path testENDir = testDir.resolve(DocumentLanguage.ENGLISH.getCode());
+    Files.createDirectory(testENDir);
+    Path testJPDir = testDir.resolve(DocumentLanguage.JAPANESE.getCode());
+    Files.createDirectory(testJPDir);
     Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
-
     assertEquals(2, result.size(), "Should have 2 languages");
     assertTrue(result.containsKey(DocumentLanguage.ENGLISH), "Should contain English language");
     assertTrue(result.containsKey(DocumentLanguage.JAPANESE), "Should contain Japanese language");
+    Files.deleteIfExists(testENDir);
+    Files.deleteIfExists(testJPDir);
+    Files.deleteIfExists(testDir);
   }
 
   @Test
-  void testGetRelativePathWithLanguageNonDirectory() throws IOException {
-    Path testFile = tempDir.resolve(PORTAL);
-    Files.createFile(testFile);
-    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testFile.toString());
+  void testGetRelativePathWithInvalidLanguageDirectory() throws IOException {
+    Path testPortalFilePath = tempDir.resolve(PORTAL);
+    Files.createFile(testPortalFilePath);
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testPortalFilePath.toString());
+    assertTrue(result.isEmpty(), "Should return empty map for no children of directory");
 
+    Path testProductFilePath = Paths.get(DirectoryConstants.DATA_CACHE_DIR).resolve("TEST_MARKET_PRODUCT");
+    Files.createDirectories(testProductFilePath);
+    result = service.getRelativePathWithLanguage(testProductFilePath.toString());
     assertTrue(result.isEmpty(), "Should return empty map for non-directory");
+    Files.deleteIfExists(testProductFilePath);
+  }
+
+  @Test
+  void testGetRelativePathWithInvalidFilePath() {
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage("[!@#$%^&*()]");
+    assertTrue(result.isEmpty(), "Should return empty map for invalid file path");
   }
 
   @Test

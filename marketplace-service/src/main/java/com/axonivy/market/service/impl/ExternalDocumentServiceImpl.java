@@ -407,6 +407,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public Map<DocumentLanguage, String> getRelativePathWithLanguage(String location) {
+    if (!isValidMarketCachePath(location)) {
+      return Map.of();
+    }
+
     var shareFolder = new File(location);
     if (!shareFolder.isDirectory()) {
       return Map.of();
@@ -424,6 +428,19 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
             DocumentLanguage::fromCode,
             name -> location + CommonConstants.SLASH + name
         ));
+  }
+
+  private boolean isValidMarketCachePath(String location) {
+    try {
+      Path baseDir = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
+      // Resolve and normalize input path
+      Path shareFolderPath = Paths.get(location).toAbsolutePath().normalize();
+      // Check the location is within the allowed base directory
+      return shareFolderPath.startsWith(baseDir);
+    } catch (InvalidPathException e) {
+      log.error("Invalid path for the location {}: {}", location, e.getMessage());
+      return false;
+    }
   }
 
   private String getShareFolderLocationByArtifactAndVersion(Artifact artifact, String version) {
