@@ -92,7 +92,7 @@ public class ExternalDocumentController {
 
     if (StringUtils.isNotBlank(version) && !VersionUtils.isVersion(version)) {
       var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
-      return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
 
     for (String id : productIds) {

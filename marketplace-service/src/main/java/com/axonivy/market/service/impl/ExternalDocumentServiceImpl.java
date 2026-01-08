@@ -108,16 +108,36 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
       List<String> releasedVersions, List<Artifact> docArtifacts, String needToBeSyncedVersion) {
     if (isResetSync) {
-      if (StringUtils.isBlank(needToBeSyncedVersion)) {
-        externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
-            Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
-      } else {
-        externalDocumentMetaRepo.deleteByProductIdAndVersion(productId, needToBeSyncedVersion);
-      }
+      deleteExternalDocumentMetaRepo(productId, releasedVersions, needToBeSyncedVersion);
     }
 
+    // Skip download doc to share folder on develop mode
+    if (!shouldDownloadDocAndUnzipToShareFolder()) {
+      log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
+          "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
+      return;
+    }
+
+    Map<String, String> latestSupportedDocVersions = VersionFactory
+        .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
+    log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
+
     for (Artifact artifact : docArtifacts) {
-      createExternalDocumentMetaForProduct(productId, isResetSync, artifact, releasedVersions, needToBeSyncedVersion);
+      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
+          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
+      needToBeSyncedDocVersions.forEach(version ->
+          handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
+      );
+    }
+  }
+
+  private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,
+      String forceDeletedVersion) {
+    if (StringUtils.isNotBlank(forceDeletedVersion)) {
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, List.of(forceDeletedVersion));
+    } else {
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
+          Stream.concat(versions.stream(), majorVersions.stream()).toList());
     }
   }
 
@@ -196,26 +216,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return VersionFactory.get(docMetaVersion, version);
   }
 
-  private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
-      List<String> releasedVersions, String needToBeSyncedVersion) {
-    // Skip download doc to share folder on develop mode
-    if (!shouldDownloadDocAndUnzipToShareFolder()) {
-      log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
-          "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
-      return;
-    }
-
-    Map<String, String> latestSupportedDocVersions = VersionFactory
-        .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
-    log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
-
-    List<String> needToBeSyncedDocVersions = StringUtils.isBlank(needToBeSyncedVersion) ?
-        getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(needToBeSyncedVersion);
-    needToBeSyncedDocVersions.forEach(version ->
-        handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
-    );
-  }
-
   public boolean shouldDownloadDocAndUnzipToShareFolder() {
     return marketplaceConfig.isProduction();
   }
@@ -267,6 +267,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .map(Map.Entry::getKey)
         .toList();
   }
+
   private String getLocationByArtifactAndVersion(Artifact artifact, String version, boolean isResetSync) {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
