@@ -11,10 +11,8 @@ import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.enums.DocumentLanguage;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.DocumentInfoResponse;
-import com.axonivy.market.model.Message;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -31,8 +29,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -104,13 +100,18 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
     List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
     List<String> releasedVersions = product.getReleasedVersions();
-    if (StringUtils.isNotBlank(version) && !releasedVersions.contains(version)) {
-      return;
+    String specifiedVersion = EMPTY;
+
+    if (StringUtils.isNotBlank(version)) {
+      specifiedVersion = VersionUtils.normalizeVersion(version);
+      if (!releasedVersions.contains(specifiedVersion)) {
+        return;
+      }
     }
 
     if (isNotEmpty(docArtifacts) && isNotEmpty(releasedVersions)) {
         downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
-            version);
+            specifiedVersion);
     }
   }
 
