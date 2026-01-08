@@ -49,8 +49,6 @@ public class AuthorizedAspect {
       throw throwInvalidAuthorizationException();
     }
 
-    jwtService.validateToken(token);
-
     gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);

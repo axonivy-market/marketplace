@@ -45,8 +45,9 @@ public class JwtServiceImpl implements JwtService {
 
   @Override
   public String generateJWTFromGitHubToken(String accessToken) {
-    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN,
-        Map.of(GitHubConstants.ACCESS_TOKEN, accessToken));
+    Map<String, Object> claims = new HashMap<>();
+    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
+    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, claims);
   }
 
   @Override
