@@ -102,7 +102,7 @@ public class ScheduledTasks {
 
             notificationService.notify(disabledEvents);
           } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.warn("Sync security monitor failed", e);
           }
         }
         , "Github repositories security monitor");

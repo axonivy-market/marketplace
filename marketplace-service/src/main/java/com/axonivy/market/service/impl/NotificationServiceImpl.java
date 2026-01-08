@@ -12,55 +12,71 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
-  private final JavaMailSender mailSender;
-  private final SecurityMonitorMailProperties mailProperties;
+    public static final String GITHUB_MARKET_ORG_URL = "https://github.com/axonivy-market";
+    private final JavaMailSender mailSender;
+    private final SecurityMonitorMailProperties mailProperties;
 
-  @Override
-  public void notify(List<DisabledSecurityEvent> events) {
-    if (events.isEmpty()) {
-      return;
+    @Override
+    public void notify(List<DisabledSecurityEvent> events) {
+        if (events.isEmpty()) {
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(mailProperties.getFrom());
+            message.setTo(mailProperties.getTo());
+            message.setSubject(buildSubject(events));
+            message.setText(buildBody(events));
+
+            mailSender.send(message);
+        } catch (MailException ex) {
+            log.error("Failed to send security monitor email", ex);
+        }
     }
 
-    try {
-      SimpleMailMessage message = new SimpleMailMessage();
-      message.setFrom(mailProperties.getFrom());
-      message.setTo(mailProperties.getTo());
-      message.setSubject(buildSubject(events));
-      message.setText(buildBody(events));
-
-      mailSender.send(message);
-    } catch (MailException ex) {
-      log.error("Failed to send security monitor email", ex);
+    private String buildSubject(List<DisabledSecurityEvent> events) {
+        return "[Security Monitor] Disabled security events detected (" + events.size() + ")";
     }
-  }
 
-  private String buildSubject(List<DisabledSecurityEvent> events) {
-    return "[Security Monitor] Disabled security events detected (" + events.size() + ")";
-  }
+    private String buildBody(List<DisabledSecurityEvent> events) {
+        Map<String, List<DisabledSecurityEvent>> securityEvents =
+                events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::repoName));
 
-  private String buildBody(List<DisabledSecurityEvent> events) {
-    Map<String, List<DisabledSecurityEvent>> securityEvents =
-        events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::repoName));
+        StringBuilder sb = new StringBuilder();
+        sb.append("The following repositories have disabled security events:\n\n");
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("The following repositories have disabled security events:\n\n");
+        AtomicInteger counter = new AtomicInteger(1);
 
-    securityEvents.forEach((repo, securityEvent) -> {
-      sb.append("Repository: ").append(repo).append("\n");
-      securityEvent.forEach(e ->
-          sb.append("  - ")
-              .append(e.feature()));
-      sb.append("\n");
-    });
+        securityEvents.forEach((repo, repoEvents) -> {
+            int index = counter.getAndIncrement();
 
-    sb.append("This message was generated automatically by the Security Monitor job.");
-    return sb.toString();
-  }
+            sb.append(index)
+                    .append(". ")
+                    .append(repo)
+                    .append(" ")
+                    .append(buildRepoUrl(repo))
+                    .append("\n");
 
+            repoEvents.forEach(e ->
+                    sb.append("   - ").append(e.feature()).append("\n")
+            );
+
+            sb.append("\n");
+        });
+
+        sb.append("This message was generated automatically by the Security Monitor job.");
+        return sb.toString();
+    }
+
+    private String buildRepoUrl(String repoName) {
+        return String.format("%s/%s/security", GITHUB_MARKET_ORG_URL, repoName);
+    }
 }

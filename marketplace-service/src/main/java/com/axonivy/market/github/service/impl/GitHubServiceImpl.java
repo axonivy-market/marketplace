@@ -6,7 +6,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -19,7 +18,6 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
@@ -198,7 +196,6 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  @TrackSyncTaskExecution(SyncTaskType.SYNC_SECURITY_MONITOR)
   public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
       String orgName) throws IOException {
     var gitHub = getGitHub(accessToken);
