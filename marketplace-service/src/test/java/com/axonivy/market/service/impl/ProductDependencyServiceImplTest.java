@@ -378,7 +378,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     assertDoesNotThrow(() -> {
       productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
-    });
+    },
+    "Expected no exception thrown when dependencies are null");
   }
 
   @Test
