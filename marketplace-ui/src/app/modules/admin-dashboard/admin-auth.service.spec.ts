@@ -16,8 +16,9 @@ describe('AdminAuthService', () => {
     };
 
     sessionStorageRef = {
-      session: sessionStorageMock as any
-    } as SessionStorageRef;
+      session: sessionStorageMock,
+      platformId: 'browser' 
+    } as any;    
 
     TestBed.configureTestingModule({
       providers: [
@@ -76,7 +77,7 @@ describe('AdminAuthService', () => {
     });
 
     it('should not throw when sessionStorage is not available', () => {
-      const nullStorageRef = { session: null } as SessionStorageRef;
+      const nullStorageRef = { session: null };
       
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
