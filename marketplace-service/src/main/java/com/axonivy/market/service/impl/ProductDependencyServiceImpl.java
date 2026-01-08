@@ -123,11 +123,11 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     try {
       Optional.ofNullable(productDependencies).stream().flatMap(List::stream)
           .filter(dependency -> dependency.getId() != null)
-          .map(dependency -> {
+          .map((ProductDependency dependency) -> {
             dependency.setDependencies(new HashSet<>());
             return dependency;
           })
-          .forEach(dependency -> {
+          .forEach((ProductDependency dependency) -> {
             log.warn("Deleting product dependencies for productId: {}, artifactId: {}, version: {}",
             dependency.getProductId(), dependency.getArtifactId(), dependency.getVersion());
             productDependencyRepository.delete(dependency);
@@ -168,7 +168,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         .build();
   }
 
-  private void computeIARDependencies(MavenArtifactVersion artifact,
+  public void computeIARDependencies(MavenArtifactVersion artifact,
       ProductDependency mavenDependency) throws Exception {
     List<Dependency> dependencyModels = extractMavenPOMDependencies(artifact.getDownloadUrl());
     if (ObjectUtils.isEmpty(dependencyModels)) {

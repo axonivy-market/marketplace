@@ -67,14 +67,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.*;
@@ -259,7 +255,7 @@ public class ProductServiceImpl implements ProductService {
     return productId;
   }
 
-  private String modifyProductLogo(String parentPath, GHContent fileContent) {
+  public String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
