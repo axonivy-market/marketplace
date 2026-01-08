@@ -255,7 +255,7 @@ public class ProductServiceImpl implements ProductService {
     return productId;
   }
 
-  private String modifyProductLogo(String parentPath, GHContent fileContent) {
+  public String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
@@ -527,8 +527,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    var repo = githubRepo.findByNameOrProductId(EMPTY, product.getId());
-    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
+    var repos = githubRepo.findByNameOrProductId(EMPTY, product.getId());
+    boolean isFocused = repos != null && repos.stream().anyMatch(repo -> Boolean.TRUE.equals(repo.getFocused()));
     product.setIsFocused(isFocused);
   }
 

@@ -108,6 +108,7 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     String resolvedProductId = getProductId(ghRepo.getName(), productId);
     var githubRepo = Optional.ofNullable(githubRepoRepository.findByNameOrProductId(ghRepo.getName(), productId))
+        .flatMap(result -> result.stream().findFirst())
         .map((GithubRepo repo) -> {
           repo.getTestSteps().clear();
           repo.getWorkflowInformation().clear();
