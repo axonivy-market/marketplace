@@ -52,8 +52,7 @@ describe('AdminAuthService', () => {
     });
 
     it('should return null when sessionStorage is not available', () => {
-      const nullStorageRef = { session: null } as SessionStorageRef;
-      
+      const nullStorageRef = { session: null };
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [

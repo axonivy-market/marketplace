@@ -11,7 +11,7 @@ describe('AdminAuthGuard', () => {
   let routerMock: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    adminDashboardServiceMock = {} as unknown as AdminDashboardService;
+    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', ['methodName']);
     adminAuthServiceMock = jasmine.createSpyObj('AdminAuthService', [
       'isAuthenticated'
     ]);
