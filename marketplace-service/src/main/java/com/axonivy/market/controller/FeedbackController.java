@@ -51,114 +51,114 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Tag(name = "User Feedback Controllers", description = "API collection to handle user's feedback.")
 public class FeedbackController {
 
-    private final FeedbackService feedbackService;
-    private final JwtService jwtService;
-    private final FeedbackModelAssembler feedbackModelAssembler;
-    private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
+  private final FeedbackService feedbackService;
+  private final JwtService jwtService;
+  private final FeedbackModelAssembler feedbackModelAssembler;
+  private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-    @GetMapping(PRODUCT_BY_ID)
-    @Operation(summary = "Find feedbacks by product id with lazy loading",
-      description = "Get all user feedback by product id (from meta.json) with lazy loading",
-      parameters = {
-        @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY,
-          example = "0", required = true),
-        @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY,
-          example = "20", required = true),
-        @Parameter(name = "sort",
-          description = "Sorting metadata: Criteria(popularity|alphabetically|recent), Order(asc|desc)",
-          in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true) })
-    public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(
-            @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
-              in = ParameterIn.PATH) String productId,
-            @ParameterObject Pageable pageable) {
-        Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
-        if (results.isEmpty()) {
-            return generateEmptyPagedModel();
-        }
-        var pageResources = pagedResourcesAssembler.toModel(results, feedbackModelAssembler);
-        return ResponseEntity.ok(pageResources);
+  @GetMapping(PRODUCT_BY_ID)
+  @Operation(summary = "Find feedbacks by product id with lazy loading",
+    description = "Get all user feedback by product id (from meta.json) with lazy loading",
+    parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY,
+        example = "0", required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY,
+        example = "20", required = true),
+      @Parameter(name = "sort", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true,
+        description = "Sorting metadata: Criteria(popularity|alphabetically|recent), Order(asc|desc)") })
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+        in = ParameterIn.PATH) String productId,
+      @ParameterObject Pageable pageable) {
+    Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
+    if (results.isEmpty()) {
+      return generateEmptyPagedModel();
     }
+    var pageResources = pagedResourcesAssembler.toModel(results, feedbackModelAssembler);
+    return ResponseEntity.ok(pageResources);
+  }
 
-    @GetMapping(BY_ID)
-    @Operation(summary = "Find all feedbacks by product id",
-      description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
-    public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID)
-      @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String id) {
-        var feedback = feedbackService.findFeedback(id);
-        var model = feedbackModelAssembler.toModel(feedback);
-        model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
-        return ResponseEntity.ok(model);
+  @GetMapping(BY_ID)
+  @Operation(summary = "Find all feedbacks by product id",
+    description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
+  public ResponseEntity<FeedbackModel> findFeedback(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+        in = ParameterIn.PATH) String id) {
+    var feedback = feedbackService.findFeedback(id);
+    var model = feedbackModelAssembler.toModel(feedback);
+    model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());
+    return ResponseEntity.ok(model);
+  }
+
+  @GetMapping()
+  @Operation(summary = "Find all feedbacks by user id and product id",
+    description = "Get current user feedback on target product.")
+  public ResponseEntity<List<FeedbackModel>> findFeedbackByUserIdAndProductId(
+      @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB", example = "1234",
+        in = ParameterIn.QUERY) String userId,
+      @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
+        in = ParameterIn.QUERY) String productId) {
+    List<Feedback> feedbacks = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    return ResponseEntity.ok(feedbackModelAssembler.toModel(feedbacks));
+  }
+
+  @Authorized
+  @GetMapping(FEEDBACK_APPROVAL)
+  @Operation(hidden = true)
+  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
+    Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
+    if (results.isEmpty()) {
+      return generateEmptyPagedModel();
     }
+    var pageResources = pagedResourcesAssembler.toModel(results, feedbackModelAssembler);
+    return ResponseEntity.ok(pageResources);
+  }
 
-    @GetMapping()
-    @Operation(summary = "Find all feedbacks by user id and product id",
-      description = "Get current user feedback on target product.")
-    public ResponseEntity<List<FeedbackModel>> findFeedbackByUserIdAndProductId(
-            @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB",
-              example = "1234", in = ParameterIn.QUERY) String userId,
-            @RequestParam("productId") @Parameter(description = "Product id (from meta.json)",
-              example = "portal", in = ParameterIn.QUERY) String productId) {
-        List<Feedback> feedbacks = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-        return ResponseEntity.ok(feedbackModelAssembler.toModel(feedbacks));
-    }
+  @PutMapping(FEEDBACK_APPROVAL)
+  @Operation(hidden = true)
+  public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
+    var model = feedbackModelAssembler.toModel(feedback);
+    model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());
+    return ResponseEntity.ok(model);
+  }
 
-    @Authorized
-    @GetMapping(FEEDBACK_APPROVAL)
-    @Operation(hidden = true)
-    public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
-        Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
-        if (results.isEmpty()) {
-            return generateEmptyPagedModel();
-        }
-        var pageResources = pagedResourcesAssembler.toModel(results, feedbackModelAssembler);
-        return ResponseEntity.ok(pageResources);
-    }
+  @Authorized
+  @PostMapping
+  @Operation(summary = "Create user feedback",
+    description = "Save user feedback of product with their token from Github account.")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback",
+    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+        schema = @Schema(implementation = FeedbackModelRequest.class)))
+  @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized request") })
+  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
+      HttpServletRequest request) {
+    String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
+    var claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(token));
+    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+    var location = ServletUriComponentsBuilder.fromCurrentRequest()
+        .path(BY_ID)
+        .buildAndExpand(newFeedback.getId())
+        .toUri();
 
-    @PutMapping(FEEDBACK_APPROVAL)
-    @Operation(hidden = true)
-    public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
-            @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
-        var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
-        var model = feedbackModelAssembler.toModel(feedback);
-        model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
-        return ResponseEntity.ok(model);
-    }
+    return ResponseEntity.created(location).build();
+  }
 
-    @Authorized
-    @PostMapping
-    @Operation(summary = "Create user feedback",
-      description = "Save user feedback of product with their token from Github account.")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback",
-      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-          schema = @Schema(implementation = FeedbackModelRequest.class)))
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized request") })
-    public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-            HttpServletRequest request) {
-        String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
-        var claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(token));
-        var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
-        var location = ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path(BY_ID)
-                        .buildAndExpand(newFeedback.getId())
-                        .toUri();
+  @Operation(summary = "Find rating information of product by its id.",
+    description = "Get overall rating of product by its id.")
+  @GetMapping(PRODUCT_RATING_BY_ID)
+  public ResponseEntity<List<ProductRating>> getProductRating(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+        in = ParameterIn.PATH) String productId) {
+    return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
+  }
 
-        return ResponseEntity.created(location).build();
-    }
-
-    @Operation(summary = "Find rating information of product by its id.",
-      description = "Get overall rating of product by its id.")
-    @GetMapping(PRODUCT_RATING_BY_ID)
-    public ResponseEntity<List<ProductRating>> getProductRating(
-            @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
-              in = ParameterIn.PATH) String productId) {
-        return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
-    }
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<PagedModel<FeedbackModel>> generateEmptyPagedModel() {
-        var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-                FeedbackModel.class);
-        return ResponseEntity.ok(emptyPagedModel);
-    }
+  @SuppressWarnings("unchecked")
+  private ResponseEntity<PagedModel<FeedbackModel>> generateEmptyPagedModel() {
+    var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        FeedbackModel.class);
+    return ResponseEntity.ok(emptyPagedModel);
+  }
 }

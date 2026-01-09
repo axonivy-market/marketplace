@@ -43,7 +43,9 @@ public class AuthorizedAspect {
     if (authorizationHeader == null) {
       authorizationHeader = request.getHeader(AUTHORIZATION);
     }
-    
+    // First, get RAW token from JWT, then validate user in org and team
+    // * Also can throw ExpiredJwtException, MalformedJwtException, SignatureException, etc.
+    // Before proceeding to the controller method
     String token = jwtService.getRawAccessToken(authorizationHeader);
     if (ObjectUtils.isEmpty(token)) {
       throw throwInvalidAuthorizationException();

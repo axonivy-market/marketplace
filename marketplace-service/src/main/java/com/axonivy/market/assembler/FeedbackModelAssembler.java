@@ -25,8 +25,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
   @Override
   public FeedbackModel toModel(Feedback feedback) {
     var resource = new FeedbackModel();
-    createResource(resource, feedback);
-    return resource;
+    return createResource(resource, feedback);
   }
 
   public List<FeedbackModel> toModel(List<Feedback> feedbacks) {
