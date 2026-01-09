@@ -30,7 +30,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
-  private static final Pattern INVALID_VERSION_CHAR_PATTERN = Pattern.compile("[^\\p{Alnum}._-]");
+  private static final Pattern INVALID_VERSION_CHAR_PATTERN = Pattern.compile("[^\\p{L}\\p{N}._-]",
+      Pattern.UNICODE_CHARACTER_CLASS);
   // Common semantic versioning pattern: 1, 1.2, 1.2.3, 1.2.3.4, 1.2.3.4.5, 1.2.3-beta, 1.2.3-beta.1, etc.
   private static final String VERSION_REGEX = "^\\d+(\\.\\d+){0,5}(-[\\p{L}\\p{N}.]+)?$";
   private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
