@@ -88,38 +88,31 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
+  public void syncDocumentForProduct(String productId, boolean isResetSync, String forceSyncedVersion) {
     if (isRequestPathUnsafe(productId)) {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
 
     var product = productRepo.findProductByIdAndRelatedData(productId);
-    if (product == null) {
-      log.warn("Cannot find the product for document sync {}", productId);
+    if (product == null || isEmpty(product.getReleasedVersions())) {
       return;
     }
 
     var releasedVersions = product.getReleasedVersions();
-    if (isEmpty(releasedVersions)) {
-      return;
-    }
-
     var specifiedVersion = EMPTY;
-    if (StringUtils.isNotBlank(version)) {
-      specifiedVersion = VersionUtils.normalizeVersion(version);
+    if (StringUtils.isNotBlank(forceSyncedVersion)) {
+      specifiedVersion = VersionUtils.normalizeVersion(forceSyncedVersion);
       if (!releasedVersions.contains(specifiedVersion)) {
         return;
       }
     }
 
     var docArtifacts = fetchDocArtifacts(product.getArtifacts());
-    if (isEmpty(docArtifacts)) {
-      return;
+    if (!isEmpty(docArtifacts)) {
+      downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
+          specifiedVersion);
     }
-
-    downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
-        specifiedVersion);
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
