@@ -217,6 +217,30 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.isAuthenticated).toBeFalse();
   }));
 
+  it('should handle unauthorized error in fetchFeedbacks', fakeAsync(() => {
+    const errorResponse = new HttpErrorResponse({ status: 401 });
+    productFeedbackServiceMock.findProductFeedbacks.and.returnValue(    
+      throwError(() => errorResponse)
+    );
+    component.token = 'testToken';
+    component.fetchFeedbacks();
+    tick();
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
+    expect(component.isAuthenticated).toBeFalse();
+  }));
+
+  it('should return early from fetchFeedbacks if not authenticated', fakeAsync(() => {
+    authServiceMock.getUserInfo.and.returnValue(of());
+    authServiceMock.getDisplayNameFromAccessToken.and.returnValue(of(''));
+    component.isAuthenticated = false;
+    
+    component.fetchFeedbacks();
+    tick();
+    
+    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
+    expect(component.isLoading).toBeFalse();
+  }));
+
   it('should toggle between tabs correctly', fakeAsync(() => {
     component.isAuthenticated = true;
     fixture.detectChanges();
