@@ -58,30 +58,21 @@ class NotificationServiceImplTest {
 
     List<DisabledSecurityEvent> events = List.of(dependabotEvent, codeScanningEvent);
 
-    ArgumentCaptor<SimpleMailMessage> captor =
-        ArgumentCaptor.forClass(SimpleMailMessage.class);
+    ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
 
     notificationService.notify(events);
-
     verify(mailSender).send(captor.capture());
 
     SimpleMailMessage message = captor.getValue();
-
     assertEquals("from@test.com", message.getFrom());
     assertNotNull(message.getTo());
     assertEquals("to@test.com", message.getTo()[0]);
-    assertEquals(
-        "[Security Monitor] Disabled security events detected (2)",
-        message.getSubject()
-    );
+    assertEquals("[Security Monitor] Disabled security checks detected (2)", message.getSubject());
 
     String body = message.getText();
-
     assertNotNull(body);
     assertTrue(body.contains("1. basic-workflow-ui"));
-    assertTrue(body.contains(
-        "https://github.com/axonivy-market/basic-workflow-ui/security"
-    ));
+    assertTrue(body.contains("https://github.com/axonivy-market/basic-workflow-ui/security"));
     assertTrue(body.contains(SecurityFeature.DEPENDABOT.name()));
     assertTrue(body.contains(SecurityFeature.CODE_SCANNING.name()));
     assertTrue(body.contains("Security Monitor job"));
@@ -98,15 +89,8 @@ class NotificationServiceImplTest {
             AccessLevel.DISABLED
         );
 
-    doThrow(new MailException("SMTP failure") {
-    })
-        .when(mailSender)
-        .send(any(SimpleMailMessage.class));
-
-    assertDoesNotThrow(() ->
-        notificationService.notify(List.of(dependabotEvent))
-    );
-
+    doThrow(new MailException("SMTP failure") {}).when(mailSender).send(any(SimpleMailMessage.class));
+    assertDoesNotThrow(() -> notificationService.notify(List.of(dependabotEvent)));
     verify(mailSender).send(any(SimpleMailMessage.class));
   }
 }

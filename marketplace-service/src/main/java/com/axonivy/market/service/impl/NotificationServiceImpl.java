@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.SecurityMonitorMailProperties;
 import com.axonivy.market.service.NotificationService;
@@ -33,8 +34,8 @@ public class NotificationServiceImpl implements NotificationService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(mailProperties.getFrom());
             message.setTo(mailProperties.getTo());
-            message.setSubject(buildSubject(events));
-            message.setText(buildBody(events));
+            message.setSubject(buildMailSubject(events));
+            message.setText(buildMailBody(events));
 
             mailSender.send(message);
         } catch (MailException ex) {
@@ -42,16 +43,16 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    private String buildSubject(List<DisabledSecurityEvent> events) {
-        return "[Security Monitor] Disabled security events detected (" + events.size() + ")";
+    private String buildMailSubject(List<DisabledSecurityEvent> events) {
+        return "[Security Monitor] Disabled security checks detected (" + events.size() + ")";
     }
 
-    private String buildBody(List<DisabledSecurityEvent> events) {
+    private String buildMailBody(List<DisabledSecurityEvent> events) {
         Map<String, List<DisabledSecurityEvent>> securityEvents =
-                events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::repoName));
+                events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::getRepoName));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("The following repositories have disabled security events:\n\n");
+        sb.append("The following repositories have security checks disabled:\n\n");
 
         AtomicInteger counter = new AtomicInteger(1);
 
@@ -61,15 +62,13 @@ public class NotificationServiceImpl implements NotificationService {
             sb.append(index)
                     .append(". ")
                     .append(repo)
-                    .append(" ")
+                    .append(CommonConstants.SPACE_SEPARATOR)
                     .append(buildRepoUrl(repo))
-                    .append("\n");
+                    .append(CommonConstants.NEW_LINE);
 
-            repoEvents.forEach(e ->
-                    sb.append("   - ").append(e.feature()).append("\n")
-            );
-
-            sb.append("\n");
+            repoEvents.forEach(e -> sb.append("   - ").append(e.getFeature())
+                    .append(CommonConstants.NEW_LINE));
+            sb.append(CommonConstants.NEW_LINE);
         });
 
         sb.append("This message was generated automatically by the Security Monitor job.");

@@ -3,6 +3,8 @@ package com.axonivy.market.schedulingtask;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
+import com.axonivy.market.github.model.DisabledSecurityEvent;
+import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -18,6 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 
 @Log4j2
 @Component
@@ -38,7 +41,6 @@ public class ScheduledTasks {
   private final ProductDependencyService productDependencyService;
   private final GithubReposService githubReposService;
   private final GitHubService gitHubService;
-  private final DisabledSecurityEventFactory eventFactory;
   private final NotificationService notificationService;
 
   @Value("${market.github.token}")
@@ -92,12 +94,12 @@ public class ScheduledTasks {
     run(() ->
         {
           try {
-            var securityInfos =
+            List<ProductSecurityInfo> securityInfos =
                 gitHubService.getSecurityDetailsForAllProducts(syncToken,
                     GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
-            var disabledEvents = securityInfos.stream()
-                .flatMap(info -> eventFactory.from(info).stream())
+            List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()
+                .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
                 .toList();
 
             notificationService.notify(disabledEvents);

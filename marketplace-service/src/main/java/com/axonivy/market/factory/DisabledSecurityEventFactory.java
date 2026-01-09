@@ -13,13 +13,10 @@ import java.util.List;
 
 import static com.axonivy.market.enums.AccessLevel.DISABLED;
 
-import org.springframework.stereotype.Component;
-
-@Component
 @Log4j2
 public class DisabledSecurityEventFactory {
 
-  public List<DisabledSecurityEvent> from(ProductSecurityInfo info) {
+  public static List<DisabledSecurityEvent> from(ProductSecurityInfo info) {
     List<DisabledSecurityEvent> events = new ArrayList<>();
 
     if (isDisabled(info.getDependabot())) {
@@ -41,28 +38,20 @@ public class DisabledSecurityEventFactory {
     return events;
   }
 
-  private boolean isDisabled(Object feature) {
-    if (feature instanceof Dependabot d) {
-      return d.getStatus() == DISABLED;
+  private static boolean isDisabled(Object feature) {
+    if (feature instanceof Dependabot dependabot) {
+      return DISABLED == dependabot.getStatus();
     }
-    if (feature instanceof SecretScanning s) {
-      return s.getStatus() == DISABLED;
+    if (feature instanceof SecretScanning secretScanning) {
+      return DISABLED == secretScanning.getStatus();
     }
-    if (feature instanceof CodeScanning c) {
-      return c.getStatus() == DISABLED;
+    if (feature instanceof CodeScanning codeScanning) {
+      return DISABLED == codeScanning.getStatus();
     }
     return false;
   }
 
-  private DisabledSecurityEvent event(
-      ProductSecurityInfo info,
-      SecurityFeature feature
-  ) {
-    return new DisabledSecurityEvent(
-        info.getRepoName(),
-        feature,
-        DISABLED
-    );
+  private static DisabledSecurityEvent event(ProductSecurityInfo info, SecurityFeature feature) {
+    return new DisabledSecurityEvent(info.getRepoName(), feature, DISABLED);
   }
 }
-
