@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface GithubRepoRepository extends JpaRepository<GithubRepo, String>, CustomGithubRepoRepository {
   @EntityGraph(attributePaths = {"workflowInformation","testSteps"})
-  GithubRepo findByNameOrProductId(String name, String productId);
+  List<GithubRepo> findByNameOrProductId(String name, String productId);
 
   @Modifying
   @Transactional

@@ -53,4 +53,14 @@ describe('NavigationComponent', () => {
     expect(googleSearchContainer).toBeTruthy();
     expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
   });
+
+  it('should return navItems when isAdminPage is false', () => {
+    component.isAdminPage = false;
+    expect(component.items).toBe(component.navItems);
+  });
+
+  it('should return adminNavItems when isAdminPage is true', () => {
+    component.isAdminPage = true;
+    expect(component.items).toBe(component.adminNavItems);
+  });
 });

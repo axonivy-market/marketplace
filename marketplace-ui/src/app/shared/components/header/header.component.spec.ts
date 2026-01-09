@@ -1,21 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { TranslateModule,  } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { HeaderComponent } from './header.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 declare const viewport: Viewport;
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
+      imports: [HeaderComponent, TranslateModule.forRoot()],
+      providers: [provideRouter([])]
     }).compileComponents();
 
+    router = TestBed.inject(Router);
     fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -101,5 +105,55 @@ describe('HeaderComponent', () => {
     expect(menuButton.getBoundingClientRect().left).toBeGreaterThan(
       logo.getBoundingClientRect().right
     );
+  });
+
+  describe('Router navigation handling', () => {
+    it('should set isAdminRoute to true when navigating to admin route', (done) => {
+      const navigationEvent = new NavigationEnd(
+        1,
+        '/internal-dashboard/admin',
+        '/internal-dashboard/admin'
+      );
+
+      setTimeout(() => {
+        expect(component.isAdminRoute).toBeTrue();
+        done();
+      }, 10);
+
+      (router.events as any).next(navigationEvent);
+    });
+
+    it('should handle multiple navigation events', (done) => {
+      const event1 = new NavigationEnd(1, '/portal', '/portal');
+      const event2 = new NavigationEnd(2, '/internal-dashboard', '/internal-dashboard');
+      const event3 = new NavigationEnd(3, '/home', '/home');
+
+      (router.events as any).next(event1);
+      
+      setTimeout(() => {
+        expect(component.isAdminRoute).toBeFalse();
+
+        (router.events as any).next(event2);
+        
+        setTimeout(() => {
+          expect(component.isAdminRoute).toBeTrue();
+
+          (router.events as any).next(event3);
+          
+          setTimeout(() => {
+            expect(component.isAdminRoute).toBeFalse();
+            done();
+          }, 10);
+        }, 10);
+      }, 10);
+    });
+  });
+
+  it('should emit menuToggle event when onMenuToggleClick is called', () => {
+    spyOn(component.menuToggle, 'emit');
+
+    component.onMenuToggleClick();
+
+    expect(component.menuToggle.emit).toHaveBeenCalled();
   });
 });
