@@ -1,14 +1,15 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.SecurityMonitorMailProperties;
 import com.axonivy.market.service.NotificationService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,14 +32,15 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
             message.setFrom(mailProperties.getFrom());
             message.setTo(mailProperties.getTo());
             message.setSubject(buildMailSubject(events));
-            message.setText(buildMailBody(events));
+            message.setText(buildBodyHtml(events), true);
 
-            mailSender.send(message);
-        } catch (MailException ex) {
+            mailSender.send(mimeMessage);
+        } catch (MessagingException | MailException ex) {
             log.error("Failed to send security monitor email", ex);
         }
     }
@@ -47,31 +49,36 @@ public class NotificationServiceImpl implements NotificationService {
         return "[Security Monitor] Disabled security checks detected (" + events.size() + ")";
     }
 
-    private String buildMailBody(List<DisabledSecurityEvent> events) {
+    private String buildBodyHtml(List<DisabledSecurityEvent> events) {
         Map<String, List<DisabledSecurityEvent>> securityEvents =
                 events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::getRepoName));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("The following repositories have security checks disabled:\n\n");
+        sb.append("<html><body>");
+        sb.append("<p>The following repositories have security checks disabled:</p>");
 
         AtomicInteger counter = new AtomicInteger(1);
 
         securityEvents.forEach((repo, repoEvents) -> {
             int index = counter.getAndIncrement();
 
-            sb.append(index)
-                    .append(". ")
-                    .append(repo)
-                    .append(CommonConstants.SPACE_SEPARATOR)
-                    .append(buildRepoUrl(repo))
-                    .append(CommonConstants.NEW_LINE);
+            sb.append("<p>")
+                    .append(index).append(". ")
+                    .append("<a href=\"").append(buildRepoUrl(repo)).append("\">")
+                    .append("<strong>").append(repo).append("</strong>")
+                    .append("</a>")
+                    .append("</p>");
 
-            repoEvents.forEach(e -> sb.append("   - ").append(e.getFeature())
-                    .append(CommonConstants.NEW_LINE));
-            sb.append(CommonConstants.NEW_LINE);
+          sb.append("<ul style=\"list-style: none; padding-left: 0;\">");
+            repoEvents.forEach(e ->
+                    sb.append("<li>⛔ ").append(e.getFeature().getSecurityLabel()).append("</li>")
+            );
+            sb.append("</ul>");
         });
 
-        sb.append("This message was generated automatically by the Security Monitor job.");
+        sb.append("<p>This message was generated automatically by the Security Monitor job.</p>");
+        sb.append("</body></html>");
+
         return sb.toString();
     }
 

@@ -5,7 +5,7 @@ import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
-import com.axonivy.market.github.model.SecurityFeature;
+import com.axonivy.market.enums.SecurityFeature;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;

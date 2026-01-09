@@ -1,6 +1,7 @@
 package com.axonivy.market.github.model;
 
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.SecurityFeature;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
