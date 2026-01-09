@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.util.DocPathUtils.*;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -92,16 +93,19 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
+
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (product == null) {
       log.warn("Cannot find the product for document sync {}", productId);
       return;
     }
 
-    List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
-    List<String> releasedVersions = product.getReleasedVersions();
-    String specifiedVersion = EMPTY;
+    var releasedVersions = product.getReleasedVersions();
+    if (isEmpty(releasedVersions)) {
+      return;
+    }
 
+    var specifiedVersion = EMPTY;
     if (StringUtils.isNotBlank(version)) {
       specifiedVersion = VersionUtils.normalizeVersion(version);
       if (!releasedVersions.contains(specifiedVersion)) {
@@ -109,10 +113,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       }
     }
 
-    if (isNotEmpty(docArtifacts) && isNotEmpty(releasedVersions)) {
-        downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
-            specifiedVersion);
+    var docArtifacts = fetchDocArtifacts(product.getArtifacts());
+    if (isEmpty(docArtifacts)) {
+      return;
     }
+
+    downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
+        specifiedVersion);
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,

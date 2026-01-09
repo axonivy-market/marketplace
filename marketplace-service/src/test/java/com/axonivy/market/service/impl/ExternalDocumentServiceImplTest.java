@@ -45,7 +45,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION_12_5 = "12.5";
   private static final String VERSION_INVALID = "99.0";
   private static final String NON_EXISTENT_PRODUCT = "nonexistent";
-
+  private static final String MARKET_CACHE = "market-cache";
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
   private static final String RELATIVE_WORKING_LOCATION_EN = "/market-cache/portal/12.5.0/doc/en";
   private static final String INDEX_FILE = "/index.html";
@@ -119,7 +119,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncDocumentForProduct() throws IOException {
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().orElse(null));
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(
+        mockPortalProductHasNoArtifact().orElse(null));
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
@@ -127,19 +128,25 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
-    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
-    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_WORKING_LOCATION);
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(
+        DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
+    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn(
+        DirectoryConstants.DATA_DIR + RELATIVE_WORKING_LOCATION);
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
+  }
 
+  @Test
+  void testSyncDocumentForProductWithLanguageDirectories() throws IOException {
+    String portalGuideDirectoryPath = preparePortalGuideDirectory();
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().orElse(new Product()).getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
-    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any())).thenReturn(
-        List.of(createExternalDocumentMock()));
-    service.syncDocumentForProduct(PORTAL, false, null);
-    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersionIn(any(), any());
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(portalGuideDirectoryPath);
+    when(externalDocumentMetaRepository.save(any())).thenReturn(new ExternalDocumentMeta());
+    service.syncDocumentForProduct(PORTAL, false, TEST_VERSION);
+    verify(externalDocumentMetaRepository, times(4)).save(any());
   }
 
   @Test
@@ -166,6 +173,30 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithNotFoundProduct() {
+    when(productRepository.findProductByIdAndRelatedData(any())).thenReturn(null);
+    service.syncDocumentForProduct(PORTAL, true, "");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithoutReleasedVersions() {
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalHasNoReleasedVersions());
+    service.syncDocumentForProduct(PORTAL, true, "");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithInvalidVersion() {
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    service.syncDocumentForProduct(PORTAL, true, "12.0-SNAPSHOT");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
   }
 
   @Test
@@ -230,6 +261,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     return Optional.of(product);
   }
 
+  private Product mockPortalHasNoReleasedVersions() {
+    return Product.builder().id(PORTAL)
+        .releasedVersions(List.of())
+        .build();
+  }
+
   private static Product mockPortal(boolean isEmptyArtifacts) {
     return Product.builder().id(PORTAL)
         .artifacts(isEmptyArtifacts ? List.of() : List.of(mockPortalMavenArtifact()))
@@ -240,6 +277,20 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Artifact mockPortalMavenArtifact() {
     return Artifact.builder().artifactId(ARTIFACT_NAME).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
+  }
+
+  private String preparePortalGuideDirectory() throws IOException {
+    Path cacheDir = tempDir.resolve(MARKET_CACHE);
+    Files.createDirectories(cacheDir);
+    Path portalDir = cacheDir.resolve(PORTAL);
+    Files.createDirectories(portalDir);
+    Path portalGuideDir = portalDir.resolve(ARTIFACT_NAME);
+    Files.createDirectories(portalGuideDir);
+    Path versionDir = portalGuideDir.resolve(TEST_VERSION);
+    Files.createDirectories(versionDir);
+    Files.createDirectory(versionDir.resolve(DocumentLanguage.ENGLISH.getCode()));
+    Files.createDirectory(versionDir.resolve(DocumentLanguage.JAPANESE.getCode()));
+    return versionDir.toString();
   }
 
   @Test
@@ -274,14 +325,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
-    Path testDir = tempDir.resolve(PORTAL);
-    Files.createDirectories(testDir);
-    Files.createDirectory(testDir.resolve(DocumentLanguage.ENGLISH.getCode()));
-    Files.createDirectory(testDir.resolve(DocumentLanguage.JAPANESE.getCode()));
-    Files.createDirectory(testDir.resolve(PORTAL));
-
-    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
-
+    String portalGuidePath = preparePortalGuideDirectory();
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(portalGuidePath);
     assertEquals(2, result.size(), "Should have 2 languages");
     assertTrue(result.containsKey(DocumentLanguage.ENGLISH), "Should contain English language");
     assertTrue(result.containsKey(DocumentLanguage.JAPANESE), "Should contain Japanese language");
