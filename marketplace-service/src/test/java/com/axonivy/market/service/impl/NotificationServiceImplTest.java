@@ -4,6 +4,7 @@ import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.enums.SecurityFeature;
 import com.axonivy.market.github.model.SecurityMonitorMailProperties;
+import jakarta.mail.Address;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,34 @@ class NotificationServiceImplTest {
     assertTrue(body.contains("⛔ Dependabot"));
     assertTrue(body.contains("⛔ Code Scanning"));
     assertTrue(body.contains("Security Monitor job"));
+  }
+
+  @Test
+  void testNotifySupportsMultipleRecipients() throws Exception {
+    when(mailProperties.getFrom()).thenReturn("from@test.com");
+    when(mailProperties.getTo()).thenReturn("to1@test.com, to2@test.com, to3@test.com");
+    MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
+    when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+    DisabledSecurityEvent event =
+        new DisabledSecurityEvent(
+            "basic-workflow-ui",
+            SecurityFeature.DEPENDABOT,
+            AccessLevel.DISABLED
+        );
+
+    notificationService.notify(List.of(event));
+
+    ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
+    verify(mailSender).send(captor.capture());
+
+    MimeMessage sent = captor.getValue();
+
+    Address[] recipients = sent.getAllRecipients();
+    assertEquals(3, recipients.length);
+    assertEquals("to1@test.com", recipients[0].toString());
+    assertEquals("to2@test.com", recipients[1].toString());
+    assertEquals("to3@test.com", recipients[2].toString());
   }
 
   @Test
