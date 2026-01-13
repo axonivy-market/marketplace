@@ -46,11 +46,20 @@ public class DisabledSecurityEventFactory {
   }
 
   private static boolean isDisabled(Object feature) {
-    return (feature instanceof Dependabot dependabot && DISABLED == dependabot.getStatus())
-        || (feature instanceof SecretScanning secretScanning && DISABLED == secretScanning.getStatus())
-        || (feature instanceof CodeScanning codeScanning && DISABLED == codeScanning.getStatus());
+    return isDependabotDisabled(feature) || isSecretScanningDisabled(feature) || isCodeScanningDisabled(feature);
   }
 
+  private static boolean isDependabotDisabled(Object feature) {
+    return feature instanceof Dependabot dependabot && DISABLED == dependabot.getStatus();
+  }
+
+  private static boolean isSecretScanningDisabled(Object feature) {
+    return feature instanceof SecretScanning secretScanning && DISABLED == secretScanning.getStatus();
+  }
+
+  private static boolean isCodeScanningDisabled(Object feature) {
+    return feature instanceof CodeScanning codeScanning && DISABLED == codeScanning.getStatus();
+  }
 
   private static DisabledSecurityEvent event(ProductSecurityInfo info, SecurityFeature feature) {
     return new DisabledSecurityEvent(info.getRepoName(), feature, DISABLED);
