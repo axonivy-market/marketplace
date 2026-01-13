@@ -90,7 +90,7 @@ public class ExternalDocumentController {
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
 
-    if (StringUtils.isNotBlank(version) && !VersionUtils.isVersion(version)) {
+    if (StringUtils.isNotBlank(version) && !VersionUtils.isMavenVersion(version)) {
       var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }

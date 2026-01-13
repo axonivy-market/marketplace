@@ -104,6 +104,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isNotBlank(forceSyncedVersion)) {
       specifiedVersion = VersionUtils.normalizeVersion(forceSyncedVersion);
       if (!releasedVersions.contains(specifiedVersion)) {
+        log.warn("The version {} has not been released yet.", specifiedVersion);
         return;
       }
     }
@@ -473,7 +474,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String version = extractVersion(path);
     // If the path does not include artifactName, the artifactName will be created by productName
     // path = /portal/13.1.1/doc -> artifactName = portal-guide & version = 13.1.1
-    if (VersionUtils.isVersion(artifactName) || VersionUtils.isDevelopmentVersion(artifactName)) {
+    if (VersionUtils.isMavenVersion(artifactName) || VersionUtils.isDevelopmentVersion(artifactName)) {
       version = artifactName;
       artifactName = createArtifactNameByProductName(productName);
     }
@@ -485,16 +486,31 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return null;
     }
 
-    String bestMatchVersion;
     if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
         version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
-      bestMatchVersion = DevelopmentVersion.DEV.getCode();
-    } else {
-      version = getVersionNumberFromDynamicDevelopmentVersions(version);
-      bestMatchVersion = resolveBestMatchSymlinkVersion(version);
-      if (ObjectUtils.isEmpty(bestMatchVersion)) {
-        bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
-      }
+      return getRedirectURLForDevVersion(productName, artifactName, language);
+    }
+
+    return getRedirectURLForVersion(productName, artifactName, language, version);
+  }
+
+  private String getRedirectURLForDevVersion(String productName, String artifactName, DocumentLanguage language) {
+    String devVersion = DevelopmentVersion.DEV.getCode();
+    String redirectURL = DocPathUtils.generatePath(productName, artifactName, devVersion, language);
+    if (!isSymlinkExisting(redirectURL)) {
+      String bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, devVersion);
+      redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
+      redirectURL = isSymlinkExisting(redirectURL) ? redirectURL : null;
+    }
+    return redirectURL;
+  }
+
+  private String getRedirectURLForVersion(String productName, String artifactName, DocumentLanguage language,
+      String version) {
+    String versionNumber = getVersionNumberFromDynamicDevelopmentVersions(version);
+    String bestMatchVersion = resolveBestMatchSymlinkVersion(versionNumber);
+    if (ObjectUtils.isEmpty(bestMatchVersion)) {
+      bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, versionNumber);
     }
     String redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
     return isSymlinkExisting(redirectURL) ? redirectURL : null;

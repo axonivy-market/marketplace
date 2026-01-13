@@ -162,7 +162,7 @@ public class VersionUtils {
     return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
   }
 
-  public static boolean isVersion(String versionStr) {
+  public static boolean isMavenVersion(String versionStr) {
     if (StringUtils.isBlank(versionStr)) {
       return false;
     }

@@ -58,11 +58,11 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testSyncDocumentForProductWithVersion() {
-    when(service.determineProductIdsForSync("portal")).thenReturn(List.of("portal"));
-    var invalidVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, null, "portal",
+    when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
+    var invalidVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, null, PORTAL,
         "invalid-version");
     assertEquals(HttpStatus.BAD_REQUEST, invalidVersionResult.getStatusCode(), "Should be an inputted invalid version");
-    var validVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, false, "portal", "13.2.0");
+    var validVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, false, PORTAL, "13.2.0");
     assertEquals(HttpStatus.OK, validVersionResult.getStatusCode(), "Should return at least one product");
   }
 
@@ -71,8 +71,8 @@ class ExternalDocumentControllerTest {
     var result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
     assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
 
-    when(service.determineProductIdsForSync("portal")).thenReturn(List.of("portal"));
-    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, "portal", null);
+    when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
+    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, PORTAL, null);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
   }
 

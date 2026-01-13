@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MetadataReaderUtils {
@@ -88,11 +90,15 @@ public class MetadataReaderUtils {
   }
 
   public static String getElementValue(Document doc, String tagName) {
+    if (doc == null) {
+      return EMPTY;
+    }
+
     var nodeList = doc.getElementsByTagName(tagName);
     if (nodeList.getLength() > 0) {
       return nodeList.item(0).getTextContent();
     }
-    return null;
+    return EMPTY;
   }
 
   public static String getSnapshotVersionValue(String version,
