@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static com.axonivy.market.constants.MailConstants.*;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
-  public static final String GITHUB_MARKET_ORG_URL = "https://github.com/axonivy-market";
   private final JavaMailSender mailSender;
   private final SecurityMonitorMailProperties mailProperties;
 
@@ -56,36 +56,22 @@ public class NotificationServiceImpl implements NotificationService {
     return "[Security Monitor] Disabled security checks detected (" + events.size() + ")";
   }
 
-  private String buildBodyHtml(List<DisabledSecurityEvent> events) {
+  private String buildBodyHtml(List<DisabledSecurityEvent> disabledSecurityEvents) {
     Map<String, List<DisabledSecurityEvent>> securityEvents =
-        events.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::getRepoName));
+        disabledSecurityEvents.stream().collect(Collectors.groupingBy(DisabledSecurityEvent::getRepoName));
 
     StringBuilder sb = new StringBuilder();
-    sb.append("<html><body>");
-    sb.append("<p>The following repositories have security checks disabled:</p>");
+    sb.append("<html><body><p>The following repositories have security checks disabled:</p>");
 
-    AtomicInteger counter = new AtomicInteger(1);
+    int index = 1;
+    for (var events : securityEvents.entrySet()) {
+      sb.append(REPO_NAME_HEADER_FORMAT.formatted(index++, buildRepoUrl(events.getKey()), events.getKey()));
+      sb.append(UL_START);
+      events.getValue().forEach(e -> sb.append(LI_FORMAT.formatted(e.getFeature().getSecurityLabel())));
+      sb.append(UL_END);
+    }
 
-    securityEvents.forEach((repo, repoEvents) -> {
-      int index = counter.getAndIncrement();
-
-      sb.append("<p>")
-          .append(index).append(". ")
-          .append("<a href=\"").append(buildRepoUrl(repo)).append("\">")
-          .append("<strong>").append(repo).append("</strong>")
-          .append("</a>")
-          .append("</p>");
-
-      sb.append("<ul style=\"list-style: none; padding-left: 0;\">");
-      repoEvents.forEach(e ->
-          sb.append("<li>⛔ ").append(e.getFeature().getSecurityLabel()).append("</li>")
-      );
-      sb.append("</ul>");
-    });
-
-    sb.append("<p>This message was generated automatically by the Security Monitor job.</p>");
-    sb.append("</body></html>");
-
+    sb.append("<p>This message was generated automatically by the Security Monitor job.</p></body></html>");
     return sb.toString();
   }
 

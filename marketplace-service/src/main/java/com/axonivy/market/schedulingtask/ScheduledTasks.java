@@ -4,6 +4,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
+import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
@@ -12,8 +13,7 @@ import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +24,7 @@ import java.util.List;
 
 @Log4j2
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ScheduledTasks {
 
   private static final String SYNC_PRODUCTS_CRON = "${market.scheduling.products-cron}";
@@ -42,9 +42,7 @@ public class ScheduledTasks {
   private final GithubReposService githubReposService;
   private final GitHubService gitHubService;
   private final NotificationService notificationService;
-
-  @Value("${market.github.token}")
-  private String syncToken;
+  private final GitHubProperty gitHubProperty;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -95,7 +93,7 @@ public class ScheduledTasks {
         {
           try {
             List<ProductSecurityInfo> securityInfos =
-                gitHubService.getSecurityDetailsForAllProducts(syncToken,
+                gitHubService.getSecurityDetailsForAllProducts(gitHubProperty.getToken(),
                     GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
             List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()

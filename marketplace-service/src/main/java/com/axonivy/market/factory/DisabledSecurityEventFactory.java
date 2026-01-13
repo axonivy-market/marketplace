@@ -6,7 +6,10 @@ import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.enums.SecurityFeature;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.kohsuke.github.GHRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +17,15 @@ import java.util.List;
 import static com.axonivy.market.enums.AccessLevel.DISABLED;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DisabledSecurityEventFactory {
 
   public static List<DisabledSecurityEvent> from(ProductSecurityInfo info) {
-    List<DisabledSecurityEvent> events = new ArrayList<>();
+    if (!isRepoEligible(info)) {
+      return List.of();
+    }
 
+    List<DisabledSecurityEvent> events = new ArrayList<>();
     if (isDisabled(info.getDependabot())) {
       events.add(event(info, SecurityFeature.DEPENDABOT));
     }
@@ -53,5 +60,9 @@ public class DisabledSecurityEventFactory {
 
   private static DisabledSecurityEvent event(ProductSecurityInfo info, SecurityFeature feature) {
     return new DisabledSecurityEvent(info.getRepoName(), feature, DISABLED);
+  }
+
+  private static boolean isRepoEligible(ProductSecurityInfo info) {
+    return !info.isArchived() && GHRepository.Visibility.PUBLIC.name().equalsIgnoreCase(info.getVisibility());
   }
 }
