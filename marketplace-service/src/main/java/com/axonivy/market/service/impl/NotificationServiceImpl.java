@@ -42,10 +42,8 @@ public class NotificationServiceImpl implements NotificationService {
               .map(String::trim)
               .toArray(String[]::new)
       );
-
       message.setSubject(buildMailSubject(events));
       message.setText(buildBodyHtml(events), true);
-
       mailSender.send(mimeMessage);
     } catch (MessagingException | MailException ex) {
       log.error("Failed to send security monitor email", ex);
