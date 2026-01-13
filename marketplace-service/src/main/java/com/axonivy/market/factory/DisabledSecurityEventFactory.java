@@ -46,16 +46,9 @@ public class DisabledSecurityEventFactory {
   }
 
   private static boolean isDisabled(Object feature) {
-    if (feature instanceof Dependabot dependabot) {
-      return DISABLED == dependabot.getStatus();
-    }
-    if (feature instanceof SecretScanning secretScanning) {
-      return DISABLED == secretScanning.getStatus();
-    }
-    if (feature instanceof CodeScanning codeScanning) {
-      return DISABLED == codeScanning.getStatus();
-    }
-    return false;
+    return feature instanceof Dependabot dependabot && DISABLED == dependabot.getStatus()
+        || feature instanceof SecretScanning secretScanning && DISABLED == secretScanning.getStatus()
+        || feature instanceof CodeScanning codeScanning && DISABLED == codeScanning.getStatus();
   }
 
   private static DisabledSecurityEvent event(ProductSecurityInfo info, SecurityFeature feature) {

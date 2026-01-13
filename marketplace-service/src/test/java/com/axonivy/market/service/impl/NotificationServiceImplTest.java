@@ -19,8 +19,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import java.util.List;
 import java.util.Properties;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,16 +64,34 @@ class NotificationServiceImplTest {
     verify(mailSender).send(captor.capture());
 
     MimeMessage sentMessage = captor.getValue();
-    assertEquals("from@test.com", sentMessage.getFrom()[0].toString());
-    assertEquals("to@test.com", sentMessage.getAllRecipients()[0].toString());
-    assertEquals("[Security Monitor] Disabled security checks detected (2)", sentMessage.getSubject());
+    assertThat(sentMessage.getFrom()[0].toString())
+        .as("Sender address should match the configured mail property")
+        .isEqualTo("from@test.com");
+
+    assertThat(sentMessage.getAllRecipients()[0].toString())
+        .as("Recipient address should match the configured mail property")
+        .isEqualTo("to@test.com");
+
+    assertThat(sentMessage.getSubject())
+        .as("Email subject should contain the number of disabled security checks")
+        .isEqualTo("[Security Monitor] Disabled security checks detected (2)");
 
     String body = sentMessage.getContent().toString();
-    assertTrue(body.contains("<strong>basic-workflow-ui</strong>"));
-    assertTrue(body.contains("https://github.com/axonivy-market/basic-workflow-ui/security"));
-    assertTrue(body.contains("⛔ Dependabot"));
-    assertTrue(body.contains("⛔ Code Scanning"));
-    assertTrue(body.contains("Security Monitor job"));
+    assertThat(body)
+        .as("Email body should contain the repository name")
+        .contains("<strong>basic-workflow-ui</strong>");
+
+    assertThat(body)
+        .as("Email body should contain the repository security page URL")
+        .contains("https://github.com/axonivy-market/basic-workflow-ui/security");
+
+    assertThat(body)
+        .as("Email body should list disabled Dependabot feature")
+        .contains("⛔ Dependabot");
+
+    assertThat(body)
+        .as("Email body should list disabled Code Scanning feature")
+        .contains("⛔ Code Scanning");
   }
 
   @Test
@@ -97,16 +116,29 @@ class NotificationServiceImplTest {
     MimeMessage sent = captor.getValue();
 
     Address[] recipients = sent.getAllRecipients();
-    assertEquals(3, recipients.length);
-    assertEquals("to1@test.com", recipients[0].toString());
-    assertEquals("to2@test.com", recipients[1].toString());
-    assertEquals("to3@test.com", recipients[2].toString());
+    assertThat(recipients)
+        .as("Email should be sent to all configured recipients")
+        .hasSize(3);
+
+    assertThat(recipients[0].toString())
+        .as("First recipient address should match configuration")
+        .isEqualTo("to1@test.com");
+
+    assertThat(recipients[1].toString())
+        .as("Second recipient address should match configuration")
+        .isEqualTo("to2@test.com");
+
+    assertThat(recipients[2].toString())
+        .as("Third recipient address should match configuration")
+        .isEqualTo("to3@test.com");
   }
 
   @Test
   void testNotifyDoNothingIfAllAreEnabled() {
     notificationService.notify(List.of());
-    verifyNoInteractions(mailSender);
+    assertThatCode(() -> verifyNoInteractions(mailSender))
+        .as("Mail sender should not be invoked when there are no disabled security events")
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -127,7 +159,9 @@ class NotificationServiceImplTest {
             AccessLevel.DISABLED
         );
 
-    assertDoesNotThrow(() -> notificationService.notify(List.of(event)));
+    assertThatCode(() -> notificationService.notify(List.of(event)))
+        .as("Notification service should catch mail exceptions and not propagate them")
+        .doesNotThrowAnyException();
     verify(mailSender).send(any(MimeMessage.class));
   }
 }

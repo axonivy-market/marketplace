@@ -63,7 +63,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     int index = 1;
     for (var events : securityEvents.entrySet()) {
-      sb.append(REPO_NAME_HEADER_FORMAT.formatted(index++, buildRepoUrl(events.getKey()), events.getKey()));
+      sb.append(REPO_NAME_HEADER_FORMAT.formatted(index, buildRepoUrl(events.getKey()), events.getKey()));
+      index++;
       sb.append(UL_START);
       events.getValue().forEach(e -> sb.append(LI_FORMAT.formatted(e.getFeature().getSecurityLabel())));
       sb.append(UL_END);

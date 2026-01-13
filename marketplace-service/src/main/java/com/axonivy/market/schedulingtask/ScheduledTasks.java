@@ -92,15 +92,7 @@ public class ScheduledTasks {
     run(() ->
         {
           try {
-            List<ProductSecurityInfo> securityInfos =
-                gitHubService.getSecurityDetailsForAllProducts(gitHubProperty.getToken(),
-                    GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-
-            List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()
-                .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
-                .toList();
-
-            notificationService.notify(disabledEvents);
+            sendNotificationForDisabledSecurityChecks();
           } catch (IOException e) {
             log.warn("Sync security monitor failed", e);
           }
@@ -117,5 +109,17 @@ public class ScheduledTasks {
     stopWatch.stop();
     log.warn("Thread {}: Ended sync data for the '{}' in [{}] millisecond(s)", threadName, schedulingTaskName,
         stopWatch.getTime());
+  }
+
+  private void sendNotificationForDisabledSecurityChecks() throws IOException {
+    List<ProductSecurityInfo> securityInfos =
+        gitHubService.getSecurityDetailsForAllProducts(gitHubProperty.getToken(),
+            GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+
+    List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()
+        .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
+        .toList();
+
+    notificationService.notify(disabledEvents);
   }
 }
