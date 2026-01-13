@@ -64,13 +64,13 @@ class NotificationServiceImplTest {
     verify(mailSender).send(captor.capture());
 
     MimeMessage sentMessage = captor.getValue();
-    assertThat(sentMessage.getFrom()[0].toString())
+    assertThat(sentMessage.getFrom()[0])
         .as("Sender address should match the configured mail property")
-        .isEqualTo("from@test.com");
+        .hasToString("from@test.com");
 
-    assertThat(sentMessage.getAllRecipients()[0].toString())
+    assertThat(sentMessage.getAllRecipients()[0])
         .as("Recipient address should match the configured mail property")
-        .isEqualTo("to@test.com");
+        .hasToString("to@test.com");
 
     assertThat(sentMessage.getSubject())
         .as("Email subject should contain the number of disabled security checks")
@@ -78,19 +78,10 @@ class NotificationServiceImplTest {
 
     String body = sentMessage.getContent().toString();
     assertThat(body)
-        .as("Email body should contain the repository name")
-        .contains("<strong>basic-workflow-ui</strong>");
-
-    assertThat(body)
-        .as("Email body should contain the repository security page URL")
-        .contains("https://github.com/axonivy-market/basic-workflow-ui/security");
-
-    assertThat(body)
-        .as("Email body should list disabled Dependabot feature")
-        .contains("⛔ Dependabot");
-
-    assertThat(body)
-        .as("Email body should list disabled Code Scanning feature")
+        .as("Email body should contain repository info and disabled security features")
+        .contains("<strong>basic-workflow-ui</strong>")
+        .contains("https://github.com/axonivy-market/basic-workflow-ui/security")
+        .contains("⛔ Dependabot")
         .contains("⛔ Code Scanning");
   }
 
@@ -120,17 +111,17 @@ class NotificationServiceImplTest {
         .as("Email should be sent to all configured recipients")
         .hasSize(3);
 
-    assertThat(recipients[0].toString())
+    assertThat(recipients[0])
         .as("First recipient address should match configuration")
-        .isEqualTo("to1@test.com");
+        .hasToString("to1@test.com");
 
-    assertThat(recipients[1].toString())
+    assertThat(recipients[1])
         .as("Second recipient address should match configuration")
-        .isEqualTo("to2@test.com");
+        .hasToString("to2@test.com");
 
-    assertThat(recipients[2].toString())
+    assertThat(recipients[2])
         .as("Third recipient address should match configuration")
-        .isEqualTo("to3@test.com");
+        .hasToString("to3@test.com");
   }
 
   @Test
