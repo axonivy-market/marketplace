@@ -177,7 +177,9 @@ public class MavenUtils {
     groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
 
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      String snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, artifact);
+      String snapShotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(repoUrl, groupIdByVersion,
+          artifactIdByVersion, version);
+      String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapShotMetadataUrl);
       return buildDownloadUrl(artifactIdByVersion, version, artifact.getType(),
           repoUrl, groupIdByVersion, StringUtils.defaultIfBlank(snapshotVersionValue, version));
     }
