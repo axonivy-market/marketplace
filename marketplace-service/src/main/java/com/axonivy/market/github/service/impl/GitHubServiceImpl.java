@@ -206,8 +206,16 @@ public class GitHubServiceImpl implements GitHubService {
             taskScheduler.getScheduledExecutor())).toList();
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
+        .thenApply(v -> futures.stream()
+            .filter(Objects::nonNull)
+            .map(CompletableFuture::join)
+            .filter(Objects::nonNull)
+            .sorted(Comparator.comparing(
+                ProductSecurityInfo::getRepoName,
+                Comparator.nullsLast(String::compareTo)
+            ))
+            .collect(Collectors.toList()))
+        .join();
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
