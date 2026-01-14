@@ -26,6 +26,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -392,6 +393,20 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
       assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
       assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlForDevVersionWithoutSymlink() {
+    String devPath = String.join(CommonConstants.SLASH,
+        BASE_PATH + DEV_VERSION, DOC_DIR,
+        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(), any())).thenReturn(false);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      assertNull(result, "Should return null value when there is no dev symlink");
+      verify(productRepository, times(1)).findById(eq(PORTAL));
     }
   }
 
