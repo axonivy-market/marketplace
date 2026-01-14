@@ -58,7 +58,7 @@ class MetadataReaderUtilsTest extends BaseSetup {
 
   @Test
   void testUpdateMetadataFromSnapshotXml() {
-    MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapShotMetadataContent(), metadata, true);
+    MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapshotMetadataContent(), metadata, true);
     assertEquals("12.0.2-20250224.083844-2", metadata.getSnapshotVersionValue(),
         "Metadata snapshot version should be match input");
   }
@@ -68,7 +68,7 @@ class MetadataReaderUtilsTest extends BaseSetup {
     try (MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       String mockMetadataUrl = "http://example.com/maven/metadata.xml";
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(mockMetadataUrl)).thenReturn(
-          getMockSnapShotMetadataContent());
+          getMockSnapshotMetadataContent());
       String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(mockMetadataUrl);
       assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue,
           "Metadata snapshot version should be match input");

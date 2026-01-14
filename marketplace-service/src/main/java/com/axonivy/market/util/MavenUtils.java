@@ -177,9 +177,9 @@ public class MavenUtils {
     groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
 
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      String snapShotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(repoUrl, groupIdByVersion,
+      String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(repoUrl, groupIdByVersion,
           artifactIdByVersion, version);
-      String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapShotMetadataUrl);
+      String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
       return buildDownloadUrl(artifactIdByVersion, version, artifact.getType(),
           repoUrl, groupIdByVersion, StringUtils.defaultIfBlank(snapshotVersionValue, version));
     }
@@ -265,7 +265,7 @@ public class MavenUtils {
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
-  public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
+  public static Metadata buildSnapshotMetadataFromVersion(Metadata metadata, String version) {
     String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(), metadata.getGroupId(),
         metadata.getArtifactId(), version);
     return Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(

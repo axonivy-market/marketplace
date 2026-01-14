@@ -125,10 +125,10 @@ public class MetadataServiceImpl implements MetadataService {
 
   public void updateMavenArtifactVersionForNonReleaseDevVersion(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata, String version) {
-    var snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    String xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapShotMetadata.getUrl());
-    MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapShotMetadata, true);
-    updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapShotMetadata);
+    var snapshotMetadata = MavenUtils.buildSnapshotMetadataFromVersion(metadata, version);
+    String xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapshotMetadata.getUrl());
+    MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapshotMetadata, true);
+    updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapshotMetadata);
   }
 
   private Metadata createNewMetadata(Dependency dependencyModel) {

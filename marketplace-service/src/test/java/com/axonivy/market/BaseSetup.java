@@ -205,7 +205,7 @@ public class BaseSetup {
     return image;
   }
 
-  protected String getMockSnapShotMetadataContent() {
+  protected String getMockSnapshotMetadataContent() {
     return getContentFromTestResourcePath(MOCK_SNAPSHOT_METADATA_FILE_PATH);
   }
 
