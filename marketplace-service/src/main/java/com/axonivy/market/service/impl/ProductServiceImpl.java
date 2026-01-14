@@ -506,7 +506,9 @@ public class ProductServiceImpl implements ProductService {
       String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
+      String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
+          mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
+      snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
     }
 
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);

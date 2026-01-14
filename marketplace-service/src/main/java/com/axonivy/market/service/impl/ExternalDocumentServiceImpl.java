@@ -30,6 +30,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -86,40 +88,67 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
+  public void syncDocumentForProduct(String productId, boolean isResetSync, String forceSyncedVersion) {
     if (isRequestPathUnsafe(productId)) {
       log.warn("Rejected product ID path: {}", productId);
       return;
     }
+
     var product = productRepo.findProductByIdAndRelatedData(productId);
-    if (product == null) {
-      log.warn("Cannot find the product for document sync {}", productId);
+    if (product == null || isEmpty(product.getReleasedVersions())) {
       return;
     }
-    List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
-    List<String> releasedVersions = getValidReleaseVersionsFromProduct(product.getReleasedVersions(), version);
-    if (isNotEmpty(docArtifacts) && isNotEmpty(releasedVersions)) {
-      downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts);
-    }
-  }
 
-  private static List<String> getValidReleaseVersionsFromProduct(List<String> releaseVersions, String version) {
-    if (isEmpty(version)) {
-      return Optional.ofNullable(releaseVersions).stream().flatMap(List::stream)
-          .filter(VersionUtils::isValidFormatReleasedVersion).distinct().toList();
+    var releasedVersions = product.getReleasedVersions();
+    var specifiedVersion = EMPTY;
+    if (StringUtils.isNotBlank(forceSyncedVersion)) {
+      specifiedVersion = VersionUtils.normalizeVersion(forceSyncedVersion);
+      if (!releasedVersions.contains(specifiedVersion)) {
+        log.warn("The version {} has not been released yet.", specifiedVersion);
+        return;
+      }
     }
-    return List.of(version);
+
+    var docArtifacts = fetchDocArtifacts(product.getArtifacts());
+    if (!isEmpty(docArtifacts)) {
+      downloadExternalDocumentFromMavenAndUpdateMetaData(productId, isResetSync, releasedVersions, docArtifacts,
+          specifiedVersion);
+    }
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
-      List<String> releasedVersions, List<Artifact> docArtifacts) {
+      List<String> releasedVersions, List<Artifact> docArtifacts, String forceSyncedVersion) {
     if (isResetSync) {
-      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
-          Stream.concat(releasedVersions.stream(), majorVersions.stream()).toList());
+      deleteExternalDocumentMetaRepo(productId, releasedVersions, forceSyncedVersion);
     }
 
+    // Skip download doc to share folder on develop mode
+    if (!shouldDownloadDocAndUnzipToShareFolder()) {
+      log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
+          "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
+      return;
+    }
+
+    Map<String, String> latestSupportedDocVersions = VersionFactory
+        .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
+    log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
+
     for (Artifact artifact : docArtifacts) {
-      createExternalDocumentMetaForProduct(productId, isResetSync, artifact, releasedVersions);
+      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(forceSyncedVersion) ?
+          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(forceSyncedVersion);
+      needToBeSyncedDocVersions.forEach(version ->
+          handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
+      );
+    }
+  }
+
+  private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,
+      String forceDeletedVersion) {
+    if (StringUtils.isNotBlank(forceDeletedVersion)) {
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, List.of(forceDeletedVersion));
+    } else {
+      externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId,
+          Stream.concat(versions.stream(), majorVersions.stream()).toList());
     }
   }
 
@@ -198,25 +227,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return VersionFactory.get(docMetaVersion, version);
   }
 
-  private void createExternalDocumentMetaForProduct(String productId, boolean isResetSync, Artifact artifact,
-      List<String> releasedVersions) {
-    List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
-    log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
-    // Skip download doc to share folder on develop mode
-    if (!shouldDownloadDocAndUnzipToShareFolder()) {
-      log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
-          "MARKET_ENVIRONMENT is not production - it was {}", productId, marketplaceConfig.getMarketEnvironment());
-      return;
-    }
-    Map<String, String> latestSupportedDocVersions = VersionFactory
-        .getMapMajorVersionToLatestVersion(releasedVersions, majorVersions);
-
-    log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
-    for (String version : missingVersions) {
-      handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions);
-    }
-  }
-
   public boolean shouldDownloadDocAndUnzipToShareFolder() {
     return marketplaceConfig.isProduction();
   }
@@ -234,25 +244,53 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         }
       }
       missingVersions = releasedVersions.stream().filter(version -> !existedDocMetaVersions.contains(version)).toList();
+      log.warn("Missing ExternalDocumentMeta for {} with {} version(s)", productId, missingVersions);
     }
+
     return missingVersions;
   }
 
   private void handleDocumentMeta(String productId, Artifact artifact, String version,
       boolean isResetSync, Map<String, String> latestSupportedDocVersions) {
-    // Switch to nexus repo for artifact
-    artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
-    String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-    String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+    if (StringUtils.isBlank(version)) {
+      return;
+    }
+
+    String location = getLocationByArtifactAndVersion(artifact, version, isResetSync);
     if (StringUtils.isBlank(location)) {
       return;
     }
-    if (latestSupportedDocVersions.containsKey(version)) {
-      String mappedVersion = latestSupportedDocVersions.get(version);
-      String symlinkVersion = StringUtils.defaultIfBlank(mappedVersion, version);
-      createSymlinkForMajorVersion(Paths.get(location), symlinkVersion);
+
+    List<String> matchedMajorVersions = getMatchedMajorVersions(latestSupportedDocVersions, version);
+    createSymlinkForMajorVersions(Paths.get(location), matchedMajorVersions);
+    buildDocumentWithLanguage(location, artifact, productId, version, matchedMajorVersions);
+  }
+
+  private List<String> getMatchedMajorVersions(Map<String, String> latestSupportedDocVersions,
+      String specifiedVersion) {
+    if (CollectionUtils.isEmpty(latestSupportedDocVersions)) {
+      return Collections.emptyList();
     }
-    buildDocumentWithLanguage(location, artifact, productId, version, latestSupportedDocVersions);
+
+    return latestSupportedDocVersions.entrySet()
+        .stream()
+        .filter(docVersion -> Objects.equals(docVersion.getValue(), specifiedVersion))
+        .map(Map.Entry::getKey)
+        .toList();
+  }
+
+  private String getLocationByArtifactAndVersion(Artifact artifact, String version, boolean isResetSync) {
+    // Switch to nexus repo for artifact
+    artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
+    String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
+    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+  }
+
+  private void createSymlinkForMajorVersions(Path versionFolder, List<String> majorVersions) {
+    if (versionFolder == null || CollectionUtils.isEmpty(majorVersions)) {
+      return;
+    }
+    majorVersions.forEach(majorVersion -> createSymlinkForMajorVersion(versionFolder, majorVersion));
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
@@ -304,24 +342,21 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private void buildDocumentWithLanguage(String location, Artifact artifact, String productId, String version,
-      Map<String, String> latestSupportedDocVersions) {
+      List<String> majorVersions) {
     Map<DocumentLanguage, String> relativeLinkWithLanguage = getRelativePathWithLanguage(location);
 
     if (!relativeLinkWithLanguage.isEmpty()) {
       relativeLinkWithLanguage.forEach((DocumentLanguage language, String link) -> {
-        ExternalDocumentMeta meta = buildDocumentMeta(link, language, artifact, productId, version);
-        externalDocumentMetaRepo.save(meta);
-
-        if (latestSupportedDocVersions.containsKey(version)) {
-          String majorVersion = latestSupportedDocVersions.get(version);
-          String majorLink = link.replace(version, majorVersion);
-          ExternalDocumentMeta majorMeta = buildDocumentMeta(majorLink, language, artifact, productId, majorVersion);
-          externalDocumentMetaRepo.save(majorMeta);
+        buildExternalDocumentMetaWithLanguage(link, language, artifact, productId, version);
+        if (!CollectionUtils.isEmpty(majorVersions)) {
+          majorVersions.forEach((String majorVersion) -> {
+            String majorLink = link.replace(version, majorVersion);
+            buildExternalDocumentMetaWithLanguage(majorLink, language, artifact, productId, majorVersion);
+          });
         }
       });
     } else {
-      ExternalDocumentMeta meta = buildDocumentMeta(location, DocumentLanguage.ENGLISH, artifact, productId, version);
-      externalDocumentMetaRepo.save(meta);
+      buildExternalDocumentMetaWithLanguage(location, DocumentLanguage.ENGLISH, artifact, productId, version);
       var docPath = Paths.get(location);
       var enPath = docPath.resolve(DocumentLanguage.ENGLISH.getCode());
       if (validatePathOutsideCacheRoot(enPath)) {
@@ -331,6 +366,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         createSymlinkForDocLanguage(enPath);
       }
     }
+  }
+
+  private void buildExternalDocumentMetaWithLanguage(String location, DocumentLanguage language,
+      Artifact artifact, String productId, String version) {
+    ExternalDocumentMeta meta = buildDocumentMeta(location, language, artifact, productId, version);
+    externalDocumentMetaRepo.save(meta);
   }
 
   private void createSymlinkForDocLanguage(Path enPath) {
@@ -431,6 +472,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String productName = extractProductId(path);
     String artifactName = extractArtifactName(path);
     String version = extractVersion(path);
+    // If the path does not include artifactName, the artifactName will be created by productName
+    // path = /portal/13.1.1/doc -> artifactName = portal-guide & version = 13.1.1
+    if (VersionUtils.isMavenVersion(artifactName) || VersionUtils.isDevelopmentVersion(artifactName)) {
+      version = artifactName;
+      artifactName = createArtifactNameByProductName(productName);
+    }
+
     DocumentLanguage extractLanguage = extractLanguage(path);
     DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
 
@@ -438,17 +486,55 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return null;
     }
 
-    String bestMatchVersion;
-    if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(version)) {
-      bestMatchVersion = version;
-    } else {
-      bestMatchVersion = resolveBestMatchSymlinkVersion(version);
-      if (ObjectUtils.isEmpty(bestMatchVersion)) {
-        bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, version);
-      }
+    if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
+        version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
+      return getRedirectURLForDevVersion(productName, artifactName, language);
+    }
+
+    return getRedirectURLForVersion(productName, artifactName, language, version);
+  }
+
+  private String getRedirectURLForDevVersion(String productName, String artifactName, DocumentLanguage language) {
+    String devVersion = DevelopmentVersion.DEV.getCode();
+    String redirectURL = DocPathUtils.generatePath(productName, artifactName, devVersion, language);
+    if (!isSymlinkExisting(redirectURL)) {
+      String bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, devVersion);
+      redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
+      redirectURL = isSymlinkExisting(redirectURL) ? redirectURL : null;
+    }
+    return redirectURL;
+  }
+
+  private String getRedirectURLForVersion(String productName, String artifactName, DocumentLanguage language,
+      String version) {
+    String versionNumber = getVersionNumberFromDynamicDevelopmentVersions(version);
+    String bestMatchVersion = resolveBestMatchSymlinkVersion(versionNumber);
+    if (ObjectUtils.isEmpty(bestMatchVersion)) {
+      bestMatchVersion = fallbackFindBestMatchVersion(productName, artifactName, versionNumber);
     }
     String redirectURL = DocPathUtils.generatePath(productName, artifactName, bestMatchVersion, language);
     return isSymlinkExisting(redirectURL) ? redirectURL : null;
+  }
+
+  private String getVersionNumberFromDynamicDevelopmentVersions(String version) {
+    String result = version;
+    for (DevelopmentVersion dv : DevelopmentVersion.DYNAMIC_DEVELOPMENT_VERSIONS) {
+      result = getVersionNumberFromDevelopmentVersion(result, dv.getCode());
+    }
+
+    return result;
+  }
+
+  private String getVersionNumberFromDevelopmentVersion(String version, String developmentVersion) {
+    if (StringUtils.isBlank(version)) {
+      return EMPTY;
+    }
+
+    if (version.startsWith(developmentVersion) || version.endsWith(developmentVersion)) {
+      return version.replace(developmentVersion, EMPTY).replace(CommonConstants.DASH_SEPARATOR, EMPTY);
+    }
+
+    return version;
   }
 
   private String fallbackFindBestMatchVersion(String productName, String artifactName, String version) {

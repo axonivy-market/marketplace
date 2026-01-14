@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MetadataReaderUtils {
@@ -34,23 +36,23 @@ public class MetadataReaderUtils {
       MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
 
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
-      boolean isSnapShot) {
+      boolean isSnapshot) {
     var document = getDocumentFromXMLContent(xmlData);
     try {
-      LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
+      LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapshot);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
         return metadata;
       }
       metadata.setLastUpdated(lastUpdated);
-      updateMetadataVersions(metadata, document, isSnapShot);
+      updateMetadataVersions(metadata, document, isSnapshot);
     } catch (Exception e) {
       log.error("Update metadata from maven failed {}", e.getMessage());
     }
     return metadata;
   }
 
-  private static void updateMetadataVersions(Metadata metadata, Document document, boolean isSnapShot) {
-    if (isSnapShot) {
+  private static void updateMetadataVersions(Metadata metadata, Document document, boolean isSnapshot) {
+    if (isSnapshot) {
       NodeList valueNodes = document.getElementsByTagName(MavenConstants.VALUE_TAG);
       String lastUpdatedTag = getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG);
       List<String> values = IntStream.range(0, valueNodes.getLength())
@@ -70,11 +72,11 @@ public class MetadataReaderUtils {
     }
   }
 
-  private static LocalDateTime getLastUpdatedTimeFromDocument(Document document, boolean isSnapShot) {
+  private static LocalDateTime getLastUpdatedTimeFromDocument(Document document, boolean isSnapshot) {
     String textValue;
     DateTimeFormatter lastUpdatedFormatter;
 
-    if (isSnapShot) {
+    if (isSnapshot) {
       textValue = Objects.requireNonNull(getElementValue(document,
         MavenConstants.SNAPSHOT_LAST_UPDATED_TAG));
       lastUpdatedFormatter = SNAPSHOT_DATE_TIME_FORMATTER;
@@ -88,18 +90,19 @@ public class MetadataReaderUtils {
   }
 
   public static String getElementValue(Document doc, String tagName) {
+    if (doc == null) {
+      return EMPTY;
+    }
+
     var nodeList = doc.getElementsByTagName(tagName);
     if (nodeList.getLength() > 0) {
       return nodeList.item(0).getTextContent();
     }
-    return null;
+    return EMPTY;
   }
 
-  public static String getSnapshotVersionValue(String version,
-      Artifact mavenArtifact) {
-    String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
-        mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
-    var metadataContent = HttpFetchingUtils.getFileAsString(snapShotMetadataUrl);
+  public static String getVersionValueFormMetadataUrl(String metadataUrl) {
+    var metadataContent = HttpFetchingUtils.getFileAsString(metadataUrl);
     var document = getDocumentFromXMLContent(metadataContent);
     return getElementValue(document, MavenConstants.VALUE_TAG);
   }

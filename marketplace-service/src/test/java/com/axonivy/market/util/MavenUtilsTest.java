@@ -129,21 +129,21 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testBuildSnapShotMetadataFromVersion() {
+  void testBuildSnapshotMetadataFromVersion() {
     Metadata originalMetadata = buildMockMetadata();
-    Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(originalMetadata,
+    Metadata snapshotMetadata = MavenUtils.buildSnapshotMetadataFromVersion(originalMetadata,
         MOCK_SNAPSHOT_VERSION);
-    Assertions.assertEquals(originalMetadata.getRepoUrl(), snapShotMetadata.getRepoUrl(),
+    Assertions.assertEquals(originalMetadata.getRepoUrl(), snapshotMetadata.getRepoUrl(),
         "Snapshot metadata repo URL should match original metadata repo URL");
-    Assertions.assertEquals(originalMetadata.getGroupId(), snapShotMetadata.getGroupId(),
+    Assertions.assertEquals(originalMetadata.getGroupId(), snapshotMetadata.getGroupId(),
         "Snapshot metadata group ID should match original metadata group ID");
-    Assertions.assertEquals(originalMetadata.getArtifactId(), snapShotMetadata.getArtifactId(),
+    Assertions.assertEquals(originalMetadata.getArtifactId(), snapshotMetadata.getArtifactId(),
         "Snapshot metadata artifact ID should match original metadata artifact ID");
-    Assertions.assertEquals(originalMetadata.getProductId(), snapShotMetadata.getProductId(),
+    Assertions.assertEquals(originalMetadata.getProductId(), snapshotMetadata.getProductId(),
         "Snapshot metadata product ID should match original metadata product ID");
-    Assertions.assertEquals(originalMetadata.getType(), snapShotMetadata.getType(),
+    Assertions.assertEquals(originalMetadata.getType(), snapshotMetadata.getType(),
         "Snapshot metadata type should match original metadata type");
-    Assertions.assertEquals(MOCK_SNAPSHOT_MAVEN_URL, snapShotMetadata.getUrl(),
+    Assertions.assertEquals(MOCK_SNAPSHOT_MAVEN_URL, snapshotMetadata.getUrl(),
         "Snapshot metadata URL should match snapshot maven URL");
   }
 
@@ -233,7 +233,7 @@ class MavenUtilsTest extends BaseSetup {
   void testExtractedContentStream() throws IOException {
     Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INVALID_FILE_PATH)),
         "Content stream should be null if file path is invalid");
-    InputStream expectedResult = IOUtils.toInputStream(getMockSnapShotMetadataContent(), StandardCharsets.UTF_8);
+    InputStream expectedResult = IOUtils.toInputStream(getMockSnapshotMetadataContent(), StandardCharsets.UTF_8);
     InputStream result = MavenUtils.extractedContentStream(Path.of(MOCK_SNAPSHOT_METADATA_FILE_PATH));
     Assertions.assertNotNull(result,
         "Content stream from snapshot metadata should not be null");
