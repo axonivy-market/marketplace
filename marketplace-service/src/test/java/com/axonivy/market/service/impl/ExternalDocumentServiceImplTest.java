@@ -26,7 +26,6 @@ import org.springframework.test.context.TestPropertySource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -406,7 +405,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       filesMock.when(() -> Files.exists(any(), any())).thenReturn(false);
       String result = service.resolveBestMatchRedirectUrl(devPath);
       assertNull(result, "Should return null value when there is no dev symlink");
-      verify(productRepository, times(1)).findById(eq(PORTAL));
+      verify(productRepository, times(1)).findById(PORTAL);
     }
   }
 
