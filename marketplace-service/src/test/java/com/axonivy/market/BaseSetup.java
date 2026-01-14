@@ -2,8 +2,13 @@ package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.github.model.CodeScanning;
+import com.axonivy.market.github.model.Dependabot;
+import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -412,6 +417,32 @@ public class BaseSetup {
         .productId(MOCK_PRODUCT_ID)
         .dependencies(mockMavenDependencies())
         .build();
+  }
+
+  protected ProductSecurityInfo mockProductSecurityInfo() {
+    return ProductSecurityInfo.builder()
+        .repoName("test-repo")
+        .visibility("PUBLIC")
+        .isArchived(false)
+        .branchProtectionEnabled(true).build();
+  }
+
+  protected Dependabot dependabot(AccessLevel status) {
+    Dependabot dependabot = new Dependabot();
+    dependabot.setStatus(status);
+    return dependabot;
+  }
+
+  protected SecretScanning secretScanning(AccessLevel status) {
+    SecretScanning secretScanning = new SecretScanning();
+    secretScanning.setStatus(status);
+    return secretScanning;
+  }
+
+  protected CodeScanning codeScanning(AccessLevel status) {
+    CodeScanning codeScanning = new CodeScanning();
+    codeScanning.setStatus(status);
+    return codeScanning;
   }
 
   protected ResponseEntity<Resource> getMockEntityResource() {
