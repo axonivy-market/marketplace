@@ -166,4 +166,12 @@ class VersionUtilsTest extends BaseSetup {
     Assertions.assertEquals(4, results.size(),
         "Expected total installable versions from both metadata objects to be 4");
   }
+
+  @Test
+  void testNormalizeVersion() {
+    Assertions.assertEquals("", VersionUtils.normalizeVersion(""),
+        "Normalize an empty version should be empty");
+    Assertions.assertEquals("12.0-SNAPSHOT", VersionUtils.normalizeVersion("12.0-SNAPSHOT@@@"),
+        "Normalize a version that contains special keywords should remove these keywords");
+  }
 }

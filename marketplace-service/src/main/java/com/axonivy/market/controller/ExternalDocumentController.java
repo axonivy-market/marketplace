@@ -6,6 +6,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.util.VersionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +79,11 @@ public class ExternalDocumentController {
     if (ObjectUtils.isEmpty(productIds)) {
       var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
+    }
+
+    if (StringUtils.isNotBlank(version) && !VersionUtils.isMavenVersion(version)) {
+      var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
+      return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
 
     for (String id : productIds) {
