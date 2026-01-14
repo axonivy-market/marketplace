@@ -45,18 +45,24 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION_12_5 = "12.5";
   private static final String VERSION_INVALID = "99.0";
   private static final String NON_EXISTENT_PRODUCT = "nonexistent";
-
+  private static final String MARKET_CACHE = "market-cache";
   private static final String RELATIVE_WORKING_LOCATION = "/market-cache/portal/10.0.0/doc";
   private static final String RELATIVE_WORKING_LOCATION_EN = "/market-cache/portal/12.5.0/doc/en";
   private static final String INDEX_FILE = "/index.html";
   private static final String RELATIVE_DOC_LOCATION = RELATIVE_WORKING_LOCATION + INDEX_FILE;
   private static final String RELATIVE_DOC_LOCATION_EN = RELATIVE_WORKING_LOCATION_EN + INDEX_FILE;
-
+  private static final String DOC_FACTORY_DOC = "docfactory";
+  private static final String DOC_FACTORY_ARTIFACT_NAME = "doc-factory-doc";
+  private static final String DOC_FACTORY_ID = "doc-factory";
   private static final String PORTAL = "portal";
 
   private static final String ARTIFACT_NAME = "portal-guide";
+  private static final String TEN_VERSION = "10.0";
   private static final String TEST_VERSION = "12.0";
   private static final String DEV_VERSION = "dev";
+  private static final String TEN_DEV_VERSION = "10.0-dev";
+  private static final String NIGHTLY_VERSION = "nightly";
+  private static final String NIGHTLY_TEN_VERSION = "nightly-10.0";
   private static final String LATEST_VERSION = "latest";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH =
@@ -66,7 +72,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final Product EMPTY_PRODUCT = new Product();
   private static final String HOST = "http://localhost:8080";
 
-  private final List<String> majorVersions = List.of(TEST_VERSION_12_5, TEST_VERSION, "13.1", DEV_VERSION);
+  private final List<String> majorVersions = List.of(TEN_VERSION, TEST_VERSION_12_5, TEST_VERSION, "13.2", DEV_VERSION);
 
   @MockBean
   ProductRepository productRepository;
@@ -106,14 +112,15 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     prepareProductDataForSyncTest();
     doReturn(false).when(service).shouldDownloadDocAndUnzipToShareFolder();
 
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).save(any());
   }
 
   @Test
   void testSyncDocumentForProduct() throws IOException {
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().orElse(null));
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(
+        mockPortalProductHasNoArtifact().orElse(null));
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
@@ -121,25 +128,31 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
-    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
-    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn(DirectoryConstants.DATA_DIR + RELATIVE_WORKING_LOCATION);
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(
+        DirectoryConstants.DATA_DIR + RELATIVE_DOC_LOCATION);
+    when(fileDownloadService.generateCacheStorageDirectory(any())).thenReturn(
+        DirectoryConstants.DATA_DIR + RELATIVE_WORKING_LOCATION);
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
     service.syncDocumentForProduct(PORTAL, true, null);
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
+  }
 
+  @Test
+  void testSyncDocumentForProductWithLanguageDirectories() throws IOException {
+    String portalGuideDirectoryPath = preparePortalGuideDirectory();
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().orElse(new Product()).getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
-    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any())).thenReturn(
-        List.of(createExternalDocumentMock()));
-    service.syncDocumentForProduct(PORTAL, false, null);
-    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersionIn(any(), any());
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(portalGuideDirectoryPath);
+    when(externalDocumentMetaRepository.save(any())).thenReturn(new ExternalDocumentMeta());
+    service.syncDocumentForProduct(PORTAL, false, TEST_VERSION);
+    verify(externalDocumentMetaRepository, times(4)).save(any());
   }
 
   @Test
   void testSyncDocumentForProductButCannotExtractToShareFolder() throws IOException {
     prepareProductDataForSyncTest();
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
   }
@@ -157,9 +170,33 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   void testSyncDocumentForProductIdAndVersion() throws IOException {
     prepareProductDataForSyncTest();
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithNotFoundProduct() {
+    when(productRepository.findProductByIdAndRelatedData(any())).thenReturn(null);
+    service.syncDocumentForProduct(PORTAL, true, "");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithoutReleasedVersions() {
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalHasNoReleasedVersions());
+    service.syncDocumentForProduct(PORTAL, true, "");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductWithInvalidVersion() {
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    service.syncDocumentForProduct(PORTAL, true, "12.0-SNAPSHOT");
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(artifactRepository, times(0)).findAllByIdInAndFetchArchivedArtifacts(any());
   }
 
   @Test
@@ -224,16 +261,36 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     return Optional.of(product);
   }
 
+  private Product mockPortalHasNoReleasedVersions() {
+    return Product.builder().id(PORTAL)
+        .releasedVersions(List.of())
+        .build();
+  }
+
   private static Product mockPortal(boolean isEmptyArtifacts) {
     return Product.builder().id(PORTAL)
         .artifacts(isEmptyArtifacts ? List.of() : List.of(mockPortalMavenArtifact()))
-        .releasedVersions(List.of("8.0.0", TEST_VERSION))
+        .releasedVersions(List.of("8.0.0", "10.0.0", TEST_VERSION, "12.5.0", "13.2.0.1", "14.0.0"))
         .build();
   }
 
   private static Artifact mockPortalMavenArtifact() {
     return Artifact.builder().artifactId(ARTIFACT_NAME).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
+  }
+
+  private String preparePortalGuideDirectory() throws IOException {
+    Path cacheDir = tempDir.resolve(MARKET_CACHE);
+    Files.createDirectories(cacheDir);
+    Path portalDir = cacheDir.resolve(PORTAL);
+    Files.createDirectories(portalDir);
+    Path portalGuideDir = portalDir.resolve(ARTIFACT_NAME);
+    Files.createDirectories(portalGuideDir);
+    Path versionDir = portalGuideDir.resolve(TEST_VERSION);
+    Files.createDirectories(versionDir);
+    Files.createDirectory(versionDir.resolve(DocumentLanguage.ENGLISH.getCode()));
+    Files.createDirectory(versionDir.resolve(DocumentLanguage.JAPANESE.getCode()));
+    return versionDir.toString();
   }
 
   @Test
@@ -268,14 +325,8 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRelativePathWithLanguageValidLanguageDirectories() throws IOException {
-    Path testDir = tempDir.resolve(PORTAL);
-    Files.createDirectories(testDir);
-    Files.createDirectory(testDir.resolve(DocumentLanguage.ENGLISH.getCode()));
-    Files.createDirectory(testDir.resolve(DocumentLanguage.JAPANESE.getCode()));
-    Files.createDirectory(testDir.resolve(PORTAL));
-
-    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(testDir.toString());
-
+    String portalGuidePath = preparePortalGuideDirectory();
+    Map<DocumentLanguage, String> result = service.getRelativePathWithLanguage(portalGuidePath);
     assertEquals(2, result.size(), "Should have 2 languages");
     assertTrue(result.containsKey(DocumentLanguage.ENGLISH), "Should contain English language");
     assertTrue(result.containsKey(DocumentLanguage.JAPANESE), "Should contain Japanese language");
@@ -341,6 +392,20 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       assertTrue(result.contains(DEV_VERSION), "Should contain dev in path");
       assertTrue(result.contains(DirectoryConstants.CACHE_DIR), "Should contain cache directory");
       assertTrue(result.contains(DocumentLanguage.ENGLISH.getCode()), "Should contain language code");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlForDevVersionWithoutSymlink() {
+    String devPath = String.join(CommonConstants.SLASH,
+        BASE_PATH + DEV_VERSION, DOC_DIR,
+        DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
+    when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(), any())).thenReturn(false);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      assertNull(result, "Should return null value when there is no dev symlink");
+      verify(productRepository, times(1)).findById(PORTAL);
     }
   }
 
@@ -612,6 +677,54 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlWithDevVersionAndNoArtifactName() {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any()))
+          .thenReturn(true);
+
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, DEV_VERSION, DOC_DIR,
+          CommonConstants.INDEX_HTML);
+      String result = service.resolveBestMatchRedirectUrl(devPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly");
+    }
+  }
+
+  @Test
+  void testResolveBestMatchRedirectUrlForDocFactoryWithoutArtifactName() {
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      filesMock.when(() -> Files.exists(any(Path.class), any())).thenReturn(true);
+
+      String nightlyPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
+          DOC_DIR);
+      String result = service.resolveBestMatchRedirectUrl(nightlyPath);
+      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+          DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(),
+          CommonConstants.INDEX_HTML);
+      assertTrue(StringUtils.contains(result, expectedDevResult),
+          "Should handle dev version correctly for doc-factory");
+
+      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION, DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(devPath);
+      assertEquals(expectedDevResult, result, "Should handle dev version correctly for doc-factory");
+
+      String devTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, TEN_DEV_VERSION,
+          DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(devTenPath);
+      assertFalse(StringUtils.contains(result, DEV_VERSION), "Should not include dev version");
+
+      String nightlyTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, NIGHTLY_TEN_VERSION,
+          DOC_DIR);
+      result = service.resolveBestMatchRedirectUrl(nightlyTenPath);
+      String expectedNightlyTenResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY,
+          DirectoryConstants.CACHE_DIR, DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME);
+      assertTrue(StringUtils.contains(result, expectedNightlyTenResult),
+          "Should handle nightly ten version correctly for doc-factory");
     }
   }
 

@@ -9,6 +9,7 @@ public class MavenConstants {
   public static final String SNAPSHOT_RELEASE_POSTFIX = "-" + SNAPSHOT_VERSION;
   public static final String SPRINT_RELEASE_POSTFIX = "-m";
   public static final String DEV_RELEASE_POSTFIX = "-dev";
+  public static final String DEV_RELEASE_PREFIX = "dev-";
   public static final String PRODUCT_ARTIFACT_POSTFIX = "-product";
   public static final String DEFAULT_IVY_MAVEN_BASE_URL = "https://maven.axonivy.com";
   public static final String DEFAULT_IVY_MIRROR_MAVEN_BASE_URL = "https://nexus-mirror.axonivy.com/repository/maven";
