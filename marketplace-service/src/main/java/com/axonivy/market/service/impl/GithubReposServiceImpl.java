@@ -5,9 +5,11 @@ import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -67,6 +69,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final ProductRepository productRepository;
 
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
         .filter(product -> Boolean.FALSE != product.getListed()
@@ -78,7 +81,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public void loadAndStoreTestRepostsForOneProduct(String productId) {
+  public void loadAndStoreTestReportsForOneProduct(String productId) {
     var product = productRepository.findById(productId).orElse(null);
     if (ObjectUtils.isEmpty(product)) {
       log.error("There is no this product {} to sync for monitoring page", productId);
@@ -105,6 +108,7 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     String resolvedProductId = getProductId(ghRepo.getName(), productId);
     var githubRepo = Optional.ofNullable(githubRepoRepository.findByNameOrProductId(ghRepo.getName(), productId))
+        .flatMap(result -> result.stream().findFirst())
         .map((GithubRepo repo) -> {
           repo.getTestSteps().clear();
           repo.getWorkflowInformation().clear();

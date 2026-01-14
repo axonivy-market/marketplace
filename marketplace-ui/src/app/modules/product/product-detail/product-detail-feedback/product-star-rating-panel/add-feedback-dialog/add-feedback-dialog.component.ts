@@ -11,14 +11,12 @@ import { MultilingualismPipe } from '../../../../../../shared/pipes/multilingual
 import { AppModalService } from '../../../../../../shared/services/app-modal.service';
 import { ProductDetailService } from '../../../product-detail.service';
 import { ProductFeedbackService } from '../../product-feedbacks-panel/product-feedback.service';
-import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { MAX_FEEDBACK_LENGTH, NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
 import { CharacterCountPipe } from '../../../../../../shared/pipes/character-count.pipe';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 @Component({
   selector: 'app-add-feedback-dialog',
-  standalone: true,
   templateUrl: './add-feedback-dialog.component.html',
   styleUrl: './add-feedback-dialog.component.scss',
   imports: [
@@ -27,7 +25,6 @@ import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.e
     FormsModule,
     TranslateModule,
     MultilingualismPipe,
-    CommonDropdownComponent,
     NgOptimizedImage,
     CharacterCountPipe
   ]

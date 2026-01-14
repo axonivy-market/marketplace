@@ -2,8 +2,13 @@ package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.github.model.CodeScanning;
+import com.axonivy.market.github.model.Dependabot;
+import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -52,6 +57,7 @@ public class BaseSetup {
   protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
+  protected static final String MOCK_FIRST_RELEASED_VERSION_FOR_TEN = "10.0.0";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
   protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
   protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
@@ -204,7 +210,7 @@ public class BaseSetup {
     return image;
   }
 
-  protected String getMockSnapShotMetadataContent() {
+  protected String getMockSnapshotMetadataContent() {
     return getContentFromTestResourcePath(MOCK_SNAPSHOT_METADATA_FILE_PATH);
   }
 
@@ -412,6 +418,32 @@ public class BaseSetup {
         .productId(MOCK_PRODUCT_ID)
         .dependencies(mockMavenDependencies())
         .build();
+  }
+
+  protected ProductSecurityInfo mockProductSecurityInfo() {
+    return ProductSecurityInfo.builder()
+        .repoName("test-repo")
+        .visibility("PUBLIC")
+        .isArchived(false)
+        .branchProtectionEnabled(true).build();
+  }
+
+  protected Dependabot dependabot(AccessLevel status) {
+    Dependabot dependabot = new Dependabot();
+    dependabot.setStatus(status);
+    return dependabot;
+  }
+
+  protected SecretScanning secretScanning(AccessLevel status) {
+    SecretScanning secretScanning = new SecretScanning();
+    secretScanning.setStatus(status);
+    return secretScanning;
+  }
+
+  protected CodeScanning codeScanning(AccessLevel status) {
+    CodeScanning codeScanning = new CodeScanning();
+    codeScanning.setStatus(status);
+    return codeScanning;
   }
 
   protected ResponseEntity<Resource> getMockEntityResource() {

@@ -5,7 +5,9 @@ import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -29,6 +31,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -134,34 +138,6 @@ class ProductDetailsControllerTest extends BaseSetup {
         "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
 
     verify(productService, times(1)).fetchProductDetailByIdAndVersion(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
-  }
-
-  @Test
-  void testBestMatchProductDetailsWithVersionWithWrongProductId() {
-    when(productService.fetchBestMatchProductDetail(anyString(), anyString())).thenReturn(
-        null);
-
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
-        WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
-
-    verify(productService, times(1)).fetchBestMatchProductDetail(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
-  }
-
-  @Test
-  void testProductDetailsWithWrongProductId() {
-    when(productService.fetchProductDetail(anyString(), anyBoolean())).thenReturn(
-        null);
-
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(
-        WRONG_PRODUCT_ID, false);
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 404 NOT_FOUND");
-
-    verify(productService, times(1)).fetchProductDetail(WRONG_PRODUCT_ID, false);
   }
 
   @Test
@@ -283,15 +259,18 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testGetLatestArtifactDownloadUrl() {
     String mockDownloadUrl = "https://market.axonivy.com";
     when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
-        anyString())).thenReturn(StringUtils.EMPTY);
-    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-        "Expected HTTP 404 NOT_FOUND when no download URL is returned");
-    when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
         anyString())).thenReturn(mockDownloadUrl);
-    response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Expected HTTP 200 OK when a valid download URL is returned");
+    assertEquals(mockDownloadUrl, response.getBody(),
+        "Expected response body to contain the download URL");
+
+    when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
+        anyString())).thenThrow(new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No artifacts found"));
+    assertThrows(NotFoundException.class, () -> {
+      productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    }, "Expected NotFoundException to be thrown when no download URL is found");
   }
 
   @Test

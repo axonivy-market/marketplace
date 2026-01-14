@@ -97,7 +97,10 @@ describe('ProductDetailResolver', () => {
           useValue: {
             snapshot: {
               params: { id: products[0].id },
-              data: { productDetail: MOCK_PRODUCT_DETAIL }
+              data: { productDetail: MOCK_PRODUCT_DETAIL },
+              queryParamMap: {
+                get: jasmine.createSpy('get').and.returnValue(null)
+              }
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
@@ -162,7 +165,8 @@ describe('ProductDetailResolver', () => {
       resolver.resolve(routeSnapshot).subscribe();
 
       expect(resolver.getProductDetailObservable).toHaveBeenCalledWith(
-        products[0].id
+        products[0].id,
+        null
       );
     });
 
@@ -264,76 +268,4 @@ describe('ProductDetailResolver', () => {
       });
     });
   });
-
-  describe('getProductDetailObservable', () => {
-    beforeEach(() => {
-      spyOn(CommonUtils, 'getCookieValue').and.returnValue(false);
-      spyOn(resolver, 'getProductById').and.returnValue(
-        of(MOCK_PRODUCT_DETAIL)
-      );
-    });
-
-    it('should call getProductById with correct parameters', () => {
-      (CommonUtils.getCookieValue as jasmine.Spy).and.returnValue(true);
-
-      resolver.getProductDetailObservable(products[0].id);
-
-      expect(resolver.getProductById).toHaveBeenCalledWith(
-        products[0].id,
-        true
-      );
-    });
-  });
-
-  describe('getProductById', () => {
-
-    it('should call getProductDetails when no target version', () => {
-      routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-        ''
-      );
-      productService.getProductDetails.and.returnValue(of(MOCK_PRODUCT_DETAIL));
-
-      resolver.getProductById(products[0].id, false).subscribe();
-
-      expect(productService.getProductDetails).toHaveBeenCalledWith(
-        products[0].id,
-        false
-      );
-      expect(
-        productService.getBestMatchProductDetailsWithVersion
-      ).not.toHaveBeenCalled();
-    });
-
-    it('should call getBestMatchProductDetailsWithVersion when target version exists', () => {
-      const targetVersion = '1.0';
-      routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-        targetVersion
-      );
-      productService.getBestMatchProductDetailsWithVersion.and.returnValue(
-        of(MOCK_PRODUCT_DETAIL)
-      );
-
-      resolver.getProductById(products[0].id, true).subscribe();
-
-      expect(
-        productService.getBestMatchProductDetailsWithVersion
-      ).toHaveBeenCalledWith(products[0].id, targetVersion);
-      expect(productService.getProductDetails).not.toHaveBeenCalled();
-    });
-
-    it('should return transformed product detail', done => {
-      routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-        ''
-      );
-      productService.getProductDetails.and.returnValue(of(MOCK_PRODUCT_DETAIL));
-      productService.setDefaultVendorImage.and.callFake((detail: ProductDetail) => detail);
-
-      resolver.getProductById(products[0].id, false).subscribe(result => {
-        expect(productService.setDefaultVendorImage).toHaveBeenCalledWith(MOCK_PRODUCT_DETAIL);
-        expect(result).toBe(MOCK_PRODUCT_DETAIL);
-        done();
-      });
-    });
-  });
-
 });

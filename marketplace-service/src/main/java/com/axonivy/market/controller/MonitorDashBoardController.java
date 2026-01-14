@@ -17,17 +17,16 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,9 +45,10 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
-  private final PagedResourcesAssembler<GithubReposModel> pagedResourcesAssembler;
 
   @GetMapping(REPOS_REPORT)
+  @Operation(summary = "Get test report for a product and workflow",
+      description = "Fetches the test report associated with the specified product ID and workflow type.")
   public ResponseEntity<List<TestStepsModel>> getTestReport(
       @PathVariable(PostgresDBConstants.PRODUCT_ID)
       @Parameter(description = "productId", example = "portal", in = ParameterIn.PATH) String productId,
@@ -77,7 +77,7 @@ public class MonitorDashBoardController {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    githubReposService.loadAndStoreTestRepostsForOneProduct(id);
+    githubReposService.loadAndStoreTestReportsForOneProduct(id);
     return ResponseEntity.ok("Repository loaded successfully.");
   }
 
@@ -93,6 +93,8 @@ public class MonitorDashBoardController {
   }
 
   @GetMapping(REPOS)
+  @Operation(summary = "Get all GitHub repositories",
+      description = "Fetches all GitHub repositories with optional filtering, searching, and sorting capabilities.")
   public ResponseEntity<PagedModel<GithubReposModel>> findAllFeedbacks(@RequestParam(value = IS_FOCUSED,
           required = false) Boolean isFocused, @ParameterObject Pageable pageable,
       @RequestParam(value = "search", required = false) String searchText,

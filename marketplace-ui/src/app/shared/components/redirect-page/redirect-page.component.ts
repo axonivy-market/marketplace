@@ -7,7 +7,6 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'redirect-page',
-  standalone: true,
   imports: [TranslateModule],
   template: "<p>{{ 'common.labels.redirecting' | translate }}</p>",
   providers: [ProductService]

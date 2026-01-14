@@ -3,7 +3,6 @@ import { NgbRating } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-star-rating',
-  standalone: true,
   imports: [NgbRating],
   templateUrl: './star-rating.component.html',
   styleUrl: './star-rating.component.scss'

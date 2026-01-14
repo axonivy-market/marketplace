@@ -6,7 +6,6 @@ import { ProductDetail } from '../../../../shared/models/product-detail.model';
 
 @Component({
   selector: 'app-product-detail-maven-content',
-  standalone: true,
   imports: [TranslateModule],
   templateUrl: './product-detail-maven-content.component.html',
   styleUrl: './product-detail-maven-content.component.scss'

@@ -5,12 +5,11 @@ import { ItemDropdown } from '../../models/item-dropdown.model';
 import { ActiveDropDownItemPipe } from '../../pipes/active-dropdown-item.pipe';
 @Component({
   selector: 'app-common-dropdown',
-  standalone: true,
   imports: [
     NgClass,
     TranslateModule,
     ActiveDropDownItemPipe
-],
+  ],
   templateUrl: './common-dropdown.component.html',
   styleUrl: './common-dropdown.component.scss'
 })

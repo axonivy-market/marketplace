@@ -12,9 +12,12 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -22,6 +25,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
@@ -125,6 +129,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_PRODUCTS)
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
@@ -250,7 +255,7 @@ public class ProductServiceImpl implements ProductService {
     return productId;
   }
 
-  private String modifyProductLogo(String parentPath, GHContent fileContent) {
+  public String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
@@ -501,7 +506,9 @@ public class ProductServiceImpl implements ProductService {
       String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
+      String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
+          mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
+      snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
     }
 
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
@@ -522,14 +529,15 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    var repo = githubRepo.findByNameOrProductId(EMPTY ,product.getId());
-    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
+    var repos = githubRepo.findByNameOrProductId(EMPTY, product.getId());
+    boolean isFocused = repos != null && repos.stream().anyMatch(repo -> Boolean.TRUE.equals(repo.getFocused()));
     product.setIsFocused(isFocused);
   }
 
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
+
     return Optional.ofNullable(product).map((Product productItem) -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
@@ -538,7 +546,7 @@ public class ProductServiceImpl implements ProductService {
       productItem.setCompatibilityRange(compatibilityRange);
       updateFocusedStatusForProduct(product);
       return productItem;
-    }).orElse(null);
+    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
   }
 
   @Override
@@ -553,6 +561,7 @@ public class ProductServiceImpl implements ProductService {
     } else {
       product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
     }
+
     return Optional.ofNullable(product).map((Product productItem) -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
@@ -562,7 +571,7 @@ public class ProductServiceImpl implements ProductService {
       updateFocusedStatusForProduct(product);
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
-    }).orElse(null);
+    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
   }
 
   @Override
@@ -599,7 +608,12 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
-    if (product != null ) {
+    if (product != null) {
+      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+      product.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
+      product.setCompatibilityRange(compatibilityRange);
       updateFocusedStatusForProduct(product);
     }
     return product;
@@ -685,19 +699,15 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public boolean syncFirstPublishedDateOfAllProducts() {
-    try {
-      List<Product> products = productRepo.findAll();
-      if (!CollectionUtils.isEmpty(products)) {
-        for (Product product : products) {
-          updateFirstPublishedDateOfProduct(product);
-        }
+    List<Product> products = productRepo.findAll();
+    if (!CollectionUtils.isEmpty(products)) {
+      for (Product product : products) {
+        updateFirstPublishedDateOfProduct(product);
       }
       log.info("sync FirstPublishedDate of all products is finished!");
       return true;
-    } catch (Exception e) {
-      log.error(e);
-      return false;
     }
+    return false;
   }
 
   private void updateFirstPublishedDateOfProduct(Product product) {
@@ -736,6 +746,7 @@ public class ProductServiceImpl implements ProductService {
 
   @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
   }

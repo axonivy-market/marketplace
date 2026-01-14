@@ -10,7 +10,6 @@ import { DEFAULT_MODE, REPORT_MODE } from '../../../shared/constants/common.cons
 
 @Component({
   selector: 'app-repo-test-result',
-  standalone: true,
   imports: [CommonModule, TranslateModule, IsEmptyObjectPipe, BuildStatusEntriesPipe, NgOptimizedImage],
   templateUrl: './repo-test-result.component.html',
   styleUrl: './repo-test-result.component.scss'

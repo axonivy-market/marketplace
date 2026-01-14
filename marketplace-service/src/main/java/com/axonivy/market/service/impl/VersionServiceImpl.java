@@ -4,6 +4,9 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -124,17 +127,18 @@ public class VersionServiceImpl implements VersionService {
     String artifactId = artifactParts[0];
     List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(metadataList)) {
-      return StringUtils.EMPTY;
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+          "No metadata found for product '" + productId + "' and artifact '" + artifactId + "'");
     }
 
     String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
     if (StringUtils.isBlank(targetVersion)) {
-      return StringUtils.EMPTY;
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No matching version found for '" + version + "'");
     }
 
     List<MavenArtifactVersion> artifactModels = mavenArtifactVersionRepo.findByProductId(productId);
     if (ObjectUtils.isEmpty(artifactModels)) {
-      return StringUtils.EMPTY;
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "No artifacts found for product '" + productId + "'");
     }
 
     List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
@@ -146,7 +150,8 @@ public class VersionServiceImpl implements VersionService {
     String fileType = artifactParts[artifactParts.length - 1];
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
-      downloadUrl = StringUtils.EMPTY;
+      throw new InvalidParamException(ErrorCode.ARGUMENT_BAD_REQUEST,
+          "File type mismatch. Expected: " + fileType + ", found: " + downloadUrl);
     }
     return downloadUrl;
   }

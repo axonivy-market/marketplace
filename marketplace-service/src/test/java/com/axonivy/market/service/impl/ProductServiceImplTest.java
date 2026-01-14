@@ -16,6 +16,7 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -319,20 +320,21 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncProductsFirstTime() throws IOException {
     var mockCommit = mockGHCommitHasSHA1WithCommitDate(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
-    when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
-        any(), anyString())).thenReturn(mockReadmeProductContent());
-
-    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
-    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    when(productModuleContentRepo.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
-
-    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
-    when(productRepo.save(any(Product.class))).thenReturn(new Product());
-    when(fileDownloadService.getFileAsString(anyString())).thenReturn(getMockMetadataContent3());
+    prepareMockDataForSync(null);
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
+
+    verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
+    verify(productRepo).save(argumentCaptor.capture());
+    assertEquals(argumentCaptorProductModuleContents.getValue().get(0).getId(), mockReadmeProductContent().getId(),
+        "Product module contents ID should match mock readme product module content ID");
+  }
+
+  @Test
+  void testSyncProductsAsForceSync() throws IOException {
+    prepareMockDataForSync(new GitHubRepoMeta());
+    // Executes
+    productService.syncLatestDataFromMarketRepo(true);
 
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
@@ -482,8 +484,9 @@ class ProductServiceImplTest extends BaseSetup {
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
-    Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertNull(result, "Product should be null");
+    assertThrows(NotFoundException.class, () -> {
+      productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    }, "Should throw exception when product is null");
   }
 
   @Test
@@ -567,17 +570,26 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetailByIdAndVersion() {
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+      mockProductMarketplaceData.getInstallationCount());
+    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
+      .thenReturn(mockVersionAndUrlModels());
     GithubRepo mockGithubRepo = new GithubRepo();
     mockGithubRepo.setName(MOCK_PRODUCT_REPOSITORY_NAME);
     mockGithubRepo.setFocused(true);
     Product mockProduct = mockResultReturn.getContent().get(0);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-    when(githubRepoRepository.findByNameOrProductId(StringUtils.EMPTY,mockProduct.getId())).thenReturn(mockGithubRepo);
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(mockProduct, result,
-        "Result product should match mock product");
+        "Product detail by id and version should match mock product");
+    assertEquals(mockProductMarketplaceData.getInstallationCount(), result.getInstallationCount(),
+      "Installation count should be populated for versioned product detail");
+    assertEquals("10.0+", result.getCompatibilityRange(),
+      "Compatibility range should be computed for versioned product detail");
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    verify(versionService).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
   }
 
   @Test
@@ -790,15 +802,15 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testSyncFirstPublishedDateWithFindingAllProductsFailed() {
     when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be failed");
+    assertThrows(MockitoException.class, () -> productService.syncFirstPublishedDateOfAllProducts(),
+        "Should throw exception when finding all products fails");
   }
 
   @Test
   void testSyncFirstPublishedDateForNoProduct() {
     when(productRepo.findAll()).thenReturn(new ArrayList<>());
-    assertTrue(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be successful with no product synced");
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
+        "Sync first published date of all products should be failed (no products to sync)");
   }
 
   @Test
@@ -811,8 +823,8 @@ class ProductServiceImplTest extends BaseSetup {
         new IOException("Mocked IOException"));
     when(productRepo.save(mockProduct)).thenThrow(
         new MockitoException("Mocked IOException"));
-    assertFalse(productService.syncFirstPublishedDateOfAllProducts(),
-        "Sync first published date of all products should be failed");
+    assertThrows(MockitoException.class, () -> productService.syncFirstPublishedDateOfAllProducts(),
+        "Should throw exception when syncing first published date of all products fails");
   }
 
   @Test
@@ -976,5 +988,106 @@ class ProductServiceImplTest extends BaseSetup {
     String result = productService.getBestMatchVersion(productId, inputVersion, false);
     assertEquals(bestMatchVersion, result, "Should return correct version");
     verify(productRepo).getReleasedVersionsById(productId);
+  }
+
+  @Test
+  void testModifyProductLogoWithExistingProduct() {
+    String parentPath = "market/connector/";
+    var mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setLogoId("existing-logo-id");
+    
+    var mockGHContent = mock(GHContent.class);
+    var mockImage = getMockImage();
+    
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(mockProduct);
+    when(imageService.mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent)).thenReturn(mockImage);
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+    
+    String result = productService.modifyProductLogo(parentPath, mockGHContent);
+    
+    assertEquals(SAMPLE_PRODUCT_ID, result, "Should return the product ID");
+    verify(productRepo).findByCriteria(productSearchCriteriaArgumentCaptor.capture());
+    verify(imageRepo).deleteById("existing-logo-id");
+    verify(productRepo).save(mockProduct);
+    
+    ProductSearchCriteria capturedCriteria = productSearchCriteriaArgumentCaptor.getValue();
+    assertEquals(parentPath, capturedCriteria.getKeyword(), "Search criteria keyword should match parent path");
+  }
+
+  @Test
+  void testModifyProductLogoWithExistingProductButNoOldLogo() {
+    String parentPath = "market/connector/";
+    var mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setLogoId(null);
+    
+    var mockGHContent = mock(GHContent.class);
+    var mockImage = getMockImage();
+    
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(mockProduct);
+    when(imageService.mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent)).thenReturn(mockImage);
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+    
+    String result = productService.modifyProductLogo(parentPath, mockGHContent);
+    
+    assertEquals(SAMPLE_PRODUCT_ID, result, "Should return the product ID");
+    verify(productRepo).findByCriteria(any(ProductSearchCriteria.class));
+    verify(imageRepo, never()).deleteById(anyString());
+    verify(productRepo).save(mockProduct);
+    assertEquals(mockImage.getId(), mockProduct.getLogoId(), "Product should have new logo ID set");
+  }
+
+  @Test
+  void testModifyProductLogoWhenProductNotFound() {
+    String parentPath = "market/non-existent/";
+    var mockGHContent = mock(GHContent.class);
+    
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(null);
+    
+    String result = productService.modifyProductLogo(parentPath, mockGHContent);
+    
+    assertEquals(StringUtils.EMPTY, result, "Should return empty string when product not found");
+    verify(productRepo).findByCriteria(any(ProductSearchCriteria.class));
+    verify(imageService, never()).mappingImageFromGHContent(anyString(), any());
+    verify(imageRepo, never()).deleteById(anyString());
+    verify(productRepo, never()).save(any());
+  }
+
+  @Test
+  void testModifyProductLogoWhenImageServiceReturnsNull() {
+    String parentPath = "market/connector/";
+    var mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setLogoId("existing-logo-id");
+    
+    var mockGHContent = mock(GHContent.class);
+    
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(mockProduct);
+    when(imageService.mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent)).thenReturn(null);
+    
+    String result = productService.modifyProductLogo(parentPath, mockGHContent);
+    
+    assertEquals(SAMPLE_PRODUCT_ID, result, "Should return the product ID");
+    verify(productRepo).findByCriteria(any(ProductSearchCriteria.class));
+    verify(imageService).mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent);
+    verify(imageRepo, never()).deleteById(anyString());
+    verify(productRepo, never()).save(any());
+    assertEquals("existing-logo-id", mockProduct.getLogoId(), "Product logo ID should remain unchanged");
+  }
+
+  private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {
+    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(repoMeta);
+    when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
+        any(), anyString())).thenReturn(mockReadmeProductContent());
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productModuleContentRepo.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
+
+    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
+    when(productRepo.save(any(Product.class))).thenReturn(new Product());
+    when(fileDownloadService.getFileAsString(anyString())).thenReturn(getMockMetadataContent3());
   }
 }

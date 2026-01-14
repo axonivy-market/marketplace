@@ -1,13 +1,9 @@
-// Required
-@import 'bootstrap/scss/functions';
-@import 'bootstrap/scss/variables';
-@import 'bootstrap/scss/mixins';
-
 @font-face {
   font-family: Inter;
   src: url(../fonts/inter.ttf) format('truetype');
 }
 
+$white: #ffffff;
 $ivyLatestReleaseBorderColor: #238636;
 $ivyLatestReleaseColor: #3fb950;
 $ivyApproveButtonColor: #47c46b;
@@ -64,6 +60,11 @@ p {
   font-size: 14px;
 }
 
+details summary {
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
 .overlay-background {
   background: rgba(0, 0, 0, 0.32);
 }
@@ -84,7 +85,7 @@ p {
   --ivy-secondary-border-color-up-arrow: #0000001a;
   --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
   --active-tab-indicator-color: #{$ivyPrimaryTextColorLight};
-  --info-dropdown-bg: #ffffff;
+  --info-dropdown-bg: #{$white};
   --info-dropdown-border: #0000001a;
 
   --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
@@ -306,7 +307,7 @@ p {
     svg {
       width: 1.6rem;
       height: 1.6rem;
-      fill: white;
+      fill: #{$white};
     }
   }
 
@@ -344,6 +345,36 @@ p {
 
 .text-muted {
   color: #858585 !important;
+}
+
+.admin-title {
+  line-height: 110%;
+  margin-top: 7.2rem;
+  margin-bottom: 3.2rem;
+  cursor: default;
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.admin-about {
+  line-height: 130%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+.admin-help-text-container {
+  line-height: 140%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 @media (max-width: 568px) {

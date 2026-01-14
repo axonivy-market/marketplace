@@ -7,8 +7,6 @@ import { ProductFilterComponent } from './product-filter.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
-import { SimpleChanges } from '@angular/core';
-import { clear } from 'node:console';
 import { PAGE } from '../../../shared/constants/query.params.constant';
 
 declare const viewport: Viewport;

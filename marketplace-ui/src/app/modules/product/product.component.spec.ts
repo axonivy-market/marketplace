@@ -2,7 +2,8 @@ import {
   ComponentFixture,
   fakeAsync,
   TestBed,
-  tick
+  tick,
+  flush
 } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
@@ -149,7 +150,6 @@ describe('ProductComponent', () => {
     const filterOption: ItemDropdown<TypeOption> = {
       value: TypeOption.CONNECTORS,
       label: 'Connectors' };
-
     component.onFilterChange(filterOption);
 
     expect(component.router.navigate).toHaveBeenCalledWith([], {
@@ -266,7 +266,7 @@ describe('ProductComponent', () => {
 
   it('should set isRESTClient true based on query params and designer environment', () => {
     component.route.queryParams = of({
-      [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly',
+      [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly'
     });
 
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
@@ -289,7 +289,7 @@ describe('ProductComponent', () => {
     expect(compiled.querySelector('.row col-md-12 mt-8')).toBeNull();
   });
 
-  it('should navigate to product detail page when clicking on a product card', async () => {
+  it('should navigate to product detail page when clicking on a product card', fakeAsync(() => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
@@ -303,9 +303,10 @@ describe('ProductComponent', () => {
     ).nativeElement as HTMLDivElement;
 
     productCardComponent.click();
-    await router.navigate([productName]);
+    router.navigate([productName]);
+    flush();
     expect(location.path()).toBe('/amazon-comprehend');
-  });
+  }));
 
   it('should set query params back to criteria', fakeAsync(() => {
     spyOn(component.router, 'navigate');

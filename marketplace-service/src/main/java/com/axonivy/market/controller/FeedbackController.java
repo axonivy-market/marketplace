@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,10 +45,11 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static com.axonivy.market.model.FeedbackModel.addModelLinks;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping(FEEDBACK)
 @Tag(name = "User Feedback Controllers", description = "API collection to handle user's feedback.")
 public class FeedbackController {
@@ -58,15 +60,6 @@ public class FeedbackController {
   private final FeedbackModelAssembler feedbackModelAssembler;
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
-
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, GitHubService gitHubService,
-      FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
-    this.feedbackService = feedbackService;
-    this.jwtService = jwtService;
-    this.gitHubService = gitHubService;
-    this.feedbackModelAssembler = feedbackModelAssembler;
-    this.pagedResourcesAssembler = pagedResourcesAssembler;
-  }
 
   @GetMapping(PRODUCT_BY_ID)
   @Operation(summary = "Find feedbacks by product id with lazy loading",
@@ -185,9 +178,5 @@ public class FeedbackController {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
-  }
-
-  private static void addModelLinks(FeedbackModel model, Feedback feedback){
-    model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
   }
 }

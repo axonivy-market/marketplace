@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import {
   Component,
   inject,
@@ -28,8 +27,7 @@ const SHIELDS_WORKFLOW = 'ci.yml';
 const BRANCH = 'master';
 @Component({
   selector: 'app-product-detail-information-tab',
-  standalone: true,
-  imports: [CommonModule, TranslateModule, IsEmptyObjectPipe],
+  imports: [TranslateModule, IsEmptyObjectPipe],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })

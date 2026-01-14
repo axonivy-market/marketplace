@@ -10,7 +10,6 @@ import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-product-card',
-  standalone: true,
   imports: [CommonModule, MultilingualismPipe, TranslateModule, NgOptimizedImage],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss'

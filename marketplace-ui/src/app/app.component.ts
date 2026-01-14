@@ -18,7 +18,6 @@ import { DocumentRef } from './core/services/browser/document-ref.service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, BackToTopComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -28,7 +27,7 @@ export class AppComponent {
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) { }
+  constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {}
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {

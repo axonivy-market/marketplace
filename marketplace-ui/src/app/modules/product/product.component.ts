@@ -44,7 +44,6 @@ const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
   selector: 'app-product',
-  standalone: true,
   imports: [
     LoadingSpinnerComponent,
     CommonModule,

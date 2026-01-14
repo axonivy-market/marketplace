@@ -60,7 +60,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
@@ -197,22 +196,18 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) {
-    try {
-      var gitHub = getGitHub(accessToken);
-      GHOrganization organization = gitHub.getOrganization(orgName);
+  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
+      String orgName) throws IOException {
+    var gitHub = getGitHub(accessToken);
+    GHOrganization organization = gitHub.getOrganization(orgName);
 
-      List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
-          .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
-              taskScheduler.getScheduledExecutor())).toList();
+    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+        .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
+            taskScheduler.getScheduledExecutor())).toList();
 
-      return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-          .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-              Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
-    } catch (IOException e) {
-      log.error(e);
-      return Collections.emptyList();
-    }
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
+            Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {

@@ -1,5 +1,5 @@
 # Build Phase
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 ARG BUILD_ENV
 WORKDIR /app
 # Only copy files needed for npm install first (better caching)
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build -- --configuration $BUILD_ENV
 
 # Run Phase
-FROM node:22-alpine
+FROM node:24-alpine
 # Create app folder
 WORKDIR /app
 # Copy built dist and minimal needed files

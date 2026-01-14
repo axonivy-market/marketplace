@@ -10,4 +10,7 @@ export enum RequestParam {
   SEARCH = 'search',
   WORK_FLOW_TYPE = 'workflowType',
   SORT_DIRECTION = 'sortDirection',
+  RESET_SYNC = 'resetSync',
+  MARKET_ITEM_PATH = 'marketItemPath',
+  OVERRIDE_MARKET_ITEM_PATH = 'overrideMarketItemPath'
 }

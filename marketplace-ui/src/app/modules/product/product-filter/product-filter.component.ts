@@ -18,7 +18,6 @@ import { PAGE, QUERY_PARAM_KEY, SEARCH_KEY } from '../../../shared/constants/que
 
 @Component({
   selector: 'app-product-filter',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent, MATOMO_DIRECTIVES],
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'

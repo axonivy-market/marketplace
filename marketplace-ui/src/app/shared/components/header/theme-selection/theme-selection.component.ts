@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, DOCUMENT } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { NgClass, DOCUMENT } from '@angular/common';
+import { NgClass } from '@angular/common';
 import {
   LIGHT_ICON_CLASS,
   DARK_ICON_CLASS,
@@ -9,7 +9,6 @@ import {
 
 @Component({
   selector: 'app-theme-selection',
-  standalone: true,
   imports: [NgClass],
   templateUrl: './theme-selection.component.html',
   styleUrl: './theme-selection.component.scss'

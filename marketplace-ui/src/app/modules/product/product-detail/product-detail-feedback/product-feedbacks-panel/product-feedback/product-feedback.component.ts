@@ -21,7 +21,6 @@ import { AuthService } from '../../../../../../auth/auth.service';
 
 @Component({
   selector: 'app-product-feedback',
-  standalone: true,
   imports: [CommonModule, StarRatingComponent, TimeAgoPipe, TranslateModule],
   templateUrl: './product-feedback.component.html',
   styleUrl: './product-feedback.component.scss'

@@ -908,7 +908,7 @@ describe('ProductDetailComponent', () => {
     // Now assert utility labels
     rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
     expect(rateConnector.childNodes[0].nativeNode.textContent.trim()).toContain(
-      'common.feedback.rateFeedbackForConnectorBtnLabel'
+      'common.feedback.rateFeedbackForUtilityBtnLabel'
     );
 
     rateConnectorEmptyText = fixture.debugElement.query(
@@ -916,7 +916,7 @@ describe('ProductDetailComponent', () => {
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForConnectorLabel');
+    ).toContain('common.feedback.noFeedbackForUtilityLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {

@@ -7,13 +7,11 @@ import { LanguageService } from '../../../../../../../core/services/language/lan
 
 @Component({
   selector: 'app-success-dialog',
-  standalone: true,
   imports: [TranslateModule, NgOptimizedImage],
   templateUrl: './success-dialog.component.html',
   styleUrls: ['./success-dialog.component.scss']
 })
 export class SuccessDialogComponent {
-
   activeModal = inject(NgbActiveModal);
 
   authService = inject(AuthService);

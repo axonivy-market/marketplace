@@ -2,6 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
 import com.axonivy.market.util.FileUtils;
@@ -39,14 +41,15 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     try {
       ZipSafetyScanner.analyze(file);
       FileUtils.unzip(file, PREVIEW_DIR);
+      return extractReadme(baseUrl, PREVIEW_DIR);
     } catch (IOException e) {
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
-      return null;
+      throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
+          ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
     }
-    return extractReadme(baseUrl, PREVIEW_DIR);
   }
 
-  public ReleasePreview extractReadme(String baseUrl, String location) {
+  public ReleasePreview extractReadme(String baseUrl, String location) throws IOException {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
     try (Stream<Path> readmePathStream = Files.walk(Paths.get(location))) {
       List<Path> readmeFiles = readmePathStream.filter(Files::isRegularFile)
@@ -59,15 +62,11 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
         processReadme(readmeFile, moduleContents, baseUrl, location);
       }
       return ReleasePreview.from(moduleContents);
-    } catch (IOException e) {
-      log.error("Cannot get README file's content from folder {}: {}",
-          PREVIEW_DIR, e.getMessage());
-      return null;
     }
   }
 
   public String updateImagesWithDownloadUrl(String unzippedFolderPath,
-      String readmeContents, String baseUrl) {
+      String readmeContents, String baseUrl) throws IOException {
     Map<String, String> imageUrls = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
@@ -84,9 +83,6 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
             imageUrls.put(imageFileName, downloadURLFormat);
           });
       return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-    } catch (Exception e) {
-      log.error("#updateImagesWithDownloadUrl: Error update image url: {}", e.getMessage());
-      return null;
     }
   }
 

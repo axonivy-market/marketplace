@@ -16,4 +16,6 @@ public interface ExternalDocumentService {
   String resolveBestMatchRedirectUrl(String path);
 
   DocumentInfoResponse findDocVersionsAndLanguages(String artifact, String version, String language, String host);
+
+  List<String> determineProductIdsForSync(String productId);
 }

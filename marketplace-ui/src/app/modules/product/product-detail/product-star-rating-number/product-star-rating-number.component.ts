@@ -11,7 +11,6 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 
 @Component({
   selector: 'app-product-star-rating-number',
-  standalone: true,
   imports: [CommonModule, TranslateModule, StarRatingComponent],
   templateUrl: './product-star-rating-number.component.html',
   styleUrl: './product-star-rating-number.component.scss'
@@ -29,10 +28,9 @@ export class ProductStarRatingNumberComponent {
 
   onClickRateLink() {
     const productId = this.productDetailService.productId();
-    if(this.authService.getToken()) {
+    if (this.authService.getToken()) {
       this.openAddFeedbackDialog.emit();
-    }
-    else {
+    } else {
       this.authService.redirectToGitHub(productId);
     }
   }

@@ -3,7 +3,8 @@ import { Component, ElementRef } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 @Component({
-  template: `<div starRatingHighlight [percent]="percent"></div>`
+    template: `<div starRatingHighlight [percent]="percent"></div>`,
+    standalone: false
 })
 class TestComponent {
   percent = 50;

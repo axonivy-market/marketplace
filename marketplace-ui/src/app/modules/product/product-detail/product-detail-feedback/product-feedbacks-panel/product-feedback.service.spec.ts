@@ -8,6 +8,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import {
+  BEARER,
   NOT_FOUND_ERROR_CODE,
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
@@ -234,7 +235,7 @@ describe('ProductFeedbackService', () => {
 
     const req = httpMock.expectOne('api/feedback/approval?page=0&size=40');
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
+    expect(req.request.headers.get('Authorization')).toBe(`${BEARER} ${token}`);
     req.flush(mockResponse);
   });
 

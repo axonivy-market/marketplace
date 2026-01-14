@@ -16,7 +16,6 @@ import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/c
 
 @Component({
   selector: 'app-error-page-component',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './error-page.component.html',
   styleUrl: './error-page.component.scss'
@@ -41,7 +40,7 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
-    
+
     this.translateService
       .get(I18N_ERROR_CODE_PATH)
       .subscribe(errorTranslations => {
@@ -64,7 +63,7 @@ export class ErrorPageComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkMediaSize();
   }

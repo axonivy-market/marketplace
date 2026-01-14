@@ -22,6 +22,7 @@ export interface Product {
   validate: boolean;
   versionDisplay: string;
   installMatcher: string;
+  marketDirectory: string;
   mavenArtifacts: MavenArtifact[];
   contactUs: boolean;
   _links?: {
@@ -29,4 +30,9 @@ export interface Product {
       href: string;
     };
   };
+}
+
+export interface MarketProduct {
+  id: string;
+  marketDirectory?: string;
 }

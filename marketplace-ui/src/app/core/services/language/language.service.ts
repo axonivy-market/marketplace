@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { computed, Inject, Injectable, signal } from '@angular/core';
+import { computed, Inject, Injectable, signal, DOCUMENT } from '@angular/core';
 import { Language } from '../../../shared/enums/language.enum';
 import { DATA_LANGUAGE } from '../../../shared/constants/common.constant';
 

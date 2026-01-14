@@ -2,12 +2,12 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,8 @@ public class ExternalDocumentController {
   private final GitHubService gitHubService;
 
   @GetMapping(BY_ID_AND_VERSION)
+  @Operation(summary = "Find external document by product id and version",
+      description = "Finds the external document metadata for the given product id and version.")
   public ResponseEntity<ExternalDocumentModel> findExternalDocument(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id,
@@ -49,21 +52,21 @@ public class ExternalDocumentController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    var model = ExternalDocumentModel.builder().productId(externalDocument.getProductId())
-        .version(externalDocument.getVersion()).relativeLink(externalDocument.getRelativeLink())
-        .artifactName(externalDocument.getArtifactName()).build();
+    var model = ExternalDocumentModel.from(externalDocument);
     model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
 
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @GetMapping(DOCUMENT_BEST_MATCH)
+  @Operation(summary = "Redirect to the best matching external document version",
+      description = "Redirects to the best matching external document version based on the provided path parameter.")
   public ResponseEntity<Void> redirectToBestVersion(@RequestParam(value = "path", required = false) String path) {
     ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND);
     String responseURL = ERROR_PAGE_404;
     String redirectUrl = externalDocumentService.resolveBestMatchRedirectUrl(path);
     if (redirectUrl != null) {
-        responseURL = redirectUrl;
+      responseURL = redirectUrl;
     }
     return response.location(URI.create(responseURL)).build();
   }
@@ -80,25 +83,23 @@ public class ExternalDocumentController {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    List<String> productIds;
-    if (ObjectUtils.isNotEmpty(productId)) {
-      productIds = List.of(productId);
-    } else {
-      productIds = externalDocumentService.findAllProductsHaveDocument().stream()
-          .map(Product::getId).toList();
-    }
-    var message = new Message();
+    List<String> productIds = externalDocumentService.determineProductIdsForSync(productId);
+
     if (ObjectUtils.isEmpty(productIds)) {
-      message.setHelpText("Nothing to be synced");
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), null);
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
+    }
+
+    if (StringUtils.isNotBlank(version) && !VersionUtils.isMavenVersion(version)) {
+      var message = new Message(ErrorCode.INVALID_VERSION.getCode(), ErrorCode.INVALID_VERSION.getHelpText(), null);
+      return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
 
     for (String id : productIds) {
       externalDocumentService.syncDocumentForProduct(id, resetSync, version);
     }
 
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), null);
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
