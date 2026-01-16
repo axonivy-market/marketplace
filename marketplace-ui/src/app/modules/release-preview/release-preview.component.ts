@@ -214,7 +214,9 @@ export class ReleasePreviewComponent implements OnInit {
   private renderReadmeContent(): void {
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
-      if (!contentValue) continue;
+      if (!contentValue) {
+        continue;
+      }
 
       const translatedContent =
         new MultilingualismPipe().transform(
