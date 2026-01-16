@@ -1,0 +1,69 @@
+.quick-access-container {
+  flex-direction: row;
+  margin-top: 9rem;
+
+  .qa-grid {
+    display: grid;
+    min-height: 10rem;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .qa-card {
+    border: 1px solid var(--ivy-border-color);
+    border-radius: 0.75rem;
+    background-color: var(--ivy-secondary-bg);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    padding: 1rem;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .qa-card:hover {
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .qa-card__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    align-content: center;
+  }
+
+  .qa-card__link:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  }
+
+  .qa-card__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .qa-card__icon {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+    background: var(--ivy-secondary-bg);
+
+    i {
+      font-size: 2rem;
+    }
+  }
+
+  .qa-card__title {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .qa-card__hint {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+  }
+}

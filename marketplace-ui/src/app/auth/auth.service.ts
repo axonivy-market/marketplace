@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
-import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
+import { BEARER, FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
 import { WindowRef } from '../core/services/browser/window-ref.service';
 import { RuntimeConfigService } from '../core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
@@ -172,7 +172,7 @@ export class AuthService {
 
   getUserInfo(token: string): Observable<GitHubUser> {
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `${BEARER} ${token}`,
       'Accept': 'application/vnd.github+json'
     });
     return this.httpClientWithoutInterceptor.get<GitHubUser>(this.userApiUrl, { headers }).pipe(

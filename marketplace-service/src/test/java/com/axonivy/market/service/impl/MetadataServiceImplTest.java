@@ -130,7 +130,7 @@ class MetadataServiceImplTest extends BaseSetup {
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder().productVersion(MOCK_SNAPSHOT_VERSION).build();
 
-      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, MOCK_SNAPSHOT_VERSION))
+      mockUtils.when(() -> MavenUtils.buildSnapshotMetadataFromVersion(mockMetadata, MOCK_SNAPSHOT_VERSION))
           .thenReturn(mockMetadata);
 
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION, mockMetadata))
@@ -160,7 +160,7 @@ class MetadataServiceImplTest extends BaseSetup {
     mockMetadata.setVersions(Set.of(snapshotVersion, MOCK_RELEASED_VERSION));
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion))
+      mockUtils.when(() -> MavenUtils.buildSnapshotMetadataFromVersion(mockMetadata, snapshotVersion))
           .thenReturn(mockMetadata);
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(
