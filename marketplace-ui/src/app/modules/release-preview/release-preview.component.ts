@@ -169,10 +169,10 @@ export class ReleasePreviewComponent implements OnInit {
         this.isUploaded = true;
         this.shouldShowHint = false;
       },
-      error: (err) => {
+      error: err => {
         this.isUploaded = true;
         this.errorMessage = err.error?.message;
-    }
+      }
     });
   }
 
@@ -214,25 +214,23 @@ export class ReleasePreviewComponent implements OnInit {
   private renderReadmeContent(): void {
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
-      if (!contentValue) {
-        continue;
+      if (contentValue) {
+        const translatedContent =
+          new MultilingualismPipe().transform(
+            contentValue,
+            this.languageService.selectedLanguage()
+          ) || '';
+
+        const renderedHtml =
+          this.markdownService.parseMarkdown(translatedContent);
+
+        const sanitizedHtml = this.sanitizer.sanitize(
+          SecurityContext.HTML,
+          renderedHtml
+        );
+
+        this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
       }
-
-      const translatedContent =
-        new MultilingualismPipe().transform(
-          contentValue,
-          this.languageService.selectedLanguage()
-        ) || '';
-
-      const renderedHtml =
-        this.markdownService.parseMarkdown(translatedContent);
-
-      const sanitizedHtml = this.sanitizer.sanitize(
-        SecurityContext.HTML,
-        renderedHtml
-      );
-
-      this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
     }
   }
 }
