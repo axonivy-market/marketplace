@@ -125,11 +125,11 @@ export class ReleasePreviewComponent implements OnInit {
       this.isZipFile = false;
 
       if (!isZip) {
-        this.errorMessage = 'common.preview.errors.invalidZip';
+        this.errorMessage = this.translateService.instant('common.preview.errors.invalidZip');
       } else if (!withinSize) {
-        this.errorMessage = 'common.preview.errors.tooLarge';
+        this.errorMessage = this.translateService.instant('common.preview.errors.tooLarge', { max: MAX_FILE_SIZE_MB });
       } else {
-        this.errorMessage = 'common.preview.errors.seemsProblem';
+        this.errorMessage = this.translateService.instant('common.preview.errors.seemsProblem');
       }
     }
   }
