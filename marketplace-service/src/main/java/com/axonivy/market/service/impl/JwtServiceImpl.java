@@ -1,9 +1,9 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -15,6 +15,8 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +76,8 @@ public class JwtServiceImpl implements JwtService {
 
   @Override
   public String getRawAccessToken(String jwtToken) {
-    var token = AuthorizationUtils.getBearerToken(jwtToken);
+    var token = StringUtils.removeStart(jwtToken, CommonConstants.BEARER);
+    token = StringUtils.trim(token);
     var claims = getClaimsFromToken(token);
     return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
   }

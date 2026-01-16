@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -49,10 +48,11 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     if (ObjectUtils.isEmpty(token)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
     }
+    token = token.trim();
     if (!StandardCharsets.US_ASCII.newEncoder().canEncode(token)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
     }
-    gitHubService.validateUserInOrganizationAndTeam(StringUtils.trim(token),
+    gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     return jwtService.generateJWTFromGitHubToken(token);

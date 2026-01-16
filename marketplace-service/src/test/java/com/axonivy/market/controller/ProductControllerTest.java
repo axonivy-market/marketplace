@@ -11,7 +11,6 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -176,19 +175,6 @@ class ProductControllerTest extends BaseSetup {
         "Response body should not be null or empty when syncOneProduct succeeds");
     assertEquals("Sync successfully!", response.getBody().getMessageDetails(),
         "Expected success message 'Sync successfully!' in response body");
-  }
-
-  @Test
-  void testGetBearerTokenWithValidHeader() {
-    String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
-    assertEquals("valid_token", token,
-        "Extracted bearer token should match the expected value 'valid_token'");
-  }
-
-  @Test
-  void testGetBearerTokenWithInvalidHeader() {
-    String token = AuthorizationUtils.getBearerToken("InvalidTokenFormat");
-    assertNull(token, "Token should be null when the Authorization header format is invalid");
   }
 
   private Product createProductMock() {
