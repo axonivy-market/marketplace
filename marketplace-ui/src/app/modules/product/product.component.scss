@@ -69,3 +69,10 @@
     padding: 0;
   }
 }
+
+@media (min-width: 1920px) {
+  .product-card {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+}
