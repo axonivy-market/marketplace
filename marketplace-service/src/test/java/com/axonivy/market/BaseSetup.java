@@ -7,7 +7,6 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
-import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;

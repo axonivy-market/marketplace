@@ -42,14 +42,14 @@ export class AdminTokenComponent implements OnInit {
     this.tokenControl.disable();
     
     this.authService.requestAccessToken(this.filledToken).subscribe({
-      next: (jwtObject) => {
+      next: jwtObject => {
         this.errorMessage = '';
         this.authService.setToken(jwtObject.token);
         this.isProcessing = false;
         this.tokenControl.enable();
         this.router.navigate(['/internal-dashboard']);
       },
-      error: (e) => {
+      error: () => {
         this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
         this.isProcessing = false;
         this.tokenControl.enable();

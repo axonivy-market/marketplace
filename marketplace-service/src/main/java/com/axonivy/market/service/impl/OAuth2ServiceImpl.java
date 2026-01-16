@@ -15,7 +15,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.OAuth2Service;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,6 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
@@ -16,8 +15,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataReaderUtilsTest extends BaseSetup {
