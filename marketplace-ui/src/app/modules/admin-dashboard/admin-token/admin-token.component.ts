@@ -26,8 +26,6 @@ export class AdminTokenComponent implements OnInit {
   isButtonDisabled = true;
 
   ngOnInit(): void {
-    this.tokenControl.setValue('', { emitEvent: false });
-
     this.tokenControl.valueChanges.subscribe(newValue => {
       this.isButtonDisabled = this.isProcessing || !newValue || newValue === this.filledToken;
       if (!this.isButtonDisabled) {
