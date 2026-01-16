@@ -85,7 +85,7 @@ describe('AdminTokenComponent', () => {
 
       component.onSubmit();
 
-      expect(component.tokenControl.enabled).toBe(true); // Re-enabled after success
+      expect(component.tokenControl.enabled).toBe(true);
     });
 
     it('should re-enable control after error', () => {
