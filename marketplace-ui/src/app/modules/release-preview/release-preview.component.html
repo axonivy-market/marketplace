@@ -16,7 +16,6 @@
           (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (keydown)="
                     ($event.key === 'Enter' || $event.key === ' ') && fileInput.click()
                   ">
-          <input #fileInput type="file" id="file-input" (change)="onFileSelected($event)" accept=".zip" hidden />
           @if (!selectedFile && !errorMessage) {
           <p class="text-muted m-0" [lang]="languageService.selectedLanguage()">
             {{ 'common.preview.dragDropText' | translate }}
@@ -45,6 +44,7 @@
           }
           }
         </button>
+        <input #fileInput type="file" id="file-input" (change)="onFileSelected($event)" accept=".zip" hidden />
         <small [lang]="languageService.selectedLanguage()" class="hint-text">
           <a href="javascript:void(0)" (click)="toggleHint()" class="text-decoration-underline">
             {{ translateService.get('common.preview.link') | async }}
