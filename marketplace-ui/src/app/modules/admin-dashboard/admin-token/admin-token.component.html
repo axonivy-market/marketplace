@@ -24,8 +24,14 @@
         type="submit"
         class="btn-primary"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
-        [disabled]="isButtonDisabled">
-        {{ 'common.admin.proceedBtnLabel' | translate }}
+        [disabled]="isButtonDisabled"
+        [style.pointer-events]="isProcessing ? 'none' : ''">
+        @if (isProcessing) {
+          <i class="fa fa-spinner fa-spin me-2"></i>
+          {{ 'common.admin.proceedingBtnLabel' | translate }}
+        } @else {
+          {{ 'common.admin.proceedBtnLabel' | translate }}
+        }
       </button>
       @if (errorMessage) {
         <div class="error-message">{{ errorMessage }}</div>

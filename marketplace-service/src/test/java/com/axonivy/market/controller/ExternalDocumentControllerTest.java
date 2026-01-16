@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ExternalDocumentService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -27,9 +26,6 @@ class ExternalDocumentControllerTest {
 
   private static final String VERSION = "13.1.1";
   private static final String PORTAL = "portal";
-
-  @Mock
-  private GitHubService gitHubService;
 
   @Mock
   private ExternalDocumentService service;

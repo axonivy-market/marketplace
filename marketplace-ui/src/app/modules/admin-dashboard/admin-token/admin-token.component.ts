@@ -30,16 +30,14 @@ export class AdminTokenComponent implements OnInit {
 
     this.tokenControl.valueChanges.subscribe(newValue => {
       this.isButtonDisabled = this.isProcessing || !newValue || newValue === this.filledToken;
+      if (!this.isButtonDisabled) {
+        this.errorMessage = '';
+      }
     });
   }
 
   onSubmit(): void {
     this.filledToken = this.tokenControl.value ?? '';
-    if (this.isButtonDisabled || !this.filledToken) {
-      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-      return;
-    }
-
     this.isProcessing = true;
     this.tokenControl.disable();
     

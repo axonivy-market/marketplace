@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -22,7 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OAuth2ServiceImplTest {
+class OAuth2ServiceImplTest extends BaseSetup {
   private Oauth2AuthorizationCode oauth2AuthorizationCode;
 
   @Mock
@@ -106,17 +107,7 @@ class OAuth2ServiceImplTest {
         "Response status should be 401 UNAUTHORIZED when a general exception occurs");
   }
 
-  private GithubUser createUserMock() {
-    GithubUser githubUser = new GithubUser();
-    githubUser.setId("userId");
-    githubUser.setUsername("username");
-    githubUser.setName("User Name");
-    githubUser.setAvatarUrl("http://avatar.url");
-    githubUser.setProvider("github");
-    return githubUser;
-  }
-
-  private GitHubAccessTokenResponse createGitHubAccessTokenResponseMock() {
+  protected GitHubAccessTokenResponse createGitHubAccessTokenResponseMock() {
     GitHubAccessTokenResponse gitHubAccessTokenResponse = new GitHubAccessTokenResponse();
     gitHubAccessTokenResponse.setAccessToken("sampleAccessToken");
     return gitHubAccessTokenResponse;

@@ -5,7 +5,6 @@ import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.FeedbackStatus;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -45,7 +44,7 @@ class FeedbackControllerTest extends BaseSetup {
   private static final String PRODUCT_ID_SAMPLE = "product-id";
   private static final String FEEDBACK_ID_SAMPLE = "feedback-id";
   private static final String USER_ID_SAMPLE = "user-id";
-  private static final String USER_NAME_SAMPLE = "Test User";
+  private static final String USER_NAME_SAMPLE = "User Name";
 
   @Mock
   private FeedbackService service;
@@ -55,9 +54,6 @@ class FeedbackControllerTest extends BaseSetup {
 
   @Mock
   private GithubUserService githubUserService;
-
-  @Mock
-  private GitHubService gitHubService;
 
   @Mock
   private FeedbackModelAssembler feedbackModelAssembler;
@@ -253,16 +249,6 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
     return mockFeedback;
-  }
-
-  private GithubUser createUserMock() {
-    GithubUser mockGithubUser = new GithubUser();
-    mockGithubUser.setId(USER_ID_SAMPLE);
-    mockGithubUser.setUsername("testUser");
-    mockGithubUser.setName("Test User");
-    mockGithubUser.setAvatarUrl("http://avatar.url");
-    mockGithubUser.setProvider("local");
-    return mockGithubUser;
   }
 
   private Claims createMockClaims() {

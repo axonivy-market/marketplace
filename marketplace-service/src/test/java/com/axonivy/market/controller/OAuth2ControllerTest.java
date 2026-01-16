@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.OAuth2Service;
 
@@ -56,7 +57,7 @@ class OAuth2ControllerTest {
   @Test
   void testRequestAccessSuccess() {
     when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(JWT_TOKEN);
-    ResponseEntity<?> response = oAuth2Controller.requestAccess(JWT_TOKEN);
+    ResponseEntity<?> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
 
     assertEquals(200, response.getStatusCode().value(),
         "Response status should be 200 OK when GitHub login succeeds");
@@ -66,7 +67,7 @@ class OAuth2ControllerTest {
 
   @Test
   void testRequestAccessEmptyAuthorizationCode() {
-    ResponseEntity<?> response = oAuth2Controller.requestAccess("");
+    ResponseEntity<?> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, ""));
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
         "Response status should be 401 UNAUTHORIZED when authorization code is empty.");

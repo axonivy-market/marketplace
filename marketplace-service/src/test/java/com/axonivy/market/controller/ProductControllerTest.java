@@ -8,7 +8,6 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
@@ -58,9 +57,6 @@ class ProductControllerTest extends BaseSetup {
 
   @Mock
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
-
-  @Mock
-  private GitHubService gitHubService;
 
   @InjectMocks
   private ProductController productController;

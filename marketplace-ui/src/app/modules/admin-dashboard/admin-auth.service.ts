@@ -4,9 +4,10 @@ import {
   ADMIN_SESSION_TOKEN,
   BEARER
 } from '../../shared/constants/common.constant';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
+import { ForwardingError } from '../../core/interceptors/api.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
@@ -23,9 +24,9 @@ export class AdminAuthService {
 
   requestAccessToken(token:string): Observable<any> {
     this.setToken('');
-    return this.httpClient.post(API_URI.GITHUB_REQUEST_ACCESS , {}, {
-      headers: this.createAuthHeader(token)
-    });
+    return this.httpClient.post(API_URI.GITHUB_REQUEST_ACCESS ,
+      { token },
+      { context: new HttpContext().set(ForwardingError, true) });
   }
 
   clearToken(): void {
@@ -41,12 +42,8 @@ export class AdminAuthService {
       return new HttpHeaders();
     }
 
-    return this.createAuthHeader(this.token);
-  }
-
-  private createAuthHeader(token: string): HttpHeaders {
     return new HttpHeaders({
-      Authorization: `${BEARER} ${token}`
+      Authorization: `${BEARER} ${this.token}`
     });
   }
 }

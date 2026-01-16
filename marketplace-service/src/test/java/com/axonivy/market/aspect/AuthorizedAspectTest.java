@@ -32,7 +32,7 @@ class AuthorizedAspectTest {
   
   @Mock
   private GitHubService gitHubService;
-  
+
   @Mock
   private ProceedingJoinPoint joinPoint;
   
@@ -46,7 +46,7 @@ class AuthorizedAspectTest {
   }
   
   @Test
-  void testUnauthorizedThrowsException() throws Throwable {
+  void testUnauthorizedThrowsException() {
     when(request.getHeader(AUTHORIZATION)).thenReturn(null);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn(null);
     

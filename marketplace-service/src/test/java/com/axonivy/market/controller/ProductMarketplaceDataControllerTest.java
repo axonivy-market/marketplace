@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,6 @@ import static org.mockito.Mockito.when;
 class ProductMarketplaceDataControllerTest extends BaseSetup {
   @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
-  @Mock
-  private GitHubService gitHubService;
   @InjectMocks
   private ProductMarketplaceDataController productMarketplaceDataController;
 
