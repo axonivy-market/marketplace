@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReleasePreviewComponent } from './release-preview.component';
 import { ReleasePreviewService } from './release-preview.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { LanguageService } from '../../core/services/language/language.service';
 import { Language } from '../../shared/enums/language.enum';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,6 +13,8 @@ import {
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MOCK_RELEASE_PREVIEW_DATA } from '../../shared/mocks/mock-data';
 import { MarkdownService } from '../../shared/services/markdown.service';
+import { ItemDropdown } from '../../shared/models/item-dropdown.model';
+import { ReleasePreviewData } from '../../shared/models/release-preview-data.model';
 
 describe('ReleasePreviewComponent', () => {
   let component: ReleasePreviewComponent;
@@ -299,5 +301,74 @@ describe('ReleasePreviewComponent', () => {
     expect(component.errorMessage).toBeNull();
     expect(component.selectedFile?.name).toBe('fixed.zip');
     expect(component.isZipFile).toBeTrue();
+  });
+
+  it('should toggle shouldShowHint', () => {
+    expect(component.shouldShowHint).toBeFalse();
+
+    component.toggleHint();
+    expect(component.shouldShowHint).toBeTrue();
+
+    component.toggleHint();
+    expect(component.shouldShowHint).toBeFalse();
+  });
+
+  it('should convert bytes to MB string with 2 decimals', () => {
+    const bytes = 1048576; // 1MB
+    const result = component.fileSizeInMB(bytes);
+
+    expect(result).toBe('1.00');
+  });
+
+  it('should not call service if no selectedFile', () => {
+    spyOn(releasePreviewService, 'extractZipDetails');
+
+    component.selectedFile = null;
+    component.isZipFile = false;
+    component.onSubmit();
+
+    expect(releasePreviewService.extractZipDetails).not.toHaveBeenCalled();
+  });
+
+  it('should not call service if selectedFile is not zip', () => {
+    spyOn(releasePreviewService, 'extractZipDetails');
+
+    component.selectedFile = {} as File;
+    component.isZipFile = false;
+    component.onSubmit();
+
+    expect(releasePreviewService.extractZipDetails).not.toHaveBeenCalled();
+  });
+
+  it('should handle service error and set errorMessage', () => {
+    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+      throwError(() => ({
+        error: { message: 'upload.failed' }
+      }))
+    );
+
+    component.selectedFile = new File(['zip'], 'bad.zip', {
+      type: 'application/zip'
+    });
+    component.isZipFile = true;
+
+    component.handlePreviewPage();
+
+    expect(component.isUploaded).toBeTrue();
+    expect(component.errorMessage).toBe('upload.failed');
+  });
+
+  it('should return label for active tab', () => {
+    component.activeTab = 'description';
+    const label = component.getSelectedTabLabel();
+
+    expect(label).toBeDefined();
+  });
+
+  it('should return null when readme content is missing', () => {
+    component.readmeContent.set({} as ReleasePreviewData);
+    const result = component.getReadmeContentValue({value: 'description'} as ItemDropdown);
+
+    expect(result).toBeNull();
   });
 });
