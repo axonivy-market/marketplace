@@ -1,5 +1,6 @@
 package com.axonivy.market.aop.aspect;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -12,6 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import static org.springframework.http.HttpHeaders.*;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -42,6 +44,10 @@ public class AuthorizedAspect {
     String authorizationHeader = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     if (authorizationHeader == null) {
       authorizationHeader = request.getHeader(AUTHORIZATION);
+    }
+    if (StringUtils.isBlank(authorizationHeader) || !authorizationHeader.startsWith(CommonConstants.BEARER)) {
+      throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),
+      "Missing Authorization header or invalid Bearer token");
     }
     // First, get RAW token from JWT, then validate user in org and team
     // * Also can throw ExpiredJwtException, MalformedJwtException, SignatureException, etc.

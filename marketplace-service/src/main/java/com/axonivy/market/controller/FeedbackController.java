@@ -10,7 +10,6 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -136,7 +135,7 @@ public class FeedbackController {
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
       HttpServletRequest request) {
     String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
-    var claims = jwtService.getClaimsFromToken(AuthorizationUtils.getBearerToken(token));
+    var claims = jwtService.getClaimsFromToken(token);
     var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)

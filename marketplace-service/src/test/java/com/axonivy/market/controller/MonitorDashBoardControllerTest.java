@@ -45,8 +45,6 @@ class MonitorDashBoardControllerTest {
     MockitoAnnotations.openMocks(this);
   }
 
-
-
   @Test
   void testGetTestReportReturnsList() {
     TestStepsModel model = new TestStepsModel();
@@ -67,7 +65,7 @@ class MonitorDashBoardControllerTest {
           GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
       doNothing().when(githubReposService).loadAndStoreTestReports();
 
-      ResponseEntity<String> response = controller.syncGithubMonitor(AUTHORIZATION);
+      ResponseEntity<String> response = controller.syncGithubMonitor();
       assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
       assertEquals("Repositories loaded successfully.", response.getBody(),
           "Response body should match expected message");
@@ -82,7 +80,7 @@ class MonitorDashBoardControllerTest {
           GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
       doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
 
-      assertThrows(IOException.class, () -> controller.syncGithubMonitor(AUTHORIZATION),
+      assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
           "IOException should be thrown when service fails to load and store test reports");
     }
   }
@@ -95,7 +93,7 @@ class MonitorDashBoardControllerTest {
     doNothing().when(githubService).validateUserInOrganizationAndTeam("token", GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
             GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    ResponseEntity<String> response = controller.updateFocusedRepo("token", updates);
+    ResponseEntity<String> response = controller.updateFocusedRepo(updates);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),

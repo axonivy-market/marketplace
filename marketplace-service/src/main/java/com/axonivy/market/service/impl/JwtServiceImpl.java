@@ -27,7 +27,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class JwtServiceImpl implements JwtService {
   private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
-  private static final long ADMIN_TOKEN_EXPIRATION = 1;
+  private static final long ADMIN_TOKEN_LIFETIME = 1;
 
   @Value("${jwt.secret}")
   private String secret;
@@ -48,7 +48,7 @@ public class JwtServiceImpl implements JwtService {
   public String generateJWTFromGitHubToken(String accessToken) {
     Map<String, Object> claims = new HashMap<>();
     claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
-    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, claims, ADMIN_TOKEN_EXPIRATION);
+    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, claims, ADMIN_TOKEN_LIFETIME);
   }
 
   @Override

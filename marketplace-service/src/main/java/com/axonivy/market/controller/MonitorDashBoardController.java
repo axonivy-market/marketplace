@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +32,6 @@ import java.util.List;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.IS_FOCUSED;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequiredArgsConstructor
@@ -59,8 +57,7 @@ public class MonitorDashBoardController {
   @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  public ResponseEntity<String> syncGithubMonitor(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
+  public ResponseEntity<String> syncGithubMonitor() throws IOException {
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
@@ -68,9 +65,10 @@ public class MonitorDashBoardController {
   @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<String> syncOneGithubMonitor(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
-          in = ParameterIn.PATH) String id) throws IOException {
+  public ResponseEntity<String> syncOneGithubMonitor(@PathVariable(ID) @Parameter(
+        description = "Product id (from meta.json)",
+        example = "portal",
+        in = ParameterIn.PATH) String id) throws IOException {
     githubReposService.loadAndStoreTestReportsForOneProduct(id);
     return ResponseEntity.ok("Repository loaded successfully.");
   }
@@ -78,8 +76,7 @@ public class MonitorDashBoardController {
   @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
-  public ResponseEntity<String> updateFocusedRepo(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(REPOS) List<String> repos) {
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
     githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }

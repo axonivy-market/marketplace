@@ -25,7 +25,7 @@ export class AdminAuthService {
     this.storageRef.session?.setItem(ADMIN_SESSION_TOKEN, token);
   }
 
-  requestAccessToken(token:string): Observable<JwtDTO> {
+  requestAccessToken(token: string): Observable<JwtDTO> {
     this.setToken('');
     return this.httpClient.post<JwtDTO>(API_URI.GITHUB_REQUEST_ACCESS,
       { token },
