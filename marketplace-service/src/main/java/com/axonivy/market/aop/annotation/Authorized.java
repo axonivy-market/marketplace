@@ -11,7 +11,7 @@ public @interface Authorized {
 
   AuthorizationScope scope() default AuthorizationScope.ORGANIZATION_TEAM;
 
-  public enum AuthorizationScope {
+  enum AuthorizationScope {
     ORGANIZATION_TEAM,
     ORGANIZATION,
     TEAM,

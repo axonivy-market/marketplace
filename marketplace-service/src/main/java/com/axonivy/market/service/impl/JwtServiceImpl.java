@@ -77,15 +77,13 @@ public class JwtServiceImpl implements JwtService {
 
   @Override
   public String getRawAccessToken(String jwtToken) {
-    var token = unifyJWTToken(jwtToken);
-    var claims = getClaimsFromToken(token);
+    var claims = getClaimsFromToken(jwtToken);
     return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
   }
 
   private String unifyJWTToken(String jwtToken) {
     var token = StringUtils.removeStart(jwtToken, CommonConstants.BEARER);
-    token = StringUtils.trim(token);
-    return token;
+    return StringUtils.trim(token);
   }
 
   private String createNewJWTCompactToken(String subject, Map<String, Object> claims, long expiration) {
