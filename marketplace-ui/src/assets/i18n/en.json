@@ -294,6 +294,7 @@
       "enterToken": "Please enter your token to access the admin dashboard.",
       "enterTokenPlaceholder": "Enter your token",
       "proceedBtnLabel": "Proceed",
+      "proceedingBtnLabel": "Proceeding...",
       "extensionId": "Extension ID",
       "sync": {
         "pageTitle": "Synchronization Tasks",

@@ -11,12 +11,11 @@
     <h3 class="text-primary">
       {{ 'common.admin.enterToken' | translate }}
     </h3>
-    <form (ngSubmit)="onSubmit()" #tokenForm="ngForm">
+    <form (ngSubmit)="onSubmit()">
       <input
         id="token-input"
         type="password"
-        name="token"
-        [(ngModel)]="token"
+        [formControl]="tokenControl"
         [attr.placeholder]="'common.admin.enterTokenPlaceholder' | translate"
         autocomplete="current-password"
         required />
@@ -24,8 +23,15 @@
       <button
         type="submit"
         class="btn-primary"
-        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-        {{ 'common.admin.proceedBtnLabel' | translate }}
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
+        [disabled]="isButtonDisabled"
+        [style.pointer-events]="isProcessing ? 'none' : ''">
+        @if (isProcessing) {
+          <i class="fa fa-spinner fa-spin me-2"></i>
+          {{ 'common.admin.proceedingBtnLabel' | translate }}
+        } @else {
+          {{ 'common.admin.proceedBtnLabel' | translate }}
+        }
       </button>
       @if (errorMessage) {
         <div class="error-message">{{ errorMessage }}</div>

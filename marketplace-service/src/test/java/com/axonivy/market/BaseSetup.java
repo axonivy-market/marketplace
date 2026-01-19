@@ -83,9 +83,11 @@ public class BaseSetup {
   protected static final String MOCK_README_FILE_NO_SETUP_PART = "src/test/resources/README_NO_SETUP_PART.md";
   protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
-  protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic/maven" +
+  protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
+      + "/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
-  protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic" +
+  protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
+      + "/com/axonivy/util/bpmn-statistic" +
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
@@ -229,7 +231,8 @@ public class BaseSetup {
   protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
-        MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
+            MOCK_ARTIFACT_ID)
+        .type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
   }
 
   protected List<MavenArtifactVersion> getMockMavenArtifactVersion() {
@@ -256,7 +259,8 @@ public class BaseSetup {
   protected Metadata getMockMetadata() {
     return Metadata.builder().productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(
         MOCK_GROUP_ID).isProductArtifact(true).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
-        MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).name(MOCK_ARTIFACT_NAME).build();
+            MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE)
+        .name(MOCK_ARTIFACT_NAME).build();
   }
 
   protected static InputStream getMockInputStream() {
@@ -403,7 +407,7 @@ public class BaseSetup {
     return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
-  protected Set<ProductDependency> mockMavenDependencies(){
+  protected Set<ProductDependency> mockMavenDependencies() {
     ProductDependency mavenDependency = ProductDependency.builder()
         .artifactId(MOCK_DEMO_ARTIFACT_ID)
         .downloadUrl(MOCK_DOWNLOAD_URL)
@@ -413,7 +417,7 @@ public class BaseSetup {
     return Set.of(mavenDependency);
   }
 
-  protected ProductDependency mockProductDependency(){
+  protected ProductDependency mockProductDependency() {
     return ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
         .dependencies(mockMavenDependencies())
@@ -464,5 +468,15 @@ public class BaseSetup {
 
   protected byte[] getMockBytes() {
     return "test-content".getBytes();
+  }
+
+  protected GithubUser createUserMock() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("userId");
+    githubUser.setUsername("username");
+    githubUser.setName("User Name");
+    githubUser.setAvatarUrl("http://avatar.url");
+    githubUser.setProvider("github");
+    return githubUser;
   }
 }

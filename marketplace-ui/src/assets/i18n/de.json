@@ -294,6 +294,7 @@
       "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen.", 
       "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
+      "proceedingBtnLabel": "Weiter...",
       "extensionId": "Erweiterungs-ID",
       "sync": {
         "pageTitle": "Synchronisationsaufgaben",
