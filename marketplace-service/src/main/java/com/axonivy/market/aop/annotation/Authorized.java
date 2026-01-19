@@ -9,4 +9,12 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Authorized {
 
+  AuthorizationScope scope() default AuthorizationScope.ORGANIZATION_TEAM;
+
+  public enum AuthorizationScope {
+    ORGANIZATION_TEAM,
+    ORGANIZATION,
+    TEAM,
+    USER
+  }
 }

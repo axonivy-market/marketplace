@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -35,6 +36,9 @@ class AuthorizedAspectTest {
 
   @Mock
   private ProceedingJoinPoint joinPoint;
+
+  @Mock
+  private Authorized authorized;
   
   @InjectMocks
   private AuthorizedAspect authorizedAspect;
@@ -51,17 +55,18 @@ class AuthorizedAspectTest {
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn(null);
     
     assertThrows(Oauth2ExchangeCodeException.class, 
-        () -> authorizedAspect.validateAuthorization(joinPoint),
+        () -> authorizedAspect.validateAuthorization(joinPoint, authorized),
         "Should throw Oauth2ExchangeCodeException when no authorization header is present");
   }
   
   @Test
   void testAuthorizedSuccess() throws Throwable {
+    when(authorized.scope()).thenReturn(Authorized.AuthorizationScope.ORGANIZATION_TEAM);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer valid-token");
     when(jwtService.getRawAccessToken("Bearer valid-token")).thenReturn("valid-token");
     when(joinPoint.proceed()).thenReturn("success");
     
-    Object result = authorizedAspect.validateAuthorization(joinPoint);
+    Object result = authorizedAspect.validateAuthorization(joinPoint, authorized);
     
     assertEquals("success", result, "Should return the result from proceed when authorized");
     verify(joinPoint).proceed();

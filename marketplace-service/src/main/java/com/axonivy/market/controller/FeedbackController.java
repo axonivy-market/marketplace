@@ -1,8 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
+import com.axonivy.market.aop.annotation.Authorized.AuthorizationScope;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
+import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
@@ -123,7 +124,7 @@ public class FeedbackController {
     return ResponseEntity.ok(model);
   }
 
-  @Authorized
+  @Authorized(scope = AuthorizationScope.USER)
   @PostMapping
   @Operation(summary = "Create user feedback",
     description = "Save user feedback of product with their token from Github account.")
@@ -134,7 +135,7 @@ public class FeedbackController {
       @ApiResponse(responseCode = "401", description = "Unauthorized request") })
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
       HttpServletRequest request) {
-    String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
+    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var claims = jwtService.getClaimsFromToken(token);
     var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
     var location = ServletUriComponentsBuilder.fromCurrentRequest()

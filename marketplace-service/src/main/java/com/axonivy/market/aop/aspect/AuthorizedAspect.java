@@ -1,5 +1,6 @@
 package com.axonivy.market.aop.aspect;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
@@ -29,14 +30,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
-  
+
   private final JwtService jwtService;
   private final GitHubService gitHubService;
 
-  @Around("@annotation(com.axonivy.market.aop.annotation.Authorized)")
-  public Object validateAuthorization(ProceedingJoinPoint joinPoint) throws Throwable {
+  @Around("@annotation(authorized)")
+  public Object validateAuthorization(ProceedingJoinPoint joinPoint, Authorized authorized) throws Throwable {
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-    if (attributes == null) {
+    if (attributes == null || authorized == null) {
       throw throwInvalidAuthorizationException();
     }
 
@@ -47,19 +48,21 @@ public class AuthorizedAspect {
     }
     if (StringUtils.isBlank(authorizationHeader) || !authorizationHeader.startsWith(CommonConstants.BEARER)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),
-      "Missing Authorization header or invalid Bearer token");
+          "Missing Authorization header or invalid Bearer token");
     }
-    // First, get RAW token from JWT, then validate user in org and team
-    // * Also can throw ExpiredJwtException, MalformedJwtException, SignatureException, etc.
+    // First, get RAW token from JWT, then validate user in org or team by defined scope.
+    // Also can throw ExpiredJwtException, MalformedJwtException, SignatureException, etc.
     // Before proceeding to the controller method
     String token = jwtService.getRawAccessToken(authorizationHeader);
     if (ObjectUtils.isEmpty(token)) {
       throw throwInvalidAuthorizationException();
     }
 
-    gitHubService.validateUserInOrganizationAndTeam(token,
+    if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
+      gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);
     return joinPoint.proceed();
@@ -67,6 +70,6 @@ public class AuthorizedAspect {
 
   private Oauth2ExchangeCodeException throwInvalidAuthorizationException() {
     throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(),
-      "Invalid Authorization header");
+        "Invalid Authorization header");
   }
 }
