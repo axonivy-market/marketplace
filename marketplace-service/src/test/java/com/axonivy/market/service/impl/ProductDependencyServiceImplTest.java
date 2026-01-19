@@ -15,17 +15,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,16 +84,31 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         .artifactId(MOCK_ARTIFACT_ID)
         .downloadUrl(MOCK_DOWNLOAD_URL)
         .build();
+    mockProductDependency.setId("test-id");
     mockProductDependency.setDependencies(Set.of(mockProductDependency));
     when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockProductDependency));
 
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
     assertEquals(1, totalSynced, "Expected 1 product was synced but service returned nothing");
   }
+  
+  @Test
+  void testSyncWithNoDependencies() throws Exception {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+    when(fileDownloadService.downloadFile(any()))
+        .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
+    productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
+    verify(productDependencyRepository, never()).saveAll(anyList());
+  }
 
   @Test
   void testSyncWithNewDependencyShouldSaveDependency() throws IOException {
-    // Test case: dependency.getId() == null (new dependency that needs to be saved)
     prepareTestData(MOCK_PRODUCT_ID);
 
     when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
@@ -111,7 +127,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncWithExistingDependencyShouldNotSaveExistingDependency() throws IOException {
-    // Test case: dependency.getId() != null (existing dependency that should not be saved again)
     prepareTestData(MOCK_PRODUCT_ID);
 
     when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
@@ -140,7 +155,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   void testSyncWithBatchSaveOfNewDependencies() throws IOException {
     prepareTestData(MOCK_PRODUCT_ID);
 
-    // Simulate no existing dependencies, so new ones will be created
     when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
         MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
         .thenReturn(List.of());
@@ -148,7 +162,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
         .thenReturn(List.of());
 
-    // Mock saveAll to assign IDs
     when(productDependencyRepository.saveAll(anyList()))
         .thenAnswer(invocation -> {
           List<ProductDependency> deps = invocation.getArgument(0);
@@ -158,7 +171,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
 
-    // Verify batch save was called
     verify(productDependencyRepository, atLeastOnce()).saveAll(anyList());
     assertTrue(totalSynced > 0, "Expected at least one product was synced");
   }
@@ -171,7 +183,6 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(mockProductId))
         .thenReturn(mavenArtifactVersionMockList);
 
-    // Mock for main artifact
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
         .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath()));
 
@@ -195,8 +206,198 @@ class ProductDependencyServiceImplTest extends BaseSetup {
           return dependency;
         });
 
-    // Mock for dependency artifact
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_DEPENDENCY_URL))
         .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
   }
+
+  @Test
+  void testSyncWithExceptionDuringCompute() {
+    var mockProduct = Product.builder().id(MOCK_PRODUCT_ID).listed(true).build();
+    when(productRepository.findAll()).thenReturn(List.of(mockProduct));
+
+    List<MavenArtifactVersion> mavenArtifactVersionMockList = new ArrayList<>();
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+    mavenArtifactVersionMock.setProductId(MOCK_PRODUCT_ID);
+    mavenArtifactVersionMock.getId().setAdditionalVersion(false);
+    mavenArtifactVersionMockList.add(mavenArtifactVersionMock);
+    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any()))
+        .thenReturn(mavenArtifactVersionMockList);
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    when(fileDownloadService.downloadFile(any())).thenThrow(new RuntimeException("Download failed"));
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, null);
+
+    assertEquals(0, totalSynced, "Expected no products synced due to exception");
+    verify(productDependencyRepository, never()).save(any(ProductDependency.class));
+  }
+
+  @Test
+  void testDeleteProductDependenciesWithException() {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    mockProductDependency.setId("test-id");
+    mockProductDependency.setDependencies(new HashSet<>());
+
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(List.of(mockProductDependency));
+    
+    doThrow(new RuntimeException("Delete failed")).when(productDependencyRepository).delete(any());
+
+    assertDoesNotThrow(() -> {
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
+      },
+    "Expected no exception thrown during sync even if delete fails");
+
+    verify(productDependencyRepository).delete(any(ProductDependency.class));
+  }
+
+  @Test
+  void testSafeThresholdExceeded() throws Exception {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .dependencies(new HashSet<>())
+        .build();
+
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    byte[] pomWithDependency = Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath());
+    when(fileDownloadService.downloadFile(any())).thenReturn(pomWithDependency);
+
+    when(metadataService.getMetadataByVersion(any(), any()))
+        .thenReturn(Metadata.builder()
+            .productId(MOCK_PRODUCT_ID)
+            .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
+            .groupId(MOCK_GROUP_ID)
+            .versions(Set.of(MOCK_VERSION))
+            .build());
+
+    when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(any(), any(), any()))
+        .thenReturn(List.of(mavenArtifactVersionMock));
+
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(any(), any(), any()))
+        .thenReturn(List.of());
+
+    assertThrows(Exception.class, () -> {
+      productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
+    },
+    "Expected exception when safe threshold of dependencies is exceeded");
+  }
+
+  @Test
+  void testSyncWithNonIARArtifacts() {
+    var mockProduct = Product.builder().id(MOCK_PRODUCT_ID).listed(true).build();
+    when(productRepository.findAll()).thenReturn(List.of(mockProduct));
+
+    List<MavenArtifactVersion> mavenArtifactVersionMockList = new ArrayList<>();
+    
+    var jarArtifact = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, 
+        "https://maven.axonivy.com/com/axonivy/portal/portal/10.0.0-SNAPSHOT/portal-10.0.0-SNAPSHOT.jar");
+    jarArtifact.setProductId(MOCK_PRODUCT_ID);
+    mavenArtifactVersionMockList.add(jarArtifact);
+
+    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any()))
+        .thenReturn(mavenArtifactVersionMockList);
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, null);
+
+    assertEquals(0, totalSynced, "Expected no products synced for non-IAR artifacts");
+    verify(productDependencyRepository, never()).save(any(ProductDependency.class));
+  }
+
+  @Test
+  void testSyncWithNonListedProducts() {
+    var mockProduct1 = Product.builder().id("product1").listed(false).build();
+    var mockProduct2 = Product.builder().id("product2").listed(true).build();
+    var mockProduct3 = Product.builder().id("product3").listed(null).build();
+    
+    when(productRepository.findAll()).thenReturn(List.of(mockProduct1, mockProduct2, mockProduct3));
+    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any()))
+        .thenReturn(List.of());
+
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, null);
+
+    verify(mavenArtifactVersionRepository, times(2)).findByProductIdOrderByAdditionalVersion(any());
+    assertEquals(0, totalSynced, "Expected no products synced (no IAR artifacts)");
+  }
+
+  @Test
+  void testDownloadPOMFileWithHttpClientErrorException() {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    when(fileDownloadService.downloadFile(any()))
+        .thenThrow(HttpClientErrorException.class);
+
+    assertThrows(Exception.class, () -> {
+      productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
+    },
+    "Expected exception when downloading POM file fails with HttpClientErrorException");
+  }
+
+  @Test
+  void testComputeIARDependenciesWithInvalidPOMContent() {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    when(fileDownloadService.downloadFile(any()))
+        .thenReturn("invalid xml content".getBytes());
+
+    assertThrows(Exception.class, () -> {
+      productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
+    },
+    "Expected exception when POM content is invalid");
+  }
+
+  @Test
+  void testDeleteProductDependenciesWithNullDependencies() {
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(null);
+
+    assertDoesNotThrow(() -> {
+      productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
+    },
+    "Expected no exception thrown when dependencies are null");
+  }
+
+  @Test
+  void testDeleteProductDependenciesWithEmptyDependencySet() {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    mockProductDependency.setDependencies(new HashSet<>());
+
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(List.of(mockProductDependency));
+
+    productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
+
+    verify(productDependencyRepository, never()).delete(any(ProductDependency.class));
+  }
+
 }

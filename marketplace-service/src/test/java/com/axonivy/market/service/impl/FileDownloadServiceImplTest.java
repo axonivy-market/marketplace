@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,8 +40,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @InjectMocks
   private FileDownloadServiceImpl fileDownloadService;
   @Mock
-  private AuthorizationUtils authorizationUtils;
-  @Mock
   private RestTemplate restTemplate;
 
   @Test
@@ -55,26 +52,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
   void testDownloadAndUnzipFileWithIssue() {
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
     assertNull(result, "Expected empty null when URL is valid but can not download file");
-  }
-
-  @Test
-  void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
-    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
-         MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class)) {
-
-      File mockChildFile = Mockito.mock(File.class);
-
-      File mockFile = Mockito.mock(File.class);
-      Mockito.when(mockFile.exists()).thenReturn(true);
-      Mockito.when(mockFile.isDirectory()).thenReturn(true);
-      Mockito.when(mockFile.listFiles()).thenReturn(new File[]{mockChildFile});
-
-      mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
-
-      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, new DownloadOption(false, "", false));
-      assertFalse(result.isEmpty(), "Expected the result to contain files after unzipping");
-      mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
-    }
   }
 
   @Test
@@ -175,6 +152,27 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
+         MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class)) {
+
+      File mockChildFile = Mockito.mock(File.class);
+
+      File mockFile = Mockito.mock(File.class);
+      Mockito.when(mockFile.exists()).thenReturn(true);
+      Mockito.when(mockFile.isDirectory()).thenReturn(true);
+      Mockito.when(mockFile.listFiles()).thenReturn(new File[]{mockChildFile});
+
+      mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
+
+      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, new DownloadOption(false, "", false));
+      assertEquals("", result,
+          "Expected the downloadAndUnzipFile method to return the empty string if file content is null");
+      mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
+    }
+  }
+
+  @Test
   void testDownloadAndUnzipFileWithNullFileContent() throws IOException {
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
     doReturn(null).when(spyService).downloadFile(DOWNLOAD_URL);
@@ -189,10 +187,9 @@ class FileDownloadServiceImplTest extends BaseSetup {
           .thenReturn(mockTempPath);
       mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class)))
           .thenReturn(mockTempPath);
-
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
-      assertEquals(EXTRACT_DIR_LOCATION, result,
-          "Expected the downloadAndUnzipFile method to return the extract directory even if file content is null");
+      assertEquals("", result,
+          "Expected the downloadAndUnzipFile method to return the empty string if file content is null");
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
     }

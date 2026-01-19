@@ -1,7 +1,6 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
@@ -16,8 +15,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataReaderUtilsTest extends BaseSetup {
@@ -58,27 +55,18 @@ class MetadataReaderUtilsTest extends BaseSetup {
 
   @Test
   void testUpdateMetadataFromSnapshotXml() {
-    MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapShotMetadataContent(), metadata, true);
+    MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapshotMetadataContent(), metadata, true);
     assertEquals("12.0.2-20250224.083844-2", metadata.getSnapshotVersionValue(),
         "Metadata snapshot version should be match input");
   }
 
   @Test
-  void testGetSnapshotVersionValue() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      Artifact mockArtifact = mock(Artifact.class);
-
-      // Mock Artifact properties
-      when(mockArtifact.getRepoUrl()).thenReturn("http://example.com/maven");
-      when(mockArtifact.getGroupId()).thenReturn(MOCK_GROUP_ID);
-      when(mockArtifact.getArtifactId()).thenReturn(MOCK_ARTIFACT_ID);
+  void testGetVersionValueFormMetadataUrl() {
+    try (MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       String mockMetadataUrl = "http://example.com/maven/metadata.xml";
-      mockUtils.when(() -> MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo("http://example.com/maven",
-          MOCK_GROUP_ID, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockMetadataUrl);
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(mockMetadataUrl)).thenReturn(
-          getMockSnapShotMetadataContent());
-      String snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(MOCK_SNAPSHOT_VERSION, mockArtifact);
+          getMockSnapshotMetadataContent());
+      String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(mockMetadataUrl);
       assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue,
           "Metadata snapshot version should be match input");
     }

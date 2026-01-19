@@ -38,7 +38,11 @@ class VersionFactoryTest  extends BaseSetup {
 
     resolvedVersion = VersionFactory.get(mockVersions, "latest");
     assertEquals("10.0.0", resolvedVersion, "Should return highest official release");
+
+    resolvedVersion = VersionFactory.get(mockVersions, "sprint");
+    assertEquals("10.0.0", resolvedVersion, "Should return highest release");
   }
+
   @Test
   void testGetFromMetadata() {
     assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.LATEST.getCode()),
@@ -55,6 +59,9 @@ class VersionFactoryTest  extends BaseSetup {
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
             "10-dev"),
         "Should return the correct released version from metadata for version '10-dev'.");
+    assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+            "dev-10"),
+        "Should return the correct released version from metadata for version 'dev-10'.");
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
             "10"),
         "Should return the correct released version from metadata for version '10'.");

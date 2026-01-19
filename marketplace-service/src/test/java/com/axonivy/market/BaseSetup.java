@@ -2,8 +2,13 @@ package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.github.model.CodeScanning;
+import com.axonivy.market.github.model.Dependabot;
+import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -52,6 +57,7 @@ public class BaseSetup {
   protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
+  protected static final String MOCK_FIRST_RELEASED_VERSION_FOR_TEN = "10.0.0";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
   protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
   protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
@@ -77,9 +83,11 @@ public class BaseSetup {
   protected static final String MOCK_README_FILE_NO_SETUP_PART = "src/test/resources/README_NO_SETUP_PART.md";
   protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
-  protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic/maven" +
+  protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
+      + "/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
-  protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic" +
+  protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
+      + "/com/axonivy/util/bpmn-statistic" +
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
@@ -204,7 +212,7 @@ public class BaseSetup {
     return image;
   }
 
-  protected String getMockSnapShotMetadataContent() {
+  protected String getMockSnapshotMetadataContent() {
     return getContentFromTestResourcePath(MOCK_SNAPSHOT_METADATA_FILE_PATH);
   }
 
@@ -223,7 +231,8 @@ public class BaseSetup {
   protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
-        MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
+            MOCK_ARTIFACT_ID)
+        .type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
   }
 
   protected List<MavenArtifactVersion> getMockMavenArtifactVersion() {
@@ -250,7 +259,8 @@ public class BaseSetup {
   protected Metadata getMockMetadata() {
     return Metadata.builder().productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(
         MOCK_GROUP_ID).isProductArtifact(true).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
-        MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).name(MOCK_ARTIFACT_NAME).build();
+            MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE)
+        .name(MOCK_ARTIFACT_NAME).build();
   }
 
   protected static InputStream getMockInputStream() {
@@ -397,7 +407,7 @@ public class BaseSetup {
     return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
-  protected Set<ProductDependency> mockMavenDependencies(){
+  protected Set<ProductDependency> mockMavenDependencies() {
     ProductDependency mavenDependency = ProductDependency.builder()
         .artifactId(MOCK_DEMO_ARTIFACT_ID)
         .downloadUrl(MOCK_DOWNLOAD_URL)
@@ -407,11 +417,37 @@ public class BaseSetup {
     return Set.of(mavenDependency);
   }
 
-  protected ProductDependency mockProductDependency(){
+  protected ProductDependency mockProductDependency() {
     return ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
         .dependencies(mockMavenDependencies())
         .build();
+  }
+
+  protected ProductSecurityInfo mockProductSecurityInfo() {
+    return ProductSecurityInfo.builder()
+        .repoName("test-repo")
+        .visibility("PUBLIC")
+        .isArchived(false)
+        .branchProtectionEnabled(true).build();
+  }
+
+  protected Dependabot dependabot(AccessLevel status) {
+    Dependabot dependabot = new Dependabot();
+    dependabot.setStatus(status);
+    return dependabot;
+  }
+
+  protected SecretScanning secretScanning(AccessLevel status) {
+    SecretScanning secretScanning = new SecretScanning();
+    secretScanning.setStatus(status);
+    return secretScanning;
+  }
+
+  protected CodeScanning codeScanning(AccessLevel status) {
+    CodeScanning codeScanning = new CodeScanning();
+    codeScanning.setStatus(status);
+    return codeScanning;
   }
 
   protected ResponseEntity<Resource> getMockEntityResource() {
@@ -432,5 +468,15 @@ public class BaseSetup {
 
   protected byte[] getMockBytes() {
     return "test-content".getBytes();
+  }
+
+  protected GithubUser createUserMock() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("userId");
+    githubUser.setUsername("username");
+    githubUser.setName("User Name");
+    githubUser.setAvatarUrl("http://avatar.url");
+    githubUser.setProvider("github");
+    return githubUser;
   }
 }

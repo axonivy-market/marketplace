@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -25,7 +26,6 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
@@ -255,7 +255,7 @@ public class ProductServiceImpl implements ProductService {
     return productId;
   }
 
-  private String modifyProductLogo(String parentPath, GHContent fileContent) {
+  public String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
@@ -506,7 +506,9 @@ public class ProductServiceImpl implements ProductService {
       String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
+      String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
+          mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
+      snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
     }
 
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
@@ -527,8 +529,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    var repo = githubRepo.findByNameOrProductId(EMPTY, product.getId());
-    boolean isFocused = repo != null && Boolean.TRUE.equals(repo.getFocused());
+    var repos = githubRepo.findByNameOrProductId(EMPTY, product.getId());
+    boolean isFocused = repos != null && repos.stream().anyMatch(repo -> Boolean.TRUE.equals(repo.getFocused()));
     product.setIsFocused(isFocused);
   }
 

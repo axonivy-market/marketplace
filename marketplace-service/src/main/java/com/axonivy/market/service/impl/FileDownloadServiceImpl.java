@@ -53,7 +53,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try {
       return restTemplate.getForObject(url, byte[].class);
     } catch (RestClientException e) {
-      log.warn("#downloadFile Failed to fetch resource from URL: {}", url, e);
+      log.warn("#downloadFile Failed to fetch resource from URL: {}", url, e.getMessage());
       return new byte[0];
     }
   }
@@ -63,19 +63,17 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try {
       return restTemplate.getForObject(url, String.class);
     } catch (RestClientException e) {
-      log.warn("Failed to fetch resource from URL: {}", url, e);
+      log.warn("Failed to fetch resource from URL: {}", url, e.getMessage());
       return EMPTY;
     }
-
   }
-
 
   @Override
   public ResponseEntity<Resource> fetchUrlResource(String url) {
       try {
         return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
       } catch (RestClientException e) {
-        log.warn("Failed to fetch resource from URL: {}", url, e);
+        log.warn("Failed to fetch resource from URL: {}", url, e.getMessage());
     }
     return null;
   }
@@ -86,14 +84,17 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       log.warn("Request URL not a ZIP/iar file - {}", url);
       return EMPTY;
     }
+
     String location = determineLocation(url, downloadOption);
     var tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
-    if (tempZipPath != null) {
-      if (downloadOption != null && downloadOption.isShouldGrantPermission()) {
-        grantNecessaryPermissionsFor(location);
-      }
-      Files.delete(tempZipPath);
+    if (tempZipPath == null) {
+      return EMPTY;
     }
+
+    if (downloadOption != null && downloadOption.isShouldGrantPermission()) {
+      grantNecessaryPermissionsFor(location);
+    }
+    Files.delete(tempZipPath);
     return location;
   }
 

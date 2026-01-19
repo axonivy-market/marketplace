@@ -64,5 +64,4 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     model.setIsLatest(feedback.getIsLatest());
     return model;
   }
-
 }

@@ -108,66 +108,6 @@ button:disabled {
   }
 }
 
-.readme-content ::ng-deep {
-  h1 {
-    font-size: 2.4rem;
-  }
-
-  h2 {
-    font-size: 2.2rem;
-  }
-
-  h3 {
-    font-size: 2rem;
-  }
-
-  p,
-  ul,
-  li {
-    font-size: 1.8rem;
-    font-weight: 400;
-    color: var(--ivy-text-primary-color);
-  }
-
-  ul,
-  li {
-    margin: 25.2px 0;
-  }
-
-  a {
-    word-break: break-all;
-  }
-
-  img {
-    max-width: 100%;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    overflow-x: auto;
-    display: block;
-
-    th,
-    td {
-      text-align: left;
-      padding: 8px;
-      word-wrap: break-word;
-      white-space: normal;
-      font-size: 1.2rem;
-    }
-
-    tr {
-      border-bottom: 1px solid var(--ivy-border-color);
-    }
-  }
-
-  pre code {
-    font-size: 1.4rem;
-  }
-}
-
 .nav-tabs {
   gap: 2rem;
 }

@@ -6,7 +6,11 @@ import io.jsonwebtoken.Claims;
 public interface JwtService {
   String generateToken(GithubUser githubUser, String accessToken);
 
+  String generateJWTFromGitHubToken(String accessToken);
+
   boolean validateToken(String token);
 
   Claims getClaimsFromToken(String token);
+  
+  String getRawAccessToken(String jwtToken);
 }
