@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,8 +39,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
   @InjectMocks
   private FileDownloadServiceImpl fileDownloadService;
-  @Mock
-  private AuthorizationUtils authorizationUtils;
   @Mock
   private RestTemplate restTemplate;
 

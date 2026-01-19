@@ -1,4 +1,4 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aop.aspect;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
@@ -35,7 +35,7 @@ public class LoggableAspect {
   @Value("${loggable.log-path}")
   public String logFilePath;
 
-  @Before("@annotation(com.axonivy.market.logging.Loggable)")
+  @Before("@annotation(com.axonivy.market.aop.annotation.Loggable)")
   public void logMethodCall(JoinPoint joinPoint) throws MissingHeaderException {
     MethodSignature signature = (MethodSignature) joinPoint.getSignature();
     ServletRequestAttributes attributes =

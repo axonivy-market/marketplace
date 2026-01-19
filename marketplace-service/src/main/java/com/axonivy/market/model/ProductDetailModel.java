@@ -1,6 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.util.ImageUtils;
@@ -11,13 +11,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.hateoas.Link;
-import org.springframework.http.ResponseEntity;
 
-import java.util.Optional;
-
-import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
-import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -80,7 +74,16 @@ public class ProductDetailModel extends ProductModel {
 
   public static ProductDetailModel createModel(Product product, boolean isProduction) {
     var model = new ProductDetailModel();
-    ProductModel.createResource(model, product);
+    model.setId(product.getId());
+    model.setNames(product.getNames());
+    model.setShortDescriptions(product.getShortDescriptions());
+    model.setType(product.getType());
+    model.setTags(product.getTags());
+    model.setMarketDirectory(product.getMarketDirectory());
+
+    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
+    model.setLogoUrl(logoLink.getHref());
+
     createDetailResource(model, product, isProduction);
     return model;
   }
@@ -118,28 +121,4 @@ public class ProductDetailModel extends ProductModel {
     model.setMavenDropins(product.isMavenDropins());
     model.setIsFocusedProduct(product.getIsFocused());
   }
-
-  public static void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
-    String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
-      var link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-              product.getBestMatchVersion(), version)).withSelfRel();
-      model.setMetaProductJsonUrl(link.getHref());
-    }
-    model.add(getSelfLinkForProduct(productId, version, path));
-  }
-
-  public static Link getSelfLinkForProduct(String productId, String version, String path) {
-    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
-    selfLinkWithVersion = switch (path) {
-      case BEST_MATCH_BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-      case BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
-    };
-    return linkTo(selfLinkWithVersion).withSelfRel();
-  }
-
 }
