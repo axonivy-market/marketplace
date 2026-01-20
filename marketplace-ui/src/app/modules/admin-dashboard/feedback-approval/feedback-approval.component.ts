@@ -61,12 +61,12 @@ export class FeedbackApprovalComponent implements OnInit {
   constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     this.fetchFeedbacks();
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
   }
 
   fetchFeedbacks(): void {
+    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
     if (!this.token) {
       this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
       this.isAuthenticated = false;
@@ -96,12 +96,16 @@ export class FeedbackApprovalComponent implements OnInit {
   }
 
   fetchUserInfo(): Observable<string | null> {
+    const decodedToken: any = this.authService.decodeToken(this.token);
+    const accessToken = decodedToken?.accessToken;
+    if (!accessToken) {
+      this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
+      return of(null);
+    }
+
     return this.authService
-      .getUserInfo(this.token)
+      .getDisplayNameFromAccessToken(accessToken)
       .pipe(
-        switchMap(() =>
-          this.authService.getDisplayNameFromAccessToken(this.token)
-        ),
         tap(name => {
           this.isAuthenticated = !!name;
           this.moderatorName = name;

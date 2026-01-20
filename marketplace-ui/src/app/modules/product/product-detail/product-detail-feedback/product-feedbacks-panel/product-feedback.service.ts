@@ -114,22 +114,13 @@ export class ProductFeedbackService {
       .pipe(
         map(partialUpdatedFeedback => {
           const existingFeedback =
-            this.pendingFeedbacks().find(
-              f => f.id === partialUpdatedFeedback.id
-            ) ||
+            this.pendingFeedbacks().find(f => f.id === partialUpdatedFeedback.id) ||
             this.allFeedbacks().find(f => f.id === partialUpdatedFeedback.id);
 
-          const updatedFeedback: Feedback = {
-            ...(existingFeedback ?? ({} as Feedback)),
-            ...partialUpdatedFeedback
-          };
+          const updatedFeedback: Feedback = {...(existingFeedback ?? ({} as Feedback)), ...partialUpdatedFeedback};
 
-          this.pendingFeedbacks.set(
-            this.pendingFeedbacks().filter(f => f.id !== updatedFeedback.id)
-          );
-
-          this.allFeedbacks.set(
-            this.sortByDate(
+          this.pendingFeedbacks.update(feedbacks => feedbacks.filter(f => f.id !== updatedFeedback.id));
+          this.allFeedbacks.set(this.sortByDate(
               [
                 updatedFeedback,
                 ...this.allFeedbacks().filter(f => f.id !== updatedFeedback.id)
