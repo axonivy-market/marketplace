@@ -18,6 +18,7 @@ public class RequestMappingConstants {
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
   public static final String GITHUB_LOGIN = "/github/login";
   public static final String GITHUB_REQUEST_ACCESS = "/github/request-access";
+  public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
   public static final String BY_FILE_NAME = "/preview/{imageName}";

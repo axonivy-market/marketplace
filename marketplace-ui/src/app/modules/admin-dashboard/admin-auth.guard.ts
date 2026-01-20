@@ -1,6 +1,8 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { AdminAuthService } from './admin-auth.service';
 
@@ -11,16 +13,17 @@ export class AdminAuthGuard implements CanActivate {
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
 
-  canActivate(): boolean {
+  canActivate(): Observable<boolean> {
     if (!isPlatformBrowser(this.platformId)) {
-      return false;
+      return of(false);
     }
 
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['request-access']);
-      return false;
-    }
-
-    return true;
+    return this.authService.isAuthenticated().pipe(
+      tap(isAuth => {
+        if (!isAuth) {
+          this.router.navigate(['request-access']);
+        }
+      })
+    );
   }
 }

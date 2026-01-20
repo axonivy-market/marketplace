@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AdminAuthService } from './admin-auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { ADMIN_SESSION_TOKEN, BEARER } from '../../shared/constants/common.constant';
 
 describe('AdminAuthService', () => {
   let service: AdminAuthService;
+  let httpTestingController: HttpTestingController;
   let sessionStorageMock: { getItem: jasmine.Spy; setItem: jasmine.Spy; removeItem: jasmine.Spy };
   let sessionStorageRef: SessionStorageRef;
 
@@ -22,12 +25,19 @@ describe('AdminAuthService', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         AdminAuthService,
         { provide: SessionStorageRef, useValue: sessionStorageRef }
       ]
     });
 
     service = TestBed.inject(AdminAuthService);
+    httpTestingController = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTestingController.verify();
   });
 
   it('should be created', () => {
@@ -57,15 +67,19 @@ describe('AdminAuthService', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
           AdminAuthService,
           { provide: SessionStorageRef, useValue: nullStorageRef }
         ]
       });
       const nullService = TestBed.inject(AdminAuthService);
+      const nullHttpTestingController = TestBed.inject(HttpTestingController);
 
       const token = nullService.token;
 
       expect(token).toBeNull();
+      nullHttpTestingController.verify();
     });
   });
 
@@ -82,13 +96,17 @@ describe('AdminAuthService', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
           AdminAuthService,
           { provide: SessionStorageRef, useValue: nullStorageRef }
         ]
       });
       const nullService = TestBed.inject(AdminAuthService);
+      const nullHttpTestingController = TestBed.inject(HttpTestingController);
 
       expect(() => nullService.setToken('new-token')).not.toThrow();
+      nullHttpTestingController.verify();
     });
 
     it('should remove token from sessionStorage', () => {
@@ -99,10 +117,19 @@ describe('AdminAuthService', () => {
   });
 
   describe('isAuthenticated', () => {
-    it('should return true when token exists', () => {
+    it('should return true when token exists', (done) => {
       sessionStorageMock.getItem.and.returnValue('test-token');
 
-      expect(service.isAuthenticated()).toBe(true);
+      service.isAuthenticated().subscribe(result => {
+        expect(result).toBe(true);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(request => 
+        request.url.includes('/github/validate-token')
+      );
+      expect(req.request.method).toBe('PUT');
+      req.flush(true);
     });
 
     it('should return headers with Authorization when token exists', () => {

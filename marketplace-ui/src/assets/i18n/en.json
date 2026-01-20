@@ -291,7 +291,7 @@
     "admin": {
       "pageTitle": "Effortless Admin Dashboard Access",
       "description": "Quickly reach essential administrative tools and configurations",
-      "enterToken": "Please enter your token to access the admin dashboard.",
+      "enterToken": "Please enter your token to access the admin dashboard",
       "enterTokenPlaceholder": "Enter your token",
       "proceedBtnLabel": "Proceed",
       "proceedingBtnLabel": "Proceeding...",
