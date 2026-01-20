@@ -96,8 +96,7 @@ export class FeedbackApprovalComponent implements OnInit {
   }
 
   fetchUserInfo(): Observable<string | null> {
-    const decodedToken: any = this.authService.decodeToken(this.token);
-    const accessToken = decodedToken?.accessToken;
+    const accessToken = this.authService.decodeToken(this.token)?.accessToken;
     if (!accessToken) {
       this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
       return of(null);
