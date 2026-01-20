@@ -49,11 +49,11 @@ jobs:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       if: matrix.language == 'java-kotlin'
       uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: maven
         
