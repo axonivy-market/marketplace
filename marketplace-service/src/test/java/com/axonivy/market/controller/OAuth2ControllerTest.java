@@ -1,8 +1,11 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.OAuth2Service;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
@@ -71,5 +75,15 @@ class OAuth2ControllerTest {
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
         "Response status should be 401 UNAUTHORIZED when authorization code is empty.");
+  }
+
+  @Test
+  void testValidateAuthorizationCode() {
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    when(mockRequest.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE)).thenReturn(JWT_TOKEN);
+    ResponseEntity<?> response = oAuth2Controller.isAuthenticated(mockRequest);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when authorization code is validated.");
   }
 }

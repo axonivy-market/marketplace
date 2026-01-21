@@ -36,8 +36,9 @@ export class AdminAuthService {
     this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
   }
 
-  isAuthenticated(): boolean {
-    return !!this.token;
+  isAuthenticated(): Observable<boolean> {
+    return this.httpClient.put<boolean>(API_URI.GITHUB_VALIDATE_TOKEN, {},
+      { headers: this.getAuthHeaders(), context: new HttpContext().set(ForwardingError, true) });
   }
 
   getAuthHeaders(): HttpHeaders {
