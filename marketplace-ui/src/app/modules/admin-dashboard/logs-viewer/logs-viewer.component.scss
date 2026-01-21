@@ -1,0 +1,30 @@
+#log-container {
+  line-height: 1.4;
+  white-space: pre-wrap;
+  height: 700px;
+}
+
+.log-table {
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border: 2px solid #dee2e6;
+    border-radius: 0.75rem 0.75rem 0 0;
+  }
+}
+
+.log-level-badge {
+  width: 70px;
+  color: #212529 !important;
+}
+
+.log-message-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.btn-link:hover {
+    filter: brightness(1.2);
+}
+

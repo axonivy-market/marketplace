@@ -20,6 +20,14 @@
             <maxHistory>14</maxHistory>
         </rollingPolicy>
     </appender>
+    <appender name="SSE_APPENDER" class="com.axonivy.market.logging.SseLogAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
 
     <!-- Hibernate SQL -->
     <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
@@ -35,6 +43,7 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="ROLLING_FILE" />
+        <appender-ref ref="SSE_APPENDER" />
     </root>
 
 </configuration>

@@ -31,7 +31,16 @@ public class FileUtils {
   public static final int DEFAULT_BUFFER_SIZE = 8192;
   public static final int DEFAULT_BUFFER_GITHUB_SIZE = 4096;
   private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
-  private static final String ENTRY_OUTSIDE_TARGET_DIR = "entry is outside the target dir";
+  private static final String ENTRY_OUTSIDE_TARGET_DIR = "Entry is outside the target dir: ";
+
+  public static Path resolveSafePath(Path baseDir, String relativePath) {
+    var normalizedBase = baseDir.normalize();
+    var resolvedPath = normalizedBase.resolve(Paths.get(relativePath)).normalize();
+    if (!resolvedPath.startsWith(normalizedBase)) {
+      throw new SecurityException(ENTRY_OUTSIDE_TARGET_DIR + relativePath);
+    }
+    return resolvedPath;
+  }
 
   public static File createFile(String fileName) throws IOException {
     var file = new File(fileName);
@@ -62,11 +71,7 @@ public class FileUtils {
   }
 
   private static void processZipEntry(ZipInputStream zis, ZipEntry entry, File unzipDir) throws IOException {
-    var entryPath = Paths.get(entry.getName()).normalize();
-    var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
-    if (!resolvedPath.startsWith(unzipDir.toPath())) {
-      throw new IllegalStateException(ENTRY_OUTSIDE_TARGET_DIR + entry.getName());
-    }
+    var resolvedPath = resolveSafePath(unzipDir.toPath(), entry.getName());
 
     var outFile = resolvedPath.toFile();
     if (entry.isDirectory()) {

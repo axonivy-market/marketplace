@@ -13,6 +13,7 @@ import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-ap
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
+import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -66,14 +67,23 @@ export const routes: Routes = [
       {
         path: 'quick-access',
         component: QuickAccessComponent
-      }
+      },
+     
     ]
   },
   {
     path: 'monitoring/:repo/:workflow',
-    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
+    loadComponent: () =>
+      import('./modules/monitor/repo-report/repo-report.component').then(
+        m => m.RepoReportComponent
+      )
   },
-
+{
+   
+        path: 'logs',
+        component: LogViewerComponent
+      
+},
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
@@ -92,8 +102,7 @@ export const routes: Routes = [
   // Home module (static root)
   {
     path: '',
-    loadChildren: () =>
-      import('./modules/home/home.routes').then(m => m.routes)
+    loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
 
   // Wildcard route for unmatched paths (404)

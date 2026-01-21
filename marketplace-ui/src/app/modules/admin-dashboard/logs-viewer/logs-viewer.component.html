@@ -1,0 +1,82 @@
+<div class="d-flex flex-column h-100">
+
+    <!-- Toolbar -->
+    <div class="d-flex align-items-center gap-2 p-2 border-bottom bg-light">
+
+        <button class="btn fs-4" [title]="isConnected() ? 'Disconnect' : 'Connect'">
+            <i class="bi" [class.bi-plug-fill]="isConnected()" [class.bi-plug]="!isConnected()" (click)="toggleConnection()"></i>
+        </button>
+
+        <button class="btn btn-sm btn-secondary fs-4 border-0" (click)="togglePause()" [title]="paused() ? 'Resume' : 'Pause'">
+            <i class="bi" [class.bi-play-circle-fill]="paused()" [class.bi-pause-circle-fill]="!paused()"></i>
+        </button>
+
+        <button class="btn btn-sm btn-outline-danger fs-4 border-0" (click)="clear()" title="Clear">
+            <i class="bi bi-trash-fill"></i>
+        </button>
+
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary fs-4 border-0" type="button" id="fileFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="fileFilterDropdown">
+                <li><a class="dropdown-item" href="#" (click)="downloadLogs()">Download All Logs</a></li>
+                <li><a class="dropdown-item" href="#" (click)="downloadFilteredLogs()">Download Filtered</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" (click)="downloadAsJSON()">Download as JSON</a></li>
+                <li><a class="dropdown-item" href="#" (click)="downloadAsCSV()">Download as CSV</a></li>
+            </ul>
+        </div>
+
+        <div class="form-check ms-auto">
+            <input class="form-check-input" type="checkbox" id="autoScroll" [checked]="autoScroll()"
+                (change)="toggleAutoScroll()" />
+            <label class="form-check-label text-dark" for="autoScroll" style="min-width: 80px;">
+                Auto-scroll
+            </label>
+        </div>
+
+    </div>
+
+    <!-- Log container -->
+    <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2">
+        <table class="table table-sm table-dark table-striped table-bordered rounded-3 mb-0 log-table">
+            <thead class="table-secondary rounded-top sticky-top">
+                <tr>
+                    <th class="col-3">Timestamp</th>
+                    <th class="col-1">Level</th>
+                    <th class="col-8">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (log of parsedLogs(); track $index) {
+                <tr>
+                    <td class="font-monospace small text-success fw-bold">{{ log.timestamp }}</td>
+                    <td>
+                        <span class="log-level-badge rounded d-inline-block text-center p-1"
+                            [ngStyle]="{'background-color': getLogLevelColor(log.level)}">
+                            {{ log.level }}
+                        </span>
+                    </td>
+                    <td class="font-monospace small cursor-pointer" (click)="log.isLong ? toggleExpand($index) : null">
+                        <!-- Preview for collapsed long content -->
+                        @if (log.isLong && !isExpanded($index)) {
+                            <div class="text-truncate text-light" style="max-width: 800px;">
+                                {{ log.message }}
+                            </div>
+                        }
+
+                        <!-- Bootstrap Collapse controlled by Angular -->
+                        <div class="collapse" [class.show]="!log.isLong || isExpanded($index)">
+                            <div class="log-message-content text-light">
+                                {{ log.message }}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
