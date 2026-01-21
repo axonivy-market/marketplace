@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { PLATFORM_ID } from '@angular/core';
+import { of, throwError } from 'rxjs';
 import { AdminAuthGuard } from './admin-auth.guard';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { AdminAuthService } from './admin-auth.service';
@@ -68,6 +69,47 @@ describe('AdminAuthGuard', () => {
 
       guard.canActivate().subscribe(() => {
         expect(routerMock.navigate).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should return false when not running in browser platform', (done) => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          AdminAuthGuard,
+          { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
+          { provide: AdminAuthService, useValue: adminAuthServiceMock },
+          { provide: Router, useValue: routerMock },
+          { provide: PLATFORM_ID, useValue: 'server' }
+        ]
+      });
+      const serverGuard = TestBed.inject(AdminAuthGuard);
+
+      serverGuard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        expect(adminAuthServiceMock.isAuthenticated).not.toHaveBeenCalled();
+        expect(routerMock.navigate).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should handle authentication errors and navigate to request-access', (done) => {
+      const error = new Error('Network error');
+      adminAuthServiceMock.isAuthenticated.and.returnValue(throwError(() => error));
+
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        expect(routerMock.navigate).toHaveBeenCalledWith(['/request-access']);
+        done();
+      });
+    });
+
+    it('should return false when authentication check throws an error', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(throwError(() => new Error('Auth failed')));
+
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
         done();
       });
     });
