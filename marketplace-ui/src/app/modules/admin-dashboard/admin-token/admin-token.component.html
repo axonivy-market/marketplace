@@ -7,13 +7,14 @@
       {{ 'common.admin.description' | translate }}
     </h3>
   </div>
-  <div class="token-input-container">
-    <h3 class="text-primary">
-      {{ 'common.admin.enterToken' | translate }}
-    </h3>
-    <form (ngSubmit)="onSubmit()">
+  <div class="token-input-container d-flex flex-column align-items-center">
+    <form (ngSubmit)="onSubmit()" class="d-flex flex-column align-items-center justify-content-start">
+      <h3 class="text-primary">
+        {{ 'common.admin.enterToken' | translate }}
+      </h3>
       <input
         id="token-input"
+        class="border"
         type="password"
         [formControl]="tokenControl"
         [attr.placeholder]="'common.admin.enterTokenPlaceholder' | translate"
@@ -22,7 +23,7 @@
 
       <button
         type="submit"
-        class="btn-primary"
+        class="btn-primary mt-3"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
         [disabled]="isButtonDisabled"
         [style.pointer-events]="isProcessing ? 'none' : ''">
@@ -30,11 +31,12 @@
           <i class="fa fa-spinner fa-spin me-2"></i>
           {{ 'common.admin.proceedingBtnLabel' | translate }}
         } @else {
+          <i class="fa-solid fa-right-to-bracket"></i>
           {{ 'common.admin.proceedBtnLabel' | translate }}
         }
       </button>
       @if (errorMessage) {
-        <div class="error-message">{{ errorMessage }}</div>
+        <div class="error-message text-center mt-2">{{ errorMessage }}</div>
       }
     </form>
   </div>
