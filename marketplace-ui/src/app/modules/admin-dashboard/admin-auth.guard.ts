@@ -20,7 +20,7 @@ export class AdminAuthGuard implements CanActivate {
     }
 
     return this.authService.isAuthenticated().pipe(
-      tap((isAuth) => {
+      tap(isAuth => {
         if (!isAuth) {
           this.router.navigate([REQUEST_ACCESS_PATH]);
         }
