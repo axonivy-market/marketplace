@@ -7,10 +7,13 @@ import {
 } from '@angular/core';
 import {
   API_INTERNAL_URL,
+  API_PUBLIC_URL,
   API_URI
 } from '../../../shared/constants/api.constant';
 import { environment } from '../../../../environments/environment.development';
-import { isPlatformServer } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
+import { RuntimeConfigService } from '../../configs/runtime-config.service';
+import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +21,11 @@ import { isPlatformServer } from '@angular/common';
 export class LogStreamService {
   private eventSource?: EventSource;
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
+    optional: true
+  });
+  private readonly apiPublicUrl = inject(API_PUBLIC_URL, {
     optional: true
   });
 
@@ -30,7 +37,14 @@ export class LogStreamService {
   connect(): void {
     if (this.eventSource || isPlatformServer(this.platformId)) return;
 
-    const baseUrl = this.apiInternalUrl || environment.apiInternalUrl;
+    let baseUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+
+    if (isPlatformBrowser(this.platformId)) {
+      baseUrl = this.apiPublicUrl || baseUrl;
+    } else {
+      baseUrl = this.apiInternalUrl || environment.apiInternalUrl;
+    }
+
     const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream`;
     this.eventSource = new EventSource(logsUrl);
 
