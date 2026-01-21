@@ -58,7 +58,7 @@ describe('AdminAuthGuard', () => {
       adminAuthServiceMock.isAuthenticated.and.returnValue(of(false));
 
       guard.canActivate().subscribe(() => {
-        expect(routerMock.navigate).toHaveBeenCalledWith(['request-access']);
+        expect(routerMock.navigate).toHaveBeenCalledWith(['/request-access']);
         done();
       });
     });
