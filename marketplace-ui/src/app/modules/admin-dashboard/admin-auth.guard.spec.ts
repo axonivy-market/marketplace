@@ -2,27 +2,21 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
 import { of, throwError } from 'rxjs';
-import { AdminAuthGuard } from './admin-auth.guard';
-import { AdminDashboardService } from './admin-dashboard.service';
+import { AdminAuthGuard, REQUEST_ACCESS_PATH } from './admin-auth.guard';
 import { AdminAuthService } from './admin-auth.service';
 
 describe('AdminAuthGuard', () => {
   let guard: AdminAuthGuard;
-  let adminDashboardServiceMock: AdminDashboardService;
   let adminAuthServiceMock: jasmine.SpyObj<AdminAuthService>;
   let routerMock: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', ['methodName']);
-    adminAuthServiceMock = jasmine.createSpyObj('AdminAuthService', [
-      'isAuthenticated'
-    ]);
+    adminAuthServiceMock = jasmine.createSpyObj('AdminAuthService', ['isAuthenticated']);
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
       providers: [
         AdminAuthGuard,
-        { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
         { provide: AdminAuthService, useValue: adminAuthServiceMock },
         { provide: Router, useValue: routerMock }
       ]
@@ -59,7 +53,7 @@ describe('AdminAuthGuard', () => {
       adminAuthServiceMock.isAuthenticated.and.returnValue(of(false));
 
       guard.canActivate().subscribe(() => {
-        expect(routerMock.navigate).toHaveBeenCalledWith(['/request-access']);
+        expect(routerMock.navigate).toHaveBeenCalledWith([REQUEST_ACCESS_PATH]);
         done();
       });
     });
@@ -78,7 +72,6 @@ describe('AdminAuthGuard', () => {
       TestBed.configureTestingModule({
         providers: [
           AdminAuthGuard,
-          { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
           { provide: AdminAuthService, useValue: adminAuthServiceMock },
           { provide: Router, useValue: routerMock },
           { provide: PLATFORM_ID, useValue: 'server' }
@@ -100,7 +93,7 @@ describe('AdminAuthGuard', () => {
 
       guard.canActivate().subscribe(result => {
         expect(result).toBe(false);
-        expect(routerMock.navigate).toHaveBeenCalledWith(['/request-access']);
+        expect(routerMock.navigate).toHaveBeenCalledWith([REQUEST_ACCESS_PATH]);
         done();
       });
     });
