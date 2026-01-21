@@ -1,12 +1,26 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
-import { API_URI } from '../../../shared/constants/api.constant';
+import {
+  inject,
+  Injectable,
+  PLATFORM_ID,
+  signal,
+  WritableSignal
+} from '@angular/core';
+import {
+  API_INTERNAL_URL,
+  API_URI
+} from '../../../shared/constants/api.constant';
 import { environment } from '../../../../environments/environment.development';
+import { isPlatformServer } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LogStreamService {
   private eventSource?: EventSource;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
+    optional: true
+  });
 
   private readonly _logs: WritableSignal<string[]> = signal([]);
   readonly logs = this._logs.asReadonly();
@@ -14,9 +28,10 @@ export class LogStreamService {
   private readonly MAX_LINES = 2000;
 
   connect(): void {
-    if (this.eventSource) return;
+    if (this.eventSource || isPlatformServer(this.platformId)) return;
 
-    const logsUrl = `${environment.apiInternalUrl}/${API_URI.LOGS}/stream`;
+    const baseUrl = this.apiInternalUrl || environment.apiInternalUrl;
+    const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream`;
     this.eventSource = new EventSource(logsUrl);
 
     this.eventSource.onmessage = event => {
