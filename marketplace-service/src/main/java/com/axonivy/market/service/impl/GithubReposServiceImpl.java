@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHArtifact;
@@ -70,6 +71,11 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
+  @SchedulerLock(
+      name = "loadAndStoreTestReports",
+      lockAtMostFor = "${shedlock.jobs.lock-at-most-for}",
+      lockAtLeastFor = "${shedlock.jobs.lock-at-least-for}"
+  )
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
         .filter(product -> Boolean.FALSE != product.getListed()
