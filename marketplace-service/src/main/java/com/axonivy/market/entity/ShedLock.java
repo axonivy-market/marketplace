@@ -31,6 +31,6 @@ public class ShedLock {
   @Column(name = LOCKED_AT, nullable = false)
   private Instant lockedAt;
 
-  @Column(name = LOCKED_by, nullable = false)
+  @Column(name = LOCKED_BY, nullable = false)
   private String lockedBy;
 }

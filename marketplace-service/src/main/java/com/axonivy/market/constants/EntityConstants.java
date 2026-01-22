@@ -44,5 +44,5 @@ public class EntityConstants {
   public static final String SHED_LOCK = "shed_lock";
   public static final String LOCK_UNTIL = "lock_until";
   public static final String LOCKED_AT = "locked_at";
-  public static final String LOCKED_by = "locked_BY";
+  public static final String LOCKED_BY = "locked_BY";
 }
