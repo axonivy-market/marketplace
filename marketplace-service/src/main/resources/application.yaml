@@ -113,8 +113,8 @@ matomo:
 
 shedlock:
   defaults:
-    lock-at-most-for: 49m
-    lock-at-least-for: 49m
+    lock-at-most-for: '${SHEDLOCK_DEFAULT_LOCK_AT_MOST_FOR}'
+    lock-at-least-for: '${SHEDLOCK_DEFAULT_LOCK_AT_LEAST_FOR}'
   jobs:
-    lock-at-most-for: 49m
-    lock-at-least-for: 49m
+    lock-at-most-for: '${SHEDLOCK_JOBS_LOCK_AT_MOST_FOR}'
+    lock-at-least-for: '${SHEDLOCK_JOBS_LOCK_AT_LEAST_FOR}'
