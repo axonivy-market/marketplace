@@ -49,6 +49,14 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @Authorized
+  @GetMapping(CUSTOM_SORT)
+  @Operation(hidden = true)
+  public ResponseEntity<ProductCustomSortRequest> getCustomSortProducts() {
+    var customSort = productMarketplaceDataService.getCustomSortProducts();
+    return new ResponseEntity<>(customSort, HttpStatus.OK);
+  }
+
   @Loggable
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)

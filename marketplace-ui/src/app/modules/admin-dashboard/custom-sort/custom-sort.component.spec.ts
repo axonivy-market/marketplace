@@ -14,10 +14,18 @@ describe('CustomSortComponent', () => {
 
   beforeEach(async () => {
     productService = jasmine.createSpyObj('ProductService', ['fetchAllProductIds']);
-    adminDashboardService = jasmine.createSpyObj('AdminDashboardService', ['sortMarketExtensions']);
+    adminDashboardService = jasmine.createSpyObj('AdminDashboardService', ['sortMarketExtensions', 'getCustomSort']);
 
-    productService.fetchAllProductIds.and.returnValue(Promise.resolve(['portal', 'coffee-machine-connector', 'persistence-utils']));
+    productService.fetchAllProductIds.and.returnValue(
+      Promise.resolve(['portal', 'coffee-machine-connector', 'persistence-utils'])
+    );
     adminDashboardService.sortMarketExtensions.and.returnValue(of(undefined));
+    adminDashboardService.getCustomSort.and.returnValue(
+      of({
+        orderedListOfProducts: ['portal'],
+        ruleForRemainder: 'alphabetically'
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
@@ -40,17 +48,19 @@ describe('CustomSortComponent', () => {
     fixture.detectChanges();
     tick();
 
-    expect(component.allExtensions).toEqual(['portal', 'coffee-machine-connector', 'persistence-utils']);
+    expect(component.sortingExtensions).toEqual(['portal']);
+    expect(component.allExtensions).toEqual(['coffee-machine-connector', 'persistence-utils']);
     expect(component.isLoading).toBe(false);
   }));
 
   it('should handle error when loading product IDs', fakeAsync(() => {
     productService.fetchAllProductIds.and.returnValue(Promise.reject('error'));
-
+    adminDashboardService.getCustomSort.and.returnValue(of({ orderedListOfProducts: [], ruleForRemainder: 'alphabetically' }));
     fixture.detectChanges();
     tick();
 
     expect(component.allExtensions).toEqual([]);
+    expect(component.sortingExtensions).toEqual([]);
     expect(component.isLoading).toBe(false);
   }));
 

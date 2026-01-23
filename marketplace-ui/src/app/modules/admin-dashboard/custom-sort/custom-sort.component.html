@@ -72,9 +72,16 @@
               (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
               @if (sortingExtensions.length === 0) {
                 <tr class="empty-row text-center">
-                  <td colspan="2">
-                    {{ 'common.admin.customSort.dragHint' | translate }}
-                  </td>
+                  @if (isLoading) {
+                    <td colspan="2" class="text-primary">
+                      <i class="fa fa-spinner fa-spin me-2"></i>
+                      {{ 'common.admin.customSort.loadingLabel' | translate }}
+                    </td>
+                  } @else {
+                    <td colspan="2">
+                      {{ 'common.admin.customSort.dragHint' | translate }}
+                    </td>
+                  }
                 </tr>
               }
               @for (item of sortingExtensions; track item; let index = $index) {
@@ -156,11 +163,20 @@
               (cdkDropListEntered)="adjustPreviewWidthOnEnter($event)">
               @if (filteredAvailableExtensions.length === 0) {
                 <tr class="empty-row text-center">
-                  <td
-                    class="text-primary"
-                    [lang]="languageService.selectedLanguage()">
-                    {{ 'common.admin.customSort.noExtensions' | translate }}
-                  </td>
+                  @if (isLoading) {
+                    <td
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      <i class="fa fa-spinner fa-spin me-2"></i>
+                      {{ 'common.admin.customSort.loadingLabel' | translate }}
+                    </td>
+                  } @else {
+                    <td
+                      class="text-primary"
+                      [lang]="languageService.selectedLanguage()">
+                      {{ 'common.admin.customSort.noExtensions' | translate }}
+                    </td>
+                  }
                 </tr>
               }
               @for (item of filteredAvailableExtensions; track item) {
@@ -226,11 +242,5 @@
         </div>
       }
     </div>
-
-    @if (isLoading) {
-      <div class="loading-state">
-        {{ 'common.admin.customSort.loadingLabel' | translate }}
-      </div>
-    }
   </section>
 </div>

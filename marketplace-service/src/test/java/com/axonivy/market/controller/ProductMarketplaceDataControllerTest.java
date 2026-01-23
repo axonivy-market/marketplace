@@ -43,6 +43,17 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
+  void testGetCustomSortProducts() {
+    ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
+    when(productMarketplaceDataService.getCustomSortProducts()).thenReturn(mockProductCustomSortRequest);
+
+    var response = productMarketplaceDataController.getCustomSortProducts();
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(mockProductCustomSortRequest, response.getBody());
+  }
+
+  @Test
   void testExtractArtifactUrl() {
     when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
         MOCK_RELEASED_VERSION)).thenReturn(getMockEntityResource());
