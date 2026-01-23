@@ -1,4 +1,4 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aop.aspect;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 
@@ -21,7 +21,7 @@ public class TrackApiCallFromNeoAspect {
     this.matomoService = matomoService;
   }
 
-  @AfterReturning("@annotation(TrackApiCallFromNeo)")
+  @AfterReturning("@annotation(com.axonivy.market.aop.annotation.TrackApiCallFromNeo)")
   public void afterTrackedApiCall(JoinPoint joinPoint) {
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {

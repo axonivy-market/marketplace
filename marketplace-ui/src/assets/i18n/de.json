@@ -291,9 +291,10 @@
     "admin": {
       "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
       "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu",
-      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen.", 
+      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen", 
       "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
+      "proceedingBtnLabel": "Weiter...",
       "extensionId": "Erweiterungs-ID",
       "sync": {
         "pageTitle": "Synchronisationsaufgaben",

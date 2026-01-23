@@ -17,7 +17,8 @@ export const API_URI = {
   SYNC_GITHUB_MONITOR: `${API}/monitor-dashboard/${SYNC}`,
   SYNC_TASK_EXECUTION: `${API}/sync-task-execution`,
   SECURITY_MONITOR: `${API}/security-monitor`,
-  LOGS: `${API}/logs`
+  GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
+  GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token'
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

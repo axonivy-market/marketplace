@@ -54,21 +54,24 @@ export const routes: Routes = [
     children: [
       {
         path: 'security-monitor',
-        component: SecurityMonitorComponent
+        component: SecurityMonitorComponent,
+        canActivate: [AdminAuthGuard]
       },
       {
         path: 'feedback-approval',
-        component: FeedbackApprovalComponent
+        component: FeedbackApprovalComponent,
+        canActivate: [AdminAuthGuard]
       },
       {
         path: 'sorting',
-        component: CustomSortComponent
+        component: CustomSortComponent,
+        canActivate: [AdminAuthGuard]
       },
       {
         path: 'quick-access',
-        component: QuickAccessComponent
-      },
-     
+        component: QuickAccessComponent,
+        canActivate: [AdminAuthGuard]
+      }
     ]
   },
   {

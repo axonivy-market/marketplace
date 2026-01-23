@@ -34,11 +34,13 @@ describe('FeedbackApprovalComponent', () => {
       'redirectToGitHub',
       'getDisplayName',
       'getUserInfo',
-      'getDisplayNameFromAccessToken'
+      'getDisplayNameFromAccessToken',
+      'decodeToken'
     ]);
     authSpy.getDisplayName.and.returnValue('TestUser');
     authSpy.getDisplayNameFromAccessToken.and.returnValue(of('TestUser'));
     authSpy.getUserInfo.and.returnValue(of({ name: 'TestUser' }));
+    authSpy.decodeToken.and.returnValue({ accessToken: 'decodedAccessToken' });
 
     const productFeedbackSpy = jasmine.createSpyObj('ProductFeedbackService', [
       'findProductFeedbacks',
@@ -116,7 +118,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
     ).toHaveBeenCalledWith(MOCK_APPROVED_FEEDBACK);
-    expect(component.fetchFeedbacks).toHaveBeenCalled();
   }));
 
   it('should update activeTab', () => {
@@ -186,22 +187,26 @@ describe('FeedbackApprovalComponent', () => {
     expect(historyTable.componentInstance.isHistoryTab).toBeTrue();
   });
 
-  it('should initialize with stored token', () => {
-    spyOn(component, 'fetchFeedbacks');
+  it('should initialize with stored token', fakeAsync(() => {
+    const fetchFeedbacksSpy = spyOn(component, 'fetchFeedbacks').and.callThrough();
     (sessionStorage.getItem as jasmine.Spy).and.returnValue('storedToken');
+
     component.ngOnInit();
+    tick();
+
     expect(component.token).toBe('storedToken');
     expect(component.isAuthenticated).toBeTrue();
-    expect(component.fetchFeedbacks).toHaveBeenCalled();
-  });
+    expect(fetchFeedbacksSpy).toHaveBeenCalled();
+  }));
 
   it('should handle fetchUserInfo success', fakeAsync(() => {
     component.token = 'testToken';
-    component.fetchUserInfo();
+    component.fetchUserInfo().subscribe();
     tick();
-    expect(authServiceMock.getUserInfo).toHaveBeenCalledWith('testToken');
+
+    expect(authServiceMock.decodeToken).toHaveBeenCalledWith('testToken');
     expect(authServiceMock.getDisplayNameFromAccessToken).toHaveBeenCalledWith(
-      'testToken'
+      'decodedAccessToken'
     );
   }));
 
@@ -210,7 +215,7 @@ describe('FeedbackApprovalComponent', () => {
     productFeedbackServiceMock.findProductFeedbacks.and.returnValue(
       throwError(() => errorResponse)
     );
-    component.token = 'testToken';
+    (sessionStorage.getItem as jasmine.Spy).and.returnValue('testToken');
     component.fetchFeedbacks();
     tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.FETCH_FAILURE);
@@ -222,7 +227,7 @@ describe('FeedbackApprovalComponent', () => {
     productFeedbackServiceMock.findProductFeedbacks.and.returnValue(    
       throwError(() => errorResponse)
     );
-    component.token = 'testToken';
+    (sessionStorage.getItem as jasmine.Spy).and.returnValue('testToken');
     component.fetchFeedbacks();
     tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
@@ -271,12 +276,12 @@ describe('FeedbackApprovalComponent', () => {
 
     spyOn(component as any, 'handleError');
 
-    authServiceMock.getUserInfo.and.returnValue(
+    authServiceMock.getDisplayNameFromAccessToken.and.returnValue(
       throwError(() => errorResponse)
     );
 
     component.token = 'test-token';
-    component.fetchUserInfo();
+    component.fetchUserInfo().subscribe();
     tick();
 
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);

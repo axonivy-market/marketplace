@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ExternalDocumentService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -25,13 +24,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ExternalDocumentControllerTest {
 
-  private static final String TOKEN = "token";
-
   private static final String VERSION = "13.1.1";
   private static final String PORTAL = "portal";
-
-  @Mock
-  private GitHubService gitHubService;
 
   @Mock
   private ExternalDocumentService service;
@@ -59,20 +53,20 @@ class ExternalDocumentControllerTest {
   @Test
   void testSyncDocumentForProductWithVersion() {
     when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
-    var invalidVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, null, PORTAL,
+    var invalidVersionResult = externalDocumentController.syncDocumentForProduct(null, PORTAL,
         "invalid-version");
     assertEquals(HttpStatus.BAD_REQUEST, invalidVersionResult.getStatusCode(), "Should be an inputted invalid version");
-    var validVersionResult = externalDocumentController.syncDocumentForProduct(TOKEN, false, PORTAL, "13.2.0");
+    var validVersionResult = externalDocumentController.syncDocumentForProduct(false, PORTAL, "13.2.0");
     assertEquals(HttpStatus.OK, validVersionResult.getStatusCode(), "Should return at least one product");
   }
 
   @Test
   void testSyncDocumentForProduct() {
-    var result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
+    var result = externalDocumentController.syncDocumentForProduct(true, null, null);
     assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
 
     when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
-    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, PORTAL, null);
+    result = externalDocumentController.syncDocumentForProduct(true, PORTAL, null);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
   }
 

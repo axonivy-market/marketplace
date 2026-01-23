@@ -5,7 +5,6 @@ import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.FeedbackStatus;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -45,8 +44,7 @@ class FeedbackControllerTest extends BaseSetup {
   private static final String PRODUCT_ID_SAMPLE = "product-id";
   private static final String FEEDBACK_ID_SAMPLE = "feedback-id";
   private static final String USER_ID_SAMPLE = "user-id";
-  private static final String USER_NAME_SAMPLE = "Test User";
-  private static final String TOKEN_SAMPLE = "token-sample";
+  private static final String USER_NAME_SAMPLE = "User Name";
 
   @Mock
   private FeedbackService service;
@@ -56,9 +54,6 @@ class FeedbackControllerTest extends BaseSetup {
 
   @Mock
   private GithubUserService githubUserService;
-
-  @Mock
-  private GitHubService gitHubService;
 
   @Mock
   private FeedbackModelAssembler feedbackModelAssembler;
@@ -72,7 +67,7 @@ class FeedbackControllerTest extends BaseSetup {
   @BeforeEach
   void setup() {
     feedbackModelAssembler = new FeedbackModelAssembler(githubUserService);
-    feedbackController = new FeedbackController(service, jwtService, gitHubService, feedbackModelAssembler,
+    feedbackController = new FeedbackController(service, jwtService, feedbackModelAssembler,
         pagedResourcesAssembler);
   }
 
@@ -152,7 +147,6 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindAllFeedbacks() {
     PageRequest pageable = PageRequest.of(0, 20);
     Feedback mockFeedback = createFeedbackMock();
-    String authHeader = "Bearer sample-token";
     GithubUser mockGithubUser = createUserMock();
 
     Page<Feedback> mockFeedbacks = new PageImpl<>(List.of(mockFeedback), pageable, 1);
@@ -162,7 +156,7 @@ class FeedbackControllerTest extends BaseSetup {
     var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
 
-    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+    var result = feedbackController.findAllFeedbacks(pageable);
 
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when all feedbacks are retrieved.");
@@ -178,12 +172,10 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindAllFeedbacksEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<Feedback> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-    String authHeader = "Bearer sample-token";
-
     when(service.findAllFeedbacks(pageable)).thenReturn(emptyPage);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
 
-    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+    var result = feedbackController.findAllFeedbacks(pageable);
 
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when no feedbacks are found.");
@@ -227,11 +219,10 @@ class FeedbackControllerTest extends BaseSetup {
     Claims mockClaims = createMockClaims();
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    when(jwtService.validateToken(TOKEN_SAMPLE)).thenReturn(true);
-    when(jwtService.getClaimsFromToken(TOKEN_SAMPLE)).thenReturn(mockClaims);
+    when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
-    var result = feedbackController.createFeedback(mockFeedbackModel, "Bearer " + TOKEN_SAMPLE);
+    var result = feedbackController.createFeedback(mockFeedbackModel, request);
 
     assertEquals(HttpStatus.CREATED, result.getStatusCode(),
         "Response status should be 201 CREATED when a new feedback is successfully created.");
@@ -258,16 +249,6 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
     return mockFeedback;
-  }
-
-  private GithubUser createUserMock() {
-    GithubUser mockGithubUser = new GithubUser();
-    mockGithubUser.setId(USER_ID_SAMPLE);
-    mockGithubUser.setUsername("testUser");
-    mockGithubUser.setName("Test User");
-    mockGithubUser.setAvatarUrl("http://avatar.url");
-    mockGithubUser.setProvider("local");
-    return mockGithubUser;
   }
 
   private Claims createMockClaims() {

@@ -1,26 +1,22 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { AdminAuthGuard } from './admin-auth.guard';
-import { AdminDashboardService } from './admin-dashboard.service';
+import { PLATFORM_ID } from '@angular/core';
+import { of, throwError } from 'rxjs';
+import { AdminAuthGuard, REQUEST_ACCESS_PATH } from './admin-auth.guard';
 import { AdminAuthService } from './admin-auth.service';
 
 describe('AdminAuthGuard', () => {
   let guard: AdminAuthGuard;
-  let adminDashboardServiceMock: AdminDashboardService;
   let adminAuthServiceMock: jasmine.SpyObj<AdminAuthService>;
   let routerMock: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', ['methodName']);
-    adminAuthServiceMock = jasmine.createSpyObj('AdminAuthService', [
-      'isAuthenticated'
-    ]);
+    adminAuthServiceMock = jasmine.createSpyObj('AdminAuthService', ['isAuthenticated']);
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
       providers: [
         AdminAuthGuard,
-        { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
         { provide: AdminAuthService, useValue: adminAuthServiceMock },
         { provide: Router, useValue: routerMock }
       ]
@@ -34,37 +30,81 @@ describe('AdminAuthGuard', () => {
   });
 
   describe('canActivate', () => {
-    it('should return true when user is authenticated', () => {
-      adminAuthServiceMock.isAuthenticated.and.returnValue(true);
+    it('should return true when user is authenticated', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(of(true));
 
-      const result = guard.canActivate();
-
-      expect(result).toBe(true);
-      expect(routerMock.navigate).not.toHaveBeenCalled();
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(true);
+        expect(routerMock.navigate).not.toHaveBeenCalled();
+        done();
+      });
     });
 
-    it('should return false when user is not authenticated', () => {
-      adminAuthServiceMock.isAuthenticated.and.returnValue(false);
+    it('should return false when user is not authenticated', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(of(false));
 
-      const result = guard.canActivate();
-
-      expect(result).toBe(false);
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        done();
+      });
     });
 
-    it('should navigate to request-access when user is not authenticated', () => {
-      adminAuthServiceMock.isAuthenticated.and.returnValue(false);
+    it('should navigate to request-access when user is not authenticated', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(of(false));
 
-      guard.canActivate();
-
-      expect(routerMock.navigate).toHaveBeenCalledWith(['request-access']);
+      guard.canActivate().subscribe(() => {
+        expect(routerMock.navigate).toHaveBeenCalledWith([REQUEST_ACCESS_PATH]);
+        done();
+      });
     });
 
-    it('should not navigate when user is authenticated', () => {
-      adminAuthServiceMock.isAuthenticated.and.returnValue(true);
+    it('should not navigate when user is authenticated', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(of(true));
 
-      guard.canActivate();
+      guard.canActivate().subscribe(() => {
+        expect(routerMock.navigate).not.toHaveBeenCalled();
+        done();
+      });
+    });
 
-      expect(routerMock.navigate).not.toHaveBeenCalled();
+    it('should return false when not running in browser platform', (done) => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          AdminAuthGuard,
+          { provide: AdminAuthService, useValue: adminAuthServiceMock },
+          { provide: Router, useValue: routerMock },
+          { provide: PLATFORM_ID, useValue: 'server' }
+        ]
+      });
+      const serverGuard = TestBed.inject(AdminAuthGuard);
+
+      serverGuard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        expect(adminAuthServiceMock.isAuthenticated).not.toHaveBeenCalled();
+        expect(routerMock.navigate).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should handle authentication errors and navigate to request-access', (done) => {
+      const error = new Error('Network error');
+      adminAuthServiceMock.isAuthenticated.and.returnValue(throwError(() => error));
+
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        expect(routerMock.navigate).toHaveBeenCalledWith([REQUEST_ACCESS_PATH]);
+        done();
+      });
+    });
+
+    it('should return false when authentication check throws an error', (done) => {
+      adminAuthServiceMock.isAuthenticated.and.returnValue(throwError(() => new Error('Auth failed')));
+
+      guard.canActivate().subscribe(result => {
+        expect(result).toBe(false);
+        done();
+      });
     });
   });
 });

@@ -1,19 +1,17 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.TrackApiCallFromNeo;
-import com.axonivy.market.logging.TrackSyncTaskExecution;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -25,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -35,7 +32,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,7 +40,6 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(PRODUCT)
@@ -52,7 +47,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
   private final ProductService productService;
-  private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -87,19 +81,14 @@ public class ProductController {
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
-    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
-    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
-    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+    var pageResources = pagedResourcesAssembler.toModel(results, assembler);
+    return ResponseEntity.ok(pageResources);
   }
 
+  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-
+  public ResponseEntity<Message> syncProducts(@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     var stopWatch = new StopWatch();
     stopWatch.start();
     List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
@@ -116,21 +105,17 @@ public class ProductController {
     return ResponseEntity.ok(message);
   }
 
+  @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   @TrackSyncTaskExecution(SyncTaskType.SYNC_ONE_PRODUCT)
-  public ResponseEntity<Message> syncOneProduct(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
-          in = ParameterIn.PATH) String productId,
+  public ResponseEntity<Message> syncOneProduct(@PathVariable(ID)
+        @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
+        in = ParameterIn.PATH) String productId,
       @RequestParam(value = MARKET_ITEM_PATH) @Parameter(
-          description = "Item folder path of the market in https://github.com/axonivy-market/market",
-          example = "market/connector/a-trust") String marketItemPath,
+        description = "Item folder path of the market in https://github.com/axonivy-market/market",
+        example = "market/connector/a-trust") String marketItemPath,
       @RequestParam(value = OVERRIDE_MARKET_ITEM_PATH, required = false) Boolean overrideMarketItemPath) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-
     if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)
         && CollectionUtils.isEmpty(axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
       var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), null,
@@ -150,14 +135,10 @@ public class ProductController {
     }
   }
 
+  @Authorized
   @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncFirstPublishedDateOfAllProducts(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-
+  public ResponseEntity<Message> syncFirstPublishedDateOfAllProducts() {
     var isSuccess = productService.syncFirstPublishedDateOfAllProducts();
     if (isSuccess) {
       var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
@@ -174,24 +155,20 @@ public class ProductController {
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
-    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+    return ResponseEntity.ok(emptyPagedModel);
   }
 
+  @Authorized
   @Operation(hidden = true)
   @PutMapping(SYNC_ZIP_ARTIFACTS)
-  public ResponseEntity<Message> syncProductArtifacts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync,
-      @RequestParam(value = ID, required = false) String productId) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-
+  public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
+      Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
     int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
 
     if (syncedCount > 0) {
       var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), 
           String.format("Synced %d artifact(s)", syncedCount));
-      return ResponseEntity.status(HttpStatus.OK).body(message);
+      return ResponseEntity.ok(message);
     } else {
       var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(), 
           "Nothing to sync");
