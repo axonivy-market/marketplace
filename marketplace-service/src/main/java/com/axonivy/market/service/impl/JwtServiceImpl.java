@@ -1,7 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.service.JwtService;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -12,6 +15,8 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +29,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class JwtServiceImpl implements JwtService {
   private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
+  private static final long ADMIN_TOKEN_LIFETIME = 1;
 
   @Value("${jwt.secret}")
   private String secret;
@@ -31,16 +37,23 @@ public class JwtServiceImpl implements JwtService {
   @Value("${jwt.expiration}")
   private long expiration;
 
+  @Override
   public String generateToken(GithubUser githubUser, String accessToken) {
     Map<String, Object> claims = new HashMap<>();
-    claims.put("name", githubUser.getName());
-    claims.put("username", githubUser.getUsername());
-    claims.put("accessToken", accessToken);
-    return Jwts.builder().setClaims(claims).setSubject(githubUser.getId()).setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
-        .signWith(SignatureAlgorithm.HS512, secret).compact();
+    claims.put(GitHubConstants.NAME, githubUser.getName());
+    claims.put(GitHubConstants.USERNAME, githubUser.getUsername());
+    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
+    return createNewJWTCompactToken(githubUser.getId(), claims, expiration);
   }
 
+  @Override
+  public String generateJWTFromGitHubToken(String accessToken) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
+    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, claims, ADMIN_TOKEN_LIFETIME);
+  }
+
+  @Override
   public boolean validateToken(String token) {
     try {
       getClaimsJws(token);
@@ -52,11 +65,34 @@ public class JwtServiceImpl implements JwtService {
     }
   }
 
+  @Override
   public Claims getClaimsFromToken(String token) {
+    token = unifyJWTToken(token);
     return getClaimsJws(token).getBody();
   }
 
   public Jws<Claims> getClaimsJws(String token) {
     return Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+  }
+
+  @Override
+  public String getRawAccessToken(String jwtToken) {
+    var claims = getClaimsFromToken(jwtToken);
+    return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
+  }
+
+  private String unifyJWTToken(String jwtToken) {
+    var token = StringUtils.removeStart(jwtToken, CommonConstants.BEARER);
+    return StringUtils.trim(token);
+  }
+
+  private String createNewJWTCompactToken(String subject, Map<String, Object> claims, long expiration) {
+    return Jwts.builder()
+        .setClaims(claims)
+        .setSubject(subject)
+        .setIssuedAt(new Date())
+        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
+        .signWith(SignatureAlgorithm.HS512, secret)
+        .compact();
   }
 }

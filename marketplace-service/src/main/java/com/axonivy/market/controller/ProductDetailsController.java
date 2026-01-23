@@ -1,10 +1,10 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
-import com.axonivy.market.logging.TrackApiCallFromNeo;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,7 +44,8 @@ import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
-import static com.axonivy.market.model.ProductDetailModel.addModelLinks;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @AllArgsConstructor
 @RestController
@@ -71,7 +72,8 @@ public class ProductDetailsController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    addModelLinks(model, productDetail, version, BY_ID_AND_VERSION);
+    var findProductDetailsMethod = methodOn(this.getClass()).findProductDetailsByVersion(id, version);
+    model.add(linkTo(findProductDetailsMethod).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
@@ -86,7 +88,11 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
+    var findProductJsonLink = methodOn(this.getClass()).findProductJsonContent(id,
+        productDetail.getBestMatchVersion(), version);
+    model.setMetaProductJsonUrl(linkTo(findProductJsonLink).withSelfRel().getHref());
+    var findBestMatchLink = methodOn(this.getClass()).findBestMatchProductDetailsByVersion(id, version);
+    model.add(linkTo(findBestMatchLink).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
@@ -120,7 +126,8 @@ public class ProductDetailsController {
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
     var productDetail = productService.fetchProductDetail(id, isShowDevVersion);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
-    addModelLinks(model, productDetail, StringUtils.EMPTY, BY_ID);
+    var findDetailsMethod = methodOn(this.getClass()).findProductDetails(id, false);
+    model.add(linkTo(findDetailsMethod).withSelfRel());
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 

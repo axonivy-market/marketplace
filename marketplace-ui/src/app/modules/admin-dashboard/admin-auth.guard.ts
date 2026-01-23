@@ -1,20 +1,32 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { AdminDashboardService } from './admin-dashboard.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { AdminAuthService } from './admin-auth.service';
 
+export const REQUEST_ACCESS_PATH = "/request-access";
 @Injectable({ providedIn: 'root' })
 export class AdminAuthGuard implements CanActivate {
-  adminService = inject(AdminDashboardService);
   authService = inject(AdminAuthService);
   router = inject(Router);
+  platformId = inject(PLATFORM_ID);
 
-  canActivate(): boolean {
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['request-access']);
-      return false;
+  canActivate(): Observable<boolean> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of(false);
     }
 
-    return true;
+    return this.authService.isAuthenticated().pipe(
+      tap(isAuth => {
+        if (!isAuth) {
+          this.router.navigate([REQUEST_ACCESS_PATH]);
+        }
+      }),
+      catchError(() => {
+        this.router.navigate([REQUEST_ACCESS_PATH]);
+        return of(false);
+      })
+    );
   }
 }

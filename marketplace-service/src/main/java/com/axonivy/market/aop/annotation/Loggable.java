@@ -1,4 +1,4 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aop.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

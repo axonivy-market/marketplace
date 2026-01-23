@@ -12,6 +12,10 @@ public class GitHubConstants {
   public static final String GITHUB_PROVIDER_NAME = "GitHub";
   public static final String GITHUB_GET_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
   public static final String README_FILE_LOCALE_REGEX = "_(..)";
+  public static final String NAME = "name";
+  public static final String USERNAME = "username";
+  public static final String ACCESS_TOKEN = "accessToken";
+  public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

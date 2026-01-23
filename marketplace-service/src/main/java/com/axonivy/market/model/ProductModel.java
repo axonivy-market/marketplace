@@ -1,7 +1,5 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.controller.ImageController;
-import com.axonivy.market.entity.Product;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,9 +13,6 @@ import org.springframework.hateoas.server.core.Relation;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -58,18 +53,4 @@ public class ProductModel extends RepresentationModel<ProductModel> {
     }
     return new EqualsBuilder().append(id, ((ProductModel) obj).getId()).isEquals();
   }
-
-  public static ProductModel createResource(ProductModel model, Product product) {
-    model.setId(product.getId());
-    model.setNames(product.getNames());
-    model.setShortDescriptions(product.getShortDescriptions());
-    model.setType(product.getType());
-    model.setTags(product.getTags());
-    model.setMarketDirectory(product.getMarketDirectory());
-
-    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
-    model.setLogoUrl(logoLink.getHref());
-    return model;
-  }
-
 }

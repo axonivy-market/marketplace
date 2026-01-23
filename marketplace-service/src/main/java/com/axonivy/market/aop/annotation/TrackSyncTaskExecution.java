@@ -1,4 +1,4 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aop.annotation;
 
 import com.axonivy.market.enums.SyncTaskType;
 import java.lang.annotation.Retention;

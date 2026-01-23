@@ -1,14 +1,13 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +32,6 @@ import java.util.List;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.IS_FOCUSED;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,7 +41,6 @@ public class MonitorDashBoardController {
 
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
-  private final GitHubService gitHubService;
 
   @GetMapping(REPOS_REPORT)
   @Operation(summary = "Get test report for a product and workflow",
@@ -58,36 +54,29 @@ public class MonitorDashBoardController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  public ResponseEntity<String> syncGithubMonitor(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) throws IOException {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  public ResponseEntity<String> syncGithubMonitor() throws IOException {
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
+  @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<String> syncOneGithubMonitor(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
-          in = ParameterIn.PATH) String id) throws IOException {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  public ResponseEntity<String> syncOneGithubMonitor(@PathVariable(ID) @Parameter(
+        description = "Product id (from meta.json)",
+        example = "portal",
+        in = ParameterIn.PATH) String id) throws IOException {
     githubReposService.loadAndStoreTestReportsForOneProduct(id);
     return ResponseEntity.ok("Repository loaded successfully.");
   }
 
+  @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
-  public ResponseEntity<String> updateFocusedRepo(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(REPOS) List<String> repos) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
     githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }

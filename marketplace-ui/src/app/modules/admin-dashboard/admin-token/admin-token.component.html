@@ -7,28 +7,36 @@
       {{ 'common.admin.description' | translate }}
     </h3>
   </div>
-  <div class="token-input-container">
-    <h3 class="text-primary">
-      {{ 'common.admin.enterToken' | translate }}
-    </h3>
-    <form (ngSubmit)="onSubmit()" #tokenForm="ngForm">
+  <div class="token-input-container d-flex flex-column align-items-center">
+    <form (ngSubmit)="onSubmit()" class="d-flex flex-column align-items-center justify-content-start">
+      <h3 class="text-primary">
+        {{ 'common.admin.enterToken' | translate }}
+      </h3>
       <input
         id="token-input"
+        class="border"
         type="password"
-        name="token"
-        [(ngModel)]="token"
+        [formControl]="tokenControl"
         [attr.placeholder]="'common.admin.enterTokenPlaceholder' | translate"
         autocomplete="current-password"
         required />
 
       <button
         type="submit"
-        class="btn-primary"
-        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-        {{ 'common.admin.proceedBtnLabel' | translate }}
+        class="btn-primary mt-3"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
+        [disabled]="isButtonDisabled"
+        [style.pointer-events]="isProcessing ? 'none' : ''">
+        @if (isProcessing) {
+          <i class="fa fa-spinner fa-spin me-2"></i>
+          {{ 'common.admin.proceedingBtnLabel' | translate }}
+        } @else {
+          <i class="fa-solid fa-right-to-bracket"></i>
+          {{ 'common.admin.proceedBtnLabel' | translate }}
+        }
       </button>
       @if (errorMessage) {
-        <div class="error-message">{{ errorMessage }}</div>
+        <div class="error-message text-center mt-2">{{ errorMessage }}</div>
       }
     </form>
   </div>

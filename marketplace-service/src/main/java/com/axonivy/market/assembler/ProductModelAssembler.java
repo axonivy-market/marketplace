@@ -1,5 +1,6 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductModel;
@@ -17,7 +18,18 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     var resource = new ProductModel();
     resource.add(linkTo(methodOn(ProductDetailsController.class)
             .findProductDetails(product.getId(),false)).withSelfRel());
-    return ProductModel.createResource(resource, product);
+
+    resource.setId(product.getId());
+    resource.setNames(product.getNames());
+    resource.setShortDescriptions(product.getShortDescriptions());
+    resource.setType(product.getType());
+    resource.setTags(product.getTags());
+    resource.setMarketDirectory(product.getMarketDirectory());
+
+    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
+    resource.setLogoUrl(logoLink.getHref());
+
+    return resource;
   }
 
 }

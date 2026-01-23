@@ -125,11 +125,11 @@ export class ReleasePreviewComponent implements OnInit {
       this.isZipFile = false;
 
       if (!isZip) {
-        this.errorMessage = 'common.preview.errors.invalidZip';
+        this.errorMessage = this.translateService.instant('common.preview.errors.invalidZip');
       } else if (!withinSize) {
-        this.errorMessage = 'common.preview.errors.tooLarge';
+        this.errorMessage = this.translateService.instant('common.preview.errors.tooLarge', { max: MAX_FILE_SIZE_MB });
       } else {
-        this.errorMessage = 'common.preview.errors.seemsProblem';
+        this.errorMessage = this.translateService.instant('common.preview.errors.seemsProblem');
       }
     }
   }
@@ -169,10 +169,10 @@ export class ReleasePreviewComponent implements OnInit {
         this.isUploaded = true;
         this.shouldShowHint = false;
       },
-      error: (err) => {
+      error: err => {
         this.isUploaded = true;
         this.errorMessage = err.error?.message;
-    }
+      }
     });
   }
 
@@ -214,23 +214,23 @@ export class ReleasePreviewComponent implements OnInit {
   private renderReadmeContent(): void {
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
-      if (!contentValue) continue;
+      if (contentValue) {
+        const translatedContent =
+          new MultilingualismPipe().transform(
+            contentValue,
+            this.languageService.selectedLanguage()
+          ) || '';
 
-      const translatedContent =
-        new MultilingualismPipe().transform(
-          contentValue,
-          this.languageService.selectedLanguage()
-        ) || '';
+        const renderedHtml =
+          this.markdownService.parseMarkdown(translatedContent);
 
-      const renderedHtml =
-        this.markdownService.parseMarkdown(translatedContent);
+        const sanitizedHtml = this.sanitizer.sanitize(
+          SecurityContext.HTML,
+          renderedHtml
+        );
 
-      const sanitizedHtml = this.sanitizer.sanitize(
-        SecurityContext.HTML,
-        renderedHtml
-      );
-
-      this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
+        this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
+      }
     }
   }
 }

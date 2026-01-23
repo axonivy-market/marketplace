@@ -1,5 +1,6 @@
-package com.axonivy.market.logging;
+package com.axonivy.market.aop.aspect;
 
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.service.SyncTaskExecutionService;

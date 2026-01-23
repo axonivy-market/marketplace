@@ -27,7 +27,7 @@ class ProductDesignerInstallationServiceImplTest extends BaseSetup {
   private ProductDesignerInstallationServiceImpl productDesignerInstallationServiceImpl;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     mockResultReturn = createProductDesignerInstallationsMock();
   }
 
