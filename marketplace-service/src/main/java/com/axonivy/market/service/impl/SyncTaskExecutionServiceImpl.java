@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.model.SyncStartResult;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -30,14 +31,18 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
 
   @Transactional
   @Override
-  public SyncTaskExecution start(SyncTaskType jobType) {
+  public SyncStartResult start(SyncTaskType jobType) {
     SyncTaskExecution execution = findOrCreate(jobType);
+    if (SyncTaskStatus.RUNNING == execution.getStatus()) {
+      return new SyncStartResult(execution, true);
+    }
     execution.setStatus(SyncTaskStatus.RUNNING);
     execution.setTriggeredAt(LocalDate.now());
     execution.setCompletedAt(null);
     execution.setMessage(null);
+    syncTaskExecutionRepo.save(execution);
 
-    return syncTaskExecutionRepo.save(execution);
+    return new SyncStartResult(execution, false);
   }
 
   @Transactional
