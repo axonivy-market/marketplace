@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -47,12 +47,7 @@ public class LogController {
   }
 
   @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public SseEmitter stream() {
-    SseEmitter emitter = new SseEmitter(5 * 60 * 1000L);
-    LogStreamRegistry.register(emitter);
-    emitter.onCompletion(() -> LogStreamRegistry.remove(emitter));
-    emitter.onTimeout(() -> LogStreamRegistry.remove(emitter));
-    emitter.onError(e -> LogStreamRegistry.remove(emitter));
-    return emitter;
+  public Flux<String> stream() {
+    return LogStreamRegistry.asFlux();
   }
 }

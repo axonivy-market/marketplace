@@ -1,34 +1,22 @@
 package com.axonivy.market.logging;
 
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 public class LogStreamRegistry {
-  private static final List<SseEmitter> EMITTERS = new CopyOnWriteArrayList<>();
+  private static final Sinks.Many<String> SINK = Sinks.many().multicast().onBackpressureBuffer();
 
   private LogStreamRegistry() {}
 
-  public static void register(SseEmitter emitter) {
-    EMITTERS.add(emitter);
-  }
-
-  public static void remove(SseEmitter emitter) {
-    EMITTERS.remove(emitter);
+  public static Flux<String> asFlux() {
+    return SINK.asFlux();
   }
 
   public static boolean hasSubscribers() {
-    return !EMITTERS.isEmpty();
+    return SINK.currentSubscriberCount() > 0;
   }
 
   public static void push(String logLine) {
-    for (SseEmitter emitter : EMITTERS) {
-      try {
-        emitter.send(logLine);
-      } catch (Exception ex) {
-        EMITTERS.remove(emitter);
-      }
-    }
+    SINK.tryEmitNext(logLine);
   }
 }
