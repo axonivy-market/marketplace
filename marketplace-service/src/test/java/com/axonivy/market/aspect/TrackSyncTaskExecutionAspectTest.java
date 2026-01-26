@@ -3,7 +3,6 @@ package com.axonivy.market.aspect;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.aop.aspect.TrackSyncTaskExecutionAspect;
 import com.axonivy.market.entity.SyncTaskExecution;
-import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncStartResult;
@@ -12,7 +11,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class TrackSyncTaskExecutionAspectTest {
@@ -61,11 +61,11 @@ class TrackSyncTaskExecutionAspectTest {
 
   @Test
   void testAroundSyncTaskAlreadyRunning() throws Throwable {
-    String TASK_ALREADY_RUNNING_MESSAGE_PATTERN = "Task %s is already running!";
+    String taskAlreadyRunningMessagePattern = "Task %s is already running!";
     SyncStartResult syncStartResult = getSyncStartResult(true);
     when(track.value()).thenReturn(SyncTaskType.SYNC_PRODUCTS);
     when(syncTaskExecutionService.start(SyncTaskType.SYNC_PRODUCTS)).thenReturn(syncStartResult);
-    String errorMessage = TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(track.value());
+    String errorMessage = taskAlreadyRunningMessagePattern.formatted(track.value());
 
     TaskAlreadyRunningException taskAlreadyRunningException = assertThrows(TaskAlreadyRunningException.class,
         () -> aspect.aroundSyncTask(pjp, track), "Should throw TaskAlreadyRunningException when execution status is " +

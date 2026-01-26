@@ -61,24 +61,26 @@ class SyncTaskExecutionServiceImplTest {
   }
 
   @Test
-  void testStartReturnSyncStartResultWithNotAlreadyRunningStatus() {
+  void testStartReturnSyncStartResultWithAlreadyRunningStatus() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.RUNNING).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existedSyncTaskExecution));
 
     SyncStartResult syncStartResult = service.start(type);
-    assertTrue(syncStartResult.isAlreadyRunning());
+    assertTrue(syncStartResult.isAlreadyRunning(), "SyncStartResult isAlreadyRunning should be true when " +
+        "existedSyncTaskExecution status is RUNNING");
   }
 
 
   @Test
-  void testStartReturnSyncStartResultWithAlreadyRunningStatus() {
+  void testStartReturnSyncStartResultWithNotAlreadyRunningStatus() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existedSyncTaskExecution));
 
     SyncStartResult syncStartResult = service.start(type);
-    assertFalse(syncStartResult.isAlreadyRunning());
+    assertFalse(syncStartResult.isAlreadyRunning(), "SyncStartResult isAlreadyRunning should be true when " +
+        "existedSyncTaskExecution status is null");
   }
 
   @Test
