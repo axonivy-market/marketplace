@@ -110,11 +110,3 @@ matomo:
     api-endpoint: '${MARKET_SERVER_MATOMO_TRACKER_URL}'
     default-site-id: '${MARKET_MATOMO_SITE_ID}'
     enabled: true
-
-shedlock:
-  defaults:
-    lock-at-most-for: '${SHEDLOCK_DEFAULT_LOCK_AT_MOST_FOR}'
-    lock-at-least-for: '${SHEDLOCK_DEFAULT_LOCK_AT_LEAST_FOR}'
-  jobs:
-    lock-at-most-for: '${SHEDLOCK_JOBS_LOCK_AT_MOST_FOR}'
-    lock-at-least-for: '${SHEDLOCK_JOBS_LOCK_AT_LEAST_FOR}'
