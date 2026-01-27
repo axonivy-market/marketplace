@@ -18,6 +18,7 @@
 
   <modules>
     <module>market-app</module>
+    <module>market-core</module>
   </modules>
 
   <properties>
