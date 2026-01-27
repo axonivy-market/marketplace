@@ -80,6 +80,7 @@ public class VersionServiceImpl implements VersionService {
         .toList();
   }
 
+  @Override
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {
     Map<String, Object> result = new HashMap<>();

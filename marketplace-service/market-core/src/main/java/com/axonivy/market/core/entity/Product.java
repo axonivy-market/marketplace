@@ -1,4 +1,4 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
 import com.axonivy.market.core.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,8 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.*;
-import static com.axonivy.market.constants.PostgresDBConstants.ID;
+import static com.axonivy.market.core.constants.EntityConstants.*;
+import static com.axonivy.market.core.constants.PostgresDBConstants.ID;
 
 @Getter
 @Setter
