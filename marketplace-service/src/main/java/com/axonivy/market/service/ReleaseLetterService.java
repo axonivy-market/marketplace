@@ -11,5 +11,9 @@ public interface ReleaseLetterService {
 
   ReleaseLetter findReleaseLetterById(String id);
 
+  ReleaseLetter findReleaseLetterByReleaseVersion(String releaseVersion);
+
   ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest);
+
+  ReleaseLetter updateReleaseLetter(String releaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest);
 }

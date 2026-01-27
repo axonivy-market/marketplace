@@ -38,6 +38,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
+  public ReleaseLetter findReleaseLetterByReleaseVersion(String releaseVersion) {
+    return releaseLetterRepository.findByReleaseVersion(releaseVersion).orElseThrow(
+        () -> new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND,
+            "Not found release letter with release version: " + releaseVersion));
+  }
+
+  @Override
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
     ReleaseLetter releaseLetter =
         ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).releaseVersion(
@@ -45,4 +52,15 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     return releaseLetterRepository.save(releaseLetter);
   }
+
+  @Override
+  public ReleaseLetter updateReleaseLetter(String releaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    var foundReleaseLetter = findReleaseLetterByReleaseVersion(releaseVersion);
+    foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
+    foundReleaseLetter.setReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+
+    return releaseLetterRepository.save(foundReleaseLetter);
+  }
+
+  
 }

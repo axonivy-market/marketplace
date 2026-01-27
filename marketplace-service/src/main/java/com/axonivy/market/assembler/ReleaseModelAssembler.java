@@ -24,4 +24,15 @@ public class ReleaseModelAssembler implements RepresentationModelAssembler<Relea
 
     return resource;
   }
+
+  public ReleaseLetterModel toModelFromReleaseVersion(ReleaseLetter releaseLetter) {
+    var resource = new ReleaseLetterModel();
+    resource.add(linkTo(methodOn(ReleaseLetterController.class)
+        .findReleaseLetterByReleaseVersion(releaseLetter.getReleaseVersion())).withSelfRel());
+    resource.setId(releaseLetter.getId());
+    resource.setContent(releaseLetter.getContent());
+    resource.setReleaseVersion(releaseLetter.getReleaseVersion());
+
+    return resource;
+  }
 }

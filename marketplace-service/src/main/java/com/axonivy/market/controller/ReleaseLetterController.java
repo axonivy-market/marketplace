@@ -1,7 +1,13 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ReleaseModelAssembler;
+
+import static com.axonivy.market.constants.RequestMappingConstants.*;
+
 import com.axonivy.market.constants.RequestParamConstants;
+
+import static com.axonivy.market.constants.RequestParamConstants.RELEASE_VERSION;
+
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ReleaseLetterModel;
@@ -21,15 +27,15 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.RELEASE_LETTER;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @AllArgsConstructor
@@ -55,24 +61,55 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
       @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id) {
-      ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
-      var releaseLetterResource = releaseModelAssembler.toModel(releaseLetter);
+    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
+    var releaseLetterResource = releaseModelAssembler.toModel(releaseLetter);
 
-      return ResponseEntity.ok(releaseLetterResource);
+    return ResponseEntity.ok(releaseLetterResource);
+  }
+
+  @GetMapping(BY_RELEASE_VERSION)
+  public ResponseEntity<ReleaseLetterModel> findReleaseLetterByReleaseVersion(
+      @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
+          in = ParameterIn.PATH) String releaseVersion) {
+    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(releaseVersion);
+    var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(releaseLetter);
+
+    return ResponseEntity.ok(releaseLetterResource);
   }
 
   @PostMapping()
   @Operation(hidden = true)
-  public ResponseEntity<Void> createReleaseLetter(@RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
+  public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
+      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
       HttpServletRequest request) {
     String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
-    var location = ServletUriComponentsBuilder.fromCurrentRequest()
-        .path(BY_ID)
-        .buildAndExpand(newReleaseLetter.getId())
-        .toUri();
+    var releaseLetterResource = releaseModelAssembler.toModel(newReleaseLetter);
+//    var location = ServletUriComponentsBuilder.fromCurrentRequest()
+//        .path(BY_ID)
+//        .buildAndExpand(newReleaseLetter.getId())
+//        .toUri();
+//    System.out.println("Location: " + location);
 
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.ok(releaseLetterResource);
+  }
+
+
+  @PatchMapping()
+  @Operation(hidden = true)
+  public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
+      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
+      @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
+          in = ParameterIn.PATH) String releaseVersion, HttpServletRequest request) {
+    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
+    var foundReleaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(releaseVersion);
+//    var location = ServletUriComponentsBuilder.fromCurrentRequest()
+//        .path(BY_ID)
+//        .buildAndExpand(newReleaseLetter.getId())
+//        .toUri();
+//    System.out.println("Location: " + location);
+
+    return ResponseEntity.ok(releaseLetterResource);
   }
 
   @SuppressWarnings("unchecked")

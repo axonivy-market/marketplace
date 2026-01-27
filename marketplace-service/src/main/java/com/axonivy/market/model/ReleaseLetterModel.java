@@ -21,7 +21,8 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
   @Schema(description = "Id of release letter", example = "667940ecc881b1d0db072f9e")
   private String id;
 
-  @Schema(description = "Release version", example = "1.20.0")
+  @EqualsAndHashCode.Include
+  @Schema(description = "Release version", example = "S42")
   private String releaseVersion;
 
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace version 1.20.0")
