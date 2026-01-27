@@ -27,6 +27,7 @@ import { lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { CustomSortConfig } from '../admin-dashboard.service';
+import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.component';
 
 const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
@@ -39,6 +40,7 @@ const AVAILABLE_ID = 'available-extensions';
     CdkDrag,
     CdkDropList,
     CdkDragPlaceholder,
+    CustomSortCardComponent
   ],
   templateUrl: './custom-sort.component.html',
   styleUrls: ['./custom-sort.component.scss'],
