@@ -12,7 +12,7 @@ export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 export const NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.news',
-    link: 'https://developer.axonivy.com/news'
+    link: '/news'
   },
   {
     label: 'common.nav.doc',

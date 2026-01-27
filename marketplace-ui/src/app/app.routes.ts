@@ -13,6 +13,7 @@ import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-ap
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
+import { NewsComponent } from './modules/news/news.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -77,10 +78,13 @@ export const routes: Routes = [
     path: 'monitoring/:repo/:workflow',
     loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
-
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
+  },
+  {
+    path: 'news',
+    component: NewsComponent
   },
 
   // Product route (dynamic)

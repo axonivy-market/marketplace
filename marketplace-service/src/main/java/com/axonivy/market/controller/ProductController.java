@@ -175,4 +175,21 @@ public class ProductController {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
   }
+
+  @Operation(hidden = true)
+  @PutMapping(SYNC_ZIP_ARTIFACTS)
+  public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
+  Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
+    int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
+
+    if (syncedCount > 0) {
+      var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+          String.format("Synced %d artifact(s)", syncedCount));
+      return ResponseEntity.ok(message);
+    } else {
+      var message = new Message(ErrorCode.NOTHING_TO_SYNC.getCode(), ErrorCode.NOTHING_TO_SYNC.getHelpText(),
+          "Nothing to sync");
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
+    }
+  }
 }
