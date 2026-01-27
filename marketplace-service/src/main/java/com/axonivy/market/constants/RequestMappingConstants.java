@@ -57,4 +57,5 @@ public class RequestMappingConstants {
   public static final String WORKFLOW = "workflow";
   public static final String FOCUSED = "focus";
   public static final String ERROR_PAGE_404 = "/error-page/404";
+  public static final String RELEASE_LETTER = API + "/release-letters";
 }
