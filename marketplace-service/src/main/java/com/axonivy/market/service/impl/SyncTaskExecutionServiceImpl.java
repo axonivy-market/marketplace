@@ -44,7 +44,6 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     execution.setTriggeredAt(LocalDate.now());
     execution.setCompletedAt(null);
     execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-    syncTaskExecutionRepo.save(execution);
 
     return syncTaskExecutionRepo.save(execution);
   }
