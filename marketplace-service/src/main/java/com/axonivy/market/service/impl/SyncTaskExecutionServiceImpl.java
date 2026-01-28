@@ -1,9 +1,11 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.model.SyncStartResult;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -31,18 +33,26 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
 
   @Transactional
   @Override
-  public SyncStartResult start(SyncTaskType jobType) {
+  public SyncTaskExecution start(SyncTaskType jobType) {
     SyncTaskExecution execution = findOrCreate(jobType);
     if (SyncTaskStatus.RUNNING == execution.getStatus()) {
-      return new SyncStartResult(execution, true);
+      String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(jobType);
+      throw new MarketException(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
+          taskAlreadyRunningMessage);
     }
-    execution.setStatus(SyncTaskStatus.RUNNING);
+    execution.setStatus(SyncTaskStatus.STARTED);
     execution.setTriggeredAt(LocalDate.now());
     execution.setCompletedAt(null);
-    execution.setMessage(null);
+    execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
     syncTaskExecutionRepo.save(execution);
 
-    return new SyncStartResult(execution, false);
+    return syncTaskExecutionRepo.save(execution);
+  }
+
+  @Transactional
+  @Override
+  public void markStatusRunning(SyncTaskExecution execution, String message) {
+    updateSyncTask(execution, SyncTaskStatus.RUNNING, message);
   }
 
   @Transactional
@@ -85,7 +95,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
-    Objects.requireNonNull(execution, "SyncTaskExecution must not be null");
+    Objects.requireNonNull(execution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
     execution.setStatus(status);
     execution.setCompletedAt(LocalDate.now());
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
