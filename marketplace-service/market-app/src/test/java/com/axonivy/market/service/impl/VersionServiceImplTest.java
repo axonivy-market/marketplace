@@ -1,14 +1,12 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.ArchivedArtifact;
+import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;

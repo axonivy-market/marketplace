@@ -2,10 +2,10 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.entity.Artifact;
+import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductDependency;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;

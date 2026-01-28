@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

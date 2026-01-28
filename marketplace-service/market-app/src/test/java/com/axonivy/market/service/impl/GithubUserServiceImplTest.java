@@ -1,8 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.GithubUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

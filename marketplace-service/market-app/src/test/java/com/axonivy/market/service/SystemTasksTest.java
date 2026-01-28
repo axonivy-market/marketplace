@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import org.junit.jupiter.api.Test;

@@ -1,10 +1,10 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.Artifact;
+import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;

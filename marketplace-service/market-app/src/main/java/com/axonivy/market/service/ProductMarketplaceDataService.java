@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;

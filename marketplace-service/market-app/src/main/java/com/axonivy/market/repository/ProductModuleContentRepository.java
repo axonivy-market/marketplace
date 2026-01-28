@@ -1,6 +1,6 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

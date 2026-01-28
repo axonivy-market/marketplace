@@ -1,7 +1,7 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.key.MavenArtifactKey;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

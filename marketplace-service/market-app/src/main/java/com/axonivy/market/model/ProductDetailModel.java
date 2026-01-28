@@ -1,8 +1,9 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.controller.ImageController;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.util.ImageUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

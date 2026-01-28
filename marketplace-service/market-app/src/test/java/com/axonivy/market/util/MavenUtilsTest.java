@@ -1,13 +1,13 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.ArchivedArtifact;
-import com.axonivy.market.entity.Artifact;
+import com.axonivy.market.core.entity.ArchivedArtifact;
+import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;

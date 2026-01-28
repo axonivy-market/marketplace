@@ -4,7 +4,7 @@ import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;

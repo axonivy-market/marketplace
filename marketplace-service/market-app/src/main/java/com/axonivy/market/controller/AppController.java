@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.model.Message;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;

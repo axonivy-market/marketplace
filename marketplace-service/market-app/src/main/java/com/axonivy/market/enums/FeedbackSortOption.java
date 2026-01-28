@@ -1,6 +1,7 @@
 package com.axonivy.market.enums;
 
-import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

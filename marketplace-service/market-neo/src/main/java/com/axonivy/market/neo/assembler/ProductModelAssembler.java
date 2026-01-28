@@ -1,7 +1,7 @@
 package com.axonivy.market.neo.assembler;
 
 
-import com.axonivy.market.core.controller.ImageController;
+import com.axonivy.market.core.controller.CoreImageController;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.ProductModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -27,7 +27,7 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     resource.setTags(product.getTags());
     resource.setMarketDirectory(product.getMarketDirectory());
 
-    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
+    var logoLink = linkTo(methodOn(CoreImageController.class).findImageById(product.getLogoId())).withSelfRel();
     resource.setLogoUrl(logoLink.getHref());
 
     return resource;

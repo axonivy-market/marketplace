@@ -1,6 +1,6 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
 import lombok.Builder;

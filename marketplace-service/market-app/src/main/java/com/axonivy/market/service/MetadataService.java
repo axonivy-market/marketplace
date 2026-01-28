@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.Metadata;
 import org.apache.maven.model.Dependency;
 
 import java.util.List;

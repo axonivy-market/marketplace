@@ -1,7 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.controller.ImageController;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;

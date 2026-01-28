@@ -2,8 +2,8 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;

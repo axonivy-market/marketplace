@@ -1,6 +1,6 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,11 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.comparator.LatestVersionComparator;
-import com.axonivy.market.comparator.MavenVersionComparator;
+import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.key.MavenArtifactKey;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.enums.DevelopmentVersion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

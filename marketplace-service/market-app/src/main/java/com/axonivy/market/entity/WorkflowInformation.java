@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.GenericIdEntity;
 import com.axonivy.market.enums.WorkFlowType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;

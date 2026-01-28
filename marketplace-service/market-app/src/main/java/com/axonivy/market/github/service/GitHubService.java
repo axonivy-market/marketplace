@@ -1,6 +1,6 @@
 package com.axonivy.market.github.service;
 
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;

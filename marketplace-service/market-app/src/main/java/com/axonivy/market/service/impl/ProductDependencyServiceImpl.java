@@ -1,9 +1,9 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.entity.ProductDependency;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;

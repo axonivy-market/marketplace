@@ -1,10 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductMarketplaceData;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.core.entity.ProductCustomSort;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;

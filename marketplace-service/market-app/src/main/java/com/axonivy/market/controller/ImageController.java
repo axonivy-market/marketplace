@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.entity.Image;
+import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

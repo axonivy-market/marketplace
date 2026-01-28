@@ -1,8 +1,5 @@
 package com.axonivy.market.exceptions;
 
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

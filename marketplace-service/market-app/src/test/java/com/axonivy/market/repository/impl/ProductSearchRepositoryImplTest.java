@@ -1,10 +1,7 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.DocumentField;
-import com.axonivy.market.enums.Language;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import jakarta.persistence.EntityManager;

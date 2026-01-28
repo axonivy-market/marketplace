@@ -1,8 +1,8 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.service.GithubUserService;
 import lombok.extern.log4j.Log4j2;

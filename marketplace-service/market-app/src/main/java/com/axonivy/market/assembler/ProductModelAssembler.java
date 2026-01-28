@@ -2,8 +2,8 @@ package com.axonivy.market.assembler;
 
 import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.ProductModel;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.model.ProductModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 

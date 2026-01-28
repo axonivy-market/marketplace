@@ -2,8 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;

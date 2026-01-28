@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;

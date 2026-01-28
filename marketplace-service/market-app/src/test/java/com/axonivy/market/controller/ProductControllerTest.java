@@ -2,11 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;

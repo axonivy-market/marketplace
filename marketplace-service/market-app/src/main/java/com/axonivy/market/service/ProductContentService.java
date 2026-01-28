@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.ProductModuleContent;
 
 import java.io.OutputStream;
 import java.util.List;

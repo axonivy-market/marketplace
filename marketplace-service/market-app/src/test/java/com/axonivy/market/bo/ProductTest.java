@@ -1,6 +1,6 @@
 package com.axonivy.market.bo;
 
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

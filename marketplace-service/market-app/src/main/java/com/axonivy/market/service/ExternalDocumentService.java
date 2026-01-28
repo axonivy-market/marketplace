@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.DocumentInfoResponse;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.core.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;

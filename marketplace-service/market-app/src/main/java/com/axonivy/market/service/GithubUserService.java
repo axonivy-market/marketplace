@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.exceptions.model.NotFoundException;
 
 import java.util.List;
 

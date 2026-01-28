@@ -1,9 +1,9 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.comparator.LatestVersionComparator;
-import com.axonivy.market.comparator.MavenVersionComparator;
+import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;

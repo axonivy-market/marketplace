@@ -1,7 +1,7 @@
 package com.axonivy.market.assembler;
 
 import com.axonivy.market.config.MarketplaceConfig;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

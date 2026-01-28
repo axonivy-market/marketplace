@@ -2,7 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;

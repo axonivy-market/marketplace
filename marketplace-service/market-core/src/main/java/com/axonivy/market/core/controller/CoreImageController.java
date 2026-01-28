@@ -27,7 +27,7 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 @RequestMapping(IMAGE)
 @AllArgsConstructor
 @Tag(name = "Image Controllers", description = "API collection to get image's detail.")
-public class ImageController {
+public class CoreImageController {
   private final CoreImageService coreImageService;
 
   @GetMapping(BY_ID)

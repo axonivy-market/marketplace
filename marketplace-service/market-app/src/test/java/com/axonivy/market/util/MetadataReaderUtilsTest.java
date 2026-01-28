@@ -2,7 +2,7 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.core.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

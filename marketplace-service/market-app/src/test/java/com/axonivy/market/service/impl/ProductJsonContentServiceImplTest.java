@@ -2,8 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import org.apache.commons.lang3.StringUtils;

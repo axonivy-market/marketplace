@@ -1,6 +1,6 @@
 package com.axonivy.market.bo;
 
-import com.axonivy.market.entity.Artifact;
+import com.axonivy.market.core.entity.Artifact;
 import org.junit.jupiter.api.Assertions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

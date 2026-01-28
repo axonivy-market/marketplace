@@ -1,15 +1,15 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.DocumentField;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.core.criteria.ProductSearchCriteria;
+import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductCustomSort;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.DocumentField;
+import com.axonivy.market.core.enums.Language;
+import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;

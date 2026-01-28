@@ -1,6 +1,6 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

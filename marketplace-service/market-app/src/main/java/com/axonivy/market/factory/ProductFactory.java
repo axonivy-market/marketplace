@@ -2,10 +2,10 @@ package com.axonivy.market.factory;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MetaConstants;
-import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.annotation.JsonInclude;

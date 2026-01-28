@@ -1,6 +1,6 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.Image;
+import com.axonivy.market.core.entity.Image;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
