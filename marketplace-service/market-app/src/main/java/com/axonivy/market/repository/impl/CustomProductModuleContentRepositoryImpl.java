@@ -1,6 +1,7 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
 import lombok.Builder;
 
@@ -10,7 +11,7 @@ import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
 
 @Builder
-public class CustomProductModuleContentRepositoryImpl extends AbstractBaseRepository<ProductModuleContent>
+public class CustomProductModuleContentRepositoryImpl extends CoreAbstractBaseRepository<ProductModuleContent>
     implements CustomProductModuleContentRepository {
 
   @Override

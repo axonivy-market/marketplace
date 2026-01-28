@@ -10,6 +10,7 @@ import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -40,7 +41,7 @@ import org.springframework.data.domain.Sort;
 
 @Log4j2
 @Builder
-public class CustomProductRepositoryImpl extends AbstractBaseRepository<Product> implements CustomProductRepository {
+public class CustomProductRepositoryImpl extends CoreAbstractBaseRepository<Product> implements CustomProductRepository {
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductModuleContentRepository contentRepository;
 

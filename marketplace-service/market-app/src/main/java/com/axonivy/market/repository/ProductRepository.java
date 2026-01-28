@@ -2,6 +2,7 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.repository.CoreProductRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+@Primary
 public interface ProductRepository extends CoreProductRepository, CustomProductRepository {
   List<Product> findByMarketDirectory(String marketDirectory);
 
