@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackProjection;
 import com.axonivy.market.model.ReleaseLetterModel;
@@ -39,28 +40,51 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public ReleaseLetter findReleaseLetterByReleaseVersion(String releaseVersion) {
-    return releaseLetterRepository.findByReleaseVersion(releaseVersion).orElseThrow(
+    return releaseLetterRepository.findByReleaseVersion(unifyReleaseVersion(releaseVersion)).orElseThrow(
         () -> new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND,
             "Not found release letter with release version: " + releaseVersion));
   }
 
   @Override
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+    if (isReleaseVersionExisted(unifiedReleaseVersion)) {
+      throw new MarketException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+    }
+
     ReleaseLetter releaseLetter =
         ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).releaseVersion(
-            releaseLetterModelRequest.getReleaseVersion()).build();
+            unifiedReleaseVersion).build();
 
     return releaseLetterRepository.save(releaseLetter);
   }
 
   @Override
-  public ReleaseLetter updateReleaseLetter(String releaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    var foundReleaseLetter = findReleaseLetterByReleaseVersion(releaseVersion);
+  public ReleaseLetter updateReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+    ReleaseLetter foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedReleaseVersion);
+//    String unifiedCurrentReleaseVersion = unifyReleaseVersion(releaseVersion);
+//    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+
+    if (!unifiedCurrentReleaseVersion.equals(unifiedNewReleaseVersion) && isReleaseVersionExisted(
+        unifiedNewReleaseVersion)) {
+      throw new MarketException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+    }
+
+    var foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedCurrentReleaseVersion);
     foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
-    foundReleaseLetter.setReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+    foundReleaseLetter.setReleaseVersion(unifiedNewReleaseVersion);
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }
 
-  
+  private boolean isReleaseVersionExisted(String requestedReleaseVersion) {
+    return releaseLetterRepository.existsByReleaseVersion(unifyReleaseVersion(requestedReleaseVersion));
+  }
+
+  private String unifyReleaseVersion(String originalInputVersion) {
+    return originalInputVersion.trim().toUpperCase();
+  }
 }

@@ -22,16 +22,6 @@ import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
 public class ReleaseLetter extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1;
-
   private String releaseVersion;
-
   private String content;
-
-  public void setContent(String content) {
-    if (content != null) {
-      this.content = content.trim();
-    } else {
-      this.content = null;
-    }
-  }
 }

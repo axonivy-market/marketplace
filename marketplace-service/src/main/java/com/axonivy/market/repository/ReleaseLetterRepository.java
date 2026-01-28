@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, String> {
   Optional<ReleaseLetter> findByReleaseVersion(String releaseVersion);
+  boolean existsByReleaseVersion(String releaseVersion);
 }
