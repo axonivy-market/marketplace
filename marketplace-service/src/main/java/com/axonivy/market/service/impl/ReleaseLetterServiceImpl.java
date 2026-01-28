@@ -61,11 +61,9 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
-  public ReleaseLetter updateReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    String unifiedReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
-    ReleaseLetter foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedReleaseVersion);
-//    String unifiedCurrentReleaseVersion = unifyReleaseVersion(releaseVersion);
-//    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+  public ReleaseLetter updateReleaseLetter(String currentReleaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedCurrentReleaseVersion = unifyReleaseVersion(currentReleaseVersion);
+    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
 
     if (!unifiedCurrentReleaseVersion.equals(unifiedNewReleaseVersion) && isReleaseVersionExisted(
         unifiedNewReleaseVersion)) {

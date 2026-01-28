@@ -43,81 +43,81 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 @RequestMapping(RELEASE_LETTER)
 @Tag(name = "Release Letter Controller", description = "API collection to get and search for release letters")
 public class ReleaseLetterController {
-  private final ReleaseLetterService releaseLetterService;
-  private final ReleaseModelAssembler releaseModelAssembler;
-  private final PagedResourcesAssembler<ReleaseLetter> pagedResourcesAssembler;
+    private final ReleaseLetterService releaseLetterService;
+    private final ReleaseModelAssembler releaseModelAssembler;
+    private final PagedResourcesAssembler<ReleaseLetter> pagedResourcesAssembler;
 
-  @GetMapping
-  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
-    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
-    if (releaseLetters.isEmpty()) {
-      return generateEmptyPagedModel();
+    @GetMapping
+    public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
+        Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
+        if (releaseLetters.isEmpty()) {
+            return generateEmptyPagedModel();
+        }
+        var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseModelAssembler);
+        return ResponseEntity.ok(pageResources);
     }
-    var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseModelAssembler);
-    return ResponseEntity.ok(pageResources);
-  }
 
-  @GetMapping(BY_ID)
-  public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
-      @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
-          in = ParameterIn.PATH) String id) {
-    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
-    var releaseLetterResource = releaseModelAssembler.toModel(releaseLetter);
+    @GetMapping(BY_ID)
+    public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
+            @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
+                    in = ParameterIn.PATH) String id) {
+        ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
+        var releaseLetterResource = releaseModelAssembler.toModel(releaseLetter);
 
-    return ResponseEntity.ok(releaseLetterResource);
-  }
+        return ResponseEntity.ok(releaseLetterResource);
+    }
 
-  @GetMapping(BY_RELEASE_VERSION)
-  public ResponseEntity<ReleaseLetterModel> findReleaseLetterByReleaseVersion(
-      @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
-          in = ParameterIn.PATH) String releaseVersion) {
-    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(releaseVersion);
-    var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(releaseLetter);
+    @GetMapping(BY_RELEASE_VERSION)
+    public ResponseEntity<ReleaseLetterModel> findReleaseLetterByReleaseVersion(
+            @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
+                    in = ParameterIn.PATH) String releaseVersion) {
+        ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(releaseVersion);
+        var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(releaseLetter);
 
-    return ResponseEntity.ok(releaseLetterResource);
-  }
+        return ResponseEntity.ok(releaseLetterResource);
+    }
 
-  @PostMapping()
-  @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
-      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
-      HttpServletRequest request) {
-    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
-    var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
-    var releaseLetterResource = releaseModelAssembler.toModel(newReleaseLetter);
+    @PostMapping()
+    @Operation(hidden = true)
+    public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
+            @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
+            HttpServletRequest request) {
+        String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
+        var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
+        var releaseLetterResource = releaseModelAssembler.toModel(newReleaseLetter);
 //    var location = ServletUriComponentsBuilder.fromCurrentRequest()
 //        .path(BY_ID)
 //        .buildAndExpand(newReleaseLetter.getId())
 //        .toUri();
 //    System.out.println("Location: " + location);
 
-    return ResponseEntity.ok(releaseLetterResource);
-  }
+        return ResponseEntity.ok(releaseLetterResource);
+    }
 
 
-  @PatchMapping()
-  @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
-      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
-  ) {
+    @PatchMapping()
+    @Operation(hidden = true)
+    public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
+            @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
+                    in = ParameterIn.PATH) String releaseVersion,
+            @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
+    ) {
 //    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
-    var foundReleaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(
-        releaseLetterModelRequest.getReleaseVersion());
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(releaseLetterModelRequest);
-    var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(foundReleaseLetter);
+        var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(releaseVersion, releaseLetterModelRequest);
+        var releaseLetterResource = releaseModelAssembler.toModel(updatedReleaseLetter);
 //    var location = ServletUriComponentsBuilder.fromCurrentRequest()
 //        .path(BY_ID)
 //        .buildAndExpand(newReleaseLetter.getId())
 //        .toUri();
 //    System.out.println("Location: " + location);
 
-    return ResponseEntity.ok(releaseLetterResource);
-  }
+        return ResponseEntity.ok(releaseLetterResource);
+    }
 
-  @SuppressWarnings("unchecked")
-  private ResponseEntity<PagedModel<ReleaseLetterModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<ReleaseLetterModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        FeedbackModel.class);
-    return ResponseEntity.ok(emptyPagedModel);
-  }
+    @SuppressWarnings("unchecked")
+    private ResponseEntity<PagedModel<ReleaseLetterModel>> generateEmptyPagedModel() {
+        var emptyPagedModel = (PagedModel<ReleaseLetterModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+                FeedbackModel.class);
+        return ResponseEntity.ok(emptyPagedModel);
+    }
 }
