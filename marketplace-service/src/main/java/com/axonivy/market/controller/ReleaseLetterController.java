@@ -84,7 +84,7 @@ public class ReleaseLetterController {
             HttpServletRequest request) {
         String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
         var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
-        var releaseLetterResource = releaseModelAssembler.toModel(newReleaseLetter);
+        var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(newReleaseLetter);
 //    var location = ServletUriComponentsBuilder.fromCurrentRequest()
 //        .path(BY_ID)
 //        .buildAndExpand(newReleaseLetter.getId())
@@ -95,7 +95,7 @@ public class ReleaseLetterController {
     }
 
 
-    @PatchMapping()
+    @PatchMapping(BY_RELEASE_VERSION)
     @Operation(hidden = true)
     public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
             @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",

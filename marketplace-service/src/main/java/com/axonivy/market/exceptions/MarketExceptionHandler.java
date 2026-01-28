@@ -1,14 +1,7 @@
 package com.axonivy.market.exceptions;
 
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.FileProcessingException;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.exceptions.model.InvalidZipEntryException;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NoContentException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.exceptions.model.*;
 import com.axonivy.market.model.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +14,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class MarketExceptionHandler {
+  @ExceptionHandler(AlreadyExistedException.class)
+  public ResponseEntity<Object> handleMarketException(AlreadyExistedException alreadyExistedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(alreadyExistedException.getCode());
+    errorMessage.setMessageDetails(alreadyExistedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
 
   @ExceptionHandler(MissingHeaderException.class)
   public ResponseEntity<Object> handleMissingServletRequestParameter(Throwable missingHeaderException) {

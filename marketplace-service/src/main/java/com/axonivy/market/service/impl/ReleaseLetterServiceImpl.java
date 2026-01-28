@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackProjection;
@@ -49,7 +50,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
     String unifiedReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
     if (isReleaseVersionExisted(unifiedReleaseVersion)) {
-      throw new MarketException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
@@ -63,15 +64,15 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   public ReleaseLetter updateReleaseLetter(String currentReleaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest) {
     String unifiedCurrentReleaseVersion = unifyReleaseVersion(currentReleaseVersion);
-    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
+    var foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedCurrentReleaseVersion);
 
+    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
     if (!unifiedCurrentReleaseVersion.equals(unifiedNewReleaseVersion) && isReleaseVersionExisted(
-        unifiedNewReleaseVersion)) {
-      throw new MarketException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+            unifiedNewReleaseVersion)) {
+      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
-    var foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedCurrentReleaseVersion);
     foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
     foundReleaseLetter.setReleaseVersion(unifiedNewReleaseVersion);
 
