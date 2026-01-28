@@ -10,7 +10,6 @@ import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
-import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;

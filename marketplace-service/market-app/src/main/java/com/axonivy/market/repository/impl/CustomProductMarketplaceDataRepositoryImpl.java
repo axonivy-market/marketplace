@@ -1,7 +1,6 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
-import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;

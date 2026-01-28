@@ -1,7 +1,6 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductDesignerInstallation;
-import com.axonivy.market.repository.AbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductDesignerInstallationRepository;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.ObjectUtils;

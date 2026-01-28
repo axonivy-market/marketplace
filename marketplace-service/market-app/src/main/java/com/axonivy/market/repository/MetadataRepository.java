@@ -7,10 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface MetadataRepository extends JpaRepository<Metadata, String>, CoreMetadataRepository {
-
-  @EntityGraph(attributePaths = {"versions"})
-  List<Metadata> findByProductIdAndArtifactId(String productId, String artifactId);
+public interface MetadataRepository extends CoreMetadataRepository {
 
   void deleteAllByProductId(String productId);
 

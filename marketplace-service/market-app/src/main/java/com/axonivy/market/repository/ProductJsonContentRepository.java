@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,9 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductJsonContentRepository extends JpaRepository<ProductJsonContent, String> {
-
-  List<ProductJsonContent> findByProductIdAndVersion(String productId, String version);
+public interface ProductJsonContentRepository extends CoreProductJsonContentRepository {
 
   List<ProductJsonContent> findByProductIdAndVersionIn(String productId, List<String> versions);
 
