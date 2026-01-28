@@ -4,6 +4,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -99,4 +100,14 @@ public class MarketExceptionHandler {
         ErrorCode.ARGUMENT_BAD_REQUEST.getHelpText());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
   }
+
+  @ExceptionHandler(MarketException.class)
+  public ResponseEntity<Object> handleMarketException(MarketException marketException) {
+    var errorMessage = new Message();
+    var message = new Message(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
+        ErrorCode.TASK_ALREADY_RUNNING.getHelpText(), marketException.getMessage());
+    errorMessage.setMessageDetails(marketException.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+  }
+
 }

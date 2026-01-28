@@ -1,8 +1,10 @@
 package com.axonivy.market.exceptions;
 
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -127,5 +129,15 @@ class MarketExceptionHandlerTest {
     var responseEntity = exceptionHandler.handleIllegalArgumentException(illegalArgumentException);
     assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(),
         "Expected HTTP 400 BAD_REQUEST");
+  }
+
+  @Test
+  void testHandleMarketException() {
+    MarketException marketException = new MarketException(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
+        "Task is already running!");
+    var responseEntity = exceptionHandler.handleMarketException(marketException);
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode(),
+        "Expected HTTP 500 INTERNAL_SERVER_ERROR");
+    assertNotNull(responseEntity.getBody(), "Response body should not be null");
   }
 }
