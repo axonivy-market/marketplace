@@ -39,7 +39,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
-    assertEquals(result.getMessage(), SyncTaskConstants.STARTED_MESSAGE,
+    assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
     assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
     assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
@@ -55,7 +55,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
-    assertEquals(result.getMessage(), SyncTaskConstants.STARTED_MESSAGE,
+    assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
     assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
     assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
