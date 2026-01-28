@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.axonivy.market.core.converter.AbstractCollectionConverter;
+
 @Converter
 public class StringSetConverter extends AbstractCollectionConverter<Set<String>> {
 

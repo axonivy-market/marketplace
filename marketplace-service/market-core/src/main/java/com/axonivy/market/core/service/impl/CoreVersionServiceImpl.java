@@ -38,8 +38,7 @@ public class CoreVersionServiceImpl implements CoreVersionService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId,
-      String designerVersion) {
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String designerVersion) {
 
     Map<String, Object> result = new HashMap<>();
     //TODO:find best match
@@ -77,8 +76,8 @@ public class CoreVersionServiceImpl implements CoreVersionService {
 
   @Override
   public String getLatestInstallableVersion(String productId) {
-    List<String> releasedVersions =
-        getInstallableVersionsFromMetadataList(coreMetadataRepository.findByProductId(productId));
+    List<String> releasedVersions = getInstallableVersionsFromMetadataList(
+        coreMetadataRepository.findByProductId(productId));
     return CollectionUtils.firstElement(releasedVersions);
   }
 
@@ -95,9 +94,8 @@ public class CoreVersionServiceImpl implements CoreVersionService {
     if (CollectionUtils.isEmpty(metadataList)) {
       return installableVersions;
     }
-    metadataList.stream().filter(
-        metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
-        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    metadataList.stream().filter(metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(
+        metadata.getVersions())).forEach(productMeta -> installableVersions.addAll(productMeta.getVersions()));
     return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
 }
