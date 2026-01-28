@@ -16,15 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.core.constants.CoreRequestMappingConstants.BY_ID;
 import static com.axonivy.market.core.constants.CoreRequestMappingConstants.IMAGE;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
-@RestController
-@RequestMapping(IMAGE)
 @AllArgsConstructor
 @Tag(name = "Image Controllers", description = "API collection to get image's detail.")
 public class CoreImageController {
