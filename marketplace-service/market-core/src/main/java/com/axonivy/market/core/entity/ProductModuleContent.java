@@ -18,7 +18,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.util.Map;
 
-import static com.axonivy.market.core.constants.EntityConstants.*;
+import static com.axonivy.market.core.constants.CoreEntityConstants.*;
 
 @Getter
 @Setter

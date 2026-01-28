@@ -1,6 +1,6 @@
 package com.axonivy.market.core.constants;
 
-public final class ProductJsonConstants {
+public final class CoreProductJsonConstants {
   public static final String PRODUCT_JSON_FILE = "product.json";
   public static final String LOGO_FILE = "logo.png";
   public static final String DATA = "data";
@@ -21,6 +21,6 @@ public final class ProductJsonConstants {
   public static final String NAME = "name";
   public static final String DEFAULT_PRODUCT_TYPE = "iar";
 
-  private ProductJsonConstants() {
+  private CoreProductJsonConstants() {
   }
 }

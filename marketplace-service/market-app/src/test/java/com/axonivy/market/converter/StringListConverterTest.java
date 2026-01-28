@@ -1,5 +1,6 @@
 package com.axonivy.market.converter;
 
+import com.axonivy.market.core.converter.StringListConverter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CommonConstants.COMMA;
+import static com.axonivy.market.core.constants.CoreCommonConstants.COMMA;
 
 @Converter
 public abstract class AbstractCollectionConverter<T extends Collection<String>>

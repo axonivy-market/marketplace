@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CommonConstants {
+public class CoreCommonConstants {
   public static final String REQUESTED_BY = "X-Requested-By";
   public static final String REFERER = "Referer";
   public static final String USER_AGENT = "user-agent";

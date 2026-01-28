@@ -16,7 +16,7 @@ import java.io.Serial;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.axonivy.market.core.constants.EntityConstants.ARTIFACT;
+import static com.axonivy.market.core.constants.CoreEntityConstants.ARTIFACT;
 
 @Getter
 @Setter

@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class PostgresDBConstants {
+public class CorePostgresDBConstants {
   public static final String ID = "id";
   public static final String PRODUCT_MARKETPLACE_DATA = "productMarketplaceData";
   public static final String INSTALLATION_COUNT = "installationCount";

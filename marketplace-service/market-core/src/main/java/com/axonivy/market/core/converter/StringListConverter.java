@@ -13,5 +13,4 @@ public class StringListConverter extends AbstractCollectionConverter<List<String
   protected List<String> createCollection(Collection<String> elements) {
     return new ArrayList<>(elements);
   }
-
 }

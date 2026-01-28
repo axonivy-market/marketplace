@@ -12,8 +12,8 @@ import lombok.Setter;
 
 import java.io.Serial;
 
-import static com.axonivy.market.core.constants.EntityConstants.PRODUCT_JSON_CONTENT;
-import static com.axonivy.market.core.constants.EntityConstants.TEXT_TYPE;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_JSON_CONTENT;
+import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
 
 @Getter
 @Setter

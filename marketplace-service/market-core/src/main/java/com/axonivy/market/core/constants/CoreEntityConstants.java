@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EntityConstants {
+public class CoreEntityConstants {
   public static final String GITHUB_USER = "github_user";
   public static final String PRODUCT = "product";
   public static final String PRODUCT_DESIGNER_INSTALLATION = "product_designer_installation";

@@ -17,8 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.core.constants.EntityConstants.*;
-import static com.axonivy.market.core.constants.PostgresDBConstants.ID;
+import static com.axonivy.market.core.constants.CoreEntityConstants.*;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
 
 @Getter
 @Setter

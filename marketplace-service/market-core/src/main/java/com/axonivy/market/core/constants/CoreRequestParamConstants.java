@@ -1,6 +1,6 @@
 package com.axonivy.market.core.constants;
 
-public class RequestParamConstants {
+public class CoreRequestParamConstants {
   public static final String ID = "id";
   public static final String ARTIFACT_ID = "artifactId";
   public static final String TYPE = "type";

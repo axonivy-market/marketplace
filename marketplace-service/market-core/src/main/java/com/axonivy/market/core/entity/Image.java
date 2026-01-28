@@ -12,8 +12,8 @@ import lombok.Setter;
 
 import java.io.Serial;
 
-import static com.axonivy.market.core.constants.EntityConstants.BYTEA_TYPE;
-import static com.axonivy.market.core.constants.EntityConstants.IMAGE;
+import static com.axonivy.market.core.constants.CoreEntityConstants.BYTEA_TYPE;
+import static com.axonivy.market.core.constants.CoreEntityConstants.IMAGE;
 
 @Getter
 @Setter

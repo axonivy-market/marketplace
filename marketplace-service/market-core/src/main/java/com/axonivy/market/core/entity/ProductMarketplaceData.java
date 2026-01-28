@@ -11,7 +11,7 @@ import lombok.Setter;
 
 import java.io.Serial;
 
-import static com.axonivy.market.core.constants.EntityConstants.PRODUCT_MARKETPLACE_DATA;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_MARKETPLACE_DATA;
 
 @Getter
 @Setter
