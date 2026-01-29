@@ -49,8 +49,10 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
     var response = productMarketplaceDataController.getCustomSortProducts();
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(mockProductCustomSortRequest, response.getBody());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be 200 when fetching custom sort products");
+
+    assertEquals(mockProductCustomSortRequest, response.getBody(),
+        "Response body should match the custom sort products returned by the service");
   }
 
   @Test

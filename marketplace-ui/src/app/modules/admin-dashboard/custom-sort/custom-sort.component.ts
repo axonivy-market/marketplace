@@ -21,12 +21,11 @@ import {
   moveItemInArray
 } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
-import { AdminDashboardService } from '../admin-dashboard.service';
+import { AdminDashboardService, CustomSortConfig } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
-import { CustomSortConfig } from '../admin-dashboard.service';
 import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.component';
 
 const SORTED_ID = 'sorted-extensions';
