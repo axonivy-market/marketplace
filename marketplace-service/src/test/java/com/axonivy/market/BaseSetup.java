@@ -296,7 +296,11 @@ public class BaseSetup {
   }
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
-    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).customOrder(2).build();
+  }
+
+  protected ProductMarketplaceData getMockProductMarketplaceData2() {
+    return ProductMarketplaceData.builder().id(SAMPLE_PRODUCT_ID).installationCount(3).customOrder(1).build();
   }
 
   protected ProductModuleContent getMockProductModuleContent() {

@@ -50,9 +50,9 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @Mock
-  private FileDownloadService fileDownloadService;
-  @Mock
   private ProductDesignerInstallationRepository productDesignerInstallationRepo;
+  @Mock
+  private FileDownloadService fileDownloadService;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
@@ -83,6 +83,36 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         "Product list size should be 1");
     assertEquals(1, capturedProducts.get(0).getCustomOrder(),
         "Product list custom order should be 1");
+  }
+
+  @Test
+  void testGetCustomSortProducts() {
+    ProductMarketplaceData productA = getMockProductMarketplaceData();
+    ProductMarketplaceData productB = getMockProductMarketplaceData2();
+
+    when(productMarketplaceDataRepo.findByCustomOrderIsNotNullOrderByCustomOrderDesc())
+        .thenReturn(List.of(productA, productB));
+    when(productCustomSortRepo.findAll())
+        .thenReturn(List.of(new ProductCustomSort(SortOption.STANDARD.getOption())));
+
+    ProductCustomSortRequest result = productMarketplaceDataService.getCustomSortProducts();
+
+    assertEquals(List.of(MOCK_PRODUCT_ID, SAMPLE_PRODUCT_ID), result.getOrderedListOfProducts(),
+        "Ordered products should mirror repository order");
+    assertEquals(SortOption.STANDARD.getOption(), result.getRuleForRemainder(),
+        "Remainder rule should come from stored configuration");
+  }
+
+  @Test
+  void testGetCustomSortProductsDefaultsWhenNoConfig() {
+    when(productMarketplaceDataRepo.findByCustomOrderIsNotNullOrderByCustomOrderDesc()).thenReturn(List.of());
+    when(productCustomSortRepo.findAll()).thenReturn(List.of());
+
+    ProductCustomSortRequest result = productMarketplaceDataService.getCustomSortProducts();
+
+    assertTrue(result.getOrderedListOfProducts().isEmpty(), "Ordered products should be empty when repository has none");
+    assertEquals(SortOption.ALPHABETICALLY.getOption(), result.getRuleForRemainder(),
+        "Default remainder rule should be alphabetically");
   }
 
   @Test
