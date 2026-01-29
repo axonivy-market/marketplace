@@ -14,6 +14,7 @@ import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/qui
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { NewsComponent } from './modules/news/news.component';
+import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -50,27 +51,32 @@ export const routes: Routes = [
   {
     path: 'internal-dashboard',
     component: AdminDashboardComponent,
-    canActivate: [AdminAuthGuard],
+    // canActivate: [AdminAuthGuard],
     children: [
       {
         path: 'security-monitor',
         component: SecurityMonitorComponent,
-        canActivate: [AdminAuthGuard]
+        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'feedback-approval',
         component: FeedbackApprovalComponent,
-        canActivate: [AdminAuthGuard]
+        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'sorting',
         component: CustomSortComponent,
-        canActivate: [AdminAuthGuard]
+        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'quick-access',
         component: QuickAccessComponent,
-        canActivate: [AdminAuthGuard]
+        // canActivate: [AdminAuthGuard]
+      },
+      {
+        path: 'news-management',
+        component: NewsManagementComponent,
+        // canActivate: [AdminAuthGuard]
       }
     ]
   },

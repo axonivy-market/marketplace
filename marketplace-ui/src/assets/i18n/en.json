@@ -36,6 +36,7 @@
       "feedbackApproval": "Feedback Approval",
       "customSort": "Custom Sort",
       "quickAccess": "Quick Access",
+      "newsManagement": "News Management",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Login with GitHub",
@@ -373,6 +374,12 @@
         "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace.",
         "monitoringTitle": "Monitoring Page",
         "releasePreviewTitle": "Release Preview Page"
+      },
+      "newsManagement": {
+        "pageTitle": "News Management",
+        "title": "News Management",
+        "description": "Manage how market news are displayed",
+        "helpText": "Configure the latest market news. Administrators can add, edit, or remove news."
       }
     }
   }

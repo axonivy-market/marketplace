@@ -373,6 +373,12 @@
         "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
         "monitoringTitle": "Überwachungsseite",
         "releasePreviewTitle": "Release-Vorschauseite"
+      },
+      "newsManagement": {
+        "pageTitle": "News Management",
+        "title": "News Management",
+        "description": "Manage how market news are displayed",
+        "helpText": "Configure the latest market news. Administrators can add, edit, or remove news."
       }
     }
   }
