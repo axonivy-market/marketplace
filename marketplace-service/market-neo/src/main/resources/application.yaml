@@ -1,0 +1,29 @@
+server:
+  port: '8080'
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: 'true'
+  tomcat:
+    connection-timeout: 240000ms
+    threads:
+      max: '200'
+    max-swallow-size: '-1'
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: '${POSTGRES_HOST_URL}'
+    username: '${POSTGRES_USERNAME}'
+    password: '${POSTGRES_PASSWORD}'
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
