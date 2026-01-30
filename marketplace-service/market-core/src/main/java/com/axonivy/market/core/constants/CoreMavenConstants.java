@@ -3,7 +3,7 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class CoreMavenConstants {
   public static final String SNAPSHOT_VERSION = "SNAPSHOT";
   public static final String SNAPSHOT_RELEASE_POSTFIX = "-" + SNAPSHOT_VERSION;

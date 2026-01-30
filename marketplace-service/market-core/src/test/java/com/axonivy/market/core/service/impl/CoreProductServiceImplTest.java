@@ -40,8 +40,6 @@ class CoreProductServiceImplTest extends CoreBaseSetup {
   private String language;
   private String keyword;
   private Page<Product> mockResultReturn;
-  public static final Pageable PAGEABLE = PageRequest.of(0, 20,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
 
   @BeforeEach
   void setup() {

@@ -56,11 +56,11 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
   @Test
   void testGetLatestInstallableVersion() {
     Metadata metadata = Metadata.builder()
+        .artifactId("test-product")
         .isProductArtifact(true)
         .versions(Set.of("10.0.1", "10.0.2"))
         .build();
     when(coreMetadataRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(metadata));
-
     String latestVersion = coreVersionService.getLatestInstallableVersion(MOCK_PRODUCT_ID);
     assertEquals("10.0.2", latestVersion);
   }

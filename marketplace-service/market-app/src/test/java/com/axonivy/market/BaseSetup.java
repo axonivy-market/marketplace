@@ -383,12 +383,16 @@ public class BaseSetup extends CoreBaseSetup {
   }
 
   protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId) {
+    return mockMavenArtifactVersion(version, artifactId, "");
+  }
+
+  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId, String downloadUrl) {
     MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
         .productVersion(version)
         .artifactId(artifactId)
         .build();
 
-    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl("").build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(downloadUrl).build();
   }
 
   protected Set<ProductDependency> mockMavenDependencies() {
