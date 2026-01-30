@@ -66,34 +66,6 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
   }
 
-  public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
-      String designerVersion) {
-    List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepo.findByProductId(productId);
-
-    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
-
-    List<MavenArtifactVersionModel> results = new ArrayList<>();
-    for (String mavenVersion : mavenVersions) {
-      List<MavenArtifactVersion> artifactsByVersion = filterArtifactByVersion(mavenArtifactVersions, mavenVersion);
-
-      if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
-        results.add(new MavenArtifactVersionModel(mavenVersion, artifactsByVersion));
-      }
-    }
-    return results;
-  }
-
-  private List<MavenArtifactVersion> filterArtifactByVersion(List<MavenArtifactVersion> mavenArtifactVersions,
-      String mavenVersion) {
-    return mavenArtifactVersions.stream()
-        .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
-        .distinct()
-        .sorted(
-            Comparator.comparing((MavenArtifactVersion artifact) -> artifact.getId().getArtifactId())
-                .thenComparing(artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACTID)))
-        .toList();
-  }
-
   @Override
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {

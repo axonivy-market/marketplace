@@ -24,7 +24,7 @@ import static com.axonivy.market.core.constants.CoreCommonConstants.*;
 import static com.axonivy.market.core.constants.CoreMavenConstants.*;
 
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class CoreVersionUtils {
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
@@ -93,7 +93,11 @@ public class CoreVersionUtils {
     return version;
   }
 
-  public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
+  public static String getBestMatchVersion(List<String> versions, String designerVersion) {
+    return getBestMatchVersion(versions, designerVersion, true);
+  }
+
+    public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
     if (CollectionUtils.isEmpty(versions)) {
       return null;
     }
