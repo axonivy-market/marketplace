@@ -15,7 +15,6 @@ public class RequestMappingConstants {
   public static final String SYNC = "sync";
   public static final String SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS = SYNC + "/first-published-date";
   public static final String SYNC_ONE_PRODUCT_BY_ID = "sync/{id}";
-  public static final String SWAGGER_URL = "/swagger-ui/index.html";
   public static final String GITHUB_LOGIN = "/github/login";
   public static final String GITHUB_REQUEST_ACCESS = "/github/request-access";
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";

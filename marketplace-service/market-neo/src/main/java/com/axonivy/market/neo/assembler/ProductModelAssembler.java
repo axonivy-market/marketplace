@@ -17,8 +17,6 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
   @Override
   public ProductModel toModel(Product product) {
     var resource = new ProductModel();
-//    resource.add(linkTo(methodOn(ProductController.class)
-//            .findProductDetails(product.getId(),false)).withSelfRel());
 
     resource.setId(product.getId());
     resource.setNames(product.getNames());
