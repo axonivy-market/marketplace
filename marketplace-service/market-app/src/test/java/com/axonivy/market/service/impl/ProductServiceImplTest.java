@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -530,7 +531,8 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = getMockProduct();
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class);
+         MockedStatic<CoreVersionUtils> mockCoreVersionUtils = Mockito.mockStatic(CoreVersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
           mockMavenArtifactVersions);
       when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))

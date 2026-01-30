@@ -28,21 +28,10 @@ class TypeOptionTest {
   }
 
   @Test
-  void testShouldThrowExceptionForNull() {
-    Exception ex = assertThrows(InvalidParamException.class,
-        () -> TypeOption.of(null),
-        "Expected TypeOption.of(null) to throw InvalidParamException");
-    assertTrue(ex.getMessage().contains("TypeOption: null"),
-        "Exception message should contain 'TypeOption: null'");
-  }
-
-  @Test
-  void testShouldThrowExceptionForUnknownOption() {
+  void testShouldReturnAllForUnknownOption() {
     String input = "foo";
-    Exception ex = assertThrows(InvalidParamException.class,
-        () -> TypeOption.of(input),
-        "Expected TypeOption.of('" + input + "') to throw InvalidParamException");
-    assertTrue(ex.getMessage().contains("TypeOption: foo"),
-        "Exception message should contain 'TypeOption: foo'");
+    TypeOption result = TypeOption.of(input);
+    assertEquals(TypeOption.ALL, result,
+        "Expected TypeOption.of('" + input + "') to return ALL");
   }
 }

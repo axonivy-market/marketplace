@@ -1,14 +1,14 @@
-package com.axonivy.market.converter;
+package com.axonivy.market.core.converter;
 
-import com.axonivy.market.core.converter.StringListConverter;
+import com.axonivy.market.core.StringListConverter;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class StringListConverterTest {
   private final StringListConverter converter = new StringListConverter();

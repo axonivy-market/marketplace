@@ -1,6 +1,6 @@
 package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.converter.StringSetConverter;
+import com.axonivy.market.core.StringSetConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;

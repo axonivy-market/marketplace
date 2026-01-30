@@ -1,6 +1,6 @@
-package com.axonivy.market.converter;
+package com.axonivy.market.core.converter;
 
-import com.axonivy.market.core.converter.StringSetConverter;
+import com.axonivy.market.core.StringSetConverter;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;

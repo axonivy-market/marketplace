@@ -1,17 +1,17 @@
-package com.axonivy.market.converter;
+package com.axonivy.market.core.converter;
 
-import com.axonivy.market.core.converter.AbstractCollectionConverter;
+import com.axonivy.market.core.AbstractCollectionConverter;
 import jakarta.persistence.AttributeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractCollectionConverterTest {
   static class ListStringConverter extends AbstractCollectionConverter<List<String>> {
