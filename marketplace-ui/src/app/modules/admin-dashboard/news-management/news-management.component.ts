@@ -1,11 +1,21 @@
-import { Component, inject } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  inject,
+  NgZone,
+  PLATFORM_ID,
+  ViewChild
+} from '@angular/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-news-management',
@@ -14,8 +24,32 @@ import { CommonModule } from '@angular/common';
   styleUrl: './news-management.component.scss'
 })
 export class NewsManagementComponent {
+  @ViewChild('editor') editor!: ElementRef<HTMLTextAreaElement>;
+
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  easyMDE!: EasyMDE;
+
+  constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: Object,
+    private changeDetectorRef: ChangeDetectorRef,
+    private zone: NgZone
+  ) {}
+
+  async ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.zone.runOutsideAngular(async () => {
+      await import('easymde');
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.easyMDE) {
+      this.easyMDE.toTextArea();
+      this.easyMDE.cleanup();
+    }
+  }
 }

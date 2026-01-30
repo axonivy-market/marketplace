@@ -29,6 +29,7 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "easymde": "^2.20.0",
     "emoji-toolkit": "^9.0.1",
     "express": "^4.22.1",
     "jwt-decode": "^4.0.0",

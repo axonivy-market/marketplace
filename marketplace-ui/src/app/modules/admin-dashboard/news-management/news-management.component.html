@@ -8,7 +8,8 @@
     <div class="d-sm-block admin-about">
       <h3 class="text-secondary">
         {{
-          translateService.get('common.admin.newsManagement.description') | async
+          translateService.get('common.admin.newsManagement.description')
+            | async
         }}
       </h3>
     </div>
@@ -22,6 +23,9 @@
         "></h4>
     </div>
   </div>
+</div>
+<div>
+  <textarea #editor></textarea>
 </div>
 <!-- <div class="sort-container flex-row">
   <section>
