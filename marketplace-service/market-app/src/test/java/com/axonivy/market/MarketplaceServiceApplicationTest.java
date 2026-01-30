@@ -15,7 +15,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 
 class MarketplaceServiceApplicationTest {
   @Mock

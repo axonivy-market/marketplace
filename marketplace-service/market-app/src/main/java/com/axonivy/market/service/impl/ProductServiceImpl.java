@@ -12,6 +12,8 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.repository.CoreProductRepository;
+import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -48,6 +50,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -86,8 +89,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl extends CoreProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
   private final ProductModuleContentRepository productModuleContentRepo;
@@ -113,19 +115,36 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
-  @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
-      Pageable pageable) {
-    final var typeOption = TypeOption.of(type);
-    var searchCriteria = new ProductSearchCriteria();
-    searchCriteria.setListed(true);
-    searchCriteria.setKeyword(keyword);
-    searchCriteria.setType(typeOption);
-    searchCriteria.setLanguage(Language.of(language));
-    if (BooleanUtils.isTrue(isRESTClient)) {
-      searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
-    }
-    return productRepo.searchByCriteria(searchCriteria, pageable);
+  public ProductServiceImpl(CoreProductRepository coreProductRepo, ProductRepository productRepo,
+      ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
+      GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepo,
+      GitHubService gitHubService, MetadataRepository metadataRepo, ProductJsonContentRepository productJsonContentRepo,
+      ImageRepository imageRepo, ImageService imageService, ProductContentService productContentService,
+      ExternalDocumentService externalDocumentService, MetadataService metadataService,
+      ProductMarketplaceDataService productMarketplaceDataService,
+      ProductMarketplaceDataRepository productMarketplaceDataRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
+      VersionService versionService, GithubRepoRepository githubRepo) {
+    super(coreProductRepo);
+    this.productRepo = productRepo;
+    this.productModuleContentRepo = productModuleContentRepo;
+    this.axonIvyMarketRepoService = axonIvyMarketRepoService;
+    this.axonIvyProductRepoService = axonIvyProductRepoService;
+    this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
+    this.gitHubService = gitHubService;
+    this.metadataRepo = metadataRepo;
+    this.productJsonContentRepo = productJsonContentRepo;
+    this.imageRepo = imageRepo;
+    this.imageService = imageService;
+    this.productContentService = productContentService;
+    this.externalDocumentService = externalDocumentService;
+    this.metadataService = metadataService;
+    this.productMarketplaceDataService = productMarketplaceDataService;
+    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
+    this.fileDownloadService = fileDownloadService;
+    this.versionService = versionService;
+    this.githubRepo = githubRepo;
   }
 
   @Override

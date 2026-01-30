@@ -8,6 +8,10 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
+import com.axonivy.market.core.repository.CoreMetadataRepository;
+import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
+import com.axonivy.market.core.service.impl.CoreVersionServiceImpl;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -41,8 +45,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @Service
-@AllArgsConstructor
-public class VersionServiceImpl implements VersionService {
+public class VersionServiceImpl extends CoreVersionServiceImpl implements VersionService {
   private static final Pattern MAIN_VERSION_PATTERN =
       Pattern.compile(MavenConstants.MAIN_VERSION_REGEX);
 
@@ -51,6 +54,17 @@ public class VersionServiceImpl implements VersionService {
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
+
+  public VersionServiceImpl(CoreProductJsonContentRepository coreProductJsonRepo,
+      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo, CoreMetadataRepository coreMetadataRepository,
+      ProductJsonContentRepository productJsonRepo, ProductMarketplaceDataService productMarketplaceDataService,
+      MetadataRepository metadataRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo) {
+    super(coreProductJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository);
+    this.productJsonRepo = productJsonRepo;
+    this.productMarketplaceDataService = productMarketplaceDataService;
+    this.metadataRepo = metadataRepo;
+    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+  }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {

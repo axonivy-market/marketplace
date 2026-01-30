@@ -1,10 +1,7 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.repository.CoreCustomProductRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 

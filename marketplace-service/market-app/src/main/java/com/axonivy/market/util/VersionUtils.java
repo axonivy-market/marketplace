@@ -6,6 +6,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.enums.DevelopmentVersion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -29,7 +30,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class VersionUtils {
+public class VersionUtils extends CoreVersionUtils {
   private static final Pattern INVALID_VERSION_CHAR_PATTERN = Pattern.compile("[^\\p{L}\\p{N}._-]",
       Pattern.UNICODE_CHARACTER_CLASS);
   // Common semantic versioning pattern: 1, 1.2, 1.2.3, 1.2.3.4, 1.2.3.4.5, 1.2.3-beta, 1.2.3-beta.1, etc.
@@ -37,47 +38,6 @@ public class VersionUtils {
   private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
-
-  public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
-    Stream<String> versionStream = versions.stream();
-    if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
-          .sorted(new LatestVersionComparator()).toList();
-    }
-    return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
-  }
-
-  public static String getBestMatchVersion(List<String> versions, String designerVersion) {
-    String bestMatchVersion = versions.stream().filter(
-        version -> StringUtils.equals(version, designerVersion)).findAny().orElse(null);
-    if (StringUtils.isBlank(bestMatchVersion)) {
-      bestMatchVersion = versions.stream().filter(
-          version -> MavenVersionComparator.compare(version, designerVersion) < 0 && isReleasedVersion(
-              version)).findAny().orElse(null);
-    }
-    if (StringUtils.isBlank(bestMatchVersion)) {
-      bestMatchVersion = versions.stream().filter(VersionUtils::isReleasedVersion).findAny().orElse(
-          CollectionUtils.firstElement(versions));
-    }
-    return bestMatchVersion;
-  }
-
-  public static boolean isOfficialVersionOrUnReleasedDevVersion(Collection<String> versions, String version) {
-    if (isReleasedVersion(version)) {
-      return true;
-    }
-    String bugfixVersion;
-    if (!isValidFormatReleasedVersion(version)) {
-      return false;
-    } else if (isSnapshotVersion(version)) {
-      bugfixVersion = getBugfixVersion(version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
-    } else {
-      bugfixVersion = getBugfixVersion(SPRINT_RELEASE_PATTERN.split(version)[0]);
-    }
-    return versions.stream().noneMatch(
-        currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
-            currentVersion).equals(bugfixVersion));
-  }
 
   public static boolean isSnapshotVersion(String version) {
     return version.endsWith(SNAPSHOT_RELEASE_POSTFIX);

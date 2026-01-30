@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.springframework.http.HttpMethod;
 
 class MarketHeaderInterceptorTest {

@@ -4,7 +4,6 @@ import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.repository.CustomGithubRepoRepository;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
-import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
