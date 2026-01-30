@@ -15,7 +15,7 @@ ARG BUILD_VERSION
 COPY --from=build-api /app/market-neo/target/market-neo-${BUILD_VERSION}.war /usr/local/tomcat/webapps/marketplace-neo.war
 
 # Expose port 8080
-EXPOSE 8081
+EXPOSE 8080
 
 # Start Tomcat
 CMD ["catalina.sh", "run"]
