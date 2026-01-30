@@ -7,91 +7,99 @@ import com.axonivy.market.core.service.CoreProductService;
 import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.neo.assembler.ProductModelAssembler;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static com.axonivy.market.neo.constants.RequestMappingConstants.PRODUCT;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ProductController.class)
+@ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
-
-  @MockBean
+  @Mock
   private CoreVersionService versionService;
 
-  @MockBean
+  @Mock
   private CoreProductService coreProductService;
 
-  @MockBean
+  @Mock
   private ProductModelAssembler assembler;
 
-  @MockBean
+  @Mock
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
+  @InjectMocks
+  private ProductController productController;
+
   @Test
-  void testFindProductJsonContent() throws Exception {
+  void testFindProductJsonContent() {
     when(versionService.getProductJsonContentByIdAndVersion(anyString(), anyString()))
         .thenReturn(Map.of("key", "value"));
 
-    mockMvc.perform(get(PRODUCT + "/test-id/json")
-            .param("designerVersion", "10.0.0"))
-        .andExpect(status().isOk());
+    ResponseEntity<?> result = productController.findProductJsonContent("test-id", "10.0.0");
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertNotNull(result.getBody(), "Expected response body to not be null");
   }
 
   @Test
-  void testFindProductVersionsById() throws Exception {
+  void testFindProductVersionsById() {
     when(versionService.getArtifactsAndVersionToDisplay(anyString(), anyBoolean(), anyString()))
         .thenReturn(List.of(new MavenArtifactVersionModel()));
 
-    mockMvc.perform(get(PRODUCT + "/test-id/versions")
-            .param("showDevVersion", "true")
-            .param("designerVersion", "10.0.0"))
-        .andExpect(status().isOk());
+    ResponseEntity<?> result = productController.findProductVersionsById("test-id", true, "10.0.0");
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertNotNull(result.getBody(), "Expected response body to not be null");
   }
 
   @Test
-  void testFindProducts() throws Exception {
-    Page<Product> productPage = new PageImpl<>(List.of(new Product()));
-    when(coreProductService.findProducts(anyString(), anyString(), anyString(), any(), any(Pageable.class)))
+  void testFindProducts() {
+    Product product = new Product();
+    Page<Product> productPage = new PageImpl<>(List.of(product), PageRequest.of(0, 20), 1);
+
+    when(coreProductService.findProducts(any(), any(), any(), any(), any()))
         .thenReturn(productPage);
-    when(pagedResourcesAssembler.toModel(any(Page.class), any(ProductModelAssembler.class)))
-        .thenReturn(PagedModel.of(Collections.emptyList(), new PagedModel.PageMetadata(1, 0, 1)));
+    doReturn(PagedModel.of(
+        List.of(new ProductModel()),
+        new PagedModel.PageMetadata(1, 0, 1)
+    )).when(pagedResourcesAssembler).toModel(any(Page.class), any(ProductModelAssembler.class));
 
-    mockMvc.perform(get(PRODUCT)
-            .param("type", "all")
-            .param("keyword", "test")
-            .param("language", "en"))
-        .andExpect(status().isOk());
+    ResponseEntity<?> result = productController.findProducts("all", "test", "en", false, PageRequest.of(0, 20));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertNotNull(result.getBody(), "Expected response body to not be null");
   }
 
   @Test
-  void testFindProductsEmpty() throws Exception {
-    when(coreProductService.findProducts(anyString(), anyString(), anyString(), any(), any(Pageable.class)))
+  void testFindProductsEmpty() {
+    when(coreProductService.findProducts(any(), any(), any(), any(), any()))
         .thenReturn(Page.empty());
-    when(pagedResourcesAssembler.toEmptyModel(any(Page.class), any()))
-        .thenReturn(PagedModel.of(Collections.emptyList(), new PagedModel.PageMetadata(0, 0, 0)));
+    doReturn(PagedModel.of(
+        List.of(),
+        new PagedModel.PageMetadata(0, 0, 0)
+    )).when(pagedResourcesAssembler).toEmptyModel(any(Page.class), any());
 
-    mockMvc.perform(get(PRODUCT))
-        .andExpect(status().isOk());
+    ResponseEntity<?> result = productController.findProducts(null, null, null, false, PageRequest.of(0, 20));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
+    assertNotNull(result.getBody(), "Expected response body to not be null");
   }
 }
