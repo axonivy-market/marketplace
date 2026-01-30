@@ -46,7 +46,7 @@ services:
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
-      - ../logs:/app/logs
+      - ../logs/app:/app/logs
     environment:
       - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
@@ -84,6 +84,22 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+  neo:
+    container_name: marketplace-neo
+    restart: always
+    volumes:
+      - ../logs/neo:/app/logs
+    environment:
+      - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    build:
+      context: ../marketplace-service
+      dockerfile: market-neo/Dockerfile
+      args:
+        - BUILD_VERSION=${BUILD_VERSION}
+    ports:
+      - "8081:8081"
 
 volumes:
   marketcache:
