@@ -1,5 +1,6 @@
 package com.axonivy.market;
 
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.Image;
