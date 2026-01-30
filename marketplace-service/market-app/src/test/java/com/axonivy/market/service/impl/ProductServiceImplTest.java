@@ -72,14 +72,13 @@ import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static com.axonivy.market.core.service.impl.CoreProductServiceImplTest.PAGEABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest extends BaseSetup {
   private static final long LAST_CHANGE_TIME = 1718096290000L;
-  private static final Pageable PAGEABLE = PageRequest.of(0, 20,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
   private static final String META_JSON_FILE_WITH_VENDOR_INFORMATION = "/meta-with-vendor-information.json";
@@ -143,29 +142,6 @@ class ProductServiceImplTest extends BaseSetup {
   @BeforeEach
   void setup() {
     mockResultReturn = createPageProductsMock();
-  }
-
-  @Test
-  void testFindProducts() {
-    language = "en";
-    // Start testing by All
-    when(productRepo.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
-    // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result,
-        "All products should match mock result");
-
-    // Start testing by Connector
-    // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result,
-        "Connector type products should match mock result");
-
-    // Start testing by Other
-    // Executes
-    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(2, result.getSize(),
-        "Number of demo type products should match number of mock demo type result");
   }
 
   @Test
@@ -281,40 +257,6 @@ class ProductServiceImplTest extends BaseSetup {
     result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result, "Latest data from Market repo should not be null");
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
-  }
-
-  @Test
-  void testFindAllProductsWithKeyword() {
-    language = "en";
-    when(productRepo.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
-    // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
-    assertEquals(mockResultReturn, result, "All products should match mock result");
-    verify(productRepo).searchByCriteria(any(), any(Pageable.class));
-
-    // Test has keyword
-    when(productRepo.searchByCriteria(any(), any(Pageable.class)))
-        .thenReturn(new PageImpl<>(mockResultReturn.stream()
-            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
-            .toList()));
-    // Executes
-    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
-    assertTrue(result.hasContent(), "Result product list should not be empty");
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()),
-        "First product should match mock product name");
-
-    // Test has keyword and type is connector
-    when(productRepo.searchByCriteria(any(), any(Pageable.class)))
-        .thenReturn(new PageImpl<>(mockResultReturn.stream()
-            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
-                && product.getType().equals(TypeOption.CONNECTORS.getCode()))
-            .toList()));
-    // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false,
-        PAGEABLE);
-    assertTrue(result.hasContent(), "Result connector type product list should not be empty");
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()),
-        "First product should match mock product name");
   }
 
   @Test
@@ -464,20 +406,6 @@ class ProductServiceImplTest extends BaseSetup {
 
     assertNull(argumentCaptor.getValue().getProductModuleContent(),
         "Product module content should be null");
-  }
-
-  @Test
-  void testSearchProducts() {
-    var simplePageable = PageRequest.of(0, 20);
-    String type = TypeOption.ALL.getOption();
-    keyword = "on";
-    language = "en";
-    when(productRepo.searchByCriteria(any(), any(Pageable.class))).thenReturn(
-        mockResultReturn);
-
-    var result = productService.findProducts(type, keyword, language, false, simplePageable);
-    assertEquals(result, mockResultReturn, "Product list from search query should match mock product list");
-    verify(productRepo).searchByCriteria(any(), any(Pageable.class));
   }
 
   @Test

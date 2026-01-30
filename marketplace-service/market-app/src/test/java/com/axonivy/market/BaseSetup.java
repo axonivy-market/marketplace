@@ -1,6 +1,6 @@
 package com.axonivy.market;
 
-import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -48,12 +48,10 @@ import java.util.Set;
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
 
 @Log4j2
-public class BaseSetup {
+public class BaseSetup extends CoreBaseSetup {
   protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
   protected static final String ACCESS_TOKEN = "sampleAccessToken";
-  protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
-  protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
   protected static final String SAMPLE_PRODUCT_REPOSITORY_NAME = "axonivy-market/amazon-comprehend";
   protected static final Pageable PAGEABLE_ALPHABETICALLY = PageRequest.of(0, 1,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
@@ -64,7 +62,6 @@ public class BaseSetup {
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
-  protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_FIRST_RELEASED_VERSION_FOR_TEN = "10.0.0";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
   protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
@@ -92,13 +89,9 @@ public class BaseSetup {
   protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
   protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
-      + "/com/axonivy/util/bpmn-statistic/maven" +
-      "-metadata.xml";
+      + "/com/axonivy/util/bpmn-statistic/maven-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
-      + "/com/axonivy/util/bpmn-statistic" +
-      "/10.0.10-SNAPSHOT/maven-metadata.xml";
-  protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
-      ".10/bpmn-statistic-10.0.10.zip";
+      + "/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DUMP_DOWNLOAD_URL = "octopus.com";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
@@ -395,24 +388,6 @@ public class BaseSetup {
         .build();
 
     return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl("").build();
-  }
-
-  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId, String downloadUrl) {
-    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
-        .productVersion(version)
-        .artifactId(artifactId)
-        .build();
-
-    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(downloadUrl).build();
-  }
-
-  protected MavenArtifactVersion mockAdditionalMavenArtifactVersion(String version, String artifactId) {
-    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
-        .productVersion(version)
-        .artifactId(artifactId)
-        .isAdditionalVersion(true)
-        .build();
-    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
   protected Set<ProductDependency> mockMavenDependencies() {
