@@ -3,8 +3,8 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.repository.CustomGithubRepoRepository;
+import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -16,15 +16,7 @@ import java.util.List;
 import static com.axonivy.market.constants.EntityConstants.NAME;
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
-public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepository {
-
-  @PersistenceContext
-  private EntityManager entityManager;
-
-  public CustomGithubRepoRepositoryImpl(EntityManager entityManager) {
-    this.entityManager = entityManager;
-  }
-
+public class CustomGithubRepoRepositoryImpl extends CoreAbstractBaseRepository<GithubRepo> implements CustomGithubRepoRepository {
   @Override
   public Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria, Pageable pageable) {
     String orderBy = getOrderBy(criteria.getWorkFlowType(), criteria.getSortDirection());
@@ -51,10 +43,10 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
             ) w ON w.repository_id = r.id
         """ + focusQuery + productQuery + orderBy;
 
-    var nativeQuery = entityManager.createNativeQuery(querySentence, GithubRepo.class);
+    var nativeQuery = getEntityManager().createNativeQuery(querySentence, GithubRepo.class);
     nativeQuery.setParameter(WORKFLOW_TYPE, criteria.getWorkFlowType());
     String countSql = "SELECT COUNT(*) FROM github_repo r " + focusQuery + productQuery;
-    var countQuery = entityManager.createNativeQuery(countSql);
+    var countQuery = getEntityManager().createNativeQuery(countSql);
 
     if (StringUtils.isNotBlank(criteria.getSearchText())) {
       nativeQuery.setParameter(PRODUCT_ID, criteria.getSearchText());
@@ -72,6 +64,11 @@ public class CustomGithubRepoRepositoryImpl implements CustomGithubRepoRepositor
     Number total = (Number) countQuery.getSingleResult();
 
     return new PageImpl<>(githubRepoList, pageable, total.longValue());
+  }
+
+  @Override
+  protected Class<GithubRepo> getType() {
+    return GithubRepo.class;
   }
 
   private static String getFocusQuery(Boolean isFocused) {
