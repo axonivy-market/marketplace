@@ -3,6 +3,8 @@ package com.axonivy.market.util;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;

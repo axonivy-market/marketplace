@@ -6,6 +6,8 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;

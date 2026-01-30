@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.core.model.ProductModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

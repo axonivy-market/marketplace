@@ -1,5 +1,6 @@
 package com.axonivy.market.converter;
 
+import com.axonivy.market.core.converter.AbstractCollectionConverter;
 import jakarta.persistence.AttributeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

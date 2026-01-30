@@ -1,6 +1,16 @@
 package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.Image;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.Language;
+import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.CodeScanning;

@@ -1,5 +1,7 @@
 package com.axonivy.market.bo;
 
+import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -1,6 +1,8 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import org.junit.jupiter.api.Test;

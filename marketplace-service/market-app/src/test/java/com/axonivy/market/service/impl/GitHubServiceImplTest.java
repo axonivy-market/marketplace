@@ -2,6 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.enums.AccessLevel;

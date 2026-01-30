@@ -1,5 +1,7 @@
 package com.axonivy.market.exceptions;
 
+import com.axonivy.market.core.exceptions.model.InvalidParamException;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;

@@ -26,7 +26,8 @@ class CustomGithubRepoRepositoryImplTest {
   @BeforeEach
   void setUp() {
     entityManager = mock(EntityManager.class);
-    customGithubRepoRepository = new CustomGithubRepoRepositoryImpl(entityManager);
+    customGithubRepoRepository = new CustomGithubRepoRepositoryImpl();
+    customGithubRepoRepository.setEntityManager(entityManager);
     // Use reflection to inject the mock because @PersistenceContext isn't set in test
     try {
       FieldUtils.writeField(customGithubRepoRepository, "entityManager", entityManager, true);

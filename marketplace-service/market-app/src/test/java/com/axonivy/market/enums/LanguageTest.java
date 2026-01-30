@@ -1,5 +1,6 @@
 package com.axonivy.market.enums;
 
+import com.axonivy.market.core.enums.Language;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

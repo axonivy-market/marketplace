@@ -3,6 +3,7 @@ package com.axonivy.market.factory;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
 
