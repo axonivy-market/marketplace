@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { EMPTY, finalize, Observable } from 'rxjs';
 import {
@@ -27,12 +33,7 @@ import { AdminAuthService } from './admin-auth.service';
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -45,6 +46,7 @@ export class AdminDashboardComponent implements OnInit {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   authService = inject(AdminAuthService);
+  cdr = inject(ChangeDetectorRef);
 
   isAuthenticated = false;
   errorMessage = '';
@@ -61,6 +63,20 @@ export class AdminDashboardComponent implements OnInit {
   marketDirectory = '';
   overrideMarketItemPath = false;
   dropdownOpen = false;
+
+  onRouteActivate(): void {
+    queueMicrotask(() => {
+      this.showSyncTask = false;
+      this.cdr.markForCheck();
+    });
+  }
+
+  onRouteDeactivate(): void {
+    queueMicrotask(() => {
+      this.showSyncTask = true;
+      this.cdr.markForCheck();
+    });
+  }
 
   private readonly syncTaskTriggers: Record<
     SyncTaskKey,

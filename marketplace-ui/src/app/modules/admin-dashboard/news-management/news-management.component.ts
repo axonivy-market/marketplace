@@ -16,10 +16,11 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { MarkdownEditorComponent } from '../../../shared/components/markdown-editor/markdown-editor.component';
 
 @Component({
   selector: 'app-news-management',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
@@ -31,6 +32,7 @@ export class NewsManagementComponent {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   easyMDE!: EasyMDE;
+  body: string = 'abc';
 
   constructor(
     @Inject(PLATFORM_ID) private readonly platformId: Object,

@@ -25,7 +25,10 @@
   </div>
 </div>
 <div>
-  <textarea #editor></textarea>
+  <app-markdown-editor
+    [(value)]="body"
+    [placeholder]="'Describe your issue...'"
+    [autosaveId]="'issue-body'"></app-markdown-editor>
 </div>
 <!-- <div class="sort-container flex-row">
   <section>
