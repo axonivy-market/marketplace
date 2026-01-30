@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,7 @@ import static com.axonivy.market.neo.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.neo.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.neo.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION;
 
+@Log4j2
 @RestController
 @RequestMapping(PRODUCT)
 @AllArgsConstructor
@@ -73,24 +76,25 @@ public class ProductController {
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'",
       parameters = {@Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY,
-          example = "0"), @Parameter(name = "size", description = "Number of items per page", in =
-          ParameterIn.QUERY,
+          example = "0"), @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY,
           example = "20"), @Parameter(name = "sort",
           description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting "
               + "order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]")})
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
-      @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
+      @RequestParam(name = TYPE, required = false) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string",
               allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
-      @RequestParam(name = KEYWORD) @Parameter(
+      @RequestParam(name = KEYWORD, required = false) @Parameter(
           description = "Keyword that exist in product's name or short description", example = "connector",
           in = ParameterIn.QUERY) String keyword,
-      @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description",
+      @RequestParam(name = LANGUAGE, required = false) @Parameter(description = "Language of product short description",
           in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
-      @RequestParam(name = IS_REST_CLIENT) @Parameter(
+      @RequestParam(name = IS_REST_CLIENT, required = false) @Parameter(
           description = "Option to render the website in the REST Client Editor of Designer",
-          in = ParameterIn.QUERY) Boolean isRESTClient, @ParameterObject Pageable pageable) {
+          in = ParameterIn.QUERY) Boolean isRESTClient,
+      @PageableDefault(size = Integer.MAX_VALUE) @ParameterObject Pageable pageable) {
+
     Page<Product> results = coreProductService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();

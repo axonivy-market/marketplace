@@ -23,6 +23,6 @@ public enum TypeOption {
         return filter;
       }
     }
-    throw new InvalidParamException(ErrorCode.PRODUCT_FILTER_INVALID, "TypeOption: " + option);
+    return ALL;
   }
 }

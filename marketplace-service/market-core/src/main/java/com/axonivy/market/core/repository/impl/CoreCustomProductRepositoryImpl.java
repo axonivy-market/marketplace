@@ -65,7 +65,6 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-
     long total = resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
       total = getTotalCount(criteriaContext.builder(), searchCriteria);
