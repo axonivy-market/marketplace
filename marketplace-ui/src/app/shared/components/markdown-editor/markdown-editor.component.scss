@@ -1,0 +1,11 @@
+:ng-deep button {
+  &:hover {
+    color: black !important;
+    background-color: red !important;
+  }
+}
+
+:ng-deep .EasyMDEContainer button:hover {
+  color: black !important;
+  background-color: red !important;
+}
