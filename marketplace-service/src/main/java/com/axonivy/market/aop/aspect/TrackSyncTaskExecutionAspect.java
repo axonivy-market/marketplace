@@ -4,7 +4,6 @@ import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,9 +29,6 @@ public class TrackSyncTaskExecutionAspect {
       Object result = pjp.proceed();
       syncTaskExecutionService.markStatusSuccess(execution, SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
       return result;
-    } catch (MarketException marketException) {
-      log.error(marketException.getMessage());
-      throw marketException;
     } catch (Throwable t) {
       if (execution != null) {
         syncTaskExecutionService.markStatusFailure(execution, t.getMessage());

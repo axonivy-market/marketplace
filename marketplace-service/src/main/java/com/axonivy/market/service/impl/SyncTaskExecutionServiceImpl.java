@@ -6,6 +6,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -37,8 +38,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     SyncTaskExecution execution = findOrCreate(jobType);
     if (SyncTaskStatus.RUNNING == execution.getStatus()) {
       String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(jobType);
-      throw new MarketException(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
-          taskAlreadyRunningMessage);
+      throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
     }
     execution.setStatus(SyncTaskStatus.STARTED);
     execution.setTriggeredAt(LocalDate.now());

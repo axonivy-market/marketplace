@@ -1,15 +1,7 @@
 package com.axonivy.market.exceptions;
 
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.FileProcessingException;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.exceptions.model.InvalidZipEntryException;
-import com.axonivy.market.exceptions.model.MarketException;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NoContentException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.exceptions.model.*;
 import com.axonivy.market.model.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,12 +124,12 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void testHandleMarketException() {
-    MarketException marketException = new MarketException(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
+  void testHandleTaskAlreadyRunningException() {
+    TaskAlreadyRunningException taskAlreadyRunningException = new TaskAlreadyRunningException(
         "Task is already running!");
-    var responseEntity = exceptionHandler.handleMarketException(marketException);
-    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode(),
-        "Expected HTTP 500 INTERNAL_SERVER_ERROR");
+    var responseEntity = exceptionHandler.handleTaskAlreadyRunningException(taskAlreadyRunningException);
+    assertEquals(HttpStatus.ACCEPTED, responseEntity.getStatusCode(),
+        "Expected HTTP 202 ACCEPTED");
     assertNotNull(responseEntity.getBody(), "Response body should not be null");
   }
 }

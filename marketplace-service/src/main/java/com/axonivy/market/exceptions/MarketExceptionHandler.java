@@ -1,15 +1,7 @@
 package com.axonivy.market.exceptions;
 
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.FileProcessingException;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.exceptions.model.InvalidZipEntryException;
-import com.axonivy.market.exceptions.model.MarketException;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NoContentException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.exceptions.model.*;
 import com.axonivy.market.model.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,13 +93,10 @@ public class MarketExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
   }
 
-  @ExceptionHandler(MarketException.class)
-  public ResponseEntity<Object> handleMarketException(MarketException marketException) {
-    var errorMessage = new Message();
-    var message = new Message(ErrorCode.TASK_ALREADY_RUNNING.getCode(),
-        ErrorCode.TASK_ALREADY_RUNNING.getHelpText(), marketException.getMessage());
-    errorMessage.setMessageDetails(marketException.getMessage());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+  @ExceptionHandler(TaskAlreadyRunningException.class)
+  public ResponseEntity<Message> handleTaskAlreadyRunningException(TaskAlreadyRunningException taskAlreadyRunningException) {
+    var message = new Message(ErrorCode.TASK_ALREADY_RUNNING.getCode(), taskAlreadyRunningException.getMessage(),
+        ErrorCode.TASK_ALREADY_RUNNING.getHelpText());
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
   }
-
 }
