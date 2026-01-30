@@ -1,4 +1,4 @@
-package com.axonivy.market.core;
+package com.axonivy.market.core.converter;
 
 import jakarta.persistence.Converter;
 

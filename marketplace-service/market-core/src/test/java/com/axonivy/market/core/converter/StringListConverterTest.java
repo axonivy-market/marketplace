@@ -1,6 +1,5 @@
 package com.axonivy.market.core.converter;
 
-import com.axonivy.market.core.StringListConverter;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
