@@ -13,8 +13,10 @@
   <artifactId>market-neo</artifactId>
   <name>market-neo</name>
   <description>market-neo</description>
+  <packaging>war</packaging>
 
-  <dependencies>
+
+    <dependencies>
     <dependency>
       <groupId>com.axonivy.market</groupId>
       <artifactId>market-core</artifactId>
