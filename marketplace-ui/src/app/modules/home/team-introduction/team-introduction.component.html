@@ -1,0 +1,53 @@
+<section class="team-introduction-container">
+  <div class="header">
+    <h2>Meet Team Octopus</h2>
+    <p>
+      As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. 
+      We specialize in the end-to-end lifecycle management of platform extensions—delivering new integration solutions, 
+      ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.
+    </p>
+  </div>
+
+  <!-- PO Card (Isolated, Larger) -->
+  <div class="po-section">
+    <div class="card po-card">
+      @if (po.quote) {
+        <div class="speech-bubble">{{ po.quote }}</div>
+      }
+      <div class="image-wrapper">
+        <img [src]="po.imageUrl" [alt]="po.name" (error)="handleImageError($event)">
+      </div>
+      <div class="content">
+        <h3>{{ po.name }}</h3>
+        <span class="title">{{ po.title }}</span>
+        <p class="intro">{{ po.intro }}</p>
+        <div class="social-links">
+          <a [href]="po.github" target="_blank" class="social-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
+          <a [href]="po.linkedin" target="_blank" class="social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="members-grid">
+    @for (member of members; track member.name) {
+      <div class="card member-card">
+        @if (member.quote) {
+          <div class="speech-bubble">{{ member.quote }}</div>
+        }
+        <div class="image-wrapper">
+          <img [src]="member.imageUrl" [alt]="member.name" (error)="handleImageError($event)">
+        </div>
+        <div class="content">
+          <h3>{{ member.name }}</h3>
+          <span class="title">{{ member.title }}</span>
+          <p class="intro">{{ member.intro }}</p>
+          <div class="social-links">
+            <a [href]="member.github" target="_blank" class="social-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
+            <a [href]="member.linkedin" target="_blank" class="social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
