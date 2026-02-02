@@ -17,9 +17,9 @@
   <description>marketplace-service</description>
 
   <modules>
-    <module>market-core</module>
-    <module>market-app</module>
-    <module>market-neo</module>
+    <module>marketplace-core</module>
+    <module>marketplace-app</module>
+    <module>marketplace-stable</module>
   </modules>
 
   <properties>
