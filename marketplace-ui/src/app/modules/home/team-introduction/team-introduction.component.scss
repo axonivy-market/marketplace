@@ -1,66 +1,62 @@
 ﻿.team-introduction {
-  /* Separator Line */
   .header {
     p {
-      max-width: 80rem; /* 800px */
+      max-width: 80rem;
     }
 
     h2:after {
       content: '';
       display: block;
-      width: 6rem; /* 60px */
-      height: 0.4rem; /* 4px */
+      width: 6rem;
+      height: 0.4rem;
       background-color: var(--bs-primary);
-      margin: 1rem auto 0; /* 10px */
-      border-radius: 0.2rem; /* 2px */
+      margin: 1rem auto 0;
+      border-radius: 0.2rem;
     }
   }
 
-  /* PO Card Styles */
   .po-card {
     .image-wrapper {
-      width: 20rem; /* 200px */
+      width: 20rem;
       height: 20rem;
       
       @media (max-width: 768px) {
-        width: 15rem !important; /* 150px */
+        width: 15rem !important;
         height: 15rem !important;
       }
     }
 
     .status-indicator {
-      width: 4.8rem; /* 48px */
+      width: 4.8rem;
       height: 4.8rem;
-      transform: translate(-1.5rem, -1.5rem); /* -15px */
+      transform: translate(-1.5rem, -1.5rem);
       font-size: 2.2rem;
     }
   }
 
-  /* Member Card Styles */
   .member-card {
       .image-wrapper {
-        width: 12rem; /* 120px */
+        width: 12rem;
         height: 12rem;
       }
 
       .status-indicator {
-        width: 3.8rem; /* 38px */
+        width: 3.8rem;
         height: 3.8rem;
-        transform: translate(-0.5rem, -0.5rem); /* -5px */
+        transform: translate(-0.5rem, -0.5rem);
         font-size: 1.6rem;
       }
       
       .member-title {
-        font-size: 0.8rem; /* Intentionally kept smaller / default rem */
+        font-size: 0.8rem;
       }
   }
 
-  /* Shared Card Hover Effects */
   .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     
     &:hover {
-      transform: translateY(-0.5rem); /* -5px */
+      transform: translateY(-0.5rem);
       box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
 
        .image-wrapper {
@@ -91,9 +87,8 @@
     }
   }
 
-  /* Social Icons */
   .social-icon {
-    width: 4rem; /* 40px */
+    width: 4rem;
     height: 4rem;
     font-size: 1.25rem;
     transition: all 0.2s ease;
@@ -101,39 +96,36 @@
     &:hover {
       background-color: var(--bs-primary) !important;
       color: white !important;
-      transform: translateY(-0.2rem); /* -2px */
+      transform: translateY(-0.2rem);
     }
   }
 
-  /* Speech Bubble (Thought Bubble) - Custom UI Element */
   .speech-bubble {
     position: absolute;
     background: #2c3e50;
     color: #fff;
     padding: 1rem 1.5rem;
-    border-radius: 3rem; /* 30px */
+    border-radius: 3rem;
     font-size: 0.9rem;
     font-weight: 500;
     text-align: center;
-    min-width: 20rem; /* 200px */
+    min-width: 20rem;
     z-index: 10;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 0.4rem 1.5rem rgba(0,0,0,0.1); /* 4px 15px */
+    box-shadow: 0 0.4rem 1.5rem rgba(0,0,0,0.1);
 
-    /* General bubble positioning (for grid members) */
-    top: -6rem; /* -60px */
+    top: -6rem;
     left: 50%;
-    transform: translateX(-50%) translateY(1rem); /* 10px */
+    transform: translateX(-50%) translateY(1rem);
 
-    /* Thought bubble dots */
     &:before {
       content: '';
       position: absolute;
-      bottom: -1rem; /* -10px */
+      bottom: -1rem;
       left: 45%;
-      width: 1.4rem; /* 14px */
+      width: 1.4rem;
       height: 1.4rem;
       background-color: #2c3e50;
       border-radius: 50%;
@@ -142,22 +134,21 @@
     &:after {
       content: '';
       position: absolute;
-      bottom: -2.2rem; /* -22px */
+      bottom: -2.2rem;
       left: 40%;
-      width: 0.8rem; /* 8px */
+      width: 0.8rem;
       height: 0.8rem;
       background-color: #2c3e50;
       border-radius: 50%;
     }
   }
 
-  /* Specific PO Bubble overrides */
   .po-card .speech-bubble {
-    top: -6rem; /* -60px */
-    left: -20rem; /* Original requested left positioning kept as relative unit or absolute large value? Assuming this 20rem was large relative spacing, re-evaluating: user asked for 20rem long ago. If 1rem=10px, -20rem = -200px. That seems reasonable. Keeping as is. */
-    transform: translateY(1rem); /* 10px */
+    top: -6rem;
+    left: -20rem;
+    transform: translateY(1rem);
     width: auto;
-    max-width: 25rem; /* 250px */
+    max-width: 25rem;
 
      &:before {
       left: auto;
@@ -166,13 +157,13 @@
     &:after {
       left: auto;
       right: 25%;
-      bottom: -2.2rem; /* -22px */
+      bottom: -2.2rem;
     }
 
     @media (max-width: 768px) {
        left: 50%;
-       top: -8rem; /* -80px */
-       transform: translateX(-50%) translateY(1rem); /* 10px */
+       top: -8rem;
+       transform: translateX(-50%) translateY(1rem);
        
        &:before { left: 45%; right: auto; }
        &:after { left: 40%; right: auto; }
