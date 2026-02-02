@@ -44,16 +44,18 @@ export class MarkdownEditorComponent {
     });
     this.isMDEReady = true;
 
-    this.mde.codemirror.on('change', () => {
-      // emit changes if needed
+    this.mde.codemirror.on('change', (value) => {
+      // emit changes if needed\
+      console.log(value);
+      
       this.cdr.markForCheck();
     });
 
-    queueMicrotask(() => this.cdr.detectChanges());
+    // queueMicrotask(() => this.cdr.detectChanges());
   }
 
   ngOnDestroy(): void {
     this.mde?.toTextArea();
-    this.mde = undefined;
+    this.mde?.cleanup();
   }
 }

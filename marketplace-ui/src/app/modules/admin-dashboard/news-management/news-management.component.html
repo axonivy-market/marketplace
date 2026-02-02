@@ -29,6 +29,15 @@
     [(value)]="body"
     [placeholder]="'Describe your issue...'"
     [autosaveId]="'issue-body'"></app-markdown-editor>
+
+  <button
+    type="button"
+    [lang]="languageService.selectedLanguage()"
+    class="mt-4 btn border-0 submit-button text-center"
+    (click)="onSubmit()"
+    [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+    Submit
+  </button>
 </div>
 <!-- <div class="sort-container flex-row">
   <section>

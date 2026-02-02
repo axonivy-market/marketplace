@@ -1,4 +1,8 @@
-:ng-deep .editor-toolbar button:hover {
-  color: black !important;
-  background-color: red !important;
+.submit-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
 }

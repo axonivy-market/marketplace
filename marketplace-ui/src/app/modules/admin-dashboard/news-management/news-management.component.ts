@@ -20,7 +20,13 @@ import { MarkdownEditorComponent } from '../../../shared/components/markdown-edi
 
 @Component({
   selector: 'app-news-management',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule,
+    MarkdownEditorComponent
+  ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
@@ -34,24 +40,7 @@ export class NewsManagementComponent {
   easyMDE!: EasyMDE;
   body: string = 'abc';
 
-  constructor(
-    @Inject(PLATFORM_ID) private readonly platformId: Object,
-    private changeDetectorRef: ChangeDetectorRef,
-    private zone: NgZone
-  ) {}
-
-  async ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    this.zone.runOutsideAngular(async () => {
-      await import('easymde');
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.easyMDE) {
-      this.easyMDE.toTextArea();
-      this.easyMDE.cleanup();
-    }
+  onSubmit() {
+    console.log('Abc');
   }
 }
