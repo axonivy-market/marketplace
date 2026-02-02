@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
@@ -109,23 +109,29 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
-    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
+    return this.http
+      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request)
+      .pipe(
+        map(partialUpdatedFeedback => {
+          const existingFeedback =
+            this.pendingFeedbacks().find(f => f.id === partialUpdatedFeedback.id) ||
+            this.allFeedbacks().find(f => f.id === partialUpdatedFeedback.id);
 
-    return this.http.put<Feedback>(requestURL, request).pipe(
-      tap(updatedFeedback => {
-        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => {
-          if (feedback.id === updatedFeedback.id) {
-            return updatedFeedback;
-          }
-          return feedback;
-        });
-        this.allFeedbacks.set(this.sortByDate(updatedAllFeedbacks, 'updatedAt'));
-        const filteredPendingFeedbacks = updatedAllFeedbacks.filter(
-          feedback => feedback.feedbackStatus === FeedbackStatus.PENDING
-        );
-        this.pendingFeedbacks.set([...filteredPendingFeedbacks]);
-      })
-    );
+          const updatedFeedback: Feedback = {...(existingFeedback ?? ({} as Feedback)), ...partialUpdatedFeedback};
+
+          this.pendingFeedbacks.update(feedbacks => feedbacks.filter(f => f.id !== updatedFeedback.id));
+          this.allFeedbacks.set(this.sortByDate(
+              [
+                updatedFeedback,
+                ...this.allFeedbacks().filter(f => f.id !== updatedFeedback.id)
+              ],
+              'updatedAt'
+            )
+          );
+
+          return updatedFeedback;
+        })
+      );
   }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
