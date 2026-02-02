@@ -30,9 +30,7 @@
         } @else {
           <a 
           [lang]="languageService.selectedLanguage()" class="nav-link" 
-          [ngClass]="{
-            'text-primary': isMobileMode(),
-            'text-secondary': !isMobileMode()}"
+          [ngClass]="isMobileMode() ? 'text-primary' : 'text-secondary'"
           aria-current="page"
           [href]="item.link" >
             {{ item.label | translate }}

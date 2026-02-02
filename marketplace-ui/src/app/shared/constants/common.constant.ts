@@ -12,6 +12,7 @@ export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 export const NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.news',
+    //TODO: replace with market release letter link when available
     link: 'https://developer.axonivy.com/news'
   },
   {
@@ -20,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'common.nav.tutorial',
-    link: 'https://developer.axonivy.com/tutorial'
+    link: 'https://app.supademo.com/demo/cmj01aoib02it0g0iuw4w5nwm?utm_source=link'
   },
   {
     label: 'common.nav.community',
@@ -28,11 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'common.nav.team',
-    link: 'https://developer.axonivy.com/team'
-  },
-  {
-    label: 'common.nav.market',
-    link: '/'
+    link: '/teams'
   }
 ];
 
