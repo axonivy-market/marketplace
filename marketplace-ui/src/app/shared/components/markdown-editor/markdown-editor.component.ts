@@ -20,10 +20,12 @@ import {
 export class MarkdownEditorComponent {
   @ViewChild('mde', { static: true })
   textarea!: ElementRef<HTMLTextAreaElement>;
+  
   @Input() value = '';
   @Input() placeholder = 'Write something...';
   @Input() autosaveId?: string; // optional
   @Output() valueChange = new EventEmitter<string>();
+  isMDEReady = false;
 
   private mde?: EasyMDE;
 
@@ -40,6 +42,7 @@ export class MarkdownEditorComponent {
       spellChecker: false,
       status: false,
     });
+    this.isMDEReady = true;
 
     this.mde.codemirror.on('change', () => {
       // emit changes if needed
@@ -48,45 +51,6 @@ export class MarkdownEditorComponent {
 
     queueMicrotask(() => this.cdr.detectChanges());
   }
-
-  // ngAfterViewInit() {
-
-  //   // if (isPlatformBrowser(this.platformId)) {
-  //   //   this.mde = new EasyMDE({
-  //   //     element: this.textarea.nativeElement,
-  //   //     initialValue: this.value,
-  //   //     placeholder: this.placeholder,
-  //   //     spellChecker: false,
-  //   //     autosave: this.autosaveId
-  //   //       ? { enabled: true, uniqueId: this.autosaveId, delay: 1000 }
-  //   //       : undefined,
-  //   //     status: false,
-  //   //     toolbar: [
-  //   //       'bold',
-  //   //       'italic',
-  //   //       'heading',
-  //   //       '|',
-  //   //       'quote',
-  //   //       'unordered-list',
-  //   //       'ordered-list',
-  //   //       '|',
-  //   //       'link',
-  //   //       'image',
-  //   //       'table',
-  //   //       '|',
-  //   //       'preview',
-  //   //       'side-by-side',
-  //   //       'fullscreen',
-  //   //       '|',
-  //   //       'guide'
-  //   //     ]
-  //   //   });
-
-  //   //   this.mde.codemirror.on('change', () => {
-  //   //     this.valueChange.emit(this.mde!.value());
-  //   //   });
-  //   // }
-  // }
 
   ngOnDestroy(): void {
     this.mde?.toTextArea();

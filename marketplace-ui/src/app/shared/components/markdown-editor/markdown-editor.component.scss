@@ -1,11 +1,8 @@
-:ng-deep button {
-  &:hover {
-    color: black !important;
-    background-color: red !important;
-  }
+.mde-hidden {
+  visibility: hidden;
 }
 
-:ng-deep .EasyMDEContainer button:hover {
-  color: black !important;
-  background-color: red !important;
+::ng-deep .EasyMDEContainer .editor-toolbar button:hover {
+  color: black;
+  // background-color: red;
 }
