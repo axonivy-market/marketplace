@@ -1,7 +1,7 @@
 <section class="container py-5 team-introduction">
     <div class="text-center mb-5 header">
         <h2 class="display-5 fw-bold mb-4 d-inline-block position-relative text-dark">Meet Team Octopus</h2>
-        <p class="lead text-secondary mx-auto" style="max-width: 800px;">
+        <p class="lead text-secondary mx-auto">
       As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. 
       We specialize in the end-to-end lifecycle management of platform extensions—delivering new integration solutions, 
       ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.
@@ -16,11 +16,17 @@
             <div class="speech-bubble">{{ po.quote }}</div>
             }
         <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
-            <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm mb-4 mb-md-0 me-md-5 flex-shrink-0 overflow-hidden bg-light position-relative"
-                style="width: 200px; height: 200px;">
-                <img [src]="po.imageUrl" [alt]="po.name" class="img-fluid w-100 h-100 object-fit-cover"
-                    (error)="handleImageError($event)">
-            </div>
+            <div class="position-relative mb-4 mb-md-0 me-md-5 flex-shrink-0">
+                <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
+                    <img [src]="po.imageUrl" [alt]="po.name" class="img-fluid w-100 h-100 object-fit-cover"
+                        (error)="handleImageError($event)">
+                </div>
+                <!-- Status Circle -->
+                <div
+                    class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
+                    {{ po.statusEmoji }}
+                </div>
+                </div>
         <div class="content flex-grow-1">
             <h3 class="fw-bold mb-2 text-dark">{{ po.name }}</h3>
             <span class="text-primary fw-semibold text-uppercase small d-block mb-3">{{ po.title }}</span>
@@ -47,14 +53,20 @@
             @if (member.quote) {
             <div class="speech-bubble">{{ member.quote }}</div>
             }
-        <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm mx-auto mb-3 overflow-hidden bg-light position-relative"
-            style="width: 120px; height: 120px;">
-            <img [src]="member.imageUrl" [alt]="member.name" class="img-fluid w-100 h-100 object-fit-cover"
-                (error)="handleImageError($event)">
-        </div>
+        <div class="position-relative d-inline-block mx-auto mb-3">
+            <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
+                <img [src]="member.imageUrl" [alt]="member.name" class="img-fluid w-100 h-100 object-fit-cover"
+                    (error)="handleImageError($event)">
+            </div>
+            <!-- Status Circle -->
+            <div
+                class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
+                {{ member.statusEmoji }}
+            </div>
+            </div>
         <div class="card-body p-0 d-flex flex-column">
             <h3 class="h5 fw-bold mb-1 text-dark">{{ member.name }}</h3>
-            <span class="text-primary fw-semibold text-uppercase small d-block mb-3" style="font-size: 0.8rem;">{{ member.title
+            <span class="text-primary fw-semibold text-uppercase small d-block mb-3 member-title">{{ member.title
                 }}</span>
             <p class="card-text text-secondary mb-4 small flex-grow-1">{{ member.intro }}</p>
             <div class="social-links d-flex gap-2 justify-content-center mt-auto">

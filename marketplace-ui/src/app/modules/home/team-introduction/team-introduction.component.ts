@@ -9,6 +9,7 @@ interface TeamMember {
   linkedin: string;
   github: string;
   quote?: string;
+  statusEmoji?: string;
 }
 
 @Component({
@@ -28,7 +29,8 @@ export class TeamIntroductionComponent {
     linkedin: 'https://www.linkedin.com/in/sabinegillner/',
     github: 'https://github.com/sabinegillner',
     quote:
-      'Innovation starts with understanding the human mind and empowering teams to build intelligent solutions.'
+      'Innovation starts with understanding the human mind and empowering teams to build intelligent solutions.',
+    statusEmoji: '🧠'
   };
 
   members: TeamMember[] = [
@@ -39,7 +41,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=5',
       linkedin: 'https://linkedin.com/in/sarahmiller-placeholder',
       github: 'https://github.com/sarahmiller',
-      quote: 'Delete half the code, double the features.'
+      quote: 'Delete half the code, double the features.',
+      statusEmoji: '🗑️'
     },
     {
       name: 'Hung Pham',
@@ -48,7 +51,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=3',
       linkedin: 'https://linkedin.com/in/jameswilson-placeholder',
       github: 'https://github.com/jameswilson',
-      quote: 'Another version, another future.'
+      quote: 'Another version, another future.',
+      statusEmoji: '📦'
     },
     {
       name: 'Dinh Nguyen',
@@ -57,7 +61,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=9',
       linkedin: 'https://linkedin.com/in/mariagarcia-placeholder',
       github: 'https://github.com/mariagarcia',
-      quote: 'Another tool. Big dreams'
+      quote: 'Another tool. Big dreams',
+      statusEmoji: '🛠️'
     },
     {
       name: 'Hoang Nguyen',
@@ -66,7 +71,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=8',
       linkedin: 'https://linkedin.com/in/davidlee-placeholder',
       github: 'https://github.com/davidlee',
-      quote: 'I don’t fix bugs. I heal margins.'
+      quote: 'I don’t fix bugs. I heal margins.',
+      statusEmoji: '📏'
     },
     {
       name: 'Phuc Nguyen',
@@ -75,7 +81,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=1',
       linkedin: 'https://linkedin.com/in/emmadavis-placeholder',
       github: 'https://github.com/emmadavis',
-      quote: 'Translation is my cardio.'
+      quote: 'Translation is my cardio.',
+      statusEmoji: '🌍'
     },
     {
       name: 'Thuy Nguyen',
@@ -84,7 +91,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=4',
       linkedin: 'https://linkedin.com/in/michaelchen-placeholder',
       github: 'https://github.com/michaelchen',
-      quote: 'I build tools for people who build tools.'
+      quote: 'I build tools for people who build tools.',
+      statusEmoji: '🏗️'
     },
     {
       name: 'Quan Nguyen',
@@ -93,7 +101,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=20',
       linkedin: 'https://linkedin.com/in/lisataylor-placeholder',
       github: 'https://github.com/lisataylor',
-      quote: 'One script. Many notifications'
+      quote: 'One script. Many notifications',
+      statusEmoji: '📢'
     },
     {
       name: 'Huy Truong',
@@ -102,7 +111,8 @@ export class TeamIntroductionComponent {
       imageUrl: 'https://i.pravatar.cc/300?img=13',
       linkedin: 'https://linkedin.com/in/robertbrown-placeholder',
       github: 'https://github.com/robertbrown',
-      quote: 'Connecting systems, one endpoint at a time.'
+      quote: 'Connecting systems, one endpoint at a time.',
+      statusEmoji: '🔌'
     }
   ];
 
