@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build-api
 WORKDIR /app
 COPY . .
-RUN mvn clean install -DskipTests
+RUN mvn clean install -pl market-neo -am -DskipTests
 
 # Stage 2: Run the application
 FROM tomcat:10.1-jdk21-openjdk-slim
