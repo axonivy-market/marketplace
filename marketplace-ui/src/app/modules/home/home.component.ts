@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { ProductComponent } from '../product/product.component';
-import { TeamIntroductionComponent } from './team-introduction/team-introduction.component';
 import { Router } from '@angular/router';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { FaviconService } from '../../shared/services/favicon.service';
@@ -13,7 +12,7 @@ import {
 
 @Component({
   selector: 'app-home',
-  imports: [ProductComponent, TeamIntroductionComponent],
+  imports: [ProductComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
