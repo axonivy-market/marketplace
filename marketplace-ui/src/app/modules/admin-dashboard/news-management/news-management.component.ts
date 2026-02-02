@@ -38,9 +38,9 @@ export class NewsManagementComponent {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   easyMDE!: EasyMDE;
-  body: string = 'abc';
+  releaseLetterValue = 'abc';
 
   onSubmit() {
-    console.log('Abc');
+    console.log(this.releaseLetterValue);
   }
 }
