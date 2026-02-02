@@ -1,5 +1,7 @@
 package com.axonivy.market.entity;
 
+import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -9,8 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
-
-import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
 
 @Getter
 @Setter

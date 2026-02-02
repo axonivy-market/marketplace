@@ -1,26 +1,17 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.Product;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
-import com.axonivy.market.exceptions.model.MarketException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.model.FeedbackProjection;
-import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 import com.axonivy.market.service.ReleaseLetterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Log4j2
 @Service
