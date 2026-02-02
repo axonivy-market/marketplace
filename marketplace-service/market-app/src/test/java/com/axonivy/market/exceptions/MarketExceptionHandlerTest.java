@@ -1,6 +1,7 @@
 package com.axonivy.market.exceptions;
 
-import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.InvalidParamException;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.*;
 import com.axonivy.market.model.Message;
 import org.junit.jupiter.api.BeforeEach;

@@ -2,10 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
