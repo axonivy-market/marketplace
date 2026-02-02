@@ -115,9 +115,4 @@ export class TeamIntroductionComponent {
       statusEmoji: '🔌'
     }
   ];
-
-  handleImageError(event: any) {
-    event.target.src = 'assets/images/misc/default-avatar.png'; // Fallback path, might need to be adjusted based on available assets
-    // fallback logic to just a gray circle if asset missing could be done in css but this is fine
-  }
 }
