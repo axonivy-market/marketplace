@@ -17,6 +17,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MarkdownEditorComponent } from '../../../shared/components/markdown-editor/markdown-editor.component';
+import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
+import { PAGE } from '../../../shared/constants/query.params.constant';
 
 @Component({
   selector: 'app-news-management',
@@ -39,6 +41,8 @@ export class NewsManagementComponent {
   pageTitleService = inject(PageTitleService);
   easyMDE!: EasyMDE;
   releaseLetterValue = 'abc';
+  releaseVersion= '';
+  PAGE = PAGE;
 
   onSubmit() {
     console.log(this.releaseLetterValue);

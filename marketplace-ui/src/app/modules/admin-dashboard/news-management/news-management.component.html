@@ -25,6 +25,17 @@
   </div>
 </div>
 <div>
+  <input
+    id="release-version"
+    autocomplete="on"
+    type="text"
+    [lang]="languageService.selectedLanguage()"
+    class="form-control input__search bg-secondary border-0 search-input mb-4"
+    [placeholder]="translateService.get('common.admin.newsManagement.releaseVersionPlaceholder') | async"
+    [ariaLabel]="translateService.get('common.admin.newsManagement.releaseVersionPlaceholder') | async"
+    aria-describedby="search" />
+</div>
+<div>
   <app-markdown-editor
     [(contentValue)]="releaseLetterValue"
     [autosaveId]="'release-letter-content'"></app-markdown-editor>

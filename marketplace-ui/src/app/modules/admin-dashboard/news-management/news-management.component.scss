@@ -6,3 +6,31 @@
   font-weight: 400;
   line-height: 16.8px;
 }
+
+$rowHeight: 37px;
+
+.input-group-text {
+  border-radius: 10px;
+  padding: 0 15px;
+}
+
+.input-group {
+  margin-top: 3rem;
+  margin-bottom: 7.2rem;
+
+  @media screen and (max-width: 991px) {
+    margin-bottom: 3.2rem;
+  }
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+.input__search {
+  height: 43px;
+}
+
+.search-input {
+  font-size: 1.4rem;
+}
