@@ -75,7 +75,7 @@ class ProductControllerTest {
     Product product = new Product();
     Page<Product> productPage = new PageImpl<>(List.of(product), PageRequest.of(0, 20), 1);
 
-    when(coreProductService.findProducts(any(), any(), any(), any(), any()))
+    when(coreProductService.findProducts(any(), any(), any(), any()))
         .thenReturn(productPage);
     doReturn(PagedModel.of(
         List.of(new ProductModel()),
@@ -90,7 +90,7 @@ class ProductControllerTest {
 
   @Test
   void testFindProductsEmpty() {
-    when(coreProductService.findProducts(any(), any(), any(), any(), any()))
+    when(coreProductService.findProducts(any(), any(), any(), any()))
         .thenReturn(Page.empty());
     doReturn(PagedModel.of(
         List.of(),

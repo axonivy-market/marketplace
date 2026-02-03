@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreCommonConstants {
-
   public static final String SLASH = "/";
   public static final String DOT_SEPARATOR = ".";
   public static final String DASH_SEPARATOR = "-";

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.core.constants.CoreMavenConstants.TEST_ARTIFACTID;
+import static com.axonivy.market.core.constants.CoreMavenConstants.TEST_ARTIFACT_ID;
 import static com.axonivy.market.core.constants.CoreProductJsonConstants.NAME;
 
 @Log4j2
@@ -90,7 +90,7 @@ public class CoreVersionServiceImpl implements CoreVersionService {
     return mavenArtifactVersions.stream().filter(
         artifact -> artifact.getId().getProductVersion().equals(mavenVersion)).distinct().sorted(
         Comparator.comparing((MavenArtifactVersion artifact) -> artifact.getId().getArtifactId()).thenComparing(
-            artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACTID))).toList();
+            artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACT_ID))).toList();
   }
 
   public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {

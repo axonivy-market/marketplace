@@ -9,5 +9,4 @@ import java.util.List;
 @Repository
 public interface CoreProductJsonContentRepository extends JpaRepository<ProductJsonContent, String> {
   List<ProductJsonContent> findByProductIdAndVersion(String productId, String version);
-
 }

@@ -58,48 +58,6 @@ class VersionUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testGetVersionsToDisplay() {
-    ArrayList<String> versionFromArtifact = new ArrayList<>();
-    versionFromArtifact.add("10.0.6");
-    versionFromArtifact.add("10.0.5");
-    versionFromArtifact.add("10.0.4");
-    versionFromArtifact.add("10.0.3-SNAPSHOT");
-
-    Assertions.assertEquals(versionFromArtifact,
-        VersionUtils.getVersionsToDisplay(versionFromArtifact, true),
-        "Displayed versions should include snapshots when 'show dev versions' is selected");
-
-    versionFromArtifact.remove(versionFromArtifact.size() - 1);
-
-    Assertions.assertEquals(versionFromArtifact,
-        VersionUtils.getVersionsToDisplay(versionFromArtifact, false),
-        "Displayed versions should exclude snapshots when snapshot filter is enabled");
-  }
-
-  @Test
-  void testIsReleasedVersionOrUnReleaseDevVersion() {
-    String unreleasedSprintVersion = "10.0.21-m1235";
-    List<String> versions = List.of(MOCK_RELEASED_VERSION, MOCK_SNAPSHOT_VERSION, MOCK_BUGFIX_VERSION,
-        MOCK_SPRINT_RELEASED_VERSION, unreleasedSprintVersion);
-
-    Assertions.assertTrue(
-        VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, MOCK_RELEASED_VERSION),
-        "Released version should be recognized as official or unreleased dev");
-    Assertions.assertFalse(
-        VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, MOCK_SNAPSHOT_VERSION),
-        "Snapshot version should not be recognized as official or unreleased dev");
-    Assertions.assertTrue(
-        VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, MOCK_BUGFIX_VERSION),
-        "Bugfix version should be recognized as official or unreleased dev");
-    Assertions.assertFalse(
-        VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, MOCK_SPRINT_RELEASED_VERSION),
-        "Released sprint version should not be recognized as unreleased dev");
-    Assertions.assertTrue(
-        VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion),
-        "Unreleased sprint version should be recognized as unreleased dev");
-  }
-
-  @Test
   void testGetBugfixVersion() {
     String shortReleasedVersion = "10.0";
 

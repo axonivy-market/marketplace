@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CoreCustomProductRepository {
-
   Page<Product> searchByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 
   Product findByCriteria(ProductSearchCriteria criteria);

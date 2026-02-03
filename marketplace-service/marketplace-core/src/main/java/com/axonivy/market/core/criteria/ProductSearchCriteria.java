@@ -16,14 +16,11 @@ import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductSearchCriteria {
-
   public static final List<DocumentField> DEFAULT_SEARCH_FIELDS = List.of(NAMES, SHORT_DESCRIPTIONS);
-
   private String keyword;
   private TypeOption type;
   private Language language;
   private List<DocumentField> fields;
   private List<DocumentField> excludeFields;
   private boolean isListed;
-
 }
