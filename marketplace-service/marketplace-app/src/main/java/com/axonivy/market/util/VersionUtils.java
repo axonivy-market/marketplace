@@ -6,7 +6,7 @@ import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.core.utils.CoreVersionUtils;
-import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.core.enums.DevelopmentVersion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;

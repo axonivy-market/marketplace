@@ -4,7 +4,8 @@ import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.entity.Metadata;
-import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.core.enums.DevelopmentVersion;
+import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_PREFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class VersionFactory {
+public class VersionFactory extends CoreVersionFactory {
   private static final String PROJECT_VERSION = "${project.version}";
   // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
   private static final Pattern RANGE_VERSION_PATTERN = Pattern.compile("[\\[\\]()]");
@@ -53,36 +54,6 @@ public class VersionFactory {
       return parts[CommonConstants.ONE].trim();
     }
     return parts[CommonConstants.ZERO].trim();
-  }
-
-  public static String get(List<String> versions, String requestedVersion) {
-    var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()
-        .filter(Objects::nonNull)
-        .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1)).toList();
-    // Redirect to the newest version for special keywords
-    var version = DevelopmentVersion.of(requestedVersion);
-
-    // Get latest released version if requested version is 'latest' or 'sprint'
-    if (version == DevelopmentVersion.LATEST || version == DevelopmentVersion.SPRINT) {
-      return sortedVersions.stream().filter(VersionUtils::isReleasedVersion)
-          .findFirst().orElse(null);
-    }
-
-    if (version != null && !sortedVersions.isEmpty()) {
-      return sortedVersions.get(0);
-    }
-
-    // e.g. 10.0-dev
-    if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
-      requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
-    }
-
-    // e.g. dev-10.0
-    if (requestedVersion.startsWith(DEV_RELEASE_PREFIX)) {
-      requestedVersion = requestedVersion.replace(DEV_RELEASE_PREFIX, EMPTY);
-    }
-
-    return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
   public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion) {
@@ -141,12 +112,5 @@ public class VersionFactory {
     }
 
     return result;
-  }
-
-  private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    if (CollectionUtils.isEmpty(releaseVersions)) {
-      return version;
-    }
-    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(releaseVersions.get(0));
   }
 }

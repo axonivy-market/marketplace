@@ -6,6 +6,7 @@ import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.core.service.CoreProductService;
 import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.stable.assembler.ProductModelAssembler;
+import com.axonivy.market.stable.service.VersionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.when;
 class ProductControllerTest {
 
   @Mock
-  private CoreVersionService versionService;
+  private VersionService versionService;
 
   @Mock
   private CoreProductService coreProductService;
@@ -81,7 +82,7 @@ class ProductControllerTest {
         new PagedModel.PageMetadata(1, 0, 1)
     )).when(pagedResourcesAssembler).toModel(any(Page.class), any(ProductModelAssembler.class));
 
-    ResponseEntity<?> result = productController.findProducts("all", "test", "en", false, PageRequest.of(0, 20));
+    ResponseEntity<?> result = productController.findProducts("all", "test", "en", PageRequest.of(0, 20));
 
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
     assertNotNull(result.getBody(), "Expected response body to not be null");
@@ -96,7 +97,7 @@ class ProductControllerTest {
         new PagedModel.PageMetadata(0, 0, 0)
     )).when(pagedResourcesAssembler).toEmptyModel(any(Page.class), any());
 
-    ResponseEntity<?> result = productController.findProducts(null, null, null, false, PageRequest.of(0, 20));
+    ResponseEntity<?> result = productController.findProducts(null, null, null, PageRequest.of(0, 20));
 
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
     assertNotNull(result.getBody(), "Expected response body to not be null");

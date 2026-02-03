@@ -1,7 +1,7 @@
 package com.axonivy.market.factory;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.core.enums.DevelopmentVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

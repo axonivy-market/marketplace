@@ -8,7 +8,7 @@ import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
-import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;

@@ -12,5 +12,7 @@ public class CoreMavenConstants {
   public static final String MAIN_VERSION_REGEX = "\\.";
   public static final String TEST_ARTIFACTID = "-test";
   public static final String DEFAULT_IVY_MAVEN_BASE_URL = "https://maven.axonivy.com";
+  public static final String DEV_RELEASE_POSTFIX = "-dev";
+  public static final String DEV_RELEASE_PREFIX = "dev-";
 }
 

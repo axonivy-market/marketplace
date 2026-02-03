@@ -24,6 +24,10 @@ public class CoreProductServiceImpl implements CoreProductService {
   private final CoreProductRepository coreProductRepo;
 
 
+  /**
+   * @deprecated This method is deprecated and will be no longer use in future release.
+   *             Use {@link #findProducts(String type, String keyword, String language, Pageable pageable)} instead.
+   */
   @Override
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
@@ -37,5 +41,10 @@ public class CoreProductServiceImpl implements CoreProductService {
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     }
     return coreProductRepo.searchByCriteria(searchCriteria, pageable);
+  }
+
+  @Override
+  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
+    return findProducts(type, keyword, language, false, pageable);
   }
 }
