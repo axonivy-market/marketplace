@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build-api
 WORKDIR /app
 COPY . .
-RUN mvn clean install -DskipTests && ls /app/marketplace-stable/target
+RUN mvn clean install -DskipTests -pl marketplace-stable -am
 
 # Stage 2: Run the application
 FROM tomcat:10.1-jdk21-openjdk-slim
@@ -12,8 +12,7 @@ RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
 # Copy the WAR file to the webapps directory in Tomcat
 ARG BUILD_VERSION
-COPY --from=build-api /app/marketplace-stable/target/marketplace-stable-${BUILD_VERSION}.war
-/usr/local/tomcat/webapps/marketplace-stable.war
+COPY --from=build-api /app/marketplace-stable/target/marketplace-stable-${BUILD_VERSION}.war /usr/local/tomcat/webapps/marketplace-stable.war
 
 # Expose port 8080
 EXPOSE 8080
