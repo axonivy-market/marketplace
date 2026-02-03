@@ -9,7 +9,6 @@ import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
-import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.service.impl.CoreVersionServiceImpl;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -19,9 +18,6 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,12 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -47,9 +41,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private static final Pattern MAIN_VERSION_PATTERN =
       Pattern.compile(MavenConstants.MAIN_VERSION_REGEX);
 
-  private final ProductJsonContentRepository productJsonRepo;
   private final ProductMarketplaceDataService productMarketplaceDataService;
-  private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
@@ -57,8 +49,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
       CoreMetadataRepository coreMetadataRepository, ProductJsonContentRepository productJsonRepo,
       ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo) {
-    super(coreMavenArtifactVersionRepo, coreMetadataRepository);
-    this.productJsonRepo = productJsonRepo;
+    super(productJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository);
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.metadataRepo = metadataRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
@@ -67,18 +58,9 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   @Override
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {
-    Map<String, Object> result = new HashMap<>();
-    try {
-      var productJsonContent =
-          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
-      if (ObjectUtils.isEmpty(productJsonContent)) {
-        return new HashMap<>();
-      }
-      result = mapper.readValue(productJsonContent.getContent(), Map.class);
-      result.computeIfAbsent(NAME, k -> productJsonContent.getName());
+    Map<String, Object> result = getProductJsonContentByIdAndVersion(productId, designerVersion);
+    if (!CollectionUtils.isEmpty(result)) {
       productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
-    } catch (JsonProcessingException jsonProcessingException) {
-      log.error(jsonProcessingException);
     }
     return result;
   }

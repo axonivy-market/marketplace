@@ -5,7 +5,6 @@ import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.core.service.CoreProductService;
-import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

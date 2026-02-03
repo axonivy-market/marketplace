@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.model.VersionAndUrlModel;
 

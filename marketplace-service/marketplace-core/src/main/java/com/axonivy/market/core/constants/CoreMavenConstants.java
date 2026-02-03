@@ -1,6 +1,5 @@
 package com.axonivy.market.core.constants;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
