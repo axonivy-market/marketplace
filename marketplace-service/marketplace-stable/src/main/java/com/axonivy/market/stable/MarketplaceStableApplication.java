@@ -11,8 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication(scanBasePackages = {CORE_BASE_PACKAGE_NAME, "com.axonivy.market.stable"})
 @EnableJpaRepositories(basePackages = CORE_BASE_PACKAGE_REPO_NAME)
 @EntityScan(basePackages = CORE_BASE_PACKAGE_ENTITY_NAME)
-public class MarketNeoApplication {
+public class MarketplaceStableApplication {
   public static void main(String[] args) {
-    SpringApplication.run(MarketNeoApplication.class, args);
+    SpringApplication.run(MarketplaceStableApplication.class, args);
   }
 }

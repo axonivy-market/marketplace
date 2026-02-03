@@ -16,7 +16,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class CoreVersionFactory {
 
-
   public static String findVersionStartWithOrNull(List<String> releaseVersions, String version) {
     if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
