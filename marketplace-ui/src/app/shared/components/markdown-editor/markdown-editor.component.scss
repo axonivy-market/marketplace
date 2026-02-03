@@ -8,15 +8,19 @@
 
 
 ::ng-deep .EasyMDEContainer {
+  .editor-toolbar {
+    font-size: 1.6rem;
+  }
+
   .CodeMirror {
-    font-size: 18px;
+    font-size: 1.8rem;
   }
 
   .editor-preview {
     h2 {
       padding-bottom: 0.5rem;
       margin-bottom: 2rem;
-      border-bottom: solid 1px var(--ivy-text-secondary-color);
+      border-bottom: solid 0.1rem var(--ivy-text-secondary-color);
     }
 
     ul li {
@@ -25,19 +29,19 @@
   }
 
   h1 {
-    font-size: 24px;
+    font-size: 2.4rem;
   }
 
   h2 {
-    font-size: 22px;
+    font-size: 2.2rem;
   }
 
   h3 {
-    font-size: 20px;
+    font-size: 2rem;
   }
 
   h4 {
-    font-size: 18px;
+    font-size: 1.8rem;
   }
 
   h5 {
@@ -47,14 +51,14 @@
   p,
   ul,
   li {
-    font-size: 18px;
+    font-size: 1.8rem;
     font-weight: 400;
     color: var(--ivy-text-primary-color);
   }
 
   ul,
   li {
-    margin: 25.2px 0;
+    margin: 2.52rem 0;
   }
 
   a {
@@ -75,14 +79,14 @@
     th,
     td {
       text-align: left;
-      padding: 8px;
+      padding: 0.8rem;
       word-wrap: break-word;
       white-space: normal;
-      font-size: 12px;
+      font-size: 1.2rem;
     }
 
     tr {
-      border-bottom: 1px solid var(--ivy-border-color);
+      border-bottom: 0.1rem solid var(--ivy-border-color);
     }
   }
 

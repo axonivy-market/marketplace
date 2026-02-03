@@ -23,6 +23,17 @@ $rowHeight: 37px;
   }
 }
 
+th h5 {
+  font-weight: 600;
+  line-height: 140%;
+  vertical-align: middle;
+}
+
+td {
+  height: 5rem;
+  vertical-align: middle;
+}
+
 .form-control {
   border-radius: 10px;
 }
@@ -33,4 +44,8 @@ $rowHeight: 37px;
 
 .search-input {
   font-size: 1.4rem;
+}
+
+.table {
+  margin-top: 9rem;
 }

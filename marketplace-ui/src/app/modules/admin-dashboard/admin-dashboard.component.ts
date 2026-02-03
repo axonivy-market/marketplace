@@ -96,8 +96,6 @@ export class AdminDashboardComponent implements OnInit {
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
-        console.log(executions);
-        
         this.applySyncTaskExecutions(executions);
         this.pageTitleService.setTitleOnLangChange(
           'common.admin.sync.pageTitle'

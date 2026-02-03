@@ -11,6 +11,7 @@ import {
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
+import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -116,5 +117,9 @@ export class AdminDashboardService {
         LoadingComponentId.SECURITY_MONITOR
       )
     });
+  }
+
+  getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.RELEASE_LETTER}`);
   }
 }

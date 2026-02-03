@@ -1,24 +1,15 @@
-import {
-  afterNextRender,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Inject,
-  inject,
-  NgZone,
-  PLATFORM_ID,
-  ViewChild
-} from '@angular/core';
+import { AdminDashboardService } from './../admin-dashboard.service';
+import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, inject, signal, Signal, ViewChild, WritableSignal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { PageTitleService } from '../../../shared/services/page-title.service';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MarkdownEditorComponent } from '../../../shared/components/markdown-editor/markdown-editor.component';
-import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
-import { PAGE } from '../../../shared/constants/query.params.constant';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+import { ReleaseLetterResponse } from '../../../shared/models/apis/release-letter-response.model';
 
 @Component({
   selector: 'app-news-management',
@@ -39,12 +30,25 @@ export class NewsManagementComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  adminDashboardService = inject(AdminDashboardService);
+  router = inject(Router);
   easyMDE!: EasyMDE;
   releaseLetterValue = 'abc';
-  releaseVersion= '';
-  PAGE = PAGE;
+  releaseVersion = '';
+  MODE = NEWS_MANAGEMENT_MODE;
+  currentMode: WritableSignal<string> = signal(NEWS_MANAGEMENT_MODE.view);
+  currentModePlain = NEWS_MANAGEMENT_MODE.view;
+  releaseLetterList: WritableSignal<ReleaseLetterResponse[]> = signal([]);
 
-  onSubmit() {
-    console.log(this.releaseLetterValue);
+  ngOnInit() {
+    this.adminDashboardService.getRelaseLetters().subscribe(res => {
+      console.log(res);
+      this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+    })
+  }
+
+  onSubmit(event: Event) {
+    event.preventDefault();
+    this.router.navigate(['/internal-dashboard']);
   }
 }

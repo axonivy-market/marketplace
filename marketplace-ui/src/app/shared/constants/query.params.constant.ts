@@ -1,4 +1,3 @@
-
 export const QUERY_PARAM_KEY = {
   TYPE: 'type',
   SORT: 'sort',
@@ -11,17 +10,23 @@ export const QUERY_PARAM_KEY = {
   SEARCH_PAGE: 'searchPage'
 };
 
-export const ACTIVE_TAB = { 
-    STANDARD: 'standard',
-    FOCUSED: 'focused'
-}
+export const ACTIVE_TAB = {
+  STANDARD: 'standard',
+  FOCUSED: 'focused'
+};
 
 export const PAGE = {
-    HOME: 'home',
-    MONITOR: 'monitor'
-} 
+  HOME: 'home',
+  MONITOR: 'monitor'
+};
 
 export const SEARCH_KEY = {
   SEARCH: 'search',
   REPO_SEARCH: 'repoSearch'
-}
+};
+
+export const NEWS_MANAGEMENT_MODE = {
+  view: 'view',
+  create: 'create',
+  edit: 'edit'
+};

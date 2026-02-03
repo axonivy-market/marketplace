@@ -48,7 +48,7 @@ export class MarkdownEditorComponent {
       autosave: {
         enabled: true,
         uniqueId: this.autosaveId,
-        delay: 1000,
+        delay: 500,
         submit_delay: 5000
       },
       spellChecker: false,

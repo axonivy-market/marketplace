@@ -55,34 +55,44 @@ export const routes: Routes = [
     children: [
       {
         path: 'security-monitor',
-        component: SecurityMonitorComponent,
+        component: SecurityMonitorComponent
         // canActivate: [AdminAuthGuard]
       },
       {
         path: 'feedback-approval',
-        component: FeedbackApprovalComponent,
+        component: FeedbackApprovalComponent
         // canActivate: [AdminAuthGuard]
       },
       {
         path: 'sorting',
-        component: CustomSortComponent,
+        component: CustomSortComponent
         // canActivate: [AdminAuthGuard]
       },
       {
         path: 'quick-access',
-        component: QuickAccessComponent,
+        component: QuickAccessComponent
         // canActivate: [AdminAuthGuard]
       },
       {
         path: 'news-management',
         component: NewsManagementComponent,
         // canActivate: [AdminAuthGuard]
+        children: [
+          {
+            path: 'edit:release-id',
+            component: SecurityMonitorComponent
+            // canActivate: [AdminAuthGuard]
+          }
+        ]
       }
     ]
   },
   {
     path: 'monitoring/:repo/:workflow',
-    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
+    loadComponent: () =>
+      import('./modules/monitor/repo-report/repo-report.component').then(
+        m => m.RepoReportComponent
+      )
   },
   {
     path: ':id/:version/lib/:artifact',
@@ -106,8 +116,7 @@ export const routes: Routes = [
   // Home module (static root)
   {
     path: '',
-    loadChildren: () =>
-      import('./modules/home/home.routes').then(m => m.routes)
+    loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
 
   // Wildcard route for unmatched paths (404)

@@ -18,10 +18,6 @@ import org.springframework.hateoas.server.core.Relation;
 public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> {
 
   @EqualsAndHashCode.Include
-  @Schema(description = "Id of release letter", example = "667940ecc881b1d0db072f9e")
-  private String id;
-
-  @EqualsAndHashCode.Include
   @Schema(description = "Release version", example = "S42")
   private String releaseVersion;
 
