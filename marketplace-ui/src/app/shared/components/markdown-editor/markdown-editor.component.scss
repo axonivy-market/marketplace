@@ -6,7 +6,12 @@
   color: black;
 }
 
+
 ::ng-deep .EasyMDEContainer {
+  .CodeMirror {
+    font-size: 18px;
+  }
+
   .editor-preview {
     h2 {
       padding-bottom: 0.5rem;
