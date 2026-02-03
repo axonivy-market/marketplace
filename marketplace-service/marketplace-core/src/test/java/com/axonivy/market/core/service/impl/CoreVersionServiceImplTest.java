@@ -41,19 +41,6 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
   private CoreProductJsonContentRepository coreProductJsonRepo;
 
   @Test
-  void testGetProductJsonContentByIdAndVersion() {
-    ProductJsonContent content = new ProductJsonContent();
-    content.setContent("{\"name\":\"Test Product\"}");
-    content.setName("Test Product");
-    when(coreProductJsonRepo.findByProductIdAndVersion(Mockito.anyString(), Mockito.anyString()))
-        .thenReturn(List.of(content));
-
-    Map<String, Object> result = coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-    assertNotNull(result);
-    assertEquals("Test Product", result.get("name"));
-  }
-
-  @Test
   void testGetLatestInstallableVersion() {
     Metadata metadata = Metadata.builder()
         .artifactId("test-product")

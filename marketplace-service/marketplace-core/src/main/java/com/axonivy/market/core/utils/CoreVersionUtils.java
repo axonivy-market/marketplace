@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.axonivy.market.core.constants.CoreCommonConstants.*;
 import static com.axonivy.market.core.constants.CoreMavenConstants.*;
@@ -37,12 +37,10 @@ public class CoreVersionUtils {
   }
 
   public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
-    Stream<String> versionStream = versions.stream();
-    if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)).sorted(
-          new LatestVersionComparator()).toList();
-    }
-    return versions.stream().filter(CoreVersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
+    Predicate<String> displayVersionFilter = BooleanUtils.isTrue(isShowDevVersion)
+        ? version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)
+        : CoreVersionUtils::isReleasedVersion;
+    return versions.stream().filter(displayVersionFilter).distinct().sorted(new LatestVersionComparator()).toList();
   }
 
   public static boolean isReleasedVersion(String version) {

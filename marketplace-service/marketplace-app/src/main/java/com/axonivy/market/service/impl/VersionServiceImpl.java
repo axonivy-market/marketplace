@@ -21,6 +21,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,11 +53,11 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
-  public VersionServiceImpl(CoreProductJsonContentRepository coreProductJsonRepo,
-      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo, CoreMetadataRepository coreMetadataRepository,
-      ProductJsonContentRepository productJsonRepo, ProductMarketplaceDataService productMarketplaceDataService,
-      MetadataRepository metadataRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo) {
-    super(coreProductJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository);
+  public VersionServiceImpl(CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
+      CoreMetadataRepository coreMetadataRepository, ProductJsonContentRepository productJsonRepo,
+      ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepo) {
+    super(coreMavenArtifactVersionRepo, coreMetadataRepository);
     this.productJsonRepo = productJsonRepo;
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.metadataRepo = metadataRepo;

@@ -3,6 +3,7 @@ package com.axonivy.market.core.service.impl;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
@@ -41,7 +42,6 @@ public class CoreVersionServiceImpl implements CoreVersionService {
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String designerVersion) {
 
     Map<String, Object> result = new HashMap<>();
-    //TODO:find best match
     if (StringUtils.isEmpty(designerVersion)) {
       designerVersion = getLatestInstallableVersion(productId);
     }
@@ -64,6 +64,9 @@ public class CoreVersionServiceImpl implements CoreVersionService {
       String designerVersion) {
     List<MavenArtifactVersion> mavenArtifactVersions = coreMavenArtifactVersionRepo.findByProductId(productId);
     List<String> mavenVersions = CoreVersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
+    if (StringUtils.isNotBlank(designerVersion)) {
+      mavenVersions = List.of(CoreVersionFactory.get(mavenVersions, designerVersion));
+    }
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     for (String mavenVersion : mavenVersions) {
       List<MavenArtifactVersion> artifactsByVersion = filterArtifactByVersion(mavenArtifactVersions, mavenVersion);

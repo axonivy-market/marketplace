@@ -6,6 +6,7 @@ import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.core.service.CoreProductService;
 import com.axonivy.market.core.service.CoreVersionService;
+import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -41,7 +42,7 @@ import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUC
 @AllArgsConstructor
 @Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
-  private final CoreVersionService versionService;
+  private final VersionService versionService;
   private final CoreProductService coreProductService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
@@ -51,8 +52,10 @@ public class ProductController {
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in "
           + "Ivy designer")
-  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) @Parameter(description =
+          "Product id (from meta.json)", example = "connectivity-demo")String productId,
+      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
+          example = "13.2.0") String designerVersion) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId,
         designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
@@ -61,12 +64,12 @@ public class ProductController {
   @GetMapping(VERSIONS_BY_ID)
   @Operation(summary = "Get product versions by product id", description = "Get all product versions by product id")
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
-          in = ParameterIn.PATH) String id, @RequestParam(name = SHOW_DEV_VERSION, required = false) @Parameter(
-          description = "Option to get Dev Version " + "(Snapshot/ sprint release)",
-          in = ParameterIn.QUERY) boolean isShowDevVersion,
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "connectivity-demo",
+          in = ParameterIn.PATH) String id,
+      @RequestParam(name = SHOW_DEV_VERSION, required = false) @Parameter(description = "Option to get Dev Version "
+          + "(Snapshot/ sprint release)", in = ParameterIn.QUERY) boolean isShowDevVersion,
       @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
-          example = "v10.0.20") String designerVersion) {
+          example = "10.0.20") String designerVersion) {
     List<MavenArtifactVersionModel> models = versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion,
         designerVersion);
     return new ResponseEntity<>(models, HttpStatus.OK);
@@ -90,12 +93,9 @@ public class ProductController {
           in = ParameterIn.QUERY) String keyword,
       @RequestParam(name = LANGUAGE, required = false) @Parameter(description = "Language of product short description",
           in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
-      @RequestParam(name = IS_REST_CLIENT, required = false) @Parameter(
-          description = "Option to render the website in the REST Client Editor of Designer",
-          in = ParameterIn.QUERY) Boolean isRESTClient,
       @PageableDefault(size = Integer.MAX_VALUE) @ParameterObject Pageable pageable) {
 
-    Page<Product> results = coreProductService.findProducts(type, keyword, language, isRESTClient, pageable);
+    Page<Product> results = coreProductService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
