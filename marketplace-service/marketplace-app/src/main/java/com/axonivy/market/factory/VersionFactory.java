@@ -87,10 +87,6 @@ public class VersionFactory extends CoreVersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
-  public static String findVersionStartWith(List<String> releaseVersions, String version) {
-    return Optional.ofNullable(findVersionStartWithOrNull(releaseVersions, version)).orElse(CollectionUtils.firstElement(releaseVersions));
-  }
-
   public static String getBestMatchMajorVersion(List<String> versions, String requestedVersion) {
     return Optional.ofNullable(versions).stream()
         .flatMap(List::stream)
@@ -147,5 +143,12 @@ public class VersionFactory extends CoreVersionFactory {
     }
 
     return result;
+  }
+
+  private static String findVersionStartWith(List<String> releaseVersions, String version) {
+    if (CollectionUtils.isEmpty(releaseVersions)) {
+      return version;
+    }
+    return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(releaseVersions.get(0));
   }
 }
