@@ -27,7 +27,7 @@ export class MarkdownEditorComponent {
 
   @Input()
   autosaveId!: string;
-  
+
   isMDEReady = false;
   contentValue = model<string>('');
   placeholder: string = 'Type your release letter content here...';
@@ -43,6 +43,7 @@ export class MarkdownEditorComponent {
 
     this.mde = new EasyMDE({
       element: this.textarea.nativeElement,
+        // toolbar: ["bold", "italic", "heading", "|", "quote", "code"],
       autofocus: true,
       autosave: {
         enabled: true,
