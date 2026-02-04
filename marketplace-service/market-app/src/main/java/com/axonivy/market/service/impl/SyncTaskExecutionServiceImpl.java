@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -32,12 +34,22 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public SyncTaskExecution start(SyncTaskType jobType) {
     SyncTaskExecution execution = findOrCreate(jobType);
-    execution.setStatus(SyncTaskStatus.RUNNING);
+    if (SyncTaskStatus.RUNNING == execution.getStatus()) {
+      String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(jobType);
+      throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
+    }
+    execution.setStatus(SyncTaskStatus.STARTED);
     execution.setTriggeredAt(LocalDate.now());
     execution.setCompletedAt(null);
-    execution.setMessage(null);
+    execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
 
     return syncTaskExecutionRepo.save(execution);
+  }
+
+  @Transactional
+  @Override
+  public void markStatusRunning(SyncTaskExecution execution, String message) {
+    updateSyncTask(execution, SyncTaskStatus.RUNNING, message);
   }
 
   @Transactional
@@ -80,7 +92,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
-    Objects.requireNonNull(execution, "SyncTaskExecution must not be null");
+    Objects.requireNonNull(execution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
     execution.setStatus(status);
     execution.setCompletedAt(LocalDate.now());
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));

@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -36,10 +38,11 @@ class SyncTaskExecutionServiceImplTest {
 
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
-    assertEquals(SyncTaskStatus.RUNNING, result.getStatus(), "Status should be RUNNING after start");
+    assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
+    assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
+        "Message should be Sync task has started! after start");
     assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
     assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
-    assertNull(result.getMessage(), "Message should be null after start");
   }
 
   @Test
@@ -51,10 +54,23 @@ class SyncTaskExecutionServiceImplTest {
 
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
-    assertEquals(SyncTaskStatus.RUNNING, result.getStatus(), "Status should be RUNNING after start");
+    assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
+    assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
+        "Message should be Sync task has started! after start");
     assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
     assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
-    assertNull(result.getMessage(), "Message should be null after start");
+  }
+
+  @Test
+  void testStartThrowTaskAlreadyRunningExceptionWhenSyncTaskStatusIsRunning() {
+    SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
+    SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
+        SyncTaskStatus.RUNNING).build();
+    when(repo.findByType(type)).thenReturn(Optional.of(existedSyncTaskExecution));
+
+    assertThrows(TaskAlreadyRunningException.class,
+        () -> service.start(type), "Should throw TaskAlreadyRunningException when execution status is " +
+            "RUNNING");
   }
 
   @Test
