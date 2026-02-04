@@ -10,9 +10,13 @@
       "title": "Meet Team Octopus",
       "description": "As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.",
       "po": {
+        "name": "Dr. Sabine Gillner",
         "title": "Senior Product Owner & Team Lead",
         "intro": "Dr. Gillner is an experienced Team Manager and Product Owner specializing in Digitalization and Process Orchestration. With a background in Cognitive Neuroscience and over a decade of leadership in tech and automotive sectors, she brings a unique perspective to innovation and AI.",
-        "quote": "Innovation starts with understanding the human mind and empowering teams to build intelligent solutions."
+        "quote": "Innovation starts with understanding the human mind and empowering teams to build intelligent solutions.",
+        "github": "https://github.com/sabinegillner",
+        "imageUrl": "https://avatars.githubusercontent.com/u/129939502?v=4",
+        "statusEmoji": "🧠"
       }
     },
     "preview": {

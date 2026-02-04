@@ -34,13 +34,6 @@ export class TeamIntroductionComponent implements OnInit {
     });
   }
 
-  po: TeamMember = {
-    name: 'Dr. Sabine Gillner',
-    imageUrl: 'https://avatars.githubusercontent.com/u/129939502?v=4',
-    github: 'https://github.com/sabinegillner',
-    statusEmoji: '🧠'
-  };
-
   members: TeamMember[] = [
     {
       name: 'Hoan Nguyen',

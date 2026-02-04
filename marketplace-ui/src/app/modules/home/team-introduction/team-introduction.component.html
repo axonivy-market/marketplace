@@ -15,22 +15,22 @@
         <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
           <div class="position-relative mb-4 mb-md-0 me-md-5 flex-shrink-0">
             <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
-              <img [src]="po.imageUrl" [alt]="po.name" class="img-fluid w-100 h-100 object-fit-cover"
+              <img [src]="'common.team.po.imageUrl' | translate" [alt]="'common.team.po.name'|translate" class="img-fluid w-100 h-100 object-fit-cover"
                 title="PO Image"/>
             </div>
             <div
               class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
-              {{ po.statusEmoji }}
+              {{ "common.team.po.statusEmoji" | translate }}
             </div>
           </div>
           <div class="content flex-grow-1">
-            <h3 class="fw-bold mb-2 text-dark fs-2">{{ po.name }}</h3>
+            <h3 class="fw-bold mb-2 text-dark fs-2">{{ "common.team.po.name" | translate }}</h3>
             <span class="text-primary fw-semibold text-uppercase d-block mb-3 fs-5">
               {{ 'common.team.po.title' | translate }}
             </span>
             <p class="text-secondary mb-4 lead fs-4">{{ 'common.team.po.intro' | translate }}</p>
             <div class="social-links d-flex gap-3 justify-content-center justify-content-md-start">
-              <a [href]="po.github" target="_blank"
+              <a [href]="'common.team.po.github' | translate" target="_blank"
                 class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-primary bg-secondary bg-opacity-10"
                 title="GitHub">
                 <i class="fa-brands fa-github"></i>
