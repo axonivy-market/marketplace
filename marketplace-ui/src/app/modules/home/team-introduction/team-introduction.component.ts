@@ -20,6 +20,9 @@ interface TeamMember {
   styleUrls: ['./team-introduction.component.scss']
 })
 export class TeamIntroductionComponent {
+  readonly teamDescription =
+    'As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.';
+
   po: TeamMember = {
     name: 'Dr. Sabine Gillner',
     title: 'Senior Product Owner & Team Lead',
