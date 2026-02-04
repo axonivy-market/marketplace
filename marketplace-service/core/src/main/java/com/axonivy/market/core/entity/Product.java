@@ -1,6 +1,6 @@
 package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.StringListConverter;
+import com.axonivy.market.core.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

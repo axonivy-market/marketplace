@@ -1,6 +1,5 @@
 package com.axonivy.market.core.converter;
 
-import com.axonivy.market.core.AbstractCollectionConverter;
 import jakarta.persistence.Converter;
 
 import java.util.Collection;

@@ -1,5 +1,5 @@
 server:
-  port: '8080'
+  port: '8085'
   forward-headers-strategy: framework
   servlet:
     session:
@@ -25,8 +25,5 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
   api-docs:
-    path: /api-docs
     version: OPENAPI_3_1

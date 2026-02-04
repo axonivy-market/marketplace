@@ -11,5 +11,6 @@ public class CoreRequestParamConstants {
   public static final String LANGUAGE = "language";
   public static final String SHOW_DEV_VERSION = "isShowDevVersion";
   public static final String DESIGNER_VERSION = "designerVersion";
+  public static final String PRODUCT_VERSION = "productVersion";
   public static final String URL = "url";
 }

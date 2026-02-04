@@ -53,10 +53,10 @@ public class ProductController {
           + "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) @Parameter(description =
           "Product id (from meta.json)", example = "connectivity-demo")String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
-          example = "13.2.0") String designerVersion) {
+      @RequestParam(name = PRODUCT_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
+          example = "13.2.0") String productVersion) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId,
-        designerVersion);
+        productVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 

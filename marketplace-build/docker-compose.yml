@@ -99,7 +99,7 @@ services:
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
-      - "8081:8081"
+      - "8085:8085"
 
 volumes:
   marketcache:

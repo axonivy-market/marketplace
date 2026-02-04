@@ -1,5 +1,6 @@
 package com.axonivy.market.stable.service.impl;
 
+import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
@@ -40,21 +41,10 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   @Override
   public List<String> getMavenVersionsToDisplay(List<MavenArtifactVersion> mavenArtifactVersions,
       Boolean isShowDevVersion, String designerVersion) {
-    List<String> result = new ArrayList<>();
-    List<String> installableVersions = CoreVersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
+    List<String> result = CoreVersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
     if (StringUtils.isBlank(designerVersion)) {
-      result.add(CollectionUtils.firstElement(installableVersions));
       return result;
     }
-    String version = CoreVersionFactory.findVersionStartWithOrNull(installableVersions, designerVersion);
-    if (StringUtils.isNotBlank(version)) {
-      result.add(version);
-      return result;
-    }
-    version = CoreVersionFactory.findLowerVersion(installableVersions, designerVersion);
-    if (StringUtils.isNotBlank(version)) {
-      result.add(version);
-    }
-    return result;
+    return result.stream().dropWhile(v -> new LatestVersionComparator().compare(v, designerVersion) < 0).toList();
   }
 }
