@@ -1,0 +1,74 @@
+<div class="release-letter-edit-container container-fluid">
+  <div
+    id="back-to-news-management-button"
+    [ngClass]="themeService.isDarkMode() ? 'text-light' : 'text-link-blue'"
+    [routerLink]="['/internal-dashboard/news-management']">
+    &lt;
+    <span [lang]="languageService.selectedLanguage()">
+      {{ 'common.product.detail.backToMainPage' | translate }}
+    </span>
+  </div>
+  <div class="row col-md-12">
+    <h1
+      class="text-primary admin-title"
+      [lang]="languageService.selectedLanguage()">
+      {{ translateService.get('common.admin.releaseLetterEdit.title') | async }}
+    </h1>
+    <div class="introduction-container">
+      <div class="d-sm-block admin-about">
+        <h3 class="text-secondary">
+          {{
+            translateService.get('common.admin.releaseLetterEdit.description')
+              | async
+          }}
+        </h3>
+      </div>
+      <div
+        class="d-sm-block align-items-center admin-help-text-container flex-fill">
+        <h4
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary help-text"
+          [innerHTML]="
+            translateService.get('common.admin.releaseLetterEdit.helpText')
+              | async
+          "></h4>
+      </div>
+    </div>
+  </div>
+  <div>
+    <form (submit)="onSubmit($event)">
+      <div>
+        <input
+          id="release-version"
+          autocomplete="on"
+          type="text"
+          [lang]="languageService.selectedLanguage()"
+          class="form-control input__search bg-secondary border-0 search-input my-4"
+          [placeholder]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.releaseVersionPlaceholder'
+            ) | async
+          "
+          [ariaLabel]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.releaseVersionPlaceholder'
+            ) | async
+          "
+          aria-describedby="search" />
+      </div>
+      <div>
+        <app-markdown-editor
+          [(contentValue)]="releaseLetterValue"
+          [autosaveId]="'release-letter-content'"></app-markdown-editor>
+
+        <button
+          type="submit"
+          [lang]="languageService.selectedLanguage()"
+          class="mt-4 btn border-0 submit-button text-center"
+          [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

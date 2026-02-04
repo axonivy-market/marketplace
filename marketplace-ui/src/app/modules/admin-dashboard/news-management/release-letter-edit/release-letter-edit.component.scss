@@ -1,0 +1,67 @@
+.release-letter-edit-container {
+  margin-top: 7.2rem;
+}
+
+#back-to-news-management-button {
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 120%;
+  cursor: pointer;
+}
+
+.submit-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+$rowHeight: 37px;
+
+.input-group-text {
+  border-radius: 10px;
+  padding: 0 15px;
+}
+
+.input-group {
+  margin-top: 3rem;
+  margin-bottom: 7.2rem;
+
+  @media screen and (max-width: 991px) {
+    margin-bottom: 3.2rem;
+  }
+}
+
+th h5 {
+  font-weight: 600;
+  line-height: 140%;
+  vertical-align: middle;
+}
+
+td {
+  height: 5rem;
+  vertical-align: middle;
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+.input__search {
+  height: 43px;
+}
+
+.search-input {
+  font-size: 1.4rem;
+}
+
+#release-letter-table {
+  margin-top: 9rem;
+
+  tbody,
+  button {
+    font-size: 1.2rem;
+  }
+}

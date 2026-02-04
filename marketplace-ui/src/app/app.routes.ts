@@ -15,6 +15,7 @@ import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { NewsComponent } from './modules/news/news.component';
 import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
+import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -75,15 +76,11 @@ export const routes: Routes = [
       },
       {
         path: 'news-management',
-        component: NewsManagementComponent,
-        // canActivate: [AdminAuthGuard]
-        children: [
-          {
-            path: 'edit:release-id',
-            component: SecurityMonitorComponent
-            // canActivate: [AdminAuthGuard]
-          }
-        ]
+        component: NewsManagementComponent
+      },
+      {
+        path: 'news-management/:release-id/edit',
+        component: ReleaseLetterEditComponent
       }
     ]
   },

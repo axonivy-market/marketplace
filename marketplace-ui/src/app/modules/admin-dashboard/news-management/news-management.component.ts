@@ -1,9 +1,17 @@
 import { AdminDashboardService } from './../admin-dashboard.service';
 import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, signal, Signal, ViewChild, WritableSignal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  Signal,
+  ViewChild,
+  WritableSignal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -32,6 +40,7 @@ export class NewsManagementComponent {
   pageTitleService = inject(PageTitleService);
   adminDashboardService = inject(AdminDashboardService);
   router = inject(Router);
+  route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
   releaseLetterValue = 'abc';
   releaseVersion = '';
@@ -40,11 +49,16 @@ export class NewsManagementComponent {
   currentModePlain = NEWS_MANAGEMENT_MODE.view;
   releaseLetterList: WritableSignal<ReleaseLetterResponse[]> = signal([]);
 
+  readonly tableHeaders = [
+    { key: '.number', class: 'text-primary' },
+    { key: '.releaseVersion', class: 'text-primary' },
+    { key: '.actions', class: 'text-primary text-center' }
+  ];
+
   ngOnInit() {
     this.adminDashboardService.getRelaseLetters().subscribe(res => {
-      console.log(res);
       this.releaseLetterList.set(res._embedded.releaseLetterModelList);
-    })
+    });
   }
 
   onSubmit(event: Event) {
@@ -52,14 +66,9 @@ export class NewsManagementComponent {
     this.router.navigate(['/internal-dashboard']);
   }
 
-  navigateToEditMode(releaseVersion: string) {
-    console.log(releaseVersion);
-    this.router.navigate([], {
-      // queryParams: {
-      //   [NEWS_MANAGEMENT_MODE.mode]: NEWS_MANAGEMENT_MODE.edit,
-      //   [NEWS_MANAGEMENT_MODE.releaseVersion]: releaseVersion
-      // },
-      // queryParamsHandling: 'merge'
+  navigateToEditPage(releaseVersion: string) {
+    this.router.navigate(['edit', releaseVersion], {
+      relativeTo: this.route
     });
   }
 }

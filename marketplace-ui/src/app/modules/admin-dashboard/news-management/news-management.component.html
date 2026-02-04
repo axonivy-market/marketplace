@@ -24,27 +24,19 @@
     </div>
   </div>
 </div>
-<section>
+<div>
   <table id="release-letter-table" class="table">
     <thead>
       <tr>
-        <th
-          class="text-primary sync-column"
-          [lang]="languageService.selectedLanguage()">
-          <h5>{{ 'common.admin.newsManagement.number' | translate }}</h5>
-        </th>
-        <th
-          class="text-primary sync-task-column"
-          [lang]="languageService.selectedLanguage()">
-          <h5>
-            {{ 'common.admin.newsManagement.releaseVersion' | translate }}
-          </h5>
-        </th>
-        <th
-          class="text-primary sync-column text-center"
-          [lang]="languageService.selectedLanguage()">
-          <h5>{{ 'common.admin.newsManagement.actions' | translate }}</h5>
-        </th>
+        @for (tableHeader of tableHeaders; track tableHeader.key) {
+          <th
+            [class]="tableHeader.class"
+            [lang]="languageService.selectedLanguage()">
+            <h5>
+              {{ 'common.admin.newsManagement' + tableHeader.key | translate }}
+            </h5>
+          </th>
+        }
       </tr>
     </thead>
     <tbody>
@@ -62,7 +54,11 @@
                   ? 'btn-light text-dark'
                   : 'btn-primary text-light'
               "
-              (click)="navigateToEditMode(releaseLetter.releaseVersion)">
+              [routerLink]="[
+                '/internal-dashboard/news-management',
+                releaseLetter.releaseVersion,
+                'edit'
+              ]">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </td>
@@ -70,8 +66,8 @@
       }
     </tbody>
   </table>
-</section>
-@if (currentModePlain === MODE.edit) {
+</div>
+<!-- @if (currentModePlain === MODE.edit) {
   <section>
     <form (submit)="onSubmit($event)">
       <div>
@@ -108,4 +104,4 @@
       </div>
     </form>
   </section>
-}
+} -->

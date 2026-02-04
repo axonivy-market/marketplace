@@ -387,6 +387,14 @@
         "view": "View",
         "edit": "Edit",
         "delete": "Delete"
+      },
+      "releaseLetterEdit": {
+        "pageTitle": "Edit release letter",
+        "title": "Edit release letter",
+        "description": "Edit selected release letter",
+        "helpText": "Update the release letter content for the selected version.",
+        "releaseVersionPlaceholder": "Enter the release version",
+        "releaseVersion": "Release Version"
       }
     }
   }
