@@ -40,8 +40,8 @@ services:
     ports:
       - "4000:4000"
 
-  service:
-    container_name: marketplace-service
+  app:
+    container_name: app
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
