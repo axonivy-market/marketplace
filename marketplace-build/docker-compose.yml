@@ -79,13 +79,13 @@ services:
       - TO_MAIL=${TO_MAIL}
     build:
       context: ../marketplace-service
-      dockerfile: marketplace-app/Dockerfile
+      dockerfile: app/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
   stable:
-    container_name: marketplace-stable
+    container_name: stable
     restart: always
     volumes:
       - ../logs/stable:/app/logs
@@ -95,7 +95,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     build:
       context: ../marketplace-service
-      dockerfile: marketplace-stable/Dockerfile
+      dockerfile: stable/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
