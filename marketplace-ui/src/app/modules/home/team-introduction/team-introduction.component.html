@@ -1,48 +1,39 @@
 ﻿<section class="container py-5 team-introduction">
   <div class="text-center mb-5 header">
-    <h2 class="display-5 fw-bold mb-4 d-inline-block position-relative text-dark">
-      Meet Team Octopus
+    <h2 class="display-5 fw-bold mb-4 d-inline-block position-relative text-primary">
+      {{ "common.team.title" | translate }}
     </h2>
-    <p class="lead text-secondary mx-auto">
-      {{ teamDescription }}
+    <p class="lead text-secondary mx-auto fs-3">
+      {{ "common.team.description" | translate }}
     </p>
   </div>
 
-  <!-- PO Card (Isolated, Larger) -->
   <div class="row justify-content-center mb-5">
     <div class="col-12 col-lg-10">
       <div class="card border-0 shadow-sm p-4 p-md-5 bg-gradient-light po-card">
-        @if (po.quote) {
-        <div class="speech-bubble">{{ po.quote }}</div>
-        }
+        <div class="speech-bubble">{{ 'common.team.po.quote' | translate }}</div>
         <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
           <div class="position-relative mb-4 mb-md-0 me-md-5 flex-shrink-0">
             <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
               <img [src]="po.imageUrl" [alt]="po.name" class="img-fluid w-100 h-100 object-fit-cover"
                 title="PO Image"/>
             </div>
-            <!-- Status Circle -->
             <div
               class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
               {{ po.statusEmoji }}
             </div>
           </div>
           <div class="content flex-grow-1">
-            <h3 class="fw-bold mb-2 text-dark">{{ po.name }}</h3>
-            <span class="text-primary fw-semibold text-uppercase small d-block mb-3">
-              {{ po.title }}
+            <h3 class="fw-bold mb-2 text-dark fs-2">{{ po.name }}</h3>
+            <span class="text-primary fw-semibold text-uppercase d-block mb-3 fs-5">
+              {{ 'common.team.po.title' | translate }}
             </span>
-            <p class="text-secondary mb-4 lead fs-6">{{ po.intro }}</p>
+            <p class="text-secondary mb-4 lead fs-4">{{ 'common.team.po.intro' | translate }}</p>
             <div class="social-links d-flex gap-3 justify-content-center justify-content-md-start">
               <a [href]="po.github" target="_blank"
-                class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-secondary bg-secondary bg-opacity-10"
+                class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-primary bg-secondary bg-opacity-10"
                 title="GitHub">
                 <i class="fa-brands fa-github"></i>
-              </a>
-              <a [href]="po.linkedin" target="_blank"
-                class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-secondary bg-secondary bg-opacity-10"
-                title="LinkedIn">
-                <i class="fa-brands fa-linkedin"></i>
               </a>
             </div>
           </div>
@@ -73,7 +64,7 @@
           <span class="text-primary fw-semibold text-uppercase small d-block mb-3 member-title">
             {{ member.title }}
           </span>
-          <p class="card-text text-secondary mb-4 small flex-grow-1">
+          <p class="card-text text-secondary mb-4 small flex-grow-1 fs-4">
             {{ member.intro }}
           </p>
           <div class="social-links d-flex gap-2 justify-content-center mt-auto">
@@ -81,11 +72,6 @@
               class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-secondary bg-secondary bg-opacity-10"
               title="GitHub">
               <i class="fa-brands fa-github"></i>
-            </a>
-            <a [href]="member.linkedin" target="_blank"
-              class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-secondary bg-secondary bg-opacity-10"
-              title="LinkedIn">
-              <i class="fa-brands fa-linkedin"></i>
             </a>
           </div>
         </div>

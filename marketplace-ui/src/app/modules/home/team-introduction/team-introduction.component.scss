@@ -9,7 +9,7 @@
       display: block;
       width: 6rem;
       height: 0.4rem;
-      background-color: var(--bs-primary);
+      background-color: var(--ivy-primary-bg);
       margin: 1rem auto 0;
       border-radius: 0.2rem;
     }
@@ -26,6 +26,10 @@
       }
     }
 
+    h3 {
+      font-size: 3.5rem;
+    }
+
     .status-indicator {
       width: 4.8rem;
       height: 4.8rem;
@@ -40,6 +44,10 @@
         height: 12rem;
       }
 
+      h3 {
+        font-size: 1.5rem;
+      }
+
       .status-indicator {
         width: 3.8rem;
         height: 3.8rem;
@@ -47,9 +55,9 @@
         font-size: 1.6rem;
       }
       
-      .member-title {
-        font-size: 0.8rem;
-      }
+      // .member-title {
+      //   font-size: 0.95rem;
+      // }
   }
 
   .card {
@@ -60,7 +68,7 @@
       box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
 
        .image-wrapper {
-        border-color: var(--bs-primary) !important;
+        border-color: var(--ivy-primary-bg) !important;
         transform: scale(1.05);
       }
 
@@ -94,7 +102,7 @@
     transition: all 0.2s ease;
 
     &:hover {
-      background-color: var(--bs-primary) !important;
+      background-color: var(--ivy-primary-bg) !important;
       color: white !important;
       transform: translateY(-0.2rem);
     }
