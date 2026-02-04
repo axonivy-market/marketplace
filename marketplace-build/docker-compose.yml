@@ -79,23 +79,23 @@ services:
       - TO_MAIL=${TO_MAIL}
     build:
       context: ../marketplace-service
-      dockerfile: market-app/Dockerfile
+      dockerfile: marketplace-app/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
-  neo:
-    container_name: marketplace-neo
+  stable:
+    container_name: marketplace-stable
     restart: always
     volumes:
-      - ../logs/neo:/app/logs
+      - ../logs/stable:/app/logs
     environment:
       - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     build:
       context: ../marketplace-service
-      dockerfile: market-neo/Dockerfile
+      dockerfile: marketplace-stable/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
