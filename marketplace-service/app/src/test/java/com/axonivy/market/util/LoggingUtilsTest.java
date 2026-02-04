@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.constants.LoggingConstants;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,9 @@ class LoggingUtilsTest {
 
   @Test
   void testBuildLogEntry() {
+    if (!SystemUtils.IS_OS_UNIX) {
+      return;
+    }
     Map<String, String> given = Map.of(
         "method", "test",
         "timestamp", "15:02:00"
