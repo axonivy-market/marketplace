@@ -9,6 +9,8 @@ import java.util.List;
 public interface SyncTaskExecutionService {
   SyncTaskExecution start(SyncTaskType syncTaskType);
 
+  void markStatusRunning(SyncTaskExecution execution, String message);
+
   void markStatusSuccess(SyncTaskExecution execution, String message);
 
   void markStatusFailure(SyncTaskExecution execution, String message);
