@@ -46,6 +46,11 @@ td {
   font-size: 1.4rem;
 }
 
-.table {
+#release-letter-table {
   margin-top: 9rem;
+
+  tbody,
+  button {
+    font-size: 1.2rem;
+  }
 }

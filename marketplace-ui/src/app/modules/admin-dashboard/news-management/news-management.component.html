@@ -25,7 +25,7 @@
   </div>
 </div>
 <section>
-  <table class="table">
+  <table id="release-letter-table" class="table">
     <thead>
       <tr>
         <th
@@ -41,7 +41,7 @@
           </h5>
         </th>
         <th
-          class="text-primary sync-column"
+          class="text-primary sync-column text-center"
           [lang]="languageService.selectedLanguage()">
           <h5>{{ 'common.admin.newsManagement.actions' | translate }}</h5>
         </th>
@@ -61,7 +61,10 @@
                 themeService.isDarkMode()
                   ? 'btn-light text-dark'
                   : 'btn-primary text-light'
-              "></button>
+              "
+              (click)="navigateToEditMode(releaseLetter.releaseVersion)">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
           </td>
         </tr>
       }

@@ -383,7 +383,10 @@
         "releaseVersionPlaceholder": "Enter the release version",
         "number": "No.",
         "releaseVersion": "Release Version",
-        "actions": "Actions"
+        "actions": "Actions",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete"
       }
     }
   }

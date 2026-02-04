@@ -51,4 +51,15 @@ export class NewsManagementComponent {
     event.preventDefault();
     this.router.navigate(['/internal-dashboard']);
   }
+
+  navigateToEditMode(releaseVersion: string) {
+    console.log(releaseVersion);
+    this.router.navigate([], {
+      // queryParams: {
+      //   [NEWS_MANAGEMENT_MODE.mode]: NEWS_MANAGEMENT_MODE.edit,
+      //   [NEWS_MANAGEMENT_MODE.releaseVersion]: releaseVersion
+      // },
+      // queryParamsHandling: 'merge'
+    });
+  }
 }
