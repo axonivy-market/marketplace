@@ -5,6 +5,7 @@ import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -62,14 +63,14 @@ class SyncTaskExecutionServiceImplTest {
   }
 
   @Test
-  void testStartReturnSyncTaskExecutionWithRunningStatus() {
+  void testStartThrowTaskAlreadyRunningExceptionWhenSyncTaskStatusIsRunning() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
         SyncTaskStatus.RUNNING).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existedSyncTaskExecution));
 
-    assertThrows(MarketException.class,
-        () -> service.start(type), "Should throw MarketException when execution status is " +
+    assertThrows(TaskAlreadyRunningException.class,
+        () -> service.start(type), "Should throw TaskAlreadyRunningException when execution status is " +
             "RUNNING");
   }
 
