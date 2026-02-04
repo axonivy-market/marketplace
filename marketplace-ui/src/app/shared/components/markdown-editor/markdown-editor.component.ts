@@ -36,6 +36,10 @@ export class MarkdownEditorComponent {
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {}
 
+  ngOnInit() {
+    console.log(this.contentValue());
+  } 
+
   async ngAfterViewInit(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -46,7 +50,7 @@ export class MarkdownEditorComponent {
         // toolbar: ["bold", "italic", "heading", "|", "quote", "code"],
       autofocus: true,
       autosave: {
-        enabled: true,
+        enabled: false,
         uniqueId: this.autosaveId,
         delay: 500,
         submit_delay: 5000

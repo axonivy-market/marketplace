@@ -12,6 +12,7 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
+import { ReleaseLetterResponse } from '../../shared/models/apis/release-letter-response.model';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -119,7 +120,11 @@ export class AdminDashboardService {
     });
   }
 
+  getRelaseLetterByReleaseVersion(releaseVersion: string): Observable<ReleaseLetterResponse> {
+    return this.http.get<ReleaseLetterResponse>(`${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`);
+  }
+
   getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
-    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.RELEASE_LETTER}`);
+    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.RELEASE_LETTERS}`);
   }
 }

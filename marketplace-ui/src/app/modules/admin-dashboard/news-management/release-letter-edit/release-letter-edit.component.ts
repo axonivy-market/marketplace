@@ -30,13 +30,24 @@ export class ReleaseLetterEditComponent {
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
-  releaseLetterValue = 'abc';
+  releaseLetterValue = '';
   releaseVersion = '';
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      console.log(params);
+    this.route.paramMap.subscribe(params => {
+      this.releaseVersion = params.get('release-version') ?? '';
+      this.getReleaseLetter();
     });
+  }
+
+  getReleaseLetter(): void {
+    this.adminDashboardService
+      .getRelaseLetterByReleaseVersion(this.releaseVersion)
+      .subscribe(response => {
+        console.log(response);
+
+        this.releaseLetterValue = response.content;
+      });
   }
 
   onSubmit(event: Event) {

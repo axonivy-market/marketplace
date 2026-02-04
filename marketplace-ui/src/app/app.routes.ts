@@ -79,7 +79,7 @@ export const routes: Routes = [
         component: NewsManagementComponent
       },
       {
-        path: 'news-management/:release-id/edit',
+        path: 'news-management/:release-version/edit',
         component: ReleaseLetterEditComponent
       }
     ]

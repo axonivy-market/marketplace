@@ -19,7 +19,7 @@ export const API_URI = {
   SECURITY_MONITOR: `${API}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
-  RELEASE_LETTER: `${API}/release-letters`
+  RELEASE_LETTERS: `${API}/release-letters`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');
