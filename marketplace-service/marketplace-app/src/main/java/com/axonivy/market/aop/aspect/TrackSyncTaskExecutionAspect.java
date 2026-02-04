@@ -1,6 +1,7 @@
 package com.axonivy.market.aop.aspect;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Log4j2
 public class TrackSyncTaskExecutionAspect {
-
   private final SyncTaskExecutionService syncTaskExecutionService;
 
   @Around("@annotation(track)")
@@ -25,8 +25,9 @@ public class TrackSyncTaskExecutionAspect {
     SyncTaskExecution execution = null;
     try {
       execution = syncTaskExecutionService.start(jobType);
+      syncTaskExecutionService.markStatusRunning(execution, SyncTaskConstants.RUNNING_MESSAGE);
       Object result = pjp.proceed();
-      syncTaskExecutionService.markStatusSuccess(execution, "Sync successfully!");
+      syncTaskExecutionService.markStatusSuccess(execution, SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
       return result;
     } catch (Throwable t) {
       if (execution != null) {
