@@ -592,6 +592,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
     List<String> versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
+    if (versions.contains(version)){
+      return version;
+    }
     return VersionFactory.get(versions, version);
   }
 

@@ -132,13 +132,15 @@
   @case (ProductDetailActionType.DESIGNER_ENV) {
     <div class="designer-section d-flex justify-content-sm-between w-100 row m-sm-0">
       <div class="ps-0 flex-grow-1 col-8">
-        <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
+        @if (versionDropdownInDesigner && versionDropdownInDesigner.length > 0) {
+        <app-common-dropdown [items]="versionDropdownInDesigner"
                 [selectedItem]="selectedVersion()"
                 buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown fs-md"
                 ariaLabel=".form-select-sm example"
                 [metaDataJsonUrl]="metaDataJsonUrl()"
                 (itemSelected)="onSelectVersionInDesigner($event.value)">
         </app-common-dropdown>
+        }
         <a href="#" [lang]="languageService.selectedLanguage()"
                 class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
                 @if (isDevVersionsDisplayed()) {

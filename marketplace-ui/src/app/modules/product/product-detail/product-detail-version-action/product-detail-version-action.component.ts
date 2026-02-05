@@ -126,6 +126,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.getVersionInDesigner();
     if (isPlatformBrowser(this.platformId)) {
       this.ngZone.onStable.pipe(take(1)).subscribe(() => {
         import('bootstrap').then(bs => {

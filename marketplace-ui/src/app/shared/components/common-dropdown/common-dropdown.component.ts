@@ -26,6 +26,17 @@ export class CommonDropdownComponent<T extends string> {
   isDropdownOpen = false;
   @Input() metaDataJsonUrl: string | undefined = '';
 
+  ngOnInit(): void {
+    if (this.selectedItem) {
+      const selected = this.items.find(item =>
+        this.translateService.instant(item.label) === this.selectedItem
+      );
+      if (selected) {
+        this.metaDataJsonUrl = selected.metaDataJsonUrl;
+    }
+  }
+}
+
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
