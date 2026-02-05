@@ -28,9 +28,7 @@ public class ZipSafetyScanner {
    * Analyze a ZIP file without unzipping
    */
   public static void analyze(MultipartFile file) throws IOException {
-    if (file == null || file.isEmpty()) {
-      throw new InvalidZipEntryException("Zip file is null or empty");
-    }
+    FileValidator.validateFileNotEmpty(file);
 
     var tempFile = new File("tempUpload" + ZIP_EXTENSION);
     try (var input = file.getInputStream();
@@ -63,7 +61,7 @@ public class ZipSafetyScanner {
           hasReadme = true;
         }
 
-        if (!zipEntry.isDirectory() && looksLikeNestedArchive(zipEntry.getName())) {
+        if (!zipEntry.isDirectory() && isArchiveFile(zipEntry.getName())) {
           throw new InvalidZipEntryException("There is nested ZIP entry " + zipEntry.getName() + " detected");
         }
       }
@@ -100,18 +98,12 @@ public class ZipSafetyScanner {
 
   private static void isEntryValid(boolean isDirectory, String name) {
     // Purpose: Detect files inside ZIP with names like ../../etc/passwd.
-    if (isTraversal(name)) {
-      throw new InvalidZipEntryException("Entry " + name + " has traversal");
-    }
     // Prevent entries with paths starting from the root (e.g. /usr/bin/file or C:\Windows\...).
-    // Avoid overwriting system files when extracting.
-    if (isAbsolutePathLike(name)) {
-      throw new InvalidZipEntryException("Entry name " + name + " has absolute path");
-    }
     // Purpose: Prevent files like .bashrc, .gitignore, .ssh/authorized_keys , .env
-    // Protect the system from overwriting hidden configuration files when unzipping.
-    if (isHiddenDotFile(name)) {
-      throw new InvalidZipEntryException("Entry file " + name + " is hidden");
+    try {
+      FileValidator.validateFilename(name);
+    } catch (IOException e) {
+      throw new InvalidZipEntryException(e.getMessage());
     }
 
     if (!isDirectory && isNotInWhiteListExtensions(name)) {
@@ -119,31 +111,11 @@ public class ZipSafetyScanner {
     }
   }
 
-  private static boolean isTraversal(String name) {
-    boolean containsDoubleDotSlash = name.contains(".." + "/") || name.contains("../") || name.contains("..\\");
-    boolean startsWithDoubleDot = name.startsWith("../") || name.startsWith("..\\");
-    return containsDoubleDotSlash || startsWithDoubleDot;
-  }
-
-  private static boolean isAbsolutePathLike(String name) {
-    return name.startsWith("/") || name.startsWith("\\");
-  }
-
-  private static boolean isHiddenDotFile(String name) {
-    String simple = name;
-    if (name.contains("/")) {
-      simple = name.substring(name.lastIndexOf('/') + 1);
-    }
-    return simple.startsWith(".") && simple.length() > 1;
-  }
-
   private static boolean isNotInWhiteListExtensions(String name) {
-    String lower = name.toLowerCase(Locale.ROOT);
-    return WHITELIST_EXTENSIONS.stream().noneMatch(lower::endsWith);
+    return !FileValidator.hasAllowedExtension(name, WHITELIST_EXTENSIONS);
   }
 
-  private static boolean looksLikeNestedArchive(String name) {
-    String lower = name.toLowerCase(Locale.ROOT);
-    return lower.endsWith(".zip") || lower.endsWith(".jar") || lower.endsWith(".war") || lower.endsWith(".ear");
+  private static boolean isArchiveFile(String name) {
+    return FileValidator.isArchiveFile(name);
   }
 }

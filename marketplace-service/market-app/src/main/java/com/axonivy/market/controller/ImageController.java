@@ -10,8 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
 import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
@@ -38,5 +41,20 @@ public class ImageController extends CoreImageController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
+  }
+
+  @PutMapping("/{id}")
+  @Operation(summary = "Update an image by ID with multipart file")
+  public ResponseEntity<String> updateImage(
+      @PathVariable("id") String id,
+      @RequestParam("file") MultipartFile file) {
+    try {
+      String savedId = imageService.saveImageWithCustomId(id, file);
+      return new ResponseEntity<>(savedId, HttpStatus.OK);
+    } catch (IOException ioException) {
+      return new ResponseEntity<>("File validation failed: " + ioException.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>("Failed to update image: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

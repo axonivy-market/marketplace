@@ -15,7 +15,7 @@
         <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
           <div class="position-relative mb-4 mb-md-0 me-md-5 flex-shrink-0">
             <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
-              <img [src]="'common.team.po.imageUrl' | translate" [alt]="'common.team.po.name'|translate" class="img-fluid w-100 h-100 object-fit-cover"
+              <img [src]="'common.team.po.githubUserName' | translate | avatarUrl" [alt]="'common.team.po.name'|translate" class="img-fluid w-100 h-100 object-fit-cover"
                 title="PO Image"/>
             </div>
             <div
@@ -30,7 +30,7 @@
             </span>
             <p class="text-secondary mb-4 lead fs-4">{{ 'common.team.po.intro' | translate }}</p>
             <div class="social-links d-flex gap-3 justify-content-center justify-content-md-start">
-              <a [href]="'common.team.po.github' | translate" target="_blank"
+              <a [href]="'common.team.po.githubUserName' | translate | githubUrl" target="_blank"
                 class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-primary bg-secondary bg-opacity-10"
                 title="GitHub">
                 <i class="fa-brands fa-github"></i>
@@ -51,7 +51,7 @@
         }
         <div class="position-relative d-inline-block mx-auto mb-3">
           <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
-            <img [src]="member.imageUrl" [alt]="member.name" class="img-fluid w-100 h-100 object-fit-cover"
+            <img [src]="member.githubUserName | avatarUrl" [alt]="member.name" class="img-fluid w-100 h-100 object-fit-cover"
               title="Team member image"/>
           </div>
           <div
@@ -68,7 +68,7 @@
             {{ member.intro }}
           </p>
           <div class="social-links d-flex gap-2 justify-content-center mt-auto">
-            <a [href]="member.github" target="_blank"
+            <a [href]="member.githubUserName | githubUrl" target="_blank"
               class="social-icon rounded-circle d-flex align-items-center justify-content-center text-decoration-none text-secondary bg-secondary bg-opacity-10"
               title="GitHub">
               <i class="fa-brands fa-github"></i>

@@ -5,6 +5,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.util.FileValidator;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,6 +15,7 @@ import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,4 +136,23 @@ public class ImageServiceImpl implements ImageService {
     }
   }
 
+  @Override
+  public String saveImageWithCustomId(String id, MultipartFile file) throws IOException {
+    // Validate the file before saving
+    FileValidator.validateImageFile(file);
+
+    Optional<Image> existingImage = imageRepository.findById(id);
+    if (existingImage.isPresent()) {
+      imageRepository.deleteById(id);
+      log.info("Deleted existing image with id: {}", id);
+    }
+    byte[] fileBytes = file.getBytes();
+    var image = new Image();
+    image.setId(id);
+    image.setImageData(fileBytes);
+    image.setImageUrl(file.getOriginalFilename());
+    var persistedImage = imageRepository.save(image);
+    log.info("Image saved successfully with custom id: {}", persistedImage.getId());
+    return persistedImage.getId();
+  }
 }
