@@ -7,6 +7,6 @@ import { environment } from '../../../../environments/environment';
 })
 export class AvatarUrlPipe implements PipeTransform {
   transform(imageId: string | number): string {
-    return `${environment.apiUrl}/api/image/${imageId}`;
+    return `${environment.apiUrl}/api/image/custom/${imageId}`;
   }
 }

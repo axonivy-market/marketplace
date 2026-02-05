@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.controller.CoreImageController;
 import com.axonivy.market.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,8 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
-import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.CUSTOM_ID;
+import static com.axonivy.market.constants.RequestParamConstants.FILE;
+
 
 @RestController
 @RequestMapping(IMAGE)
@@ -45,10 +48,10 @@ public class ImageController extends CoreImageController {
     return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
   }
 
-  @GetMapping("/custom/{customId}")
+  @GetMapping(BY_CUSTOM_ID)
   @Operation(summary = "Get an image by custom ID")
   public ResponseEntity<byte[]> getImageByCustomId(
-      @PathVariable("customId") String customId) {
+      @PathVariable(CUSTOM_ID) String customId) {
     byte[] imageData = imageService.getImageByCustomId(customId);
     if (imageData == null || imageData.length == 0) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -58,18 +61,24 @@ public class ImageController extends CoreImageController {
     return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
   }
 
-  @PutMapping("/{id}")
-  @Operation(summary = "Update an image by ID with multipart file")
+  @PutMapping(BY_CUSTOM_ID)
+  @Operation(hidden = true)
+  @Authorized
   public ResponseEntity<String> updateImage(
-      @PathVariable("id") String id,
-      @RequestParam("file") MultipartFile file) {
+      @PathVariable(CUSTOM_ID) String customId,
+      @RequestParam(FILE) MultipartFile file) {
+    String message;
+    HttpStatus status;
     try {
-      String savedId = imageService.saveImageWithCustomId(id, file);
-      return new ResponseEntity<>(savedId, HttpStatus.OK);
+      message = imageService.saveImageWithCustomId(customId, file);
+      status = HttpStatus.OK;
     } catch (IOException ioException) {
-      return new ResponseEntity<>("File validation failed: " + ioException.getMessage(), HttpStatus.BAD_REQUEST);
+      message = "File validation failed: " + ioException.getMessage();
+      status = HttpStatus.BAD_REQUEST;
     } catch (Exception e) {
-      return new ResponseEntity<>("Failed to update image: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      message = "Failed to update image: " + e.getMessage();
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
+    return new ResponseEntity<>(message, status);
   }
 }

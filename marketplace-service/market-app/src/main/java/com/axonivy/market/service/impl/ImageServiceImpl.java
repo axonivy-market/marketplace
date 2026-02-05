@@ -159,8 +159,8 @@ public class ImageServiceImpl implements ImageService {
     var image = new Image();
     image.setImageData(fileBytes);
     image.setImageUrl(file.getOriginalFilename());
-    image = imageRepository.save(image);
     image.setCustomId(customId);
+    image = imageRepository.save(image);
     log.info("Image saved successfully with id: {}", image.getId());
     return image.getId();
   }
