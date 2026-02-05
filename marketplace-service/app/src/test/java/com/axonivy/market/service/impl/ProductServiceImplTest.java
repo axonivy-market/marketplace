@@ -466,7 +466,7 @@ class ProductServiceImplTest extends BaseSetup {
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+      when(productJsonContentRepo.findByProductIdAndVersionIgnoreCase(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
           .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
 
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
