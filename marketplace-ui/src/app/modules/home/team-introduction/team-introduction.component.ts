@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AvatarUrlPipe } from './avatar-url.pipe';
-import { GithubUrlPipe } from './github-url.pipe';
+import { AvatarUrlPipe } from '../../../shared/pipes/avatar-url.pipe';
+import { GithubUrlPipe } from '../../../shared/pipes/github-url.pipe';
 
 interface TeamMember {
   name: string;
