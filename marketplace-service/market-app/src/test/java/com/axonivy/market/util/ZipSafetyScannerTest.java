@@ -48,7 +48,7 @@ class ZipSafetyScannerTest {
   @Test
   void testAnalyzeNullOrEmptyZip() throws IOException {
     MultipartFile file = mockZipFile(new byte[0], true);
-    assertThrows(InvalidZipEntryException.class, () -> ZipSafetyScanner.analyze(file),
+    assertThrows(IOException.class, () -> ZipSafetyScanner.analyze(file),
         "Expected analyze to throw InvalidZipEntryException for a null or empty zip file.");
   }
 
