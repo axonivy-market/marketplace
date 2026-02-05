@@ -140,7 +140,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFindProductsInRESTClientOfDesigner() {
-    productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
+    productService.findProducts(TypeOption.CONNECTORS.getOption(), "", Language.EN.getValue(), true, PAGEABLE);
     verify(productRepo).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
     assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields(),
         "Product short descriptions should match input short descriptions");
