@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
@@ -882,7 +883,7 @@ class GitHubServiceImplTest {
         () -> gitHubService.getAndUpdateUser(accessToken),
         "IOException should be translated into NotFoundException");
 
-    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
   }

@@ -11,6 +11,7 @@ import org.matomo.java.tracking.MatomoTracker;
 import org.springframework.stereotype.Service;
 
 import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 @Service
 @Log4j2

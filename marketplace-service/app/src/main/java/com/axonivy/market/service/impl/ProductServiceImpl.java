@@ -5,18 +5,24 @@ import com.axonivy.market.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.factory.ProductFactory;
@@ -72,14 +78,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
-import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
-import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
-import static com.axonivy.market.core.enums.DocumentField.MARKET_DIRECTORY;
-import static com.axonivy.market.enums.FileStatus.ADDED;
-import static com.axonivy.market.enums.FileStatus.MODIFIED;
-import static java.util.Optional.ofNullable;
+import static com.axonivy.market.core.constants.CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -105,10 +105,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
   private final GithubRepoRepository githubRepo;
-  private GHCommit lastGHCommit;
-  private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
+  private GHCommit lastGHCommit = null;
+  private GitHubRepoMeta marketRepoMeta = null;
 
   public ProductServiceImpl(CoreProductRepository coreProductRepo, ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
@@ -190,7 +190,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private String resolveProductId(GitHubFile file, String key) {
-    if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
+    if (file.getStatus() == FileStatus.MODIFIED || file.getStatus() == FileStatus.ADDED) {
       return modifyProductMetaOrLogo(file, key);
     }
     return removeProductAndImage(file);
@@ -199,13 +199,13 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private List<String> updateLatestChangeToProductsFromGithubRepo() {
     Set<String> syncedProductIds = new HashSet<>();
     var fromSHA1 = marketRepoMeta.getLastSHA1();
-    var toSHA1 = ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse(EMPTY);
+    var toSHA1 = Optional.ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse(EMPTY);
     log.warn("**ProductService: synchronize products from SHA1 {} to SHA1 {}", fromSHA1, toSHA1);
     List<GitHubFile> gitHubFileChanges = axonIvyMarketRepoService.fetchMarketItemsBySHA1Range(fromSHA1, toSHA1);
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.substring(0, filePath.lastIndexOf(SLASH) + 1);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf(CoreCommonConstants.SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -222,7 +222,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private String removeProductAndImage(GitHubFile file) {
     String productId = EMPTY;
     if (FileType.META == file.getType()) {
-      String[] splitMetaJsonPath = file.getFileName().split(SLASH);
+      String[] splitMetaJsonPath = file.getFileName().split(CoreCommonConstants.SLASH);
       String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
           EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
@@ -272,7 +272,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
-    searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+    searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
     var result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(
@@ -346,7 +346,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
-    if (ghContent != null && StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
+    if (ghContent != null && StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
           .ifPresent(image -> product.setLogoId(image.getId()));
     }
@@ -484,7 +484,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<String> versionChanges =
         mavenVersions.stream().filter(
             version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
-                version) && VersionUtils.isOfficialVersionOrUnReleasedDevVersion(
+                version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 
     if (ObjectUtils.isEmpty(versionChanges)) {
@@ -506,7 +506,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getReleasedVersions().add(version);
       }
       var productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
-          product.getNames().get(EN_LANGUAGE));
+          product.getNames().get(ProductJsonConstants.EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
     nonSyncReleasedVersions.addAll(versionChanges);
@@ -519,7 +519,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
     String snapshotVersionValue = Strings.EMPTY;
-    if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
+    if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
       String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
           mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
       snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
@@ -567,7 +567,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public Product fetchBestMatchProductDetail(String id, String version) {
     List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
         metadataRepo.findByProductId(id));
-    String bestMatchVersion = VersionUtils.getBestMatchVersion(installableVersions, version);
+    String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file
     Product product;
     if (StringUtils.isBlank(bestMatchVersion)) {
@@ -590,7 +590,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   @Override
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
-    List<String> versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
+    List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return VersionFactory.get(versions, version);
   }
@@ -608,7 +608,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
+      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
       version = CollectionUtils.firstElement(versions);
     }
 

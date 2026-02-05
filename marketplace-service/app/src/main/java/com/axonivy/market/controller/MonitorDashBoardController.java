@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.constants.PostgresDBConstants;
+import com.axonivy.market.core.constants.CorePostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.IS_FOCUSED;
 
 @RestController
@@ -46,7 +46,7 @@ public class MonitorDashBoardController {
   @Operation(summary = "Get test report for a product and workflow",
       description = "Fetches the test report associated with the specified product ID and workflow type.")
   public ResponseEntity<List<TestStepsModel>> getTestReport(
-      @PathVariable(PostgresDBConstants.PRODUCT_ID)
+      @PathVariable(CorePostgresDBConstants.PRODUCT_ID)
       @Parameter(description = "productId", example = "portal", in = ParameterIn.PATH) String productId,
       @PathVariable(WORKFLOW) @Parameter(description = "Workflow name", example = "CI",
           in = ParameterIn.PATH) WorkFlowType workflow) {

@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 public final class DocPathUtils {
   private static final Pattern PATH_PATTERN =

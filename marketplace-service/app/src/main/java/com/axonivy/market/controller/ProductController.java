@@ -40,6 +40,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 
 @RestController
 @RequestMapping(PRODUCT)

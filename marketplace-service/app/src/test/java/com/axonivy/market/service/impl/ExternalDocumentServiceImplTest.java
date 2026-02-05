@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
@@ -63,7 +64,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String LATEST_VERSION = "latest";
   private static final String DOC_DIR = "doc";
   private static final String BASE_PATH =
-      CommonConstants.SLASH + PORTAL + CommonConstants.SLASH + ARTIFACT_NAME + CommonConstants.SLASH;
+      CoreCommonConstants.SLASH + PORTAL + CoreCommonConstants.SLASH + ARTIFACT_NAME + CoreCommonConstants.SLASH;
   private static final Path PATH_TMP = Paths.get("/tmp");
   private static final Path CACHE_ROOT_PATH = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
   private static final Product EMPTY_PRODUCT = new Product();
@@ -380,7 +381,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
-      String path = String.join(CommonConstants.SLASH,
+      String path = String.join(CoreCommonConstants.SLASH,
           BASE_PATH + DEV_VERSION, DOC_DIR,
           DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
       String result = service.resolveBestMatchRedirectUrl(path);
@@ -394,7 +395,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testResolveBestMatchRedirectUrlForDevVersionWithoutSymlink() {
-    String devPath = String.join(CommonConstants.SLASH,
+    String devPath = String.join(CoreCommonConstants.SLASH,
         BASE_PATH + DEV_VERSION, DOC_DIR,
         DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
     when(productRepository.findById(PORTAL)).thenReturn(Optional.of(EMPTY_PRODUCT));
@@ -427,7 +428,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
               ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
               ExternalDocumentMeta.builder().version(DEV_VERSION).build()));
 
-      String path = String.join(CommonConstants.SLASH,
+      String path = String.join(CoreCommonConstants.SLASH,
           BASE_PATH + LATEST_VERSION, DOC_DIR,
           DocumentLanguage.ENGLISH.getCode() + INDEX_FILE);
       String result = service.resolveBestMatchRedirectUrl(path);
@@ -503,7 +504,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForMajorVersionInvalidPathStructure() {
-    Path rootPath = Paths.get(CommonConstants.SLASH);
+    Path rootPath = Paths.get(CoreCommonConstants.SLASH);
     String result = service.createSymlinkForMajorVersion(rootPath, TEST_VERSION);
     assertEquals(StringUtils.EMPTY, result, "Should return empty string for root path");
   }
@@ -668,10 +669,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
-      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
+      String devPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, DEV_VERSION,
           DOC_DIR, CommonConstants.INDEX_HTML);
       String result = service.resolveBestMatchRedirectUrl(devPath);
-      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+      String expectedDevResult = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly");
     }
@@ -683,10 +684,10 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
 
-      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, DEV_VERSION, DOC_DIR,
+      String devPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, PORTAL, DEV_VERSION, DOC_DIR,
           CommonConstants.INDEX_HTML);
       String result = service.resolveBestMatchRedirectUrl(devPath);
-      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+      String expectedDevResult = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           PORTAL, ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly");
     }
@@ -697,28 +698,28 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
       filesMock.when(() -> Files.exists(any(Path.class), any())).thenReturn(true);
 
-      String nightlyPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
+      String nightlyPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_DOC, NIGHTLY_VERSION,
           DOC_DIR);
       String result = service.resolveBestMatchRedirectUrl(nightlyPath);
-      String expectedDevResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
+      String expectedDevResult = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR,
           DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME, DEV_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(),
           CommonConstants.INDEX_HTML);
       assertTrue(StringUtils.contains(result, expectedDevResult),
           "Should handle dev version correctly for doc-factory");
 
-      String devPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION, DOC_DIR);
+      String devPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, DEV_VERSION, DOC_DIR);
       result = service.resolveBestMatchRedirectUrl(devPath);
       assertEquals(expectedDevResult, result, "Should handle dev version correctly for doc-factory");
 
-      String devTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, TEN_DEV_VERSION,
+      String devTenPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, TEN_DEV_VERSION,
           DOC_DIR);
       result = service.resolveBestMatchRedirectUrl(devTenPath);
       assertFalse(StringUtils.contains(result, DEV_VERSION), "Should not include dev version");
 
-      String nightlyTenPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, NIGHTLY_TEN_VERSION,
+      String nightlyTenPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DOC_FACTORY_ID, NIGHTLY_TEN_VERSION,
           DOC_DIR);
       result = service.resolveBestMatchRedirectUrl(nightlyTenPath);
-      String expectedNightlyTenResult = String.join(CommonConstants.SLASH, StringUtils.EMPTY,
+      String expectedNightlyTenResult = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY,
           DirectoryConstants.CACHE_DIR, DOC_FACTORY_DOC, DOC_FACTORY_ARTIFACT_NAME);
       assertTrue(StringUtils.contains(result, expectedNightlyTenResult),
           "Should handle nightly ten version correctly for doc-factory");
@@ -757,7 +758,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForParentWithNullParentComponents() {
-    Path rootPath = Paths.get(CommonConstants.SLASH);
+    Path rootPath = Paths.get(CoreCommonConstants.SLASH);
     String result = service.createSymlinkForMajorVersion(rootPath, TEST_VERSION);
     assertEquals(StringUtils.EMPTY, result, "Should return empty string when parent structure is invalid");
   }
@@ -832,12 +833,12 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
           .thenReturn(TEST_VERSION);
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(true);
-      String testPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
+      String testPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME, TEST_VERSION_12_5,
           DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       String result = service.resolveBestMatchRedirectUrl(testPath);
 
       assertNotNull(result, "Should return path when symlink exists");
-      String expectedPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
+      String expectedPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, DirectoryConstants.CACHE_DIR, PORTAL,
           ARTIFACT_NAME, TEST_VERSION, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       assertTrue(result.contains(expectedPath), "Should return updated path with best match version");
     }
@@ -855,7 +856,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
           .thenReturn(TEST_VERSION);
       filesMock.when(() -> Files.exists(any(Path.class), any()))
           .thenReturn(false);
-      String testPath = String.join(CommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME,
+      String testPath = String.join(CoreCommonConstants.SLASH, StringUtils.EMPTY, PORTAL, ARTIFACT_NAME,
           TEST_VERSION_12_5, DOC_DIR, DocumentLanguage.ENGLISH.getCode(), CommonConstants.INDEX_HTML);
       String result = service.resolveBestMatchRedirectUrl(testPath);
 

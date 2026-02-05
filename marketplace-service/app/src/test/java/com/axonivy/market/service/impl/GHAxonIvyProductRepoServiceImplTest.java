@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
@@ -100,7 +101,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     boolean isDependency = true;
 
     MavenUtils.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts,
-        MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+        CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
 
     assertEquals(2, artifacts.size(), "Expected 2 artifacts to be added to the list"); // Assert that 2 artifacts were added
     assertEquals(MOCK_ARTIFACT_ID, artifacts.get(0).getArtifactId(), "First artifact's artifactId does not match"); // Validate first artifact
@@ -119,7 +120,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateArtifactFromJsonNode() {
-    String repoUrl = MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+    String repoUrl = CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
     boolean isDependency = true;
     String groupId = MOCK_GROUP_ID;
     String artifactId = MOCK_ARTIFACT_ID;

@@ -6,7 +6,6 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
-import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.utils.CoreVersionUtils;
@@ -51,10 +50,8 @@ import org.mockito.Spy;
 import org.mockito.exceptions.base.MockitoException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +65,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -476,7 +473,7 @@ class ProductServiceImplTest extends BaseSetup {
       when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(VersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      when(CoreVersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result,
           "Product with newest release version should match mock product");

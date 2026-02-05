@@ -1,12 +1,13 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.constants.PostgresDBConstants;
+import com.axonivy.market.core.constants.CorePostgresDBConstants;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 
-import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
 public class CustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBaseRepository<ProductMarketplaceData>
@@ -24,11 +25,14 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBase
   public int updateInitialCount(String productId, int initialCount) {
     CriteriaUpdateContext<ProductMarketplaceData> criteriaUpdateContext = createCriteriaUpdateContext();
     // Set the fields
-    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(INSTALLATION_COUNT), initialCount);
-    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(SYNCHRONIZED_INSTALLATION_COUNT), true);
+    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(CorePostgresDBConstants.INSTALLATION_COUNT),
+        initialCount);
+    criteriaUpdateContext.query().set(
+        criteriaUpdateContext.root().get(PostgresDBConstants.SYNCHRONIZED_INSTALLATION_COUNT), true);
     // Where condition (filter by productId)
     criteriaUpdateContext.query().where(
-        criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
+        criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(CorePostgresDBConstants.ID),
+            productId));
     // Execute the update
     int updatedRows = executeQuery(criteriaUpdateContext);
     getEntityManager().clear();
@@ -43,7 +47,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBase
   @Transactional
   public int increaseInstallationCount(String productId) {
     var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
-    query.setParameter(PRODUCT_ID, productId);
+    query.setParameter(CorePostgresDBConstants.PRODUCT_ID, productId);
     return ((Number) query.getSingleResult()).intValue();
   }
 
@@ -52,8 +56,8 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBase
   public void checkAndInitProductMarketplaceDataIfNotExist(String productId) {
     CriteriaByTypeContext<ProductMarketplaceData, Long> criteriaNumberContext = createCriteriaTypeContext(Long.class);
 
-    criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root()))
-        .where(criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(ID), productId));
+    criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root())).where(
+        criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(CorePostgresDBConstants.ID), productId));
     Long count = getEntityManager().createQuery(criteriaNumberContext.query()).getSingleResult();
     boolean marketPlaceExists = count > 0;
     if (!marketPlaceExists) {

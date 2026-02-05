@@ -4,6 +4,7 @@ import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
@@ -66,7 +67,7 @@ public class MetadataServiceImpl implements MetadataService {
     List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {
-      String metadataContent = fileDownloadService.getFileAsString(metadata.getUrl());
+      var metadataContent = fileDownloadService.getFileAsString(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
@@ -113,7 +114,7 @@ public class MetadataServiceImpl implements MetadataService {
     for (String version : metadata.getVersions()) {
       boolean isSnapshotVersion = VersionUtils.isSnapshotVersion(version);
       boolean isOfficialVersionOrUnReleasedDevVersion =
-          VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions(), version);
+          CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions(), version);
 
       if (isSnapshotVersion && isOfficialVersionOrUnReleasedDevVersion) {
         updateMavenArtifactVersionForNonReleaseDevVersion(artifactModelsInVersions, metadata, version);
@@ -126,7 +127,7 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionForNonReleaseDevVersion(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata, String version) {
     var snapshotMetadata = MavenUtils.buildSnapshotMetadataFromVersion(metadata, version);
-    String xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapshotMetadata.getUrl());
+    var xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapshotMetadata.getUrl());
     MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapshotMetadata, true);
     updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapshotMetadata);
   }
@@ -140,7 +141,7 @@ public class MetadataServiceImpl implements MetadataService {
     String artifactName = MavenUtils.convertArtifactIdToName(dependencyModel.getArtifactId());
     String type = StringUtils.defaultIfBlank(dependencyModel.getType(), DEFAULT_PRODUCT_TYPE);
 
-    Metadata metadata = Metadata.builder()
+    var metadata = Metadata.builder()
         .groupId(dependencyModel.getGroupId())
         .artifactId(dependencyModel.getArtifactId())
         .versions(new HashSet<>())

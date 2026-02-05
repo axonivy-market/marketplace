@@ -2,6 +2,7 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -77,13 +78,13 @@ class VersionUtilsTest extends BaseSetup {
   void testGetBestMatchVersion() {
     List<String> releasedVersions = List.of("10.0.21-SNAPSHOT", "10.0.21", "10.0.19", "10.0.17");
 
-    Assertions.assertEquals("10.0.19", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.19"),
+    Assertions.assertEquals("10.0.19", CoreVersionUtils.getBestMatchVersion(releasedVersions, "10.0.19"),
         "Exact version 10.0.19 should be matched");
-    Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.22"),
+    Assertions.assertEquals("10.0.21", CoreVersionUtils.getBestMatchVersion(releasedVersions, "10.0.22"),
         "Closest lower version to 10.0.22 should be 10.0.21");
-    Assertions.assertEquals("10.0.17", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.18"),
+    Assertions.assertEquals("10.0.17", CoreVersionUtils.getBestMatchVersion(releasedVersions, "10.0.18"),
         "Closest lower version to 10.0.18 should be 10.0.17");
-    Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.16"),
+    Assertions.assertEquals("10.0.21", CoreVersionUtils.getBestMatchVersion(releasedVersions, "10.0.16"),
         "Closest higher version to 10.0.16 should be 10.0.21");
   }
 

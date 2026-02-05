@@ -5,8 +5,8 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
-import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.core.enums.DevelopmentVersion;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,13 +22,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CommonConstants.*;
-import static com.axonivy.market.constants.MavenConstants.*;
+import static com.axonivy.market.core.constants.CoreCommonConstants.*;
+import static com.axonivy.market.core.constants.CoreMavenConstants.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class VersionUtils extends CoreVersionUtils {
+public class VersionUtils {
   private static final Pattern INVALID_VERSION_CHAR_PATTERN = Pattern.compile("[^\\p{L}\\p{N}._-]",
       Pattern.UNICODE_CHARACTER_CLASS);
   // Common semantic versioning pattern: 1, 1.2, 1.2.3, 1.2.3.4, 1.2.3.4.5, 1.2.3-beta, 1.2.3-beta.1, etc.
@@ -66,9 +66,8 @@ public class VersionUtils extends CoreVersionUtils {
     String[] segments = MAIN_VERSION_PATTERN.split(version);
 
     if (segments.length >= THREE) {
-      segments[TWO] = segments[TWO].split(CommonConstants.DASH_SEPARATOR)[0];
-      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[ONE] +
-          CommonConstants.DOT_SEPARATOR + segments[TWO];
+      segments[TWO] = segments[TWO].split(DASH_SEPARATOR)[0];
+      return segments[0] + DOT_SEPARATOR + segments[ONE] + DOT_SEPARATOR + segments[TWO];
     }
     return version;
   }
@@ -82,7 +81,7 @@ public class VersionUtils extends CoreVersionUtils {
   }
 
   public static String getNumbersOnly(String version) {
-    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(DASH_SEPARATOR)[0];
   }
 
   public static boolean isMajorVersion(String version) {
@@ -117,7 +116,7 @@ public class VersionUtils extends CoreVersionUtils {
         .map(MavenArtifactKey::getProductVersion)
         .collect(Collectors.toSet());
 
-    return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
+    return CoreVersionUtils.getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
   }
 
   public static boolean isMavenVersion(String versionStr) {
@@ -129,7 +128,7 @@ public class VersionUtils extends CoreVersionUtils {
   }
 
   public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
-    String versionRangeSuffix = PLUS;
+    String versionRangeSuffix = CommonConstants.PLUS;
     if (BooleanUtils.isTrue(isDeprecatedProduct)) {
       versionRangeSuffix = EMPTY;
     }
@@ -141,7 +140,7 @@ public class VersionUtils extends CoreVersionUtils {
     if (VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion))) {
       return minVersion.concat(versionRangeSuffix);
     }
-    return String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+    return String.format(CommonConstants.COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
   }
 
   private static String splitVersion(String version) {

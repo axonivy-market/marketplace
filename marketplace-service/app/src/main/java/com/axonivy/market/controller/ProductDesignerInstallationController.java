@@ -19,7 +19,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.DESIGNER_INSTALLATION_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DESIGNER_INSTALLATION;
-import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
 @RestController
 @RequestMapping(PRODUCT_DESIGNER_INSTALLATION)

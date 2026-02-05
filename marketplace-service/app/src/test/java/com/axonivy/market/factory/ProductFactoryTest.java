@@ -18,7 +18,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

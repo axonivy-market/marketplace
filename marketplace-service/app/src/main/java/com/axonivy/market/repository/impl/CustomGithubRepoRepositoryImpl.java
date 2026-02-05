@@ -12,8 +12,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.EntityConstants.NAME;
+import static com.axonivy.market.core.constants.CoreEntityConstants.NAME;
 import static com.axonivy.market.constants.PostgresDBConstants.*;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
 
 public class CustomGithubRepoRepositoryImpl extends CoreAbstractBaseRepository<GithubRepo> implements CustomGithubRepoRepository {
   @Override

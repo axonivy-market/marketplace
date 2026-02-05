@@ -4,6 +4,9 @@ import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.constants.CoreMavenConstants;
+import com.axonivy.market.core.constants.CoreProductJsonConstants;
 import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -127,7 +130,7 @@ public class MavenUtils {
 
     for (JsonNode mavenNode : installersNode) {
       JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
-      if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
+      if (!installerIdsToDisplay.contains(mavenNode.path(CoreProductJsonConstants.ID).asText())) {
         continue;
       }
 
@@ -136,9 +139,9 @@ public class MavenUtils {
       String repoUrl = Optional.of(repositoriesNode)
           .filter(jsonNode -> !jsonNode.isMissingNode())
           .map(jsonNode -> jsonNode.get(0))
-          .map(jsonNode -> jsonNode.get(ProductJsonConstants.URL))
+          .map(jsonNode -> jsonNode.get(CoreProductJsonConstants.URL))
           .map(JsonNode::asText)
-          .orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+          .orElse(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
 
       // Process projects
       if (dataNode.has(ProductJsonConstants.PROJECTS)) {
@@ -166,7 +169,7 @@ public class MavenUtils {
   public static String buildDownloadUrl(Artifact artifact, String version) {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
-    String repoUrl = StringUtils.defaultIfBlank(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    String repoUrl = StringUtils.defaultIfBlank(artifact.getRepoUrl(), CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     var archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(version,
         artifact.getArchivedArtifacts());
 
@@ -174,9 +177,9 @@ public class MavenUtils {
       groupIdByVersion = archivedArtifactBestMatchVersion.getGroupId();
       artifactIdByVersion = archivedArtifactBestMatchVersion.getArtifactId();
     }
-    groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
+    groupIdByVersion = groupIdByVersion.replace(CoreCommonConstants.DOT_SEPARATOR, CoreCommonConstants.SLASH);
 
-    if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
+    if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
       String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(repoUrl, groupIdByVersion,
           artifactIdByVersion, version);
       String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
@@ -190,12 +193,12 @@ public class MavenUtils {
 
   public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
+    groupId = groupId.replace(CoreCommonConstants.DOT_SEPARATOR, CoreCommonConstants.SLASH);
     if (StringUtils.isBlank(version)) {
       version = baseVersion;
     }
     var artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
+    return String.join(CoreCommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
 
   public static ArchivedArtifact findArchivedArtifactInfoBestMatchWithVersion(String version,
@@ -216,8 +219,8 @@ public class MavenUtils {
       return StringUtils.EMPTY;
     }
     repoUrl = getDefaultMirrorMavenRepo(repoUrl);
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
+    groupId = groupId.replace(CoreCommonConstants.DOT_SEPARATOR, CoreCommonConstants.SLASH);
+    return String.join(CoreCommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
         MavenConstants.METADATA_URL_POSTFIX);
   }
 
@@ -226,8 +229,8 @@ public class MavenUtils {
       return StringUtils.EMPTY;
     }
     repoUrl = getDefaultMirrorMavenRepo(repoUrl);
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
+    groupId = groupId.replace(CoreCommonConstants.DOT_SEPARATOR, CoreCommonConstants.SLASH);
+    return String.join(CoreCommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
   }
 
   public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl) {
@@ -247,7 +250,7 @@ public class MavenUtils {
     }
 
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
-    String repoUrl = StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    String repoUrl = StringUtils.defaultIfEmpty(artifact.getRepoUrl(), CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
 
     return Metadata.builder().groupId(groupId).versions(new HashSet<>()).productId(productId).artifactId(
@@ -259,7 +262,7 @@ public class MavenUtils {
     if (StringUtils.isBlank(artifactId)) {
       return StringUtils.EMPTY;
     }
-    return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
+    return Arrays.stream(artifactId.split(CoreCommonConstants.DASH_SEPARATOR))
         .map(part -> part.substring(0, 1).toUpperCase(Locale.getDefault()) + part.substring(1).toLowerCase(
             Locale.getDefault()))
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
@@ -342,7 +345,7 @@ public class MavenUtils {
   }
 
   public static String getDefaultMirrorMavenRepo(String repoUrl) {
-    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
       return MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;

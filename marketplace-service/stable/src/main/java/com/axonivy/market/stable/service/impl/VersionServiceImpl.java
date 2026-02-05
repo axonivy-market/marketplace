@@ -2,7 +2,6 @@ package com.axonivy.market.stable.service.impl;
 
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
-import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -12,11 +11,8 @@ import com.axonivy.market.stable.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Log4j2

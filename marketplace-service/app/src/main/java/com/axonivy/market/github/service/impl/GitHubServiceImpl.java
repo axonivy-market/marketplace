@@ -207,7 +207,7 @@ public class GitHubServiceImpl implements GitHubService {
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
         .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
+            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {

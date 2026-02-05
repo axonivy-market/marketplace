@@ -2,6 +2,7 @@ package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.core.CoreBaseSetup;
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -232,7 +233,7 @@ public class BaseSetup extends CoreBaseSetup {
 
   protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
-        MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
+        MOCK_MAVEN_URL).repoUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
             MOCK_ARTIFACT_ID)
         .type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
   }
@@ -260,7 +261,7 @@ public class BaseSetup extends CoreBaseSetup {
 
   protected Metadata getMockMetadata() {
     return Metadata.builder().productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(
-        MOCK_GROUP_ID).isProductArtifact(true).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
+        MOCK_GROUP_ID).isProductArtifact(true).repoUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
             MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE)
         .name(MOCK_ARTIFACT_NAME).build();
   }

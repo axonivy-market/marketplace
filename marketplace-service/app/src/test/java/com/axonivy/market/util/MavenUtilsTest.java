@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
@@ -23,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+import static com.axonivy.market.core.constants.CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 
 class MavenUtilsTest extends BaseSetup {
 
@@ -34,7 +35,7 @@ class MavenUtilsTest extends BaseSetup {
         MOCK_RELEASED_VERSION, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
 
     // Assert case without archived artifact
-    String expectedResult = String.join(CommonConstants.SLASH, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL,
+    String expectedResult = String.join(CoreCommonConstants.SLASH, DEFAULT_IVY_MAVEN_BASE_URL,
         "com/axonivy/util", MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION, artifactFileName);
     String result = MavenUtils.buildDownloadUrl(getMockArtifact(), MOCK_RELEASED_VERSION);
     Assertions.assertEquals(expectedResult, result,
@@ -51,7 +52,7 @@ class MavenUtilsTest extends BaseSetup {
     result = MavenUtils.buildDownloadUrl(targetArtifact, MOCK_RELEASED_VERSION);
     artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION
         , MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
-    expectedResult = String.join(CommonConstants.SLASH, customRepoUrl, "com/axonivy/util", MOCK_ARTIFACT_ID,
+    expectedResult = String.join(CoreCommonConstants.SLASH, customRepoUrl, "com/axonivy/util", MOCK_ARTIFACT_ID,
         MOCK_RELEASED_VERSION, artifactFileName);
     Assertions.assertEquals(expectedResult, result,
         "Released version download URL should match expected URL when artifact versions do not match and use custom " +
@@ -62,7 +63,7 @@ class MavenUtilsTest extends BaseSetup {
     result = MavenUtils.buildDownloadUrl(targetArtifact, "10.0.9");
     artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, "adobe-connector", "10.0.9",
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
-    expectedResult = String.join(CommonConstants.SLASH, customRepoUrl, "com/axonivy/adobe/connector",
+    expectedResult = String.join(CoreCommonConstants.SLASH, customRepoUrl, "com/axonivy/adobe/connector",
         "adobe-connector", "10.0.9", artifactFileName);
     Assertions.assertEquals(expectedResult, result,
         "Released version download URL should match expected URL when archived artifact versions match and use " +
@@ -75,7 +76,7 @@ class MavenUtilsTest extends BaseSetup {
         MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(null, null, null, null),
         "Snapshot metadata URL should be empty");
     Assertions.assertEquals(MOCK_SNAPSHOT_MAVEN_URL,
-        MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
+        MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
             MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION),
         "Snapshot metadata URL should match expected snapshot maven URL");
   }
@@ -102,7 +103,7 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertTrue(StringUtils.isEmpty(MavenUtils.buildMetadataUrlFromArtifactInfo(null, null, null)),
         "Snapshot metadata URL built from artifact info should be null");
     Assertions.assertEquals(MOCK_MAVEN_URL,
-        MavenUtils.buildMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
+        MavenUtils.buildMetadataUrlFromArtifactInfo(DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
             MOCK_ARTIFACT_ID), "Snapshot metadata URL built from artifact info should match expected maven URL");
   }
 
@@ -117,7 +118,7 @@ class MavenUtilsTest extends BaseSetup {
         "Metadata name should match artifact name");
     Assertions.assertTrue(CollectionUtils.isEmpty(result.getVersions()),
         "Metadata versions should be empty");
-    Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, result.getRepoUrl(),
+    Assertions.assertEquals(DEFAULT_IVY_MAVEN_BASE_URL, result.getRepoUrl(),
         "Metadata repo URL should match default Ivy maven base URL");
 
     artifact.setName("octopus demo");
@@ -279,7 +280,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testGetDefaultMirrorMavenRepo() {
-    String result = MavenUtils.getDefaultMirrorMavenRepo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    String result = MavenUtils.getDefaultMirrorMavenRepo(DEFAULT_IVY_MAVEN_BASE_URL);
     Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, result,
         "Default mirror maven repo should match default ivy mirror maven base URL");
     final String ivyRepoUrl = "https://oss.sonatype.org/content/repositories/releases";

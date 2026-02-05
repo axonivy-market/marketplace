@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.SecurityMonitorMailProperties;
 import com.axonivy.market.service.NotificationService;
@@ -38,7 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
       MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
       message.setFrom(mailProperties.getFrom());
       message.setTo(
-          Arrays.stream(mailProperties.getTo().split(CommonConstants.COMMA))
+          Arrays.stream(mailProperties.getTo().split(CoreCommonConstants.COMMA))
               .map(String::trim)
               .toArray(String[]::new)
       );

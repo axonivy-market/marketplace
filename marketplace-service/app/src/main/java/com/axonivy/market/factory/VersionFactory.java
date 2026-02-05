@@ -3,6 +3,7 @@ package com.axonivy.market.factory;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.factory.CoreVersionFactory;
@@ -50,9 +51,9 @@ public class VersionFactory extends CoreVersionFactory {
 
   private static String extractVersionFromRange(String mavenVersion) {
     var plainVersions = RANGE_VERSION_PATTERN.matcher(mavenVersion).replaceAll(EMPTY);
-    String[] parts = plainVersions.split(CommonConstants.COMMA);
-    if (parts.length > CommonConstants.ONE) {
-      return parts[CommonConstants.ONE].trim();
+    String[] parts = plainVersions.split(CoreCommonConstants.COMMA);
+    if (parts.length > CoreCommonConstants.ONE) {
+      return parts[CoreCommonConstants.ONE].trim();
     }
     return parts[CommonConstants.ZERO].trim();
   }

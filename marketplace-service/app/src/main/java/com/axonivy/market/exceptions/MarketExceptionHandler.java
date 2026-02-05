@@ -102,7 +102,8 @@ public class MarketExceptionHandler {
   }
 
   @ExceptionHandler(TaskAlreadyRunningException.class)
-  public ResponseEntity<Message> handleTaskAlreadyRunningException(TaskAlreadyRunningException taskAlreadyRunningException) {
+  public ResponseEntity<Message> handleTaskAlreadyRunningException(
+      TaskAlreadyRunningException taskAlreadyRunningException) {
     var message = new Message(ErrorCode.TASK_ALREADY_RUNNING.getCode(), taskAlreadyRunningException.getMessage(),
         ErrorCode.TASK_ALREADY_RUNNING.getHelpText());
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);

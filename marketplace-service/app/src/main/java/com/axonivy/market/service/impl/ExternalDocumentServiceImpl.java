@@ -6,6 +6,7 @@ import com.axonivy.market.config.MarketplaceConfig;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
@@ -178,9 +179,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<ExternalDocumentMeta> docMetasByVersions =
         externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, majorVersions);
 
-    List<ExternalDocumentMeta> docMetasByLanguages =
-        externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, Collections.singletonList(version));
-
     if (docMetasByVersions.isEmpty()) {
       return null;
     }
@@ -188,7 +186,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     List<DocumentInfoResponse.DocumentVersion> documentVersions = docMetasByVersions.stream()
         .collect(Collectors.groupingBy(ExternalDocumentMeta::getVersion))
         .entrySet().stream()
-        .sorted((v1, v2) -> {
+        .sorted((Map.Entry<String,List<ExternalDocumentMeta>> v1,Map.Entry<String,List<ExternalDocumentMeta>> v2) -> {
           if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v1.getKey())) {
             return 1;
           }
@@ -207,6 +205,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
               .url(host + chosenMeta.getRelativeLink()).build();
         }).toList();
 
+    List<ExternalDocumentMeta> docMetasByLanguages =
+        externalDocumentMetaRepo.findByArtifactNameAndVersionIn(artifact, Collections.singletonList(version));
     List<DocumentInfoResponse.DocumentLanguage> documentLanguages = docMetasByLanguages.stream()
         .map(docMeta -> DocumentInfoResponse.DocumentLanguage.builder()
             .language(docMeta.getLanguage().getCode())
@@ -376,7 +376,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private void createSymlinkForDocLanguage(Path enPath) {
     try {
-      var target = Path.of(CommonConstants.DOT_SEPARATOR);
+      var target = Path.of(CoreCommonConstants.DOT_SEPARATOR);
       prepareDirectoryForSymlinkPath(enPath);
       Files.createSymbolicLink(enPath, target);
     } catch (IOException e) {
@@ -395,7 +395,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // remove prefix 'data' and replace all ms win separator to slash if present
     var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
-        CommonConstants.SLASH);
+        CoreCommonConstants.SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
     List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo
         .findByProductIdAndLanguageAndVersion(productId, language, version);
@@ -434,7 +434,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .filter(name -> DocumentLanguage.getCodes().contains(name))
         .collect(Collectors.toMap(
             DocumentLanguage::fromCode,
-            name -> location + CommonConstants.SLASH + name
+            name -> location + CoreCommonConstants.SLASH + name
         ));
   }
 
@@ -480,12 +480,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     DocumentLanguage extractLanguage = extractLanguage(path);
-    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
-
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
 
+    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
     if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
         version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
       return getRedirectURLForDevVersion(productName, artifactName, language);
@@ -531,7 +530,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     if (version.startsWith(developmentVersion) || version.endsWith(developmentVersion)) {
-      return version.replace(developmentVersion, EMPTY).replace(CommonConstants.DASH_SEPARATOR, EMPTY);
+      return version.replace(developmentVersion, EMPTY).replace(CoreCommonConstants.DASH_SEPARATOR, EMPTY);
     }
 
     return version;
@@ -558,7 +557,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (StringUtils.isBlank(input) || !SAFE_PATH_PATTERN.matcher(input).matches()) {
       return true;
     }
-    String[] forbiddenPathParts = {"..", CommonConstants.SLASH, "\\", java.io.File.separator};
+    String[] forbiddenPathParts = {"..", CoreCommonConstants.SLASH, "\\", java.io.File.separator};
     return input.contains(String.join(EMPTY, forbiddenPathParts));
   }
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import static com.axonivy.market.constants.RequestMappingConstants.ROOT;
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.ROOT;
 import static com.axonivy.market.core.constants.CoreRequestMappingConstants.SWAGGER_URL;
 
 @RestController
@@ -31,7 +31,7 @@ public class AppController {
     var swaggerURL = SWAGGER_URL;
     try {
       swaggerURL = ServletUriComponentsBuilder.fromCurrentContextPath().path(SWAGGER_URL).toUriString();
-    } catch (Exception e) {
+    } catch (IllegalStateException | IllegalArgumentException | NullPointerException e) {
       log.error("Cannot get Swagger Url", e);
     }
     return swaggerURL;

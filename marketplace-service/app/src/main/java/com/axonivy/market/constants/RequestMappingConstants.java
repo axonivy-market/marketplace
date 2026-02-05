@@ -3,15 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMappingConstants {
-  public static final String ROOT = "/";
-  public static final String API = ROOT + "api";
   public static final String PRODUCT = API + "/product";
   public static final String PRODUCT_DETAILS = API + "/product-details";
   public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
   public static final String FEEDBACK = API + "/feedback";
-  public static final String IMAGE = API + "/image";
   public static final String SYNC = "sync";
   public static final String SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS = SYNC + "/first-published-date";
   public static final String SYNC_ONE_PRODUCT_BY_ID = "sync/{id}";

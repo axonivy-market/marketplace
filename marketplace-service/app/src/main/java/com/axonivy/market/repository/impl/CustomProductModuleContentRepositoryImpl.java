@@ -7,7 +7,8 @@ import lombok.Builder;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
+
 import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
 
 @Builder

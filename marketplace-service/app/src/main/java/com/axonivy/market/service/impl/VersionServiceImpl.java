@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.ErrorCode;
@@ -10,6 +10,7 @@ import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.service.impl.CoreVersionServiceImpl;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -39,7 +40,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class VersionServiceImpl extends CoreVersionServiceImpl implements VersionService {
   private static final Pattern MAIN_VERSION_PATTERN =
-      Pattern.compile(MavenConstants.MAIN_VERSION_REGEX);
+      Pattern.compile(CoreMavenConstants.MAIN_VERSION_REGEX);
 
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final MetadataRepository metadataRepo;
@@ -75,7 +76,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     }
 
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    for (String version : VersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
+    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
       var link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
               designerVersion)).withSelfRel();

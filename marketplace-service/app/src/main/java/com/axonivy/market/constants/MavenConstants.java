@@ -1,11 +1,10 @@
 package com.axonivy.market.constants;
 
-import com.axonivy.market.core.constants.CoreMavenConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class MavenConstants extends CoreMavenConstants {
+public class MavenConstants {
   public static final String PRODUCT_ARTIFACT_POSTFIX = "-product";
   public static final String DEFAULT_IVY_MIRROR_MAVEN_BASE_URL = "https://nexus-mirror.axonivy.com/repository/maven";
   public static final String ARTIFACT_FILE_NAME_FORMAT = "%s-%s.%s";
@@ -21,4 +20,6 @@ public class MavenConstants extends CoreMavenConstants {
   public static final String VALUE_TAG = "value";
   public static final String DEFAULT_PRODUCT_FOLDER_TYPE = "zip";
   public static final String POM = "pom";
+  public static final String DEV_RELEASE_POSTFIX = "-dev";
+
 }

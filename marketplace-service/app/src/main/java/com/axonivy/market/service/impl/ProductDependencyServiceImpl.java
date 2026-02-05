@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
@@ -34,9 +35,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+import static com.axonivy.market.core.constants.CoreCommonConstants.DOT_SEPARATOR;
 
 @Log4j2
 @AllArgsConstructor
@@ -256,7 +257,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
   private byte[] downloadPOMFileFromMaven(String downloadUrl) throws HttpClientErrorException {
     ObjectUtils.requireNonEmpty(downloadUrl, "Download URL must not be null");
-    var changeToMirrorRepo = downloadUrl.replace(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
+    var changeToMirrorRepo = downloadUrl.replace(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL,
+        DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     var pomURL = changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
     return fileDownloadService.downloadFile(pomURL);
   }

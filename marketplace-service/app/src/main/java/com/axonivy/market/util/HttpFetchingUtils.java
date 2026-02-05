@@ -1,6 +1,6 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class HttpFetchingUtils {
 
   public static String extractFileNameFromUrl(String fileUrl) {
     String name = UNKNOWN_FILE_NAME;
-    if (StringUtils.isNotBlank(fileUrl) && !fileUrl.endsWith(CommonConstants.SLASH)) {
+    if (StringUtils.isNotBlank(fileUrl) && !fileUrl.endsWith(CoreCommonConstants.SLASH)) {
       try {
         String path = new URI(fileUrl).toURL().getPath();
         Path fileName = Paths.get(path).getFileName();

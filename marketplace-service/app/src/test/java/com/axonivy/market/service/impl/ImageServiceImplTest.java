@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2

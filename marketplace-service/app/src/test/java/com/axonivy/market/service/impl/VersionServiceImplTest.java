@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -68,7 +69,7 @@ class VersionServiceImplTest extends BaseSetup {
 
     MavenArtifactVersion mockModel = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, null);
     mockModel.setName(MOCK_PRODUCT_ID);
-    mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    mockModel.setDownloadUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     proceededData.add(mockModel);
 
     when(mavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(proceededData);
@@ -83,7 +84,7 @@ class VersionServiceImplTest extends BaseSetup {
 
     MavenArtifactVersion mockModel = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact-test");
     mockModel.setName(MOCK_PRODUCT_ID);
-    mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    mockModel.setDownloadUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
 
     MavenArtifactVersion mockModel2 = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact");
     mockModel2.setName("MOCK_PRODUCT_ID");

@@ -1,6 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.WorkflowInformation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -101,7 +101,7 @@ public class GithubReposModel {
     if (StringUtils.isBlank(htmlUrl)) {
       return Strings.EMPTY;
     }
-    String[] parts = htmlUrl.split(CommonConstants.SLASH);
+    String[] parts = htmlUrl.split(CoreCommonConstants.SLASH);
     return parts[parts.length - 1];
   }
 }
