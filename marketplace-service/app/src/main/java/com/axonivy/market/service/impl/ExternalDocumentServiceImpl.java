@@ -479,12 +479,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       artifactName = createArtifactNameByProductName(productName);
     }
 
-    DocumentLanguage extractLanguage = extractLanguage(path);
     if (StringUtils.isAnyBlank(productName, artifactName, version)) {
       return null;
     }
 
-    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage, DocumentLanguage.ENGLISH);
+    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage(path), DocumentLanguage.ENGLISH);
     if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
         version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
       return getRedirectURLForDevVersion(productName, artifactName, language);

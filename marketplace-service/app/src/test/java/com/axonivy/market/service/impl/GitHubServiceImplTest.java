@@ -739,7 +739,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetRepoOfficialReleasesWithIOExceptionThrown() throws IOException {
+  void testGetRepoOfficialReleasesWithIOExceptionThrown() {
     String repoName = "test-org/error-repo";
     String productId = "test-product-id";
 

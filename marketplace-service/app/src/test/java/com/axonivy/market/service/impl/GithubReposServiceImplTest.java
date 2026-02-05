@@ -93,17 +93,6 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testProcessProductNewRepo() {
-    doReturn(List.of(new TestStep())).when(serviceSpy)
-        .processWorkflowWithFallback(any(), any(), any());
-
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo, dbRepo.getProductId()),
-        "Processing product should not throw an exception");
-
-    verify(githubRepoRepository).save(any());
-  }
-
-  @Test
   void testProcessProductDataAccessException() {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), any());

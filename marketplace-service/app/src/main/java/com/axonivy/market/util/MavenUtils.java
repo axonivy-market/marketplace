@@ -48,8 +48,8 @@ public class MavenUtils {
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
       return new ArrayList<>();
     }
-    InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
     try {
+      var contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
       return extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
       log.error("Can not get maven artifacts from Product.json of {}", productJson);
@@ -280,7 +280,7 @@ public class MavenUtils {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
 
-    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
+    var mavenArtifactKey = MavenArtifactKey.builder()
         .artifactId(metadata.getArtifactId())
         .productVersion(version)
         .isAdditionalVersion(!metadata.isProductArtifact())

@@ -107,8 +107,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final GithubRepoRepository githubRepo;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
-  private GHCommit lastGHCommit = null;
-  private GitHubRepoMeta marketRepoMeta = null;
+  private GHCommit lastGHCommit;
+  private GitHubRepoMeta marketRepoMeta;
 
   public ProductServiceImpl(CoreProductRepository coreProductRepo, ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,

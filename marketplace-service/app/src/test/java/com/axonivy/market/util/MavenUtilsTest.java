@@ -4,7 +4,6 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;

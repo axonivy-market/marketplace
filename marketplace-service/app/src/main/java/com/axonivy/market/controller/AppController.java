@@ -31,7 +31,7 @@ public class AppController {
     var swaggerURL = SWAGGER_URL;
     try {
       swaggerURL = ServletUriComponentsBuilder.fromCurrentContextPath().path(SWAGGER_URL).toUriString();
-    } catch (IllegalStateException | IllegalArgumentException | NullPointerException e) {
+    } catch (IllegalStateException | IllegalArgumentException e) {
       log.error("Cannot get Swagger Url", e);
     }
     return swaggerURL;

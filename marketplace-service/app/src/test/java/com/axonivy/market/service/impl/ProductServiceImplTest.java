@@ -88,8 +88,6 @@ class ProductServiceImplTest extends BaseSetup {
   ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
   @Captor
   ArgumentCaptor<ProductMarketplaceData> argumentCaptorProductMarketplaceData;
-  private String keyword;
-  private String language;
   private Page<Product> mockResultReturn;
   @Mock
   private ProductRepository productRepo;
