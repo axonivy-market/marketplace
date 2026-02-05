@@ -486,7 +486,7 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testGetProductByIdWithNewestReleaseVersionWithEmptyArtifact() {
     Product mockProduct = getMockProduct();
-    when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+    when(productJsonContentRepo.findByProductIdAndVersionIgnoreCase(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
     when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));

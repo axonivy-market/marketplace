@@ -177,7 +177,7 @@ class VersionServiceImplTest extends BaseSetup {
   void testGetProductJsonContentByIdAndVersion() {
     ProductJsonContent mockProductJsonContent = getMockProductJsonContent();
     mockProductJsonContent.setName(MOCK_PRODUCT_NAME);
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersionIgnoreCase(anyString(), anyString()))
         .thenReturn(List.of(mockProductJsonContent));
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
         MOCK_RELEASED_VERSION, MOCK_DESIGNER_VERSION);
@@ -187,7 +187,7 @@ class VersionServiceImplTest extends BaseSetup {
 
   @Test
   void testGetProductJsonContentByIdAndVersionNoResult() {
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersionIgnoreCase(anyString(), anyString())).thenReturn(
         Collections.emptyList());
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
         MOCK_RELEASED_VERSION, MOCK_DESIGNER_VERSION);

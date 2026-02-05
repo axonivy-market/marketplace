@@ -57,6 +57,9 @@ public class ProductController {
           example = "13.2.0") String productVersion) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId,
         productVersion);
+    if (productJsonContent.isEmpty()) {
+      return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 

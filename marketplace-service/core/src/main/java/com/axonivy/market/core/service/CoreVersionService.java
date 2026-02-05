@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface CoreVersionService {
-  Map<String, Object> getProductJsonContentByIdAndVersion(String name, String designerVersion);
+  Map<String, Object> getProductJsonContentByIdAndVersion(String name, String productVersion);
 
   List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion);
@@ -15,5 +15,5 @@ public interface CoreVersionService {
   List<String> getMavenVersionsToDisplay(List<MavenArtifactVersion> mavenArtifactVersions, Boolean isShowDevVersion,
       String designerVersion);
 
-  String getLatestInstallableVersion(String productId);
+  String getLatestReleasedVersion(String productId);
 }
