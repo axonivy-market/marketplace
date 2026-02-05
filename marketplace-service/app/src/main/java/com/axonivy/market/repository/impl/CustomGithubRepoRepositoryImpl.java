@@ -16,7 +16,8 @@ import static com.axonivy.market.core.constants.CoreEntityConstants.NAME;
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
 
-public class CustomGithubRepoRepositoryImpl extends CoreAbstractBaseRepository<GithubRepo> implements CustomGithubRepoRepository {
+public class CustomGithubRepoRepositoryImpl extends CoreAbstractBaseRepository<GithubRepo>
+    implements CustomGithubRepoRepository {
   @Override
   public Page<GithubRepo> findAllByFocusedSorted(MonitoringSearchCriteria criteria, Pageable pageable) {
     String orderBy = getOrderBy(criteria.getWorkFlowType(), criteria.getSortDirection());

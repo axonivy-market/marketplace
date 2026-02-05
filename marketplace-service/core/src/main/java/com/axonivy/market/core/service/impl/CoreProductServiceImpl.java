@@ -29,6 +29,7 @@ public class CoreProductServiceImpl implements CoreProductService {
    *             Use {@link #findProducts(String type, String keyword, String language, Pageable pageable)} instead.
    */
   @Override
+  @Deprecated
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
     final var typeOption = TypeOption.of(type);

@@ -17,14 +17,14 @@ import java.util.List;
 public class AxonIvyClient {
 
   private static final String DOCUMENT_VERSION_PATH = "/api/docs/Axon-Ivy-Platform/dev/en";
-
+  private static final String HOST_PATH_FORMAT = "%s%s";
   @Value("${axon.ivy.developer.url}")
   private String host;
 
   private final RestTemplate restTemplate;
 
   public List<String> getDocumentVersions() {
-    var url = String.format(host + DOCUMENT_VERSION_PATH);
+    var url = String.format(HOST_PATH_FORMAT, host ,DOCUMENT_VERSION_PATH);
     try {
       DocumentInfoResponse response = restTemplate.getForObject(url, DocumentInfoResponse.class);
       if (response != null) {

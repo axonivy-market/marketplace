@@ -10,6 +10,7 @@ public interface CoreProductService {
    * @deprecated This method is deprecated and will be no longer use in future release.
    *             Use {@link #findProducts(String, String, String, Pageable)} instead.
    */
+  @Deprecated
   Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
 
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
