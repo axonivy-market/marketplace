@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Primary
@@ -18,4 +19,6 @@ public interface ImageRepository extends CoreImageRepository {
   List<Image> findByProductId(String productId);
 
   void deleteAllByProductId(String productId);
+
+  List<Image> findByCustomId(String customID);
 }

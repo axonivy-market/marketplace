@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
 import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
 
@@ -40,6 +42,19 @@ public class ImageController extends CoreImageController {
     if (imageData.length == 0) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
+  }
+
+  @GetMapping("/custom/{customId}")
+  @Operation(summary = "Get an image by custom ID")
+  public ResponseEntity<byte[]> getImageByCustomId(
+      @PathVariable("customId") String customId) {
+    byte[] imageData = imageService.getImageByCustomId(customId);
+    if (imageData == null || imageData.length == 0) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    var headers = new HttpHeaders();
+    headers.setContentType(MediaType.IMAGE_JPEG);
     return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
   }
 

@@ -40,4 +40,7 @@ public class Image extends GenericIdEntity {
   @Schema(description = "The SHA from github", example = "93b1e2f1595d3a85e51b01")
   private String sha;
 
+  @Schema(description = "Custom id", example = "octopus-team-member-1")
+  private String customId;
+
 }

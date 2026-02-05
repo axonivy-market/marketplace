@@ -113,6 +113,17 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
+  public byte[] getImageByCustomId(String customId) {
+    List<Image> images = imageRepository.findByCustomId(customId);
+    if (CollectionUtils.isEmpty(images)) {
+      log.info("No image found with customId: {}", customId);
+      return null;
+    }
+    log.info("Found {} image(s) with customId: {}, returning the first one", images.size(), customId);
+    return images.get(0).getImageData();
+  }
+
+  @Override
   public byte[] readPreviewImageByName(String imageName) {
     var previewPath = Paths.get(PREVIEW_DIR);
     if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
@@ -137,22 +148,20 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public String saveImageWithCustomId(String id, MultipartFile file) throws IOException {
-    // Validate the file before saving
+  public String saveImageWithCustomId(String customId, MultipartFile file) throws IOException {
     FileValidator.validateImageFile(file);
-
-    Optional<Image> existingImage = imageRepository.findById(id);
-    if (existingImage.isPresent()) {
-      imageRepository.deleteById(id);
-      log.info("Deleted existing image with id: {}", id);
+    List<Image> existingImages = imageRepository.findByCustomId(customId);
+    if (!CollectionUtils.isEmpty(existingImages)) {
+      imageRepository.deleteAll(existingImages);
+      log.info("Deleted existing {} image(s) with customId: {}", existingImages.size(), customId);
     }
     byte[] fileBytes = file.getBytes();
     var image = new Image();
-    image.setId(id);
     image.setImageData(fileBytes);
     image.setImageUrl(file.getOriginalFilename());
-    var persistedImage = imageRepository.save(image);
-    log.info("Image saved successfully with custom id: {}", persistedImage.getId());
-    return persistedImage.getId();
+    image = imageRepository.save(image);
+    image.setCustomId(customId);
+    log.info("Image saved successfully with id: {}", image.getId());
+    return image.getId();
   }
 }
