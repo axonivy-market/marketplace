@@ -16,7 +16,7 @@
           <div class="position-relative mb-4 mb-md-0 me-md-5 flex-shrink-0">
             <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
               <img [src]="'common.team.po.githubUserName' | translate | avatarUrl" [alt]="'common.team.po.name'|translate" class="img-fluid w-100 h-100 object-fit-cover"
-                title="PO Image"/>
+                title="PO Image" onerror="this.src='../../../../assets/images/misc/anonymous-avatar.png'"/>
             </div>
             <div
               class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
@@ -52,7 +52,7 @@
         <div class="position-relative d-inline-block mx-auto mb-3">
           <div class="image-wrapper rounded-circle border border-4 border-white shadow-sm overflow-hidden bg-light">
             <img [src]="member.githubUserName | avatarUrl" [alt]="member.name" class="img-fluid w-100 h-100 object-fit-cover"
-              title="Team member image"/>
+              title="Team member image" onerror="this.src='../../../../assets/images/misc/anonymous-avatar.png'"/>
           </div>
           <div
             class="status-indicator position-absolute bottom-0 end-0 bg-white border border-1 border-light rounded-circle shadow-sm d-flex align-items-center justify-content-center">
