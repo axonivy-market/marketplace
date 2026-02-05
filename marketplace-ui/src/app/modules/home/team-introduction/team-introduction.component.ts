@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AvatarUrlPipe } from './avatar-url.pipe';
@@ -20,19 +20,8 @@ interface TeamMember {
   templateUrl: './team-introduction.component.html',
   styleUrls: ['./team-introduction.component.scss']
 })
-export class TeamIntroductionComponent implements OnInit {
-  teamTitle: string = '';
-  teamDescription: string = '';
+export class TeamIntroductionComponent {
   translateService = inject(TranslateService);
-
-  ngOnInit() {
-    this.translateService.get('common.team.title').subscribe(res => {
-      this.teamTitle = res;
-    });
-    this.translateService.get('common.team.description').subscribe(res => {
-      this.teamDescription = res;
-    });
-  }
 
   members: TeamMember[] = [
     {
