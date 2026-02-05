@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
@@ -12,7 +12,8 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
-import { ReleaseLetterResponse } from '../../shared/models/apis/release-letter-response.model';
+import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -120,11 +121,48 @@ export class AdminDashboardService {
     });
   }
 
-  getRelaseLetterByReleaseVersion(releaseVersion: string): Observable<ReleaseLetterResponse> {
-    return this.http.get<ReleaseLetterResponse>(`${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`);
+  createReleaseLetter(
+    releaseLetterRequest: ReleaseLetter
+  ): Observable<ReleaseLetterApiResponse> {
+    return this.http.post<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
+  updateReleaseLetter(
+    selectedReleaseVersion: string,
+    releaseLetterRequest: ReleaseLetter
+  ): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/release-version/${selectedReleaseVersion}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
+  getRelaseLetterByReleaseVersion(
+    releaseVersion: string
+  ): Observable<ReleaseLetterApiResponse> {
+    return this.http.get<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 
   getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
-    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.RELEASE_LETTERS}`);
+    return this.http.get<ReleaseLetterListApiResponse>(
+      `${API_URI.RELEASE_LETTERS}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 }

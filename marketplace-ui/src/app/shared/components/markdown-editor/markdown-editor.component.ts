@@ -1,14 +1,14 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
-  ChangeDetectorRef,
   Component,
+  effect,
   ElementRef,
-  EventEmitter,
   Inject,
+  input,
   Input,
   model,
-  Output,
   PLATFORM_ID,
+  Signal,
   ViewChild
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -30,15 +30,29 @@ export class MarkdownEditorComponent {
 
   isMDEReady = false;
   contentValue = model<string>('');
+
+  isSubmittingSignal = input<Signal<boolean>>();
+
   placeholder: string = 'Type your release letter content here...';
 
   private mde?: EasyMDE;
 
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {}
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    effect(() => {
+      const value = this.contentValue() ?? '';
+      const submitting = this.isSubmittingSignal()?.();
 
-  ngOnInit() {
-    console.log(this.contentValue());
-  } 
+      if (!this.mde) return; 
+      this.mde.codemirror.setOption('readOnly', submitting ? 'nocursor' : false);
+
+      if (this.mde.value() !== value) {
+        const cm = this.mde.codemirror;
+        const cursor = cm.getCursor();
+        this.mde.value(value);
+        cm.setCursor(cursor);
+      }
+    });
+  }
 
   async ngAfterViewInit(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -47,7 +61,6 @@ export class MarkdownEditorComponent {
 
     this.mde = new EasyMDE({
       element: this.textarea.nativeElement,
-        // toolbar: ["bold", "italic", "heading", "|", "quote", "code"],
       autofocus: true,
       autosave: {
         enabled: false,
@@ -65,6 +78,11 @@ export class MarkdownEditorComponent {
     this.mde.codemirror.on('change', () => {
       this.updateContent(this.mde!.value());
     });
+  }
+
+  setEasyMDEContent(content: string): void {
+    if (!this.mde) return;
+    this.mde.value(content);
   }
 
   updateContent(content: string): void {

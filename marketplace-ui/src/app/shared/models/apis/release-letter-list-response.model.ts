@@ -1,10 +1,10 @@
 import { Link } from "./link.model";
 import { Page } from "./page.model";
-import { ReleaseLetterResponse } from "./release-letter-response.model";
+import { ReleaseLetterApiResponse } from "./release-letter-response.model";
 
 export interface ReleaseLetterListApiResponse {
     _embedded: {
-        releaseLetterModelList: ReleaseLetterResponse[];
+        releaseLetterModelList: ReleaseLetterApiResponse[];
     };
     _links: Link;
     page: Page;

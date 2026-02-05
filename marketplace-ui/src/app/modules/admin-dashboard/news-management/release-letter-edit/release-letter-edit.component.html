@@ -42,9 +42,10 @@
           id="release-version"
           autocomplete="on"
           type="text"
+          [disabled]="isSubmitting()"
           [lang]="languageService.selectedLanguage()"
           class="form-control input__search bg-secondary border-0 search-input my-4"
-          [value]="releaseVersion"
+          [value]="selectedReleaseVersion"
           [placeholder]="
             translateService.get(
               'common.admin.releaseLetterEdit.releaseVersionPlaceholder'
@@ -59,15 +60,23 @@
       </div>
       <div>
         <app-markdown-editor
-          [(contentValue)]="releaseLetterValue"
+          [isSubmittingSignal]="isSubmitting"
+          [(contentValue)]="releaseLetter.content"
           [autosaveId]="'release-letter-content'"></app-markdown-editor>
 
         <button
+          id="submit-button"
+          [disabled]="isSubmitting()"
           type="submit"
           [lang]="languageService.selectedLanguage()"
-          class="mt-4 btn border-0 submit-button text-center"
+          class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
           [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-          Submit
+          @if (isSubmitting()) {
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          }
+          <span>Submit</span>
         </button>
       </div>
     </form>

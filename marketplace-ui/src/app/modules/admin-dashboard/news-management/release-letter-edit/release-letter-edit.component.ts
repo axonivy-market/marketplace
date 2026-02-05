@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input, Signal, signal, WritableSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,8 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
+import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -32,27 +34,47 @@ export class ReleaseLetterEditComponent {
   easyMDE!: EasyMDE;
   releaseLetterValue = '';
   releaseVersion = '';
+  selectedReleaseVersion = '';
+  releaseLetter: ReleaseLetter = {
+    releaseVersion: '',
+    content: ''
+  };
+  isSubmitting = signal<boolean>(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      this.releaseVersion = params.get('release-version') ?? '';
+      this.selectedReleaseVersion = params.get('release-version') ?? '';
       this.getReleaseLetter();
     });
   }
 
   getReleaseLetter(): void {
     this.adminDashboardService
-      .getRelaseLetterByReleaseVersion(this.releaseVersion)
+      .getRelaseLetterByReleaseVersion(this.selectedReleaseVersion)
       .subscribe(response => {
-        console.log(response);
-
         this.releaseLetterValue = response.content;
+        this.releaseLetter.content = response.content;
+        this.releaseLetter.releaseVersion = response.releaseVersion;
       });
   }
 
   onSubmit(event: Event) {
     event.preventDefault();
-    this.router.navigate(['/internal-dashboard/news-management']);
+    if (this.isSubmitting()) return;
+
+    this.isSubmitting.set(true);
+    this.adminDashboardService
+      .updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: res => {
+          this.router.navigate(['/internal-dashboard/news-management']);
+        },
+        error: err => {
+          console.error('Failed to update release letter:', err);
+          // optionally show a toast/message here
+        }
+      });
   }
 
   onClickingBackToNewsManagementButton(): void {

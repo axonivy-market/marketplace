@@ -17,7 +17,8 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { MarkdownEditorComponent } from '../../../shared/components/markdown-editor/markdown-editor.component';
 import { PageTitleService } from '../../../shared/services/page-title.service';
-import { ReleaseLetterResponse } from '../../../shared/models/apis/release-letter-response.model';
+import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
+import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 
 @Component({
   selector: 'app-news-management',
@@ -47,7 +48,7 @@ export class NewsManagementComponent {
   MODE = NEWS_MANAGEMENT_MODE;
   currentMode: WritableSignal<string> = signal(NEWS_MANAGEMENT_MODE.view);
   currentModePlain = NEWS_MANAGEMENT_MODE.view;
-  releaseLetterList: WritableSignal<ReleaseLetterResponse[]> = signal([]);
+  releaseLetterList: WritableSignal<ReleaseLetter[]> = signal([]);
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },

@@ -6,7 +6,6 @@
   color: black;
 }
 
-
 ::ng-deep .EasyMDEContainer {
   .editor-toolbar {
     font-size: 1.6rem;
@@ -93,4 +92,9 @@
   pre code {
     font-size: 1.4rem;
   }
+}
+
+.spinner-border {
+  width: 12px;
+  height: 12px;
 }

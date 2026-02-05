@@ -81,6 +81,10 @@ export const routes: Routes = [
       {
         path: 'news-management/:release-version/edit',
         component: ReleaseLetterEditComponent
+      },
+      {
+        path: 'news-management/create',
+        component: ReleaseLetterEditComponent
       }
     ]
   },
