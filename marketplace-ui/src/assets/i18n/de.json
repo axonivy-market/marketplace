@@ -291,7 +291,7 @@
     "admin": {
       "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
       "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu",
-      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen", 
+      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen",
       "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
       "proceedingBtnLabel": "Weiter...",
@@ -380,9 +380,23 @@
         "description": "Manage how market news are displayed",
         "helpText": "Configure the latest market news. Administrators can add, edit, or remove news.",
         "releaseVersionPlaceholder": "Enter the release version",
+        "number": "No.",
+        "releaseVersion": "Release Version",
+        "actions": "Actions",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "releaseLetterEdit": {
+        "pageTitle": "Edit release letter",
+        "title": "Edit release letter",
+        "description": "Edit selected release letter",
+        "helpText": "Update the release letter content for the selected version.",
+        "releaseVersionPlaceholder": "Enter the release version",
         "contentPlaceholder": "Type your release letter content here...",
         "releaseVersion": "Release Version",
-        "backToNewsManagement": "Back to News Management"
+        "backToNewsManagement": "Back to News Management",
+        "releaseVersionAlreadyExistsErrorMessage": "A letter of this release version already exists. Please choose a different release version."
       }
     }
   }

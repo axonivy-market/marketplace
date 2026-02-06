@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, Signal, signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  Signal,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -63,7 +70,7 @@ export class ReleaseLetterEditComponent {
   onSubmit(event: Event) {
     event.preventDefault();
     if (this.isSubmitting()) return;
-    
+
     this.isSubmitting.set(true);
     this.adminDashboardService
       .updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter)
@@ -73,8 +80,13 @@ export class ReleaseLetterEditComponent {
           this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
-          if (RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() === err.error.helpCode) {
-            this.errorMessage = "A letter of this release version already exists. Please choose a different release version.";
+          if (
+            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
+            err.error.helpCode
+          ) {
+            this.errorMessage = this.translateService.instant(
+              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
+            );
           }
         }
       });

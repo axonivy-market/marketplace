@@ -396,7 +396,8 @@
         "releaseVersionPlaceholder": "Enter the release version",
         "contentPlaceholder": "Type your release letter content here...",
         "releaseVersion": "Release Version",
-        "backToNewsManagement": "Back to News Management"
+        "backToNewsManagement": "Back to News Management",
+        "releaseVersionAlreadyExistsErrorMessage": "A letter of this release version already exists. Please choose a different release version."
       }
     }
   }
