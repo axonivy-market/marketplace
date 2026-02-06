@@ -379,7 +379,10 @@
         "title": "News Management",
         "description": "Manage how market news are displayed",
         "helpText": "Configure the latest market news. Administrators can add, edit, or remove news.",
-        "releaseVersionPlaceholder": "Enter the release version"
+        "releaseVersionPlaceholder": "Enter the release version",
+        "contentPlaceholder": "Type your release letter content here...",
+        "releaseVersion": "Release Version",
+        "backToNewsManagement": "Back to News Management"
       }
     }
   }

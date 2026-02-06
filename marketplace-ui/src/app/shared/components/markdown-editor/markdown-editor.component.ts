@@ -28,12 +28,14 @@ export class MarkdownEditorComponent {
   @Input()
   autosaveId!: string;
 
+  @Input()
+  placeholder: string = 'Enter content here';
+
   isMDEReady = false;
   contentValue = model<string>('');
 
   isSubmittingSignal = input<Signal<boolean>>();
 
-  placeholder: string = 'Type your release letter content here...';
 
   private mde?: EasyMDE;
 

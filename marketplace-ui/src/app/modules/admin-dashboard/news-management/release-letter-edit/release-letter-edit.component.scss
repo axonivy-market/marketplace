@@ -18,33 +18,6 @@
   line-height: 16.8px;
 }
 
-$rowHeight: 37px;
-
-.input-group-text {
-  border-radius: 10px;
-  padding: 0 15px;
-}
-
-.input-group {
-  margin-top: 3rem;
-  margin-bottom: 7.2rem;
-
-  @media screen and (max-width: 991px) {
-    margin-bottom: 3.2rem;
-  }
-}
-
-th h5 {
-  font-weight: 600;
-  line-height: 140%;
-  vertical-align: middle;
-}
-
-td {
-  height: 5rem;
-  vertical-align: middle;
-}
-
 .form-control {
   border-radius: 10px;
 }
@@ -53,15 +26,10 @@ td {
   height: 43px;
 }
 
-.search-input {
+#release-version-input {
   font-size: 1.4rem;
 }
 
-#release-letter-table {
-  margin-top: 9rem;
-
-  tbody,
-  button {
-    font-size: 1.2rem;
-  }
+#release-letter-edit-error-message {
+  color: red;
 }

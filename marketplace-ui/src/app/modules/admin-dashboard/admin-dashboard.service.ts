@@ -128,7 +128,8 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
       }
     );
   }
@@ -141,7 +142,8 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}/release-version/${selectedReleaseVersion}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
       }
     );
   }
@@ -152,7 +154,8 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
       }
     );
   }
@@ -161,7 +164,8 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.RELEASE_LETTERS}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
       }
     );
   }

@@ -1,12 +1,9 @@
-import { AdminDashboardService } from './../admin-dashboard.service';
-import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
 import { CommonModule } from '@angular/common';
 import {
   Component,
   ElementRef,
   inject,
   signal,
-  Signal,
   ViewChild,
   WritableSignal
 } from '@angular/core';
@@ -15,10 +12,10 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { MarkdownEditorComponent } from '../../../shared/components/markdown-editor/markdown-editor.component';
-import { PageTitleService } from '../../../shared/services/page-title.service';
-import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
+import { AdminDashboardService } from './../admin-dashboard.service';
 
 @Component({
   selector: 'app-news-management',
@@ -26,8 +23,7 @@ import { ReleaseLetter } from '../../../shared/models/release-letter-request.mod
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslateModule,
-    MarkdownEditorComponent
+    TranslateModule
   ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'

@@ -394,7 +394,9 @@
         "description": "Edit selected release letter",
         "helpText": "Update the release letter content for the selected version.",
         "releaseVersionPlaceholder": "Enter the release version",
-        "releaseVersion": "Release Version"
+        "contentPlaceholder": "Type your release letter content here...",
+        "releaseVersion": "Release Version",
+        "backToNewsManagement": "Back to News Management"
       }
     }
   }

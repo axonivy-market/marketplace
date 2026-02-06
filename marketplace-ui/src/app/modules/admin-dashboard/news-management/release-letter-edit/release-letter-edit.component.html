@@ -5,7 +5,7 @@
     [routerLink]="['/internal-dashboard/news-management']">
     &lt;
     <span [lang]="languageService.selectedLanguage()">
-      {{ 'common.product.detail.backToMainPage' | translate }}
+      {{ 'common.admin.releaseLetterEdit.backToNewsManagement' | translate }}
     </span>
   </div>
   <div class="row col-md-12">
@@ -39,13 +39,15 @@
     <form (submit)="onSubmit($event)">
       <div>
         <input
-          id="release-version"
+          id="release-version-input"
+          name="release-version-input"
           autocomplete="on"
           type="text"
           [disabled]="isSubmitting()"
           [lang]="languageService.selectedLanguage()"
-          class="form-control input__search bg-secondary border-0 search-input my-4"
-          [value]="selectedReleaseVersion"
+          class="form-control input__search bg-secondary border-0 my-4"
+          [(ngModel)]="releaseLetter.releaseVersion"
+          (ngModelChange)="onReleaseVersionChange()"
           [placeholder]="
             translateService.get(
               'common.admin.releaseLetterEdit.releaseVersionPlaceholder'
@@ -58,11 +60,19 @@
           "
           aria-describedby="search" />
       </div>
+      @if (errorMessage !== null && errorMessage !== '') {
+        <p id="release-letter-edit-error-message">{{ errorMessage }}</p>
+      }
       <div>
         <app-markdown-editor
           [isSubmittingSignal]="isSubmitting"
           [(contentValue)]="releaseLetter.content"
-          [autosaveId]="'release-letter-content'"></app-markdown-editor>
+          [placeholder]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.contentPlaceholder'
+            ) | async
+          "
+          [autosaveId]="releaseLetter.releaseVersion"></app-markdown-editor>
 
         <button
           id="submit-button"

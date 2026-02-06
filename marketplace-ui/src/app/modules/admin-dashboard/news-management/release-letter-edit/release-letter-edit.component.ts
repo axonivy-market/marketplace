@@ -10,6 +10,7 @@ import { PageTitleService } from '../../../../shared/services/page-title.service
 import { AdminDashboardService } from '../../admin-dashboard.service';
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { finalize } from 'rxjs';
+import { RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED } from '../../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -40,6 +41,7 @@ export class ReleaseLetterEditComponent {
     content: ''
   };
   isSubmitting = signal<boolean>(false);
+  errorMessage: string | null = null;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -61,23 +63,28 @@ export class ReleaseLetterEditComponent {
   onSubmit(event: Event) {
     event.preventDefault();
     if (this.isSubmitting()) return;
-
+    
     this.isSubmitting.set(true);
     this.adminDashboardService
       .updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: res => {
+        next: _res => {
           this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
-          console.error('Failed to update release letter:', err);
-          // optionally show a toast/message here
+          if (RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() === err.error.helpCode) {
+            this.errorMessage = "A letter of this release version already exists. Please choose a different release version.";
+          }
         }
       });
   }
 
   onClickingBackToNewsManagementButton(): void {
     this.router.navigate(['/internal-dashboard/news-management']);
+  }
+
+  onReleaseVersionChange() {
+    this.errorMessage = null;
   }
 }
