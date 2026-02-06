@@ -12,27 +12,41 @@
     <h1
       class="text-primary admin-title"
       [lang]="languageService.selectedLanguage()">
-      {{ translateService.get('common.admin.releaseLetterEdit.title') | async }}
+      {{
+        isCreateMode
+          ? (translateService.get('common.admin.releaseLetterEdit.createTitle')
+            | async)
+          : (translateService.get('common.admin.releaseLetterEdit.editTitle')
+            | async)
+      }}
     </h1>
     <div class="introduction-container">
       <div class="d-sm-block admin-about">
         <h3 class="text-secondary">
           {{
-            translateService.get('common.admin.releaseLetterEdit.description')
-              | async
+            isCreateMode
+              ? (translateService.get(
+                  'common.admin.releaseLetterEdit.createDescription'
+                ) | async)
+              : (translateService.get(
+                  'common.admin.releaseLetterEdit.editDescription'
+                ) | async)
           }}
         </h3>
       </div>
-      <div
-        class="d-sm-block align-items-center admin-help-text-container flex-fill">
-        <h4
-          [lang]="languageService.selectedLanguage()"
-          class="text-secondary help-text"
-          [innerHTML]="
-            translateService.get('common.admin.releaseLetterEdit.helpText')
-              | async
-          "></h4>
-      </div>
+      @if (!isCreateMode) {
+        <div
+          class="d-sm-block align-items-center admin-help-text-container flex-fill">
+          <h4
+            [lang]="languageService.selectedLanguage()"
+            class="text-secondary help-text">
+            {{
+              translateService.get('common.admin.releaseLetterEdit.editHelpText')
+                | async
+            }}
+          </h4>
+        </div>
+      }
     </div>
   </div>
   <div>

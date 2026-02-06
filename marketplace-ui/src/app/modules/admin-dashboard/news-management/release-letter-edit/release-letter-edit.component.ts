@@ -1,23 +1,17 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  inject,
-  input,
-  Signal,
-  signal,
-  WritableSignal
-} from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
+import { finalize } from 'rxjs';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
+import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
+import { RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED } from '../../../../shared/constants/common.constant';
+import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
-import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
-import { finalize } from 'rxjs';
-import { RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED } from '../../../../shared/constants/common.constant';
+import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -40,40 +34,63 @@ export class ReleaseLetterEditComponent {
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
-  releaseLetterValue = '';
-  releaseVersion = '';
-  selectedReleaseVersion = '';
+  selectedReleaseVersion: string = '';
   releaseLetter: ReleaseLetter = {
     releaseVersion: '',
     content: ''
   };
+  isCreateMode = true;
   isSubmitting = signal<boolean>(false);
   errorMessage: string | null = null;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      this.selectedReleaseVersion = params.get('release-version') ?? '';
-      this.getReleaseLetter();
+      const releaseVersionParam = params.get('release-version');
+      if (releaseVersionParam) {
+        this.isCreateMode = false;
+        this.selectedReleaseVersion = releaseVersionParam;
+        this.getReleaseLetter(this.selectedReleaseVersion);
+      } else {
+        this.isCreateMode = true;
+      }
     });
   }
 
-  getReleaseLetter(): void {
+  getReleaseLetter(releaseVersion: string): void {
     this.adminDashboardService
-      .getRelaseLetterByReleaseVersion(this.selectedReleaseVersion)
+      .getRelaseLetterByReleaseVersion(releaseVersion)
       .subscribe(response => {
-        this.releaseLetterValue = response.content;
         this.releaseLetter.content = response.content;
         this.releaseLetter.releaseVersion = response.releaseVersion;
       });
   }
 
-  onSubmit(event: Event) {
-    event.preventDefault();
-    if (this.isSubmitting()) return;
-
-    this.isSubmitting.set(true);
+  createReleaseLetter(releaseLetter: ReleaseLetter): void {
     this.adminDashboardService
-      .updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter)
+      .createReleaseLetter(releaseLetter)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      // .subscribe(response => {
+      //   this.releaseLetter.content = response.content;
+      //   this.releaseLetter.releaseVersion = response.releaseVersion;
+      // });
+      .subscribe({
+        next: _res => {
+          this.router.navigate(['/internal-dashboard/news-management']);
+        },
+        error: err => {
+          if (
+            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
+            err.error.helpCode
+          ) {
+            this.errorMessage = this.translateService.instant(
+              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
+            );
+          }
+        }
+      });
+
+    this.adminDashboardService
+      .createReleaseLetter(releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {
@@ -90,6 +107,39 @@ export class ReleaseLetterEditComponent {
           }
         }
       });
+  }
+
+  updateReleaseLetter(
+    releaseVersion: string,
+    releaseLetter: ReleaseLetter
+  ): void {
+    this.adminDashboardService
+      .updateReleaseLetter(releaseVersion, releaseLetter)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: _res => {
+          this.router.navigate(['/internal-dashboard/news-management']);
+        },
+        error: err => {
+          if (
+            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
+            err.error.helpCode
+          ) {
+            this.errorMessage = this.translateService.instant(
+              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
+            );
+          }
+        }
+      });
+  }
+
+  onSubmit(event: Event) {
+    event.preventDefault();
+    if (this.isSubmitting()) return;
+
+    this.isSubmitting.set(true);
+
+    this.updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter);
   }
 
   onClickingBackToNewsManagementButton(): void {

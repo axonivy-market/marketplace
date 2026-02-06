@@ -154,8 +154,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -164,8 +163,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.RELEASE_LETTERS}`,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
