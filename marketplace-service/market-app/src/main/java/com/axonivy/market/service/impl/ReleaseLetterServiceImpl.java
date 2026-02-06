@@ -31,50 +31,50 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
-  public ReleaseLetter findReleaseLetterByReleaseVersion(String releaseVersion) {
-    return releaseLetterRepository.findByReleaseVersion(unifyReleaseVersion(releaseVersion)).orElseThrow(
+  public ReleaseLetter findReleaseLetterBySprint(String sprint) {
+    return releaseLetterRepository.findBySprint(unifySprint(sprint)).orElseThrow(
         () -> new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND,
-            "Not found release letter with release version: " + releaseVersion));
+            "Not found release letter of sprint: " + sprint));
   }
 
   @Override
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    String unifiedReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
-    if (isReleaseVersionExisted(unifiedReleaseVersion)) {
+    String unifiedSprint = unifySprint(releaseLetterModelRequest.getSprint());
+    if (isSprintExisted(unifiedSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
     ReleaseLetter releaseLetter =
-        ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).releaseVersion(
-            unifiedReleaseVersion).build();
+        ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).sprint(
+            unifiedSprint).build();
 
     return releaseLetterRepository.save(releaseLetter);
   }
 
   @Override
-  public ReleaseLetter updateReleaseLetter(String currentReleaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    String unifiedCurrentReleaseVersion = unifyReleaseVersion(currentReleaseVersion);
-    var foundReleaseLetter = findReleaseLetterByReleaseVersion(unifiedCurrentReleaseVersion);
+  public ReleaseLetter updateReleaseLetter(String selectedSprint, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedSelectedSprint = unifySprint(selectedSprint);
+    var foundReleaseLetter = findReleaseLetterBySprint(unifiedSelectedSprint);
 
-    String unifiedNewReleaseVersion = unifyReleaseVersion(releaseLetterModelRequest.getReleaseVersion());
-    if (!unifiedCurrentReleaseVersion.equals(unifiedNewReleaseVersion) && isReleaseVersionExisted(
-            unifiedNewReleaseVersion)) {
+    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(
+        unifiedNewSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
     foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
-    foundReleaseLetter.setReleaseVersion(unifiedNewReleaseVersion);
+    foundReleaseLetter.setSprint(unifiedNewSprint);
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }
 
-  private boolean isReleaseVersionExisted(String requestedReleaseVersion) {
-    return releaseLetterRepository.existsByReleaseVersion(unifyReleaseVersion(requestedReleaseVersion));
+  private boolean isSprintExisted(String requestedSprint) {
+    return releaseLetterRepository.existsBySprint(unifySprint(requestedSprint));
   }
 
-  private String unifyReleaseVersion(String originalInputVersion) {
-    return originalInputVersion.trim().toUpperCase();
+  private String unifySprint(String originalInputSprint) {
+    return originalInputSprint.trim().toUpperCase();
   }
 }

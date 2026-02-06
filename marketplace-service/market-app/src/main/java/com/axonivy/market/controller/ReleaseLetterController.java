@@ -1,12 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ReleaseModelAssembler;
-
-import static com.axonivy.market.constants.RequestMappingConstants.*;
-
 import com.axonivy.market.constants.RequestParamConstants;
 
-import static com.axonivy.market.constants.RequestParamConstants.RELEASE_VERSION;
+import static com.axonivy.market.constants.RequestParamConstants.*;
 
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.FeedbackModel;
@@ -27,16 +24,14 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @AllArgsConstructor
 @RestController
@@ -67,11 +62,11 @@ public class ReleaseLetterController {
         return ResponseEntity.ok(releaseLetterResource);
     }
 
-    @GetMapping(BY_RELEASE_VERSION)
-    public ResponseEntity<ReleaseLetterModel> findReleaseLetterByReleaseVersion(
-            @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
-                    in = ParameterIn.PATH) String releaseVersion) {
-        ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterByReleaseVersion(releaseVersion);
+    @GetMapping(BY_SPRINT)
+    public ResponseEntity<ReleaseLetterModel> findReleaseLetterBySprint(
+            @PathVariable(SPRINT) @Parameter(description = "The sprint version", example = "S43",
+                    in = ParameterIn.PATH) String sprint) {
+        ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
         var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(releaseLetter);
 
         return ResponseEntity.ok(releaseLetterResource);
@@ -94,11 +89,11 @@ public class ReleaseLetterController {
         return ResponseEntity.ok(releaseLetterResource);
     }
 
-
-    @PatchMapping(BY_RELEASE_VERSION)
+//    @Authorized
+    @PutMapping(BY_SPRINT)
     @Operation(hidden = true)
     public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
-            @PathVariable(RELEASE_VERSION) @Parameter(description = "The release version", example = "S43",
+            @PathVariable(SPRINT) @Parameter(description = "The release version", example = "S43",
                     in = ParameterIn.PATH) String releaseVersion,
             @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
     ) {

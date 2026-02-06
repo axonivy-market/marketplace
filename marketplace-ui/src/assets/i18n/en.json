@@ -380,24 +380,28 @@
         "title": "News Management",
         "description": "Manage how market news are displayed",
         "helpText": "Configure the latest market news. Administrators can add, edit, or remove news.",
-        "releaseVersionPlaceholder": "Enter the release version",
+        "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
-        "releaseVersion": "Release Version",
+        "sprint": "Sprint",
         "actions": "Actions",
+        "create": "Create",
         "view": "View",
         "edit": "Edit",
         "delete": "Delete"
       },
       "releaseLetterEdit": {
-        "pageTitle": "Edit release letter",
-        "title": "Edit release letter",
-        "description": "Edit selected release letter",
-        "helpText": "Update the release letter content for the selected version.",
-        "releaseVersionPlaceholder": "Enter the release version",
+        "createPageTitle": "Create release letter",
+        "editPageTitle": "Edit release letter",
+        "createTitle": "Create release letter",
+        "editTitle": "Edit release letter",
+        "createDescription": "Create a new release letter",
+        "editDescription": "Edit selected release letter",
+        "editHelpText": "Update the release letter content for the selected sprint.",
+        "sprintPlaceholder": "Enter the desired sprint",
         "contentPlaceholder": "Type your release letter content here...",
-        "releaseVersion": "Release Version",
+        "sprint": "Sprint",
         "backToNewsManagement": "Back to News Management",
-        "releaseVersionAlreadyExistsErrorMessage": "A letter of this release version already exists. Please choose a different release version."
+        "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint."
       }
     }
   }

@@ -60,7 +60,7 @@
           [disabled]="isSubmitting()"
           [lang]="languageService.selectedLanguage()"
           class="form-control input__search bg-secondary border-0 my-4"
-          [(ngModel)]="releaseLetter.releaseVersion"
+          [(ngModel)]="releaseLetter.sprint"
           (ngModelChange)="onReleaseVersionChange()"
           [placeholder]="
             translateService.get(
@@ -86,7 +86,7 @@
               'common.admin.releaseLetterEdit.contentPlaceholder'
             ) | async
           "
-          [autosaveId]="releaseLetter.releaseVersion"></app-markdown-editor>
+          [autosaveId]="releaseLetter.sprint"></app-markdown-editor>
 
         <button
           id="submit-button"

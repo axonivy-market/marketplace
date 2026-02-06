@@ -1,6 +1,6 @@
 export interface ReleaseLetterApiResponse {
   content: string;
-  releaseVersion: string;
+  sprint: string;
   _links?: {
     self: {
       href: string;

@@ -25,7 +25,7 @@
   </div>
 </div>
 <div>
-  <table id="release-letter-table" class="table">
+  <table id="release-letter-table" class="table" ngbAccordion>
     <thead>
       <tr>
         @for (tableHeader of tableHeaders; track tableHeader.key) {
@@ -43,7 +43,7 @@
       @for (releaseLetter of releaseLetterList(); track $index) {
         <tr>
           <td>{{ $index + 1 }}</td>
-          <td>{{ releaseLetter.releaseVersion }}</td>
+          <td>{{ releaseLetter.sprint }}</td>
           <td class="text-center">
             <button
               type="button"
@@ -56,7 +56,7 @@
               "
               [routerLink]="[
                 '/internal-dashboard/news-management',
-                releaseLetter.releaseVersion,
+                releaseLetter.sprint,
                 'edit'
               ]">
               <i class="fa-solid fa-pen-to-square"></i>
@@ -66,4 +66,33 @@
       }
     </tbody>
   </table>
+</div>
+
+<div ngbAccordion>
+  @for (releaseLetter of releaseLetterList(); track $index) {
+    <div
+      ngbAccordionItem
+      [collapsed]="true"
+      class="changelog-container mb-5 p-4">
+      <div ngbAccordionHeader>
+        <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
+          <!-- <h1>{{ releaseLetter.releaseVersion }}</h1>
+          <h1>{{ releaseLetter.releaseVersion }}</h1>
+          <h1>{{ releaseLetter.releaseVersion }}</h1>
+          <h1>{{ releaseLetter.releaseVersion }}</h1> -->
+          <div class="row accordion-header-content">
+            <!-- <p>{{ $index + 1 }}</p>
+            <p>{{ releaseLetter.releaseVersion }}</p> -->
+            <div class="col">{{ $index + 1 }}</div>
+            <div class="col">{{ releaseLetter.sprint }}</div>
+          </div>
+        </button>
+      </div>
+      <div ngbAccordionCollapse class="release-content custom-accordion-button">
+        <div ngbAccordionBody class="p-0 changelog-content">
+          {{ releaseLetter.content }}
+        </div>
+      </div>
+    </div>
+  }
 </div>

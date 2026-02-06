@@ -18,8 +18,8 @@ import org.springframework.hateoas.server.core.Relation;
 public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> {
 
   @EqualsAndHashCode.Include
-  @Schema(description = "Release version", example = "S42")
-  private String releaseVersion;
+  @Schema(description = "Sprint version", example = "S42")
+  private String sprint;
 
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace version 1.20.0")
   private String content;

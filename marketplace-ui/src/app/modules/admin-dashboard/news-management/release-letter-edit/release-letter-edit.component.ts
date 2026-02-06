@@ -34,9 +34,9 @@ export class ReleaseLetterEditComponent {
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
-  selectedReleaseVersion: string = '';
+  selectedSprint: string = '';
   releaseLetter: ReleaseLetter = {
-    releaseVersion: '',
+    sprint: '',
     content: ''
   };
   isCreateMode = true;
@@ -45,23 +45,23 @@ export class ReleaseLetterEditComponent {
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      const releaseVersionParam = params.get('release-version');
-      if (releaseVersionParam) {
+      const sprintParam = params.get('sprint');
+      if (sprintParam) {
         this.isCreateMode = false;
-        this.selectedReleaseVersion = releaseVersionParam;
-        this.getReleaseLetter(this.selectedReleaseVersion);
+        this.selectedSprint = sprintParam;
+        this.getReleaseLetter(this.selectedSprint);
       } else {
         this.isCreateMode = true;
       }
     });
   }
 
-  getReleaseLetter(releaseVersion: string): void {
+  getReleaseLetter(sprint: string): void {
     this.adminDashboardService
-      .getRelaseLetterByReleaseVersion(releaseVersion)
+      .getRelaseLetterBySprint(sprint)
       .subscribe(response => {
         this.releaseLetter.content = response.content;
-        this.releaseLetter.releaseVersion = response.releaseVersion;
+        this.releaseLetter.sprint = response.sprint;
       });
   }
 
@@ -71,7 +71,7 @@ export class ReleaseLetterEditComponent {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       // .subscribe(response => {
       //   this.releaseLetter.content = response.content;
-      //   this.releaseLetter.releaseVersion = response.releaseVersion;
+      //   this.releaseLetter.sprint = response.sprint;
       // });
       .subscribe({
         next: _res => {
@@ -83,30 +83,30 @@ export class ReleaseLetterEditComponent {
             err.error.helpCode
           ) {
             this.errorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
+              'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
             );
           }
         }
       });
 
-    this.adminDashboardService
-      .createReleaseLetter(releaseLetter)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: _res => {
-          this.router.navigate(['/internal-dashboard/news-management']);
-        },
-        error: err => {
-          if (
-            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
-            err.error.helpCode
-          ) {
-            this.errorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
-            );
-          }
-        }
-      });
+    // this.adminDashboardService
+    //   .createReleaseLetter(releaseLetter)
+    //   .pipe(finalize(() => this.isSubmitting.set(false)))
+    //   .subscribe({
+    //     next: _res => {
+    //       this.router.navigate(['/internal-dashboard/news-management']);
+    //     },
+    //     error: err => {
+    //       if (
+    //         RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
+    //         err.error.helpCode
+    //       ) {
+    //         this.errorMessage = this.translateService.instant(
+    //           'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
+    //         );
+    //       }
+    //     }
+    //   });
   }
 
   updateReleaseLetter(
@@ -126,7 +126,7 @@ export class ReleaseLetterEditComponent {
             err.error.helpCode
           ) {
             this.errorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.releaseVersionAlreadyExistsErrorMessage'
+              'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
             );
           }
         }
@@ -139,7 +139,7 @@ export class ReleaseLetterEditComponent {
 
     this.isSubmitting.set(true);
 
-    this.updateReleaseLetter(this.selectedReleaseVersion, this.releaseLetter);
+    this.updateReleaseLetter(this.selectedSprint, this.releaseLetter);
   }
 
   onClickingBackToNewsManagementButton(): void {

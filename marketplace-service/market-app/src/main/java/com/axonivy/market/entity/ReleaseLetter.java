@@ -22,6 +22,6 @@ import java.io.Serial;
 public class ReleaseLetter extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1;
-  private String releaseVersion;
+  private String sprint;
   private String content;
 }

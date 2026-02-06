@@ -13,7 +13,7 @@ public class ReleaseLetterModelRequest {
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace version 1.20.0.")
   private String content;
 
-  @Schema(description = "Marketplace release version", example = "S42")
-  @NotBlank(message = "Marketplace release version cannot be blank")
-  private String releaseVersion;
+  @Schema(description = "Marketplace sprint", example = "S42")
+  @NotBlank(message = "Marketplace sprint cannot be blank")
+  private String sprint;
 }

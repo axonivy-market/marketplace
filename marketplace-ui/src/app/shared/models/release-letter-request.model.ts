@@ -1,4 +1,4 @@
 export interface ReleaseLetter {
-  releaseVersion: string;
+  sprint: string;
   content: string;
 }

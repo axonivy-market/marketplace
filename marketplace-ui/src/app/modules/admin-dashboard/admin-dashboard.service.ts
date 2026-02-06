@@ -135,11 +135,11 @@ export class AdminDashboardService {
   }
 
   updateReleaseLetter(
-    selectedReleaseVersion: string,
+    selectedSprint: string,
     releaseLetterRequest: ReleaseLetter
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/release-version/${selectedReleaseVersion}`,
+      `${API_URI.RELEASE_LETTERS}/sprint/${selectedSprint}`,
       releaseLetterRequest,
       {
         headers: this.adminAuth.getAuthHeaders(),
@@ -148,11 +148,11 @@ export class AdminDashboardService {
     );
   }
 
-  getRelaseLetterByReleaseVersion(
-    releaseVersion: string
+  getRelaseLetterBySprint(
+    sprint: string
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.get<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/release-version/${releaseVersion}`,
+      `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
       {
         headers: this.adminAuth.getAuthHeaders()
       }
