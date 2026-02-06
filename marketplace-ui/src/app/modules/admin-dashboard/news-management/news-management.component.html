@@ -24,8 +24,17 @@
     </div>
   </div>
 </div>
-<div>
-  <table id="release-letter-table" class="table" ngbAccordion>
+<div id="release-letter-container">
+  <button
+    id="create-button"
+    type="button"
+    [lang]="languageService.selectedLanguage()"
+    class="mt-4 btn border-0 text-center d-flex align-items-center justify-content-center"
+    [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+    [routerLink]="['/internal-dashboard/news-management/create']">
+    <span>{{ 'common.admin.newsManagement.create' | translate }}</span>
+  </button>
+  <table id="release-letter-table" class="table mt-4" ngbAccordion>
     <thead>
       <tr>
         @for (tableHeader of tableHeaders; track tableHeader.key) {
