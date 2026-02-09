@@ -44,13 +44,15 @@ pipeline {
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
     OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
     MARKET_SCHEDULING_TASK_PRODUCTS_CRON = credentials('MARKET_SCHEDULING_TASK_PRODUCTS_CRON')
-    MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON= credentials('MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON')
     MARKET_SCHEDULING_TASK_DOCUMENTS_CRON = credentials('MARKET_SCHEDULING_TASK_DOCUMENTS_CRON')
     MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON = credentials('MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON')
     MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON = credentials('MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON')
     MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON = credentials('MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON')
-    MARKET_SERVER_MATOMO_TRACKER_URL = credentials('MARKET_SERVER_MATOMO_TRACKER_URL')
+    SESSION_COOKIE_SECURE = credentials('SESSION_COOKIE_SECURE')
+    MARKET_API_INTERNAL_URL = credentials('MARKET_API_INTERNAL_URL')
     MARKET_MATOMO_SITE_ID = credentials('MARKET_MATOMO_SITE_ID')
+    MARKET_MATOMO_TRACKER_URL = credentials('MARKET_MATOMO_TRACKER_URL')
+    MARKET_SERVER_MATOMO_TRACKER_URL = credentials('MARKET_SERVER_MATOMO_TRACKER_URL')    
     MAIL_HOST_URL = credentials('MAIL_HOST_URL')
     MAIL_PORT = credentials('MAIL_PORT')
     FROM_MAIL = credentials('FROM_MAIL')
@@ -102,12 +104,16 @@ pipeline {
     stage('Update Version and Tag Source') {
       steps {
         withEnv([
-          "POM_FILE=./marketplace-service/pom.xml",
+          "CORE_POM_FILE=./marketplace-service/core/pom.xml",
+          "APP_POM_FILE=./marketplace-service/app/pom.xml",
+          "STABLE_POM_FILE=./marketplace-service/stable/pom.xml",
           "PACKAGE_FILE=./marketplace-ui/package.json"
         ]) {
           script {
             sh '''
-              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $POM_FILE
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $CORE_POM_FILE
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $APP_POM_FILE
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $STABLE_POM_FILE
               sed -i 's/"version": \"[^\"]*\"/"version": \"$RELEASE_VERSION\"/' $PACKAGE_FILE
               git config --global user.email $OCTOPUS_MAIL
               git config --global user.name $OCTOPUS_ACCOUNT_NAME
@@ -139,17 +145,16 @@ pipeline {
           sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
           sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
           sed -i "s|^MARKET_SCHEDULING_TASK_PRODUCTS_CRON=.*\$|MARKET_SCHEDULING_TASK_PRODUCTS_CRON=${env.MARKET_SCHEDULING_TASK_PRODUCTS_CRON}|" \$ENV_FILE
-          sed -i "s|^MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON=.*\$|MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON=${env.MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON}|" \$ENV_FILE
           sed -i "s|^MARKET_SCHEDULING_TASK_DOCUMENTS_CRON=.*\$|MARKET_SCHEDULING_TASK_DOCUMENTS_CRON=${env.MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}|" \$ENV_FILE
           sed -i "s|^MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON=.*\$|MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON=${env.MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}|" \$ENV_FILE
           sed -i "s|^MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON=.*\$|MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON=${env.MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}|" \$ENV_FILE
+          sed -i "s|^SESSION_COOKIE_SECURE=.*\$|SESSION_COOKIE_SECURE=${env.SESSION_COOKIE_SECURE}|" \$ENV_FILE
           sed -i "s|^MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON=.*\$|MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON=${env.MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON}|" \$ENV_FILE
-          sed -i "s|^MARKET_SERVER_MATOMO_TRACKER_URL=.*\$|MARKET_SERVER_MATOMO_TRACKER_URL=${env.MARKET_SERVER_MATOMO_TRACKER_URL}|" \$ENV_FILE
-          sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
           sed -i "s|^MAIL_HOST_URL=.*\$|MAIL_HOST_URL=${env.MAIL_HOST_URL}|" \$ENV_FILE
           sed -i "s|^MAIL_PORT=.*\$|MAIL_PORT=${env.MAIL_PORT}|" \$ENV_FILE
           sed -i "s|^FROM_MAIL=.*\$|FROM_MAIL=${env.FROM_MAIL}|" \$ENV_FILE
           sed -i "s|^TO_MAIL=.*\$|TO_MAIL=${env.TO_MAIL}|" \$ENV_FILE
+
         """
       }
     }
@@ -200,10 +205,10 @@ pipeline {
     stage('Release Marketplace UI Image') {
       steps {
         sh '''
+          # Prepare UI image
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
-
           # Cleanup old UI image versions
           export IMAGE_NAME=$UI_IMAGE_NAME
           bash ./.build/scripts/ghcr-cleanup.sh
@@ -214,10 +219,10 @@ pipeline {
     stage('Release Marketplace App Image') {
       steps {
         sh '''
+          # Prepare App image
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
           docker tag $APP_IMAGE_NAME $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
-
           # Cleanup old App image versions
           export IMAGE_NAME=$APP_IMAGE_NAME
           bash ./.build/scripts/ghcr-cleanup.sh
@@ -228,10 +233,10 @@ pipeline {
     stage('Release Marketplace Stable Image') {
       steps {
         sh '''
+          # Prepare Stable image
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
           docker tag $STABLE_IMAGE_NAME $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
-
           # Cleanup old Stable image versions
           export IMAGE_NAME=$STABLE_IMAGE_NAME
           bash ./.build/scripts/ghcr-cleanup.sh

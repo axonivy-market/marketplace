@@ -16,7 +16,7 @@ VERSIONS="${response::-3}"
 # Check for success
 if [[ "$STATUS" != "200" ]]; then
   echo "GitHub API request failed (HTTP $STATUS)."
-  exit 1
+  exit 0
 fi
 
 # Sort versions by created_at descending and extract IDs
