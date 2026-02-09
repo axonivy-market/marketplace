@@ -152,7 +152,6 @@ export class ProductDetailComponent implements AfterViewInit {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
-    this.getReadmeContent();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -174,12 +173,35 @@ export class ProductDetailComponent implements AfterViewInit {
   private readonly changelogIntersectionObserver?: IntersectionObserver;
 
   private scrollPositions: { [tabId: string]: number } = {};
+  private initialFragmentHandled = false;
+  private isDataLoaded = false;
 
   @HostListener('window:popstate')
   onPopState() {
-    this.activeTab = window.location.hash;
-    this.activeTab ??= DEFAULT_ACTIVE_TAB;
-    this.updateDropdownSelection();
+    const fragment = window.location.hash.replace('#', '');
+    const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
+
+    if (tabValue !== this.activeTab) {
+      if (this.activeTab) {
+        this.scrollPositions[this.activeTab] = window.scrollY;
+      }
+
+      this.activeTab = tabValue;
+
+      if (this.productDetail()?.id) {
+        const savedTab = {
+          productId: this.productDetail().id,
+          savedActiveTab: this.activeTab
+        };
+        localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+      }
+
+      this.updateDropdownSelection();
+      setTimeout(() => {
+        const savedScroll = this.scrollPositions[tabValue] ?? 0;
+        window.scrollTo({ top: savedScroll, behavior: 'instant' });
+      }, 0);
+    }
   }
 
   constructor(
@@ -189,7 +211,6 @@ export class ProductDetailComponent implements AfterViewInit {
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
-      this.scrollToTop();
       this.resizeObserver = new ResizeObserver(() => {
         this.updateDropdownSelection();
       });
@@ -259,7 +280,10 @@ export class ProductDetailComponent implements AfterViewInit {
 
         this.handlePopupLogic();
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-        this.navigateToProductDetailsWithTabFragment();
+        this.isDataLoaded = true;
+        setTimeout(() => {
+          this.navigateToProductDetailsWithTabFragment();
+        }, 0);
       });
     }
   }
@@ -481,15 +505,56 @@ export class ProductDetailComponent implements AfterViewInit {
       });
   }
 
-  setActiveTab(tab: string): void {
-    this.router.navigate([], {
-      fragment: tab,
-      queryParamsHandling: 'preserve',
-      replaceUrl: true
-    });
-    this.scrollPositions[this.activeTab] = window.scrollY;
+  setActiveTab(tab: string, updateUrl = true): void {
+
+    if (!this.isDataLoaded) {
+      return;
+    }
+
+    const isFirstTime = !this.initialFragmentHandled;
+    if (isFirstTime) {
+      updateUrl = false;
+      this.initialFragmentHandled = true;
+      this.router.navigate([], {
+        fragment: tab || DEFAULT_ACTIVE_TAB,
+        queryParamsHandling: 'preserve',
+        replaceUrl: true
+      });
+      this.activeTab = tab;
+      this.scrollToTop();
+
+      const savedTab = {
+        productId: this.productDetail().id,
+        savedActiveTab: this.activeTab
+      };
+      localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+
+      if (tab === 'changelog') {
+        setTimeout(() => this.setupIntersectionObserver(), 100);
+      }
+      return;
+    }
+
+    const currentFragment = this.route.snapshot.fragment;
+
+    if (updateUrl && currentFragment !== tab) {
+      this.router.navigate([], {
+        fragment: tab,
+        queryParamsHandling: 'preserve',
+        replaceUrl: true
+      });
+    }
+
+    if (this.activeTab && this.activeTab !== tab) {
+      this.scrollPositions[this.activeTab] = window.scrollY;
+    }
+
     this.activeTab = tab;
-    this.keepCurrentTabScroll(tab);
+    if (tab in this.scrollPositions) {
+      this.keepCurrentTabScroll(tab);
+    } else {
+      this.scrollToTop();
+    }
 
     const savedTab = {
       productId: this.productDetail().id,
@@ -517,7 +582,9 @@ export class ProductDetailComponent implements AfterViewInit {
 
   keepCurrentTabScroll(tabId: string) {
     const pos = this.scrollPositions[tabId] ?? 0;
-    window.scrollTo(0, pos);
+    if (pos > 0) {
+      setTimeout(() => window.scrollTo({ top: pos, behavior: 'instant' }), 0);
+    }
   }
 
   onShowInfoContent(): void {
@@ -693,7 +760,23 @@ export class ProductDetailComponent implements AfterViewInit {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
         const tabValue = RouteUtils.getTabFragment(fragment);
-        this.setActiveTab(tabValue);
+
+        if (fragment) {
+          const shouldUpdateUrl = this.initialFragmentHandled;
+          this.setActiveTab(tabValue, shouldUpdateUrl);
+        } else if (!this.initialFragmentHandled) {
+          this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
+        } else {
+          const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
+          const currentFragment = this.route.snapshot.fragment;
+          if (currentFragment !== currentTab) {
+            this.router.navigate([], {
+              fragment: currentTab,
+              queryParamsHandling: 'preserve',
+              replaceUrl: true
+            });
+          }
+        }
       })
     );
   }
