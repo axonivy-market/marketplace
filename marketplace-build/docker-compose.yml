@@ -15,7 +15,7 @@ services:
       - "4500:80"
     depends_on:
       - ui
-      - service
+      - app
 
   ui:
     container_name: marketplace-ui
@@ -41,7 +41,7 @@ services:
       - "4000:4000"
 
   app:
-    container_name: app
+    container_name: marketplace-app
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
@@ -84,8 +84,9 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+
   stable:
-    container_name: stable
+    container_name: marketplace-stable
     restart: always
     volumes:
       - ../logs/stable:/app/logs
