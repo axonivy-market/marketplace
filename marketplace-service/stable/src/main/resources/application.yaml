@@ -24,6 +24,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+market:
+  info:
+    title: "Marketplace stable"
+    description: "The stable public api"
+    version: '${BUILD_VERSION}'
+
 springdoc:
   api-docs:
     version: OPENAPI_3_1
