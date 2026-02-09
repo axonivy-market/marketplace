@@ -80,7 +80,7 @@ services:
       - TO_MAIL=${TO_MAIL}
     build:
       context: ../../marketplace-service
-      dockerfile: market-app/Dockerfile
+      dockerfile: app/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
