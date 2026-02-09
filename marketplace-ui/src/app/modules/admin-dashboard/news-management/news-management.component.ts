@@ -16,7 +16,9 @@ import { ReleaseLetter } from '../../../shared/models/release-letter-request.mod
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
 import { AdminDashboardService } from './../admin-dashboard.service';
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ReleaseLetterModalComponent } from './release-letter-modal/release-letter-modal.component';
+import { AppModalService } from '../../../shared/services/app-modal.service';
 
 @Component({
   selector: 'app-news-management',
@@ -47,6 +49,7 @@ export class NewsManagementComponent {
   currentMode: WritableSignal<string> = signal(NEWS_MANAGEMENT_MODE.view);
   currentModePlain = NEWS_MANAGEMENT_MODE.view;
   releaseLetterList: WritableSignal<ReleaseLetter[]> = signal([]);
+  appModalService = inject(AppModalService);
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
@@ -56,6 +59,7 @@ export class NewsManagementComponent {
 
   ngOnInit() {
     this.adminDashboardService.getRelaseLetters().subscribe(res => {
+      console.log(res);
       this.releaseLetterList.set(res._embedded.releaseLetterModelList);
     });
   }
@@ -69,5 +73,10 @@ export class NewsManagementComponent {
     this.router.navigate(['edit', releaseVersion], {
       relativeTo: this.route
     });
+  }
+
+  openModal(item: ReleaseLetter) {
+    console.log(item);
+    this.appModalService.openReleaseLetterModal(item);
   }
 }

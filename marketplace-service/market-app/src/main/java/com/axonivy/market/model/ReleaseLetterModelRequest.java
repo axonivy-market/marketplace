@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ReleaseLetterModelRequest {
-  @Schema(description = "Release letter content", example = "This is the release letter of Marketplace version 1.20.0.")
+  @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 
   @Schema(description = "Marketplace sprint", example = "S42")

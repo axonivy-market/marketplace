@@ -1,0 +1,21 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{ item.sprint }}</h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+<div class="modal-body">
+  <p>{{ item.sprint }}</p>
+  <p>{{renderReleaseLetterContent()}}</p>
+  <p [innerHTML]="renderReleaseLetterContent()">{{renderReleaseLetterContent()}}</p>
+</div>
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="activeModal.close('Close click')">
+    Close
+  </button>
+</div>

@@ -121,6 +121,15 @@ export class AdminDashboardService {
     });
   }
 
+  getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    return this.http.get<ReleaseLetterListApiResponse>(
+      `${API_URI.RELEASE_LETTERS}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   createReleaseLetter(
     releaseLetterRequest: ReleaseLetter
   ): Observable<ReleaseLetterApiResponse> {
@@ -153,15 +162,6 @@ export class AdminDashboardService {
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
-  }
-
-  getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
-    return this.http.get<ReleaseLetterListApiResponse>(
-      `${API_URI.RELEASE_LETTERS}`,
       {
         headers: this.adminAuth.getAuthHeaders()
       }

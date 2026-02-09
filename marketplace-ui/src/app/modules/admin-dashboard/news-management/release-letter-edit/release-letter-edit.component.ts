@@ -68,14 +68,15 @@ export class ReleaseLetterEditComponent {
   createReleaseLetter(releaseLetter: ReleaseLetter): void {
     this.adminDashboardService
       .createReleaseLetter(releaseLetter)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      // .subscribe(response => {
-      //   this.releaseLetter.content = response.content;
-      //   this.releaseLetter.sprint = response.sprint;
-      // });
+      .pipe(
+        finalize(() => {
+          this.isSubmitting.set(false);
+          this.router.navigate(['/internal-dashboard/news-management']);
+        })
+      )
       .subscribe({
         next: _res => {
-          this.router.navigate(['/internal-dashboard/news-management']);
+          // this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
           if (
@@ -86,27 +87,11 @@ export class ReleaseLetterEditComponent {
               'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
             );
           }
-        }
+        },
+        // complete: () => {
+        //   this.router.navigate(['/internal-dashboard/news-management']);
+        // }
       });
-
-    // this.adminDashboardService
-    //   .createReleaseLetter(releaseLetter)
-    //   .pipe(finalize(() => this.isSubmitting.set(false)))
-    //   .subscribe({
-    //     next: _res => {
-    //       this.router.navigate(['/internal-dashboard/news-management']);
-    //     },
-    //     error: err => {
-    //       if (
-    //         RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
-    //         err.error.helpCode
-    //       ) {
-    //         this.errorMessage = this.translateService.instant(
-    //           'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
-    //         );
-    //       }
-    //     }
-    //   });
   }
 
   updateReleaseLetter(
@@ -138,6 +123,11 @@ export class ReleaseLetterEditComponent {
     if (this.isSubmitting()) return;
 
     this.isSubmitting.set(true);
+
+    if (this.isCreateMode) {
+      this.createReleaseLetter(this.releaseLetter);
+      return;
+    }
 
     this.updateReleaseLetter(this.selectedSprint, this.releaseLetter);
   }

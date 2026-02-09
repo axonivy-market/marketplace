@@ -8,13 +8,32 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
-import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rxjs';
+import {
+  inject,
+  Injector,
+  makeStateKey,
+  PLATFORM_ID,
+  TransferState
+} from '@angular/core';
+import {
+  catchError,
+  EMPTY,
+  finalize,
+  Observable,
+  of,
+  tap,
+  throwError
+} from 'rxjs';
 import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import {
+  ERROR_CODES,
+  ERROR_PAGE_PATH,
+  FORBIDDEN,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
-import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
+import { API_INTERNAL_URL, API_URI } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
 
 export const REQUEST_BY = 'X-Requested-By';
@@ -35,7 +54,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
   const transferState = inject(TransferState);
-  const key = makeStateKey<unknown>(req.urlWithParams);
+  const key = makeStateKey<unknown>(`${req.method} ${req.urlWithParams}`);
 
   if (req.url.includes('i18n')) {
     return next(req);
@@ -43,6 +62,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Only cache GET requests to API
   if (req.method === 'GET' && transferState.hasKey(key)) {
+    console.log(key);
+
     const data = transferState.get<unknown>(key, null);
     transferState.remove(key);
     return of(new HttpResponse({ body: data, status: HttpStatusCode.Ok }));
@@ -62,6 +83,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
+  console.log(`Request URL: ${requestURL}`);
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers)
@@ -70,7 +92,20 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.context.get(ForwardingError)) {
     return next(cloneReq).pipe(
       tap(event => {
-        if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+        if (
+          (req.method === 'POST' ||
+            req.method === 'PUT' ||
+            req.method === 'PATCH' ||
+            req.method === 'DELETE') &&
+          req.url === API_URI.RELEASE_LETTERS // <-- must match the URL used by the GET call
+        ) {
+          invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
+        }
+        if (
+          req.method === 'GET' &&
+          event instanceof HttpResponse &&
+          event.status === HttpStatusCode.Ok
+        ) {
           transferState.set(key, event.body);
         }
       })
@@ -78,9 +113,29 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(cloneReq).pipe(
-    catchError(error => handleHttpError(router,error)),
+    catchError(error => handleHttpError(router, error)),
     tap(event => {
-      if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+      if (
+        (req.method === 'POST' ||
+          req.method === 'PUT' ||
+          req.method === 'PATCH' ||
+          req.method === 'DELETE') &&
+        req.url === API_URI.RELEASE_LETTERS // <-- must match the URL used by the GET call
+      ) {
+        invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
+      }
+      if (
+        event instanceof HttpResponse &&
+        event.status === HttpStatusCode.Ok &&
+        req.method !== 'GET'
+      ) {
+        invalidateGetCache(transferState, req.urlWithParams);
+      }
+      if (
+        req.method === 'GET' &&
+        event instanceof HttpResponse &&
+        event.status === HttpStatusCode.Ok
+      ) {
         transferState.set(key, event.body);
       }
     }),
@@ -113,4 +168,11 @@ export function handleHttpError(
     router.navigate([ERROR_PAGE_PATH]);
   }
   return EMPTY;
+}
+
+function invalidateGetCache(transferState: TransferState, url: string) {
+  const key = makeStateKey(`GET ${url}`);
+  if (transferState.hasKey(key)) {
+    transferState.remove(key);
+  }
 }
