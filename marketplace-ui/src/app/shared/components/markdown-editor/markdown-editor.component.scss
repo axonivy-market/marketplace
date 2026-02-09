@@ -2,11 +2,21 @@
   visibility: hidden;
 }
 
-::ng-deep .EasyMDEContainer .editor-toolbar button:hover {
+::ng-deep .EasyMDEContainer .editor-toolbar button:hover,
+::ng-deep .EasyMDEContainer .editor-toolbar button.active {
   color: black;
 }
 
+::ng-deep .EasyMDEContainer .CodeMirror .editor-preview-full.bg-secondary,
+::ng-deep .EasyMDEContainer .editor-preview-side.bg-secondary {
+  padding: 1rem;
+}
+
 ::ng-deep .EasyMDEContainer {
+  a {
+    color: #007095;
+  }
+
   .editor-toolbar {
     font-size: 1.6rem;
   }
@@ -66,27 +76,6 @@
 
   img {
     max-width: 100%;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    overflow-x: auto;
-    display: block;
-
-    th,
-    td {
-      text-align: left;
-      padding: 0.8rem;
-      word-wrap: break-word;
-      white-space: normal;
-      font-size: 1.2rem;
-    }
-
-    tr {
-      border-bottom: 0.1rem solid var(--ivy-border-color);
-    }
   }
 
   pre code {

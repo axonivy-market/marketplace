@@ -36,7 +36,6 @@ export class MarkdownEditorComponent {
 
   isSubmittingSignal = input<Signal<boolean>>();
 
-
   private mde?: EasyMDE;
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
@@ -44,8 +43,11 @@ export class MarkdownEditorComponent {
       const value = this.contentValue() ?? '';
       const submitting = this.isSubmittingSignal()?.();
 
-      if (!this.mde) return; 
-      this.mde.codemirror.setOption('readOnly', submitting ? 'nocursor' : false);
+      if (!this.mde) return;
+      this.mde.codemirror.setOption(
+        'readOnly',
+        submitting ? 'nocursor' : false
+      );
 
       if (this.mde.value() !== value) {
         const cm = this.mde.codemirror;
@@ -73,9 +75,20 @@ export class MarkdownEditorComponent {
       spellChecker: false,
       status: false,
       placeholder: this.placeholder,
-      initialValue: this.contentValue()
+      initialValue: this.contentValue(),
+      previewClass: "bg-secondary"
     });
     this.isMDEReady = true;
+
+    const container = this.mde.codemirror
+      .getWrapperElement()
+      .closest('.EasyMDEContainer')!;
+
+    const easyMDEToolbar = container.querySelector('.editor-toolbar')!;
+    easyMDEToolbar.classList.add('bg-secondary', 'text-primary');
+
+    const codeMirrorTextArea = container.querySelector('.CodeMirror')!;
+    codeMirrorTextArea.classList.add('bg-secondary', 'text-primary');
 
     this.mde.codemirror.on('change', () => {
       this.updateContent(this.mde!.value());

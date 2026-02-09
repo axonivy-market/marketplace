@@ -1,21 +1,16 @@
-<div class="modal-header">
-  <h4 class="modal-title">{{ item.sprint }}</h4>
-  <button
-    type="button"
-    class="btn-close"
-    aria-label="Close"
-    (click)="activeModal.dismiss('Cross click')"></button>
-</div>
-<div class="modal-body">
-  <p>{{ item.sprint }}</p>
-  <p>{{renderReleaseLetterContent()}}</p>
-  <p [innerHTML]="renderReleaseLetterContent()">{{renderReleaseLetterContent()}}</p>
-</div>
-<div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-secondary"
-    (click)="activeModal.close('Close click')">
-    Close
-  </button>
+<div class="modal-body-wrapper changelog-container">
+  <div class="modal-header">
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="activeModal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <h1>{{ item.sprint }}</h1>
+    <div
+      ngbAccordionBody
+      class="p-0 changelog-content"
+      [innerHtml]="renderReleaseLetterContent()"></div>
+  </div>
 </div>

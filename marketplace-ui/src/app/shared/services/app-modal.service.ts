@@ -15,7 +15,7 @@ export class AppModalService {
     const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
       fullscreen: 'md',
       centered: true,
-      size: 'lg'  
+      size: 'xl'
     });
 
     modalRef.componentInstance.item = item;

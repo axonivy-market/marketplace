@@ -97,7 +97,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
             req.method === 'PUT' ||
             req.method === 'PATCH' ||
             req.method === 'DELETE') &&
-          req.url === API_URI.RELEASE_LETTERS // <-- must match the URL used by the GET call
+          req.url.includes(API_URI.RELEASE_LETTERS)
         ) {
           invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
         }
@@ -120,7 +120,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
           req.method === 'PUT' ||
           req.method === 'PATCH' ||
           req.method === 'DELETE') &&
-        req.url === API_URI.RELEASE_LETTERS // <-- must match the URL used by the GET call
+        req.url.includes(API_URI.RELEASE_LETTERS)
       ) {
         invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
       }

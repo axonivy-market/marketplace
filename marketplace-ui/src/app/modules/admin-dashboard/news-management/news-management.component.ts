@@ -64,11 +64,6 @@ export class NewsManagementComponent {
     });
   }
 
-  onSubmit(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/internal-dashboard']);
-  }
-
   navigateToEditPage(releaseVersion: string) {
     this.router.navigate(['edit', releaseVersion], {
       relativeTo: this.route
@@ -76,7 +71,8 @@ export class NewsManagementComponent {
   }
 
   openModal(item: ReleaseLetter) {
-    console.log(item);
+    const buttonElement = document.activeElement as HTMLElement;
+    buttonElement.blur();
     this.appModalService.openReleaseLetterModal(item);
   }
 }

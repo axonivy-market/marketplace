@@ -71,12 +71,11 @@ export class ReleaseLetterEditComponent {
       .pipe(
         finalize(() => {
           this.isSubmitting.set(false);
-          this.router.navigate(['/internal-dashboard/news-management']);
         })
       )
       .subscribe({
         next: _res => {
-          // this.router.navigate(['/internal-dashboard/news-management']);
+          this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
           if (
@@ -87,10 +86,7 @@ export class ReleaseLetterEditComponent {
               'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
             );
           }
-        },
-        // complete: () => {
-        //   this.router.navigate(['/internal-dashboard/news-management']);
-        // }
+        }
       });
   }
 

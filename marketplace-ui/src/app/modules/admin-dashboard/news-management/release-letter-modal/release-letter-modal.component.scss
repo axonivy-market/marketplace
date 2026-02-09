@@ -1,0 +1,111 @@
+.modal-header {
+  border: none;
+}
+
+.modal-body {
+  padding: 2.4rem;
+}
+
+.changelog-container ::ng-deep {
+  a {
+    color: var(--ivy-primary-bg);
+  }
+
+  border-radius: 1rem;
+
+  .custom-accordion-button {
+    background: none;
+    box-shadow: none;
+    color: var(--ivy-text-primary-color);
+
+    a.release-name {
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .release-content {
+    margin-bottom: -1.5rem;
+  }
+
+  .changelog-content {
+    h2 {
+      padding-bottom: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: solid 1px var(--ivy-text-secondary-color);
+    }
+
+    ul li {
+      margin: 0.25rem 0 0 0;
+    }
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  h4 {
+    font-size: 18px;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  p,
+  ul,
+  li {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ivy-text-primary-color);
+  }
+
+  ul,
+  li {
+    margin: 25.2px 0;
+  }
+
+  a {
+    word-break: break-all;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    overflow-x: auto;
+    display: block;
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+      word-wrap: break-word;
+      white-space: normal;
+      font-size: 12px;
+    }
+
+    tr {
+      border-bottom: 1px solid var(--ivy-border-color);
+    }
+  }
+
+  pre code {
+    font-size: 1.4rem;
+  }
+}

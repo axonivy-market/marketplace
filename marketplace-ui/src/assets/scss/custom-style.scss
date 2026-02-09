@@ -11,7 +11,6 @@ $ivyRejectButtonColor: #e5151c;
 
 $ivyReleasePreviewErrorColor: #dc3545;
 
-
 // Light
 $ivyPrimaryColorLight: #007095;
 $ivyPrimaryColorHoverLight: #00445c;
@@ -78,7 +77,7 @@ details summary {
   --ivy-text-primary-color: #{$ivyPrimaryTextColorLight};
   --ivy-text-secondary-color: #{$ivySecondaryTextLight};
   --ivy-border-color: #{$ivySecondaryButtonHoverLight};
-  --ivy-textarea-background-color: #FAFAFA;
+  --ivy-textarea-background-color: #fafafa;
   --header-border-color: #ebebeb;
   --footer-border-color: #e7e7e7;
   --ivy-secondary-border-color: #e7e7e7;
@@ -106,10 +105,10 @@ details summary {
   --clear-search-text-button-bg-hover: #eeeeee;
   --clear-search-text-button-bg-active: #d6d6d6;
 
-  --monitoring-toggle-button-border: #96C4D4;
-  --monitoring-toggle-button-bg: #E6F1F5;
+  --monitoring-toggle-button-border: #96c4d4;
+  --monitoring-toggle-button-bg: #e6f1f5;
   --monitoring-toggle-button-text: #007095;
-  --monitoring-border-color: #E7E7E7;
+  --monitoring-border-color: #e7e7e7;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
 
@@ -191,12 +190,15 @@ details summary {
   }
 
   /** End Star Rating Summary **/
-}
 
-// .spinner-border {
-//   width: 100px;
-//   height: 100px;
-// }
+  /** EasyMDE Cursor **/
+
+  .EasyMDEContainer .CodeMirror-cursor {
+    border-left-color: $ivyPrimaryTextColorLight;
+  }
+
+  /** End EasyMDE Cursor **/
+}
 
 [data-bs-theme='dark'] {
   --bs-body-bg: #{$ivyBodyBackgroundDark};
@@ -223,9 +225,9 @@ details summary {
   --info-dropdown-border: #000000b2;
   --star-color: #757575;
   --star-filled-color: #{$white};
-  --text-no-rating-color: #A3A3A3;
-  --text-feedback-time-color: #A3A3A3;
-  --text-error-code-color: #A3A3A3;
+  --text-no-rating-color: #a3a3a3;
+  --text-feedback-time-color: #a3a3a3;
+  --text-error-code-color: #a3a3a3;
   --text-error-oops-color: #ffffff;
   --product-feedback-container-bg-color: #{$ivySecondaryColorDark};
   --product-feedback-container-border-color: #{$ivySecondaryTextLight};
@@ -238,10 +240,10 @@ details summary {
   --clear-search-text-button-bg-hover: #262626;
   --clear-search-text-button-bg-active: #454545;
 
-  --monitoring-toggle-button-border: #7E7E7E;
+  --monitoring-toggle-button-border: #7e7e7e;
   --monitoring-toggle-button-bg: #333333;
-  --monitoring-toggle-button-text: #FAFAFA;
-  --monitoring-border-color: #4F4E4E;
+  --monitoring-toggle-button-text: #fafafa;
+  --monitoring-border-color: #4f4e4e;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
 
@@ -317,11 +319,19 @@ details summary {
     background-color: #383838 !important;
 
     .star-rating-percent {
-      background-color: #FAFAFA !important;
+      background-color: #fafafa !important;
     }
   }
 
   /** End Star Rating Summary **/
+  
+  /** EasyMDE Cursor **/
+
+  .EasyMDEContainer .CodeMirror-cursor {
+    border-left-color: #fafafa;
+  }
+
+  /** End EasyMDE Cursor **/
 }
 
 .default-cursor {
@@ -371,13 +381,16 @@ details summary {
   }
 
   p,
-  ul, li, details {
+  ul,
+  li,
+  details {
     font-size: 1.6rem;
     font-weight: 400;
     color: var(--ivy-text-primary-color);
   }
 
-  ul, li {
+  ul,
+  li {
     margin: 25.2px 0;
   }
 
