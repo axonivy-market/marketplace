@@ -1,37 +1,21 @@
 .modal-header {
   border: none;
+  padding: 2.4rem;
 }
 
 .modal-body {
   padding: 2.4rem;
+  scrollbar-width: 3rem;
 }
 
-.changelog-container ::ng-deep {
+.release-letter-modal-container ::ng-deep {
   a {
     color: var(--ivy-primary-bg);
   }
 
   border-radius: 1rem;
 
-  .custom-accordion-button {
-    background: none;
-    box-shadow: none;
-    color: var(--ivy-text-primary-color);
-
-    a.release-name {
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .release-content {
-    margin-bottom: -1.5rem;
-  }
-
-  .changelog-content {
+  .release-letter-content {
     h2 {
       padding-bottom: 0.5rem;
       margin-bottom: 2rem;

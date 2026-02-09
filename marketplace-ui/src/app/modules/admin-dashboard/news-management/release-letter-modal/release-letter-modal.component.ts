@@ -7,7 +7,6 @@ import { MarkdownService } from '../../../../shared/services/markdown.service';
 
 @Component({
   selector: 'app-release-letter-modal',
-  imports: [],
   templateUrl: './release-letter-modal.component.html',
   styleUrl: './release-letter-modal.component.scss'
 })
@@ -16,7 +15,6 @@ export class ReleaseLetterModalComponent {
   item!: ReleaseLetter;
 
   markdownService = inject(MarkdownService);
-
   md: MarkdownIt = new MarkdownIt();
 
   constructor(
@@ -25,7 +23,7 @@ export class ReleaseLetterModalComponent {
   ) {}
 
   renderReleaseLetterContent() {
-    const rawHtml = this.markdownService.parseMarkdown(this.item.content || '');
+    const rawHtml = this.markdownService.parseMarkdown(this.item.content);
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   } 
 }

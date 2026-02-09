@@ -1,5 +1,6 @@
-<div class="modal-body-wrapper changelog-container">
+<div class="release-letter-modal-container">
   <div class="modal-header">
+    <h1>{{ item.sprint }}</h1>
     <button
       type="button"
       class="btn-close"
@@ -7,10 +8,8 @@
       (click)="activeModal.dismiss('Cross click')"></button>
   </div>
   <div class="modal-body">
-    <h1>{{ item.sprint }}</h1>
     <div
-      ngbAccordionBody
-      class="p-0 changelog-content"
+      class="p-0 release-letter-content"
       [innerHtml]="renderReleaseLetterContent()"></div>
   </div>
 </div>
