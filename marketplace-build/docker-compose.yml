@@ -48,6 +48,7 @@ services:
       - marketcache:/app/data/market-cache
       - ../logs/app:/app/logs
     environment:
+      - BUILD_VERSION=${BUILD_VERSION}
       - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
@@ -91,6 +92,7 @@ services:
     volumes:
       - ../logs/stable:/app/logs
     environment:
+      - BUILD_VERSION=${STABLE_BUILD_VERSION}
       - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -98,7 +100,7 @@ services:
       context: ../marketplace-service
       dockerfile: stable/Dockerfile
       args:
-        - BUILD_VERSION=${BUILD_VERSION}
+        - BUILD_VERSION=${STABLE_BUILD_VERSION}
     ports:
       - "8085:8080"
 
