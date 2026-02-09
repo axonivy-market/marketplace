@@ -26,7 +26,8 @@ pipeline {
     GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
     GITHUB_REPOSITORY_OWNER = 'axonivy-market'
     UI_IMAGE_NAME = 'marketplace-ui'
-    SERVICE_IMAGE_NAME = 'marketplace-service'
+    APP_IMAGE_NAME = 'marketplace-app'
+    STABLE_IMAGE_NAME = 'marketplace-stable'
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
@@ -210,15 +211,29 @@ pipeline {
       }
     }
 
-    stage('Release Marketplace Service Image') {
+    stage('Release Marketplace App Image') {
       steps {
         sh '''
-          SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
-          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
-          docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
+          APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
+          docker tag $APP_IMAGE_NAME $APP_IMAGE_ID:$RELEASE_VERSION
+          docker push $APP_IMAGE_ID:$RELEASE_VERSION
 
-          # Cleanup old Service image versions
-          export IMAGE_NAME=$SERVICE_IMAGE_NAME
+          # Cleanup old App image versions
+          export IMAGE_NAME=$APP_IMAGE_NAME
+          bash ./.build/scripts/ghcr-cleanup.sh
+        '''
+      }
+    }
+
+    stage('Release Marketplace Stable Image') {
+      steps {
+        sh '''
+          STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
+          docker tag $STABLE_IMAGE_NAME $STABLE_IMAGE_ID:$RELEASE_VERSION
+          docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
+
+          # Cleanup old Stable image versions
+          export IMAGE_NAME=$STABLE_IMAGE_NAME
           bash ./.build/scripts/ghcr-cleanup.sh
         '''
       }
