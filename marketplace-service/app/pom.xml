@@ -11,7 +11,7 @@
   </parent>
   <groupId>com.axonivy.market</groupId>
   <artifactId>app</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.23.0-m45</version>
   <packaging>war</packaging>
   <name>app</name>
   <description>app</description>
