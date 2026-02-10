@@ -10,10 +10,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ReleaseLetterModelRequest {
+
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 
-  @Schema(description = "Marketplace sprint", example = "S42")
+  @Schema(description = "Sprint sprint", example = "S42")
   @NotBlank(message = "Marketplace sprint cannot be blank")
   private String sprint;
+
+  @Schema(description = "Decide whether the created release letter should be active", example = "false")
+  private boolean isActive;
 }

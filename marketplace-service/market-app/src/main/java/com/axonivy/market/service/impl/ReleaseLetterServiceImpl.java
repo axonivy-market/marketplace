@@ -7,11 +7,13 @@ import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 import com.axonivy.market.service.ReleaseLetterService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 @Log4j2
 @Service
@@ -38,7 +40,9 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
+  @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
+    System.out.println("Is letter model active: " + releaseLetterModelRequest.isActive());
     String unifiedSprint = unifySprint(releaseLetterModelRequest.getSprint());
     if (isSprintExisted(unifiedSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
@@ -47,7 +51,12 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     ReleaseLetter releaseLetter =
         ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).sprint(
-            unifiedSprint).build();
+            unifiedSprint).isActive(releaseLetterModelRequest.isActive()).build();
+
+    if (releaseLetterModelRequest.isActive()) {
+//      this.handleActiveReleaseLetter();
+      releaseLetterRepository.deactivateOtherActiveReleaseLetters(unifiedSprint);
+    }
 
     return releaseLetterRepository.save(releaseLetter);
   }
@@ -64,8 +73,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
+    foundReleaseLetter.setActive(releaseLetterModelRequest.isActive());
     foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
     foundReleaseLetter.setSprint(unifiedNewSprint);
+
+    if (releaseLetterModelRequest.isActive()) {
+      releaseLetterRepository.deactivateOtherActiveReleaseLetters(unifiedNewSprint);
+    }
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }

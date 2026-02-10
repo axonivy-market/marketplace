@@ -2,9 +2,12 @@ package com.axonivy.market.entity;
 
 import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
 
+import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +28,8 @@ public class ReleaseLetter extends AuditableIdEntity {
   private static final long serialVersionUID = 1;
   private String sprint;
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = TEXT_TYPE)
   private String content;
+
+  private boolean isActive;
 }

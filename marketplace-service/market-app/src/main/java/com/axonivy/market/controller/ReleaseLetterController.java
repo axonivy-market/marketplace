@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.assembler.ReleaseModelAssembler;
+import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.constants.RequestParamConstants;
 
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -39,7 +39,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 @Tag(name = "Release Letter Controller", description = "API collection to get and search for release letters")
 public class ReleaseLetterController {
     private final ReleaseLetterService releaseLetterService;
-    private final ReleaseModelAssembler releaseModelAssembler;
+    private final ReleaseLetterModelAssembler releaseLetterModelAssembler;
     private final PagedResourcesAssembler<ReleaseLetter> pagedResourcesAssembler;
 
     @GetMapping
@@ -48,7 +48,7 @@ public class ReleaseLetterController {
         if (releaseLetters.isEmpty()) {
             return generateEmptyPagedModel();
         }
-        var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseModelAssembler);
+        var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
         return ResponseEntity.ok(pageResources);
     }
 
@@ -57,7 +57,7 @@ public class ReleaseLetterController {
             @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
                     in = ParameterIn.PATH) String id) {
         ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
-        var releaseLetterResource = releaseModelAssembler.toModel(releaseLetter);
+        var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
 
         return ResponseEntity.ok(releaseLetterResource);
     }
@@ -67,7 +67,7 @@ public class ReleaseLetterController {
             @PathVariable(SPRINT) @Parameter(description = "The sprint version", example = "S43",
                     in = ParameterIn.PATH) String sprint) {
         ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
-        var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(releaseLetter);
+        var releaseLetterResource = releaseLetterModelAssembler.toModelFromReleaseVersion(releaseLetter);
 
         return ResponseEntity.ok(releaseLetterResource);
     }
@@ -79,7 +79,7 @@ public class ReleaseLetterController {
             HttpServletRequest request) {
         String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
         var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
-        var releaseLetterResource = releaseModelAssembler.toModelFromReleaseVersion(newReleaseLetter);
+        var releaseLetterResource = releaseLetterModelAssembler.toModelFromReleaseVersion(newReleaseLetter);
 //    var location = ServletUriComponentsBuilder.fromCurrentRequest()
 //        .path(BY_ID)
 //        .buildAndExpand(newReleaseLetter.getId())
@@ -99,7 +99,7 @@ public class ReleaseLetterController {
     ) {
 //    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
         var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(releaseVersion, releaseLetterModelRequest);
-        var releaseLetterResource = releaseModelAssembler.toModel(updatedReleaseLetter);
+        var releaseLetterResource = releaseLetterModelAssembler.toModelFromReleaseVersion(updatedReleaseLetter);
 //    var location = ServletUriComponentsBuilder.fromCurrentRequest()
 //        .path(BY_ID)
 //        .buildAndExpand(newReleaseLetter.getId())

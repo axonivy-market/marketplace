@@ -12,7 +12,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @Component
-public class ReleaseModelAssembler implements RepresentationModelAssembler<ReleaseLetter, ReleaseLetterModel> {
+public class ReleaseLetterModelAssembler implements RepresentationModelAssembler<ReleaseLetter, ReleaseLetterModel> {
   @Override
   public ReleaseLetterModel toModel(ReleaseLetter releaseLetter) {
     var resource = new ReleaseLetterModel();
@@ -30,6 +30,7 @@ public class ReleaseModelAssembler implements RepresentationModelAssembler<Relea
         .findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
     resource.setContent(releaseLetter.getContent());
     resource.setSprint(releaseLetter.getSprint());
+    resource.setActive(releaseLetter.isActive());
 
     return resource;
   }

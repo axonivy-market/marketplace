@@ -21,6 +21,9 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
   @Schema(description = "Sprint version", example = "S42")
   private String sprint;
 
-  @Schema(description = "Release letter content", example = "This is the release letter of Marketplace version 1.20.0")
+  @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
+
+  @Schema(description = "Decide whether the created release letter should be active", example = "false")
+  private boolean isActive;
 }
