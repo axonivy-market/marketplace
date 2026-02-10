@@ -7,8 +7,8 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { EMPTY, finalize, Observable } from 'rxjs';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
@@ -47,6 +47,7 @@ export class AdminDashboardComponent implements OnInit {
   pageTitleService = inject(PageTitleService);
   authService = inject(AdminAuthService);
   cdr = inject(ChangeDetectorRef);
+  router = inject(Router);
 
   isAuthenticated = false;
   errorMessage = '';
@@ -91,6 +92,16 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExecutions();
+
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.urlAfterRedirects === '/internal-dashboard') {
+          this.pageTitleService.setTitleOnLangChange(
+            'common.admin.sync.pageTitle'
+          );
+        }
+      });
   }
 
   private loadExecutions(): void {

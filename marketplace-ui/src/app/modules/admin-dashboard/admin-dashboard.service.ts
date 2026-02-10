@@ -130,6 +130,15 @@ export class AdminDashboardService {
     );
   }
 
+  getActiveRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    return this.http.get<ReleaseLetterListApiResponse>(
+      `${API_URI.ACTIVE_RELEASE_LETTERS}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   createReleaseLetter(
     releaseLetterRequest: ReleaseLetter
   ): Observable<ReleaseLetterApiResponse> {

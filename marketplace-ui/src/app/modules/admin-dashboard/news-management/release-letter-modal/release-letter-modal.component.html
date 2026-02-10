@@ -1,6 +1,6 @@
 <div class="release-letter-modal-container">
   <div class="modal-header">
-    <h1>{{ item.sprint }}</h1>
+    <h1>{{ sprintHeader }}</h1>
     <button
       type="button"
       class="btn-close"
@@ -10,6 +10,6 @@
   <div class="modal-body">
     <div
       class="p-0 release-letter-content"
-      [innerHtml]="renderReleaseLetterContent()"></div>
+      [innerHtml]="releaseLetterContent"></div>
   </div>
 </div>

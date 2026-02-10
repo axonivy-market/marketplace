@@ -60,6 +60,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  const isReleaseLettersApi = req.url.includes(API_URI.RELEASE_LETTERS);
+
   // Only cache GET requests to API
   if (req.method === 'GET' && transferState.hasKey(key)) {
     console.log(key);
@@ -76,14 +78,16 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
   let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+
   if (isPlatformServer(platformId)) {
     apiURL = injector.get(API_INTERNAL_URL, environment.apiInternalUrl);
   }
+
   let requestURL = req.url;
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
-  console.log(`Request URL: ${requestURL}`);
+  
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers)
@@ -93,16 +97,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     return next(cloneReq).pipe(
       tap(event => {
         if (
-          (req.method === 'POST' ||
-            req.method === 'PUT' ||
-            req.method === 'PATCH' ||
-            req.method === 'DELETE') &&
-          req.url.includes(API_URI.RELEASE_LETTERS)
-        ) {
-          invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
-        }
-        if (
           req.method === 'GET' &&
+          !isReleaseLettersApi &&
           event instanceof HttpResponse &&
           event.status === HttpStatusCode.Ok
         ) {
@@ -116,15 +112,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => handleHttpError(router, error)),
     tap(event => {
       if (
-        (req.method === 'POST' ||
-          req.method === 'PUT' ||
-          req.method === 'PATCH' ||
-          req.method === 'DELETE') &&
-        req.url.includes(API_URI.RELEASE_LETTERS)
-      ) {
-        invalidateGetCache(transferState, API_URI.RELEASE_LETTERS);
-      }
-      if (
         event instanceof HttpResponse &&
         event.status === HttpStatusCode.Ok &&
         req.method !== 'GET'
@@ -133,6 +120,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       }
       if (
         req.method === 'GET' &&
+        !isReleaseLettersApi &&
         event instanceof HttpResponse &&
         event.status === HttpStatusCode.Ok
       ) {

@@ -375,6 +375,14 @@
         "monitoringTitle": "Monitoring Page",
         "releasePreviewTitle": "Release Preview Page"
       },
+      "news": {
+        "pageTitle": "Axon Ivy Market News",
+        "title": "Axon Ivy Market News",
+        "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
+        "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
+        "emptyActiveReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "sprint": "Sprint: "
+      },
       "newsManagement": {
         "pageTitle": "News Management",
         "title": "News Management",
@@ -383,6 +391,8 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "sprintHeader": "Sprint: ",
+        "active": "Active",
         "actions": "Actions",
         "create": "Create",
         "view": "View",
@@ -397,9 +407,11 @@
         "createDescription": "Create a new release letter",
         "editDescription": "Edit selected release letter",
         "editHelpText": "Update the release letter content for the selected sprint.",
+        "sprintNameLabel": "Sprint name",
         "sprintPlaceholder": "Enter the desired sprint",
         "contentPlaceholder": "Type your release letter content here...",
         "sprint": "Sprint",
+        "makeReleaseLetterActive": "Make this release letter active",
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint."
       }

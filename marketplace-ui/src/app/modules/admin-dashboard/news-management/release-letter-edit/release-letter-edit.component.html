@@ -41,20 +41,28 @@
             [lang]="languageService.selectedLanguage()"
             class="text-secondary help-text">
             {{
-              translateService.get('common.admin.releaseLetterEdit.editHelpText')
-                | async
+              translateService.get(
+                'common.admin.releaseLetterEdit.editHelpText'
+              ) | async
             }}
           </h4>
         </div>
       }
     </div>
   </div>
-  <div>
+  <div class="mt-5">
     <form (submit)="onSubmit($event)">
       <div>
+        <h4>
+          {{
+            translateService.get(
+              'common.admin.releaseLetterEdit.sprintNameLabel'
+            ) | async
+          }}
+        </h4>
         <input
-          id="release-version-input"
-          name="release-version-input"
+          id="sprint-input"
+          name="sprint-input"
           autocomplete="on"
           type="text"
           [disabled]="isSubmitting()"
@@ -87,22 +95,37 @@
             ) | async
           "
           [autosaveId]="releaseLetter.sprint"></app-markdown-editor>
-
-        <button
-          id="submit-button"
-          [disabled]="isSubmitting()"
-          type="submit"
-          [lang]="languageService.selectedLanguage()"
-          class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
-          [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-          @if (isSubmitting()) {
-            <div class="spinner-border spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          }
-          <span>Submit</span>
-        </button>
       </div>
+      <div class="active-checkbox-container mt-4">
+        <input
+          name="active-checkbox"
+          class="form-check-input me-2"
+          type="checkbox"
+          id="flexCheckDefault"
+          [ngClass]="releaseLetter.active ? 'active-checkbox-color' : ''"
+          [(ngModel)]="releaseLetter.active" />
+        <label class="form-check-label" for="flexCheckDefault">
+          {{
+            translateService.get(
+              'common.admin.releaseLetterEdit.makeReleaseLetterActive'
+            ) | async
+          }}
+        </label>
+      </div>
+      <button
+        id="submit-button"
+        type="submit"
+        class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+        [disabled]="isSubmitting()"
+        [lang]="languageService.selectedLanguage()">
+        @if (isSubmitting()) {
+          <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        }
+        <span>Submit</span>
+      </button>
     </form>
   </div>
 </div>

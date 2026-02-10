@@ -1,8 +1,10 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   ElementRef,
+  Inject,
   inject,
+  PLATFORM_ID,
   signal,
   ViewChild,
   WritableSignal
@@ -16,19 +18,11 @@ import { ReleaseLetter } from '../../../shared/models/release-letter-request.mod
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
 import { AdminDashboardService } from './../admin-dashboard.service';
-import { NgbAccordionModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ReleaseLetterModalComponent } from './release-letter-modal/release-letter-modal.component';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 
 @Component({
   selector: 'app-news-management',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule,
-    NgbAccordionModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
@@ -50,16 +44,26 @@ export class NewsManagementComponent {
   currentModePlain = NEWS_MANAGEMENT_MODE.view;
   releaseLetterList: WritableSignal<ReleaseLetter[]> = signal([]);
   appModalService = inject(AppModalService);
+  isBrowser: boolean;
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
-    { key: '.sprint', class: 'text-primary' },
+    { key: '.sprint', class: 'text-primary text-center' },
+    { key: '.active', class: 'text-primary text-center' },
     { key: '.actions', class: 'text-primary text-center' }
   ];
 
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
   ngOnInit() {
+    if (this.isBrowser) {
+      this.pageTitleService.setTitleOnLangChange(
+        'common.admin.newsManagement.pageTitle'
+      );
+    }
     this.adminDashboardService.getRelaseLetters().subscribe(res => {
-      console.log(res);
       this.releaseLetterList.set(res._embedded.releaseLetterModelList);
     });
   }

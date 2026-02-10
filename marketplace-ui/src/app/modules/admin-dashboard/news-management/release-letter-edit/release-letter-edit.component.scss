@@ -26,10 +26,31 @@
   height: 43px;
 }
 
-#release-version-input {
+#sprint-input {
   font-size: 1.4rem;
 }
 
 #release-letter-edit-error-message {
   color: red;
+}
+
+.active-checkbox-container {
+  width: fit-content;
+  font-size: 1.6rem;
+
+  &:hover {
+    .form-check-input {
+      background-color: #00445c;
+    }
+  }
+}
+
+.active-checkbox-color {
+  background-color: #007095;
+}
+
+.active-checkbox-container .form-check-input {
+  // &:active {
+  //   background-color: #007095;
+  // }
 }

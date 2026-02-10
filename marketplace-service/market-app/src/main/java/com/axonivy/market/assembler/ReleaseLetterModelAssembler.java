@@ -20,16 +20,6 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
         .findReleaseLetterById(releaseLetter.getId())).withSelfRel());
     resource.setContent(releaseLetter.getContent());
     resource.setSprint(releaseLetter.getSprint());
-
-    return resource;
-  }
-
-  public ReleaseLetterModel toModelFromReleaseVersion(ReleaseLetter releaseLetter) {
-    var resource = new ReleaseLetterModel();
-    resource.add(linkTo(methodOn(ReleaseLetterController.class)
-        .findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
-    resource.setContent(releaseLetter.getContent());
-    resource.setSprint(releaseLetter.getSprint());
     resource.setActive(releaseLetter.isActive());
 
     return resource;

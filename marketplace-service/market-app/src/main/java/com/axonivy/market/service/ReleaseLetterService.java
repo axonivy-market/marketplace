@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import org.springframework.data.domain.Page;
@@ -10,6 +9,8 @@ public interface ReleaseLetterService {
   Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable);
 
   ReleaseLetter findReleaseLetterById(String id);
+
+  Page<ReleaseLetter> findActiveReleaseLetter(Pageable pageable);
 
   ReleaseLetter findReleaseLetterBySprint(String releaseVersion);
 

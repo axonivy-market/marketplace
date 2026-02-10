@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+
+import java.util.List;
 
 @Log4j2
 @Service
@@ -30,6 +33,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   public ReleaseLetter findReleaseLetterById(String id) {
     return releaseLetterRepository.findById(id).orElseThrow(
         () -> new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND, "Not found release letter with id: " + id));
+  }
+
+  @Override
+  public Page<ReleaseLetter> findActiveReleaseLetter(Pageable pageable) {
+    return releaseLetterRepository.findByIsActive(true, pageable);
   }
 
   @Override

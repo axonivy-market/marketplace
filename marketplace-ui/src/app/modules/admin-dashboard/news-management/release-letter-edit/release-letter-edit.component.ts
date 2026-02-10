@@ -11,7 +11,6 @@ import { RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED } from '../../../../shar
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -37,7 +36,8 @@ export class ReleaseLetterEditComponent {
   selectedSprint: string = '';
   releaseLetter: ReleaseLetter = {
     sprint: '',
-    content: ''
+    content: '',
+    active: false
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
@@ -49,19 +49,20 @@ export class ReleaseLetterEditComponent {
       if (sprintParam) {
         this.isCreateMode = false;
         this.selectedSprint = sprintParam;
-        this.getReleaseLetter(this.selectedSprint);
+        this.getRelaseLetterBySprint(this.selectedSprint);
       } else {
         this.isCreateMode = true;
       }
     });
   }
 
-  getReleaseLetter(sprint: string): void {
+  getRelaseLetterBySprint(sprint: string): void {
     this.adminDashboardService
       .getRelaseLetterBySprint(sprint)
       .subscribe(response => {
         this.releaseLetter.content = response.content;
         this.releaseLetter.sprint = response.sprint;
+        this.releaseLetter.active = response.active;
       });
   }
 
