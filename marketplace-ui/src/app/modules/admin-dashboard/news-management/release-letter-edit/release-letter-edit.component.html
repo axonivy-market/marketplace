@@ -82,8 +82,12 @@
           "
           aria-describedby="search" />
       </div>
-      @if (errorMessage !== null && errorMessage !== '') {
-        <p id="release-letter-edit-error-message">{{ errorMessage }}</p>
+      @if (
+        existedSprintErrorMessage !== null && existedSprintErrorMessage !== ''
+      ) {
+        <p id="existed-sprint-error-message">
+          {{ existedSprintErrorMessage }}
+        </p>
       }
       <div>
         <app-markdown-editor
@@ -125,6 +129,13 @@
           </div>
         }
         <span>Submit</span>
+        @if (
+          existedSprintErrorMessage !== null && existedSprintErrorMessage !== ''
+        ) {
+          <p id="generic-error-message">
+            {{ genericErrorMessage }}
+          </p>
+        }
       </button>
     </form>
   </div>

@@ -391,6 +391,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "createdAt": "Created at",
         "sprintHeader": "Sprint: ",
         "active": "Active",
         "actions": "Actions",
@@ -413,7 +414,8 @@
         "sprint": "Sprint",
         "makeReleaseLetterActive": "Make this release letter active",
         "backToNewsManagement": "Back to News Management",
-        "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint."
+        "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
+        "genericErrorMessage": "An error occurred while processing your request. Please try again."
       }
     }
   }

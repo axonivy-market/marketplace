@@ -37,11 +37,13 @@ export class ReleaseLetterEditComponent {
   releaseLetter: ReleaseLetter = {
     sprint: '',
     content: '',
+    createdAt: '',
     active: false
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
-  errorMessage: string | null = null;
+  existedSprintErrorMessage: string | null = null;
+  genericErrorMessage: string | null = null;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -83,8 +85,12 @@ export class ReleaseLetterEditComponent {
             RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
             err.error.helpCode
           ) {
-            this.errorMessage = this.translateService.instant(
+            this.existedSprintErrorMessage = this.translateService.instant(
               'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
+            );
+          } else {
+            this.genericErrorMessage = this.translateService.instant(
+              'common.admin.releaseLetterEdit.genericErrorMessage'
             );
           }
         }
@@ -107,8 +113,12 @@ export class ReleaseLetterEditComponent {
             RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
             err.error.helpCode
           ) {
-            this.errorMessage = this.translateService.instant(
+            this.existedSprintErrorMessage = this.translateService.instant(
               'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
+            );
+          } else {
+            this.genericErrorMessage = this.translateService.instant(
+              'common.admin.releaseLetterEdit.genericErrorMessage'
             );
           }
         }
@@ -134,6 +144,6 @@ export class ReleaseLetterEditComponent {
   }
 
   onReleaseVersionChange() {
-    this.errorMessage = null;
+    this.existedSprintErrorMessage = null;
   }
 }

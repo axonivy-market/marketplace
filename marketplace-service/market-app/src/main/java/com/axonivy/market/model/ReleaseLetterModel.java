@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,4 +28,7 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
 
   @Schema(description = "Decide whether the created release letter should be active", example = "false")
   private boolean isActive;
+
+  @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
+  private Date createdAt;
 }

@@ -20,8 +20,6 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
 
   boolean existsBySprint(String releaseVersion);
 
-  List<ReleaseLetter> findByIsActive(boolean isActive);
-  
   Page<ReleaseLetter> findByIsActive(boolean isActive, Pageable pageable);
 
   @Modifying

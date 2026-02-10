@@ -49,6 +49,7 @@ export class NewsManagementComponent {
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
     { key: '.sprint', class: 'text-primary text-center' },
+    { key: '.createdAt', class: 'text-primary text-center' },
     { key: '.active', class: 'text-primary text-center' },
     { key: '.actions', class: 'text-primary text-center' }
   ];
@@ -78,5 +79,10 @@ export class NewsManagementComponent {
     const buttonElement = document.activeElement as HTMLElement;
     buttonElement.blur();
     this.appModalService.openReleaseLetterModal(item);
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   }
 }

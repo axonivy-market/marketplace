@@ -93,12 +93,6 @@ public class ReleaseLetterController {
     String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(newReleaseLetter);
-//    var location = ServletUriComponentsBuilder.fromCurrentRequest()
-//        .path(BY_ID)
-//        .buildAndExpand(newReleaseLetter.getId())
-//        .toUri();
-//    System.out.println("Location: " + location);
-
     return ResponseEntity.ok(releaseLetterResource);
   }
 
@@ -113,12 +107,6 @@ public class ReleaseLetterController {
 //    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(releaseVersion, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-//    var location = ServletUriComponentsBuilder.fromCurrentRequest()
-//        .path(BY_ID)
-//        .buildAndExpand(newReleaseLetter.getId())
-//        .toUri();
-//    System.out.println("Location: " + location);
-
     return ResponseEntity.ok(releaseLetterResource);
   }
 

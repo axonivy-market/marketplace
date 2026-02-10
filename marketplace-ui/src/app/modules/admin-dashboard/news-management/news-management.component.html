@@ -53,6 +53,9 @@
         <tr>
           <td>{{ $index + 1 }}</td>
           <td class="text-center">{{ releaseLetter.sprint }}</td>
+          <td class="text-center">
+            {{ releaseLetter.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}
+          </td>
           @if (releaseLetter.active) {
             <td class="text-center">
               <i class="fa-solid fa-square-check"></i>

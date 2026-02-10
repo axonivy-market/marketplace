@@ -30,7 +30,7 @@
   font-size: 1.4rem;
 }
 
-#release-letter-edit-error-message {
+#existed-sprint-error-message, #generic-error-message {
   color: red;
 }
 
@@ -47,10 +47,4 @@
 
 .active-checkbox-color {
   background-color: #007095;
-}
-
-.active-checkbox-container .form-check-input {
-  // &:active {
-  //   background-color: #007095;
-  // }
 }

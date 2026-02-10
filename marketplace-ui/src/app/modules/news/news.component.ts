@@ -28,6 +28,7 @@ export class NewsComponent {
   activeReleaseLetter: ReleaseLetter = {
     sprint: '',
     content: '',
+    createdAt: '',
     active: false
   };
 
