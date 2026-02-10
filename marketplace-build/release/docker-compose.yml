@@ -16,7 +16,7 @@ services:
       - "80:80"
     depends_on:
       - preview_ui
-      - preview_service
+      - preview_app
 
   preview_ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
@@ -36,8 +36,8 @@ services:
     expose:
       - 4000
 
-  preview_service:
-    image: ghcr.io/axonivy-market/marketplace-service:${RELEASE_VERSION}
+  preview_app:
+    image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     expose:
       - 8080
@@ -46,6 +46,7 @@ services:
       - marketcache:/app/data/market-cache
       - ../logs:/app/logs
     environment:
+      - BUILD_VERSION=${BUILD_VERSION}
       - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
@@ -75,6 +76,20 @@ services:
       - MAIL_PORT=${MAIL_PORT}
       - FROM_MAIL=${FROM_MAIL}
       - TO_MAIL=${TO_MAIL}
+
+  preview_stable:
+    image: ghcr.io/axonivy-market/marketplace-stable:${RELEASE_VERSION}
+    restart: always
+    volumes:
+      - ../logs/stable:/app/logs
+    environment:
+      - BUILD_VERSION=${BUILD_VERSION}
+      - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "8085:8080"
+
 volumes:
   marketcache:
   marketbrowser:
