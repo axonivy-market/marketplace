@@ -42,7 +42,7 @@ export class NewsComponent {
     }
     this.adminDashboardService.getActiveRelaseLetters().subscribe(res => {
       if (res._embedded.releaseLetterModelList.length == 0) {
-        this.activeReleaseLetter.active = this.translateService.instant(
+        this.activeReleaseLetterSprintTitle = this.translateService.instant(
           'common.admin.news.emptyActiveReleaseLetter'
         );
       } else {
