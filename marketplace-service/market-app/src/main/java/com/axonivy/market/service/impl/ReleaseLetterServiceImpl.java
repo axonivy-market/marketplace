@@ -8,6 +8,7 @@ import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 import com.axonivy.market.service.ReleaseLetterService;
+import com.axonivy.market.util.ProductContentUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,11 +20,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class ReleaseLetterServiceImpl implements ReleaseLetterService {
+  private static final String GITHUB_USERNAME_REGEX = "@([\\p{Alnum}\\-]+)";
+  private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
+  private static final String GITHUB_MAIN_LINK = "https://github.com/";
+  private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
+      Pattern.UNICODE_CHARACTER_CLASS);
   private final ReleaseLetterRepository releaseLetterRepository;
 
   @Override
@@ -69,11 +76,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     }
 
     ReleaseLetter releaseLetter =
-        ReleaseLetter.builder().content(releaseLetterModelRequest.getContent()).sprint(
+        ReleaseLetter.builder().content(transformContent(releaseLetterModelRequest.getContent())).sprint(
             unifiedSprint).isActive(releaseLetterModelRequest.isActive()).build();
 
     if (releaseLetterModelRequest.isActive()) {
-//      this.handleActiveReleaseLetter();
       releaseLetterRepository.deactivateOtherActiveReleaseLetters(unifiedSprint);
     }
 
@@ -93,7 +99,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     }
 
     foundReleaseLetter.setActive(releaseLetterModelRequest.isActive());
-    foundReleaseLetter.setContent(releaseLetterModelRequest.getContent());
+    foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
 
     if (releaseLetterModelRequest.isActive()) {
@@ -109,5 +115,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   private String unifySprint(String originalInputSprint) {
     return originalInputSprint.trim().toUpperCase();
+  }
+
+  private String transformContent(String originalContent) {
+    return GITHUB_USERNAME_PATTERN.matcher(originalContent).replaceAll(
+        GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 }

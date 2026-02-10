@@ -76,6 +76,7 @@ export class MarkdownEditorComponent {
         'bold',
         'italic',
         'heading',
+        'strikethrough',
         '|',
         'quote',
         'unordered-list',
