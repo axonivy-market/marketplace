@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import MarkdownIt from 'markdown-it';
+import taskLists from 'markdown-it-task-lists';
 import { full } from 'markdown-it-emoji';
 import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 
@@ -17,6 +18,7 @@ export class MarkdownService {
     this.md.use(
       (MarkdownItGitHubAlerts as any).default ?? (MarkdownItGitHubAlerts as any)
     );
+    this.md.use(taskLists);
   }
 
   parseMarkdown(markdownText: string): string {

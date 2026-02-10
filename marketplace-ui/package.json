@@ -38,6 +38,7 @@
     "markdown-it": "^14.1.0",
     "markdown-it-emoji": "^3.0.0",
     "markdown-it-github-alerts": "^0.3.2",
+    "markdown-it-task-lists": "^2.1.1",
     "marked": "^12.0.2",
     "ngx-cookie-service": "^21.1.0",
     "ngx-matomo-client": "^9.0.1",
