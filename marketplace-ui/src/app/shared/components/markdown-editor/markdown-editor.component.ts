@@ -72,11 +72,31 @@ export class MarkdownEditorComponent {
         delay: 500,
         submit_delay: 5000
       },
+      toolbar: [
+        'bold',
+        'italic',
+        'heading',
+        '|',
+        'quote',
+        'unordered-list',
+        'ordered-list',
+        '|',
+        'code',
+        '|',
+        'link',
+        'image',
+        '|',
+        'preview',
+        'side-by-side',
+        'fullscreen',
+        '|',
+        'guide'
+      ],
       spellChecker: false,
       status: false,
       placeholder: this.placeholder,
       initialValue: this.contentValue(),
-      previewClass: "bg-secondary"
+      previewClass: 'bg-secondary'
     });
     this.isMDEReady = true;
 
