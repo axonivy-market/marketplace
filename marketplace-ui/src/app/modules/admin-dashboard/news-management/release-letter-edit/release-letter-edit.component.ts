@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, inject, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -47,8 +47,18 @@ export class ReleaseLetterEditComponent {
   isSubmitting = signal<boolean>(false);
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
+    if (this.isBrowser) {
+      this.pageTitleService.setTitleOnLangChange(
+        'common.admin.newsManagement.pageTitle'
+      );
+    }
     this.route.paramMap.subscribe(params => {
       const sprintParam = params.get('sprint');
       if (sprintParam) {

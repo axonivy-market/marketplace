@@ -8,7 +8,6 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
-import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
