@@ -176,4 +176,15 @@ export class AdminDashboardService {
       }
     );
   }
+
+  deleteReleaseLetterBySprint(
+    sprint: string
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
 }

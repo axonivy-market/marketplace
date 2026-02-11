@@ -85,4 +85,29 @@ export class NewsManagementComponent {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   }
+
+  openDeleteConfirmModal(sprint: string) {
+    const buttonElement = document.activeElement as HTMLElement;
+    buttonElement.blur();
+    this.appModalService
+      .openDeleteReleaseLetterConfirmModal(sprint)
+      .then(() => {
+        this.adminDashboardService.getRelaseLetters().subscribe(res => {
+          this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+        });
+      });
+  }
+
+  deleteReleaseLetterBySprint(sprint: string) {
+    this.adminDashboardService.deleteReleaseLetterBySprint(sprint).subscribe({
+      next: () => {
+        this.adminDashboardService.getRelaseLetters().subscribe(res => {
+          this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+        });
+      },
+      error: err => {
+        console.error('Error deleting release letter:', err);
+      }
+    });
+  }
 }

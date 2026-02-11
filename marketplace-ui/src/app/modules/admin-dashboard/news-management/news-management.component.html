@@ -54,7 +54,7 @@
           <td>{{ $index + 1 }}</td>
           <td class="text-center">{{ releaseLetter.sprint }}</td>
           <td class="text-center">
-            {{ releaseLetter.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}
+            {{ releaseLetter.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}
           </td>
           @if (releaseLetter.active) {
             <td class="text-center">
@@ -79,7 +79,7 @@
             <button
               type="button"
               [lang]="languageService.selectedLanguage()"
-              class="btn border-0 mb-0"
+              class="btn border-0 mb-0 me-2"
               [ngClass]="
                 themeService.isDarkMode()
                   ? 'btn-light text-dark'
@@ -91,6 +91,19 @@
                 'edit'
               ]">
               <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button
+              id="delete-button"
+              type="button"
+              [lang]="languageService.selectedLanguage()"
+              class="btn border-0 mb-0"
+              [ngClass]="
+                themeService.isDarkMode()
+                  ? 'btn-light text-dark'
+                  : 'btn-primary text-light'
+              "
+              (click)="openDeleteConfirmModal(releaseLetter.sprint)">
+              <i class="fa-solid fa-trash"></i>
             </button>
           </td>
         </tr>

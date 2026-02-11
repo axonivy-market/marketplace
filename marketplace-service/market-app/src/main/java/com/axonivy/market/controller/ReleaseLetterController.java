@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -100,14 +101,22 @@ public class ReleaseLetterController {
   @PutMapping(BY_SPRINT)
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
-      @PathVariable(SPRINT) @Parameter(description = "The release version", example = "S43",
-          in = ParameterIn.PATH) String releaseVersion,
+      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
+          in = ParameterIn.PATH) String sprint,
       @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
   ) {
 //    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(releaseVersion, releaseLetterModelRequest);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     return ResponseEntity.ok(releaseLetterResource);
+  }
+
+  @DeleteMapping(BY_SPRINT)
+  @Operation(hidden = true)
+  public void deleteReleaseLetter(
+      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
+          in = ParameterIn.PATH) String sprint) {
+      releaseLetterService.deleteReleaseLetterBySprint(sprint);
   }
 
   @SuppressWarnings("unchecked")

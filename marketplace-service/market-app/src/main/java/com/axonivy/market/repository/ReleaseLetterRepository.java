@@ -22,6 +22,8 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
 
   Page<ReleaseLetter> findByIsActive(boolean isActive, Pageable pageable);
 
+  void deleteBySprint(String sprint);
+
   @Modifying
   @Transactional
   @Query("UPDATE ReleaseLetter r SET r.isActive = false WHERE r.isActive = true AND (r.sprint <> :currentSprint)")

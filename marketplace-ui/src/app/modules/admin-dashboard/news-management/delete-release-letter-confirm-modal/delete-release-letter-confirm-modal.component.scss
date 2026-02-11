@@ -1,0 +1,54 @@
+.modal-header{
+  border: none;
+  padding: 2.4rem;
+}
+
+.modal-footer {
+  border: 0;
+  padding: 2.4rem 0 2.4rem 0;
+}
+
+.modal-body {
+  padding: 0 2.4rem 0 2.4rem;
+  scrollbar-width: 3rem;
+  font-size: 1.8rem;
+}
+
+h1 {
+  font-weight: 600;
+  font-size: 72px;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: 64px;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 22px;
+}
+
+h4 {
+  font-weight: 400;
+  font-size: 18px;
+}
+
+h5 {
+  font-weight: 400;
+  font-size: 16px;
+}
+
+button {
+  font-size: 1.4rem;
+  padding: 5px 10px;
+}
+
+.delete-button {
+  color: white;
+  background-color: #e5151c;
+}
+
+.delete-button:hover {
+  background-color: #b60000;
+}

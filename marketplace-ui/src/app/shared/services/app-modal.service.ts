@@ -4,6 +4,8 @@ import { ShowFeedbacksDialogComponent } from '../../modules/product/product-deta
 import { AddFeedbackDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/add-feedback-dialog.component';
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
 import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-modal/release-letter-modal.component';
+import { DeleteReleaseLetterConfirmModalComponent } from '../../modules/admin-dashboard/news-management/delete-release-letter-confirm-modal/delete-release-letter-confirm-modal.component';
+import { ReleaseLetter } from '../models/release-letter-request.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,7 @@ import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-
 export class AppModalService {
   private readonly modalService = inject(NgbModal);
 
-  openReleaseLetterModal(item: any): void {
+  openReleaseLetterModal(item: ReleaseLetter): void {
     const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
       fullscreen: 'md',
       centered: true,
@@ -19,6 +21,19 @@ export class AppModalService {
     });
 
     modalRef.componentInstance.item = item;
+  }
+
+  openDeleteReleaseLetterConfirmModal(sprint: string) {
+    const modalRef = this.modalService.open(
+      DeleteReleaseLetterConfirmModalComponent,
+      {
+        size: 'lg'
+      }
+    );
+
+    modalRef.componentInstance.releaseLetterSprint = sprint;
+
+    return modalRef.result;
   }
 
   openShowFeedbacksDialog(): void {

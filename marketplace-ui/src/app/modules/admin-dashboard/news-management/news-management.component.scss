@@ -38,6 +38,10 @@ td {
   }
 }
 
-.accordion-button {
-  justify-content: space-between;
+#delete-button {
+  background-color: red;
+
+  &:hover {
+    background-color: #ff6868;
+  }
 }

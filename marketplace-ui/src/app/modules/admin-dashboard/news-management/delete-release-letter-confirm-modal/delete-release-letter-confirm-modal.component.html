@@ -1,0 +1,33 @@
+<div>
+  <div class="modal-header">
+    <h2>Warning</h2>
+  </div>
+  <div class="modal-body">
+    <div class="p-0 release-letter-content">
+      {{ 'common.admin.newsManagement.deleteConfirmMessage' | translate }}
+      <b>{{ releaseLetterSprint }}</b>
+      ?
+    </div>
+    <div class="modal-footer">
+      <button
+        (click)="activeModal.dismiss()"
+        type="button"
+        [lang]="languageService.selectedLanguage()"
+        class="btn border-0 mb-0 me-2"
+        [ngClass]="
+          themeService.isDarkMode()
+            ? 'btn-light text-dark'
+            : 'btn-primary text-light'
+        ">
+        {{ translateService.get('common.admin.newsManagement.cancel') | async }}
+      </button>
+      <button
+        (click)="deleteReleaseLetterBySprint()"
+        type="button"
+        [lang]="languageService.selectedLanguage()"
+        class="btn delete-button border-0 mb-0 me-2">
+        {{ translateService.get('common.admin.newsManagement.delete') | async }}
+      </button>
+    </div>
+  </div>
+</div>

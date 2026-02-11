@@ -17,4 +17,6 @@ public interface ReleaseLetterService {
   ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest);
 
   ReleaseLetter updateReleaseLetter(String releaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest);
+
+  void deleteReleaseLetterBySprint(String sprint);
 }
