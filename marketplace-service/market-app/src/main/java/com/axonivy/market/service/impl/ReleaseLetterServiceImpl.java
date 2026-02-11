@@ -1,25 +1,23 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 import com.axonivy.market.service.ReleaseLetterService;
-import com.axonivy.market.util.ProductContentUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 @Log4j2
@@ -68,13 +66,16 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    System.out.println("Is letter model active: " + releaseLetterModelRequest.isActive());
+    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+    }
+
     String unifiedSprint = unifySprint(releaseLetterModelRequest.getSprint());
     if (isSprintExisted(unifiedSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
-
     ReleaseLetter releaseLetter =
         ReleaseLetter.builder().content(transformContent(releaseLetterModelRequest.getContent())).sprint(
             unifiedSprint).isActive(releaseLetterModelRequest.isActive()).build();
@@ -88,6 +89,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public ReleaseLetter updateReleaseLetter(String selectedSprint, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+    }
     String unifiedSelectedSprint = unifySprint(selectedSprint);
     var foundReleaseLetter = findReleaseLetterBySprint(unifiedSelectedSprint);
 

@@ -26,12 +26,16 @@
   height: 43px;
 }
 
-#sprint-input {
+#sprint-name {
   font-size: 1.4rem;
 }
 
-#existed-sprint-error-message, #generic-error-message {
+.error-message {
   color: red;
+}
+
+.error-input {
+  border: 1px solid red;
 }
 
 .active-checkbox-container {

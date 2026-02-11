@@ -7,7 +7,10 @@ import { finalize } from 'rxjs';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
-import { RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED } from '../../../../shared/constants/common.constant';
+import {
+  RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED,
+  SPRINT_CANNOT_BE_BLANK
+} from '../../../../shared/constants/common.constant';
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
@@ -42,7 +45,7 @@ export class ReleaseLetterEditComponent {
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
-  existedSprintErrorMessage: string | null = null;
+  sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
 
   ngOnInit() {
@@ -68,7 +71,23 @@ export class ReleaseLetterEditComponent {
       });
   }
 
-  createReleaseLetter(releaseLetter: ReleaseLetter): void {
+  onSubmit(event: Event) {
+    event.preventDefault();
+    if (this.isSubmitting()) return;
+
+    // this.isSubmitting.set(true);
+
+    if (this.isCreateMode) {
+      this.createReleaseLetter(this.releaseLetter);
+      return;
+    }
+
+    this.updateReleaseLetter(this.selectedSprint, this.releaseLetter);
+  }
+
+  createReleaseLetter(releaseLetter: ReleaseLetter) {
+    console.log(releaseLetter);
+
     this.adminDashboardService
       .createReleaseLetter(releaseLetter)
       .pipe(
@@ -81,26 +100,11 @@ export class ReleaseLetterEditComponent {
           this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
-          if (
-            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
-            err.error.helpCode
-          ) {
-            this.existedSprintErrorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
-            );
-          } else {
-            this.genericErrorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.genericErrorMessage'
-            );
-          }
+          this.handleError(err.error.helpCode);
         }
       });
   }
-
-  updateReleaseLetter(
-    releaseVersion: string,
-    releaseLetter: ReleaseLetter
-  ): void {
+  updateReleaseLetter(releaseVersion: string, releaseLetter: ReleaseLetter) {
     this.adminDashboardService
       .updateReleaseLetter(releaseVersion, releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
@@ -109,34 +113,31 @@ export class ReleaseLetterEditComponent {
           this.router.navigate(['/internal-dashboard/news-management']);
         },
         error: err => {
-          if (
-            RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString() ===
-            err.error.helpCode
-          ) {
-            this.existedSprintErrorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
-            );
-          } else {
-            this.genericErrorMessage = this.translateService.instant(
-              'common.admin.releaseLetterEdit.genericErrorMessage'
-            );
-          }
+          this.handleError(err.error.helpCode);
         }
       });
   }
 
-  onSubmit(event: Event) {
-    event.preventDefault();
-    if (this.isSubmitting()) return;
+  handleError(errorHelpcode: string) {
+    switch (errorHelpcode) {
+      case SPRINT_CANNOT_BE_BLANK.toString():
+        this.sprintErrorMessage = this.translateService.instant(
+          'common.admin.releaseLetterEdit.sprintCannotBeBlankErrorMessage'
+        );
+        return;
 
-    this.isSubmitting.set(true);
+      case RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString():
+        this.sprintErrorMessage = this.translateService.instant(
+          'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
+        );
+        return;
 
-    if (this.isCreateMode) {
-      this.createReleaseLetter(this.releaseLetter);
-      return;
+      default:
+        this.genericErrorMessage = this.translateService.instant(
+          'common.admin.releaseLetterEdit.genericErrorMessage'
+        );
+        return;
     }
-
-    this.updateReleaseLetter(this.selectedSprint, this.releaseLetter);
   }
 
   onClickingBackToNewsManagementButton(): void {
@@ -144,6 +145,6 @@ export class ReleaseLetterEditComponent {
   }
 
   onReleaseVersionChange() {
-    this.existedSprintErrorMessage = null;
+    this.sprintErrorMessage = null;
   }
 }

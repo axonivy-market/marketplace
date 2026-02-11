@@ -415,6 +415,7 @@
         "makeReleaseLetterActive": "Make this release letter active",
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
+        "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
         "genericErrorMessage": "An error occurred while processing your request. Please try again."
       }
     }

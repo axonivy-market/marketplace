@@ -61,13 +61,14 @@
           }}
         </h4>
         <input
-          id="sprint-input"
-          name="sprint-input"
+          id="sprint-name"
+          name="sprint-name"
           autocomplete="on"
           type="text"
           [disabled]="isSubmitting()"
           [lang]="languageService.selectedLanguage()"
-          class="form-control input__search bg-secondary border-0 my-4"
+          class="form-control input__search bg-secondary my-4"
+          [class]="(sprintErrorMessage !== null && sprintErrorMessage !== '') ? 'error-input' : ''"
           [(ngModel)]="releaseLetter.sprint"
           (ngModelChange)="onReleaseVersionChange()"
           [placeholder]="
@@ -83,10 +84,10 @@
           aria-describedby="search" />
       </div>
       @if (
-        existedSprintErrorMessage !== null && existedSprintErrorMessage !== ''
+        sprintErrorMessage !== null && sprintErrorMessage !== ''
       ) {
-        <p id="existed-sprint-error-message">
-          {{ existedSprintErrorMessage }}
+        <p id="sprint-error-message" class="error-message">
+          {{ sprintErrorMessage }}
         </p>
       }
       <div>
@@ -129,14 +130,12 @@
           </div>
         }
         <span>Submit</span>
-        @if (
-          existedSprintErrorMessage !== null && existedSprintErrorMessage !== ''
-        ) {
-          <p id="generic-error-message">
-            {{ genericErrorMessage }}
-          </p>
-        }
       </button>
+      @if (genericErrorMessage !== null && genericErrorMessage !== '') {
+        <p id="generic-error-message">
+          {{ genericErrorMessage }}
+        </p>
+      }
     </form>
   </div>
 </div>

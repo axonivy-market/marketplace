@@ -15,7 +15,6 @@ public class ReleaseLetterModelRequest {
   private String content;
 
   @Schema(description = "Sprint sprint", example = "S42")
-  @NotBlank(message = "Marketplace sprint cannot be blank")
   private String sprint;
 
   @Schema(description = "Decide whether the created release letter should be active", example = "false")

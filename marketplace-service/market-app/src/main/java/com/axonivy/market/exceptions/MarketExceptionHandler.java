@@ -6,6 +6,7 @@ import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -38,8 +39,16 @@ public class MarketExceptionHandler {
     return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(MarketException.class)
+  public ResponseEntity<Object> handleAMarketException(MarketException marketException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(marketException.getCode());
+    errorMessage.setMessageDetails(marketException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
   @ExceptionHandler(AlreadyExistedException.class)
-  public ResponseEntity<Object> handleMarketException(AlreadyExistedException alreadyExistedException) {
+  public ResponseEntity<Object> handleAlreadyExistedException(AlreadyExistedException alreadyExistedException) {
     var errorMessage = new Message();
     errorMessage.setHelpCode(alreadyExistedException.getCode());
     errorMessage.setMessageDetails(alreadyExistedException.getMessage());
