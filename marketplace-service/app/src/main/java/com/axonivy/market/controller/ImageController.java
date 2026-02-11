@@ -72,13 +72,14 @@ public class ImageController extends CoreImageController {
     String message;
     HttpStatus status;
     try {
-      message = imageService.saveImageWithCustomId(customId, file);
+      imageService.saveImageWithCustomId(customId, file);
+      message = "Image updated successfully: ";
       status = HttpStatus.OK;
     } catch (IOException ioException) {
       message = "File validation failed";
       status = HttpStatus.BAD_REQUEST;
     } catch (Exception e) {
-      message = "Failed to update image with custom id: {}" + customId;
+      message = "Failed to update image with given custom id";
       status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
     return new ResponseEntity<>(message, status);
