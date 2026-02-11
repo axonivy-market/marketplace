@@ -17,8 +17,9 @@
   <description>marketplace-service</description>
 
   <modules>
-    <module>market-core</module>
-    <module>market-app</module>
+    <module>core</module>
+    <module>app</module>
+    <module>stable</module>
   </modules>
 
   <properties>
