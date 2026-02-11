@@ -73,7 +73,7 @@ public class ImageController extends CoreImageController {
     HttpStatus status;
     try {
       imageService.saveImageWithCustomId(customId, file);
-      message = "Image updated successfully: ";
+      message = "Image updated successfully";
       status = HttpStatus.OK;
     } catch (IOException ioException) {
       message = "File validation failed";
