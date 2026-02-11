@@ -9,6 +9,7 @@ import { PageTitleService } from '../../shared/services/page-title.service';
 import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-news',
@@ -25,14 +26,11 @@ export class NewsComponent {
   markdownService = inject(MarkdownService);
   isBrowser: boolean;
   activeReleaseLetterSprintTitle = '';
-  activeReleaseLetter: ReleaseLetter = {
-    sprint: '',
-    content: '',
-    createdAt: '',
-    active: false
-  };
-
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+  activeReleaseLetterContent: SafeHtml = '';
+  constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: Object,
+    private readonly sanitizer: DomSanitizer
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -47,12 +45,13 @@ export class NewsComponent {
         );
       } else {
         const response = res._embedded.releaseLetterModelList[0];
-        this.activeReleaseLetterSprintTitle = this.getSprintTitle(response.sprint);
-        this.activeReleaseLetter.content = this.markdownService.parseMarkdown(
-          response.content
+        this.activeReleaseLetterSprintTitle = this.getSprintTitle(
+          response.sprint
         );
-        this.activeReleaseLetter.sprint = response.sprint;
-        this.activeReleaseLetter.active = response.active;
+        this.activeReleaseLetterContent =
+          this.sanitizer.bypassSecurityTrustHtml(
+            this.markdownService.parseMarkdown(response.content)
+          );
       }
     });
   }
