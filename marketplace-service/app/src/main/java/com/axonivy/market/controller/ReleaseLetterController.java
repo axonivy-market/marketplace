@@ -2,12 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.constants.RequestParamConstants;
-
-import static com.axonivy.market.constants.RequestParamConstants.*;
-
-import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.entity.ReleaseLetter;
-import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
@@ -34,8 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-
-import java.util.List;
+import static com.axonivy.market.constants.RequestParamConstants.SPRINT;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
 @AllArgsConstructor
 @RestController
