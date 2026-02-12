@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
-import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.SPRINT;
@@ -42,6 +43,7 @@ public class ReleaseLetterController {
   private final PagedResourcesAssembler<ReleaseLetter> pagedResourcesAssembler;
 
   @GetMapping
+  @Operation(summary = "Retrieve a paginated list of all release letter")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
     Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
     if (releaseLetters.isEmpty()) {
@@ -51,7 +53,9 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(pageResources);
   }
 
+  @Authorized
   @GetMapping(BY_ID)
+  @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
       @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id) {
@@ -62,6 +66,8 @@ public class ReleaseLetterController {
   }
 
   @GetMapping(BY_SPRINT)
+  @Operation(summary = "Retrieve a release letter by sprint name",
+      description = "Get release letter by sprint name")
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterBySprint(
       @PathVariable(SPRINT) @Parameter(description = "The sprint version", example = "S43",
           in = ParameterIn.PATH) String sprint) {
@@ -72,6 +78,8 @@ public class ReleaseLetterController {
   }
 
   @GetMapping(BY_ACTIVE)
+  @Operation(summary = "Find active release letter",
+      description = "Get currently active release letter.")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findActiveReleaseLetter(@ParameterObject Pageable pageable) {
     Page<ReleaseLetter> results = releaseLetterService.findActiveReleaseLetter(pageable);
     if (results.isEmpty()) {
@@ -81,18 +89,21 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLettersPageResources);
   }
 
+  @Authorized
   @PostMapping()
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
       @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
       HttpServletRequest request) {
-    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
-    var releaseLetterResource = releaseLetterModelAssembler.toModel(newReleaseLetter);
-    return ResponseEntity.ok(releaseLetterResource);
+    var location = ServletUriComponentsBuilder.fromCurrentRequest()
+        .path(BY_ID)
+        .buildAndExpand(newReleaseLetter.getId())
+        .toUri();
+    return ResponseEntity.created(location).build();
   }
 
-  //    @Authorized
+  @Authorized
   @PutMapping(BY_SPRINT)
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
@@ -100,18 +111,18 @@ public class ReleaseLetterController {
           in = ParameterIn.PATH) String sprint,
       @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
   ) {
-//    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     return ResponseEntity.ok(releaseLetterResource);
   }
 
+  @Authorized
   @DeleteMapping(BY_SPRINT)
   @Operation(hidden = true)
   public void deleteReleaseLetter(
       @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
           in = ParameterIn.PATH) String sprint) {
-      releaseLetterService.deleteReleaseLetterBySprint(sprint);
+    releaseLetterService.deleteReleaseLetterBySprint(sprint);
   }
 
   @SuppressWarnings("unchecked")
