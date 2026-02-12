@@ -282,7 +282,8 @@ class ImageServiceImplTest extends BaseSetup {
 
       String result = imageService.saveImageWithCustomId("custom-123", mockFile);
 
-      assertEquals("saved-image-id", result);
+      assertEquals("saved-image-id", result,
+          "When no existing images are found, the service should save and return the new image ID");
       verify(imageRepository, never()).deleteAll(anyIterable());
     }
   }
@@ -312,7 +313,8 @@ class ImageServiceImplTest extends BaseSetup {
 
       String result = imageService.saveImageWithCustomId("custom-456", mockFile);
 
-      assertEquals("new-saved-image-id", result);
+      assertEquals("new-saved-image-id", result,
+          "When existing images are found, the service should delete them and return the new image ID");
       verify(imageRepository, times(1)).deleteAll(List.of(existingImage));
     }
   }

@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 class FileValidatorTest {
 
   @Test
-  void testValidateImageFileSuccess() throws IOException {
+  void testValidateImageFileSuccess() {
     MultipartFile mockFile = mock(MultipartFile.class);
     when(mockFile.isEmpty()).thenReturn(false);
     when(mockFile.getSize()).thenReturn(5120L);
@@ -25,18 +25,19 @@ class FileValidatorTest {
   }
 
   @Test
-  void testValidateFileSizeExceeded() throws IOException {
+  void testValidateFileSizeExceeded() {
     MultipartFile mockFile = mock(MultipartFile.class);
     when(mockFile.getSize()).thenReturn(20971520L);
 
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFileSize(mockFile, 10 * 1024 * 1024),
         "File size exceeding max should throw IOException");
-    assertTrue(exception.getMessage().contains("File size exceeds"));
+    assertTrue(exception.getMessage().contains("File size exceeds"),
+        "Exception message should contain 'File size exceeds'");
   }
 
   @Test
-  void testValidateMimeTypeValid() throws IOException {
+  void testValidateMimeTypeValid() {
     MultipartFile mockFile = mock(MultipartFile.class);
     when(mockFile.getContentType()).thenReturn("image/png");
 
@@ -46,7 +47,7 @@ class FileValidatorTest {
   }
 
   @Test
-  void testValidateMimeTypeInvalid() throws IOException {
+  void testValidateMimeTypeInvalid() {
     MultipartFile mockFile = mock(MultipartFile.class);
     when(mockFile.getContentType()).thenReturn("application/pdf");
 
@@ -54,37 +55,41 @@ class FileValidatorTest {
         () -> FileValidator.validateMimeType(mockFile, 
             Set.of("image/jpeg", "image/png")),
         "Invalid mime type should throw IOException");
-    assertTrue(exception.getMessage().contains("Invalid file type"));
+    assertTrue(exception.getMessage().contains("Invalid file type"),
+        "Exception message should contain 'Invalid file type'");
   }
 
   @Test
-  void testValidateFilenameValid() throws IOException {
+  void testValidateFilenameValid() {
     assertDoesNotThrow(() -> FileValidator.validateFilename("image.jpg"),
         "Valid filename should pass validation");
   }
 
   @Test
-  void testValidateFilenameWithTraversal() throws IOException {
+  void testValidateFilenameWithTraversal() {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename("../../../etc/passwd.jpg"),
         "Filename with path traversal should throw IOException");
-    assertTrue(exception.getMessage().contains("path traversal"));
+    assertTrue(exception.getMessage().contains("path traversal"),
+        "Exception message should contain 'path traversal'");
   }
 
   @Test
-  void testValidateFilenameAbsolutePath() throws IOException {
+  void testValidateFilenameAbsolutePath() {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename("/etc/passwd"),
         "Filename with absolute path should throw IOException");
-    assertTrue(exception.getMessage().contains("absolute path"));
+    assertTrue(exception.getMessage().contains("absolute path"),
+        "Exception message should contain 'absolute path'");
   }
 
   @Test
-  void testValidateFilenameHiddenDotFile() throws IOException {
+  void testValidateFilenameHiddenDotFile() {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename(".hiddenfile"),
         "Hidden dot filename should throw IOException");
-    assertTrue(exception.getMessage().contains("hidden files are not allowed"));
+    assertTrue(exception.getMessage().contains("hidden files are not allowed"),
+        "Exception message should contain 'hidden files are not allowed'");
   }
 
   @Test
@@ -92,7 +97,8 @@ class FileValidatorTest {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename("folder/../../../secret.jpg"),
         "Traversal pattern with ../ should be detected");
-    assertTrue(exception.getMessage().contains("path traversal"));
+    assertTrue(exception.getMessage().contains("path traversal"),
+        "Exception message should contain 'path traversal'");
   }
 
   @Test
@@ -100,7 +106,8 @@ class FileValidatorTest {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename("folder\\..\\..\\secret.jpg"),
         "Traversal pattern with ..\\ should be detected");
-    assertTrue(exception.getMessage().contains("path traversal"));
+    assertTrue(exception.getMessage().contains("path traversal"),
+        "Exception message should contain 'path traversal'");
   }
 
   @Test
@@ -108,7 +115,8 @@ class FileValidatorTest {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename(".secret.jpg"),
         "Hidden file starting with dot should be detected");
-    assertTrue(exception.getMessage().contains("hidden files are not allowed"));
+    assertTrue(exception.getMessage().contains("hidden files are not allowed"),
+        "Exception message should contain 'hidden files are not allowed'");
   }
 
   @Test
@@ -116,15 +124,17 @@ class FileValidatorTest {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename("folder/.hidden"),
         "Hidden file in path should be detected");
-    assertTrue(exception.getMessage().contains("hidden files are not allowed"));
+    assertTrue(exception.getMessage().contains("hidden files are not allowed"),
+        "Exception message should contain 'hidden files are not allowed'");
   }
 
   @Test
-  void testValidateFilenameEmpty() throws IOException {
+  void testValidateFilenameEmpty() {
     IOException exception = assertThrows(IOException.class,
         () -> FileValidator.validateFilename(""),
         "Empty filename should throw IOException");
-    assertTrue(exception.getMessage().contains("Filename is missing"));
+    assertTrue(exception.getMessage().contains("Filename is missing"),
+        "Exception message should contain 'Filename is missing'");
   }
 
 }

@@ -47,7 +47,8 @@ public class FileValidator {
   public static void validateFileSize(MultipartFile file, long maxFileSize) throws IOException {
     if (file.getSize() > maxFileSize) {
       throw new IOException(
-          "File size exceeds maximum allowed size of " + (maxFileSize / BINARY_UNIT_MULTIPLIER / BINARY_UNIT_MULTIPLIER) + " MB");
+          "File size exceeds maximum allowed size of " +
+              (maxFileSize / BINARY_UNIT_MULTIPLIER / BINARY_UNIT_MULTIPLIER) + " MB");
     }
   }
 
