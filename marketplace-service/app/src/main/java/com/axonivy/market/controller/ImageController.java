@@ -78,9 +78,6 @@ public class ImageController extends CoreImageController {
     } catch (IOException ioException) {
       message = "File validation failed";
       status = HttpStatus.BAD_REQUEST;
-    } catch (Exception e) {
-      message = "Failed to update image with given custom id";
-      status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
     return new ResponseEntity<>(message, status);
   }

@@ -29,7 +29,8 @@ public class FileValidator {
     validateImageFile(file, maxFileSize, DEFAULT_ALLOWED_MIME_TYPES);
   }
 
-  public static void validateImageFile(MultipartFile file, long maxFileSize, Set<String> allowedMimeTypes) throws IOException {
+  public static void validateImageFile(MultipartFile file, long maxFileSize,
+      Set<String> allowedMimeTypes) throws IOException {
     validateFileNotEmpty(file);
     validateFileSize(file, maxFileSize);
     validateMimeType(file, allowedMimeTypes);
@@ -45,7 +46,8 @@ public class FileValidator {
 
   public static void validateFileSize(MultipartFile file, long maxFileSize) throws IOException {
     if (file.getSize() > maxFileSize) {
-      throw new IOException("File size exceeds maximum allowed size of " + (maxFileSize / BINARY_UNIT_MULTIPLIER / BINARY_UNIT_MULTIPLIER) + " MB");
+      throw new IOException(
+          "File size exceeds maximum allowed size of " + (maxFileSize / BINARY_UNIT_MULTIPLIER / BINARY_UNIT_MULTIPLIER) + " MB");
     }
   }
 

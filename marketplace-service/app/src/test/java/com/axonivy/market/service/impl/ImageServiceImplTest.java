@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.FileValidator;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -238,6 +240,80 @@ class ImageServiceImplTest extends BaseSetup {
           () -> imageService.readPreviewImageByName(IMAGE_NAME),
           "The service should handle IOExceptions gracefully without throwing them to the caller"
       );
+    }
+  }
+
+  @Test
+  void testGetImageByCustomIdCoveringIfElse() {
+    // Test if condition: when images list is empty
+    when(imageRepository.findByCustomId("nonexistent-id")).thenReturn(Collections.emptyList());
+    byte[] emptyResult = imageService.getImageByCustomId("nonexistent-id");
+    assertEquals(0, emptyResult.length,
+        "When no images are found for the custom ID, an empty byte array should be returned (if branch)");
+
+    // Test else condition: when images list has data
+    Image mockImage = new Image();
+    byte[] imageData = "image content".getBytes();
+    mockImage.setImageData(imageData);
+    when(imageRepository.findByCustomId("existing-id")).thenReturn(List.of(mockImage));
+    byte[] result = imageService.getImageByCustomId("existing-id");
+    assertArrayEquals(imageData, result,
+        "When images are found, the first image's data should be returned (else branch)");
+  }
+
+  @Test
+  void testSaveImageWithCustomIdNoExistingImages() throws IOException {
+    MultipartFile mockFile = mock(MultipartFile.class);
+    byte[] fileBytes = "new image content".getBytes();
+
+    when(mockFile.getBytes()).thenReturn(fileBytes);
+    when(mockFile.getOriginalFilename()).thenReturn("image.jpg");
+    when(imageRepository.findByCustomId("custom-123")).thenReturn(Collections.emptyList());
+
+    Image savedImage = new Image();
+    savedImage.setId("saved-image-id");
+    savedImage.setImageData(fileBytes);
+    savedImage.setImageUrl("image.jpg");
+    savedImage.setCustomId("custom-123");
+    when(imageRepository.save(any(Image.class))).thenReturn(savedImage);
+
+    try (MockedStatic<FileValidator> mockedValidator = mockStatic(FileValidator.class)) {
+      mockedValidator.when(() -> FileValidator.validateImageFile(mockFile)).thenAnswer(invocation -> null);
+
+      String result = imageService.saveImageWithCustomId("custom-123", mockFile);
+
+      assertEquals("saved-image-id", result);
+      verify(imageRepository, never()).deleteAll(anyIterable());
+    }
+  }
+
+  @Test
+  void testSaveImageWithCustomIdDeletesExistingImages() throws IOException {
+    MultipartFile mockFile = mock(MultipartFile.class);
+    byte[] fileBytes = "new image content".getBytes();
+
+    Image existingImage = new Image();
+    existingImage.setId("old-image-id");
+    existingImage.setCustomId("custom-456");
+
+    when(mockFile.getBytes()).thenReturn(fileBytes);
+    when(mockFile.getOriginalFilename()).thenReturn("new-image.jpg");
+    when(imageRepository.findByCustomId("custom-456")).thenReturn(List.of(existingImage));
+
+    Image savedImage = new Image();
+    savedImage.setId("new-saved-image-id");
+    savedImage.setImageData(fileBytes);
+    savedImage.setImageUrl("new-image.jpg");
+    savedImage.setCustomId("custom-456");
+    when(imageRepository.save(any(Image.class))).thenReturn(savedImage);
+
+    try (MockedStatic<FileValidator> mockedValidator = mockStatic(FileValidator.class)) {
+      mockedValidator.when(() -> FileValidator.validateImageFile(mockFile)).thenAnswer(invocation -> null);
+
+      String result = imageService.saveImageWithCustomId("custom-456", mockFile);
+
+      assertEquals("new-saved-image-id", result);
+      verify(imageRepository, times(1)).deleteAll(List.of(existingImage));
     }
   }
 

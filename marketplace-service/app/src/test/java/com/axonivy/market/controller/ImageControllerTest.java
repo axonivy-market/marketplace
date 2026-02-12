@@ -10,8 +10,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -19,6 +23,9 @@ class ImageControllerTest {
 
   @Mock
   private ImageService imageService;
+
+  @Mock
+  private MultipartFile multipartFile;
 
   @InjectMocks
   private ImageController imageController;
@@ -87,5 +94,70 @@ class ImageControllerTest {
         "Status should be 204 NO_CONTENT when preview image data is empty");
     assertNull(result.getBody(),
         "Response body should be null when preview image data is empty");
+  }
+
+  @Test
+  void testGetImageByCustomIdWhenImageExists() {
+    byte[] mockImageData = "custom image data".getBytes();
+    when(imageService.getImageByCustomId("custom-123")).thenReturn(mockImageData);
+
+    ResponseEntity<byte[]> result = imageController.getImageByCustomId("custom-123");
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Status should be 200 OK when image with custom ID exists");
+    assertEquals(mockImageData, result.getBody(),
+        "Response body should contain the image data");
+    assertEquals(MediaType.IMAGE_JPEG, result.getHeaders().getContentType(),
+        "Content-Type should be IMAGE_JPEG");
+  }
+
+  @Test
+  void testGetImageByCustomIdWhenImageNotFound() {
+    when(imageService.getImageByCustomId("nonexistent")).thenReturn(null);
+
+    ResponseEntity<byte[]> result = imageController.getImageByCustomId("nonexistent");
+
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Status should be 404 NOT_FOUND when image with custom ID is not found");
+    assertNull(result.getBody(),
+        "Response body should be null when image is not found");
+  }
+
+  @Test
+  void testGetImageByCustomIdWhenImageEmpty() {
+    when(imageService.getImageByCustomId("empty-custom")).thenReturn(new byte[0]);
+
+    ResponseEntity<byte[]> result = imageController.getImageByCustomId("empty-custom");
+
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
+        "Status should be 404 NOT_FOUND when image data is empty");
+    assertNull(result.getBody(),
+        "Response body should be null when image data is empty");
+  }
+
+  @Test
+  void testUpdateImageSuccessfully() throws IOException {
+    when(imageService.saveImageWithCustomId("custom-456", multipartFile))
+        .thenReturn("image-id-123");
+
+    ResponseEntity<String> result = imageController.updateImage("custom-456", multipartFile);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Status should be 200 OK when image is updated successfully");
+    assertEquals("Image updated successfully", result.getBody(),
+        "Response message should indicate successful update");
+  }
+
+  @Test
+  void testUpdateImageWithInvalidFile() throws IOException {
+    when(imageService.saveImageWithCustomId("custom-789", multipartFile))
+        .thenThrow(new IOException("File validation failed"));
+
+    ResponseEntity<String> result = imageController.updateImage("custom-789", multipartFile);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode(),
+        "Status should be 400 BAD_REQUEST when file validation fails");
+    assertEquals("File validation failed", result.getBody(),
+        "Response message should indicate validation failure");
   }
 }
