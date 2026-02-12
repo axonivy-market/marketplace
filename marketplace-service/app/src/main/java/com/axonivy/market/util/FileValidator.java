@@ -16,7 +16,7 @@ import java.util.Set;
 public class FileValidator {
 
   private static final int BINARY_UNIT_MULTIPLIER = 1024;
-  private static final long DEFAULT_MAX_FILE_SIZE = 10 * BINARY_UNIT_MULTIPLIER * BINARY_UNIT_MULTIPLIER;
+  private static final long DEFAULT_MAX_FILE_SIZE = 10L * BINARY_UNIT_MULTIPLIER * BINARY_UNIT_MULTIPLIER;
   private static final Set<String> DEFAULT_ALLOWED_MIME_TYPES = new HashSet<>(Set.of(
       "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"
   ));
@@ -80,8 +80,11 @@ public class FileValidator {
   }
 
   private static boolean isTraversal(String name) {
-    boolean containsDoubleDotSlash = name.contains(CoreCommonConstants.DOUBLE_DOT) && (name.contains(CoreCommonConstants.SLASH) || name.contains(CoreCommonConstants.BACKSLASH));
-    boolean startsWithDoubleDot = name.startsWith(CoreCommonConstants.DOUBLE_DOT + CoreCommonConstants.SLASH) || name.startsWith(CoreCommonConstants.DOUBLE_DOT + CoreCommonConstants.BACKSLASH);
+    boolean containsDoubleDotSlash = name.contains(CoreCommonConstants.DOUBLE_DOT) && (name.contains(
+        CoreCommonConstants.SLASH) || name.contains(CoreCommonConstants.BACKSLASH));
+    boolean startsWithDoubleDot = name.startsWith(
+        CoreCommonConstants.DOUBLE_DOT + CoreCommonConstants.SLASH) || name.startsWith(
+        CoreCommonConstants.DOUBLE_DOT + CoreCommonConstants.BACKSLASH);
     return containsDoubleDotSlash || startsWithDoubleDot;
   }
 
@@ -106,6 +109,8 @@ public class FileValidator {
 
   public static boolean isArchiveFile(String fileName) {
     String lower = fileName.toLowerCase(Locale.ROOT);
-    return lower.endsWith(CoreCommonConstants.ZIP_EXTENSION) || lower.endsWith(CoreCommonConstants.JAR_EXTENSION) || lower.endsWith(CoreCommonConstants.WAR_EXTENSION) || lower.endsWith(CoreCommonConstants.EAR_EXTENSION);
+    return lower.endsWith(CoreCommonConstants.ZIP_EXTENSION) || lower.endsWith(
+        CoreCommonConstants.JAR_EXTENSION) || lower.endsWith(CoreCommonConstants.WAR_EXTENSION) || lower.endsWith(
+        CoreCommonConstants.EAR_EXTENSION);
   }
 }

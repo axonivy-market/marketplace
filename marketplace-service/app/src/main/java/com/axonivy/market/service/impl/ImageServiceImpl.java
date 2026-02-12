@@ -116,10 +116,8 @@ public class ImageServiceImpl implements ImageService {
   public byte[] getImageByCustomId(String customId) {
     List<Image> images = imageRepository.findByCustomId(customId);
     if (CollectionUtils.isEmpty(images)) {
-      log.info("No image found with customId: {}", customId);
-      return null;
+      return new byte[0];
     }
-    log.info("Found {} image(s) with customId: {}, returning the first one", images.size(), customId);
     return images.get(0).getImageData();
   }
 
