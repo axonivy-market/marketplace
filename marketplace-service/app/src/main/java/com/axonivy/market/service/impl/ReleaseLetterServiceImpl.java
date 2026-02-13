@@ -29,7 +29,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
       Pattern.UNICODE_CHARACTER_CLASS);
-  private static final String DELETE_SUCCESSFULLY_MESSAGE = "Successfully delete release letter of sprint %s";
   private final ReleaseLetterRepository releaseLetterRepository;
 
   @Override

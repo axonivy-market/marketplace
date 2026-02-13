@@ -34,9 +34,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ReleaseLetterControllerTest extends BaseSetup {
 
-  private static final String RELEASE_LETTER_SPRINT_NAME_SAMPLE = "demo";
+  private static final String RELEASE_LETTER_SPRINT_NAME_SAMPLE = "DEMO";
   private static final String RELEASE_LETTER_CONTENT_SAMPLE = "Demo content";
   private static final String RELEASE_LETTER_ID_SAMPLE = "release-letter-id";
+
   @Mock
   private ReleaseLetterService releaseLetterService;
 
@@ -136,10 +137,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   @Test
   void findLatestReleaseLetterShouldReturnPagedModelWhenDataExists() {
     PageRequest pageable = PageRequest.of(0, 20);
-
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
-
-    ReleaseLetter entity = new ReleaseLetter();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(mockReleaseLetter));
 
     ReleaseLetterModel model = new ReleaseLetterModel();
