@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -93,8 +92,7 @@ public class ReleaseLetterController {
   @PostMapping()
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
-      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest,
-      HttpServletRequest request) {
+      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest) {
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
