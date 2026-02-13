@@ -50,7 +50,7 @@ export class NewsManagementComponent {
     { key: '.number', class: 'text-primary' },
     { key: '.sprint', class: 'text-primary text-center' },
     { key: '.createdAt', class: 'text-primary text-center' },
-    { key: '.active', class: 'text-primary text-center' },
+    { key: '.latest', class: 'text-primary text-center' },
     { key: '.actions', class: 'text-primary text-center' }
   ];
 

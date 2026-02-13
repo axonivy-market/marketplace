@@ -41,7 +41,7 @@ export class ReleaseLetterEditComponent {
     sprint: '',
     content: '',
     createdAt: '',
-    active: false
+    latest: false
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
@@ -77,7 +77,7 @@ export class ReleaseLetterEditComponent {
       .subscribe(response => {
         this.releaseLetter.content = response.content;
         this.releaseLetter.sprint = response.sprint;
-        this.releaseLetter.active = response.active;
+        this.releaseLetter.latest = response.latest;
       });
   }
 

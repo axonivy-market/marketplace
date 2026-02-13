@@ -379,8 +379,9 @@
         "title": "Axon Ivy Market News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
         "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
-        "emptyActiveReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
-        "sprint": "Sprint: "
+        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "sprint": "Sprint: ",
+        "latest": "Latest"
       },
       "newsManagement": {
         "pageTitle": "News Management",
@@ -392,7 +393,7 @@
         "sprint": "Sprint",
         "createdAt": "Created at",
         "sprintHeader": "Sprint: ",
-        "active": "Active",
+        "latest": "Latest",
         "actions": "Actions",
         "create": "Create",
         "view": "View",
@@ -413,7 +414,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "contentPlaceholder": "Type your release letter content here...",
         "sprint": "Sprint",
-        "makeReleaseLetterActive": "Make this release letter active",
+        "makeReleaseLetterLatest": "Make this release letter latest",
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",

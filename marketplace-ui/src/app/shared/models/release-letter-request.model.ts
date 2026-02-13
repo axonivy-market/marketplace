@@ -1,6 +1,6 @@
 export interface ReleaseLetter {
   sprint: string;
   content: string;
-  active: boolean;
+  latest: boolean;
   createdAt: string;
 }

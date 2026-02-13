@@ -20,12 +20,12 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
 
   boolean existsBySprint(String releaseVersion);
 
-  Page<ReleaseLetter> findByIsActive(boolean isActive, Pageable pageable);
+  Page<ReleaseLetter> findByIsLatest(boolean isLatest, Pageable pageable);
 
   void deleteBySprint(String sprint);
 
   @Modifying
   @Transactional
-  @Query("UPDATE ReleaseLetter r SET r.isActive = false WHERE r.isActive = true AND (r.sprint <> :currentSprint)")
-  void deactivateOtherActiveReleaseLetters(String currentSprint);
+  @Query("UPDATE ReleaseLetter r SET r.isLatest = false WHERE r.isLatest = true AND (r.sprint <> :currentSprint)")
+  void deactivateOtherLatestReleaseLetters(String currentSprint);
 }

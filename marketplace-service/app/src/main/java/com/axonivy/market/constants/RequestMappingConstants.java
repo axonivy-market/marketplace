@@ -20,7 +20,7 @@ public class RequestMappingConstants {
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
   public static final String BY_SPRINT = "/sprint/{sprint}";
-  public static final String BY_ACTIVE = "/active";
+  public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";

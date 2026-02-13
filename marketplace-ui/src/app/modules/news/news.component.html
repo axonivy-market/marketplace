@@ -15,17 +15,52 @@
       <h4
         [lang]="languageService.selectedLanguage()"
         class="text-secondary help-text"
-        [innerHTML]="
+        [innerHtml]="
           translateService.get('common.admin.news.helpText') | async
         "></h4>
     </div>
   </div>
 </div>
-<section class="active-release-letter-container mt-5">
-  <h1>
-    {{ activeReleaseLetterSprintTitle }}
-  </h1>
-  <div
-    class="active-release-letter-content mt-5"
-    [innerHTML]="activeReleaseLetterContent"></div>
+<section class="release-letter-container mt-5">
+  @if (releaseLetterSafeHtmlContentList().length == 0) {
+    <h1>
+      {{ emptyReleaseLetterTitle }}
+    </h1>
+  } @else {
+    <div ngbAccordion>
+      @for (
+        releaseLetterSafeHtmlContent of releaseLetterSafeHtmlContentList();
+        track releaseLetterSafeHtmlContent.sprint
+      ) {
+        <div
+          ngbAccordionItem
+          [collapsed]="!releaseLetterSafeHtmlContent.latest"
+          class="release-letter-accordion-item mb-5 p-4">
+          <div ngbAccordionHeader>
+            <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
+              <h1 class="me-4">
+                {{ releaseLetterSafeHtmlContent.sprint }}
+              </h1>
+              @if (releaseLetterSafeHtmlContent.latest) {
+                <h5 class="latest-release px-3 py-2">{{ translateService.get('common.admin.news.latest') | async }}</h5>
+              }
+            </button>
+          </div>
+          <h5 class="release-published-date">
+            {{
+              releaseLetterSafeHtmlContent.createdAt
+                | date: 'MMM dd, yyyy'
+            }}
+          </h5>
+          <div ngbAccordionCollapse class="release-content">
+            <div
+              ngbAccordionBody
+              ngSkipHydration
+              class="p-0 changelog-content"
+              [innerHtml]="releaseLetterSafeHtmlContent.content"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </section>

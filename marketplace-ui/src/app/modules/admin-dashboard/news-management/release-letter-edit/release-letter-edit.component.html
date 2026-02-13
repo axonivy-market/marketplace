@@ -107,12 +107,12 @@
           class="form-check-input me-2"
           type="checkbox"
           id="flexCheckDefault"
-          [ngClass]="releaseLetter.active ? 'active-checkbox-color' : ''"
-          [(ngModel)]="releaseLetter.active" />
+          [ngClass]="releaseLetter.latest ? 'active-checkbox-color' : ''"
+          [(ngModel)]="releaseLetter.latest" />
         <label class="form-check-label" for="flexCheckDefault">
           {{
             translateService.get(
-              'common.admin.releaseLetterEdit.makeReleaseLetterActive'
+              'common.admin.releaseLetterEdit.makeReleaseLetterLatest'
             ) | async
           }}
         </label>

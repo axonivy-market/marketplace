@@ -1,11 +1,52 @@
-.active-release-letter-container ::ng-deep {
+.release-letter-container {
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  h4 {
+    font-size: 18px;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+}
+
+.release-letter-accordion-item ::ng-deep {
   a {
     color: var(--ivy-primary-bg);
   }
 
+  border: solid 1px gray;
   border-radius: 1rem;
 
-  .active-release-letter-content {
+  .custom-accordion-button {
+    background: none;
+    box-shadow: none;
+    color: var(--ivy-text-primary-color);
+
+    a.release-name {
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .release-content {
+    margin-bottom: -1.5rem;
+  }
+
+  .changelog-content {
     h2 {
       padding-bottom: 0.5rem;
       margin-bottom: 2rem;
@@ -15,6 +56,16 @@
     ul li {
       margin: 0.25rem 0 0 0;
     }
+  }
+
+  .release-published-date {
+    color: var(--ivy-text-secondary-color);
+  }
+
+  .latest-release {
+    color: var(--product-latest-release);
+    border: 1px solid var(--product-latest-release-border);
+    border-radius: 3rem;
   }
 
   h1 {

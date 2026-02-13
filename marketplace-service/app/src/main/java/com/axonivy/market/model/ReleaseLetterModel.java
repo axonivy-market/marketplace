@@ -26,8 +26,8 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 
-  @Schema(description = "Decide whether the created release letter should be active", example = "false")
-  private boolean isActive;
+  @Schema(description = "Decide whether the created release letter should be the latest", example = "false")
+  private boolean isLatest;
 
   @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
   private Date createdAt;

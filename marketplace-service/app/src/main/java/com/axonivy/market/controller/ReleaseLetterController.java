@@ -77,11 +77,11 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterResource);
   }
 
-  @GetMapping(BY_ACTIVE)
+  @GetMapping(BY_LATEST)
   @Operation(summary = "Find active release letter",
       description = "Get currently active release letter.")
-  public ResponseEntity<PagedModel<ReleaseLetterModel>> findActiveReleaseLetter(@ParameterObject Pageable pageable) {
-    Page<ReleaseLetter> results = releaseLetterService.findActiveReleaseLetter(pageable);
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findLatestReleaseLetter(@ParameterObject Pageable pageable) {
+    Page<ReleaseLetter> results = releaseLetterService.findLatestReleaseLetter(pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }

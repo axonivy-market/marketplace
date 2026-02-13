@@ -53,8 +53,8 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
-  public Page<ReleaseLetter> findActiveReleaseLetter(Pageable pageable) {
-    return releaseLetterRepository.findByIsActive(true, pageable);
+  public Page<ReleaseLetter> findLatestReleaseLetter(Pageable pageable) {
+    return releaseLetterRepository.findByIsLatest(true, pageable);
   }
 
   @Override
@@ -79,10 +79,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     }
     ReleaseLetter releaseLetter =
         ReleaseLetter.builder().content(transformContent(releaseLetterModelRequest.getContent())).sprint(
-            unifiedSprint).isActive(releaseLetterModelRequest.isActive()).build();
+            unifiedSprint).isLatest(releaseLetterModelRequest.isLatest()).build();
 
-    if (releaseLetterModelRequest.isActive()) {
-      releaseLetterRepository.deactivateOtherActiveReleaseLetters(unifiedSprint);
+    if (releaseLetterModelRequest.isLatest()) {
+      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedSprint);
     }
 
     return releaseLetterRepository.save(releaseLetter);
@@ -104,12 +104,12 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
-    foundReleaseLetter.setActive(releaseLetterModelRequest.isActive());
+    foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
     foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
 
-    if (releaseLetterModelRequest.isActive()) {
-      releaseLetterRepository.deactivateOtherActiveReleaseLetters(unifiedNewSprint);
+    if (releaseLetterModelRequest.isLatest()) {
+      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
     }
 
     return releaseLetterRepository.save(foundReleaseLetter);

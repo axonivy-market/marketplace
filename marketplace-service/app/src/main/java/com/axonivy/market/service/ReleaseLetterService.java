@@ -10,7 +10,7 @@ public interface ReleaseLetterService {
 
   ReleaseLetter findReleaseLetterById(String id);
 
-  Page<ReleaseLetter> findActiveReleaseLetter(Pageable pageable);
+  Page<ReleaseLetter> findLatestReleaseLetter(Pageable pageable);
 
   ReleaseLetter findReleaseLetterBySprint(String releaseVersion);
 
