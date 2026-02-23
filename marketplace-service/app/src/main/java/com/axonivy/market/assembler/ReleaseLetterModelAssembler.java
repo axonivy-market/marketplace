@@ -16,6 +16,11 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
 
   @Override
   public ReleaseLetterModel toModel(ReleaseLetter releaseLetter) {
-    return ReleaseLetterModel.createModel(releaseLetter);
+    var model = ReleaseLetterModel.createModel(releaseLetter);
+    model.add(linkTo(methodOn(ReleaseLetterController.class)
+        .findReleaseLetterBySprint(releaseLetter.getSprint()))
+        .withSelfRel());
+
+    return model;
   }
 }
