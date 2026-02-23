@@ -21,11 +21,7 @@ Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok
 JDK 21+, Maven 3.6+, PostgreSQL 12+
 
 ### Environment
-```bash
-export POSTGRES_HOST_URL=jdbc:postgresql://localhost:5432/marketplace
-export POSTGRES_USERNAME=postgres
-export POSTGRES_PASSWORD=your_password
-```
+See [Marketplace Service](../README.md#environment-setup) for environment variable configuration.
 
 ### Build & Run
 ```bash

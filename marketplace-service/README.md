@@ -5,60 +5,55 @@ Spring Boot 3.2.5 backend application for AxonIvy Marketplace with three special
 ## Modules
 
 ### Core Module
-**Shared foundation**: Data entities, repositories, services, utilities, and constants  
-**Key classes**: Product, Metadata, Image entities; CoreProductService, CoreVersionService  
-**No dependencies**: Provides base for App and Stable modules  
-**Build**: `mvn -f core/pom.xml clean install`  
-**Details**: See [core/README.md](core/README.md)
+**Shared foundation**: Data entities, repositories, services, utilities  
+**Key components**: Product, Metadata, Image entities; service layer for all modules  
+**Dependency**: Base module used by App and Stable  
+**Learn more**: See [core/README.md](core/README.md)
 
 ### App Module
-**Production marketplace API**: Full CRUD operations for products, images, metadata  
-**Features**: Product management, image handling, GitHub integration, Maven artifact indexing  
-**Server Port**: 8080  
-**Endpoints**: GET/POST/PUT/DELETE /product, /image  
-**Special**: Requires GitHub token in `github.token` file  
-**Build**: `mvn -f app/pom.xml clean install`  
-**Run**: `mvn -f app/pom.xml spring-boot:run`  
-**API Docs**: http://localhost:8080/swagger-ui/index.html  
-**Details**: See [app/README.md](app/README.md)
+**Production marketplace API**: Full CRUD operations with GitHub integration  
+**Features**: Product management, image handling, Maven artifact indexing  
+**API Port**: 8080  
+**Learn more**: See [app/README.md](app/README.md)
 
 ### Stable Module
-**Read-only API**: For new integrations (Neo Designer, VSCode v14, AI features)  
-**Features**: Versioned product queries, image access, optimized for reads  
-**Server Port**: 8085  
-**Endpoints**: GET /product, /product/{id}/versions, /product/{id}/version/{version}/content, /image  
-**Build**: `mvn -f stable/pom.xml clean install`  
-**Run**: `mvn -f stable/pom.xml spring-boot:run`  
-**API Docs**: http://localhost:8085/swagger-ui/index.html  
-**Details**: See [stable/README.md](stable/README.md)
+**Read-only API**: For Neo Designer, VSCode v14, and AI features  
+**Features**: Versioned product queries, optimized for reads  
+**API Port**: 8085  
+**Learn more**: See [stable/README.md](stable/README.md)
 
-## Quick Start
+## Prerequisites
 
-### Prerequisites
 - JDK 21+
 - Maven 3.6+
 - PostgreSQL 12+
 
-### Environment Setup
+## Environment Setup
+
+All modules use the same database configuration via environment variables:
+
 ```bash
 export POSTGRES_HOST_URL=jdbc:postgresql://localhost:5432/marketplace
 export POSTGRES_USERNAME=postgres
 export POSTGRES_PASSWORD=your_password
-export BUILD_VERSION=1.0.0
-export GITHUB_TOKEN=your_token  # App module only
+
+# App module only
+export GITHUB_TOKEN=your_github_token
 ```
 
-### Build All
+## Build All Modules
+
 ```bash
 mvn clean install
 ```
 
-### Run Individual Modules
+## Run Individual Modules
+
 ```bash
-# App Module (Port 8080)
+# Build and run App module (Port 8080)
 mvn -f app/pom.xml spring-boot:run
 
-# Stable Module (Port 8085)
+# Build and run Stable module (Port 8085)
 mvn -f stable/pom.xml spring-boot:run
 ```
 
@@ -71,34 +66,34 @@ app ──┐
 stable┘
 ```
 
-Both App and Stable depend on Core.
+Both App and Stable depend on Core for shared data models and repositories.
 
-## Technology
+## Technology Stack
 
-- **Java**: 21 LTS
-- **Spring Boot**: 3.2.5
-- **Database**: PostgreSQL with Spring Data JPA
-- **Build Tool**: Maven
-- **Code Gen**: Project Lombok
-- **API Documentation**: Swagger/OpenAPI 3.1
+Java 21 LTS • Spring Boot 3.2.5 • Spring Data JPA • PostgreSQL • Lombok • Swagger/OpenAPI 3.1
 
 ## Testing
 
 ```bash
-# All tests
+# All modules
 mvn test
 
 # Specific module
 mvn -f app/pom.xml test
-
-# Code coverage
-mvn clean verify
+mvn -f stable/pom.xml test
+mvn -f core/pom.xml test
 ```
+
+## API Documentation
+
+After running either module, access API docs:
+
+- App: http://localhost:8080/swagger-ui/index.html
+- Stable: http://localhost:8085/swagger-ui/index.html
 
 ## References
 
-- [Core Module](core/README.md)
-- [App Module](app/README.md)
-- [Stable Module](stable/README.md)
-- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
-- [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
+- [Core Module](core/README.md) - Shared data models and services
+- [App Module](app/README.md) - Production marketplace API
+- [Stable Module](stable/README.md) - Read-only integrations API
+

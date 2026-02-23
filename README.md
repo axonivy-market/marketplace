@@ -1,23 +1,123 @@
-# Getting Started
+# AxonIvy Marketplace
 
-For AxonIvy Marketplace, we have 3 parts: marketplace-ui, marketplace-service, and marketplace-build:
-* ``marketplace-ui``: is an Angular project, built on v18 and contains the frontend code for the website.
-* ``marketplace-service``: is a SpringBoot project, built on v3.2.5 and includes the apis code for the website.
-* ``marketplace-build``: is a folder to keep everything related to build and dockers.
+Complete marketplace platform for AxonIvy products with UI, backend services, and deployment infrastructure.
+
+## Architecture
+
+The project consists of three main components:
+
+### Marketplace UI
+**Frontend**: Angular 18 single-page application  
+**Technology**: Angular, TypeScript, SCSS  
+**Purpose**: Web interface for browsing and managing products  
+**Setup**: See [marketplace-ui/README.md](marketplace-ui/README.md)
+
+### Marketplace Service  
+**Backend**: Spring Boot 3.2.5 microservices with three specialized modules  
+**Technology**: Java 21 LTS, PostgreSQL, Spring Data JPA, Maven  
+**Modules**: 
+- **Core**: Shared data models and services
+- **App**: Full CRUD marketplace API (port 8080)
+- **Stable**: Read-only API for integrations (port 8085)
+**Setup**: See [marketplace-service/README.md](marketplace-service/README.md)
+
+### Marketplace Build
+**Infrastructure**: Docker configurations, NGINX reverse proxy, Matomo analytics  
+**Purpose**: Containerization and deployment configuration  
+**Setup**: See [marketplace-build/README.md](marketplace-build/README.md)
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ (for UI)
+- JDK 21+ (for service)
+- Maven 3.6+ (for service)
+- PostgreSQL 12+ (for service)
+- Docker & Docker Compose (for deployment)
+
+### Setup Steps
+
+1. **Clone and navigate to workspace**
+   ```bash
+   cd marketplace
+   ```
+
+2. **Start Marketplace Service** (if using database)
+   ```bash
+   See marketplace-service/README.md for environment setup
+   mvn -f marketplace-service clean install
+   mvn -f marketplace-service/app spring-boot:run  # Port 8080
+   ```
+
+3. **Start Marketplace UI**
+   ```bash
+   See marketplace-ui/README.md for setup
+   npm install
+   npm start
+   ```
+
+4. **Optional: Start with Docker**
+   ```bash
+   cd marketplace-build
+   docker-compose up
+   ```
+
+## Project Structure
+
+```
+marketplace/
+├── marketplace-ui/          # Angular frontend
+├── marketplace-service/     # Spring Boot backend
+│   ├── core/               # Shared models & services
+│   ├── app/                # Production API
+│   └── stable/             # Read-only API
+├── marketplace-build/       # Docker & deployment
+└── marketplace-migration/   # Database migration scripts
+```
+
+## Key Technologies
+
+- **Frontend**: Angular 18, TypeScript, SCSS
+- **Backend**: Java 21 LTS, Spring Boot 3.2.5, Spring Data JPA
+- **Database**: PostgreSQL
+- **Build**: Maven, npm
+- **Deployment**: Docker, NGINX, Docker Compose
+- **API Docs**: Swagger/OpenAPI 3.1
+
+## Documentation
+
+- [Marketplace Service Guide](marketplace-service/README.md) - Backend setup & API documentation
+- [Marketplace UI Guide](marketplace-ui/README.md) - Frontend setup & development
+- [Marketplace Build Guide](marketplace-build/README.md) - Deployment configuration
 
 ## Translation
 
 [![translation-status](https://hosted.weblate.org/widget/axonivy-marketplace/svg-badge.svg)](https://hosted.weblate.org/engage/axonivy-marketplace/)
 
-AxonIvy Marketplace is incorporating Weblate into its localization workflow to facilitate more efficient and collaborative translation management. If you are interested in contributing to our translation efforts, please see the  [AxonIvy Marketplace project on Weblate](https://hosted.weblate.org/projects/axonivy-marketplace/#information).
+AxonIvy Marketplace uses Weblate for collaborative translation management. To contribute translations, visit the [AxonIvy Marketplace project on Weblate](https://hosted.weblate.org/projects/axonivy-marketplace/#information).
 
-### Guides
-* How to start the Marketplace UI refer to the [marketplace-ui guide][1]
+## Common Tasks
 
-* How to start the Marketplace Service refer to the [marketplace-service guide][2]
+### Run Tests
+```bash
+# Backend
+mvn -f marketplace-service test
 
-* How to start the Marketplace Build refer to the [marketplace-build guide][3]
+# Frontend
+cd marketplace-ui && npm test
+```
 
-  [1]: marketplace-ui/README.md
-  [2]: marketplace-service/README.md
-  [3]: marketplace-build/README.md
+### Generate API Documentation
+Backend: http://localhost:8080/swagger-ui/index.html (App module)  
+Backend: http://localhost:8085/swagger-ui/index.html (Stable module)  
+Frontend: See marketplace-ui/README.md
+
+### Build for Production
+See deployment sections in individual component READMEs.
+
+## Support & Contributing
+
+For issues, questions, or contributions, refer to:
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [License](LICENSE)
+- [Security Policy](SECURITY.md)

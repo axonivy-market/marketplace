@@ -48,22 +48,8 @@ public class Application { }
 
 ## Environment Setup
 
+See [Marketplace Service](../README.md#environment-setup) for environment variable configuration.
+
 ```bash
-export POSTGRES_HOST_URL=jdbc:postgresql://localhost:5432/marketplace
-export POSTGRES_USERNAME=postgres
-export POSTGRES_PASSWORD=your_password
+mvn -f core/pom.xml clean install
 ```
-
-## Shared Across Modules
-
-✅ JPA entities for products, metadata, images, versions  
-✅ Spring Data repositories for database operations  
-✅ Business logic services (product, version, image management)  
-✅ Version utilities (semantic versioning, release detection, latest version)  
-✅ Constants (database tables, API routes, request parameters)  
-✅ REST models and custom exceptions  
-
-## Related
-
-- [App Module](../app/README.md) - Production marketplace API (full CRUD)
-- [Stable Module](../stable/README.md) - Read-only API (Neo Designer, VSCode v14)

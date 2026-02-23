@@ -1,44 +1,105 @@
-# Getting Started
+# Marketplace App Module
 
-### Reference Documentation
+Production Spring Boot 3.2.5 API for AxonIvy Marketplace with full CRUD operations, product management, and GitHub integration.
 
-For further reference, please consider the following sections:
+## Overview
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/)
-* [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
+Complete product marketplace API with full CRUD operations. Manages products, images, metadata, and Maven artifacts. Integrates with GitHub for version indexing. Depends on Core module for entities and repositories.
 
-### Guides
+- **Full CRUD APIs**: GET/POST/PUT/DELETE operations
+- **Product Management**: Create, update, delete products
+- **Image Handling**: Upload and manage product images
+- **GitHub Integration**: Automatic version indexing from GitHub releases
+- **Maven Artifacts**: Index and track Maven artifact versions
+- **Port**: 8080
 
-The following guides illustrate how to use some features concretely:
+## Technology
 
-* Installing postgresql, and access it as Url jdbc:postgresql://localhost:5432/marketplace-service, and you can create
-  and name whatever you want,then you should put them to application.properties
-* You can change the postgreSQL configuration in file `application.properties`
-    ```
-    spring.datasource.url=${POSTGRES_HOST_URL}
-    spring.datasource.username=${POSTGRES_USERNAME}
-    spring.datasource.password=${POSTGRES_PASSWORD}
-    spring.jpa.show-sql=true/false
-    spring.datasource.driver-class-name=org.postgresql.Driver
-    ```
-* Update GitHub token in file `github.token`
-* Run mvn clean install to build project
-* Run mvn test to test all tests
+Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok • Spring Data JPA
 
-### Access Swagger URL: http://{your-host}/swagger-ui/index.html
+## Quick Start
 
-### Install Lombok for Eclipse IDE
+### Prerequisites
+JDK 21+, Maven 3.6+, PostgreSQL 12+
 
-* Download lombok here https://projectlombok.org/download
-* run command "java -jar lombok.jar" then you can access file “eclipse.ini“ in eclipse folder where you install → there
-  is a text like this:  -javaagent:C:\Users\tvtphuc\eclipse\jee-2024-032\eclipse\lombok.jar → it means you are
-  successful
-* Start eclipse
-* Import the project then in the eclipse , you should run the command “mvn clean install“
-* After that you go to class MarketplaceServiceApplication → right click to main method → click run as → choose Java
-  Application
-* Then you can send a request in postman
-* If you want to run single test in class UserServiceImplTest. You can right-click to method testFindAllUser and right
-  click → select Run as → choose JUnit Test
+### Environment
+See [Marketplace Service](../README.md#environment-setup) for environment variable configuration. App module also requires `GITHUB_TOKEN`.
+
+### Build & Run
+```bash
+mvn -f app/pom.xml clean install
+mvn -f app/pom.xml spring-boot:run
+```
+
+Runs on **http://localhost:8080**
+
+## Configuration
+
+```yaml
+spring:
+  datasource:
+    url: ${POSTGRES_HOST_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+server:
+  port: 8080
+```
+
+Set GitHub token:
+```bash
+echo $GITHUB_TOKEN > github.token
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/product` | GET/POST | List all or create product |
+| `/product/{id}` | GET/PUT/DELETE | Product details, update, delete |
+| `/product/{id}/versions` | GET | Available versions |
+| `/image` | GET/POST | List or upload images |
+
+API Docs: http://localhost:8080/swagger-ui/index.html
+
+## Testing
+
+```bash
+mvn -f app/pom.xml test
+mvn -f app/pom.xml clean verify
+```
+
+## Deployment
+
+### Docker
+```bash
+docker build -f app/Dockerfile -t marketplace-app .
+docker run -p 8080:8080 \
+  -e POSTGRES_HOST_URL=jdbc:postgresql://localhost:5432/marketplace \
+  -e POSTGRES_USERNAME=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -e GITHUB_TOKEN=token \
+  marketplace-app
+```
+
+### WAR
+```bash
+mvn -f app/pom.xml clean package
+cp app/target/app-1.0.0-SNAPSHOT.war $CATALINA_HOME/webapps/
+```
+
+## Troubleshooting
+
+**Port 8080 in use**: Change `server.port` in application.yaml
+
+**Database connection failed**: Check environment variables and PostgreSQL running
+
+**GitHub integration fails**: Verify GITHUB_TOKEN is set correctly
+
+## Related
+
+- [Core Module](../core/README.md)
+- [Stable Module](../stable/README.md)
+- [Marketplace Service](../README.md)
