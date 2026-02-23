@@ -94,15 +94,15 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
     }
     String unifiedSelectedSprint = unifySprint(selectedSprint);
-    var foundReleaseLetter = findReleaseLetterBySprint(unifiedSelectedSprint);
-
     String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+
     if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(
         unifiedNewSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
 
+    var foundReleaseLetter = findReleaseLetterBySprint(selectedSprint);
     foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
     foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
