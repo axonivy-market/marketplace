@@ -17,8 +17,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +64,8 @@ public class ReleaseLetterController {
           in = ParameterIn.PATH) String id) {
     var releaseLetter = releaseLetterService.findReleaseLetterById(id);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
-    releaseLetterResource.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
+    releaseLetterResource.add(
+        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
 
     return ResponseEntity.ok(releaseLetterResource);
   }
@@ -75,7 +78,8 @@ public class ReleaseLetterController {
           in = ParameterIn.PATH) String sprint) {
     var releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
-    releaseLetterResource.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
+    releaseLetterResource.add(
+        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
 
     return ResponseEntity.ok(releaseLetterResource);
   }
@@ -115,7 +119,8 @@ public class ReleaseLetterController {
   ) {
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-    releaseLetterResource.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
+    releaseLetterResource.add(
+        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
     return ResponseEntity.ok(releaseLetterResource);
   }
 

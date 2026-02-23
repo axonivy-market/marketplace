@@ -1,6 +1,5 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.entity.ReleaseLetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;

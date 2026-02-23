@@ -175,8 +175,10 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     ReleaseLetter result = releaseLetterService.createReleaseLetter(request);
 
-    assertEquals(RELEASE_LETTER_SPRINT_NAME_SAMPLE.trim().toUpperCase(), result.getSprint());
-    assertEquals("Thanks https://github.com/john", result.getContent());
+    assertEquals(UNIFIED_RELEASE_LETTER_SPRINT_NAME, result.getSprint(),
+        "Result sprint name should be unified to uppercase");
+    assertEquals("Thanks https://github.com/john", result.getContent(),
+        "Content should transform GitHub username into GitHub profile link");
   }
 
   @Test
