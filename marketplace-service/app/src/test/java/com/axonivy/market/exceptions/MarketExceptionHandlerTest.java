@@ -140,8 +140,7 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void shouldHandleValidationExceptions() {
-    // Arrange
+  void testHandleValidationExceptions() {
     MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
     BindingResult bindingResult = mock(BindingResult.class);
 
@@ -173,7 +172,7 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void shouldHandleMarketException() {
+  void testHandleMarketException() {
     MarketException exception = mock(MarketException.class);
 
     when(exception.getCode()).thenReturn("ERR_001");
@@ -193,7 +192,7 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void shouldHandleAlreadyExistedException() {
+  void testHandleAlreadyExistedException() {
     AlreadyExistedException exception = mock(AlreadyExistedException.class);
 
     when(exception.getCode()).thenReturn("ERR_409");
