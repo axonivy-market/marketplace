@@ -9,7 +9,9 @@ import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +22,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +37,7 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION;
+import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 
 @Log4j2
 @RestController
@@ -51,6 +55,10 @@ public class ProductController {
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in "
           + "Ivy designer")
+  @ApiResponse(responseCode = "200", description = "Product JSON content found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Map.class)))
+  @ApiResponse(responseCode = "404", description = "Product JSON content not found",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Map.class)))
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) @Parameter(description =
           "Product id (from meta.json)", example = "connectivity-demo")String productId,
       @RequestParam(name = PRODUCT_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
@@ -65,6 +73,8 @@ public class ProductController {
 
   @GetMapping(VERSIONS_BY_ID)
   @Operation(summary = "Get product versions by product id", description = "Get all product versions by product id")
+  @ApiResponse(responseCode = "200", description = "Product versions found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = List.class)))
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "connectivity-demo",
           in = ParameterIn.PATH) String id,
@@ -86,6 +96,8 @@ public class ProductController {
           description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting "
               + "order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]")})
+  @ApiResponse(responseCode = "200", description = "Paginated list of products returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PagedModel.class)))
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(name = TYPE, required = false) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string",

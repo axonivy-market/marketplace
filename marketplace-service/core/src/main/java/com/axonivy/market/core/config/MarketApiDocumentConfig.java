@@ -1,4 +1,4 @@
-package com.axonivy.market.stable.config;
+package com.axonivy.market.core.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

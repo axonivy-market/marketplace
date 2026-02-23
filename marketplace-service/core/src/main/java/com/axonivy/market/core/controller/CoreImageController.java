@@ -30,7 +30,8 @@ public class CoreImageController {
       description = "Collect the byte[] of image with contentType in header is PNG")
   @ApiResponse(responseCode = "200", description = "Image found and returned",
       content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE, schema = @Schema(implementation = Image.class)))
-  @ApiResponse(responseCode = "404", description = "Image not found")
+  @ApiResponse(responseCode = "404", description = "Image not found",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
   @ApiResponse(responseCode = "204", description = "No content (image empty)")
   public ResponseEntity<byte[]> findImageById(
       @PathVariable(ID) @Parameter(description = "The image id", example = "66e7efc8a24f36158df06fc7",

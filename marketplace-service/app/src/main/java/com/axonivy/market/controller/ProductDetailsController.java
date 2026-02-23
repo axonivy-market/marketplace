@@ -15,6 +15,9 @@ import com.axonivy.market.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 
@@ -64,6 +67,10 @@ public class ProductDetailsController {
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
       description = "get product detail by it product id and release version")
+  @ApiResponse(responseCode = "200", description = "Product detail found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDetailModel.class)))
+  @ApiResponse(responseCode = "404", description = "Product detail not found",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -83,6 +90,8 @@ public class ProductDetailsController {
   @TrackApiCallFromNeo
   @Operation(summary = "Find best match product detail by product id and version.",
       description = "get product detail by it product id and version")
+  @ApiResponse(responseCode = "200", description = "Best match product detail found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDetailModel.class)))
   public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -121,6 +130,8 @@ public class ProductDetailsController {
 
   @GetMapping(BY_ID)
   @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
+  @ApiResponse(responseCode = "200", description = "Product detail found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDetailModel.class)))
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -137,6 +148,8 @@ public class ProductDetailsController {
   @Operation(summary = "Get product versions by product id",
       description = "Get all product versions by product id")
   @TrackApiCallFromNeo
+  @ApiResponse(responseCode = "200", description = "Product versions found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = List.class)))
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String id,
@@ -154,6 +167,8 @@ public class ProductDetailsController {
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
+  @ApiResponse(responseCode = "200", description = "Product JSON content found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Map.class)))
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version,
       @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
@@ -165,6 +180,8 @@ public class ProductDetailsController {
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product",
       description = "Collect the released versions in product for ivy designer")
+  @ApiResponse(responseCode = "200", description = "Versions found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = List.class)))
   public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id,
       @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion,
       @RequestParam(SHOW_DEV_VERSION) @Parameter(description = "Option to get Dev Version (Snapshot/ sprint release)",
@@ -192,6 +209,8 @@ public class ProductDetailsController {
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true)})
+  @ApiResponse(responseCode = "200", description = "Public releases found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PagedModel.class)))
   public ResponseEntity<PagedModel<GitHubReleaseModel>> findGithubPublicReleases(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
@@ -220,6 +239,8 @@ public class ProductDetailsController {
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
   @Operation(summary = "Find release by product id and release id",
       description = "Get release by product id and release id")
+  @ApiResponse(responseCode = "200", description = "Release found and returned",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = GitHubReleaseModel.class)))
   public ResponseEntity<GitHubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
