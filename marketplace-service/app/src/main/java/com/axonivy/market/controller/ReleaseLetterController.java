@@ -58,7 +58,7 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
       @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id) {
-    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterById(id);
+    var releaseLetter = releaseLetterService.findReleaseLetterById(id);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
 
     return ResponseEntity.ok(releaseLetterResource);
@@ -70,7 +70,7 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterBySprint(
       @PathVariable(SPRINT) @Parameter(description = "The sprint version", example = "S43",
           in = ParameterIn.PATH) String sprint) {
-    ReleaseLetter releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
+    var releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
 
     return ResponseEntity.ok(releaseLetterResource);

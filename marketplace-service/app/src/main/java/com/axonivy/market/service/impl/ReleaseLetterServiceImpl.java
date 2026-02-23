@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 @Log4j2
@@ -76,7 +77,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
-    ReleaseLetter releaseLetter =
+    var releaseLetter =
         ReleaseLetter.builder().content(transformContent(releaseLetterModelRequest.getContent())).sprint(
             unifiedSprint).isLatest(releaseLetterModelRequest.isLatest()).build();
 
@@ -127,7 +128,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   private String unifySprint(String originalInputSprint) {
-    return originalInputSprint.trim().toUpperCase();
+    return originalInputSprint.trim().toUpperCase(Locale.getDefault());
   }
 
   private String transformContent(String originalContent) {

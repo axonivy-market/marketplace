@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ReleaseLetterControllerTest extends BaseSetup {
+class ReleaseLetterControllerTest extends BaseSetup {
 
   private static final String RELEASE_LETTER_SPRINT_NAME_SAMPLE = "DEMO";
   private static final String RELEASE_LETTER_CONTENT_SAMPLE = "Demo content";
@@ -51,7 +51,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   private ReleaseLetterController releaseLetterController;
 
   @Test
-  void findAllReleaseLettersShouldReturnPagedModelWhenDataExists() {
+  void testFindAllReleaseLettersShouldReturnPagedModelWhenDataExists() {
     PageRequest pageable = PageRequest.of(0, 20);
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
 
@@ -78,7 +78,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findAllReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
+  void testFindAllReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<ReleaseLetter> emptyPage = Page.empty();
 
@@ -100,7 +100,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findReleaseLetterByIdShouldReturnReleaseLetter() {
+  void testFindReleaseLetterByIdShouldReturnReleaseLetter() {
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
     ReleaseLetterModel model = new ReleaseLetterModel();
 
@@ -119,7 +119,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findReleaseLetterBySprintShouldReturnReleaseLetter() {
+  void testFindReleaseLetterBySprintShouldReturnReleaseLetter() {
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
     ReleaseLetterModel model = new ReleaseLetterModel();
 
@@ -135,7 +135,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findLatestReleaseLetterShouldReturnPagedModelWhenDataExists() {
+  void testFindLatestReleaseLetterShouldReturnPagedModelWhenDataExists() {
     PageRequest pageable = PageRequest.of(0, 20);
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(mockReleaseLetter));
@@ -160,7 +160,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
 
 
   @Test
-  void findLatestReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
+  void testFindLatestReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<ReleaseLetter> emptyPage = Page.empty();
 
@@ -181,7 +181,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void createReleaseLetterShouldReturnCreated() {
+  void testCreateReleaseLetterShouldReturnCreated() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -199,7 +199,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldReturnUpdatedReleaseLetter() {
+  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
     String sprint = "S43";
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
 
@@ -220,7 +220,7 @@ public class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void deleteReleaseLetter_shouldCallService() {
+  void testDeleteReleaseLetterShouldCallService() {
     releaseLetterController.deleteReleaseLetter(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
 
     verify(releaseLetterService).deleteReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);

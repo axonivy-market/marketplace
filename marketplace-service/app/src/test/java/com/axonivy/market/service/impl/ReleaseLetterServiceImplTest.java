@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ReleaseLetterServiceImplTest extends BaseSetup {
+class ReleaseLetterServiceImplTest extends BaseSetup {
 
   private static final String RELEASE_LETTER_SPRINT_NAME_SAMPLE = "demo";
   private static final String UNIFIED_RELEASE_LETTER_SPRINT_NAME = "DEMO";
@@ -42,7 +42,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   private ReleaseLetterServiceImpl releaseLetterService;
 
   @Test
-  void shouldUseDefaultSortingWhenNotSorted() {
+  void testShouldUseDefaultSortingWhenNotSorted() {
     PageRequest pageable = PageRequest.of(0, 10);
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
@@ -67,7 +67,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldUseGivenSortingWhenAlreadySorted() {
+  void testShouldUseGivenSortingWhenAlreadySorted() {
     Pageable pageable = PageRequest.of(0, 10, Sort.by("sprint"));
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
@@ -82,7 +82,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldReturnReleaseLetterWhenIdExists() {
+  void testShouldReturnReleaseLetterWhenIdExists() {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
         .thenReturn(Optional.of(releaseLetterMock));
@@ -94,7 +94,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldThrowNotFoundExceptionWhenIdNotExists() {
+  void testShouldThrowNotFoundExceptionWhenIdNotExists() {
     when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
         .thenReturn(Optional.empty());
 
@@ -104,7 +104,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldReturnReleaseLetterWhenSprintNameExists() {
+  void testShouldReturnReleaseLetterWhenSprintNameExists() {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     when(releaseLetterRepository.findBySprint(UNIFIED_RELEASE_LETTER_SPRINT_NAME))
         .thenReturn(Optional.of(releaseLetterMock));
@@ -116,7 +116,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldThrowNotFoundExceptionWhenSprintNameNotExists() {
+  void testShouldThrowNotFoundExceptionWhenSprintNameNotExists() {
     when(releaseLetterRepository.findBySprint(UNIFIED_RELEASE_LETTER_SPRINT_NAME))
         .thenReturn(Optional.empty());
 
@@ -126,7 +126,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldReturnLatestReleaseLetters() {
+  void testShouldReturnLatestReleaseLetters() {
     PageRequest pageable = PageRequest.of(0, 20);
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
@@ -141,7 +141,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldThrowMarketExceptionWhenSprintNameIsEmpty() {
+  void testShouldThrowMarketExceptionWhenSprintNameIsEmpty() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = new ReleaseLetterModelRequest();
     releaseLetterModelRequestMock.setSprint("   ");
 
@@ -151,7 +151,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldThrowWhenSprintAlreadyExists() {
+  void testShouldThrowWhenSprintAlreadyExists() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S43");
 
@@ -163,7 +163,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldCreateReleaseLetterSuccessfully() {
+  void testShouldCreateReleaseLetterSuccessfully() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
     request.setContent("Thanks @john");
@@ -180,7 +180,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldDeactivateOthersWhenLatestIsTrue() {
+  void testShouldDeactivateOthersWhenLatestIsTrue() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S43");
     request.setContent("content");
@@ -195,7 +195,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldUpdateSuccessfully() {
+  void testShouldUpdateSuccessfully() {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S44");
@@ -217,7 +217,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
+  void testUpdateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("   ");
 
@@ -229,7 +229,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldThrowAlreadyExistedWhenSprintChangedAndExists() {
+  void testUpdateReleaseLetterShouldThrowAlreadyExistedWhenSprintChangedAndExists() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S44");
 
@@ -241,7 +241,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldUpdateSuccessfullyWhenSprintNotChanged() {
+  void testUpdateReleaseLetterShouldUpdateSuccessfullyWhenSprintNotChanged() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S43");
     request.setLatest(false);
@@ -265,7 +265,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldUpdateSprintWhenSprintChangedAndNotExists() {
+  void testUpdateReleaseLetterShouldUpdateSprintWhenSprintChangedAndNotExists() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("s44");
     request.setLatest(false);
@@ -295,7 +295,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void updateReleaseLetterShouldDeactivateOthersWhenIsLatestTrue() {
+  void testUpdateReleaseLetterShouldDeactivateOthersWhenIsLatestTrue() {
     ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
     request.setSprint("S43");
     request.setLatest(true);
@@ -321,7 +321,7 @@ public class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void deleteReleaseLetterBySprintShouldDeleteSuccessfullyWhenSprintExists() {
+  void testDeleteReleaseLetterBySprintShouldDeleteSuccessfullyWhenSprintExists() {
     String inputSprint = " s43 ";
     String unifiedSprint = "S43";
 

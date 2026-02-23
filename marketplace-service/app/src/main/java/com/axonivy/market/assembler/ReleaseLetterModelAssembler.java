@@ -13,16 +13,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Log4j2
 @Component
 public class ReleaseLetterModelAssembler implements RepresentationModelAssembler<ReleaseLetter, ReleaseLetterModel> {
+
   @Override
   public ReleaseLetterModel toModel(ReleaseLetter releaseLetter) {
-    var resource = new ReleaseLetterModel();
-    resource.add(linkTo(methodOn(ReleaseLetterController.class)
-        .findReleaseLetterById(releaseLetter.getId())).withSelfRel());
-    resource.setContent(releaseLetter.getContent());
-    resource.setSprint(releaseLetter.getSprint());
-    resource.setLatest(releaseLetter.isLatest());
-    resource.setCreatedAt(releaseLetter.getCreatedAt());
-
-    return resource;
+    return ReleaseLetterModel.createModel(releaseLetter);
   }
 }

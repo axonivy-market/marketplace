@@ -1,5 +1,9 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.controller.ImageController;
+import com.axonivy.market.controller.ReleaseLetterController;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.entity.ReleaseLetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
@@ -8,6 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.Date;
 
@@ -31,4 +38,16 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
 
   @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
   private Date createdAt;
+
+  public static ReleaseLetterModel createModel(ReleaseLetter releaseLetter) {
+    var model = new ReleaseLetterModel();
+    model.add(linkTo(methodOn(ReleaseLetterController.class)
+        .findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
+    model.setContent(releaseLetter.getContent());
+    model.setSprint(releaseLetter.getSprint());
+    model.setLatest(releaseLetter.isLatest());
+    model.setCreatedAt(releaseLetter.getCreatedAt());
+
+    return model;
+  }
 }
