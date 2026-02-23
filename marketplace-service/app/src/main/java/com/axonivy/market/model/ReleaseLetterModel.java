@@ -32,14 +32,4 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
 
   @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
   private Date createdAt;
-
-  public static ReleaseLetterModel createModel(ReleaseLetter releaseLetter) {
-    var model = new ReleaseLetterModel();
-    model.setContent(releaseLetter.getContent());
-    model.setSprint(releaseLetter.getSprint());
-    model.setLatest(releaseLetter.isLatest());
-    model.setCreatedAt(releaseLetter.getCreatedAt());
-
-    return model;
-  }
 }
