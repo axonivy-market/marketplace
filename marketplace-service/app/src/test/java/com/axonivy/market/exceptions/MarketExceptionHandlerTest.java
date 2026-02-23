@@ -13,11 +13,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ExtendWith(MockitoExtension.class)
 class MarketExceptionHandlerTest {
@@ -132,5 +137,79 @@ class MarketExceptionHandlerTest {
     assertEquals(HttpStatus.ACCEPTED, responseEntity.getStatusCode(),
         "Expected HTTP 202 ACCEPTED");
     assertNotNull(responseEntity.getBody(), "Response body should not be null");
+  }
+
+  @Test
+  void shouldHandleValidationExceptions() {
+    // Arrange
+    MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+    BindingResult bindingResult = mock(BindingResult.class);
+
+    FieldError fieldError1 = new FieldError("object", "sprint", "Sprint cannot be blank");
+    FieldError fieldError2 = new FieldError("object", "version", "Version is required");
+
+    when(exception.getBindingResult()).thenReturn(bindingResult);
+    when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
+
+    ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValidationExceptions(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST when validation fails");
+
+    Map<String, Object> body = response.getBody();
+    assertNotNull(body, "Response body must not be null for validation errors");
+
+    assertEquals(HttpStatus.BAD_REQUEST.value(), body.get("status"),
+        "Response body 'status' field should contain 400");
+
+    @SuppressWarnings("unchecked")
+    Map<String, String> errors = (Map<String, String>) body.get("errors");
+
+    assertEquals(2, errors.size(), "Validation error map should contain exactly 2 field errors");
+    assertEquals("Sprint cannot be blank", errors.get("sprint"),
+        "Error message for field 'sprint' is incorrect");
+    assertEquals("Version is required", errors.get("version"),
+        "Error message for field 'version' is incorrect");
+  }
+
+  @Test
+  void shouldHandleMarketException() {
+    MarketException exception = mock(MarketException.class);
+
+    when(exception.getCode()).thenReturn("ERR_001");
+    when(exception.getMessage()).thenReturn("Sprint cannot be blank");
+
+    ResponseEntity<Object> response = exceptionHandler.handleAMarketException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for MarketException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for MarketException");
+
+    assertEquals("ERR_001", body.getHelpCode(), "Help code in response does not match exception code");
+    assertEquals("Sprint cannot be blank", body.getMessageDetails(),
+        "Message details in response do not match exception message");
+  }
+
+  @Test
+  void shouldHandleAlreadyExistedException() {
+    AlreadyExistedException exception = mock(AlreadyExistedException.class);
+
+    when(exception.getCode()).thenReturn("ERR_409");
+    when(exception.getMessage()).thenReturn("Release letter already exists");
+
+    ResponseEntity<Object> response = exceptionHandler.handleAlreadyExistedException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for AlreadyExistedException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for AlreadyExistedException");
+
+    assertEquals("ERR_409", body.getHelpCode(),
+        "Help code in response does not match AlreadyExistedException code");
+    assertEquals("Release letter already exists", body.getMessageDetails(),
+        "Message details in response do not match AlreadyExistedException message");
   }
 }
