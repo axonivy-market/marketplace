@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MarketApiDocumentConfig {
+public class MarketDocumentConfig {
 
   @Value("${market.info.title}")
   private String title;
