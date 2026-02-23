@@ -32,5 +32,4 @@ market:
 
 springdoc:
   api-docs:
-    path: /api-docs
     version: OPENAPI_3_1

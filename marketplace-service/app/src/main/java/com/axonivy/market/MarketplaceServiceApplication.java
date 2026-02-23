@@ -18,11 +18,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.List;
 
-import static com.axonivy.market.core.constants.BasePackageConstants.CORE_BASE_PACKAGE_NAME;
 @Log4j2
 @EnableAsync
 @EnableScheduling
-@SpringBootApplication(scanBasePackages = {CORE_BASE_PACKAGE_NAME, "com.axonivy.market"})
+@SpringBootApplication
 @AllArgsConstructor
 @EnableCaching
 @EnableJpaAuditing
