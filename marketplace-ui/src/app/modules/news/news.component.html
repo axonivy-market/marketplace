@@ -55,7 +55,6 @@
           <div ngbAccordionCollapse class="release-content">
             <div
               ngbAccordionBody
-              ngSkipHydration
               class="p-0 changelog-content"
               [innerHtml]="releaseLetterSafeHtmlContent.content"></div>
           </div>
@@ -63,4 +62,8 @@
       }
     </div>
   }
+  <app-loading-spinner
+    containerClasses="position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.NEWS_PAGE" />
+  <div #releaseLetterObserver class="release-letter-observer"></div>
 </section>

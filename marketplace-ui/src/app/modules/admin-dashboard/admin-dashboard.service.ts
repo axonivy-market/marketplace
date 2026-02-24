@@ -1,6 +1,7 @@
+import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { AdminAuthService } from './admin-auth.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
@@ -14,6 +15,7 @@ import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
+import { debug } from 'console';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -121,16 +123,50 @@ export class AdminDashboardService {
     });
   }
 
-  getRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
+  getReleaseLettersWithoutPaging(): Observable<ReleaseLetterListApiResponse> {
     return this.http.get<ReleaseLetterListApiResponse>(
-      `${API_URI.RELEASE_LETTERS}`,
+      `${API_URI.RELEASE_LETTERS_WITHOUT_PAGINATION}`,
       {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
 
-  getActiveRelaseLetters(): Observable<ReleaseLetterListApiResponse> {
+  getReleaseLetters2(
+    releaseLetterCriteria: ReleaseLetterCriteria,
+    pageId: String = LoadingComponentId.NEWS_PAGE
+  ): Observable<ReleaseLetterListApiResponse> {
+    let params = new HttpParams();
+    let url = '';
+
+     if (releaseLetterCriteria.nextPageHref) {
+      url = releaseLetterCriteria.nextPageHref;
+    } else {
+      url = `${API_URI.RELEASE_LETTERS}`;
+      
+      if (releaseLetterCriteria.pageable) {
+        params = params
+          .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
+          .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
+      }
+    }
+    return this.http
+          .get<ReleaseLetterListApiResponse>(url, {
+            context: new HttpContext().set(
+              LoadingComponent,
+              pageId
+            ),
+            params
+          })
+          .pipe(
+            catchError(() => {
+              const releaseLetterListApiResponse = {} as ReleaseLetterListApiResponse;
+              return of(releaseLetterListApiResponse);
+            })
+          );
+  }
+
+  getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
@@ -177,9 +213,7 @@ export class AdminDashboardService {
     );
   }
 
-  deleteReleaseLetterBySprint(
-    sprint: string
-  ): Observable<void> {
+  deleteReleaseLetterBySprint(sprint: string): Observable<void> {
     return this.http.delete<void>(
       `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
       {

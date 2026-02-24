@@ -18,6 +18,7 @@ public class RequestMappingConstants {
   public static final String GITHUB_REQUEST_ACCESS = "/github/request-access";
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
+  public static final String ALL = "/all";
   public static final String BY_ID = "/{id}";
   public static final String BY_SPRINT = "/sprint/{sprint}";
   public static final String BY_LATEST = "/latest";

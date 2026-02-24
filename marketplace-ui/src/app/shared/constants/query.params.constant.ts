@@ -24,9 +24,3 @@ export const SEARCH_KEY = {
   SEARCH: 'search',
   REPO_SEARCH: 'repoSearch'
 };
-
-export const NEWS_MANAGEMENT_MODE = {
-  view: 'view',
-  create: 'create',
-  edit: 'edit'
-};

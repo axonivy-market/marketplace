@@ -12,39 +12,52 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
+import { DEFAULT_PAGEABLE } from '../../../shared/constants/common.constant';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { Link } from '../../../shared/models/apis/link.model';
+import { Page } from '../../../shared/models/apis/page.model';
+import { ReleaseLetterCriteria } from '../../../shared/models/criteria.model';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
-import { PageTitleService } from '../../../shared/services/page-title.service';
-import { NEWS_MANAGEMENT_MODE } from './../../../shared/constants/query.params.constant';
-import { AdminDashboardService } from './../admin-dashboard.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
+import { PageTitleService } from '../../../shared/services/page-title.service';
+import { AdminDashboardService } from './../admin-dashboard.service';
 
 @Component({
   selector: 'app-news-management',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule
+  ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
 export class NewsManagementComponent {
-  @ViewChild('editor') editor!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('releaseLetterObserver', { static: false })
+  observerElement!: ElementRef;
 
+  isBrowser: boolean;
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  loadingService = inject(LoadingService);
   adminDashboardService = inject(AdminDashboardService);
   router = inject(Router);
   route = inject(ActivatedRoute);
-  easyMDE!: EasyMDE;
-  releaseLetterValue = 'abc';
-  releaseVersion = '';
-  MODE = NEWS_MANAGEMENT_MODE;
-  currentMode: WritableSignal<string> = signal(NEWS_MANAGEMENT_MODE.view);
-  currentModePlain = NEWS_MANAGEMENT_MODE.view;
+  subscriptions: Subscription[] = [];
   releaseLetterList: WritableSignal<ReleaseLetter[]> = signal([]);
   appModalService = inject(AppModalService);
-  isBrowser: boolean;
+  newsLinks!: Link;
+  newsPages!: Page;
+  releaseLetterCriteria: ReleaseLetterCriteria = {
+    pageable: DEFAULT_PAGEABLE
+  };
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
@@ -63,10 +76,8 @@ export class NewsManagementComponent {
       this.pageTitleService.setTitleOnLangChange(
         'common.admin.newsManagement.pageTitle'
       );
+      this.loadReleaseLetters();
     }
-    this.adminDashboardService.getRelaseLetters().subscribe(res => {
-      this.releaseLetterList.set(res._embedded.releaseLetterModelList);
-    });
   }
 
   navigateToEditPage(releaseVersion: string) {
@@ -92,22 +103,38 @@ export class NewsManagementComponent {
     this.appModalService
       .openDeleteReleaseLetterConfirmModal(sprint)
       .then(() => {
-        this.adminDashboardService.getRelaseLetters().subscribe(res => {
-          this.releaseLetterList.set(res._embedded.releaseLetterModelList);
-        });
+        this.adminDashboardService
+          .getReleaseLettersWithoutPaging()
+          .subscribe(res => {
+            this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+          });
       });
   }
 
-  deleteReleaseLetterBySprint(sprint: string) {
-    this.adminDashboardService.deleteReleaseLetterBySprint(sprint).subscribe({
-      next: () => {
-        this.adminDashboardService.getRelaseLetters().subscribe(res => {
-          this.releaseLetterList.set(res._embedded.releaseLetterModelList);
-        });
-      },
-      error: err => {
-        console.error('Error deleting release letter:', err);
-      }
+  loadReleaseLetters(): void {
+    const sub = this.adminDashboardService
+      .getReleaseLettersWithoutPaging()
+      .subscribe({
+        next: response => {
+          if (!response) {
+            return;
+          }
+          const newReleaseLetters =
+            response._embedded?.releaseLetterModelList ?? [];
+          if (newReleaseLetters.length > 0) {
+            this.releaseLetterList.update(existingReleaseLetters =>
+              existingReleaseLetters.concat(newReleaseLetters)
+            );
+          }
+        }
+      });
+
+    this.subscriptions.push(sub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
     });
   }
 }

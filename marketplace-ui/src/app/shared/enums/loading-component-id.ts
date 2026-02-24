@@ -8,5 +8,6 @@ export enum LoadingComponentId {
   RELEASE_PREVIEW = 'release-preview',
   PRODUCT_CHANGELOG = 'product-changelog',
   MONITORING_DASHBOARD = 'monitoring-repo',
+  NEWS_PAGE = 'news-page',
   TOKEN_REQUEST = 'token-request'
 }

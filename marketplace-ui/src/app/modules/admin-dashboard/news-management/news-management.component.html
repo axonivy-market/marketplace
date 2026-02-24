@@ -49,7 +49,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (releaseLetter of releaseLetterList(); track $index) {
+      @for (releaseLetter of releaseLetterList(); track releaseLetter.sprint) {
         <tr>
           <td>{{ $index + 1 }}</td>
           <td class="text-center">{{ releaseLetter.sprint }}</td>

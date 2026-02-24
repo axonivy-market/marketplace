@@ -637,8 +637,6 @@ export class ProductDetailComponent implements AfterViewInit {
     const markdownContent = this.md.render(
       value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1')
     );
-    console.log(this.sanitizer.bypassSecurityTrustHtml(markdownContent));
-    
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 

@@ -64,8 +64,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Only cache GET requests to API
   if (req.method === 'GET' && transferState.hasKey(key)) {
-    console.log(key);
-
     const data = transferState.get<unknown>(key, null);
     transferState.remove(key);
     return of(new HttpResponse({ body: data, status: HttpStatusCode.Ok }));

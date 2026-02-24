@@ -85,7 +85,7 @@ export class ReleaseLetterEditComponent {
     event.preventDefault();
     if (this.isSubmitting()) return;
 
-    // this.isSubmitting.set(true);
+    this.isSubmitting.set(true);
 
     if (this.isCreateMode) {
       this.createReleaseLetter(this.releaseLetter);
@@ -96,8 +96,6 @@ export class ReleaseLetterEditComponent {
   }
 
   createReleaseLetter(releaseLetter: ReleaseLetter) {
-    console.log(releaseLetter);
-
     this.adminDashboardService
       .createReleaseLetter(releaseLetter)
       .pipe(

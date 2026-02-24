@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
         );
 
     return releaseLetterRepository.findAll(sortedPageable);
+  }
+
+  @Override
+  public List<ReleaseLetter> findAllReleaseLettersWithoutPaging() {
+    return releaseLetterRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
   @Override

@@ -16,6 +16,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -36,6 +37,8 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.SPRINT;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
+import java.util.List;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping(RELEASE_LETTER)
@@ -54,6 +57,25 @@ public class ReleaseLetterController {
     }
     var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
     return ResponseEntity.ok(pageResources);
+  }
+
+  @GetMapping(ALL)
+  @Operation(hidden = true)
+  public ResponseEntity<CollectionModel<ReleaseLetterModel>> findAllReleaseLettersWithoutPaging() {
+
+    List<ReleaseLetter> releaseLetters =
+        releaseLetterService.findAllReleaseLettersWithoutPaging();
+
+    List<ReleaseLetterModel> resources = releaseLetters.stream()
+        .map(releaseLetterModelAssembler::toModel)
+        .map(model -> model.add(
+            linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel()))
+        .toList();
+
+    CollectionModel<ReleaseLetterModel> collectionModel =
+        CollectionModel.of(resources);
+
+    return ResponseEntity.ok(collectionModel);
   }
 
   @Authorized

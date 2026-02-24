@@ -20,6 +20,7 @@ export const API_URI = {
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   RELEASE_LETTERS: `${API}/release-letters`,
+  RELEASE_LETTERS_WITHOUT_PAGINATION: `${API}/release-letters/all`,
   ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`
 };
 
