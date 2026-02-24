@@ -1,12 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DeleteReleaseLetterConfirmModalComponent } from './delete-release-letter-confirm-modal.component';
-import { AdminDashboardService } from '../../admin-dashboard.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LanguageService } from '../../../../core/services/language/language.service';
-import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { of, Subject } from 'rxjs';
+import { ThemeService } from '../../../../core/services/theme/theme.service';
+import { AdminDashboardService } from '../../admin-dashboard.service';
+import { DeleteReleaseLetterConfirmModalComponent } from './delete-release-letter-confirm-modal.component';
 
 describe('DeleteReleaseLetterConfirmModalComponent', () => {
   let component: DeleteReleaseLetterConfirmModalComponent;
@@ -63,7 +62,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
     expect(activeModalMock.close).toHaveBeenCalled();
   });
 
-  fit('should not close modal before observable emits', () => {
+  it('should not close modal before observable emits', () => {
     component.releaseLetterSprint = 'S42';
 
     const subject = new Subject<void>();
