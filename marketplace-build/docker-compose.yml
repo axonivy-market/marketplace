@@ -15,7 +15,7 @@ services:
       - "4500:80"
     depends_on:
       - ui
-      - service
+      - app
 
   ui:
     container_name: marketplace-ui
@@ -40,14 +40,15 @@ services:
     ports:
       - "4000:4000"
 
-  service:
-    container_name: marketplace-service
+  app:
+    container_name: marketplace-app
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
-      - ../logs:/app/logs
+      - ../logs/app:/app/logs
     environment:
+      - BUILD_VERSION=${BUILD_VERSION}
       - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
@@ -79,11 +80,29 @@ services:
       - TO_MAIL=${TO_MAIL}
     build:
       context: ../marketplace-service
-      dockerfile: Dockerfile
+      dockerfile: app/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+
+  stable:
+    container_name: marketplace-stable
+    restart: always
+    volumes:
+      - ../logs/stable:/app/logs
+    environment:
+      - BUILD_VERSION=${STABLE_BUILD_VERSION}
+      - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    build:
+      context: ../marketplace-service
+      dockerfile: stable/Dockerfile
+      args:
+        - BUILD_VERSION=${STABLE_BUILD_VERSION}
+    ports:
+      - "8085:8080"
 
 volumes:
   marketcache:
