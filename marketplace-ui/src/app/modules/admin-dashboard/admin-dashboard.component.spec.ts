@@ -12,6 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { provideRouter } from '@angular/router';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -102,6 +103,7 @@ describe('AdminDashboardComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AdminDashboardComponent, TranslateModule.forRoot()],
       providers: [
+        provideRouter([]),
         { provide: AdminDashboardService, useValue: mockAdminService },
         { provide: ProductService, useValue: mockProductService },
         { provide: AdminAuthService, useValue: mockAuthService },
