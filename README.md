@@ -31,8 +31,8 @@ The project consists of three main components:
 ### Prerequisites
 - Node.js 18+ (for UI)
 - JDK 21+ (for service)
-- Maven 3.6+ (for service)
-- PostgreSQL 12+ (for service)
+- Maven 3.9+ (for service)
+- PostgreSQL 17+ (for service)
 - Docker & Docker Compose (for deployment)
 
 ### Setup Steps
