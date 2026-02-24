@@ -17,7 +17,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { DEFAULT_PAGEABLE } from '../../../shared/constants/common.constant';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Link } from '../../../shared/models/apis/link.model';
 import { Page } from '../../../shared/models/apis/page.model';
 import { ReleaseLetterCriteria } from '../../../shared/models/criteria.model';
