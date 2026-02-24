@@ -107,4 +107,58 @@ describe('NewsManagementComponent', () => {
 
     expect(component.releaseLetterList().length).toBe(3);
   });
+
+  it('should navigate to edit page', () => {
+    component.navigateToEditPage('S1');
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['edit', 'S1'], {
+      relativeTo: component.route
+    });
+  });
+
+  it('should format date correctly', () => {
+    const result = component.formatDate('2025-01-01');
+
+    expect(result).toBeTruthy();
+  });
+
+  it('should open release letter modal', () => {
+    const item = mockReleaseLetters[0];
+
+    spyOnProperty(document, 'activeElement', 'get').and.returnValue({
+      blur: jasmine.createSpy()
+    } as any);
+
+    component.openModal(item);
+
+    expect(appModalServiceMock.openReleaseLetterModal).toHaveBeenCalledWith(
+      item
+    );
+  });
+
+  it('should refresh list after delete confirmation', async () => {
+    component.releaseLetterList.set([]);
+
+    await component.openDeleteConfirmModal('S1');
+
+    expect(
+      appModalServiceMock.openDeleteReleaseLetterConfirmModal
+    ).toHaveBeenCalledWith('S1');
+
+    expect(
+      adminDashboardServiceMock.getReleaseLettersWithoutPaging
+    ).toHaveBeenCalled();
+
+    expect(component.releaseLetterList()).toEqual(mockReleaseLetters);
+  });
+
+  it('should unsubscribe on destroy', () => {
+    component.loadReleaseLetters();
+
+    spyOn(component.subscriptions[0], 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(component.subscriptions[0].unsubscribe).toHaveBeenCalled();
+  });
 });
