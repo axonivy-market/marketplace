@@ -1,4 +1,11 @@
-import { Component, DestroyRef, effect, inject, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  PLATFORM_ID,
+  signal
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';
 
@@ -7,6 +14,10 @@ interface ParsedLog {
   level: string;
   message: string;
   isLong: boolean;
+}
+
+interface LogFile {
+  filename: string;
 }
 
 @Component({
@@ -26,10 +37,15 @@ export class LogViewerComponent {
   readonly parsedLogs = signal<ParsedLog[]>([]);
   readonly logs = this.logStream.logs;
   readonly expandedLogs = signal<Set<number>>(new Set());
+  readonly selectedDate = signal<string>('');
+  readonly logFiles = signal<LogFile[]>([]);
+  readonly filteredLogFiles = signal<LogFile[]>([]);
 
   constructor() {
     if (this.isBrowser) {
       effect(() => {
+        // Track both autoScroll and parsedLogs to trigger on log changes
+        this.parsedLogs();
         if (this.autoScroll()) {
           queueMicrotask(() => this.scrollToBottom());
         }
@@ -49,7 +65,9 @@ export class LogViewerComponent {
 
   private parseLog(logLine: string): ParsedLog {
     // Format: 2026-01-20 00:29:45 INFO  logger - message
-    const match = logLine.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(\w+)\s+(.*)$/);
+    const match = logLine.match(
+      /^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(\w+)\s+(.*)$/
+    );
     if (match) {
       const message = match[3];
       return {
@@ -143,7 +161,11 @@ export class LogViewerComponent {
     this.downloadFile(headers + csvData, 'logs.csv', 'text/csv');
   }
 
-  private downloadFile(content: string, fileName: string, mimeType: string): void {
+  private downloadFile(
+    content: string,
+    fileName: string,
+    mimeType: string
+  ): void {
     const blob = new Blob([content], { type: mimeType });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -157,12 +179,52 @@ export class LogViewerComponent {
 
   getLogLevelColor(level: string): string {
     const colors: { [key: string]: string } = {
-      'DEBUG': '#ffffff',    // White
-      'INFO': '#7ed957',     // Green
-      'WARN': '#ffd966',     // Yellow
-      'ERROR': '#ffb6c1',    // Pink
-      'FATAL': '#ff6464'     // Red
+      DEBUG: '#ffffff', // White
+      INFO: '#7ed957', // Green
+      WARN: '#ffd966', // Yellow
+      ERROR: '#ffb6c1', // Pink
+      FATAL: '#ff6464' // Red
     };
     return colors[level] || '#ffffff';
+  }
+
+  private extractDateFromFilename(filename: string): string {
+    // Extract date from filename format: application.2026-02-12.log.gz
+    const match = filename.match(/(\d{4}-\d{2}-\d{2})/);
+    return match ? match[1] : '';
+  }
+
+  filterLogsByDate(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const selectedDate = target.value;
+    this.selectedDate.set(selectedDate);
+
+    // Mock: List of log file names from backend
+    // In a real implementation, this would call a service to fetch logs for the selected date
+    const allLogFiles: LogFile[] = [
+      { filename: 'application.2026-02-24.log.gz' },
+      { filename: 'error.2026-02-24.log.gz' },
+      { filename: 'debug.2026-02-23.log.gz' },
+      { filename: 'application.2026-02-22.log.gz' }
+    ];
+
+    if (selectedDate) {
+      const filtered = allLogFiles.filter(
+        log => this.extractDateFromFilename(log.filename) === selectedDate
+      );
+      this.filteredLogFiles.set(filtered);
+    } else {
+      this.filteredLogFiles.set(allLogFiles);
+    }
+  }
+
+  clearDateFilter(): void {
+    this.selectedDate.set('');
+    this.filteredLogFiles.set([]);
+  }
+
+  selectLogFile(logFile: LogFile): void {
+    console.log('Selected log file:', logFile);
+    // In a real implementation, you would fetch and display the content of the selected log file
   }
 }
