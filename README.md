@@ -72,7 +72,6 @@ marketplace/
 │   ├── app/                # Production API
 │   └── stable/             # Read-only API
 ├── marketplace-build/       # Docker & deployment
-└── marketplace-migration/   # Database migration scripts
 ```
 
 ## Key Technologies
