@@ -5,28 +5,28 @@ Spring Boot 3.2.5 backend application for AxonIvy Marketplace with three special
 ## Modules
 
 ### Core Module
-**Shared foundation**: Data entities, repositories, services, utilities  
-**Key components**: Product, Metadata, Image entities; service layer for all modules  
-**Dependency**: Base module used by App and Stable  
+**Shared foundation**: Data entities, repositories, services, utilities
+**Key components**: Product, Metadata, Image entities; service layer for all modules
+**Dependency**: Base module used by App and Stable
 **Learn more**: See [core/README.md](core/README.md)
 
 ### App Module
-**Production marketplace API**: Full CRUD operations with GitHub integration  
-**Features**: Product management, image handling, Maven artifact indexing  
-**API Port**: 8080  
+**Production marketplace API**: Full CRUD operations with GitHub integration
+**Features**: Product management, image handling, Maven artifact indexing
+**API Port**: 8080
 **Learn more**: See [app/README.md](app/README.md)
 
 ### Stable Module
-**Read-only API**: For Neo Designer, VSCode v14, and AI features  
-**Features**: Versioned product queries, optimized for reads  
-**API Port**: 8085  
+**Read-only API**: For Neo Designer, VSCode v14, and AI features
+**Features**: Versioned product queries, optimized for reads
+**API Port**: 8085
 **Learn more**: See [stable/README.md](stable/README.md)
 
 ## Prerequisites
 
 - JDK 21+
-- Maven 3.6+
-- PostgreSQL 12+
+- Maven 3.9+
+- PostgreSQL 17+
 
 ## Environment Setup
 
@@ -96,4 +96,5 @@ After running either module, access API docs:
 - [Core Module](core/README.md) - Shared data models and services
 - [App Module](app/README.md) - Production marketplace API
 - [Stable Module](stable/README.md) - Read-only integrations API
+
 

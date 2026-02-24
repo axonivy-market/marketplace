@@ -10,7 +10,7 @@ Stable, versioned product information as read-only APIs. Depends on Core module 
 - **Versioned Endpoints**: Version-specific metadata
 - **AI-Ready**: Extended metadata for processing
 - **Port**: 8085
-
+  
 ## Technology
 
 Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok
@@ -18,7 +18,7 @@ Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok
 ## Quick Start
 
 ### Prerequisites
-JDK 21+, Maven 3.6+, PostgreSQL 12+
+JDK 21+, Maven 3.9+, PostgreSQL 17+
 
 ### Environment
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration.
@@ -32,14 +32,6 @@ mvn -f stable/pom.xml spring-boot:run
 Runs on **http://localhost:8085**
 
 ## API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /product` | List all products |
-| `GET /product/{id}` | Get product details |
-| `GET /product/{id}/versions` | Get available versions |
-| `GET /product/{id}/version/{version}/content` | Get version metadata |
-| `GET /image` | List product images |
 
 API Docs: http://localhost:8085/swagger-ui/index.html
 

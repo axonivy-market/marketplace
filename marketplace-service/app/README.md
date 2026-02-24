@@ -7,9 +7,8 @@ Production Spring Boot 3.2.5 API for AxonIvy Marketplace with full CRUD operatio
 Complete product marketplace API with full CRUD operations. Manages products, images, metadata, and Maven artifacts. Integrates with GitHub for version indexing. Depends on Core module for entities and repositories.
 
 - **Full CRUD APIs**: GET/POST/PUT/DELETE operations
-- **Product Management**: Create, update, delete products
-- **Image Handling**: Upload and manage product images
-- **GitHub Integration**: Automatic version indexing from GitHub releases
+- **Product Management**: Create, update, archive products
+- **GitHub Integration**: Automatic version indexing from GitHub releases, manage GitHub repositories build status,...
 - **Maven Artifacts**: Index and track Maven artifact versions
 - **Port**: 8080
 
@@ -20,7 +19,7 @@ Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok • Spring Data JPA
 ## Quick Start
 
 ### Prerequisites
-JDK 21+, Maven 3.6+, PostgreSQL 12+
+JDK 21+, Maven 3.9+, PostgreSQL 16+
 
 ### Environment
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration. App module also requires `GITHUB_TOKEN`.
@@ -55,13 +54,6 @@ echo $GITHUB_TOKEN > github.token
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/product` | GET/POST | List all or create product |
-| `/product/{id}` | GET/PUT/DELETE | Product details, update, delete |
-| `/product/{id}/versions` | GET | Available versions |
-| `/image` | GET/POST | List or upload images |
-
 API Docs: http://localhost:8080/swagger-ui/index.html
 
 ## Testing
@@ -89,14 +81,6 @@ docker run -p 8080:8080 \
 mvn -f app/pom.xml clean package
 cp app/target/app-1.0.0-SNAPSHOT.war $CATALINA_HOME/webapps/
 ```
-
-## Troubleshooting
-
-**Port 8080 in use**: Change `server.port` in application.yaml
-
-**Database connection failed**: Check environment variables and PostgreSQL running
-
-**GitHub integration fails**: Verify GITHUB_TOKEN is set correctly
 
 ## Related
 
