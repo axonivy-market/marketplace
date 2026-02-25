@@ -161,4 +161,17 @@ describe('NewsManagementComponent', () => {
 
     expect(component.subscriptions[0].unsubscribe).toHaveBeenCalled();
   });
+
+  it('should do nothing if backend response is null', () => {
+    adminDashboardServiceMock.getReleaseLettersWithoutPaging.and.returnValue(
+      of(null)
+    );
+
+    component.releaseLetterList.set([]);
+    component.subscriptions = [];
+
+    component.loadReleaseLetters();
+
+    expect(component.releaseLetterList().length).toBe(0);
+  });
 });
