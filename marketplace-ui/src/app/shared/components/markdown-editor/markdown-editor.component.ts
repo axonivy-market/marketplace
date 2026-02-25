@@ -38,6 +38,10 @@ export class MarkdownEditorComponent {
 
   private mde?: EasyMDE;
 
+  protected loadEasyMDE(): Promise<any> {
+    return import('easymde');
+  }
+
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     effect(() => {
       const value = this.contentValue() ?? '';
@@ -61,7 +65,8 @@ export class MarkdownEditorComponent {
   async ngAfterViewInit(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const { default: EasyMDE } = await import('easymde');
+    // const { default: EasyMDE } = await import('easymde');
+    const { default: EasyMDE } = await this.loadEasyMDE();
 
     this.mde = new EasyMDE({
       element: this.textarea.nativeElement,
@@ -101,7 +106,7 @@ export class MarkdownEditorComponent {
     });
     this.isMDEReady = true;
 
-    const container = this.mde.codemirror
+    const container = this.mde?.codemirror
       .getWrapperElement()
       .closest('.EasyMDEContainer')!;
 
@@ -111,7 +116,7 @@ export class MarkdownEditorComponent {
     const codeMirrorTextArea = container.querySelector('.CodeMirror')!;
     codeMirrorTextArea.classList.add('bg-secondary', 'text-primary');
 
-    this.mde.codemirror.on('change', () => {
+    this.mde?.codemirror.on('change', () => {
       this.updateContent(this.mde!.value());
     });
   }
