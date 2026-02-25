@@ -1,9 +1,11 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   Inject,
   inject,
+  OnInit,
   PLATFORM_ID,
   signal,
   ViewChild,
@@ -43,7 +45,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss'
 })
-export class NewsComponent {
+export class NewsComponent implements OnInit, AfterViewInit {
   @ViewChild('releaseLetterObserver', { static: false })
   observerElement!: ElementRef;
 
@@ -130,7 +132,7 @@ export class NewsComponent {
           }
           const newReleaseLetters =
             response._embedded?.releaseLetterModelList ?? [];
-          if (newReleaseLetters.length == 0) {
+          if (newReleaseLetters.length === 0) {
             this.emptyReleaseLetterTitle = this.translateService.instant(
               'common.admin.news.emptyLatestReleaseLetter'
             );

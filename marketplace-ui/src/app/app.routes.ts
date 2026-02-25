@@ -57,22 +57,18 @@ export const routes: Routes = [
       {
         path: 'security-monitor',
         component: SecurityMonitorComponent
-        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'feedback-approval',
         component: FeedbackApprovalComponent
-        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'sorting',
         component: CustomSortComponent
-        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'quick-access',
         component: QuickAccessComponent
-        // canActivate: [AdminAuthGuard]
       },
       {
         path: 'news-management',

@@ -7,6 +7,8 @@ import LinkifyIt from 'linkify-it';
 
 const GITHUB_BASE_URL = 'https://github.com/';
 
+type MarkdownItPlugin = (md: MarkdownIt, ...params: unknown[]) => void;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,15 +16,20 @@ export class MarkdownService {
   private readonly md: MarkdownIt;
 
   constructor() {
+    const githubAlertsPlugin =
+      (MarkdownItGitHubAlerts as unknown as { default?: MarkdownItPlugin })
+        .default ?? (MarkdownItGitHubAlerts as unknown as MarkdownItPlugin);
+
     this.md = new MarkdownIt({
       html: true
     });
     this.md
       .use(full)
-      .use(
-        (MarkdownItGitHubAlerts as any).default ??
-          (MarkdownItGitHubAlerts as any)
-      )
+      // .use(
+      //   (MarkdownItGitHubAlerts as any).default ??
+      //     (MarkdownItGitHubAlerts as any)
+      // )
+      .use(githubAlertsPlugin)
       .use(taskLists)
       .use(this.linkifyPullRequests)
       .set({

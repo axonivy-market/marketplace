@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import MarkdownIt from 'markdown-it';
@@ -12,7 +12,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   templateUrl: './release-letter-modal.component.html',
   styleUrl: './release-letter-modal.component.scss'
 })
-export class ReleaseLetterModalComponent {
+export class ReleaseLetterModalComponent implements OnInit {
   @Input()
   item!: ReleaseLetter;
 

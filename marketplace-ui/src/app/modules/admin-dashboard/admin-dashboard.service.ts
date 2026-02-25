@@ -1,21 +1,20 @@
-import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
-import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
-import { API_URI } from '../../shared/constants/api.constant';
-import { AdminAuthService } from './admin-auth.service';
-import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import {
   ForwardingError,
   LoadingComponent
 } from '../../core/interceptors/api.interceptor';
+import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { debug } from 'console';
+import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
+import { AdminAuthService } from './admin-auth.service';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -134,7 +133,7 @@ export class AdminDashboardService {
 
   getReleaseLetters(
     releaseLetterCriteria: ReleaseLetterCriteria,
-    pageId: String = LoadingComponentId.NEWS_PAGE
+    pageId: string = LoadingComponentId.NEWS_PAGE
   ): Observable<ReleaseLetterListApiResponse> {
     let params = new HttpParams();
     let url = '';

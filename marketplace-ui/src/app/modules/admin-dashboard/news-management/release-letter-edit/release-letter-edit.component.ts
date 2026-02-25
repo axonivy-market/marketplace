@@ -1,5 +1,12 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, inject, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -27,7 +34,7 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
   templateUrl: './release-letter-edit.component.html',
   styleUrl: './release-letter-edit.component.scss'
 })
-export class ReleaseLetterEditComponent {
+export class ReleaseLetterEditComponent implements OnInit {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -36,7 +43,7 @@ export class ReleaseLetterEditComponent {
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
-  selectedSprint: string = '';
+  selectedSprint = '';
   releaseLetter: ReleaseLetter = {
     sprint: '',
     content: '',
@@ -48,6 +55,7 @@ export class ReleaseLetterEditComponent {
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
   isBrowser: boolean;
+  newsManangementUrl = '/internal-dashboard/news-management';
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -83,7 +91,9 @@ export class ReleaseLetterEditComponent {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    if (this.isSubmitting()) return;
+    if (this.isSubmitting()) {
+      return;
+    }
 
     this.isSubmitting.set(true);
 
@@ -105,7 +115,7 @@ export class ReleaseLetterEditComponent {
       )
       .subscribe({
         next: _res => {
-          this.router.navigate(['/internal-dashboard/news-management']);
+          this.router.navigate([this.newsManangementUrl]);
         },
         error: err => {
           this.handleError(err.error.helpCode);
@@ -118,7 +128,7 @@ export class ReleaseLetterEditComponent {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {
-          this.router.navigate(['/internal-dashboard/news-management']);
+          this.router.navigate([this.newsManangementUrl]);
         },
         error: err => {
           this.handleError(err.error.helpCode);
@@ -149,7 +159,7 @@ export class ReleaseLetterEditComponent {
   }
 
   onClickingBackToNewsManagementButton(): void {
-    this.router.navigate(['/internal-dashboard/news-management']);
+    this.router.navigate([this.newsManangementUrl]);
   }
 
   onReleaseVersionChange() {

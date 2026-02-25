@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   effect,
   ElementRef,
@@ -7,6 +8,7 @@ import {
   input,
   Input,
   model,
+  OnDestroy,
   PLATFORM_ID,
   Signal,
   ViewChild
@@ -21,7 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './markdown-editor.component.html',
   styleUrl: './markdown-editor.component.scss'
 })
-export class MarkdownEditorComponent {
+export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mde', { static: true })
   textarea!: ElementRef<HTMLTextAreaElement>;
 
@@ -29,14 +31,14 @@ export class MarkdownEditorComponent {
   autosaveId!: string;
 
   @Input()
-  placeholder: string = 'Enter content here';
-
-  isMDEReady = false;
-  contentValue = model<string>('');
-
-  isSubmittingSignal = input<Signal<boolean>>();
+  placeholder = 'Enter content here';
 
   private mde?: EasyMDE;
+  isMDEReady = false;
+  contentValue = model<string>('');
+  isSubmittingSignal = input<Signal<boolean>>();
+  textPrimaryClass = 'text-primary';
+  bgSecondaryClass = 'bg-secondary';
 
   protected loadEasyMDE(): Promise<any> {
     return import('easymde');
@@ -63,9 +65,10 @@ export class MarkdownEditorComponent {
   }
 
   async ngAfterViewInit(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-    // const { default: EasyMDE } = await import('easymde');
     const { default: EasyMDE } = await this.loadEasyMDE();
 
     this.mde = new EasyMDE({
@@ -102,19 +105,22 @@ export class MarkdownEditorComponent {
       status: false,
       placeholder: this.placeholder,
       initialValue: this.contentValue(),
-      previewClass: 'bg-secondary'
+      previewClass: this.bgSecondaryClass
     });
     this.isMDEReady = true;
 
-    const container = this.mde?.codemirror
-      .getWrapperElement()
-      .closest('.EasyMDEContainer')!;
+    const wrapper = this.mde?.codemirror?.getWrapperElement();
+    const container = wrapper?.closest('.EasyMDEContainer');
+
+    if (!container) {
+      return;
+    }
 
     const easyMDEToolbar = container.querySelector('.editor-toolbar')!;
-    easyMDEToolbar.classList.add('bg-secondary', 'text-primary');
+    easyMDEToolbar.classList.add(this.bgSecondaryClass, this.textPrimaryClass);
 
     const codeMirrorTextArea = container.querySelector('.CodeMirror')!;
-    codeMirrorTextArea.classList.add('bg-secondary', 'text-primary');
+    codeMirrorTextArea.classList.add(this.bgSecondaryClass, this.textPrimaryClass);
 
     this.mde?.codemirror.on('change', () => {
       this.updateContent(this.mde!.value());
@@ -122,7 +128,9 @@ export class MarkdownEditorComponent {
   }
 
   setEasyMDEContent(content: string): void {
-    if (!this.mde) return;
+    if (!this.mde) {
+      return;
+    }
     this.mde.value(content);
   }
 

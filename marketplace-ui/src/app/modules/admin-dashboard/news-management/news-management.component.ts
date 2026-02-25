@@ -4,6 +4,8 @@ import {
   ElementRef,
   Inject,
   inject,
+  OnDestroy,
+  OnInit,
   PLATFORM_ID,
   signal,
   ViewChild,
@@ -36,7 +38,7 @@ import { AdminDashboardService } from './../admin-dashboard.service';
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
-export class NewsManagementComponent {
+export class NewsManagementComponent implements OnInit, OnDestroy {
   @ViewChild('releaseLetterObserver', { static: false })
   observerElement!: ElementRef;
 
@@ -57,13 +59,14 @@ export class NewsManagementComponent {
   releaseLetterCriteria: ReleaseLetterCriteria = {
     pageable: DEFAULT_PAGEABLE
   };
+  tableHeadersClass = 'text-primary text-center';
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
-    { key: '.sprint', class: 'text-primary text-center' },
-    { key: '.createdAt', class: 'text-primary text-center' },
-    { key: '.latest', class: 'text-primary text-center' },
-    { key: '.actions', class: 'text-primary text-center' }
+    { key: '.sprint', class: this.tableHeadersClass },
+    { key: '.createdAt', class: this.tableHeadersClass },
+    { key: '.latest', class: this.tableHeadersClass },
+    { key: '.actions', class: this.tableHeadersClass }
   ];
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
