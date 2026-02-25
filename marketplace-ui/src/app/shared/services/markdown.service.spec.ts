@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
 import { MarkdownService } from './markdown.service';
+import MarkdownIt from 'markdown-it';
+import { GITHUB_PULL_REQUEST_NUMBER_REGEX } from '../constants/common.constant';
 
 describe('MarkdownService', () => {
   let service: MarkdownService;
@@ -42,5 +44,40 @@ describe('MarkdownService', () => {
     const input = '[Click me](javascript:alert("Hacked!"))';
     const result = service.parseMarkdown(input);
     expect(result).not.toContain('href="javascript:alert');
+  });
+
+  it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    service.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
+
+    const inputText =
+      'Check out this PR: https://github.com/source-repo/pull/123';
+    const expectedOutput = 'Check out this PR: #123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
+  });
+
+  it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    service.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
+
+    const inputText =
+      'Check out this PR: https://github.com/source-repo/compare/123';
+    const expectedOutput =
+      'Check out this PR: https://github.com/source-repo/compare/123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
   });
 });

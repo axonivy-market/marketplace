@@ -3,7 +3,7 @@ import { HeaderComponent } from './shared/components/header/header.component';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
-import { Component, inject, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit, Renderer2 } from '@angular/core';
 import {
   ActivatedRoute,
   NavigationError,
@@ -22,7 +22,7 @@ import { DocumentRef } from './core/services/browser/document-ref.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit, AfterViewInit {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
