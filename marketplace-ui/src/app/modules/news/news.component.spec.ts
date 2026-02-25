@@ -184,32 +184,6 @@ describe('NewsComponent', () => {
   it('should setup intersection observer and call loadReleaseLetters when intersecting', () => {
     const observeSpy = jasmine.createSpy('observe');
 
-    const mockObserver = jasmine
-      .createSpy('IntersectionObserver')
-      .and.callFake((callback: any) => {
-        callback([{ isIntersecting: true }]);
-        return { observe: observeSpy };
-      });
-
-    (window as any).IntersectionObserver = mockObserver;
-
-    spyOn(component, 'hasMoreReleaseLetters').and.returnValue(true);
-    spyOn(component.loadingService, 'isLoading').and.returnValue(false);
-    spyOn(component, 'loadReleaseLetters');
-
-    component.observerElement = {
-      nativeElement: document.createElement('div')
-    } as ElementRef;
-
-    component.setupIntersectionObserver();
-
-    expect(component.loadReleaseLetters).toHaveBeenCalled();
-    expect(observeSpy).toHaveBeenCalled();
-  });
-
-  it('should setup intersection observer and call loadReleaseLetters when intersecting', () => {
-    const observeSpy = jasmine.createSpy('observe');
-
     let savedCallback!: IntersectionObserverCallback;
 
     class MockIntersectionObserver {
