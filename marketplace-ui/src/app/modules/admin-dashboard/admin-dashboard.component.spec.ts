@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { AdminDashboardService, SyncTaskExecution } from './admin-dashboard.service';
 import { ProductService } from '../../modules/product/product.service';
@@ -13,6 +13,7 @@ import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { provideRouter } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -48,6 +49,7 @@ const expectSyncTaskState = (
 };
 
 describe('AdminDashboardComponent', () => {
+  let cdr: ChangeDetectorRef;
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
   let mockAdminService: jasmine.SpyObj<AdminDashboardService>;
@@ -116,6 +118,9 @@ describe('AdminDashboardComponent', () => {
     mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
+
+    cdr = component.cdr;
+    spyOn(cdr, 'markForCheck');
   });
 
   describe('ngOnInit', () => {
@@ -459,4 +464,32 @@ describe('AdminDashboardComponent', () => {
       expect(component.dropdownOpen).toBe(false);
     });
   });
+
+  it('should set showSyncTask to false on route activate', fakeAsync(() => {
+    component.showSyncTask = true;
+
+    component.onRouteActivate();
+
+    // before microtask flush
+    expect(component.showSyncTask).toBeTrue();
+
+    flushMicrotasks();
+
+    expect(component.showSyncTask).toBeFalse();
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  }));
+
+  it('should set showSyncTask to true on route deactivate', fakeAsync(() => {
+    component.showSyncTask = false;
+
+    component.onRouteDeactivate();
+
+    // before microtask flush
+    expect(component.showSyncTask).toBeFalse();
+
+    flushMicrotasks();
+
+    expect(component.showSyncTask).toBeTrue();
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  }));
 });
