@@ -158,4 +158,75 @@ describe('MarkdownEditorComponent', () => {
     expect(toTextAreaSpy).toHaveBeenCalled();
     expect(cleanupSpy).toHaveBeenCalled();
   });
+
+  it('should sync editor value and preserve cursor when contentValue changes', async () => {
+    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+      default: FakeEasyMDE
+    });
+
+    await component.ngAfterViewInit();
+
+    const fakeMde = component['mde'] as any;
+    const cm = fakeMde.codemirror;
+
+    fakeMde.value('old');
+
+    const getCursorSpy = spyOn(cm, 'getCursor').and.returnValue({
+      line: 3,
+      ch: 5
+    });
+
+    const setCursorSpy = spyOn(cm, 'setCursor').and.callThrough();
+    const valueSpy = spyOn(fakeMde, 'value').and.callThrough();
+
+    component.contentValue.set('new');
+
+    fixture.detectChanges();
+
+    expect(getCursorSpy).toHaveBeenCalled();
+    expect(valueSpy).toHaveBeenCalledWith('new');
+    expect(setCursorSpy).toHaveBeenCalledWith({ line: 3, ch: 5 });
+  });
+
+  it('should NOT initialize editor when running on server platform', () => {
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      imports: [MarkdownEditorComponent],
+      providers: [{ provide: PLATFORM_ID, useValue: 'server' }]
+    }).compileComponents();
+
+    const serverFixture = TestBed.createComponent(MarkdownEditorComponent);
+    const serverComponent = serverFixture.componentInstance;
+
+    spyOn(serverComponent as any, 'initializeEditor');
+
+    serverFixture.detectChanges();
+
+    expect((serverComponent as any).initializeEditor).not.toHaveBeenCalled();
+    expect(serverComponent['mde']).toBeUndefined();
+  });
+
+  it('should set content when mde is initialized', async () => {
+    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+      default: FakeEasyMDE
+    });
+
+    await component.ngAfterViewInit();
+
+    const fakeMde = component['mde'] as any;
+    const valueSpy = spyOn(fakeMde, 'value');
+
+    component.setEasyMDEContent('hello world');
+
+    expect(valueSpy).toHaveBeenCalledWith('hello world');
+  });
+
+  it('should NOT set content if mde is not initialized', () => {
+    component['mde'] = undefined as any;
+
+    expect(() => {
+      component.setEasyMDEContent('test');
+    }).not.toThrow();
+  });
 });
