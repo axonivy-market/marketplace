@@ -7,12 +7,12 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { AdminAuthService } from './admin-auth.service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
-import { provideRouter } from '@angular/router';
+import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 
 const TEST_CONSTANTS = {
@@ -49,6 +49,7 @@ const expectSyncTaskState = (
 };
 
 describe('AdminDashboardComponent', () => {
+  let router: Router;
   let cdr: ChangeDetectorRef;
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
@@ -119,6 +120,7 @@ describe('AdminDashboardComponent', () => {
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
 
+    router = TestBed.inject(Router);
     cdr = component.cdr;
     spyOn(cdr, 'markForCheck');
   });
@@ -470,7 +472,6 @@ describe('AdminDashboardComponent', () => {
 
     component.onRouteActivate();
 
-    // before microtask flush
     expect(component.showSyncTask).toBeTrue();
 
     flushMicrotasks();
@@ -484,7 +485,6 @@ describe('AdminDashboardComponent', () => {
 
     component.onRouteDeactivate();
 
-    // before microtask flush
     expect(component.showSyncTask).toBeFalse();
 
     flushMicrotasks();
@@ -492,4 +492,34 @@ describe('AdminDashboardComponent', () => {
     expect(component.showSyncTask).toBeTrue();
     expect(cdr.markForCheck).toHaveBeenCalled();
   }));
+
+  it('should set page title when navigating to /internal-dashboard', () => {
+    const events$ = new Subject<any>();
+
+    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+
+    component.ngOnInit();
+
+    events$.next(
+      new NavigationEnd(1, '/internal-dashboard', '/internal-dashboard')
+    );
+
+    expect(mockPageTitleService.setTitleOnLangChange)
+      .toHaveBeenCalledWith('common.admin.sync.pageTitle');
+  });
+
+  it('should not set page title for other routes', () => {
+    const events$ = new Subject<any>();
+
+    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+
+    component.ngOnInit();
+
+    events$.next(
+      new NavigationEnd(1, '/other', '/other')
+    );
+
+    expect(mockPageTitleService.setTitleOnLangChange)
+      .toHaveBeenCalledTimes(1); // only initial call
+  });
 });
