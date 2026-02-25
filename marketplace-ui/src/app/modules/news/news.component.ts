@@ -5,6 +5,7 @@ import {
   ElementRef,
   Inject,
   inject,
+  OnDestroy,
   OnInit,
   PLATFORM_ID,
   signal,
@@ -45,7 +46,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss'
 })
-export class NewsComponent implements OnInit, AfterViewInit {
+export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('releaseLetterObserver', { static: false })
   observerElement!: ElementRef;
 

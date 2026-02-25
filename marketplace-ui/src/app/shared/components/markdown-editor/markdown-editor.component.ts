@@ -109,18 +109,18 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     });
     this.isMDEReady = true;
 
-    const wrapper = this.mde?.codemirror?.getWrapperElement();
-    const container = wrapper?.closest('.EasyMDEContainer');
-
-    if (!container) {
-      return;
-    }
+    const container = this.mde?.codemirror
+      .getWrapperElement()
+      .closest('.EasyMDEContainer')!;
 
     const easyMDEToolbar = container.querySelector('.editor-toolbar')!;
     easyMDEToolbar.classList.add(this.bgSecondaryClass, this.textPrimaryClass);
 
     const codeMirrorTextArea = container.querySelector('.CodeMirror')!;
-    codeMirrorTextArea.classList.add(this.bgSecondaryClass, this.textPrimaryClass);
+    codeMirrorTextArea.classList.add(
+      this.bgSecondaryClass,
+      this.textPrimaryClass
+    );
 
     this.mde?.codemirror.on('change', () => {
       this.updateContent(this.mde!.value());
