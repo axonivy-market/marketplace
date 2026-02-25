@@ -80,4 +80,38 @@ describe('MarkdownService', () => {
 
     expect(result).toContain(expectedOutput);
   });
+
+  it('should convert GitHub profile URL to @mention in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+
+    service.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
+
+    const inputText =
+      'Thanks to https://github.com/johndoe for the contribution';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain('Thanks to @johndoe for the contribution');
+  });
+
+  it('should leave non-GitHub URLs unchanged in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+
+    service.linkifyPullRequests(
+      md,
+      sourceUrl,
+      GITHUB_PULL_REQUEST_NUMBER_REGEX
+    );
+
+    const inputText = 'Visit https://example.com for more info';
+
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain('https://example.com');
+  });
 });
