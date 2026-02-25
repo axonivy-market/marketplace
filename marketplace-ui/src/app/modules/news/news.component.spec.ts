@@ -7,7 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { LoadingService } from '../../core/services/loading/loading.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('NewsComponent', () => {
   let component: NewsComponent;
@@ -37,10 +37,6 @@ describe('NewsComponent', () => {
         .createSpy()
         .and.callFake((c: string) => `<p>${c}</p>`)
     };
-
-    // mockLoadingService = {
-    //   isLoading: jasmine.createSpy().and.returnValue(false)
-    // };
 
     await TestBed.configureTestingModule({
       imports: [NewsComponent, TranslateModule.forRoot()],
@@ -217,6 +213,33 @@ describe('NewsComponent', () => {
     expect(observeSpy).toHaveBeenCalled();
   });
 
+  it('should not setup intersection observer if not running in browser', () => {
+    component.isBrowser = false;
+
+    const originalIO = window.IntersectionObserver;
+    const ioSpy = jasmine.createSpy('IntersectionObserver');
+    (window as any).IntersectionObserver = ioSpy;
+
+    component.setupIntersectionObserver();
+
+    expect(ioSpy).not.toHaveBeenCalled();
+
+    window.IntersectionObserver = originalIO;
+  });
+
+  it('should not setup intersection observer if IntersectionObserver is undefined', () => {
+    component.isBrowser = true;
+
+    const originalIO = window.IntersectionObserver;
+    (window as any).IntersectionObserver = undefined;
+
+    component.setupIntersectionObserver();
+
+    expect().nothing();
+
+    window.IntersectionObserver = originalIO;
+  });
+
   it('should unsubscribe all subscriptions on destroy', () => {
     const unsubscribeSpy = jasmine.createSpy('unsubscribe');
 
@@ -225,5 +248,32 @@ describe('NewsComponent', () => {
     component.ngOnDestroy();
 
     expect(unsubscribeSpy).toHaveBeenCalled();
+  });
+
+  it('should return early if response is null', () => {
+    mockAdminDashboardService.getReleaseLetters.and.returnValue(of(null));
+
+    const freshFixture = TestBed.createComponent(NewsComponent);
+    const freshComponent = freshFixture.componentInstance;
+
+    freshComponent.loadReleaseLetters();
+
+    expect(freshComponent.newsLinks).toBeUndefined();
+    expect(freshComponent.newsPages).toBeUndefined();
+    expect(freshComponent.releaseLetterSafeHtmlContentList()).toEqual([]);
+  });
+
+  it('should handle error from getReleaseLetters', () => {
+    const testError = new Error('Test error');
+
+    mockAdminDashboardService.getReleaseLetters.and.returnValue(
+      throwError(() => testError)
+    );
+
+    const initialSubscriptionCount = component.subscriptions.length;
+
+    component.loadReleaseLetters();
+
+    expect(component.subscriptions.length).toBe(initialSubscriptionCount + 1);
   });
 });
