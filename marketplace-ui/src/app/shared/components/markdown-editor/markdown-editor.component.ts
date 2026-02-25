@@ -49,7 +49,10 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
       const value = this.contentValue() ?? '';
       const submitting = this.isSubmittingSignal()?.();
 
-      if (!this.mde) return;
+      if (!this.mde) {
+        return;
+      }
+
       this.mde.codemirror.setOption(
         'readOnly',
         submitting ? 'nocursor' : false
@@ -64,11 +67,15 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  async ngAfterViewInit(): Promise<void> {
+  ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
+    this.initializeEditor();
+  }
+
+  async initializeEditor(): Promise<void> {
     const { default: EasyMDE } = await this.loadEasyMDE();
 
     this.mde = new EasyMDE({
