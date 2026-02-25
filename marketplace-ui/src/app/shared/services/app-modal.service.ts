@@ -13,29 +13,6 @@ import { ReleaseLetter } from '../models/release-letter-request.model';
 export class AppModalService {
   private readonly modalService = inject(NgbModal);
 
-  openReleaseLetterModal(item: ReleaseLetter): void {
-    const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
-      fullscreen: 'md',
-      centered: true,
-      size: 'xl'
-    });
-
-    modalRef.componentInstance.item = item;
-  }
-
-  openDeleteReleaseLetterConfirmModal(sprint: string) {
-    const modalRef = this.modalService.open(
-      DeleteReleaseLetterConfirmModalComponent,
-      {
-        size: 'lg'
-      }
-    );
-
-    modalRef.componentInstance.releaseLetterSprint = sprint;
-
-    return modalRef.result;
-  }
-
   openShowFeedbacksDialog(): void {
     this.modalService.open(ShowFeedbacksDialogComponent, {
       centered: true,
@@ -62,5 +39,28 @@ export class AppModalService {
       centered: true,
       modalDialogClass: 'add-feedback-modal-dialog'
     });
+  }
+
+  openReleaseLetterModal(item: ReleaseLetter): void {
+    const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
+      fullscreen: 'md',
+      centered: true,
+      size: 'xl'
+    });
+
+    modalRef.componentInstance.item = item;
+  }
+
+  openDeleteReleaseLetterConfirmModal(sprint: string) {
+    const modalRef = this.modalService.open(
+      DeleteReleaseLetterConfirmModalComponent,
+      {
+        size: 'lg'
+      }
+    );
+
+    modalRef.componentInstance.releaseLetterSprint = sprint;
+
+    return modalRef.result;
   }
 }

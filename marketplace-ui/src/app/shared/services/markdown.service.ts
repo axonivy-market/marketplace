@@ -25,10 +25,6 @@ export class MarkdownService {
     });
     this.md
       .use(full)
-      // .use(
-      //   (MarkdownItGitHubAlerts as any).default ??
-      //     (MarkdownItGitHubAlerts as any)
-      // )
       .use(githubAlertsPlugin)
       .use(taskLists)
       .use(this.linkifyPullRequests)
