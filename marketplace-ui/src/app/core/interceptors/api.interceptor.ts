@@ -156,7 +156,7 @@ export function handleHttpError(
   return EMPTY;
 }
 
-function invalidateGetCache(transferState: TransferState, url: string) {
+export function invalidateGetCache(transferState: TransferState, url: string) {
   const key = makeStateKey(`GET ${url}`);
   if (transferState.hasKey(key)) {
     transferState.remove(key);
