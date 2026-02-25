@@ -132,7 +132,7 @@ export class AdminDashboardService {
     );
   }
 
-  getReleaseLetters2(
+  getReleaseLetters(
     releaseLetterCriteria: ReleaseLetterCriteria,
     pageId: String = LoadingComponentId.NEWS_PAGE
   ): Observable<ReleaseLetterListApiResponse> {

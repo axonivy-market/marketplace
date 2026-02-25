@@ -122,7 +122,7 @@ export class NewsComponent {
 
   loadReleaseLetters(): void {
     const sub = this.adminDashboardService
-      .getReleaseLetters2(this.releaseLetterCriteria)
+      .getReleaseLetters(this.releaseLetterCriteria)
       .subscribe({
         next: response => {
           if (!response) {
