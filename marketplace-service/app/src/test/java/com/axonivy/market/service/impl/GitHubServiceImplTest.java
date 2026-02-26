@@ -24,7 +24,9 @@ import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
+import org.kohsuke.github.function.InputStreamFunction;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -41,7 +43,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -886,5 +890,76 @@ class GitHubServiceImplTest {
     assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
+  }
+
+  @Test
+  void testGetLatestWorkflowRunReturnsCompletedRun() throws IOException {
+    GHRepository repo = mock(GHRepository.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+    PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
+    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
+
+    GHWorkflowRun completedRun = mock(GHWorkflowRun.class);
+
+    when(repo.getWorkflow("build.yml")).thenReturn(workflow);
+    when(workflow.listRuns()).thenReturn(pagedRuns);
+    when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
+
+    when(pagedRuns.iterator()).thenReturn(pagedIterator);
+
+    when(pagedIterator.hasNext()).thenReturn(true, false);
+    when(pagedIterator.next()).thenReturn(completedRun);
+
+    when(completedRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
+
+    GHWorkflowRun result =
+        gitHubService.getLatestWorkflowRun(repo, "build.yml");
+
+    assertNotNull(result);
+    assertEquals(completedRun, result);
+  }
+
+  @Test
+  void testGetLatestWorkflowRunNoCompletedRunsReturnsNull() throws IOException {
+    GHRepository repo = mock(GHRepository.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+    PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
+    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
+
+    GHWorkflowRun inProgressRun = mock(GHWorkflowRun.class);
+
+    when(repo.getWorkflow("build.yml")).thenReturn(workflow);
+    when(workflow.listRuns()).thenReturn(pagedRuns);
+    when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
+
+    when(pagedRuns.iterator()).thenReturn(pagedIterator);
+
+    when(pagedIterator.hasNext()).thenReturn(true, false);
+    when(pagedIterator.next()).thenReturn(inProgressRun);
+
+    when(inProgressRun.getStatus())
+        .thenReturn(GHWorkflowRun.Status.IN_PROGRESS);
+
+    GHWorkflowRun result =
+        gitHubService.getLatestWorkflowRun(repo, "build.yml");
+
+    assertNull(result);
+  }
+
+  @Test
+  void testDownloadArtifactZipReturnsStreamWithDownloadedBytes() throws Exception {
+    GHArtifact artifact = mock(GHArtifact.class);
+    byte[] expected = new byte[] {1, 2, 3};
+
+    doAnswer(inv -> {
+      InputStreamFunction<Void> fn = inv.getArgument(0);
+      fn.apply(new ByteArrayInputStream(expected));
+      return null;
+    }).when(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
+
+    InputStream result = gitHubService.downloadArtifactZip(artifact);
+
+    assertArrayEquals(expected, result.readAllBytes());
+    verify(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
   }
 }
