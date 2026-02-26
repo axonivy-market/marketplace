@@ -7,8 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,14 +29,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LogServiceImplTest {
 
+  @InjectMocks
   private LogServiceImpl logService;
   
   @TempDir
   private Path tempDir;
-
+  
   @BeforeEach
   void setUp() {
-    logService = new LogServiceImpl(null, new ArrayList<>(), 0);
+    // Set the log path to temp directory using reflection for testing
+    ReflectionTestUtils.setField(logService, "logPath", tempDir.toString());
   }
 
   @Test
@@ -42,7 +47,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate(null);
     
@@ -56,7 +60,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
@@ -70,7 +73,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("");
     
@@ -89,7 +91,6 @@ class LogServiceImplTest {
     Files.createFile(logFile2);
     Files.createFile(logFile3);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("2026-02-26");
     
@@ -108,7 +109,6 @@ class LogServiceImplTest {
     Files.createFile(gzFile);
     Files.createFile(txtFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
@@ -119,7 +119,6 @@ class LogServiceImplTest {
 
   @Test
   void testListGzLogNamesByDateWithNonExistentPath() {
-    logService = createLogServiceWithPath("/non/existent/path");
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
@@ -128,9 +127,7 @@ class LogServiceImplTest {
   }
 
   @Test
-  void testListGzLogNamesByDateWithEmptyLogPath() {
-    logService = createLogServiceWithPath("");
-    
+  void testListGzLogNamesByDateWithEmptyLogPath() {    
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
     assertNotNull(result, "Result should not be null");
@@ -138,9 +135,7 @@ class LogServiceImplTest {
   }
 
   @Test
-  void testListGzLogNamesByDateWithNullLogPath() {
-    logService = createLogServiceWithPath(null);
-    
+  void testListGzLogNamesByDateWithNullLogPath() {    
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
     assertNotNull(result, "Result should not be null");
@@ -152,7 +147,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result1 = logService.listGzLogNamesByDate("null");
     List<LogFileModel> result2 = logService.listGzLogNamesByDate("null");
@@ -163,18 +157,11 @@ class LogServiceImplTest {
 
   @Test
   void testExtractDateFromFileName() throws IOException {
-    logService = createLogServiceWithPath(tempDir.toString());
-    
-    // Test cases with different date formats
-    List<LogFileModel> result = logService.listGzLogNamesByDate("null");
-    
     // Create specific files and test
     Path logFile = tempDir.resolve("application.2026-02-26.log");
     Files.createFile(logFile);
     
-    // Refresh cache
-    logService = createLogServiceWithPath(tempDir.toString());
-    result = logService.listGzLogNamesByDate("2026-02-26");
+    List<LogFileModel> result = logService.listGzLogNamesByDate("2026-02-26");
     
     assertTrue(result.size() > 0, "Result should not be empty");
     assertTrue(result.stream().anyMatch(log -> "2026-02-26".equals(log.getDate())), "Should extract date from file name");
@@ -189,8 +176,7 @@ class LogServiceImplTest {
       mockedFileUtils.when(() -> FileUtils.resolveSafePath(any(), any()))
           .thenReturn(logFile);
       
-      logService = createLogServiceWithPath(tempDir.toString());
-      
+        
       boolean exists = logService.isLogFileExisted("application.log");
       
       assertTrue(exists, "Log file should exist");
@@ -205,8 +191,7 @@ class LogServiceImplTest {
       mockedFileUtils.when(() -> FileUtils.resolveSafePath(any(), any()))
           .thenReturn(nonExistentFile);
       
-      logService = createLogServiceWithPath(tempDir.toString());
-      
+        
       boolean exists = logService.isLogFileExisted("non-existent.log");
       
       assertFalse(exists, "Non-existent log file should return false");
@@ -223,8 +208,7 @@ class LogServiceImplTest {
       mockedFileUtils.when(() -> FileUtils.resolveSafePath(any(), any()))
           .thenReturn(logFile);
       
-      logService = createLogServiceWithPath(tempDir.toString());
-      
+        
       OutputStream outputStream = new ByteArrayOutputStream();
       logService.streamLogContent("application.log", outputStream);
       
@@ -241,8 +225,7 @@ class LogServiceImplTest {
       mockedFileUtils.when(() -> FileUtils.resolveSafePath(any(), any()))
           .thenReturn(nonExistentFile);
       
-      logService = createLogServiceWithPath(tempDir.toString());
-      
+        
       OutputStream outputStream = new ByteArrayOutputStream();
       assertDoesNotThrow(() -> logService.streamLogContent("non-existent.log", outputStream), "Streaming non-existent file should not throw exception");
     }
@@ -254,7 +237,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.write(logFile, content.getBytes());
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
@@ -267,7 +249,6 @@ class LogServiceImplTest {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
     
-    logService = createLogServiceWithPath(tempDir.toString());
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
@@ -287,17 +268,10 @@ class LogServiceImplTest {
     Files.createFile(file3);
     Files.createFile(file4);
     
-    logService = createLogServiceWithPath(tempDir.toString());
-    
     List<LogFileModel> feb20 = logService.listGzLogNamesByDate("2026-02-20");
     List<LogFileModel> feb26 = logService.listGzLogNamesByDate("2026-02-26");
     
     assertEquals(2, feb20.size(), "Should find 2 files for 2026-02-20");
     assertEquals(2, feb26.size(), "Should find 2 files for 2026-02-26");
-  }
-
-  private LogServiceImpl createLogServiceWithPath(String path) {
-    LogServiceImpl service = new LogServiceImpl(path, new ArrayList<>(), 0);
-    return service;
   }
 }

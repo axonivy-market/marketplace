@@ -6,6 +6,8 @@ import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,7 @@ import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
 
 @Log4j2
 @Service
-@AllArgsConstructor
+@NoArgsConstructor
 public class LogServiceImpl implements LogService {
   private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L; // 30 min
   @Value("${logging.file.path}")
