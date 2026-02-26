@@ -19,7 +19,7 @@ interface ParsedLog {
 }
 
 const LOG_LINE_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>.*)$/;
+  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>[^\r\n]*)$/;
 const LONG_MESSAGE_THRESHOLD = 150;
 
 @Component({
@@ -77,8 +77,8 @@ export class LogViewerComponent {
       const { timestamp, level, message } = match.groups;
       return {
         timestamp,
-        level: level.trim(),
         message,
+        level: level.trim(),
         isLong: message.length > LONG_MESSAGE_THRESHOLD
       };
     }

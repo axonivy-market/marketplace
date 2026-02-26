@@ -1,143 +1,142 @@
 <div class="d-flex flex-column h-100">
-    <div class="d-flex gap-3 p-2 border-bottom bg-light">
-        <button class="btn btn-primary tab-title tab-runtime-log" [class.active]="activeTab() === 'runtime-log'"
-            (click)="activeTab.set('runtime-log')" [attr.aria-current]="activeTab() === 'runtime-log' ? 'page' : null">
-            Runtime Log
+<div class="d-flex gap-3 p-2 border-bottom bg-light">
+    <button class="btn btn-primary tab-title tab-runtime-log" [class.active]="activeTab() === 'runtime-log'"
+        (click)="activeTab.set('runtime-log')" [attr.aria-current]="activeTab() === 'runtime-log' ? 'page' : null">
+        Runtime Log
+    </button>
+    <button class="btn btn-primary tab-title tab-logs-file" [class.active]="activeTab() === 'logs-file'"
+        (click)="activeTab.set('logs-file')" [attr.aria-current]="activeTab() === 'logs-file' ? 'page' : null">
+        Logs File
+    </button>
+</div>
+@if (activeTab() === 'runtime-log') {
+<div class="d-flex flex-column h-100 flex-grow-1">
+    <div class="d-flex align-items-center gap-2 p-2 border-bottom bg-light">
+        <button class="btn btn-sm btn-outline-secondary fs-4 border-0"
+            [title]="isConnected() ? 'Disconnect' : 'Connect'"
+            [attr.aria-label]="isConnected() ? 'Disconnect' : 'Connect'" (click)="toggleConnection()">
+            <i class="bi" [class.bi-plug-fill]="isConnected()" [class.bi-plug]="!isConnected()"></i>
+            <span class="visually-hidden">{{ isConnected() ? 'Disconnect' : 'Connect' }}</span>
         </button>
-        <button class="btn btn-primary tab-title tab-logs-file" [class.active]="activeTab() === 'logs-file'"
-            (click)="activeTab.set('logs-file')" [attr.aria-current]="activeTab() === 'logs-file' ? 'page' : null">
-            Logs File
+        <button class="btn btn-sm btn-secondary fs-4 border-0" (click)="togglePause()"
+            [title]="paused() ? 'Resume' : 'Pause'" [attr.aria-label]="paused() ? 'Resume' : 'Pause'">
+            <i class="bi" [class.bi-play-circle-fill]="paused()" [class.bi-pause-circle-fill]="!paused()"></i>
+            <span class="visually-hidden">{{ paused() ? 'Resume' : 'Pause' }}</span>
         </button>
-    </div>
-    @if (activeTab() === 'runtime-log') {
-    <div class="d-flex flex-column h-100 flex-grow-1">
-        <div class="d-flex align-items-center gap-2 p-2 border-bottom bg-light">
-            <button class="btn btn-sm btn-outline-secondary fs-4 border-0"
-                [title]="isConnected() ? 'Disconnect' : 'Connect'"
-                [attr.aria-label]="isConnected() ? 'Disconnect' : 'Connect'" (click)="toggleConnection()">
-                <i class="bi" [class.bi-plug-fill]="isConnected()" [class.bi-plug]="!isConnected()"></i>
-                <span class="visually-hidden">{{ isConnected() ? 'Disconnect' : 'Connect' }}</span>
+        <button class="btn btn-sm btn-outline-danger fs-4 border-0" (click)="clear()" title="Clear"
+            aria-label="Clear logs">
+            <i class="bi bi-trash-fill"></i>
+            <span class="visually-hidden">Clear</span>
+        </button>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary fs-4 border-0" type="button" id="fileFilterDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download options">
+                <i class="bi bi-download"></i>
             </button>
-            <button class="btn btn-sm btn-secondary fs-4 border-0" (click)="togglePause()"
-                [title]="paused() ? 'Resume' : 'Pause'" [attr.aria-label]="paused() ? 'Resume' : 'Pause'">
-                <i class="bi" [class.bi-play-circle-fill]="paused()" [class.bi-pause-circle-fill]="!paused()"></i>
-                <span class="visually-hidden">{{ paused() ? 'Resume' : 'Pause' }}</span>
-            </button>
-            <button class="btn btn-sm btn-outline-danger fs-4 border-0" (click)="clear()" title="Clear"
-                aria-label="Clear logs">
-                <i class="bi bi-trash-fill"></i>
-                <span class="visually-hidden">Clear</span>
-            </button>
-            <div class="dropdown">
-                <button class="btn btn-sm btn-outline-primary fs-4 border-0" type="button" id="fileFilterDropdown"
-                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download options">
-                    <i class="bi bi-download"></i>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="fileFilterDropdown">
-                    <li><a class="dropdown-item" href="#" (click)="downloadLogs()">Download All Logs</a></li>
-                    <li><a class="dropdown-item" href="#" (click)="downloadFilteredLogs()">Download Filtered</a>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item" href="#" (click)="downloadAsJSON()">Download as JSON</a></li>
-                    <li><a class="dropdown-item" href="#" (click)="downloadAsCSV()">Download as CSV</a></li>
-                </ul>
-            </div>
-            <div class="form-check ms-auto">
-                <input class="form-check-input" type="checkbox" id="autoScroll" [checked]="autoScroll()"
-                    (click)="toggleAutoScroll()" />
-                <label class="form-check-label text-dark auto-scroll-label" for="autoScroll">
-                    Auto-scroll
-                </label>
-            </div>
+            <ul class="dropdown-menu" aria-labelledby="fileFilterDropdown">
+                <li><a class="dropdown-item" href="#" (click)="downloadLogs()">Download All Logs</a></li>
+                <li><a class="dropdown-item" href="#" (click)="downloadFilteredLogs()">Download Filtered</a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#" (click)="downloadAsJSON()">Download as JSON</a></li>
+                <li><a class="dropdown-item" href="#" (click)="downloadAsCSV()">Download as CSV</a></li>
+            </ul>
         </div>
-        <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2 text-wrap">
-            <table class="table table-sm table-dark table-striped table-bordered rounded-3 mb-0 log-table">
-                <thead class="table-secondary rounded-top sticky-top">
-                    <tr>
-                        <th class="col-3 text-center">Timestamp</th>
-                        <th class="col-1 text-center">Level</th>
-                        <th class="col-8 text-center">Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (log of parsedLogs(); track $index) {
-                    <tr>
-                        <td class="font-monospace small text-success fw-bold">{{ log.timestamp }}</td>
-                        <td class="d-flex justify-content-center align-items-center">
-                            <span class="log-level-badge text-dark rounded p-1 text-center"
-                                [ngStyle]="{'background-color': getLogLevelColor(log.level)}">
-                                {{ log.level }}
-                            </span>
-                        </td>
-                        <td class="font-monospace small cursor-pointer"
-                            (click)="log.isLong ? toggleExpand($index) : null">
-                            @if (log.isLong && !isExpanded($index)) {
-                            <div class="text-truncate text-light log-message-truncate">
+        <div class="form-check ms-auto">
+            <input class="form-check-input" type="checkbox" id="autoScroll" [checked]="autoScroll()"
+                (click)="toggleAutoScroll()" />
+            <label class="form-check-label text-dark auto-scroll-label" for="autoScroll">
+                Auto-scroll
+            </label>
+        </div>
+    </div>
+    <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2 text-wrap">
+        <table class="table table-sm table-dark table-striped table-bordered rounded-3 mb-0 log-table">
+            <thead class="table-secondary rounded-top sticky-top">
+                <tr>
+                    <th class="col-3 text-center">Timestamp</th>
+                    <th class="col-1 text-center">Level</th>
+                    <th class="col-8 text-center">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (log of parsedLogs(); track $index) {
+                <tr>
+                    <td class="font-monospace small text-success fw-bold">{{ log.timestamp }}</td>
+                    <td class="d-flex justify-content-center align-items-center">
+                        <span class="log-level-badge text-dark rounded p-1 text-center"
+                            [ngStyle]="{'background-color': getLogLevelColor(log.level)}">
+                            {{ log.level }}
+                        </span>
+                    </td>
+                    <td class="font-monospace small cursor-pointer" (click)="log.isLong ? toggleExpand($index) : null">
+                        @if (log.isLong && !isExpanded($index)) {
+                        <div class="text-truncate text-light log-message-truncate">
+                            {{ log.message }}
+                        </div>
+                        }
+                        <div class="collapse" [class.show]="!log.isLong || isExpanded($index)">
+                            <div class="text-light text-wrap text-break">
                                 {{ log.message }}
                             </div>
-                            }
-                            <div class="collapse" [class.show]="!log.isLong || isExpanded($index)">
-                                <div class="text-light text-wrap text-break">
-                                    {{ log.message }}
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    }
-    @else if (activeTab() === 'logs-file') {
-    <div class="d-flex flex-column h-100 flex-grow-1">
-        <div class="d-flex align-items-center gap-2 p-3 border-bottom bg-light">
-            <label for="logDateFilter" class="form-label mb-0">Select Date:</label>
-            <input type="date" class="form-control date-filter-input" id="logDateFilter" [value]="selectedDate()"
-                (change)="filterLogsByDate($event)" />
-            <button class="btn btn-sm btn-outline-danger border-0" (click)="clearDateFilter()" title="Clear Filter">
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
-        <div class="flex-grow-1 overflow-auto p-3">
-            @if (filteredLogFiles().length > 0) {
-            <div class="row g-3">
-                @for (logFile of filteredLogFiles(); track logFile.fileName) {
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100 log-file-card" >
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <div>
-                                <h6 class="card-title font-monospace mb-2 text-truncate text-secondary"
-                                    [title]="logFile.fileName">
-                                    {{ logFile.fileName }}
-                                </h6>
-                                <p class="card-text text-muted small mb-0">
-                                    <i class="bi bi-file-earmark"></i>
-                                    {{ formatFileSize(logFile.size) }}
-                                </p>
-                                @if (logFile.date) {
-                                <p class="card-text text-muted small">
-                                    <i class="bi bi-calendar"></i>
-                                    {{ logFile.date }}
-                                </p>
-                                }
-                            </div>
-                            <button class="btn btn-sm btn-primary mt-3" (click)="downloadLogFile(logFile, $event)">
-                                <i class="bi bi-download"></i> Download
-                            </button>
                         </div>
-                    </div>
-                </div>
+                    </td>
+                </tr>
                 }
-            </div>
-            }
-            @else {
-            <div class="alert alert-info text-center">
-                <p>No log files found</p>
-            </div>
-            }
-        </div>
+            </tbody>
+        </table>
     </div>
-    }
+</div>
+}
+@else if (activeTab() === 'logs-file') {
+<div class="d-flex flex-column h-100 flex-grow-1">
+    <div class="d-flex align-items-center gap-2 p-3 border-bottom bg-light">
+        <label for="logDateFilter" class="form-label mb-0">Select Date:</label>
+        <input type="date" class="form-control date-filter-input" id="logDateFilter" [value]="selectedDate()"
+            (change)="filterLogsByDate($event)" />
+        <button class="btn btn-sm btn-outline-danger border-0" (click)="clearDateFilter()" title="Clear Filter">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+    <div class="flex-grow-1 overflow-auto p-3">
+        @if (filteredLogFiles().length > 0) {
+        <div class="row g-3">
+            @for (logFile of filteredLogFiles(); track logFile.fileName) {
+            <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 log-file-card">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="card-title font-monospace mb-2 text-truncate text-secondary" [title]="logFile.fileName">
+                        {{ logFile.fileName }}
+                    </h6>
+                    <p class="card-text text-muted small mb-0">
+                        <i class="bi bi-file-earmark"></i>
+                        {{ formatFileSize(logFile.size) }}
+                    </p>
+                    @if (logFile.date) {
+                    <p class="card-text text-muted small">
+                        <i class="bi bi-calendar"></i>
+                        {{ logFile.date }}
+                    </p>
+                    }
+                </div>
+                <button class="btn btn-sm btn-primary mt-3" (click)="downloadLogFile(logFile, $event)">
+                    <i class="bi bi-download"></i> Download
+                </button>
+            </div>
+        </div>
+        </div>
+        }
+        </div>
+        }
+        @else {
+        <div class="alert alert-info text-center">
+            <p>No log files found</p>
+        </div>
+        }
+        </div>
+        </div>
+        }
+</div>
