@@ -60,9 +60,9 @@ public class ReleaseLetterController {
     PagedModel<ReleaseLetterModel> pageModel =
         pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
 
-    pageModel.forEach(model ->
-        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
-    );
+//    pageModel.forEach(model ->
+//        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
+//    );
 
     return ResponseEntity.ok(pageModel);
   }
