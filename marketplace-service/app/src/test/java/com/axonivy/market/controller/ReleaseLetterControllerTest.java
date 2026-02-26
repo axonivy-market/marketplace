@@ -229,7 +229,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findAllReleaseLettersWithoutPagingShouldReturnCollectionModelWhenDataExists() {
+  void testFindAllReleaseLettersWithoutPagingShouldReturnCollectionModelWhenDataExists() {
     ReleaseLetter entity1 = new ReleaseLetter();
     ReleaseLetter entity2 = new ReleaseLetter();
 
@@ -248,8 +248,10 @@ class ReleaseLetterControllerTest extends BaseSetup {
     ResponseEntity<CollectionModel<ReleaseLetterModel>> response =
         releaseLetterController.findAllReleaseLettersWithoutPaging();
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "HTTP status should be 200 OK when release letters exist");
+    assertNotNull(response.getBody(),
+        "Response body should not be null when release letters exist");
     assertEquals(2, response.getBody().getContent().size(),
         "CollectionModel should contain two elements");
 
@@ -259,7 +261,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void findAllReleaseLettersWithoutPagingShouldAddSelfLinkToEachModel() {
+  void testFindAllReleaseLettersWithoutPagingShouldAddSelfLinkToEachModel() {
     ReleaseLetter entity = new ReleaseLetter();
 
     ReleaseLetterModel model = new ReleaseLetterModel();

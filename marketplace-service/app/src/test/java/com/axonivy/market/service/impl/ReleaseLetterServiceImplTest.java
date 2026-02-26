@@ -343,7 +343,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldReturnAllReleaseLettersSortedByCreatedAtDesc() {
+  void testShouldReturnAllReleaseLettersSortedByCreatedAtDesc() {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     List<ReleaseLetter> expected = List.of(releaseLetterMock);
 
@@ -358,9 +358,12 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     Sort usedSort = sortCaptor.getValue();
     Sort.Order order = usedSort.getOrderFor("createdAt");
 
-    assertNotNull(order);
-    assertEquals(Sort.Direction.DESC, order.getDirection());
-    assertEquals(expected, result);
+    assertNotNull(order,
+        "Sort should contain an order for property 'createdAt'");
+    assertEquals(Sort.Direction.DESC, order.getDirection(),
+        "Release letters should be sorted by 'createdAt' in descending order");
+    assertEquals(expected, result,
+        "Service should return the exact list returned by repository");
   }
 
   private ReleaseLetter createReleaseLetterMock() {
