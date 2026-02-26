@@ -7,26 +7,25 @@ import { LogFileModel } from '../../shared/models/apis/log-file-response.model';
 const BLOB = 'blob';
 const RESPONSE = 'response';
 const ANCHOR_ELEMENT = 'a';
+const LOG_BASE_URL = API_URI.LOGS;
 
 @Injectable({ providedIn: 'root' })
 export class LogService {
   httpClient = inject(HttpClient);
 
   getLogFiles(date?: string): Observable<LogFileModel[]> {
-    let requestURL = API_URI.LOGS;
     let requestParams = new HttpParams();
     requestParams = requestParams.set('date', date ?? '');
-    return this.httpClient.get<LogFileModel[]>(requestURL, {
+    return this.httpClient.get<LogFileModel[]>(LOG_BASE_URL, {
       params: requestParams
     });
   }
 
   getLogFileContent(fileName: string): void {
-    let requestURL = API_URI.LOGS;
     let requestParams = new HttpParams();
     requestParams = requestParams.set('fileName', fileName);
     this.httpClient
-      .get(`${requestURL}/download`, {
+      .get(`${LOG_BASE_URL}/download`, {
         params: requestParams,
         responseType: BLOB,
         observe: RESPONSE

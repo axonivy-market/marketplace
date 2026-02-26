@@ -18,6 +18,10 @@ interface ParsedLog {
   isLong: boolean;
 }
 
+const LOG_LINE_REGEX =
+  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>.*)$/;
+const LONG_MESSAGE_THRESHOLD = 150;
+
 @Component({
   selector: 'app-log-viewer',
   standalone: true,
@@ -68,23 +72,21 @@ export class LogViewerComponent {
 
   private parseLog(logLine: string): ParsedLog {
     // Format: 2026-01-20 00:29:45 INFO  logger - message
-    const match = logLine.match(
-      /^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(\w+)\s+(.*)$/
-    );
-    if (match) {
-      const message = match[3];
+    const match = LOG_LINE_REGEX.exec(logLine);
+    if (match?.groups) {
+      const { timestamp, level, message } = match.groups;
       return {
-        timestamp: match[1],
-        level: match[2].trim(),
-        message: message,
-        isLong: message.length > 150
+        timestamp,
+        level: level.trim(),
+        message,
+        isLong: message.length > LONG_MESSAGE_THRESHOLD
       };
     }
     return {
       timestamp: new Date().toISOString(),
       level: 'INFO',
       message: logLine,
-      isLong: logLine.length > 150
+      isLong: logLine.length > LONG_MESSAGE_THRESHOLD
     };
   }
 
@@ -133,7 +135,9 @@ export class LogViewerComponent {
   }
 
   private scrollToBottom(): void {
-    if (!this.isBrowser) return;
+    if (!this.isBrowser) {
+      return;
+    }
 
     const el = document.getElementById('log-container');
     if (el) {
@@ -170,14 +174,14 @@ export class LogViewerComponent {
     mimeType: string
   ): void {
     const blob = new Blob([content], { type: mimeType });
-    const url = window.URL.createObjectURL(blob);
+    const url = globalThis.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    globalThis.URL.revokeObjectURL(url);
   }
 
   getLogLevelColor(level: string): string {
@@ -193,7 +197,8 @@ export class LogViewerComponent {
 
   private extractDateFromFilename(filename: string): string {
     // Extract date from filename format: application.2026-02-12.log.gz
-    const match = filename.match(/(\d{4}-\d{2}-\d{2})/);
+    const dateRegex = /(\d{4}-\d{2}-\d{2})/;
+    const match = dateRegex.exec(filename);
     return match ? match[1] : '';
   }
 
@@ -204,7 +209,7 @@ export class LogViewerComponent {
         this.logFiles.set(response);
         this.filteredLogFiles.set(response);
       },
-      error: error => {
+      error: _error => {
         this.logFiles.set([]);
         this.filteredLogFiles.set([]);
       }
@@ -229,10 +234,12 @@ export class LogViewerComponent {
   }
 
   formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }
 }

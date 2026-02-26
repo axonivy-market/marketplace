@@ -19,7 +19,7 @@ import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
   providedIn: 'root'
 })
 export class LogStreamService {
-  private eventSource?: EventSource;
+  private eventSource: EventSource | null = null;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
@@ -35,7 +35,9 @@ export class LogStreamService {
   private readonly MAX_LINES = 2000;
 
   connect(): void {
-    if (this.eventSource || isPlatformServer(this.platformId)) return;
+    if (this.eventSource || isPlatformServer(this.platformId)) {
+      return;
+    }
 
     let baseUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
 
@@ -58,18 +60,13 @@ export class LogStreamService {
     };
 
     this.eventSource.onerror = (error: Event) => {
-      console.error('EventSource connection error:', {
-        readyState: this.eventSource?.readyState,
-        url: this.eventSource?.url,
-        error
-      });
       this.disconnect();
     };
   }
 
   disconnect(): void {
     this.eventSource?.close();
-    this.eventSource = undefined;
+    this.eventSource = null;
   }
 
   clear(): void {
