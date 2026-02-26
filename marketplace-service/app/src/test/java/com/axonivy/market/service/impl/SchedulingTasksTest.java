@@ -7,23 +7,23 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
+import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.MockedStatic;
-
 import org.mockito.Mockito;
-
-import static org.mockito.Mockito.*;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.*;
 
 @TestPropertySource("classpath:application-test.properties")
 @SpringBootTest
@@ -34,6 +34,9 @@ class SchedulingTasksTest {
 
   @MockBean
   GitHubService gitHubService;
+
+  @MockBean
+  GithubReposService gitHubReposService;
 
   @MockBean
   NotificationService notificationService;
@@ -60,14 +63,44 @@ class SchedulingTasksTest {
   }
 
   @Test
-  void shouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
+  void shouldHandleIOExceptionWhenSyncingGithubRepos() throws Exception {
+    doThrow(new IOException("failure"))
+        .when(gitHubReposService)
+        .loadAndStoreTestReports();
+
+    assertDoesNotThrow(() -> tasks.syncDataForGithubRepos());
+    verify(gitHubReposService).loadAndStoreTestReports();
+  }
+
+  @Test
+  void shouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
+    when(gitHubProperty.getToken()).thenReturn("token");
+
+    doThrow(new IOException("failure"))
+        .when(gitHubService)
+        .getSecurityDetailsForAllProducts(
+            anyString(),
+            anyString()
+        );
+
+    assertDoesNotThrow(() -> tasks.syncDataForSecurityMonitor());
+    verify(gitHubService)
+        .getSecurityDetailsForAllProducts(
+            "token",
+            GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME
+        );
+    verify(notificationService, never()).notify(any());
+  }
+
+  @Test
+  void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
     String token = "dummy-token";
     when(gitHubProperty.getToken()).thenReturn(token);
 
     ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
     when(gitHubService.getSecurityDetailsForAllProducts(
-        eq(token),
-        eq(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)
+        token,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME
     )).thenReturn(List.of(securityInfo));
 
     DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
