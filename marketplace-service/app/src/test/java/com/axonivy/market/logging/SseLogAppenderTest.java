@@ -1,0 +1,200 @@
+package com.axonivy.market.logging;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.encoder.Encoder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class SseLogAppenderTest {
+
+  private SseLogAppender appender;
+  
+  @Mock
+  private Encoder<ILoggingEvent> mockEncoder;
+  
+  @Mock
+  private ILoggingEvent mockEvent;
+
+  @BeforeEach
+  void setUp() {
+    appender = new SseLogAppender();
+  }
+
+  @Test
+  void testStartWithoutEncoder() {
+    // Start appender without setting encoder
+    appender.start();
+    
+    assertTrue(appender.isStarted());
+  }
+
+  @Test
+  void testStartWithEncoder() {
+    appender.setEncoder(mockEncoder);
+    
+    appender.start();
+    
+    assertTrue(appender.isStarted());
+    verify(mockEncoder, times(1)).start();
+  }
+
+  @Test
+  void testSetEncoder() {
+    appender.setEncoder(mockEncoder);
+    
+    assertEquals(mockEncoder, appender.getEncoder());
+  }
+
+  @Test
+  void testGetEncoder() {
+    appender.setEncoder(mockEncoder);
+    
+    Encoder<ILoggingEvent> retrieved = appender.getEncoder();
+    
+    assertNotNull(retrieved);
+    assertEquals(mockEncoder, retrieved);
+  }
+
+  @Test
+  void testAppendWithNoSubscribers() {
+    appender.setEncoder(mockEncoder);
+    appender.start();
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(false);
+      
+      appender.append(mockEvent);
+      
+      mockedRegistry.verify(() -> LogStreamRegistry.hasSubscribers(), times(1));
+      mockedRegistry.verify(() -> LogStreamRegistry.push(anyString()), never());
+    }
+  }
+
+  @Test
+  void testAppendWithSubscribersAndEncoder() {
+    String encodedMessage = "Encoded log message\n";
+    appender.setEncoder(mockEncoder);
+    appender.start();
+    
+    when(mockEncoder.encode(mockEvent)).thenReturn(encodedMessage.getBytes());
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
+      
+      appender.append(mockEvent);
+      
+      ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+      mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
+      
+      String pushed = captor.getValue();
+      assertEquals("Encoded log message", pushed); // trimmed
+    }
+  }
+
+  @Test
+  void testAppendWithSubscribersAndNoEncoder() {
+    String formattedMessage = "Formatted log message";
+    appender.start();
+    
+    when(mockEvent.getFormattedMessage()).thenReturn(formattedMessage);
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
+      
+      appender.append(mockEvent);
+      
+      ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+      mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
+      
+      String pushed = captor.getValue();
+      assertEquals(formattedMessage, pushed);
+    }
+  }
+
+  @Test
+  void testAppendTrimsWhitespace() {
+    String encodedMessageWithWhitespace = "  Trimmed message  \n";
+    appender.setEncoder(mockEncoder);
+    appender.start();
+    
+    when(mockEncoder.encode(mockEvent)).thenReturn(encodedMessageWithWhitespace.getBytes());
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
+      
+      appender.append(mockEvent);
+      
+      ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+      mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
+      
+      String pushed = captor.getValue();
+      assertEquals("Trimmed message", pushed);
+    }
+  }
+
+  @Test
+  void testAppendMultipleEvents() {
+    String message1 = "First message\n";
+    String message2 = "Second message\n";
+    
+    appender.setEncoder(mockEncoder);
+    appender.start();
+    
+    when(mockEncoder.encode(mockEvent))
+        .thenReturn(message1.getBytes())
+        .thenReturn(message2.getBytes());
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
+      
+      appender.append(mockEvent);
+      appender.append(mockEvent);
+      
+      mockedRegistry.verify(() -> LogStreamRegistry.push(anyString()), times(2));
+    }
+  }
+
+  @Test
+  void testAppenderAlreadyStarted() {
+    appender.setEncoder(mockEncoder);
+    appender.start();
+    
+    assertTrue(appender.isStarted());
+    
+    // Starting again should not cause issues
+    appender.start();
+    assertTrue(appender.isStarted());
+    verify(mockEncoder, times(2)).start();
+  }
+
+  @Test
+  void testAppendEmptyMessage() {
+    String emptyMessage = "";
+    appender.start();
+    
+    when(mockEvent.getFormattedMessage()).thenReturn(emptyMessage);
+    
+    try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
+      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
+      
+      appender.append(mockEvent);
+      
+      ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+      mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
+      
+      String pushed = captor.getValue();
+      assertEquals(emptyMessage, pushed);
+    }
+  }
+}
