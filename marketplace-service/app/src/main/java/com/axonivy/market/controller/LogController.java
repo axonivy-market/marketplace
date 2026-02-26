@@ -61,6 +61,7 @@ public class LogController {
 
   @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public Flux<String> stream() {
+    log.error("Hello Guy - You are trying to observe our log, this is not a good behavior");
     return LogStreamRegistry.asFlux();
   }
 

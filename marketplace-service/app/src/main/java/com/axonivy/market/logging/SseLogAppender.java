@@ -8,6 +8,14 @@ public class SseLogAppender extends AppenderBase<ILoggingEvent> {
   private Encoder<ILoggingEvent> encoder;
 
   @Override
+  public void start() {
+    if (encoder != null) {
+      encoder.init(null);
+    }
+    super.start();
+  }
+
+  @Override
   protected void append(ILoggingEvent event) {
     if (LogStreamRegistry.hasSubscribers()) {
       String record;
