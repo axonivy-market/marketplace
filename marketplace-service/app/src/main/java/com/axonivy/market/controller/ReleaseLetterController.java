@@ -61,10 +61,7 @@ public class ReleaseLetterController {
         pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
 
     pageModel.forEach(model ->
-        model.add(linkTo(
-            methodOn(ReleaseLetterController.class)
-                .findReleaseLetterBySprint(model.getSprint()))
-            .withSelfRel())
+        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
     );
 
     return ResponseEntity.ok(pageModel);
