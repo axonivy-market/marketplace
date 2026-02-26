@@ -146,7 +146,7 @@ class LogServiceImplTest {
   }
 
   @Test
-  void testStreamLogContentWithNonExistentFile() throws IOException {
+  void testStreamLogContentWithNonExistentFile() {
     Path nonExistentFile = tempDir.resolve("non-existent.log");
     try (MockedStatic<FileUtils> mockedFileUtils = mockStatic(FileUtils.class)) {
       mockedFileUtils.when(() -> FileUtils.resolveSafePath(any(), any()))

@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
@@ -28,8 +29,10 @@ import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
 public class LogServiceImpl implements LogService {
   private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L;
   private static final String NULL_STRING = "null";
-  private static    final String DATE_YEAR_SEPARATOR = "\\.";
-  private static  final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+  private static final String DATE_YEAR_SEPARATOR = "\\.";
+  private static final Pattern DATE_YEAR_SEPARATOR_COMPILED = Pattern.compile(DATE_YEAR_SEPARATOR);
+  private static final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+  private static final Pattern DATE_PATTERN_COMPILED = Pattern.compile(DATE_PATTERN);
   private static final int MIN_EXPECTED_PARTS = 2;
   private static final int DATE_YEAR_CHAR_COUNT = 10;
   @Value("${logging.file.path}")
@@ -75,8 +78,8 @@ public class LogServiceImpl implements LogService {
       }
       try (Stream<Path> stream = Files.list(path)) {
         return stream
-          .filter(filePath -> isLogFile(filePath.getFileName().toString()))
-          .map(filePath -> {
+          .filter((Path filePath) -> isLogFile(filePath.getFileName().toString()))
+          .map((Path filePath) -> {
             try {
               var fileName = filePath.getFileName().toString();
               String date = extractDateFromFileName(fileName);
@@ -105,12 +108,12 @@ public class LogServiceImpl implements LogService {
     if (fileName == null || fileName.isEmpty()) {
       return null;
     }
-    String[] parts = fileName.split(DATE_YEAR_SEPARATOR);
+    String[] parts = DATE_YEAR_SEPARATOR_COMPILED.split(fileName);
     if (parts.length >= MIN_EXPECTED_PARTS) {
       // The date is typically the second part: application.[DATE].log(.gz)
       String datePart = parts[1];
       // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
-      if (datePart.length() == DATE_YEAR_CHAR_COUNT && datePart.matches(DATE_PATTERN)) {
+      if (datePart.length() == DATE_YEAR_CHAR_COUNT && DATE_PATTERN_COMPILED.matcher(datePart).matches()) {
         return datePart;
       }
     }
