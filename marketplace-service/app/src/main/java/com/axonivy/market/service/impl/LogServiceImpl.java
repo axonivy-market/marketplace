@@ -4,6 +4,8 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,29 +25,27 @@ import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
 
 @Log4j2
 @Service
+@AllArgsConstructor
 public class LogServiceImpl implements LogService {
-
+  private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L; // 30 min
   @Value("${logging.file.path}")
   private String logPath;
-
-  private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000; // 30 min
   private List<LogFileModel> cachedLogFiles;
   private long lastCacheTime;
-
 
   @Override
   public List<LogFileModel> listGzLogNamesByDate(String date) {
     List<LogFileModel> allLogs = getCachedLogFiles();
-    String DEFAULT_DATE_VALUE = "null";
-    if (StringUtils.isEmpty(date) || StringUtils.equals(DEFAULT_DATE_VALUE, date)) {
+    final String nullValue = "null";
+    if (StringUtils.isEmpty(date) || StringUtils.equals(nullValue, date)) {
       log.debug("No date provided, returning uncompressed .log files");
       return allLogs.stream()
           .filter(log -> log.getFileName().endsWith(LOG_EXTENSION))
-          .collect(Collectors.toList());
+          .toList();
     }
     return allLogs.stream()
         .filter(log -> date.equals(log.getDate()))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<LogFileModel> getCachedLogFiles() {
@@ -69,7 +69,7 @@ public class LogServiceImpl implements LogService {
       return Collections.emptyList();
     }
 
-    Path path = Paths.get(logPath);
+    var path = Paths.get(logPath);
     if (!Files.exists(path) || !Files.isDirectory(path)) {
       log.warn("Logging directory does not exist: {}", logPath);
       return Collections.emptyList();
@@ -77,18 +77,18 @@ public class LogServiceImpl implements LogService {
 
     try (Stream<Path> stream = Files.list(path)) {
       return stream
-          .filter(p -> isLogFile(p.getFileName().toString()))
-          .map(p -> {
+          .filter(filePath -> isLogFile(filePath.getFileName().toString()))
+          .map(filePath -> {
             try {
-              String fileName = p.getFileName().toString();
+              var fileName = filePath.getFileName().toString();
               String date = extractDateFromFileName(fileName);
-              return new LogFileModel(fileName, Files.size(p), date);
+              return new LogFileModel(fileName, Files.size(filePath), date);
             } catch (IOException e) {
-              log.error("Failed to get size of log file: {}", p.getFileName(), e);
-              return new LogFileModel(p.getFileName().toString(), 0L, null);
+              log.error("Failed to get size of log file: {}", filePath.getFileName(), e);
+              return new LogFileModel(filePath.getFileName().toString(), 0L, null);
             }
           })
-          .collect(Collectors.toList());
+          .toList();
     } catch (IOException e) {
       log.error("Failed to list log files in: {}", logPath, e);
       return Collections.emptyList();
@@ -106,15 +106,16 @@ public class LogServiceImpl implements LogService {
     if (fileName == null || fileName.isEmpty()) {
       return null;
     }
-    final String DATE_MONTH_YEAR_SEPARATOR_REGEX = "\\.";
-    final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
-
-    String[] parts = fileName.split(DATE_MONTH_YEAR_SEPARATOR_REGEX);
-    if (parts.length >= 2) {
+    final String dateMonthYearSeparator = "\\.";
+    final String datePattern = "\\d{4}-\\d{2}-\\d{2}";
+    final int minExpectedParts = 2;
+    final int dateYearCharCount = 10; // yyyy-MM-dd is 10 characters
+    String[] parts = fileName.split(dateMonthYearSeparator);
+    if (parts.length >= minExpectedParts) {
       // The date is typically the second part: application.[DATE].log(.gz)
       String datePart = parts[1];
       // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
-      if (datePart.length() == 10 && datePart.matches(DATE_PATTERN)) {
+      if (datePart.length() == dateYearCharCount && datePart.matches(datePattern)) {
         return datePart;
       }
     }
@@ -123,7 +124,7 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public void streamLogContent(String fileName, OutputStream outputStream) {
-    Path filePath = getLogFilePath(fileName);
+    var filePath = getLogFilePath(fileName);
     try {
       Files.copy(filePath, outputStream);
     } catch (IOException e) {
@@ -133,7 +134,7 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public boolean isLogFileExisted(String fileName) {
-    Path filePath = getLogFilePath(fileName);
+    var filePath = getLogFilePath(fileName);
     return Files.exists(filePath) && !Files.isDirectory(filePath);
   }
 

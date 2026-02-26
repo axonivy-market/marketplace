@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +33,7 @@ class LogServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    logService = new LogServiceImpl();
+    logService = new LogServiceImpl(null, new ArrayList<>(), 0);
   }
 
   @Test
@@ -45,9 +46,9 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate(null);
     
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertTrue(result.get(0).getFileName().endsWith(".log"));
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should contain 1 log file");
+    assertTrue(result.get(0).getFileName().endsWith(".log"), "File should have .log extension");
   }
 
   @Test
@@ -59,9 +60,9 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertTrue(result.get(0).getFileName().endsWith(".log"));
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should contain 1 log file");
+    assertTrue(result.get(0).getFileName().endsWith(".log"), "File should have .log extension");
   }
 
   @Test
@@ -73,9 +74,9 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("");
     
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertTrue(result.get(0).getFileName().endsWith(".log"));
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should contain 1 log file");
+    assertTrue(result.get(0).getFileName().endsWith(".log"), "File should have .log extension");
   }
 
   @Test
@@ -92,9 +93,9 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("2026-02-26");
     
-    assertNotNull(result);
-    assertEquals(2, result.size());
-    assertTrue(result.stream().allMatch(log -> log.getDate().equals("2026-02-26")));
+    assertNotNull(result, "Result should not be null");
+    assertEquals(2, result.size(), "Should contain 2 log files for the specified date");
+    assertTrue(result.stream().allMatch(log -> log.getDate().equals("2026-02-26")), "All results should have the specified date");
   }
 
   @Test
@@ -111,9 +112,9 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals("application.log", result.get(0).getFileName());
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should contain 1 .log file");
+    assertEquals("application.log", result.get(0).getFileName(), "Should filter only .log files");
   }
 
   @Test
@@ -122,8 +123,8 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Result should be empty for non-existent path");
   }
 
   @Test
@@ -132,8 +133,8 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Result should be empty for empty log path");
   }
 
   @Test
@@ -142,8 +143,8 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Result should be empty for null log path");
   }
 
   @Test
@@ -156,8 +157,8 @@ class LogServiceImplTest {
     List<LogFileModel> result1 = logService.listGzLogNamesByDate("null");
     List<LogFileModel> result2 = logService.listGzLogNamesByDate("null");
     
-    assertEquals(result1.size(), result2.size());
-    assertEquals(result1.get(0).getFileName(), result2.get(0).getFileName());
+    assertEquals(result1.size(), result2.size(), "Cached results should have same size");
+    assertEquals(result1.get(0).getFileName(), result2.get(0).getFileName(), "Cached results should have same file names");
   }
 
   @Test
@@ -175,8 +176,8 @@ class LogServiceImplTest {
     logService = createLogServiceWithPath(tempDir.toString());
     result = logService.listGzLogNamesByDate("2026-02-26");
     
-    assertTrue(result.size() > 0);
-    assertTrue(result.stream().anyMatch(log -> "2026-02-26".equals(log.getDate())));
+    assertTrue(result.size() > 0, "Result should not be empty");
+    assertTrue(result.stream().anyMatch(log -> "2026-02-26".equals(log.getDate())), "Should extract date from file name");
   }
 
   @Test
@@ -192,7 +193,7 @@ class LogServiceImplTest {
       
       boolean exists = logService.isLogFileExisted("application.log");
       
-      assertTrue(exists);
+      assertTrue(exists, "Log file should exist");
     }
   }
 
@@ -208,7 +209,7 @@ class LogServiceImplTest {
       
       boolean exists = logService.isLogFileExisted("non-existent.log");
       
-      assertFalse(exists);
+      assertFalse(exists, "Non-existent log file should return false");
     }
   }
 
@@ -228,7 +229,7 @@ class LogServiceImplTest {
       logService.streamLogContent("application.log", outputStream);
       
       String result = outputStream.toString();
-      assertEquals(content, result);
+      assertEquals(content, result, "Streamed content should match original file content");
     }
   }
 
@@ -243,7 +244,7 @@ class LogServiceImplTest {
       logService = createLogServiceWithPath(tempDir.toString());
       
       OutputStream outputStream = new ByteArrayOutputStream();
-      assertDoesNotThrow(() -> logService.streamLogContent("non-existent.log", outputStream));
+      assertDoesNotThrow(() -> logService.streamLogContent("non-existent.log", outputStream), "Streaming non-existent file should not throw exception");
     }
   }
 
@@ -257,8 +258,8 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertTrue(result.size() > 0);
-    assertTrue(result.get(0).getSize() > 0);
+    assertTrue(result.size() > 0, "Result should not be empty");
+    assertTrue(result.get(0).getSize() > 0, "Log file model should have size greater than 0");
   }
 
   @Test
@@ -270,8 +271,8 @@ class LogServiceImplTest {
     
     List<LogFileModel> result = logService.listGzLogNamesByDate("null");
     
-    assertTrue(result.size() > 0);
-    assertNull(result.get(0).getDate());
+    assertTrue(result.size() > 0, "Result should not be empty");
+    assertNull(result.get(0).getDate(), "File name without date should have null date");
   }
 
   @Test
@@ -291,19 +292,12 @@ class LogServiceImplTest {
     List<LogFileModel> feb20 = logService.listGzLogNamesByDate("2026-02-20");
     List<LogFileModel> feb26 = logService.listGzLogNamesByDate("2026-02-26");
     
-    assertEquals(2, feb20.size());
-    assertEquals(2, feb26.size());
+    assertEquals(2, feb20.size(), "Should find 2 files for 2026-02-20");
+    assertEquals(2, feb26.size(), "Should find 2 files for 2026-02-26");
   }
 
   private LogServiceImpl createLogServiceWithPath(String path) {
-    LogServiceImpl service = new LogServiceImpl();
-    try {
-      var field = LogServiceImpl.class.getDeclaredField("logPath");
-      field.setAccessible(true);
-      field.set(service, path);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      fail("Failed to set logPath field: " + e.getMessage());
-    }
+    LogServiceImpl service = new LogServiceImpl(path, new ArrayList<>(), 0);
     return service;
   }
 }

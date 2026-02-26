@@ -3,7 +3,7 @@ package com.axonivy.market.logging;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-public class LogStreamRegistry {
+public final class LogStreamRegistry {
   private static final Sinks.Many<String> SINK = Sinks.many().multicast().onBackpressureBuffer();
 
   private LogStreamRegistry() {}

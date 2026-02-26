@@ -13,7 +13,7 @@ class LogStreamRegistryTest {
   @Test
   void testAsFluxReturnsNonNullFlux() {
     Flux<String> flux = LogStreamRegistry.asFlux();
-    assertNotNull(flux);
+    assertNotNull(flux, "Flux should not be null");
   }
 
   @Test
@@ -26,7 +26,7 @@ class LogStreamRegistryTest {
     // After subscribing, should have subscribers
     boolean afterSubscriptionHasSubscribers = LogStreamRegistry.hasSubscribers();
     
-    assertTrue(afterSubscriptionHasSubscribers);
+    assertTrue(afterSubscriptionHasSubscribers, "Should have subscribers after subscription");
   }
 
   @Test
@@ -45,7 +45,7 @@ class LogStreamRegistryTest {
       Thread.currentThread().interrupt();
     }
     
-    assertTrue(received.contains(testMessage));
+    assertTrue(received.contains(testMessage), "Received list should contain the test message");
   }
 
   @Test
@@ -68,9 +68,9 @@ class LogStreamRegistryTest {
       Thread.currentThread().interrupt();
     }
     
-    assertTrue(received.contains(message1));
-    assertTrue(received.contains(message2));
-    assertTrue(received.contains(message3));
+    assertTrue(received.contains(message1), "Received list should contain message1");
+    assertTrue(received.contains(message2), "Received list should contain message2");
+    assertTrue(received.contains(message3), "Received list should contain message3");
   }
 
   @Test
@@ -88,7 +88,7 @@ class LogStreamRegistryTest {
       Thread.currentThread().interrupt();
     }
     
-    assertTrue(received.contains(emptyMessage));
+    assertTrue(received.contains(emptyMessage), "Received list should contain the empty message");
   }
 
   @Test
@@ -110,8 +110,8 @@ class LogStreamRegistryTest {
       Thread.currentThread().interrupt();
     }
     
-    assertTrue(subscriber1Records.contains(testMessage));
-    assertTrue(subscriber2Records.contains(testMessage));
+    assertTrue(subscriber1Records.contains(testMessage), "Subscriber 1 should receive the message");
+    assertTrue(subscriber2Records.contains(testMessage), "Subscriber 2 should receive the message");
   }
 
   @Test
@@ -133,7 +133,7 @@ class LogStreamRegistryTest {
       Thread.currentThread().interrupt();
     }
     
-    assertTrue(received1.size() >= 1);
-    assertTrue(received2.size() >= 1);
+    assertTrue(received1.size() >= 1, "First subscriber should have received at least 1 message");
+    assertTrue(received2.size() >= 1, "Second subscriber should have received at least 1 message");
   }
 }

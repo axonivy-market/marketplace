@@ -49,9 +49,9 @@ class LogControllerTest {
     
     ResponseEntity<List<LogFileModel>> response = logController.listGzLogs(date);
     
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(2, response.getBody().size());
+    assertNotNull(response, "Response should not be null");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
+    assertEquals(2, response.getBody().size(), "Response body should contain 2 log files");
     verify(logService, times(1)).listGzLogNamesByDate(anyString());
   }
 
@@ -66,9 +66,9 @@ class LogControllerTest {
     
     ResponseEntity<List<LogFileModel>> response = logController.listGzLogs(date);
     
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(1, response.getBody().size());
+    assertNotNull(response, "Response should not be null");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
+    assertEquals(1, response.getBody().size(), "Response body should contain 1 log file");
     verify(logService, times(1)).listGzLogNamesByDate("2026-02-26");
   }
 
@@ -80,9 +80,9 @@ class LogControllerTest {
     
     ResponseEntity<List<LogFileModel>> response = logController.listGzLogs(date);
     
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.getBody().isEmpty());
+    assertNotNull(response, "Response should not be null");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
+    assertTrue(response.getBody().isEmpty(), "Response body should be empty when no logs match the date");
   }
 
   @Test
@@ -93,13 +93,13 @@ class LogControllerTest {
     
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(MediaType.APPLICATION_OCTET_STREAM, response.getHeaders().getContentType());
+    assertNotNull(response, "Response should not be null");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK for existing file");
+    assertEquals(MediaType.APPLICATION_OCTET_STREAM, response.getHeaders().getContentType(), "Content type should be APPLICATION_OCTET_STREAM");
     assertTrue(response.getHeaders().getFirst("Content-Disposition")
-        .contains("attachment"));
+        .contains("attachment"), "Content-Disposition should contain attachment");
     assertTrue(response.getHeaders().getFirst("Content-Disposition")
-        .contains(fileName));
+        .contains(fileName), "Content-Disposition should contain the file name");
   }
 
   @Test
@@ -110,8 +110,8 @@ class LogControllerTest {
     
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
-    assertNotNull(response);
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response, "Response should not be null");
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(), "Response status should be NOT_FOUND when file does not exist");
   }
 
   @Test
@@ -123,9 +123,9 @@ class LogControllerTest {
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
     String contentDisposition = response.getHeaders().getFirst("Content-Disposition");
-    assertNotNull(contentDisposition);
-    assertTrue(contentDisposition.startsWith("attachment"));
-    assertTrue(contentDisposition.contains("filename=\"" + fileName + "\""));
+    assertNotNull(contentDisposition, "Content-Disposition header should not be null");
+    assertTrue(contentDisposition.startsWith("attachment"), "Content-Disposition should start with 'attachment'");
+    assertTrue(contentDisposition.contains("filename=\"" + fileName + "\""), "Content-Disposition should contain the file name");
   }
 
   @Test
@@ -137,8 +137,8 @@ class LogControllerTest {
       
       Flux<String> result = logController.stream();
       
-      assertNotNull(result);
-      assertEquals(flux, result);
+      assertNotNull(result, "Stream result should not be null");
+      assertEquals(flux, result, "Stream result should match expected Flux");
     }
   }
 
@@ -156,10 +156,10 @@ class LogControllerTest {
       
       Flux<String> result = logController.stream();
       
-      assertNotNull(result);
+      assertNotNull(result, "Stream result should not be null");
       List<String> collected = result.collectList().block();
-      assertEquals(3, collected.size());
-      assertTrue(collected.containsAll(logLines));
+      assertEquals(3, collected.size(), "Collected list should contain 3 log lines");
+      assertTrue(collected.containsAll(logLines), "Collected list should contain all expected log lines");
     }
   }
 
@@ -172,9 +172,9 @@ class LogControllerTest {
       
       Flux<String> result = logController.stream();
       
-      assertNotNull(result);
+      assertNotNull(result, "Stream result should not be null");
       List<String> collected = result.collectList().block();
-      assertTrue(collected.isEmpty());
+      assertTrue(collected.isEmpty(), "Collected list from empty Flux should be empty");
     }
   }
 
@@ -186,7 +186,7 @@ class LogControllerTest {
       when(logService.isLogFileExisted(fileName)).thenReturn(true);
       ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
       
-      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK for file: " + fileName);
     }
     
     verify(logService, times(3)).isLogFileExisted(anyString());
@@ -201,7 +201,7 @@ class LogControllerTest {
       
       Flux<String> result = logController.stream();
       
-      assertNotNull(result);
+      assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
     }
   }
@@ -212,7 +212,7 @@ class LogControllerTest {
     
     ResponseEntity<List<LogFileModel>> response = logController.listGzLogs(null);
     
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
     verify(logService, times(1)).listGzLogNamesByDate("null");
   }
 
@@ -224,9 +224,9 @@ class LogControllerTest {
     
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK for .gz file");
     String contentDisposition = response.getHeaders().getFirst("Content-Disposition");
-    assertTrue(contentDisposition.contains(fileName));
+    assertTrue(contentDisposition.contains(fileName), "Content-Disposition should contain the .gz file name");
   }
 
   @Test
@@ -237,7 +237,7 @@ class LogControllerTest {
     
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
-    assertNotNull(response.getBody());
+    assertNotNull(response.getBody(), "Response body should not be null when streaming log file");
   }
 
   @Test
@@ -248,9 +248,9 @@ class LogControllerTest {
     
     ResponseEntity<List<LogFileModel>> response = logController.listGzLogs(date);
     
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertTrue(response.getBody().isEmpty());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
+    assertNotNull(response.getBody(), "Response body should not be null");
+    assertTrue(response.getBody().isEmpty(), "Response body should be empty for past date with no logs");
   }
 
   @Test
@@ -262,6 +262,6 @@ class LogControllerTest {
     ResponseEntity<StreamingResponseBody> response = logController.downloadLog(fileName);
     
     verify(logService, times(1)).isLogFileExisted(fileName);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK after service call");
   }
 }

@@ -36,7 +36,7 @@ class SseLogAppenderTest {
     // Start appender without setting encoder
     appender.start();
     
-    assertTrue(appender.isStarted());
+    assertTrue(appender.isStarted(), "Appender should be started");
   }
 
   @Test
@@ -45,7 +45,7 @@ class SseLogAppenderTest {
     
     appender.start();
     
-    assertTrue(appender.isStarted());
+    assertTrue(appender.isStarted(), "Appender should be started with encoder");
     verify(mockEncoder, times(1)).start();
   }
 
@@ -53,7 +53,7 @@ class SseLogAppenderTest {
   void testSetEncoder() {
     appender.setEncoder(mockEncoder);
     
-    assertEquals(mockEncoder, appender.getEncoder());
+    assertEquals(mockEncoder, appender.getEncoder(), "Encoder should be set correctly");
   }
 
   @Test
@@ -62,8 +62,8 @@ class SseLogAppenderTest {
     
     Encoder<ILoggingEvent> retrieved = appender.getEncoder();
     
-    assertNotNull(retrieved);
-    assertEquals(mockEncoder, retrieved);
+    assertNotNull(retrieved, "Retrieved encoder should not be null");
+    assertEquals(mockEncoder, retrieved, "Retrieved encoder should match the set encoder");
   }
 
   @Test
@@ -98,7 +98,7 @@ class SseLogAppenderTest {
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
       
       String pushed = captor.getValue();
-      assertEquals("Encoded log message", pushed); // trimmed
+      assertEquals("Encoded log message", pushed, "Pushed message should be trimmed"); // trimmed
     }
   }
 
@@ -118,7 +118,7 @@ class SseLogAppenderTest {
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
       
       String pushed = captor.getValue();
-      assertEquals(formattedMessage, pushed);
+      assertEquals(formattedMessage, pushed, "Pushed message should match formatted message");
     }
   }
 
@@ -139,7 +139,7 @@ class SseLogAppenderTest {
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
       
       String pushed = captor.getValue();
-      assertEquals("Trimmed message", pushed);
+      assertEquals("Trimmed message", pushed, "Pushed message should be properly trimmed");
     }
   }
 
@@ -170,11 +170,11 @@ class SseLogAppenderTest {
     appender.setEncoder(mockEncoder);
     appender.start();
     
-    assertTrue(appender.isStarted());
+    assertTrue(appender.isStarted(), "Appender should be started initially");
     
     // Starting again should not cause issues
     appender.start();
-    assertTrue(appender.isStarted());
+    assertTrue(appender.isStarted(), "Appender should still be started after second start call");
     verify(mockEncoder, times(2)).start();
   }
 
@@ -194,7 +194,7 @@ class SseLogAppenderTest {
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
       
       String pushed = captor.getValue();
-      assertEquals(emptyMessage, pushed);
+      assertEquals(emptyMessage, pushed, "Pushed message should be empty string");
     }
   }
 }
