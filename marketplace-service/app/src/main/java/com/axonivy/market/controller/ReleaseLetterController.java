@@ -52,29 +52,37 @@ public class ReleaseLetterController {
   @Operation(summary = "Retrieve a paginated list of all release letter")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
     Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
+
     if (releaseLetters.isEmpty()) {
       return generateEmptyPagedModel();
     }
-    var pageResources = pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
-    return ResponseEntity.ok(pageResources);
+
+    PagedModel<ReleaseLetterModel> pageModel =
+        pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
+
+    pageModel.forEach(model ->
+        model.add(linkTo(
+            methodOn(ReleaseLetterController.class)
+                .findReleaseLetterBySprint(model.getSprint()))
+            .withSelfRel())
+    );
+
+    return ResponseEntity.ok(pageModel);
   }
 
   @GetMapping(ALL)
   @Operation(hidden = true)
   public ResponseEntity<CollectionModel<ReleaseLetterModel>> findAllReleaseLettersWithoutPaging() {
-
     List<ReleaseLetter> releaseLetters =
         releaseLetterService.findAllReleaseLettersWithoutPaging();
 
     List<ReleaseLetterModel> resources = releaseLetters.stream()
-        .map(releaseLetterModelAssembler::toModel)
+        .map(releaseLetterModelAssembler::toModelWithoutContent)
         .map(model -> model.add(
             linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel()))
         .toList();
 
-    CollectionModel<ReleaseLetterModel> collectionModel =
-        CollectionModel.of(resources);
-
+    CollectionModel<ReleaseLetterModel> collectionModel = CollectionModel.of(resources);
     return ResponseEntity.ok(collectionModel);
   }
 

@@ -24,12 +24,6 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());
 
-    resource.add(
-        linkTo(methodOn(ReleaseLetterController.class)
-            .findReleaseLetterBySprint(releaseLetter.getSprint()))
-            .withSelfRel()
-    );
-
     return resource;
   }
 
