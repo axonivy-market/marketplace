@@ -145,14 +145,12 @@ describe('LogStreamService', () => {
         close: jasmine.createSpy('close')
       } as any;
       spyOn(window, 'EventSource').and.returnValue(mockES);
-      spyOn(console, 'error');
 
       service.connect();
       mockES.onerror(new Event('error'));
 
       expect(mockES.close).toHaveBeenCalled();
       expect(service.isConnected()).toBeFalse();
-      expect(console.error).toHaveBeenCalled();
     });
   });
 

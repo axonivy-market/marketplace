@@ -59,7 +59,7 @@ export class LogStreamService {
       });
     };
 
-    this.eventSource.onerror = (error: Event) => {
+    this.eventSource.onerror = () => {
       this.disconnect();
     };
   }
