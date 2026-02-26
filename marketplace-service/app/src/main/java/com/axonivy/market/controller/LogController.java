@@ -37,9 +37,9 @@ public class LogController {
     return ResponseEntity.ok(logService.listGzLogNamesByDate(String.valueOf(date)));
   }
 
-  @GetMapping("/{fileName}")
+  @GetMapping("/download")
 //  @Operation(hidden = true)
-  public ResponseEntity<StreamingResponseBody> downloadLog(@PathVariable String fileName) {
+  public ResponseEntity<StreamingResponseBody> downloadLog(@RequestParam String fileName) {
     if (!logService.isLogFileExisted(fileName)) {
       return ResponseEntity.notFound().build();
     }

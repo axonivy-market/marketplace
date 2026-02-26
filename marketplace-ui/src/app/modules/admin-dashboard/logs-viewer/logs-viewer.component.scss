@@ -4,6 +4,69 @@
   height: 700px;
 }
 
+.form-tabs {
+  gap: 2rem;
+}
+
+.nav-tabs a:hover {
+  cursor: pointer;
+}
+
+.nav-item {
+  gap: 10px;
+
+  a {
+    font-weight: 400;
+    font-size: 16px;
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 0px;
+  background-color: transparent;
+}
+
+.tab-title {
+  padding: 1.5rem;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+
+  &:not(.active) {
+    color: var(--text-secondary, #666);
+
+    &:hover {
+      color: var(--text-primary, #333);
+    }
+  }
+}
+
+// Runtime Log Tab
+.tab-runtime-log {
+  &.active {
+    padding: calc(1.5rem - 2px);
+  }
+}
+
+// Logs File Tab
+.tab-logs-file {
+
+  &.active {
+    color: white;
+    padding: calc(1.5rem - 2px);
+  }
+}
+
 .log-table {
   thead {
     position: sticky;
@@ -26,5 +89,39 @@
 
 .btn-link:hover {
     filter: brightness(1.2);
+}
+
+.auto-scroll-label {
+  min-width: 80px;
+}
+
+.date-filter-input {
+  max-width: 200px;
+}
+
+.log-message-truncate {
+  max-width: 800px;
+}
+
+.log-file-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #dee2e6;
+  background-color: var(--bs-body-bg);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .card-title {
+    color: #333;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .card-text {
+    font-size: 12px;
+  }
 }
 

@@ -8,16 +8,14 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';
+import { LogFileModel } from '../../../shared/models/apis/log-file-response.model';
+import { LogService } from '../log.service';
 
 interface ParsedLog {
   timestamp: string;
   level: string;
   message: string;
   isLong: boolean;
-}
-
-interface LogFile {
-  filename: string;
 }
 
 @Component({
@@ -30,7 +28,9 @@ interface LogFile {
 export class LogViewerComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly logStream = inject(LogStreamService);
+  private readonly logService = inject(LogService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly activeTab = signal<'runtime-log' | 'logs-file'>('runtime-log');
   readonly paused = signal(false);
   readonly autoScroll = signal(true);
   readonly isConnected = signal(false);
@@ -38,8 +38,8 @@ export class LogViewerComponent {
   readonly logs = this.logStream.logs;
   readonly expandedLogs = signal<Set<number>>(new Set());
   readonly selectedDate = signal<string>('');
-  readonly logFiles = signal<LogFile[]>([]);
-  readonly filteredLogFiles = signal<LogFile[]>([]);
+  readonly logFiles = signal<LogFileModel[]>([]);
+  readonly filteredLogFiles = signal<LogFileModel[]>([]);
 
   constructor() {
     if (this.isBrowser) {
@@ -55,6 +55,16 @@ export class LogViewerComponent {
       effect(() => {
         const allLogs = this.logs();
         this.parsedLogs.set(allLogs.map(log => this.parseLog(log)));
+      });
+
+      // Load log files when switching to logs-file tab
+      effect(() => {
+        const tab = this.activeTab();
+        console.log('Active tab changed to:', tab);
+        if (tab === 'logs-file') {
+          console.log('Loading log files for tab: logs-file');
+          this.loadLogFiles();
+        }
       });
     }
 
@@ -194,37 +204,51 @@ export class LogViewerComponent {
     return match ? match[1] : '';
   }
 
+  private loadLogFiles(): void {
+    const selectedDate = this.selectedDate();
+    console.log('loadLogFiles called with selectedDate:', selectedDate);
+    this.logService.getLogFiles(selectedDate).subscribe({
+      next: (response: LogFileModel[]) => {
+        console.log('Log files loaded successfully:', response);
+        this.logFiles.set(response);
+        this.filteredLogFiles.set(response);
+      },
+      error: error => {
+        console.error('Failed to load log files', error);
+        this.logFiles.set([]);
+        this.filteredLogFiles.set([]);
+      }
+    });
+  }
+
   filterLogsByDate(event: Event): void {
     const target = event.target as HTMLInputElement;
     const selectedDate = target.value;
     this.selectedDate.set(selectedDate);
-
-    // Mock: List of log file names from backend
-    // In a real implementation, this would call a service to fetch logs for the selected date
-    const allLogFiles: LogFile[] = [
-      { filename: 'application.2026-02-24.log.gz' },
-      { filename: 'error.2026-02-24.log.gz' },
-      { filename: 'debug.2026-02-23.log.gz' },
-      { filename: 'application.2026-02-22.log.gz' }
-    ];
-
-    if (selectedDate) {
-      const filtered = allLogFiles.filter(
-        log => this.extractDateFromFilename(log.filename) === selectedDate
-      );
-      this.filteredLogFiles.set(filtered);
-    } else {
-      this.filteredLogFiles.set(allLogFiles);
-    }
+    this.loadLogFiles();
   }
 
   clearDateFilter(): void {
     this.selectedDate.set('');
-    this.filteredLogFiles.set([]);
+    this.loadLogFiles();
   }
 
-  selectLogFile(logFile: LogFile): void {
+  selectLogFile(logFile: LogFileModel): void {
     console.log('Selected log file:', logFile);
     // In a real implementation, you would fetch and display the content of the selected log file
+  }
+
+  downloadLogFile(logFile: LogFileModel, event: Event): void {
+    event.stopPropagation();
+    console.log('Downloading log file:', logFile.fileName);
+    this.logService.getLogFileContent(logFile.fileName);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 }

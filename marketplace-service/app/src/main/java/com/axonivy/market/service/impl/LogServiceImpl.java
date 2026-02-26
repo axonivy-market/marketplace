@@ -5,6 +5,7 @@ import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +34,17 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public List<LogFileModel> listGzLogNamesByDate(String date) {
-    if (date == null || date.isEmpty()) {
-      log.warn("Date parameter is required.");
-      return Collections.emptyList();
-    }
-
     List<LogFileModel> allLogs = getCachedLogFiles();
+    
+    // If no date provided, return only .log files (not compressed)
+    if (StringUtils.isEmpty(date) || StringUtils.equals("null", date)) {
+      log.debug("No date provided, returning uncompressed .log files");
+      return allLogs.stream()
+          .filter(log -> log.getFileName().endsWith(".log"))
+          .collect(Collectors.toList());
+    }
+    
+    // If date provided, filter by that date
     return allLogs.stream()
         .filter(log -> date.equals(log.getDate()))
         .collect(Collectors.toList());
