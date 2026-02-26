@@ -63,7 +63,7 @@ class SchedulingTasksTest {
   }
 
   @Test
-  void shouldHandleIOExceptionWhenSyncingGithubRepos() throws Exception {
+  void testShouldHandleIOExceptionWhenSyncingGithubRepos() throws Exception {
     doThrow(new IOException("failure"))
         .when(gitHubReposService)
         .loadAndStoreTestReports();
@@ -74,7 +74,7 @@ class SchedulingTasksTest {
   }
 
   @Test
-  void shouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
+  void testShouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
     when(gitHubProperty.getToken()).thenReturn("token");
 
     doThrow(new IOException("failure"))

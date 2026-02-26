@@ -148,7 +148,7 @@ class GitHubUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testGetDownloadUrl_whenIOExceptionThrown_shouldReturnEmptyString() throws Exception {
+  void testGetDownloadUrlWhenIOExceptionThrownShouldReturnEmptyString() throws Exception {
     GHContent content = Mockito.mock(GHContent.class);
 
     Mockito.when(content.getDownloadUrl())
