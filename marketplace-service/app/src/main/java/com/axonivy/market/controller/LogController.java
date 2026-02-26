@@ -1,8 +1,10 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.logging.LogStreamRegistry;
+import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,10 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.LOGS;
@@ -27,9 +31,10 @@ public class LogController {
   private final LogService logService;
 
   @GetMapping
-//  @Operation(hidden = true)
-  public ResponseEntity<List<String>> listGzLogs() {
-    return ResponseEntity.ok(logService.listGzLogNames());
+  public ResponseEntity<List<LogFileModel>> listGzLogs(
+      @Parameter(description = "Filter logs by date (format: yyyy-MM-dd)")
+      @RequestParam(required = false) LocalDate date) {
+    return ResponseEntity.ok(logService.listGzLogNamesByDate(String.valueOf(date)));
   }
 
   @GetMapping("/{fileName}")

@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
 import lombok.extern.log4j.Log4j2;
@@ -24,8 +25,44 @@ public class LogServiceImpl implements LogService {
   @Value("${logging.file.path}")
   private String logPath;
 
+  // Cache settings
+  private static final long CACHE_TTL_MILLIS = 60 * 60 * 1000; // 1 hour
+  private List<LogFileModel> cachedLogFiles;
+  private long lastCacheTime;
+
+
   @Override
-  public List<String> listGzLogNames() {
+  public List<LogFileModel> listGzLogNamesByDate(String date) {
+    if (date == null || date.isEmpty()) {
+      log.warn("Date parameter is required.");
+      return Collections.emptyList();
+    }
+
+    List<LogFileModel> allLogs = getCachedLogFiles();
+    return allLogs.stream()
+        .filter(log -> date.equals(log.getDate()))
+        .collect(Collectors.toList());
+  }
+
+  private List<LogFileModel> getCachedLogFiles() {
+    // Check if cache is still valid
+    if (cachedLogFiles != null && isCacheValid()) {
+      log.debug("Using cached log files");
+      return cachedLogFiles;
+    }
+
+    // Cache expired or doesn't exist, refresh it
+    log.debug("Refreshing log files cache");
+    cachedLogFiles = loadLogFilesFromDisk();
+    lastCacheTime = System.currentTimeMillis();
+    return cachedLogFiles;
+  }
+
+  private boolean isCacheValid() {
+    return System.currentTimeMillis() - lastCacheTime < CACHE_TTL_MILLIS;
+  }
+
+  private List<LogFileModel> loadLogFilesFromDisk() {
     if (logPath == null || logPath.isEmpty()) {
       log.warn("Logging file path is not configured.");
       return Collections.emptyList();
@@ -39,13 +76,47 @@ public class LogServiceImpl implements LogService {
 
     try (Stream<Path> stream = Files.list(path)) {
       return stream
-          .filter(p -> p.toString().endsWith(CommonConstants.GZ_EXTENSION))
-          .map(Path::getFileName).map(Path::toString)
+          .filter(p -> isLogFile(p.getFileName().toString()))
+          .map(p -> {
+            try {
+              String fileName = p.getFileName().toString();
+              String date = extractDateFromFileName(fileName);
+              return new LogFileModel(fileName, Files.size(p), date);
+            } catch (IOException e) {
+              log.error("Failed to get size of log file: {}", p.getFileName(), e);
+              return new LogFileModel(p.getFileName().toString(), 0L, null);
+            }
+          })
           .collect(Collectors.toList());
     } catch (IOException e) {
       log.error("Failed to list log files in: {}", logPath, e);
       return Collections.emptyList();
     }
+  }
+
+  private boolean isLogFile(String fileName) {
+    // Accept both .log and .log.gz files
+    return fileName.endsWith(".log") || fileName.endsWith(CommonConstants.GZ_EXTENSION);
+  }
+
+  private String extractDateFromFileName(String fileName) {
+    // Pattern: application.yyyy-MM-dd.log or application.yyyy-MM-dd.log.gz
+    // or application.yyyy-MM-dd.1.log.gz, etc.
+    // Extract the date part (yyyy-MM-dd)
+    if (fileName == null || fileName.isEmpty()) {
+      return null;
+    }
+    
+    String[] parts = fileName.split("\\.");
+    if (parts.length >= 2) {
+      // The date is typically the second part: application.[DATE].log(.gz)
+      String datePart = parts[1];
+      // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
+      if (datePart.length() == 10 && datePart.matches("\\d{4}-\\d{2}-\\d{2}")) {
+        return datePart;
+      }
+    }
+    return null;
   }
 
   @Override
