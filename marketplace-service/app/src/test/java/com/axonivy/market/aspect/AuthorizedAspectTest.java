@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -70,5 +71,34 @@ class AuthorizedAspectTest {
     
     assertEquals("success", result, "Should return the result from proceed when authorized");
     verify(joinPoint).proceed();
+  }
+
+  @Test
+  void testValidateAuthorizationWhenRequestAttributesNullShouldThrowException() {
+    RequestContextHolder.resetRequestAttributes();
+
+    Oauth2ExchangeCodeException exception = assertThrows(
+        Oauth2ExchangeCodeException.class,
+        () -> authorizedAspect.validateAuthorization(joinPoint, authorized),
+        "Should throw Oauth2ExchangeCodeException when RequestContextHolder has no attributes"
+    );
+
+    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
+        "Error code should be BAD_REQUEST when request attributes are missing");
+
+    ServletRequestAttributes attributes = new ServletRequestAttributes(request);
+    RequestContextHolder.setRequestAttributes(attributes);
+  }
+
+  @Test
+  void testValidateAuthorization_whenAuthorizedAnnotationNull_shouldThrowException() {
+    Oauth2ExchangeCodeException exception = assertThrows(
+        Oauth2ExchangeCodeException.class,
+        () -> authorizedAspect.validateAuthorization(joinPoint, null),
+        "Should throw Oauth2ExchangeCodeException when Authorized annotation is null"
+    );
+
+    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
+        "Error code should be BAD_REQUEST when Authorized annotation is null");
   }
 }
