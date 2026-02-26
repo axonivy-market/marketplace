@@ -24,7 +24,7 @@ import org.springframework.dao.DataAccessException;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class SyncTaskShutdownListenerTest {
+class SyncTaskShutdownListenerTest {
   @Mock
   private SyncTaskExecutionRepository syncTaskExecutionRepo;
 
@@ -35,7 +35,7 @@ public class SyncTaskShutdownListenerTest {
   private SyncTaskShutdownListener listener;
 
   @Test
-  void shouldMarkRunningExecutionAsFailed() {
+  void testMarkRunningExecutionAsFailed() {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
 
@@ -45,14 +45,13 @@ public class SyncTaskShutdownListenerTest {
     listener.onShutdown();
     verify(syncTaskExecutionService, atLeastOnce())
         .markStatusFailure(
-            eq(runningExecution),
-            eq("Application shutdown during execution")
+            runningExecution,
+            "Application shutdown during execution"
         );
   }
 
   @Test
-  void shouldNotMarkNonRunningExecution() {
-    // Arrange
+  void testShouldNotMarkNonRunningExecution() {
     SyncTaskExecution finishedExecution = mock(SyncTaskExecution.class);
     when(finishedExecution.getStatus()).thenReturn(SyncTaskStatus.SUCCESS);
 
@@ -65,7 +64,7 @@ public class SyncTaskShutdownListenerTest {
   }
 
   @Test
-  void shouldContinueWhenDataAccessExceptionThrown() {
+  void testShouldContinueWhenDataAccessExceptionThrown() {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
     when(runningExecution.getType()).thenReturn(SyncTaskType.values()[0]);
