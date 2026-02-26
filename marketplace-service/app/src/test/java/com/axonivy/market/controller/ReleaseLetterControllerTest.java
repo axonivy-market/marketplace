@@ -6,6 +6,9 @@ import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +29,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -224,6 +226,58 @@ class ReleaseLetterControllerTest extends BaseSetup {
     releaseLetterController.deleteReleaseLetter(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
 
     verify(releaseLetterService).deleteReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
+  }
+
+  @Test
+  void findAllReleaseLettersWithoutPagingShouldReturnCollectionModelWhenDataExists() {
+    ReleaseLetter entity1 = new ReleaseLetter();
+    ReleaseLetter entity2 = new ReleaseLetter();
+
+    ReleaseLetterModel model1 = new ReleaseLetterModel();
+    model1.setSprint("S43");
+
+    ReleaseLetterModel model2 = new ReleaseLetterModel();
+    model2.setSprint("S44");
+
+    when(releaseLetterService.findAllReleaseLettersWithoutPaging())
+        .thenReturn(List.of(entity1, entity2));
+
+    when(releaseLetterModelAssembler.toModel(entity1)).thenReturn(model1);
+    when(releaseLetterModelAssembler.toModel(entity2)).thenReturn(model2);
+
+    ResponseEntity<CollectionModel<ReleaseLetterModel>> response =
+        releaseLetterController.findAllReleaseLettersWithoutPaging();
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(2, response.getBody().getContent().size(),
+        "CollectionModel should contain two elements");
+
+    verify(releaseLetterService).findAllReleaseLettersWithoutPaging();
+    verify(releaseLetterModelAssembler).toModel(entity1);
+    verify(releaseLetterModelAssembler).toModel(entity2);
+  }
+
+  @Test
+  void findAllReleaseLettersWithoutPagingShouldAddSelfLinkToEachModel() {
+    ReleaseLetter entity = new ReleaseLetter();
+
+    ReleaseLetterModel model = new ReleaseLetterModel();
+    model.setSprint("S43");
+
+    when(releaseLetterService.findAllReleaseLettersWithoutPaging())
+        .thenReturn(List.of(entity));
+
+    when(releaseLetterModelAssembler.toModel(entity)).thenReturn(model);
+
+    ResponseEntity<CollectionModel<ReleaseLetterModel>> response =
+        releaseLetterController.findAllReleaseLettersWithoutPaging();
+
+    ReleaseLetterModel result =
+        Objects.requireNonNull(response.getBody()).getContent().iterator().next();
+
+    assertTrue(result.getLinks().hasLink("self"),
+        "Each model should contain a self link");
   }
 
   private ReleaseLetter createReleaseLetterMock() {

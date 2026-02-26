@@ -7,6 +7,9 @@ import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -337,6 +340,27 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).findBySprint(unifiedSprint);
     verify(releaseLetterRepository).deleteBySprint(inputSprint);
+  }
+
+  @Test
+  void shouldReturnAllReleaseLettersSortedByCreatedAtDesc() {
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    List<ReleaseLetter> expected = List.of(releaseLetterMock);
+
+    when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(expected);
+
+    List<ReleaseLetter> result = releaseLetterService.findAllReleaseLettersWithoutPaging();
+
+    ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
+
+    verify(releaseLetterRepository) .findAll(sortCaptor.capture());
+
+    Sort usedSort = sortCaptor.getValue();
+    Sort.Order order = usedSort.getOrderFor("createdAt");
+
+    assertNotNull(order);
+    assertEquals(Sort.Direction.DESC, order.getDirection());
+    assertEquals(expected, result);
   }
 
   private ReleaseLetter createReleaseLetterMock() {
