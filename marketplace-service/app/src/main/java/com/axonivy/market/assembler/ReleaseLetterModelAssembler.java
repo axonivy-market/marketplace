@@ -1,9 +1,15 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.controller.ReleaseLetterController;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModel;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -14,6 +20,21 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
   public ReleaseLetterModel toModel(ReleaseLetter releaseLetter) {
     var resource = new ReleaseLetterModel();
     resource.setContent(releaseLetter.getContent());
+    resource.setSprint(releaseLetter.getSprint());
+    resource.setLatest(releaseLetter.isLatest());
+    resource.setCreatedAt(releaseLetter.getCreatedAt());
+
+    resource.add(
+        linkTo(methodOn(ReleaseLetterController.class)
+            .findReleaseLetterBySprint(releaseLetter.getSprint()))
+            .withSelfRel()
+    );
+
+    return resource;
+  }
+
+  public ReleaseLetterModel toModelWithoutContent(ReleaseLetter releaseLetter) {
+    var resource = new ReleaseLetterModel();
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());

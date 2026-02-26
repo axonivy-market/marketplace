@@ -32,6 +32,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
       Pattern.UNICODE_CHARACTER_CLASS);
   private final ReleaseLetterRepository releaseLetterRepository;
+  private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
   @Override
   public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable) {
@@ -41,7 +42,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
             : PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
-            Sort.by(Sort.Direction.DESC, "createdAt")
+            defaultSorting
         );
 
     return releaseLetterRepository.findAll(sortedPageable);
@@ -49,7 +50,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public List<ReleaseLetter> findAllReleaseLettersWithoutPaging() {
-    return releaseLetterRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    return releaseLetterRepository.findAll(defaultSorting);
   }
 
   @Override
