@@ -5,9 +5,7 @@ import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
 
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
@@ -29,7 +26,12 @@ import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
 @Service
 @NoArgsConstructor
 public class LogServiceImpl implements LogService {
-  private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L; // 30 min
+  private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L;
+  private static final String NULL_STRING = "null";
+  private static    final String DATE_YEAR_SEPARATOR = "\\.";
+  private static  final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+  private static final int MIN_EXPECTED_PARTS = 2;
+  private static final int DATE_YEAR_CHAR_COUNT = 10;
   @Value("${logging.file.path}")
   private String logPath;
   private List<LogFileModel> cachedLogFiles;
@@ -38,8 +40,7 @@ public class LogServiceImpl implements LogService {
   @Override
   public List<LogFileModel> listGzLogNamesByDate(String date) {
     List<LogFileModel> allLogs = getCachedLogFiles();
-    final String nullValue = "null";
-    if (StringUtils.isEmpty(date) || StringUtils.equals(nullValue, date)) {
+    if (StringUtils.isEmpty(date) || StringUtils.equals(NULL_STRING, date)) {
       log.debug("No date provided, returning uncompressed .log files");
       return allLogs.stream()
           .filter(log -> log.getFileName().endsWith(LOG_EXTENSION))
@@ -66,19 +67,14 @@ public class LogServiceImpl implements LogService {
   }
 
   private List<LogFileModel> loadLogFilesFromDisk() {
-    if (logPath == null || logPath.isEmpty()) {
-      log.warn("Logging file path is not configured.");
-      return Collections.emptyList();
-    }
-
-    var path = Paths.get(logPath);
-    if (!Files.exists(path) || !Files.isDirectory(path)) {
-      log.warn("Logging directory does not exist: {}", logPath);
-      return Collections.emptyList();
-    }
-
-    try (Stream<Path> stream = Files.list(path)) {
-      return stream
+    if (!StringUtils.isEmpty(logPath)) {
+      var path = Paths.get(logPath);
+      if (!Files.exists(path) || !Files.isDirectory(path)) {
+        log.warn("Logging directory does not exist: {}", logPath);
+        return Collections.emptyList();
+      }
+      try (Stream<Path> stream = Files.list(path)) {
+        return stream
           .filter(filePath -> isLogFile(filePath.getFileName().toString()))
           .map(filePath -> {
             try {
@@ -91,10 +87,11 @@ public class LogServiceImpl implements LogService {
             }
           })
           .toList();
-    } catch (IOException e) {
-      log.error("Failed to list log files in: {}", logPath, e);
-      return Collections.emptyList();
+      } catch (IOException e) {
+        log.error("Failed to list log files in: {}", logPath, e);
+      }
     }
+    return Collections.emptyList();
   }
 
   private boolean isLogFile(String fileName) {
@@ -108,16 +105,12 @@ public class LogServiceImpl implements LogService {
     if (fileName == null || fileName.isEmpty()) {
       return null;
     }
-    final String dateMonthYearSeparator = "\\.";
-    final String datePattern = "\\d{4}-\\d{2}-\\d{2}";
-    final int minExpectedParts = 2;
-    final int dateYearCharCount = 10; // yyyy-MM-dd is 10 characters
-    String[] parts = fileName.split(dateMonthYearSeparator);
-    if (parts.length >= minExpectedParts) {
+    String[] parts = fileName.split(DATE_YEAR_SEPARATOR);
+    if (parts.length >= MIN_EXPECTED_PARTS) {
       // The date is typically the second part: application.[DATE].log(.gz)
       String datePart = parts[1];
       // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
-      if (datePart.length() == dateYearCharCount && datePart.matches(datePattern)) {
+      if (datePart.length() == DATE_YEAR_CHAR_COUNT && datePart.matches(DATE_PATTERN)) {
         return datePart;
       }
     }
