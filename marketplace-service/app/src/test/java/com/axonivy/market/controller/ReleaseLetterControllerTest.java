@@ -68,7 +68,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
         .thenReturn(pagedModel);
 
     ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-        releaseLetterController.findAllReleaseLetters(pageable);
+        releaseLetterController.findAllReleaseLetters(pageable, false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when release letters exist.");
@@ -90,7 +90,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
 
     ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-        releaseLetterController.findAllReleaseLetters(pageable);
+        releaseLetterController.findAllReleaseLetters(pageable, false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when empty page returned.");
@@ -242,8 +242,8 @@ class ReleaseLetterControllerTest extends BaseSetup {
     when(releaseLetterService.findAllReleaseLettersWithoutPaging())
         .thenReturn(List.of(entity1, entity2));
 
-    when(releaseLetterModelAssembler.toModel(entity1)).thenReturn(model1);
-    when(releaseLetterModelAssembler.toModel(entity2)).thenReturn(model2);
+    when(releaseLetterModelAssembler.toModelWithoutContent(entity1)).thenReturn(model1);
+    when(releaseLetterModelAssembler.toModelWithoutContent(entity2)).thenReturn(model2);
 
     ResponseEntity<CollectionModel<ReleaseLetterModel>> response =
         releaseLetterController.findAllReleaseLettersWithoutPaging();
@@ -256,8 +256,8 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "CollectionModel should contain two elements");
 
     verify(releaseLetterService).findAllReleaseLettersWithoutPaging();
-    verify(releaseLetterModelAssembler).toModel(entity1);
-    verify(releaseLetterModelAssembler).toModel(entity2);
+    verify(releaseLetterModelAssembler).toModelWithoutContent(entity1);
+    verify(releaseLetterModelAssembler).toModelWithoutContent(entity2);
   }
 
   @Test
@@ -270,7 +270,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
     when(releaseLetterService.findAllReleaseLettersWithoutPaging())
         .thenReturn(List.of(entity));
 
-    when(releaseLetterModelAssembler.toModel(entity)).thenReturn(model);
+    when(releaseLetterModelAssembler.toModelWithoutContent(entity)).thenReturn(model);
 
     ResponseEntity<CollectionModel<ReleaseLetterModel>> response =
         releaseLetterController.findAllReleaseLettersWithoutPaging();

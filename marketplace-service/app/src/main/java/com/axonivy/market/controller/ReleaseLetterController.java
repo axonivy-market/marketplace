@@ -50,7 +50,8 @@ public class ReleaseLetterController {
 
   @GetMapping
   @Operation(summary = "Retrieve a paginated list of all release letter")
-  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable,
+      boolean hasAll) {
     Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
 
     if (releaseLetters.isEmpty()) {
@@ -60,9 +61,9 @@ public class ReleaseLetterController {
     PagedModel<ReleaseLetterModel> pageModel =
         pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
 
-//    pageModel.forEach(model ->
-//        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
-//    );
+    pageModel.forEach(model ->
+        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
+    );
 
     return ResponseEntity.ok(pageModel);
   }
