@@ -91,7 +91,7 @@ class AuthorizedAspectTest {
   }
 
   @Test
-  void testValidateAuthorization_whenAuthorizedAnnotationNull_shouldThrowException() {
+  void testValidateAuthorizationWhenAuthorizedAnnotationNullShouldThrowException() {
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
         () -> authorizedAspect.validateAuthorization(joinPoint, null),

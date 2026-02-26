@@ -68,7 +68,8 @@ class SchedulingTasksTest {
         .when(gitHubReposService)
         .loadAndStoreTestReports();
 
-    assertDoesNotThrow(() -> tasks.syncDataForGithubRepos());
+    assertDoesNotThrow(() -> tasks.syncDataForGithubRepos(),
+        "syncDataForGithubRepos should swallow IOException and not propagate it");
     verify(gitHubReposService).loadAndStoreTestReports();
   }
 
@@ -83,7 +84,8 @@ class SchedulingTasksTest {
             anyString()
         );
 
-    assertDoesNotThrow(() -> tasks.syncDataForSecurityMonitor());
+    assertDoesNotThrow(() -> tasks.syncDataForSecurityMonitor(),
+        "syncDataForSecurityMonitor should swallow IOException and not propagate it");
     verify(gitHubService)
         .getSecurityDetailsForAllProducts(
             "token",
