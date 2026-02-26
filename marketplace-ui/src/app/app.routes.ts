@@ -71,6 +71,11 @@ export const routes: Routes = [
         path: 'quick-access',
         component: QuickAccessComponent,
         canActivate: [AdminAuthGuard]
+      },
+      {
+        path: 'logs',
+        component: LogViewerComponent,
+        canActivate: [AdminAuthGuard]
       }
     ]
   },
@@ -81,12 +86,6 @@ export const routes: Routes = [
         m => m.RepoReportComponent
       )
   },
-{
-   
-        path: 'logs',
-        component: LogViewerComponent
-      
-},
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent

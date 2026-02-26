@@ -1,6 +1,4 @@
 <div class="d-flex flex-column h-100">
-
-    <!-- Tab Navigation -->
     <div class="d-flex gap-3 p-2 border-bottom bg-light">
         <button class="btn btn-primary tab-title tab-runtime-log" [class.active]="activeTab() === 'runtime-log'"
             (click)="activeTab.set('runtime-log')" [attr.aria-current]="activeTab() === 'runtime-log' ? 'page' : null">
@@ -11,33 +9,25 @@
             Logs File
         </button>
     </div>
-
-    <!-- Tab Content -->
     @if (activeTab() === 'runtime-log') {
     <div class="d-flex flex-column h-100 flex-grow-1">
-
-        <!-- Toolbar -->
         <div class="d-flex align-items-center gap-2 p-2 border-bottom bg-light">
-
             <button class="btn btn-sm btn-outline-secondary fs-4 border-0"
                 [title]="isConnected() ? 'Disconnect' : 'Connect'"
                 [attr.aria-label]="isConnected() ? 'Disconnect' : 'Connect'" (click)="toggleConnection()">
                 <i class="bi" [class.bi-plug-fill]="isConnected()" [class.bi-plug]="!isConnected()"></i>
                 <span class="visually-hidden">{{ isConnected() ? 'Disconnect' : 'Connect' }}</span>
             </button>
-
             <button class="btn btn-sm btn-secondary fs-4 border-0" (click)="togglePause()"
                 [title]="paused() ? 'Resume' : 'Pause'" [attr.aria-label]="paused() ? 'Resume' : 'Pause'">
                 <i class="bi" [class.bi-play-circle-fill]="paused()" [class.bi-pause-circle-fill]="!paused()"></i>
                 <span class="visually-hidden">{{ paused() ? 'Resume' : 'Pause' }}</span>
             </button>
-
             <button class="btn btn-sm btn-outline-danger fs-4 border-0" (click)="clear()" title="Clear"
                 aria-label="Clear logs">
                 <i class="bi bi-trash-fill"></i>
                 <span class="visually-hidden">Clear</span>
             </button>
-
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-primary fs-4 border-0" type="button" id="fileFilterDropdown"
                     data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download options">
@@ -54,7 +44,6 @@
                     <li><a class="dropdown-item" href="#" (click)="downloadAsCSV()">Download as CSV</a></li>
                 </ul>
             </div>
-
             <div class="form-check ms-auto">
                 <input class="form-check-input" type="checkbox" id="autoScroll" [checked]="autoScroll()"
                     (click)="toggleAutoScroll()" />
@@ -63,8 +52,6 @@
                 </label>
             </div>
         </div>
-
-        <!-- Log container -->
         <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2">
             <table class="table table-sm table-dark table-striped table-bordered rounded-3 mb-0 log-table">
                 <thead class="table-secondary rounded-top sticky-top">
@@ -104,11 +91,8 @@
         </div>
     </div>
     }
-
     @else if (activeTab() === 'logs-file') {
     <div class="d-flex flex-column h-100 flex-grow-1">
-
-        <!-- Date Filter Toolbar -->
         <div class="d-flex align-items-center gap-2 p-3 border-bottom bg-light">
             <label for="logDateFilter" class="form-label mb-0">Select Date:</label>
             <input type="date" class="form-control date-filter-input" id="logDateFilter" [value]="selectedDate()"
@@ -117,8 +101,6 @@
                 <i class="bi bi-trash"></i>
             </button>
         </div>
-
-        <!-- Logs File List -->
         <div class="flex-grow-1 overflow-auto p-3">
             @if (filteredLogFiles().length > 0) {
             <div class="row g-3">

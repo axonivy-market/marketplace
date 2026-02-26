@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
+
 @Log4j2
 @Service
 public class LogServiceImpl implements LogService {
@@ -26,8 +28,7 @@ public class LogServiceImpl implements LogService {
   @Value("${logging.file.path}")
   private String logPath;
 
-  // Cache settings
-  private static final long CACHE_TTL_MILLIS = 60 * 60 * 1000; // 1 hour
+  private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000; // 30 min
   private List<LogFileModel> cachedLogFiles;
   private long lastCacheTime;
 
@@ -37,10 +38,11 @@ public class LogServiceImpl implements LogService {
     List<LogFileModel> allLogs = getCachedLogFiles();
     
     // If no date provided, return only .log files (not compressed)
-    if (StringUtils.isEmpty(date) || StringUtils.equals("null", date)) {
+    String DEFAULT_DATE_VALUE = "null";
+    if (StringUtils.isEmpty(date) || StringUtils.equals(DEFAULT_DATE_VALUE, date)) {
       log.debug("No date provided, returning uncompressed .log files");
       return allLogs.stream()
-          .filter(log -> log.getFileName().endsWith(".log"))
+          .filter(log -> log.getFileName().endsWith(LOG_EXTENSION))
           .collect(Collectors.toList());
     }
     
@@ -102,7 +104,7 @@ public class LogServiceImpl implements LogService {
 
   private boolean isLogFile(String fileName) {
     // Accept both .log and .log.gz files
-    return fileName.endsWith(".log") || fileName.endsWith(CommonConstants.GZ_EXTENSION);
+    return fileName.endsWith(LOG_EXTENSION) || fileName.endsWith(CommonConstants.GZ_EXTENSION);
   }
 
   private String extractDateFromFileName(String fileName) {
@@ -112,13 +114,15 @@ public class LogServiceImpl implements LogService {
     if (fileName == null || fileName.isEmpty()) {
       return null;
     }
-    
-    String[] parts = fileName.split("\\.");
+    final String DATE_MONTH_YEAR_SEPARATOR_REGEX = "\\.";
+    final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+
+    String[] parts = fileName.split(DATE_MONTH_YEAR_SEPARATOR_REGEX);
     if (parts.length >= 2) {
       // The date is typically the second part: application.[DATE].log(.gz)
       String datePart = parts[1];
       // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
-      if (datePart.length() == 10 && datePart.matches("\\d{4}-\\d{2}-\\d{2}")) {
+      if (datePart.length() == 10 && datePart.matches(DATE_PATTERN)) {
         return datePart;
       }
     }
