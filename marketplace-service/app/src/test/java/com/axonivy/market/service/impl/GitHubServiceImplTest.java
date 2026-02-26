@@ -892,7 +892,6 @@ class GitHubServiceImplTest {
         "Error message should be meaningful");
   }
 
-  @Test
   void testGetLatestWorkflowRunReturnsCompletedRun() throws IOException {
     GHRepository repo = mock(GHRepository.class);
     GHWorkflow workflow = mock(GHWorkflow.class);
@@ -915,8 +914,11 @@ class GitHubServiceImplTest {
     GHWorkflowRun result =
         gitHubService.getLatestWorkflowRun(repo, "build.yml");
 
-    assertNotNull(result);
-    assertEquals(completedRun, result);
+    assertNotNull(result,
+        "Expected a completed workflow run to be returned, but result was null.");
+
+    assertEquals(completedRun, result,
+        "Expected the method to return the first COMPLETED workflow run from the iterator.");
   }
 
   @Test
@@ -943,7 +945,8 @@ class GitHubServiceImplTest {
     GHWorkflowRun result =
         gitHubService.getLatestWorkflowRun(repo, "build.yml");
 
-    assertNull(result);
+    assertNull(result,
+        "Expected null when no workflow runs have COMPLETED status, but a run was returned.");
   }
 
   @Test
@@ -959,7 +962,9 @@ class GitHubServiceImplTest {
 
     InputStream result = gitHubService.downloadArtifactZip(artifact);
 
-    assertArrayEquals(expected, result.readAllBytes());
+    assertArrayEquals(expected, result.readAllBytes(),
+        "Returned InputStream should contain exactly the bytes provided by the artifact download callback.");
+
     verify(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
   }
 }
