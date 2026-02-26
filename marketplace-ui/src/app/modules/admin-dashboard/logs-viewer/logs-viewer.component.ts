@@ -44,25 +44,18 @@ export class LogViewerComponent {
   constructor() {
     if (this.isBrowser) {
       effect(() => {
-        // Track both autoScroll and parsedLogs to trigger on log changes
         this.parsedLogs();
         if (this.autoScroll()) {
           queueMicrotask(() => this.scrollToBottom());
         }
       });
-
-      // Watch for log changes and parse them
       effect(() => {
         const allLogs = this.logs();
         this.parsedLogs.set(allLogs.map(log => this.parseLog(log)));
       });
-
-      // Load log files when switching to logs-file tab
       effect(() => {
         const tab = this.activeTab();
-        console.log('Active tab changed to:', tab);
         if (tab === 'logs-file') {
-          console.log('Loading log files for tab: logs-file');
           this.loadLogFiles();
         }
       });
@@ -206,15 +199,12 @@ export class LogViewerComponent {
 
   private loadLogFiles(): void {
     const selectedDate = this.selectedDate();
-    console.log('loadLogFiles called with selectedDate:', selectedDate);
     this.logService.getLogFiles(selectedDate).subscribe({
       next: (response: LogFileModel[]) => {
-        console.log('Log files loaded successfully:', response);
         this.logFiles.set(response);
         this.filteredLogFiles.set(response);
       },
       error: error => {
-        console.error('Failed to load log files', error);
         this.logFiles.set([]);
         this.filteredLogFiles.set([]);
       }
@@ -233,14 +223,8 @@ export class LogViewerComponent {
     this.loadLogFiles();
   }
 
-  selectLogFile(logFile: LogFileModel): void {
-    console.log('Selected log file:', logFile);
-    // In a real implementation, you would fetch and display the content of the selected log file
-  }
-
   downloadLogFile(logFile: LogFileModel, event: Event): void {
     event.stopPropagation();
-    console.log('Downloading log file:', logFile.fileName);
     this.logService.getLogFileContent(logFile.fileName);
   }
 

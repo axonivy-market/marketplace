@@ -52,7 +52,7 @@
                 </label>
             </div>
         </div>
-        <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2">
+        <div id="log-container" class="flex-grow-1 overflow-auto bg-dark text-light p-2 text-wrap">
             <table class="table table-sm table-dark table-striped table-bordered rounded-3 mb-0 log-table">
                 <thead class="table-secondary rounded-top sticky-top">
                     <tr>
@@ -66,7 +66,7 @@
                     <tr>
                         <td class="font-monospace small text-success fw-bold">{{ log.timestamp }}</td>
                         <td class="d-flex justify-content-center align-items-center">
-                            <span class="log-level-badge rounded p-1 text-center"
+                            <span class="log-level-badge text-dark rounded p-1 text-center"
                                 [ngStyle]="{'background-color': getLogLevelColor(log.level)}">
                                 {{ log.level }}
                             </span>
@@ -79,7 +79,7 @@
                             </div>
                             }
                             <div class="collapse" [class.show]="!log.isLong || isExpanded($index)">
-                                <div class="log-message-content text-light">
+                                <div class="text-light text-wrap text-break">
                                     {{ log.message }}
                                 </div>
                             </div>
@@ -106,7 +106,7 @@
             <div class="row g-3">
                 @for (logFile of filteredLogFiles(); track logFile.fileName) {
                 <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100 log-file-card" (click)="selectLogFile(logFile)">
+                    <div class="card h-100 log-file-card" >
                         <div class="card-body d-flex flex-column justify-content-between">
                             <div>
                                 <h6 class="card-title font-monospace mb-2 text-truncate text-secondary"

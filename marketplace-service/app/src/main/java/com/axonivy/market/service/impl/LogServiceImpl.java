@@ -36,8 +36,6 @@ public class LogServiceImpl implements LogService {
   @Override
   public List<LogFileModel> listGzLogNamesByDate(String date) {
     List<LogFileModel> allLogs = getCachedLogFiles();
-    
-    // If no date provided, return only .log files (not compressed)
     String DEFAULT_DATE_VALUE = "null";
     if (StringUtils.isEmpty(date) || StringUtils.equals(DEFAULT_DATE_VALUE, date)) {
       log.debug("No date provided, returning uncompressed .log files");
@@ -45,21 +43,16 @@ public class LogServiceImpl implements LogService {
           .filter(log -> log.getFileName().endsWith(LOG_EXTENSION))
           .collect(Collectors.toList());
     }
-    
-    // If date provided, filter by that date
     return allLogs.stream()
         .filter(log -> date.equals(log.getDate()))
         .collect(Collectors.toList());
   }
 
   private List<LogFileModel> getCachedLogFiles() {
-    // Check if cache is still valid
     if (cachedLogFiles != null && isCacheValid()) {
       log.debug("Using cached log files");
       return cachedLogFiles;
     }
-
-    // Cache expired or doesn't exist, refresh it
     log.debug("Refreshing log files cache");
     cachedLogFiles = loadLogFilesFromDisk();
     lastCacheTime = System.currentTimeMillis();
@@ -103,7 +96,6 @@ public class LogServiceImpl implements LogService {
   }
 
   private boolean isLogFile(String fileName) {
-    // Accept both .log and .log.gz files
     return fileName.endsWith(LOG_EXTENSION) || fileName.endsWith(CommonConstants.GZ_EXTENSION);
   }
 
