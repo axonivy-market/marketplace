@@ -90,7 +90,7 @@ describe('NewsManagementComponent', () => {
     );
 
     expect(
-      adminDashboardServiceMock.getReleaseLettersWithoutPaging
+      adminDashboardServiceMock.getReleaseLetters
     ).toHaveBeenCalled();
   });
 
@@ -144,7 +144,7 @@ describe('NewsManagementComponent', () => {
     ).toHaveBeenCalledWith('S1');
 
     expect(
-      adminDashboardServiceMock.getReleaseLettersWithoutPaging
+      adminDashboardServiceMock.getReleaseLetters
     ).toHaveBeenCalled();
 
     expect(component.releaseLetterList()).toEqual(mockReleaseLetters);
@@ -161,7 +161,7 @@ describe('NewsManagementComponent', () => {
   });
 
   it('should do nothing if backend response is null', () => {
-    adminDashboardServiceMock.getReleaseLettersWithoutPaging.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetters.and.returnValue(
       of(null)
     );
 
