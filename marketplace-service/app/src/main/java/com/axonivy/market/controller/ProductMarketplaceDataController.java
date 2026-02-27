@@ -50,7 +50,6 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @Authorized
   @GetMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<ProductCustomSortRequest> getCustomSortProducts() {

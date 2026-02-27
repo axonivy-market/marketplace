@@ -114,7 +114,7 @@ export class AdminDashboardService {
 
   getCustomSort(): Observable<CustomSortConfig> {
     return this.http.get<CustomSortConfig>(
-      `${API_URI.CUSTOM_SORT}`,{ headers: this.adminAuth.getAuthHeaders() }
+      `${API_URI.CUSTOM_SORT}`
     );
   }
 

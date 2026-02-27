@@ -227,11 +227,17 @@ export class CustomSortComponent implements OnInit {
           this.sortSuccessMessage = this.translateService.instant(
             'common.admin.customSort.sortSuccessMessage'
           );
+          setTimeout(() => {
+            this.sortSuccessMessage = '';
+          }, 3000);
         },
         error: () => {
           this.sortErrorMessage = this.translateService.instant(
             'common.admin.customSort.sortErrorMessage'
           );
+          setTimeout(() => {
+            this.sortErrorMessage = '';
+          }, 3000);
         }
       });
   }
