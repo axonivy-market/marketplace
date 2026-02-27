@@ -47,13 +47,14 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testShouldUseDefaultSortingWhenNotSorted() {
     PageRequest pageable = PageRequest.of(0, 10);
+    boolean isPaging = true;
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
     when(releaseLetterRepository.findAll(any(Pageable.class)))
         .thenReturn(page);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable);
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
 
     ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
     verify(releaseLetterRepository).findAll(captor.capture());
@@ -72,12 +73,13 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testShouldUseGivenSortingWhenAlreadySorted() {
     Pageable pageable = PageRequest.of(0, 10, Sort.by("sprint"));
+    boolean isPaging = true;
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
     when(releaseLetterRepository.findAll(pageable)).thenReturn(page);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable);
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
 
     verify(releaseLetterRepository).findAll(pageable);
     assertEquals(1, result.getTotalElements(), "Total elements in page should be 1");
@@ -289,7 +291,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     assertEquals("S44", result.getSprint(), "Sprint should be normalized to uppercase and updated");
 
-    assertEquals("Reviewed by https://github.com/alice",result.getContent(),
+    assertEquals("Reviewed by https://github.com/alice", result.getContent(),
         "Content should correctly replace GitHub username with profile link"
     );
 
@@ -317,7 +319,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     assertNotNull(result, "Result should not be null when marking release letter as latest");
     assertTrue(result.isLatest(), "Latest flag should be updated to true");
 
-    assertEquals("Thanks https://github.com/bob",result.getContent(),
+    assertEquals("Thanks https://github.com/bob", result.getContent(),
         "Content should correctly transform GitHub username into link"
     );
 
@@ -353,7 +355,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
 
-    verify(releaseLetterRepository) .findAll(sortCaptor.capture());
+    verify(releaseLetterRepository).findAll(sortCaptor.capture());
 
     Sort usedSort = sortCaptor.getValue();
     Sort.Order order = usedSort.getOrderFor("createdAt");
@@ -364,6 +366,33 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
         "Release letters should be sorted by 'createdAt' in descending order");
     assertEquals(expected, result,
         "Service should return the exact list returned by repository");
+  }
+
+  @Test
+  void testFindAllReleaseLettersShouldReturnSinglePageWhenPagingDisabled() {
+    Pageable pageable = PageRequest.of(5, 1); // irrelevant when isPaging = false
+    boolean isPaging = false;
+
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    List<ReleaseLetter> list = List.of(releaseLetterMock);
+
+    when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(list);
+
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
+
+    ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
+    verify(releaseLetterRepository).findAll(sortCaptor.capture());
+
+    Sort usedSort = sortCaptor.getValue();
+    Sort.Order order = usedSort.getOrderFor("createdAt");
+
+    assertNotNull(order, "Sort should contain 'createdAt' property");
+    assertEquals(Sort.Direction.DESC, order.getDirection(), "Sort direction should be DESC");
+
+    assertEquals(0, result.getNumber(), "Page number should always be 0 when paging disabled");
+    assertEquals(1, result.getSize(), "Page size should equal list size");
+    assertEquals(1, result.getTotalElements(), "Total elements should equal list size");
+    assertEquals(list, result.getContent(), "Page content should match repository result");
   }
 
   private ReleaseLetter createReleaseLetterMock() {

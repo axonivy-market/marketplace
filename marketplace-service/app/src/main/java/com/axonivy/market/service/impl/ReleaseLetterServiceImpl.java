@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +36,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
   @Override
-  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable) {
+  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isPaging) {
+    if (!isPaging) {
+      List<ReleaseLetter> list = findAllReleaseLettersWithoutPaging();
+      Pageable noPagingPageable = PageRequest.of(0, list.size(), defaultSorting);
+      return new PageImpl<>(list, noPagingPageable, list.size());
+    }
+
     Pageable sortedPageable =
         pageable.getSort().isSorted()
             ? pageable
@@ -44,7 +51,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
             pageable.getPageSize(),
             defaultSorting
         );
-
     return releaseLetterRepository.findAll(sortedPageable);
   }
 
@@ -84,9 +90,9 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
-    var releaseLetter =
-        ReleaseLetter.builder().content(transformContent(releaseLetterModelRequest.getContent())).sprint(
-            unifiedSprint).isLatest(releaseLetterModelRequest.isLatest()).build();
+    var releaseLetter = ReleaseLetter.builder().content(
+        transformContent(releaseLetterModelRequest.getContent())).sprint(unifiedSprint).isLatest(
+        releaseLetterModelRequest.isLatest()).build();
 
     if (releaseLetterModelRequest.isLatest()) {
       releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedSprint);
@@ -104,8 +110,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     String unifiedSelectedSprint = unifySprint(selectedSprint);
     String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
 
-    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(
-        unifiedNewSprint)) {
+    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
@@ -139,7 +144,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   private String transformContent(String originalContent) {
-    return GITHUB_USERNAME_PATTERN.matcher(originalContent).replaceAll(
-        GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
+    return GITHUB_USERNAME_PATTERN.matcher(originalContent).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 }

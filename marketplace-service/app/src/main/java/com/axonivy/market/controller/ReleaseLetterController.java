@@ -16,7 +16,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -30,14 +29,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.SPRINT;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
-
-import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -50,38 +48,21 @@ public class ReleaseLetterController {
 
   @GetMapping
   @Operation(summary = "Retrieve a paginated list of all release letter")
-  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable,
-      boolean hasAll) {
-    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable);
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(
+      @ParameterObject Pageable pageable,
+      @RequestParam(required = false, name = "isPaging", defaultValue = "true") boolean isPaging) {
+    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
 
     if (releaseLetters.isEmpty()) {
       return generateEmptyPagedModel();
     }
 
-    PagedModel<ReleaseLetterModel> pageModel =
-        pagedResourcesAssembler.toModel(releaseLetters, releaseLetterModelAssembler);
-
+    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isPaging);
     pageModel.forEach(model ->
         model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
     );
 
     return ResponseEntity.ok(pageModel);
-  }
-
-  @GetMapping(ALL)
-  @Operation(hidden = true)
-  public ResponseEntity<CollectionModel<ReleaseLetterModel>> findAllReleaseLettersWithoutPaging() {
-    List<ReleaseLetter> releaseLetters =
-        releaseLetterService.findAllReleaseLettersWithoutPaging();
-
-    List<ReleaseLetterModel> resources = releaseLetters.stream()
-        .map(releaseLetterModelAssembler::toModelWithoutContent)
-        .map(model -> model.add(
-            linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel()))
-        .toList();
-
-    CollectionModel<ReleaseLetterModel> collectionModel = CollectionModel.of(resources);
-    return ResponseEntity.ok(collectionModel);
   }
 
   @Authorized
@@ -113,8 +94,8 @@ public class ReleaseLetterController {
   }
 
   @GetMapping(BY_LATEST)
-  @Operation(summary = "Find active release letter",
-      description = "Get currently active release letter.")
+  @Operation(summary = "Find latest release letter",
+      description = "Get currently latest release letter.")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findLatestReleaseLetter(@ParameterObject Pageable pageable) {
     Page<ReleaseLetter> results = releaseLetterService.findLatestReleaseLetter(pageable);
     if (results.isEmpty()) {
@@ -159,6 +140,13 @@ public class ReleaseLetterController {
       @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
           in = ParameterIn.PATH) String sprint) {
     releaseLetterService.deleteReleaseLetterBySprint(sprint);
+  }
+
+  private PagedModel<ReleaseLetterModel> buildPagedModel(Page<ReleaseLetter> page, boolean isPaging) {
+    if (isPaging) {
+      return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler);
+    }
+    return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler::toModelWithoutContent);
   }
 
   @SuppressWarnings("unchecked")

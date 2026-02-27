@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ReleaseLetterService {
-  Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable);
+  Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isPaging);
 
   List<ReleaseLetter> findAllReleaseLettersWithoutPaging();
 
