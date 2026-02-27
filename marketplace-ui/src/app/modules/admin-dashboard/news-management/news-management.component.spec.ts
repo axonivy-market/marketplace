@@ -123,16 +123,16 @@ describe('NewsManagementComponent', () => {
   });
 
   it('should open release letter modal', () => {
-    const item = mockReleaseLetters[0];
+    const sprint = mockReleaseLetters[0].sprint;
 
     spyOnProperty(document, 'activeElement', 'get').and.returnValue({
       blur: jasmine.createSpy()
     } as any);
 
-    component.openModal(item);
+    component.openModal(sprint);
 
     expect(appModalServiceMock.openReleaseLetterModal).toHaveBeenCalledWith(
-      item
+      sprint
     );
   });
 

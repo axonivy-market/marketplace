@@ -29,12 +29,7 @@ import { AdminDashboardService } from './../admin-dashboard.service';
 
 @Component({
   selector: 'app-news-management',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })
@@ -57,7 +52,8 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   newsLinks!: Link;
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
-    pageable: DEFAULT_PAGEABLE
+    pageable: DEFAULT_PAGEABLE,
+    isPaging: false
   };
   tableHeadersClass = 'text-primary text-center';
 
@@ -88,10 +84,10 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  openModal(item: ReleaseLetter) {
+  openModal(sprint: string) {
     const buttonElement = document.activeElement as HTMLElement;
     buttonElement.blur();
-    this.appModalService.openReleaseLetterModal(item);
+    this.appModalService.openReleaseLetterModal(sprint);
   }
 
   formatDate(dateString: string): string {
@@ -106,7 +102,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
       .openDeleteReleaseLetterConfirmModal(sprint)
       .then(() => {
         this.adminDashboardService
-          .getReleaseLettersWithoutPaging()
+          .getReleaseLetters(this.releaseLetterCriteria)
           .subscribe(res => {
             this.releaseLetterList.set(res._embedded.releaseLetterModelList);
           });
@@ -115,7 +111,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
 
   loadReleaseLetters(): void {
     const sub = this.adminDashboardService
-      .getReleaseLettersWithoutPaging()
+      .getReleaseLetters(this.releaseLetterCriteria)
       .subscribe({
         next: response => {
           if (!response) {
