@@ -1,11 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
+import { DeleteReleaseLetterConfirmModalComponent } from '../../modules/admin-dashboard/news-management/delete-release-letter-confirm-modal/delete-release-letter-confirm-modal.component';
+import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-modal/release-letter-modal.component';
 import { AddFeedbackDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/add-feedback-dialog.component';
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
-import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-modal/release-letter-modal.component';
-import { DeleteReleaseLetterConfirmModalComponent } from '../../modules/admin-dashboard/news-management/delete-release-letter-confirm-modal/delete-release-letter-confirm-modal.component';
-import { ReleaseLetter } from '../models/release-letter-request.model';
+import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
 
 @Injectable({
   providedIn: 'root'
@@ -41,14 +40,14 @@ export class AppModalService {
     });
   }
 
-  openReleaseLetterModal(item: ReleaseLetter): void {
+  openReleaseLetterModal(sprint: string): void {
     const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
       fullscreen: 'md',
       centered: true,
       size: 'xl'
     });
 
-    modalRef.componentInstance.item = item;
+    modalRef.componentInstance.sprint = sprint;
   }
 
   openDeleteReleaseLetterConfirmModal(sprint: string) {

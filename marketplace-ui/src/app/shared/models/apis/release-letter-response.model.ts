@@ -1,6 +1,6 @@
 export interface ReleaseLetterApiResponse {
-  content: string;
   sprint: string;
+  content?: string;
   createdAt: string;
   latest: boolean;
   _links?: {

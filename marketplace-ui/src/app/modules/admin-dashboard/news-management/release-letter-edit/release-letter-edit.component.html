@@ -93,7 +93,7 @@
       <div>
         <app-markdown-editor
           [isSubmittingSignal]="isSubmitting"
-          [(contentValue)]="releaseLetter.content"
+          [(contentValue)]="releaseLetter.content!"
           [placeholder]="
             translateService.get(
               'common.admin.releaseLetterEdit.contentPlaceholder'

@@ -29,5 +29,6 @@ export interface MonitoringCriteria {
 
 export interface ReleaseLetterCriteria {
   pageable?: Pageable;
+  isPaging?: boolean;
   nextPageHref?: string;
 }

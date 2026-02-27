@@ -65,7 +65,8 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   newsLinks!: Link;
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
-    pageable: DEFAULT_PAGEABLE
+    pageable: DEFAULT_PAGEABLE,
+    isPaging: true
   };
   protected LoadingComponentId = LoadingComponentId;
 
@@ -98,7 +99,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   toSafeHtmlModel(item: ReleaseLetterApiResponse): ReleaseLetterSafeHtml {
     return {
       sprint: item.sprint,
-      content: this.renderReleaseLetterContent(item.content),
+      content: this.renderReleaseLetterContent(item.content!),
       latest: item.latest,
       createdAt: item.createdAt
     };

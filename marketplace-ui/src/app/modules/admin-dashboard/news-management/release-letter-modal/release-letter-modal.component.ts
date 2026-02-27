@@ -1,10 +1,10 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
-import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import MarkdownIt from 'markdown-it';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MarkdownService } from '../../../../shared/services/markdown.service';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import MarkdownIt from 'markdown-it';
+import { MarkdownService } from '../../../../shared/services/markdown.service';
+import { AdminDashboardService } from '../../admin-dashboard.service';
 
 @Component({
   selector: 'app-release-letter-modal',
@@ -14,10 +14,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class ReleaseLetterModalComponent implements OnInit {
   @Input()
-  item!: ReleaseLetter;
+  sprint!: string;
 
   markdownService = inject(MarkdownService);
   translateService = inject(TranslateService);
+  adminDashboardService = inject(AdminDashboardService);
 
   md: MarkdownIt = new MarkdownIt();
   sprintHeader = '';
@@ -29,16 +30,23 @@ export class ReleaseLetterModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    console.log(this.sprint);
     this.sprintHeader = this.getSprintHeader();
-    this.releaseLetterContent = this.renderReleaseLetterContent();
+    this.adminDashboardService.getReleaseLetterBySprint(this.sprint).subscribe(response => {
+      this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
+    });
   }
 
-  renderReleaseLetterContent() {
-    const rawHtml = this.markdownService.parseMarkdown(this.item.content);
+  renderReleaseLetterContent(content: string) {
+    const rawHtml = this.markdownService.parseMarkdown(content);
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   }
 
   getSprintHeader() {
-    return this.translateService.instant('common.admin.newsManagement.sprintHeader') + this.item.sprint;
+    return (
+      this.translateService.instant(
+        'common.admin.newsManagement.sprintHeader'
+      ) + this.sprint
+    );
   }
 }

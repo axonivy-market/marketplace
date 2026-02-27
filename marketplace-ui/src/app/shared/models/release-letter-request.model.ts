@@ -1,6 +1,6 @@
 export interface ReleaseLetter {
   sprint: string;
-  content: string;
+  content?: string;
   latest: boolean;
   createdAt: string;
 }

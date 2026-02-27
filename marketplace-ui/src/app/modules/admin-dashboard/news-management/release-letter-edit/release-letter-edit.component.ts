@@ -81,7 +81,7 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   getRelaseLetterBySprint(sprint: string): void {
     this.adminDashboardService
-      .getRelaseLetterBySprint(sprint)
+      .getReleaseLetterBySprint(sprint)
       .subscribe(response => {
         this.releaseLetter.content = response.content;
         this.releaseLetter.sprint = response.sprint;
