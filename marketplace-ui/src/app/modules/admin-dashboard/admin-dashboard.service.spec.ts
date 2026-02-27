@@ -207,41 +207,6 @@ describe('AdminDashboardService', () => {
     });
   });
 
-  describe('getReleaseLettersWithoutPaging', () => {
-    it('should get release letters without pagination', () => {
-      const mockResponse: ReleaseLetterListApiResponse = {
-        _embedded: {
-          releaseLetterModelList: [
-            {
-              sprint: 'S43',
-              createdAt: '2024-01-01T00:00:00Z',
-              content: 'Release content',
-              latest: true
-            } as any
-          ]
-        },
-        _links: {
-          self: { href: '/api/release-letters' }
-        }
-      } as any;
-
-      service.getReleaseLettersWithoutPaging().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(
-        API_URI.RELEASE_LETTERS_WITHOUT_PAGINATION
-      );
-
-      expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
-        'Bearer test-token'
-      );
-
-      req.flush(mockResponse);
-    });
-  });
-
   describe('getReleaseLetters', () => {
     it('should call RELEASE_LETTERS with pageable params and default pageId', () => {
       const criteria: ReleaseLetterCriteria = {
@@ -427,7 +392,7 @@ describe('AdminDashboardService', () => {
         createdAt: '2024-02-10T00:00:00Z'
       } as any;
 
-      service.getRelaseLetterBySprint(sprint).subscribe(response => {
+      service.getReleaseLetterBySprint(sprint).subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 

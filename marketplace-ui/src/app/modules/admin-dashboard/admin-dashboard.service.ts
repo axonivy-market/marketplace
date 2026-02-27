@@ -122,15 +122,6 @@ export class AdminDashboardService {
     });
   }
 
-  getReleaseLettersWithoutPaging(): Observable<ReleaseLetterListApiResponse> {
-    return this.http.get<ReleaseLetterListApiResponse>(
-      `${API_URI.RELEASE_LETTERS_WITHOUT_PAGINATION}`,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
-  }
-
   getReleaseLetters(
     releaseLetterCriteria: ReleaseLetterCriteria,
     pageId: string = LoadingComponentId.NEWS_PAGE
@@ -145,6 +136,7 @@ export class AdminDashboardService {
       
       if (releaseLetterCriteria.pageable) {
         params = params
+          .set(RequestParam.IS_PAGING, `${releaseLetterCriteria.isPaging}`)
           .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }
@@ -201,7 +193,7 @@ export class AdminDashboardService {
     );
   }
 
-  getRelaseLetterBySprint(
+  getReleaseLetterBySprint(
     sprint: string
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.get<ReleaseLetterApiResponse>(
