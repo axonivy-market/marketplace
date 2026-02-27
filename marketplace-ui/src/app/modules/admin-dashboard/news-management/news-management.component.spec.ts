@@ -42,9 +42,7 @@ describe('NewsManagementComponent', () => {
 
   beforeEach(async () => {
     adminDashboardServiceMock = {
-      getReleaseLettersWithoutPaging: jasmine
-        .createSpy()
-        .and.returnValue(of(mockResponse))
+      getReleaseLetters: jasmine.createSpy().and.returnValue(of(mockResponse))
     };
 
     appModalServiceMock = {
