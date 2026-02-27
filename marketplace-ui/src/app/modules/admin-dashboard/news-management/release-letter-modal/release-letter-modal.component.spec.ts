@@ -5,6 +5,15 @@ import { MarkdownService } from '../../../../shared/services/markdown.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SafeHtml } from '@angular/platform-browser';
+import { AdminDashboardService } from '../../admin-dashboard.service';
+import { of } from 'rxjs';
+
+const mockResponse = {
+  sprint: 'S43',
+  content: 'content',
+  latest: true,
+  createdAt: '2026-02-01'
+};
 
 describe('ReleaseLetterModalComponent', () => {
   let component: ReleaseLetterModalComponent;
@@ -12,6 +21,7 @@ describe('ReleaseLetterModalComponent', () => {
 
   let markdownServiceMock: jasmine.SpyObj<MarkdownService>;
   let translateServiceMock: jasmine.SpyObj<TranslateService>;
+  let adminDashboardServiceMock: jasmine.SpyObj<AdminDashboardService>;
   let activeModalMock: jasmine.SpyObj<NgbActiveModal>;
 
   beforeEach(async () => {
@@ -25,6 +35,13 @@ describe('ReleaseLetterModalComponent', () => {
       'close',
       'dismiss'
     ]);
+    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
+      'getReleaseLetterBySprint'
+    ]);
+
+    adminDashboardServiceMock.getReleaseLetterBySprint.and.returnValue(
+      of(mockResponse)
+    );
     markdownServiceMock.parseMarkdown.and.returnValue('<p>Mock</p>');
     translateServiceMock.instant.and.returnValue('Sprint: ');
 
@@ -33,7 +50,8 @@ describe('ReleaseLetterModalComponent', () => {
       providers: [
         { provide: MarkdownService, useValue: markdownServiceMock },
         { provide: TranslateService, useValue: translateServiceMock },
-        { provide: NgbActiveModal, useValue: activeModalMock }
+        { provide: NgbActiveModal, useValue: activeModalMock },
+        { provide: AdminDashboardService, useValue: adminDashboardServiceMock }
       ]
     }).compileComponents();
 
@@ -58,10 +76,10 @@ describe('ReleaseLetterModalComponent', () => {
   });
 
   it('should render markdown and sanitize content on init', () => {
-    expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith('# Hello');
+    expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith(mockResponse.content);
     expect(component.releaseLetterContent).toBeTruthy();
   });
-  
+
   it('getSprintHeader should concatenate translation and sprint', () => {
     translateServiceMock.instant.and.returnValue('Version: ');
 

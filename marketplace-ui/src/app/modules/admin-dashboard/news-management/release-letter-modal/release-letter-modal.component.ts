@@ -30,7 +30,6 @@ export class ReleaseLetterModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log(this.sprint);
     this.sprintHeader = this.getSprintHeader();
     this.adminDashboardService.getReleaseLetterBySprint(this.sprint).subscribe(response => {
       this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);

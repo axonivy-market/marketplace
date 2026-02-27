@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppModalService } from './app-modal.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DeleteReleaseLetterConfirmModalComponent } from '../../modules/admin-dashboard/news-management/delete-release-letter-confirm-modal/delete-release-letter-confirm-modal.component';
+import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-modal/release-letter-modal.component';
 import { AddFeedbackDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/add-feedback-dialog.component';
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
 import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ReleaseLetterModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-modal/release-letter-modal.component';
-import { DeleteReleaseLetterConfirmModalComponent } from '../../modules/admin-dashboard/news-management/delete-release-letter-confirm-modal/delete-release-letter-confirm-modal.component';
+import { AppModalService } from './app-modal.service';
 
 describe('AppModalService', () => {
   let service: AppModalService;
@@ -16,10 +16,7 @@ describe('AppModalService', () => {
     const spy = jasmine.createSpyObj('NgbModal', ['open']);
 
     TestBed.configureTestingModule({
-      providers: [
-        AppModalService,
-        { provide: NgbModal, useValue: spy }
-      ]
+      providers: [AppModalService, { provide: NgbModal, useValue: spy }]
     });
 
     service = TestBed.inject(AppModalService);
@@ -28,11 +25,14 @@ describe('AppModalService', () => {
 
   it('should open ShowFeedbacksDialogComponent with correct options', () => {
     service.openShowFeedbacksDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(ShowFeedbacksDialogComponent, {
-      centered: true,
-      modalDialogClass: 'show-feedbacks-modal-dialog',
-      windowClass: 'overflow-hidden'
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      ShowFeedbacksDialogComponent,
+      {
+        centered: true,
+        modalDialogClass: 'show-feedbacks-modal-dialog',
+        windowClass: 'overflow-hidden'
+      }
+    );
   });
 
   it('should open AddFeedbackDialogComponent with correct options and return result', async () => {
@@ -40,11 +40,14 @@ describe('AppModalService', () => {
     modalServiceSpy.open.and.returnValue({ result: mockResult } as any);
 
     const result = await service.openAddFeedbackDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(AddFeedbackDialogComponent, {
-      fullscreen: 'md',
-      centered: true,
-      modalDialogClass: 'add-feedback-modal-dialog'
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      AddFeedbackDialogComponent,
+      {
+        fullscreen: 'md',
+        centered: true,
+        modalDialogClass: 'add-feedback-modal-dialog'
+      }
+    );
     expect(result).toBe('test result');
   });
 
