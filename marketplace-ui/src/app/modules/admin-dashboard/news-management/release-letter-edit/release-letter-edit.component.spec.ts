@@ -35,7 +35,7 @@ describe('ReleaseLetterEditComponent', () => {
     };
 
     adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'getRelaseLetterBySprint',
+      'getReleaseLetterBySprint',
       'createReleaseLetter',
       'updateReleaseLetter'
     ]);
@@ -110,7 +110,6 @@ describe('ReleaseLetterEditComponent', () => {
       of(mockResponse)
     );
 
-    // Set param BEFORE component creation
     activatedRouteMock.paramMap = of(convertToParamMap({ sprint: 'S43' }));
 
     fixture = TestBed.createComponent(ReleaseLetterEditComponent);

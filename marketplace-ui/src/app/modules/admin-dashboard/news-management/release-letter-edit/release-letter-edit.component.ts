@@ -72,14 +72,14 @@ export class ReleaseLetterEditComponent implements OnInit {
       if (sprintParam) {
         this.isCreateMode = false;
         this.selectedSprint = sprintParam;
-        this.getRelaseLetterBySprint(this.selectedSprint);
+        this.getReleaseLetterBySprint(this.selectedSprint);
       } else {
         this.isCreateMode = true;
       }
     });
   }
 
-  getRelaseLetterBySprint(sprint: string): void {
+  getReleaseLetterBySprint(sprint: string): void {
     this.adminDashboardService
       .getReleaseLetterBySprint(sprint)
       .subscribe(response => {

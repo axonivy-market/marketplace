@@ -382,7 +382,7 @@ describe('AdminDashboardService', () => {
     });
   });
 
-  describe('getRelaseLetterBySprint', () => {
+  describe('getReleaseLetterBySprint', () => {
     it('should get release letter by sprint', () => {
       const sprint = 'S52';
 
