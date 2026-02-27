@@ -57,8 +57,8 @@ describe('AppModalService', () => {
     });
   });
 
-  it('should open ReleaseLetterModalComponent and set item on componentInstance', () => {
-    const mockItem = { sprint: 'S43' } as any;
+  it('should open ReleaseLetterModalComponent and set sprint on componentInstance', () => {
+    const mockSprint = 'S43';
 
     const mockModalRef = {
       componentInstance: {}
@@ -66,7 +66,7 @@ describe('AppModalService', () => {
 
     modalServiceSpy.open.and.returnValue(mockModalRef);
 
-    service.openReleaseLetterModal(mockItem);
+    service.openReleaseLetterModal(mockSprint);
 
     expect(modalServiceSpy.open).toHaveBeenCalledWith(
       ReleaseLetterModalComponent,
@@ -77,7 +77,7 @@ describe('AppModalService', () => {
       }
     );
 
-    expect(mockModalRef.componentInstance.item).toBe(mockItem);
+    expect(mockModalRef.componentInstance.sprint).toBe(mockSprint);
   });
 
   it('should open DeleteReleaseLetterConfirmModalComponent, set sprint, and return result', async () => {
