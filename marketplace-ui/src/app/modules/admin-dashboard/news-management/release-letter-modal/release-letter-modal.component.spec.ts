@@ -40,10 +40,7 @@ describe('ReleaseLetterModalComponent', () => {
     fixture = TestBed.createComponent(ReleaseLetterModalComponent);
     component = fixture.componentInstance;
 
-    component.item = {
-      sprint: 'S43',
-      content: '# Hello'
-    } as any;
+    component.sprint = 'S43';
 
     fixture.detectChanges();
   });
@@ -64,17 +61,7 @@ describe('ReleaseLetterModalComponent', () => {
     expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith('# Hello');
     expect(component.releaseLetterContent).toBeTruthy();
   });
-
-  it('renderReleaseLetterContent should return SafeHtml', () => {
-    markdownServiceMock.parseMarkdown.calls.reset();
-    markdownServiceMock.parseMarkdown.and.returnValue('<p>New</p>');
-
-    const result: SafeHtml = component.renderReleaseLetterContent();
-
-    expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith('# Hello');
-    expect(result).toBeTruthy();
-  });
-
+  
   it('getSprintHeader should concatenate translation and sprint', () => {
     translateServiceMock.instant.and.returnValue('Version: ');
 

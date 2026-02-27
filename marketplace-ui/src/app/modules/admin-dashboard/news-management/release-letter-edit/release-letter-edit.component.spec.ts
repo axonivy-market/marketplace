@@ -106,7 +106,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should initialize in edit mode and load release letter', () => {
-    adminDashboardServiceMock.getRelaseLetterBySprint.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetterBySprint.and.returnValue(
       of(mockResponse)
     );
 
