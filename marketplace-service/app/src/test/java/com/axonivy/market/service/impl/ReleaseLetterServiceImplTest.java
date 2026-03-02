@@ -136,11 +136,11 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
-    when(releaseLetterRepository.findByIsLatest(true, pageable)).thenReturn(page);
+    when(releaseLetterRepository.findByLatest(true, pageable)).thenReturn(page);
 
     Page<ReleaseLetter> result = releaseLetterService.findLatestReleaseLetter(pageable);
 
-    verify(releaseLetterRepository).findByIsLatest(true, pageable);
+    verify(releaseLetterRepository).findByLatest(true, pageable);
 
     assertEquals(page, result, "Resulting page of latest ReleaseLetters should match repository response");
   }
@@ -342,30 +342,6 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).findBySprint(unifiedSprint);
     verify(releaseLetterRepository).deleteBySprint(inputSprint);
-  }
-
-  @Test
-  void testShouldReturnAllReleaseLettersSortedByCreatedAtDesc() {
-    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    List<ReleaseLetter> expected = List.of(releaseLetterMock);
-
-    when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(expected);
-
-    List<ReleaseLetter> result = releaseLetterService.findAllReleaseLettersWithoutPaging();
-
-    ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
-
-    verify(releaseLetterRepository).findAll(sortCaptor.capture());
-
-    Sort usedSort = sortCaptor.getValue();
-    Sort.Order order = usedSort.getOrderFor("createdAt");
-
-    assertNotNull(order,
-        "Sort should contain an order for property 'createdAt'");
-    assertEquals(Sort.Direction.DESC, order.getDirection(),
-        "Release letters should be sorted by 'createdAt' in descending order");
-    assertEquals(expected, result,
-        "Service should return the exact list returned by repository");
   }
 
   @Test

@@ -140,38 +140,6 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void testHandleValidationExceptions() {
-    MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
-    BindingResult bindingResult = mock(BindingResult.class);
-
-    FieldError fieldError1 = new FieldError("object", "sprint", "Sprint cannot be blank");
-    FieldError fieldError2 = new FieldError("object", "version", "Version is required");
-
-    when(exception.getBindingResult()).thenReturn(bindingResult);
-    when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
-
-    ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValidationExceptions(exception);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
-        "HTTP status should be 400 BAD_REQUEST when validation fails");
-
-    Map<String, Object> body = response.getBody();
-    assertNotNull(body, "Response body must not be null for validation errors");
-
-    assertEquals(HttpStatus.BAD_REQUEST.value(), body.get("status"),
-        "Response body 'status' field should contain 400");
-
-    @SuppressWarnings("unchecked")
-    Map<String, String> errors = (Map<String, String>) body.get("errors");
-
-    assertEquals(2, errors.size(), "Validation error map should contain exactly 2 field errors");
-    assertEquals("Sprint cannot be blank", errors.get("sprint"),
-        "Error message for field 'sprint' is incorrect");
-    assertEquals("Version is required", errors.get("version"),
-        "Error message for field 'version' is incorrect");
-  }
-
-  @Test
   void testHandleMarketException() {
     MarketException exception = mock(MarketException.class);
 

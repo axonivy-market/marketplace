@@ -136,8 +136,8 @@ export class ReleaseLetterEditComponent implements OnInit {
       });
   }
 
-  handleError(errorHelpcode: string) {
-    switch (errorHelpcode) {
+  handleError(errorHelpCode: string) {
+    switch (errorHelpCode) {
       case SPRINT_CANNOT_BE_BLANK.toString():
         this.sprintErrorMessage = this.translateService.instant(
           'common.admin.releaseLetterEdit.sprintCannotBeBlankErrorMessage'

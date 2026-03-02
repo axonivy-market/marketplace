@@ -26,18 +26,12 @@ import java.util.Map;
 @RestControllerAdvice
 public class MarketExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+  public ResponseEntity<Object> handleValidationExceptions(
       MethodArgumentNotValidException exception) {
-    Map<String, Object> errors = new HashMap<>();
-    errors.put("status", HttpStatus.BAD_REQUEST.value());
-
-    Map<String, String> fieldErrors = new HashMap<>();
-    exception.getBindingResult().getFieldErrors().forEach(error ->
-        fieldErrors.put(error.getField(), error.getDefaultMessage())
-    );
-
-    errors.put("errors", fieldErrors);
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(exception.getDetailMessageCode());
+    errorMessage.setMessageDetails(exception.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MarketException.class)

@@ -27,12 +27,14 @@ class ReleaseLetterModelAssemblerTest {
   @Test
   void testToModel() {
     Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
+    Date updatedDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 24, 10, 30, 0).getTime();
 
     ReleaseLetter releaseLetter = new ReleaseLetter();
     releaseLetter.setContent("Release content");
     releaseLetter.setSprint("S43");
     releaseLetter.setLatest(true);
     releaseLetter.setCreatedAt(createdDate);
+    releaseLetter.setUpdatedAt(updatedDate);
 
     ReleaseLetterModel result = releaseLetterModelAssembler.toModel(releaseLetter);
 
@@ -45,17 +47,21 @@ class ReleaseLetterModelAssemblerTest {
         "Latest flag should be mapped correctly from ReleaseLetter");
     assertEquals(createdDate, result.getCreatedAt(),
         "CreatedAt date should be mapped correctly from ReleaseLetter");
+    assertEquals(updatedDate, result.getUpdatedAt(),
+            "UpdatedAt date should be mapped correctly from ReleaseLetter");
   }
 
   @Test
   void testToModelWithoutContent() {
     Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
+    Date updatedDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 24, 10, 30, 0).getTime();
 
     ReleaseLetter releaseLetter = new ReleaseLetter();
     releaseLetter.setContent("Release content");
     releaseLetter.setSprint("S43");
     releaseLetter.setLatest(true);
     releaseLetter.setCreatedAt(createdDate);
+    releaseLetter.setUpdatedAt(updatedDate);
 
     ReleaseLetterModel result = releaseLetterModelAssembler.toModelWithoutContent(releaseLetter);
 
@@ -66,5 +72,7 @@ class ReleaseLetterModelAssemblerTest {
         "Latest flag should be mapped correctly from ReleaseLetter");
     assertEquals(createdDate, result.getCreatedAt(),
         "CreatedAt date should be mapped correctly from ReleaseLetter");
+    assertEquals(updatedDate, result.getUpdatedAt(),
+            "UpdatedAt date should be mapped correctly from ReleaseLetter");
   }
 }

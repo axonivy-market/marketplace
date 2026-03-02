@@ -23,6 +23,7 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());
+    resource.setUpdatedAt(releaseLetter.getUpdatedAt());
 
     return resource;
   }
@@ -32,6 +33,7 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());
+    resource.setUpdatedAt(releaseLetter.getUpdatedAt());
 
     return resource;
   }

@@ -66,7 +66,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
     pageable: DEFAULT_PAGEABLE,
-    isPaging: true
+    isReadOnly: true
   };
   protected LoadingComponentId = LoadingComponentId;
 

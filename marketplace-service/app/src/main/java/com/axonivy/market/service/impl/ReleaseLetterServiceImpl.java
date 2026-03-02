@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,27 +37,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
   @Override
-  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isPaging) {
-    if (!isPaging) {
-      List<ReleaseLetter> list = findAllReleaseLettersWithoutPaging();
-      Pageable noPagingPageable = PageRequest.of(0, list.size(), defaultSorting);
-      return new PageImpl<>(list, noPagingPageable, list.size());
+  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
+    if (!isReadOnly) {
+      return new PageImpl<>(releaseLetterRepository.findAll(defaultSorting));
     }
 
-    Pageable sortedPageable =
-        pageable.getSort().isSorted()
-            ? pageable
-            : PageRequest.of(
-            pageable.getPageNumber(),
-            pageable.getPageSize(),
-            defaultSorting
-        );
+    Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSorting);
     return releaseLetterRepository.findAll(sortedPageable);
-  }
-
-  @Override
-  public List<ReleaseLetter> findAllReleaseLettersWithoutPaging() {
-    return releaseLetterRepository.findAll(defaultSorting);
   }
 
   @Override
@@ -67,7 +54,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public Page<ReleaseLetter> findLatestReleaseLetter(Pageable pageable) {
-    return releaseLetterRepository.findByIsLatest(true, pageable);
+    return releaseLetterRepository.findByLatest(true, pageable);
   }
 
   @Override
@@ -102,6 +89,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
+  @Transactional
   public ReleaseLetter updateReleaseLetter(String selectedSprint, ReleaseLetterModelRequest releaseLetterModelRequest) {
     if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
@@ -144,6 +132,9 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   private String transformContent(String originalContent) {
+    if (ObjectUtils.isEmpty(originalContent)) {
+      return "";
+    }
     return GITHUB_USERNAME_PATTERN.matcher(originalContent).replaceAll(GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 }

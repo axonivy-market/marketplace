@@ -8,29 +8,10 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import {
-  inject,
-  Injector,
-  makeStateKey,
-  PLATFORM_ID,
-  TransferState
-} from '@angular/core';
-import {
-  catchError,
-  EMPTY,
-  finalize,
-  Observable,
-  of,
-  tap,
-  throwError
-} from 'rxjs';
+import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
+import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import {
-  ERROR_CODES,
-  ERROR_PAGE_PATH,
-  FORBIDDEN,
-  UNAUTHORIZED
-} from '../../shared/constants/common.constant';
+import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL, API_URI } from '../../shared/constants/api.constant';

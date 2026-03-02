@@ -50,14 +50,14 @@ public class ReleaseLetterController {
   @Operation(summary = "Retrieve a paginated list of all release letter")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(
       @ParameterObject Pageable pageable,
-      @RequestParam(required = false, name = "isPaging", defaultValue = "true") boolean isPaging) {
-    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
+      @RequestParam(required = false, name = "isReadOnly", defaultValue = "true") boolean isReadOnly) {
+    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
 
     if (releaseLetters.isEmpty()) {
       return generateEmptyPagedModel();
     }
 
-    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isPaging);
+    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
     pageModel.forEach(model ->
         model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
     );
@@ -109,7 +109,7 @@ public class ReleaseLetterController {
   @PostMapping()
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
-      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest) {
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
@@ -124,7 +124,7 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
       @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
           in = ParameterIn.PATH) String sprint,
-      @RequestBody @Valid ReleaseLetterModelRequest releaseLetterModelRequest
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
   ) {
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);

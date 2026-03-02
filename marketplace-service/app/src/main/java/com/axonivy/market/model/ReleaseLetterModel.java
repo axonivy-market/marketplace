@@ -14,7 +14,6 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-@Relation(itemRelation = "releaseLetter")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> {
@@ -31,4 +30,7 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
 
   @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
   private Date createdAt;
+
+  @Schema(description = "The time the release letter was last updated", example = "2026-02-11 09:47:32.243")
+  private Date updatedAt;
 }
