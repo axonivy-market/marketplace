@@ -1,8 +1,17 @@
 package com.axonivy.market.service.impl;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.axonivy.market.constants.ErrorMessageConstants;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.model.AdminLoginResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.kohsuke.github.GHMyself;
+import org.kohsuke.github.GitHub;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +27,7 @@ import com.axonivy.market.service.OAuth2Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Log4j2
 @RequiredArgsConstructor
 @Service
 public class OAuth2ServiceImpl implements OAuth2Service {
@@ -58,4 +67,22 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     return jwtService.generateJWTFromGitHubToken(token);
   }
 
+  @Override
+  public AdminLoginResponse validateTokenAndGenerateJWT2(String token) {
+    if (ObjectUtils.isEmpty(token)) {
+      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
+    }
+    token = token.trim();
+    if (!StandardCharsets.US_ASCII.newEncoder().canEncode(token)) {
+      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
+    }
+
+    GithubUser gitHubUser = gitHubService.validateUserInOrganizationAndTeam2(token,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+    String jwt = jwtService.generateJWTFromGitHubToken(token);
+
+    return new AdminLoginResponse(jwt, gitHubUser);
+  }
 }

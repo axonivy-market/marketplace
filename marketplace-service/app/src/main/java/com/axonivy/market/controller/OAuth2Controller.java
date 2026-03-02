@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.OAuth2Service;
 
@@ -25,6 +26,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_LOGIN;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_REQUEST_ACCESS;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_VALIDATE_TOKEN;
+
 import org.springframework.web.bind.annotation.PutMapping;
 
 @Log4j2
@@ -42,10 +44,18 @@ public class OAuth2Controller {
     return responseJWTData(jwt);
   }
 
+//  @PostMapping(GITHUB_REQUEST_ACCESS)
+//  public ResponseEntity<Map<String, String>> requestAccess(@RequestBody Map<String, String> token) {
+//    String jwt = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
+//    return responseJWTData(jwt);
+//  }
+
   @PostMapping(GITHUB_REQUEST_ACCESS)
-  public ResponseEntity<Map<String, String>> requestAccess(@RequestBody Map<String, String> token) {
-    String jwt = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
-    return responseJWTData(jwt);
+  public ResponseEntity<AdminLoginResponse> requestAccess(@RequestBody Map<String, String> token) {
+    System.out.println(token);
+    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT2(
+        token.get(GitHubConstants.Json.TOKEN));
+    return ResponseEntity.ok(adminLoginResponse);
   }
 
   @Authorized

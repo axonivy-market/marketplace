@@ -28,6 +28,7 @@ public class GithubUser extends GenericIdEntity {
   private String username;
   private String name;
   private String avatarUrl;
+  private String url;
 
   @Override
   public int hashCode() {
