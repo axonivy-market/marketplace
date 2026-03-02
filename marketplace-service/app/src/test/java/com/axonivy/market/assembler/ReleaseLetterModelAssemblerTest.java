@@ -48,7 +48,7 @@ class ReleaseLetterModelAssemblerTest {
   }
 
   @Test
-  void toModelWithoutContent() {
+  void testToModelWithoutContent() {
     Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
 
     ReleaseLetter releaseLetter = new ReleaseLetter();
