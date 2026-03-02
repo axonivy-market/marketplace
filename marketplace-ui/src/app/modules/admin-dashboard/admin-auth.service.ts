@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import {
   ADMIN_SESSION_TOKEN,
@@ -8,14 +8,34 @@ import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ForwardingError } from '../../core/interceptors/api.interceptor';
+import { GitHubUser } from '../../auth/auth.service';
 
 export interface JwtDTO {
   token: string;
+  user: GitHubUser;
 }
+
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
+  private readonly _user = signal<GitHubUser | null>(this.loadFromSession());
+  readonly user = this._user.asReadonly();
+
+  private loadFromSession(): GitHubUser | null {
+    const stored = sessionStorage.getItem('GITHUB_USER');
+    return stored ? JSON.parse(stored) : null;
+  }
+
+  setUser(user: GitHubUser) {
+    sessionStorage.setItem('GITHUB_USER', JSON.stringify(user));
+    this._user.set(user);
+  }
+
+  logout() {
+    sessionStorage.removeItem('GITHUB_USER');
+    this._user.set(null);
+  }
 
   get token(): string | null {
     return this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? null;
@@ -27,9 +47,11 @@ export class AdminAuthService {
 
   requestAccessToken(token: string): Observable<JwtDTO> {
     this.setToken('');
-    return this.httpClient.post<JwtDTO>(API_URI.GITHUB_REQUEST_ACCESS,
+    return this.httpClient.post<JwtDTO>(
+      API_URI.GITHUB_REQUEST_ACCESS,
       { token },
-      { context: new HttpContext().set(ForwardingError, true) });
+      { context: new HttpContext().set(ForwardingError, true) }
+    );
   }
 
   clearToken(): void {
@@ -37,8 +59,14 @@ export class AdminAuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    return this.httpClient.put<boolean>(API_URI.GITHUB_VALIDATE_TOKEN, {},
-      { headers: this.getAuthHeaders(), context: new HttpContext().set(ForwardingError, true) });
+    return this.httpClient.put<boolean>(
+      API_URI.GITHUB_VALIDATE_TOKEN,
+      {},
+      {
+        headers: this.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
+      }
+    );
   }
 
   getAuthHeaders(): HttpHeaders {

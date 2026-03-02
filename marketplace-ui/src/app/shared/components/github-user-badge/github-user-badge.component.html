@@ -1,0 +1,7 @@
+@if (user()) {
+  <img
+    id="user-avatar"
+    [src]="user()!.avatarUrl"
+    alt="GitHub avatar"
+    class="github-avatar" />
+}
