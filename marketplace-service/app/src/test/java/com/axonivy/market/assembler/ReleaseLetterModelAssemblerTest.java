@@ -26,16 +26,7 @@ class ReleaseLetterModelAssemblerTest {
 
   @Test
   void testToModel() {
-    Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
-    Date updatedDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 24, 10, 30, 0).getTime();
-
-    ReleaseLetter releaseLetter = new ReleaseLetter();
-    releaseLetter.setContent("Release content");
-    releaseLetter.setSprint("S43");
-    releaseLetter.setLatest(true);
-    releaseLetter.setCreatedAt(createdDate);
-    releaseLetter.setUpdatedAt(updatedDate);
-
+    ReleaseLetter releaseLetter = createMockReleaseLetter();
     ReleaseLetterModel result = releaseLetterModelAssembler.toModel(releaseLetter);
 
     assertNotNull(result, "Mapped ReleaseLetterModel should not be null");
@@ -45,24 +36,15 @@ class ReleaseLetterModelAssemblerTest {
         "Sprint should be mapped correctly from ReleaseLetter");
     assertTrue(result.isLatest(),
         "Latest flag should be mapped correctly from ReleaseLetter");
-    assertEquals(createdDate, result.getCreatedAt(),
+    assertEquals(releaseLetter.getCreatedAt(), result.getCreatedAt(),
         "CreatedAt date should be mapped correctly from ReleaseLetter");
-    assertEquals(updatedDate, result.getUpdatedAt(),
+    assertEquals(releaseLetter.getUpdatedAt(), result.getUpdatedAt(),
             "UpdatedAt date should be mapped correctly from ReleaseLetter");
   }
 
   @Test
   void testToModelWithoutContent() {
-    Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
-    Date updatedDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 24, 10, 30, 0).getTime();
-
-    ReleaseLetter releaseLetter = new ReleaseLetter();
-    releaseLetter.setContent("Release content");
-    releaseLetter.setSprint("S43");
-    releaseLetter.setLatest(true);
-    releaseLetter.setCreatedAt(createdDate);
-    releaseLetter.setUpdatedAt(updatedDate);
-
+    ReleaseLetter releaseLetter = createMockReleaseLetter();
     ReleaseLetterModel result = releaseLetterModelAssembler.toModelWithoutContent(releaseLetter);
 
     assertNotNull(result, "Mapped ReleaseLetterModel should not be null");
@@ -70,9 +52,24 @@ class ReleaseLetterModelAssemblerTest {
         "Sprint should be mapped correctly from ReleaseLetter");
     assertTrue(result.isLatest(),
         "Latest flag should be mapped correctly from ReleaseLetter");
-    assertEquals(createdDate, result.getCreatedAt(),
-        "CreatedAt date should be mapped correctly from ReleaseLetter");
-    assertEquals(updatedDate, result.getUpdatedAt(),
+    assertEquals(releaseLetter.getCreatedAt(), result.getCreatedAt(),
+            "CreatedAt date should be mapped correctly from ReleaseLetter");
+    assertEquals(releaseLetter.getUpdatedAt(), result.getUpdatedAt(),
             "UpdatedAt date should be mapped correctly from ReleaseLetter");
+  }
+
+  private ReleaseLetter createMockReleaseLetter() {
+    Date createdDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 23, 10, 30, 0).getTime();
+    Date updatedDate = new GregorianCalendar(2025, Calendar.FEBRUARY, 24, 10, 30, 0).getTime();
+
+    ReleaseLetter releaseLetter = new ReleaseLetter();
+    releaseLetter.setId("66e7efc8a24f36158df06fc7");
+    releaseLetter.setContent("Release content");
+    releaseLetter.setSprint("S43");
+    releaseLetter.setLatest(true);
+    releaseLetter.setCreatedAt(createdDate);
+    releaseLetter.setUpdatedAt(updatedDate);
+
+    return releaseLetter;
   }
 }

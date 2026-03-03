@@ -5,6 +5,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { CommonModule } from '@angular/common';
 import { AdminDashboardService } from '../../admin-dashboard.service';
+import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 
 @Component({
   selector: 'app-delete-release-letter-confirm-modal',
@@ -14,7 +15,10 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 })
 export class DeleteReleaseLetterConfirmModalComponent {
   @Input()
-  releaseLetterSprint!: string;
+  id!: string;
+
+  @Input()
+  sprint!: string;
 
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
@@ -23,9 +27,9 @@ export class DeleteReleaseLetterConfirmModalComponent {
 
   constructor(public activeModal: NgbActiveModal) {}
 
-  deleteReleaseLetterBySprint() {
+  deleteReleaseLetterById() {
     this.adminDashboardService
-      .deleteReleaseLetterBySprint(this.releaseLetterSprint)
+      .deleteReleaseLetterById(this.id)
       .subscribe({
         next: () => {
           this.activeModal.close();

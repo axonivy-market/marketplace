@@ -17,6 +17,9 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> {
+  @EqualsAndHashCode.Include
+  @Schema(description = "Release letter id", example = "66e7efc8a24f36158df06fc7")
+  private String id;
 
   @EqualsAndHashCode.Include
   @Schema(description = "Sprint version", example = "S42")

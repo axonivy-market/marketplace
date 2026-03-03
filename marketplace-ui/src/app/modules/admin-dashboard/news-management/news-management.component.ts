@@ -61,6 +61,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
     { key: '.number', class: 'text-primary' },
     { key: '.sprint', class: this.tableHeadersClass },
     { key: '.createdAt', class: this.tableHeadersClass },
+    { key: '.updatedAt', class: this.tableHeadersClass },
     { key: '.latest', class: this.tableHeadersClass },
     { key: '.actions', class: this.tableHeadersClass }
   ];
@@ -95,11 +96,11 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
     return date.toLocaleDateString();
   }
 
-  openDeleteConfirmModal(sprint: string) {
+  openDeleteConfirmModal(releaseLetter: ReleaseLetter) {
     const buttonElement = document.activeElement as HTMLElement;
     buttonElement.blur();
     this.appModalService
-      .openDeleteReleaseLetterConfirmModal(sprint)
+      .openDeleteReleaseLetterConfirmModal(releaseLetter)
       .then(() => {
         this.adminDashboardService
           .getReleaseLetters(this.releaseLetterCriteria)

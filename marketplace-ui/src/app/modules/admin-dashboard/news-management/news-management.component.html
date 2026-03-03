@@ -56,6 +56,9 @@
           <td class="text-center">
             {{ releaseLetter.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}
           </td>
+          <td class="text-center">
+            {{ releaseLetter.updatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}
+          </td>
           @if (releaseLetter.latest) {
             <td class="text-center">
               <i class="fa-solid fa-square-check"></i>
@@ -87,7 +90,7 @@
               "
               [routerLink]="[
                 '/internal-dashboard/news-management',
-                releaseLetter.sprint,
+                releaseLetter.id,
                 'edit'
               ]">
               <i class="fa-solid fa-pen-to-square"></i>
@@ -102,7 +105,7 @@
                   ? 'btn-light text-dark'
                   : 'btn-primary text-light'
               "
-              (click)="openDeleteConfirmModal(releaseLetter.sprint)">
+              (click)="openDeleteConfirmModal(releaseLetter)">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>

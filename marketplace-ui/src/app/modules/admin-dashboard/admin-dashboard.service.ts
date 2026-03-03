@@ -129,11 +129,11 @@ export class AdminDashboardService {
     let params = new HttpParams();
     let url = '';
 
-     if (releaseLetterCriteria.nextPageHref) {
+    if (releaseLetterCriteria.nextPageHref) {
       url = releaseLetterCriteria.nextPageHref;
     } else {
       url = `${API_URI.RELEASE_LETTERS}`;
-      
+
       if (releaseLetterCriteria.pageable) {
         params = params
           .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
@@ -142,19 +142,17 @@ export class AdminDashboardService {
       }
     }
     return this.http
-          .get<ReleaseLetterListApiResponse>(url, {
-            context: new HttpContext().set(
-              LoadingComponent,
-              pageId
-            ),
-            params
-          })
-          .pipe(
-            catchError(() => {
-              const releaseLetterListApiResponse = {} as ReleaseLetterListApiResponse;
-              return of(releaseLetterListApiResponse);
-            })
-          );
+      .get<ReleaseLetterListApiResponse>(url, {
+        context: new HttpContext().set(LoadingComponent, pageId),
+        params
+      })
+      .pipe(
+        catchError(() => {
+          const releaseLetterListApiResponse =
+            {} as ReleaseLetterListApiResponse;
+          return of(releaseLetterListApiResponse);
+        })
+      );
   }
 
   getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
@@ -193,6 +191,20 @@ export class AdminDashboardService {
     );
   }
 
+  updateReleaseLetter2(
+    selectedSprint: string,
+    releaseLetterRequest: ReleaseLetter
+  ): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/${selectedSprint}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
+      }
+    );
+  }
+
   getReleaseLetterBySprint(
     sprint: string
   ): Observable<ReleaseLetterApiResponse> {
@@ -204,9 +216,27 @@ export class AdminDashboardService {
     );
   }
 
+  getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
+    return this.http.get<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/${id}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   deleteReleaseLetterBySprint(sprint: string): Observable<void> {
     return this.http.delete<void>(
       `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
+  deleteReleaseLetterById(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${API_URI.RELEASE_LETTERS}/${id}`,
       {
         headers: this.adminAuth.getAuthHeaders()
       }

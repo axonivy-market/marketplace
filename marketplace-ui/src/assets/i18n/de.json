@@ -393,6 +393,7 @@
         "number": "No.",
         "sprint": "Sprint",
         "createdAt": "Created at",
+        "updatedAt": "Updated at",
         "sprintHeader": "Sprint: ",
         "latest": "Latest",
         "actions": "Actions",

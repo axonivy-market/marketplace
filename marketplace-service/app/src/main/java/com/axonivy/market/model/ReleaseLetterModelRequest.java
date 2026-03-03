@@ -10,6 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ReleaseLetterModelRequest {
 
+  @Schema(description = "Release letter id", example = "66e7efc8a24f36158df06fc7")
+  private String id;
+
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 

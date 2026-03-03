@@ -19,6 +19,7 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
   @Override
   public ReleaseLetterModel toModel(ReleaseLetter releaseLetter) {
     var resource = new ReleaseLetterModel();
+    resource.setId(releaseLetter.getId());
     resource.setContent(releaseLetter.getContent());
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
@@ -30,6 +31,7 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
 
   public ReleaseLetterModel toModelWithoutContent(ReleaseLetter releaseLetter) {
     var resource = new ReleaseLetterModel();
+    resource.setId(releaseLetter.getId());
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());

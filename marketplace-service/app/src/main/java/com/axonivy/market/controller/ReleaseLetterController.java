@@ -59,22 +59,22 @@ public class ReleaseLetterController {
 
     PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
     pageModel.forEach(model ->
-        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(model.getSprint())).withSelfRel())
+        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterById(model.getId())).withSelfRel())
     );
 
     return ResponseEntity.ok(pageModel);
   }
 
-  @Authorized
   @GetMapping(BY_ID)
-  @Operation(hidden = true)
+  @Operation(summary = "Retrieve a release letter by id",
+      description = "Get release letter by id")
   public ResponseEntity<ReleaseLetterModel> findReleaseLetterById(
       @PathVariable(ID) @Parameter(description = "The release letter id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id) {
     var releaseLetter = releaseLetterService.findReleaseLetterById(id);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
     releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
+        linkTo(methodOn(this.getClass()).findReleaseLetterById(releaseLetter.getId())).withSelfRel());
 
     return ResponseEntity.ok(releaseLetterResource);
   }
@@ -88,7 +88,7 @@ public class ReleaseLetterController {
     var releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
     releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(releaseLetter.getSprint())).withSelfRel());
+        linkTo(methodOn(this.getClass()).findReleaseLetterById(releaseLetter.getId())).withSelfRel());
 
     return ResponseEntity.ok(releaseLetterResource);
   }
@@ -118,28 +118,52 @@ public class ReleaseLetterController {
     return ResponseEntity.created(location).build();
   }
 
+//  @Authorized
+//  @PutMapping(BY_SPRINT)
+//  @Operation(hidden = true)
+//  public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
+//      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
+//          in = ParameterIn.PATH) String sprint,
+//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
+//  ) {
+//    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
+//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
+//    releaseLetterResource.add(
+//        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
+//    return ResponseEntity.ok(releaseLetterResource);
+//  }
+
   @Authorized
-  @PutMapping(BY_SPRINT)
+  @PutMapping(BY_ID)
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
-      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
-          in = ParameterIn.PATH) String sprint,
+      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
+          in = ParameterIn.PATH) String id,
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
   ) {
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter2(id, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
         linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
     return ResponseEntity.ok(releaseLetterResource);
   }
 
+//  @Authorized
+//  @DeleteMapping(BY_SPRINT)
+//  @Operation(hidden = true)
+//  public void deleteReleaseLetter(
+//      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
+//          in = ParameterIn.PATH) String sprint) {
+//    releaseLetterService.deleteReleaseLetterBySprint(sprint);
+//  }
+
   @Authorized
-  @DeleteMapping(BY_SPRINT)
+  @DeleteMapping(BY_ID)
   @Operation(hidden = true)
   public void deleteReleaseLetter(
-      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
-          in = ParameterIn.PATH) String sprint) {
-    releaseLetterService.deleteReleaseLetterBySprint(sprint);
+      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
+          in = ParameterIn.PATH) String id) {
+    releaseLetterService.deleteReleaseLetterById(id);
   }
 
   private PagedModel<ReleaseLetterModel> buildPagedModel(Page<ReleaseLetter> page, boolean isPaging) {

@@ -20,5 +20,9 @@ public interface ReleaseLetterService {
 
   ReleaseLetter updateReleaseLetter(String releaseVersion, ReleaseLetterModelRequest releaseLetterModelRequest);
 
+  ReleaseLetter updateReleaseLetter2(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
+
   void deleteReleaseLetterBySprint(String sprint);
+
+  void deleteReleaseLetterById(String id);
 }

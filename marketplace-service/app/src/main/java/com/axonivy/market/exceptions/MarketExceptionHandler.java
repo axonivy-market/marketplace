@@ -26,8 +26,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class MarketExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Object> handleValidationExceptions(
-      MethodArgumentNotValidException exception) {
+  public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException exception) {
     var errorMessage = new Message();
     errorMessage.setHelpCode(exception.getDetailMessageCode());
     errorMessage.setMessageDetails(exception.getMessage());

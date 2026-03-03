@@ -43,11 +43,14 @@ export class ReleaseLetterEditComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
+  selectedId = '';
   selectedSprint = '';
   releaseLetter: ReleaseLetter = {
+    id: '',
     sprint: '',
     content: '',
     createdAt: '',
+    updatedAt: '',
     latest: false
   };
   isCreateMode = true;
@@ -68,21 +71,22 @@ export class ReleaseLetterEditComponent implements OnInit {
       );
     }
     this.route.paramMap.subscribe(params => {
-      const sprintParam = params.get('sprint');
-      if (sprintParam) {
+      const idParam = params.get('id');
+      if (idParam) {
         this.isCreateMode = false;
-        this.selectedSprint = sprintParam;
-        this.getReleaseLetterBySprint(this.selectedSprint);
+        this.selectedId = idParam;
+        this.getReleaseLetterById(this.selectedId);
       } else {
         this.isCreateMode = true;
       }
     });
   }
 
-  getReleaseLetterBySprint(sprint: string): void {
+  getReleaseLetterById(id: string): void {
     this.adminDashboardService
-      .getReleaseLetterBySprint(sprint)
+      .getReleaseLetterById(id)
       .subscribe(response => {
+        this.releaseLetter.id = response.id;
         this.releaseLetter.content = response.content;
         this.releaseLetter.sprint = response.sprint;
         this.releaseLetter.latest = response.latest;
@@ -102,7 +106,7 @@ export class ReleaseLetterEditComponent implements OnInit {
       return;
     }
 
-    this.updateReleaseLetter(this.selectedSprint, this.releaseLetter);
+    this.updateReleaseLetter(this.releaseLetter);
   }
 
   createReleaseLetter(releaseLetter: ReleaseLetter) {
@@ -122,9 +126,10 @@ export class ReleaseLetterEditComponent implements OnInit {
         }
       });
   }
-  updateReleaseLetter(releaseVersion: string, releaseLetter: ReleaseLetter) {
+
+  updateReleaseLetter(releaseLetter: ReleaseLetter) {
     this.adminDashboardService
-      .updateReleaseLetter(releaseVersion, releaseLetter)
+      .updateReleaseLetter2(releaseLetter.sprint, releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {

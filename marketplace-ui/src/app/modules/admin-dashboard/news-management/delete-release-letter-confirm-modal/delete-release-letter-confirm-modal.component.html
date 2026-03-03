@@ -5,7 +5,7 @@
   <div class="modal-body">
     <div class="p-0 release-letter-content">
       {{ 'common.admin.newsManagement.deleteConfirmMessage' | translate }}
-      <b>{{ releaseLetterSprint }}</b>?
+      <b>{{ sprint }}</b>?
     </div>
     <div class="modal-footer">
       <button
@@ -21,7 +21,7 @@
         {{ translateService.get('common.admin.newsManagement.cancel') | async }}
       </button>
       <button
-        (click)="deleteReleaseLetterBySprint()"
+        (click)="deleteReleaseLetterById()"
         type="button"
         [lang]="languageService.selectedLanguage()"
         class="btn delete-button border-0 mb-0 me-2">

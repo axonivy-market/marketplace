@@ -67,7 +67,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+    if (releaseLetterModelRequest.getSprint() == null || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
     }
@@ -115,12 +115,48 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     return releaseLetterRepository.save(foundReleaseLetter);
   }
 
+
+  @Override
+  @Transactional
+  public ReleaseLetter updateReleaseLetter2(String id,
+      ReleaseLetterModelRequest releaseLetterModelRequest) {
+    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+    }
+    var foundReleaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
+    String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
+    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+
+    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
+      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+    }
+
+    foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
+    foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
+    foundReleaseLetter.setSprint(unifiedNewSprint);
+
+    if (releaseLetterModelRequest.isLatest()) {
+      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
+    }
+
+    return releaseLetterRepository.save(foundReleaseLetter);
+  }
+
   @Transactional
   @Override
   public void deleteReleaseLetterBySprint(String sprint) {
     String unifiedSelectedSprint = unifySprint(sprint);
     findReleaseLetterBySprint(unifiedSelectedSprint);
     releaseLetterRepository.deleteBySprint(unifiedSelectedSprint);
+  }
+
+  @Transactional
+  @Override
+  public void deleteReleaseLetterById(String id) {
+    findReleaseLetterById(id);
+    releaseLetterRepository.deleteById(id);
   }
 
   private boolean isSprintExisted(String requestedSprint) {
