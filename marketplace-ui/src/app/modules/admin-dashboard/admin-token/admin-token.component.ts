@@ -41,6 +41,8 @@ export class AdminTokenComponent implements OnInit {
     
     this.authService.requestAccessToken(this.filledToken).subscribe({
       next: jwtObject => {
+        console.log(jwtObject);
+        
         this.errorMessage = '';
         this.authService.setToken(jwtObject.token);
         this.authService.setUser(jwtObject.user);
@@ -57,5 +59,4 @@ export class AdminTokenComponent implements OnInit {
       }
     });
   }
-
 }

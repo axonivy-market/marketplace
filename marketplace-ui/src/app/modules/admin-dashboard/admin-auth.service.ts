@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import {
   ADMIN_SESSION_TOKEN,
@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ForwardingError } from '../../core/interceptors/api.interceptor';
 import { GitHubUser } from '../../auth/auth.service';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface JwtDTO {
   token: string;
@@ -19,22 +20,32 @@ export interface JwtDTO {
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
-  private readonly _user = signal<GitHubUser | null>(this.loadFromSession());
-  readonly user = this._user.asReadonly();
+  private readonly _adminInfo = signal<GitHubUser | null>(null);
+  readonly adminInfo = this._adminInfo.asReadonly();
+  private readonly platformId = inject(PLATFORM_ID);
 
-  private loadFromSession(): GitHubUser | null {
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      const user = this.loadFromSession();
+      if (user) {
+        this._adminInfo.set(user);
+      }
+    }
+  }
+
+  loadFromSession(): GitHubUser | null {
     const stored = sessionStorage.getItem('GITHUB_USER');
     return stored ? JSON.parse(stored) : null;
   }
 
   setUser(user: GitHubUser) {
     sessionStorage.setItem('GITHUB_USER', JSON.stringify(user));
-    this._user.set(user);
+    this._adminInfo.set(user);
   }
 
   logout() {
     sessionStorage.removeItem('GITHUB_USER');
-    this._user.set(null);
+    this._adminInfo.set(null);
   }
 
   get token(): string | null {

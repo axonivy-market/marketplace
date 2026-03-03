@@ -31,30 +31,11 @@
               class="bi bi-search header__search-button"
               (click)="onClickSearchIcon()"></i>
           </li>
-          <!-- <li>
-          <app-github-user-badge></app-github-user-badge>
-        </li> -->
+          <li>
+            <app-github-user-badge></app-github-user-badge>
+          </li>
         }
       </li>
     </ul>
-
-    Collapse Search
-    <li class="d-none d-lg-flex header__button--right">
-      @if (isGoogleSearchBarDisplayed()) {
-        <div
-          class="google-search-container text-primary google-search-svg-primary">
-          <div class="gcse-search"></div>
-        </div>
-      } @else {
-        <li class="search-icon">
-          <i
-            class="bi bi-search header__search-button"
-            (click)="onClickSearchIcon()"></i>
-        </li>
-        <!-- <li>
-          <app-github-user-badge></app-github-user-badge>
-        </li> -->
-      }
-    </li>
   }
 </div>

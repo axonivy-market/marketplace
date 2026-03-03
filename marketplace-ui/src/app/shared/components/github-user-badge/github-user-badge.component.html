@@ -1,7 +1,7 @@
-@if (user()) {
+@if (adminInfo()) {
   <img
     id="user-avatar"
-    [src]="user()!.avatarUrl"
+    [src]="adminInfo()!.avatarUrl"
     alt="GitHub avatar"
     class="github-avatar" />
 }
