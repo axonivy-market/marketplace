@@ -120,7 +120,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   public void deleteReleaseLetterBySprint(String sprint) {
     String unifiedSelectedSprint = unifySprint(sprint);
     findReleaseLetterBySprint(unifiedSelectedSprint);
-    releaseLetterRepository.deleteBySprint(sprint);
+    releaseLetterRepository.deleteBySprint(unifiedSelectedSprint);
   }
 
   private boolean isSprintExisted(String requestedSprint) {

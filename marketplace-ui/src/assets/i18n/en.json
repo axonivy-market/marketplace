@@ -401,6 +401,7 @@
         "edit": "Edit",
         "delete": "Delete",
         "cancel": "Cancel",
+        "warning": "Warning",
         "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
       },
       "releaseLetterEdit": {
