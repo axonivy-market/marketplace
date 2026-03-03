@@ -141,7 +141,7 @@ public class ReleaseLetterController {
           in = ParameterIn.PATH) String id,
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
   ) {
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter2(id, releaseLetterModelRequest);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
         linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());

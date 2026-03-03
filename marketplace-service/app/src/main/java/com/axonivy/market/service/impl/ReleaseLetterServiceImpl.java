@@ -12,7 +12,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -90,36 +88,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   @Transactional
-  public ReleaseLetter updateReleaseLetter(String selectedSprint, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-    }
-    String unifiedSelectedSprint = unifySprint(selectedSprint);
-    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
-
-    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
-      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
-          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
-    }
-
-    var foundReleaseLetter = findReleaseLetterBySprint(selectedSprint);
-    foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
-    foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
-    foundReleaseLetter.setSprint(unifiedNewSprint);
-
-    if (releaseLetterModelRequest.isLatest()) {
-      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
-    }
-
-    return releaseLetterRepository.save(foundReleaseLetter);
-  }
-
-
-  @Override
-  @Transactional
-  public ReleaseLetter updateReleaseLetter2(String id,
-      ReleaseLetterModelRequest releaseLetterModelRequest) {
+  public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
     if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
