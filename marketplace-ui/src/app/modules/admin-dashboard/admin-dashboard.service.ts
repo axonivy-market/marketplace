@@ -166,8 +166,8 @@ export class AdminDashboardService {
 
   createReleaseLetter(
     releaseLetterRequest: ReleaseLetter
-  ): Observable<ReleaseLetterApiResponse> {
-    return this.http.post<ReleaseLetterApiResponse>(
+  ): Observable<void> {
+    return this.http.post<void>(
       `${API_URI.RELEASE_LETTERS}`,
       releaseLetterRequest,
       {

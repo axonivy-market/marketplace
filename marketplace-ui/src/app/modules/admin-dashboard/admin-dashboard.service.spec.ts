@@ -322,14 +322,8 @@ describe('AdminDashboardService', () => {
         createdAt: '2024-02-01T00:00:00Z'
       } as any;
 
-      const mockResponse: ReleaseLetterApiResponse = {
-        sprint: 'S51',
-        content: 'New release content',
-        createdAt: '2024-02-01T00:00:00Z'
-      } as any;
-
       service.createReleaseLetter(releaseLetterRequest).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toBeNull();
       });
 
       const req = httpMock.expectOne(API_URI.RELEASE_LETTERS);
@@ -341,7 +335,7 @@ describe('AdminDashboardService', () => {
       );
       expect(req.request.context.get(ForwardingError)).toBeTrue();
 
-      req.flush(mockResponse);
+      req.flush(null);
     });
   });
 

@@ -155,7 +155,7 @@ describe('ReleaseLetterEditComponent', () => {
 
   it('should navigate after successful create', () => {
     adminDashboardServiceMock.createReleaseLetter.and.returnValue(
-      of(mockResponse)
+      of(void 0)
     );
 
     component.createReleaseLetter(component.releaseLetter);
