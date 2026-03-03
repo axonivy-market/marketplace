@@ -123,22 +123,6 @@ class ReleaseLetterControllerTest extends BaseSetup {
   }
 
   @Test
-  void testFindReleaseLetterBySprintShouldReturnReleaseLetter() {
-    ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
-    ReleaseLetterModel model = new ReleaseLetterModel();
-
-    when(releaseLetterService.findReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE)).thenReturn(mockReleaseLetter);
-    when(releaseLetterModelAssembler.toModel(mockReleaseLetter)).thenReturn(model);
-
-    var response = releaseLetterController.findReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK when release letter is found.");
-    assertEquals(model, response.getBody(),
-        "Response should contain a body when release letter is found.");
-  }
-
-  @Test
   void testFindLatestReleaseLetterShouldReturnPagedModelWhenDataExists() {
     PageRequest pageable = PageRequest.of(0, 20);
     ReleaseLetter mockReleaseLetter = createReleaseLetterMock();

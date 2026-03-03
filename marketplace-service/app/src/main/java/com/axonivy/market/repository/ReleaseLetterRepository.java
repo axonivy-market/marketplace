@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -20,6 +21,10 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
   Page<ReleaseLetter> findByLatest(boolean isLatest, Pageable pageable);
 
   void deleteBySprint(String sprint);
+
+  @Modifying
+  @Query("DELETE from ReleaseLetter r where r.id = :id")
+  int deleteByIdReturningCount(@Param("id") String id);
 
   @Modifying
   @Transactional

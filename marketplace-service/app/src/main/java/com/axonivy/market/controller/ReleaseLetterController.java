@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.SPRINT;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
 @AllArgsConstructor
@@ -78,20 +77,6 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterResource);
   }
 
-  @GetMapping(BY_SPRINT)
-  @Operation(summary = "Retrieve a release letter by sprint name",
-      description = "Get release letter by sprint name")
-  public ResponseEntity<ReleaseLetterModel> findReleaseLetterBySprint(
-      @PathVariable(SPRINT) @Parameter(description = "The sprint version", example = "S43",
-          in = ParameterIn.PATH) String sprint) {
-    var releaseLetter = releaseLetterService.findReleaseLetterBySprint(sprint);
-    var releaseLetterResource = releaseLetterModelAssembler.toModel(releaseLetter);
-    releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterById(releaseLetter.getId())).withSelfRel());
-
-    return ResponseEntity.ok(releaseLetterResource);
-  }
-
   @GetMapping(BY_LATEST)
   @Operation(summary = "Find latest release letter",
       description = "Get currently latest release letter.")
@@ -128,7 +113,7 @@ public class ReleaseLetterController {
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
+        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
     return ResponseEntity.ok(releaseLetterResource);
   }
 
@@ -141,8 +126,8 @@ public class ReleaseLetterController {
     releaseLetterService.deleteReleaseLetterById(id);
   }
 
-  private PagedModel<ReleaseLetterModel> buildPagedModel(Page<ReleaseLetter> page, boolean isPaging) {
-    if (isPaging) {
+  private PagedModel<ReleaseLetterModel> buildPagedModel(Page<ReleaseLetter> page, boolean isReadOnly) {
+    if (isReadOnly) {
       return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler);
     }
     return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler::toModelWithoutContent);

@@ -12,13 +12,9 @@ public interface ReleaseLetterService {
 
   Page<ReleaseLetter> findLatestReleaseLetter(Pageable pageable);
 
-  ReleaseLetter findReleaseLetterBySprint(String releaseVersion);
-
   ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest);
 
   ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
-
-  void deleteReleaseLetterBySprint(String sprint);
 
   void deleteReleaseLetterById(String id);
 }

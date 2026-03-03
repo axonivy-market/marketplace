@@ -56,13 +56,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
-  public ReleaseLetter findReleaseLetterBySprint(String sprint) {
-    return releaseLetterRepository.findBySprint(unifySprint(sprint)).orElseThrow(
-        () -> new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND,
-            "Not found release letter of sprint: " + sprint));
-  }
-
-  @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
     if (releaseLetterModelRequest.getSprint() == null
@@ -116,17 +109,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Transactional
   @Override
-  public void deleteReleaseLetterBySprint(String sprint) {
-    String unifiedSelectedSprint = unifySprint(sprint);
-    findReleaseLetterBySprint(unifiedSelectedSprint);
-    releaseLetterRepository.deleteBySprint(unifiedSelectedSprint);
-  }
-
-  @Transactional
-  @Override
   public void deleteReleaseLetterById(String id) {
-    findReleaseLetterById(id);
-    releaseLetterRepository.deleteById(id);
+    int deletedRow = releaseLetterRepository.deleteByIdReturningCount(id);
+    if (deletedRow == 0) {
+      throw new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND, "Not found release letter with id: " + id);
+    }
   }
 
   private boolean isSprintExisted(String requestedSprint) {

@@ -93,28 +93,6 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testShouldReturnReleaseLetterWhenSprintNameExists() {
-    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    when(releaseLetterRepository.findBySprint(UNIFIED_RELEASE_LETTER_SPRINT_NAME))
-        .thenReturn(Optional.of(releaseLetterMock));
-
-    ReleaseLetter result = releaseLetterService.findReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
-
-    assertEquals(UNIFIED_RELEASE_LETTER_SPRINT_NAME, result.getSprint(),
-        "Id of found release letter should match requested id");
-  }
-
-  @Test
-  void testShouldThrowNotFoundExceptionWhenSprintNameNotExists() {
-    when(releaseLetterRepository.findBySprint(UNIFIED_RELEASE_LETTER_SPRINT_NAME))
-        .thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class,
-        () -> releaseLetterService.findReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE),
-        "Expected NotFoundException to be thrown when sprint name does not exist");
-  }
-
-  @Test
   void testShouldReturnLatestReleaseLetters() {
     PageRequest pageable = PageRequest.of(0, 20);
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
@@ -348,46 +326,25 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDeleteReleaseLetterBySprintShouldDeleteSuccessfullyWhenSprintExists() {
-    String inputSprint = " s43 ";
-    String unifiedSprint = "S43";
-
-    ReleaseLetter existing = new ReleaseLetter();
-    existing.setSprint(unifiedSprint);
-
-    when(releaseLetterRepository.findBySprint(unifiedSprint)).thenReturn(Optional.of(existing));
-
-    releaseLetterService.deleteReleaseLetterBySprint(inputSprint);
-
-    verify(releaseLetterRepository).findBySprint(unifiedSprint);
-    verify(releaseLetterRepository).deleteBySprint(unifiedSprint);
-  }
-
-  @Test
   void testDeleteReleaseLetterWhenIdExists() {
     String id = "123";
-    ReleaseLetter existing = new ReleaseLetter();
-    existing.setId(id);
 
-    when(releaseLetterRepository.findById(id)).thenReturn(Optional.of(existing));
+    when(releaseLetterRepository.deleteByIdReturningCount(id)).thenReturn(1);
 
     releaseLetterService.deleteReleaseLetterById(id);
-
-    verify(releaseLetterRepository).findById(id);
-    verify(releaseLetterRepository).deleteById(id);
+    verify(releaseLetterRepository).deleteByIdReturningCount(id);
   }
 
   @Test
   void testDeleteReleaseLetterByIdShouldThrowNotFoundExceptionWhenIdDoesNotExist() {
     String id = "123";
 
-    when(releaseLetterRepository.findById(id)).thenReturn(Optional.empty());
+    when(releaseLetterRepository.deleteByIdReturningCount(id)).thenReturn(0);
     assertThrows(NotFoundException.class,
             () -> releaseLetterService.deleteReleaseLetterById(id),
             "Expected NotFoundException to be thrown when id does not exist");
 
-    verify(releaseLetterRepository).findById(id);
-    verify(releaseLetterRepository, never()).deleteById(anyString());
+    verify(releaseLetterRepository).deleteByIdReturningCount(id);
   }
 
   @Test
