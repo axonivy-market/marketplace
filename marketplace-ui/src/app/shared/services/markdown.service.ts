@@ -20,9 +20,7 @@ export class MarkdownService {
       (MarkdownItGitHubAlerts as unknown as { default?: MarkdownItPlugin })
         .default ?? (MarkdownItGitHubAlerts as unknown as MarkdownItPlugin);
 
-    this.md = new MarkdownIt({
-      html: true
-    });
+    this.md = new MarkdownIt();
     this.md
       .use(full)
       .use(githubAlertsPlugin)
