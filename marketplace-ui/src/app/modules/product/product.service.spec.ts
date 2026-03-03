@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { firstValueFrom } from 'rxjs';
 import { Language } from '../../shared/enums/language.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
@@ -440,29 +441,14 @@ describe('ProductService', () => {
   });
 
   describe('fetchAllProductIds', () => {
-    it('should use custom page size and language', async () => {
-      const mockResponse = {
-        _embedded: {
-          products: [
-            { id: 'product-1', marketDirectory: 'dir1' }
-          ]
-        },
-        page: {
-          number: 0,
-          totalPages: 1
-        }
-      };
+    it('should request all product ids', async () => {
+      const resultPromise = firstValueFrom(service.fetchAllProductIds());
 
-      const promise = service.fetchAllProductIds(50, Language.DE);
+      const req = httpMock.expectOne(request => request.url === API_URI.PRODUCT_ID);
+      expect(req.request.method).toBe('GET');
+      req.flush(['product-1']);
 
-      const req = httpMock.expectOne(request =>
-        request.url === API_URI.PRODUCT &&
-        request.params.get('size') === '50' &&
-        request.params.get('language') === Language.DE
-      );
-      req.flush(mockResponse);
-
-      const result = await promise;
+      const result = await resultPromise;
       expect(result).toEqual(['product-1']);
     });
 

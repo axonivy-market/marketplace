@@ -84,10 +84,22 @@
     width: 7rem;
   }
 
+  .available-order-spacer {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .index {
     width: 3rem;
     font-weight: 600;
     color: var(--text-secondary-color, #4b5563);
+  }
+
+  tbody#available-extensions .index {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .empty-row td {
@@ -104,7 +116,7 @@
     display: table-row;
     height: 52px;
     background-color: rgba(37, 99, 235, 0.12);
-    border: 2px dashed rgba(37, 99, 235, 0.4);
+    border: none;
   }
 
   .drag-placeholder {
@@ -118,6 +130,7 @@
   }
 
   .cdk-drag-preview {
+    opacity: 0;
     box-sizing: border-box;
     padding: 0;
     border-radius: 0.5rem;

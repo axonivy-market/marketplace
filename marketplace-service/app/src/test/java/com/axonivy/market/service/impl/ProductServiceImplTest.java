@@ -881,12 +881,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetProductIdList() {
-    List<Product> products = List.of(new Product(), new Product());
+    List<Product> products = getMockProducts();
     when(productRepo.findAll()).thenReturn(products);
 
-    List<String> result = productService.getProductIdList();
-    assertEquals(products.size(), result.size(),
-        "Github release model list size should match total products size");
+    List<String> results = productService.getProductIdList();
+
+    assertEquals(List.of(MOCK_PRODUCT_ID, "tel-search-ch-connector"), results, "Product id list should be sorted");
+    verify(productRepo).findAll();
   }
 
   @Test

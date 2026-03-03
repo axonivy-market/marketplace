@@ -23,7 +23,7 @@ import {
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService, CustomSortConfig } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
-import { lastValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.component';
@@ -245,30 +245,11 @@ export class CustomSortComponent implements OnInit {
   private async loadAllProductIds(): Promise<void> {
     this.isLoading = true;
     try {
-      const [productIds, customSort] = await Promise.all([
-        this.fetchAllProductIds(),
-        this.fetchCustomSortConfig()
-      ]);
-
+      const productIds = await firstValueFrom(this.productService.fetchAllProductIds()) ?? [];
+      let customSort = await lastValueFrom(this.adminDashboardService.getCustomSort()) ?? null;
       this.applyCustomSort(productIds, customSort);
     } finally {
       this.isLoading = false;
-    }
-  }
-
-  private async fetchAllProductIds(): Promise<string[]> {
-    try {
-      return await this.productService.fetchAllProductIds();
-    } catch {
-      return [];
-    }
-  }
-
-  private async fetchCustomSortConfig(): Promise<CustomSortConfig | null> {
-    try {
-      return await lastValueFrom(this.adminDashboardService.getCustomSort());
-    } catch {
-      return null;
     }
   }
 

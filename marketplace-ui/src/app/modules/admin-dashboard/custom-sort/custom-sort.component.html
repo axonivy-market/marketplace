@@ -74,6 +74,7 @@
           @for (item of sortingExtensions; track item; let index = $index) {
             <tr
               cdkDrag
+              [cdkDragPreviewClass]="'custom-sort-drag-preview'"
               [cdkDragData]="item"
               (cdkDragStarted)="setDragPreviewWidth($event)"
               (cdkDragEnded)="resetDragPreviewWidth($event)">
@@ -82,14 +83,11 @@
                 <span class="extension-id">{{ item }}</span>
               </td>
               <ng-template cdkDragPreview>
-                <div class="drag-preview d-flex align-items-center">
-                  <span class="index">{{ index + 1 }}</span>
-                  <span class="text-truncate flex-grow-1">{{ item }}</span>
-                </div>
+                <span></span>
               </ng-template>
               <ng-template cdkDragPlaceholder>
                 <tr class="drag-placeholder">
-                  <td class="index border-0">{{ index + 1 }}</td>
+                  <td class="index border-0">&nbsp;</td>
                   <td class="border-0">
                     <span class="d-block text-truncate">{{ item }}</span>
                   </td>
@@ -118,6 +116,7 @@
 
         <thead>
           <tr>
+            <th class="text-primary text-start order-column available-order-spacer" aria-hidden="true"></th>
             <th class="text-primary text-start">
               {{ 'common.admin.extensionId' | translate }}
             </th>
@@ -137,6 +136,7 @@
             <tr class="empty-row text-center">
               @if (isLoading) {
                 <td
+                  colspan="2"
                   class="text-primary"
                   [lang]="languageService.selectedLanguage()">
                   <i class="fa fa-spinner fa-spin me-2"></i>
@@ -144,6 +144,7 @@
                 </td>
               } @else {
                 <td
+                  colspan="2"
                   class="text-primary"
                   [lang]="languageService.selectedLanguage()">
                   {{ 'common.admin.customSort.noExtensions' | translate }}
@@ -154,20 +155,21 @@
           @for (item of filteredAvailableExtensions; track item) {
             <tr
               cdkDrag
+              [cdkDragPreviewClass]="'custom-sort-drag-preview'"
               [cdkDragData]="item"
               (cdkDragStarted)="setDragPreviewWidth($event)"
               (cdkDragEnded)="resetDragPreviewWidth($event)">
+              <td class="index available-index-spacer" aria-hidden="true"></td>
               <td>
                 <span>{{ item }}</span>
               </td>
               <ng-template cdkDragPreview>
-                <div class="drag-preview d-flex align-items-center">
-                  <span class="text-truncate flex-grow-1">{{ item }}</span>
-                </div>
+                <span></span>
               </ng-template>
               <ng-template cdkDragPlaceholder>
                 <tr class="drag-placeholder">
-                  <td colspan="2" class="border-0">
+                  <td class="index border-0">&nbsp;</td>
+                  <td class="border-0">
                     <span class="d-block text-truncate">{{ item }}</span>
                   </td>
                 </tr>

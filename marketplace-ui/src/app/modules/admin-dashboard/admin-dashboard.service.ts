@@ -113,9 +113,7 @@ export class AdminDashboardService {
   }
 
   getCustomSort(): Observable<CustomSortConfig> {
-    return this.http.get<CustomSortConfig>(
-      `${API_URI.CUSTOM_SORT}`
-    );
+    return this.http.get<CustomSortConfig>(`${API_URI.CUSTOM_SORT}`);
   }
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {

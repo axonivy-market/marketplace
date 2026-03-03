@@ -255,8 +255,15 @@ public class BaseSetup extends CoreBaseSetup {
     return mockProduct;
   }
 
+  protected Product getMockProduct2() {
+    Product mockProduct = Product.builder().id("tel-search-ch-connector").releasedVersions(new ArrayList<>()).artifacts(
+        List.of(getMockArtifact(), getMockArtifact2())).build();
+    mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
+    return mockProduct;
+  }
+
   protected List<Product> getMockProducts() {
-    return List.of(getMockProduct());
+    return List.of(getMockProduct(), getMockProduct2());
   }
 
   protected Metadata getMockMetadata() {

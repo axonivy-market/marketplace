@@ -6,6 +6,7 @@ const SYNC = 'sync';
 export const API_URI = {
   APP: '/',
   PRODUCT: `${API}/product`,
+  PRODUCT_ID: `${API}/product/product-id`,
   PRODUCT_DETAILS: `${API}/product-details`,
   EXTERNAL_DOCUMENT: `${API}/externaldocument`,
   FEEDBACK: `${API}/feedback`,

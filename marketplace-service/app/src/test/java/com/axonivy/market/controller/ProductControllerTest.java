@@ -177,6 +177,21 @@ class ProductControllerTest extends BaseSetup {
         "Expected success message 'Sync successfully!' in response body");
   }
 
+    @Test
+    void testGetAllProductIds() {
+      List<String> productIds = List.of("a-trust", "amazon-comprehend");
+      when(service.getProductIdList()).thenReturn(productIds);
+
+      var response = productController.getAllProductIds();
+
+      assertEquals(HttpStatus.OK, response.getStatusCode(),
+          "Expected HTTP 200 OK when getProductIdList succeeds");
+      assertTrue(response.hasBody(),
+          "Response body should not be null or empty when getProductIdList succeeds");
+      assertEquals(productIds, response.getBody(), "Expected response body to match product ID list");
+      verify(service, times(1)).getProductIdList();
+    }
+
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");

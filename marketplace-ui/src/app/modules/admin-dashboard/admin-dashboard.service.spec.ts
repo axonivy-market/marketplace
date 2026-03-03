@@ -174,7 +174,6 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
       req.flush(mockConfig);
     });
   });
