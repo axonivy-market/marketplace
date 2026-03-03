@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,16 +45,14 @@ class LogServiceImplTest {
     Files.createFile(logFile);
     List<LogFileModel> result = logService.listGzLogNamesByDate(null);
     assertNotNull(result, "Result should not be null");
-    assertEquals(1, result.size(), "Should contain 1 log file");
-    assertTrue(result.get(0).getFileName().endsWith(".log"), "File should have .log extension");
+    assertTrue(result.isEmpty(), "Should return empty list for null date");
     result = logService.listGzLogNamesByDate("null");
     assertNotNull(result, "Result should not be null");
-    assertEquals(1, result.size(), "Should contain 1 log file");
-    assertTrue(result.get(0).getFileName().endsWith(".log"), "File should have .log extension");
+    assertTrue(result.isEmpty(), "Should return empty list for 'null' string date");
   }
 
   @Test
-  void testListGzLogNamesByDateWithSpecificDate() throws IOException {
+  void testListGzLogNamesByDateWithPastDate() throws IOException {
     Path logFile1 = tempDir.resolve("application.2026-02-20.log");
     Path logFile2 = tempDir.resolve("application.2026-02-26.log");
     Path logFile3 = tempDir.resolve("application.2026-02-26.log.gz");
@@ -67,17 +66,16 @@ class LogServiceImplTest {
   }
 
   @Test
-  void testListGzLogNamesByDateFiltersByLogExtension() throws IOException {
+  void testListGzLogNamesByDateWithEmptyDate() throws IOException {
     Path logFile = tempDir.resolve("application.log");
     Path gzFile = tempDir.resolve("application.log.gz");
     Path txtFile = tempDir.resolve("application.txt");
     Files.createFile(logFile);
     Files.createFile(gzFile);
     Files.createFile(txtFile);
-    List<LogFileModel> result = logService.listGzLogNamesByDate("null");
+    List<LogFileModel> result = logService.listGzLogNamesByDate("");
     assertNotNull(result, "Result should not be null");
-    assertEquals(1, result.size(), "Should contain 1 .log file");
-    assertEquals("application.log", result.get(0).getFileName(), "Should filter only .log files");
+    assertTrue(result.isEmpty(), "Should return empty list for empty date string");
   }
 
   @Test
@@ -88,23 +86,36 @@ class LogServiceImplTest {
   }
 
   @Test
-  void testCachingOfLogFiles() throws IOException {
+  void testListGzLogNamesByDateWithInvalidDateFormat() throws IOException {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
-    List<LogFileModel> result1 = logService.listGzLogNamesByDate("null");
-    List<LogFileModel> result2 = logService.listGzLogNamesByDate("null");
-    assertEquals(result1.size(), result2.size(), "Cached results should have same size");
-    assertEquals(result1.get(0).getFileName(), result2.get(0).getFileName(), "Cached results should have same file names");
+    List<LogFileModel> result = logService.listGzLogNamesByDate("invalid-date");
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.isEmpty(), "Should return empty list for invalid date format");
   }
 
   @Test
-  void testExtractDateFromFileName() throws IOException {
-    // Create specific files and test
-    Path logFile = tempDir.resolve("application.2026-02-26.log");
-    Files.createFile(logFile);
-    List<LogFileModel> result = logService.listGzLogNamesByDate("2026-02-26");
-    assertTrue(result.size() > 0, "Result should not be empty");
-    assertTrue(result.stream().anyMatch(log -> "2026-02-26".equals(log.getDate())), "Should extract date from file name");
+  void testListGzLogNamesByDateWithTodayDate() throws IOException {
+    // Create both .log and .gz files for today
+    LocalDate today = LocalDate.now();
+    String todayString = today.toString(); // Format: yyyy-MM-dd
+    Path logFileWithDate = tempDir.resolve("application." + todayString + ".log");
+    Path gzFileWithDate = tempDir.resolve("application." + todayString + ".log.gz");
+    Path uncompressedFile = tempDir.resolve("application.log");
+    Path otherDateLog = tempDir.resolve("application.2026-02-20.log");
+    Files.createFile(logFileWithDate);
+    Files.createFile(gzFileWithDate);
+    Files.createFile(uncompressedFile);
+    Files.createFile(otherDateLog);
+    List<LogFileModel> result = logService.listGzLogNamesByDate(todayString);
+    assertNotNull(result, "Result should not be null");
+    assertEquals(2, result.size(), "Should contain 2 files: .log with today's date and uncompressed .log");
+    assertTrue(result.stream().anyMatch(log -> ("application." + todayString + ".log").equals(log.getFileName())), 
+        "Should include .log with today's date");
+    assertTrue(result.stream().anyMatch(log -> "application.log".equals(log.getFileName())), 
+        "Should include uncompressed .log");
+    assertFalse(result.stream().anyMatch(log -> "application." + todayString + ".log.gz".equals(log.getFileName())), 
+        "Should NOT include .gz files");
   }
 
   @Test
@@ -159,9 +170,11 @@ class LogServiceImplTest {
   @Test
   void testLogFileModelWithSize() throws IOException {
     String content = "This is a test file";
-    Path logFile = tempDir.resolve("application.log");
+    LocalDate today = LocalDate.now();
+    String todayString = today.toString();
+    Path logFile = tempDir.resolve("application." + todayString + ".log");
     Files.write(logFile, content.getBytes());
-    List<LogFileModel> result = logService.listGzLogNamesByDate("null");
+    List<LogFileModel> result = logService.listGzLogNamesByDate(todayString);
     assertTrue(result.size() > 0, "Result should not be empty");
     assertTrue(result.get(0).getSize() > 0, "Log file model should have size greater than 0");
   }
@@ -170,9 +183,23 @@ class LogServiceImplTest {
   void testExtractDateFromFileNameWithoutDate() throws IOException {
     Path logFile = tempDir.resolve("application.log");
     Files.createFile(logFile);
-    List<LogFileModel> result = logService.listGzLogNamesByDate("null");
+    LocalDate today = LocalDate.now();
+    String todayString = today.toString();
+    List<LogFileModel> result = logService.listGzLogNamesByDate(todayString);
     assertTrue(result.size() > 0, "Result should not be empty");
     assertNull(result.get(0).getDate(), "File name without date should have null date");
+  }
+
+  @Test
+  void testCachingOfLogFiles() throws IOException {
+    LocalDate today = LocalDate.now();
+    String todayString = today.toString();
+    Path logFile = tempDir.resolve("application." + todayString + ".log");
+    Files.createFile(logFile);
+    List<LogFileModel> result1 = logService.listGzLogNamesByDate(todayString);
+    List<LogFileModel> result2 = logService.listGzLogNamesByDate(todayString);
+    assertEquals(result1.size(), result2.size(), "Cached results should have same size");
+    assertEquals(result1.get(0).getFileName(), result2.get(0).getFileName(), "Cached results should have same file names");
   }
 
   @Test

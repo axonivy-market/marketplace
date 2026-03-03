@@ -15,11 +15,14 @@ interface ParsedLog {
   timestamp: string;
   level: string;
   message: string;
+  prefix: string;
+  messageContent: string;
   isLong: boolean;
+  icon: string;
 }
 
 const LOG_LINE_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>[^\r\n]*)$/;
+  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>.*(?:\n(?!\d{4}-\d{2}-\d{2}).*)*)/m;
 const LONG_MESSAGE_THRESHOLD = 150;
 
 @Component({
@@ -35,13 +38,12 @@ export class LogViewerComponent {
   private readonly logService = inject(LogService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly activeTab = signal<'runtime-log' | 'logs-file'>('runtime-log');
-  readonly paused = signal(false);
   readonly autoScroll = signal(true);
   readonly isConnected = signal(false);
   readonly parsedLogs = signal<ParsedLog[]>([]);
   readonly logs = this.logStream.logs;
   readonly expandedLogs = signal<Set<number>>(new Set());
-  readonly selectedDate = signal<string>('');
+  readonly selectedDate = signal<string>(this.getTodayDate());
   readonly logFiles = signal<LogFileModel[]>([]);
   readonly filteredLogFiles = signal<LogFileModel[]>([]);
 
@@ -75,10 +77,15 @@ export class LogViewerComponent {
     const match = LOG_LINE_REGEX.exec(logLine);
     if (match?.groups) {
       const { timestamp, level, message } = match.groups;
+      const trimmedLevel = level.trim();
+      const { prefix, content } = this.extractMessageParts(message);
       return {
         timestamp,
         message,
-        level: level.trim(),
+        prefix,
+        messageContent: content,
+        level: trimmedLevel,
+        icon: this.getLogLevelIconClass(trimmedLevel),
         isLong: message.length > LONG_MESSAGE_THRESHOLD
       };
     }
@@ -86,8 +93,35 @@ export class LogViewerComponent {
       timestamp: new Date().toISOString(),
       level: 'INFO',
       message: logLine,
+      prefix: '',
+      messageContent: logLine,
+      icon: this.getLogLevelIconClass('INFO'),
       isLong: logLine.length > LONG_MESSAGE_THRESHOLD
     };
+  }
+
+  private extractMessageParts(message: string): {
+    prefix: string;
+    content: string;
+  } {
+    const parts = message.split(' - ');
+    if (parts.length > 1) {
+      const prefix = parts[0];
+      const content = parts.slice(1).join(' - ');
+      return { prefix, content };
+    }
+    return { prefix: '', content: message };
+  }
+
+  private getLogLevelIconClass(level: string): string {
+    const icons: { [key: string]: string } = {
+      DEBUG: 'bi-bug',
+      INFO: 'bi-info-circle',
+      WARN: 'bi-exclamation-circle',
+      ERROR: 'bi-x-circle',
+      FATAL: 'bi-stop-circle'
+    };
+    return icons[level] || 'bi-info-circle';
   }
 
   toggleExpand(index: number): void {
@@ -124,10 +158,6 @@ export class LogViewerComponent {
 
   clear(): void {
     this.logStream.clear();
-  }
-
-  togglePause(): void {
-    this.paused.update(v => !v);
   }
 
   toggleAutoScroll(): void {
@@ -224,8 +254,16 @@ export class LogViewerComponent {
   }
 
   clearDateFilter(): void {
-    this.selectedDate.set('');
+    this.selectedDate.set(this.getTodayDate());
     this.loadLogFiles();
+  }
+
+  private getTodayDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   downloadLogFile(logFile: LogFileModel, event: Event): void {

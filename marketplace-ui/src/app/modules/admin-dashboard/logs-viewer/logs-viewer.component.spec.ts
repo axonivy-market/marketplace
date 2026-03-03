@@ -51,7 +51,6 @@ describe('LogViewerComponent', () => {
   describe('Initial State', () => {
     it('should have default signal values', () => {
       expect(component.activeTab()).toBe('runtime-log');
-      expect(component.paused()).toBeFalse();
       expect(component.autoScroll()).toBeTrue();
       expect(component.isConnected()).toBeFalse();
       expect(component.parsedLogs()).toEqual([]);
@@ -119,12 +118,6 @@ describe('LogViewerComponent', () => {
     it('should clear logs', () => {
       component.clear();
       expect(logStreamServiceMock.clear).toHaveBeenCalled();
-    });
-
-    it('should toggle pause', () => {
-      expect(component.paused()).toBeFalse();
-      component.togglePause();
-      expect(component.paused()).toBeTrue();
     });
 
     it('should toggle auto-scroll', () => {

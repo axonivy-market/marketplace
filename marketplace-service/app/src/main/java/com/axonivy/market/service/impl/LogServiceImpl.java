@@ -16,8 +16,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -42,15 +45,23 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public List<LogFileModel> listGzLogNamesByDate(String date) {
-    List<LogFileModel> allLogs = getCachedLogFiles();
-    if (StringUtils.isEmpty(date) || StringUtils.equals(NULL_STRING, date)) {
-      log.debug("No date provided, returning uncompressed .log files");
-      return allLogs.stream()
-          .filter(log -> log.getFileName().endsWith(LOG_EXTENSION))
-          .toList();
+    if (StringUtils.isBlank(date)) {
+      log.debug("Empty or null date provided, returning empty list");
+      return Collections.emptyList();
     }
+    List<LogFileModel> allLogs = getCachedLogFiles();
+    LocalDate parsedDate;
+    try {
+      parsedDate = LocalDate.parse(date);
+    } catch (Exception e) {
+      log.warn("Failed to parse date: {}", date);
+      return Collections.emptyList();
+    }
+    boolean isToday = parsedDate.equals(LocalDate.now());
     return allLogs.stream()
-        .filter(log -> date.equals(log.getDate()))
+        .filter(logFile -> isToday 
+            ? (date.equals(logFile.getDate()) || logFile.getFileName().endsWith(LOG_EXTENSION))
+            : date.equals(logFile.getDate()))
         .toList();
   }
 
