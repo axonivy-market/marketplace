@@ -13,15 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ExtendWith(MockitoExtension.class)
@@ -157,6 +154,28 @@ class MarketExceptionHandlerTest {
     assertEquals("ERR_001", body.getHelpCode(), "Help code in response does not match exception code");
     assertEquals("Sprint cannot be blank", body.getMessageDetails(),
         "Message details in response do not match exception message");
+  }
+
+  @Test
+  void testHandleValidationExceptions() {
+    MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+
+    when(exception.getDetailMessageCode()).thenReturn("VALIDATION_ERROR");
+    when(exception.getMessage()).thenReturn("Field 'sprint' must not be blank");
+
+    ResponseEntity<Object> response = exceptionHandler.handleValidationExceptions(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST for validation exception");
+
+    assertNotNull(response.getBody(), "Response body must not be null");
+
+    Message body = (Message) response.getBody();
+
+    assertEquals("VALIDATION_ERROR", body.getHelpCode(),
+        "Help code should match exception detail message code");
+    assertEquals("Field 'sprint' must not be blank", body.getMessageDetails(),
+        "Message details should match exception message");
   }
 
   @Test

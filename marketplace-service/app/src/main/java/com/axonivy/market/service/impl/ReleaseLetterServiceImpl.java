@@ -65,7 +65,8 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (releaseLetterModelRequest.getSprint() == null || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+    if (releaseLetterModelRequest.getSprint() == null
+        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
     }

@@ -5,8 +5,6 @@ import com.axonivy.market.model.ReleaseLetterModelRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface ReleaseLetterService {
   Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly);
 

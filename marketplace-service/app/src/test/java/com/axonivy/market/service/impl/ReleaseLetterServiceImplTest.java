@@ -257,9 +257,10 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(releaseLetterMock));
     when(releaseLetterRepository.existsBySprint("S44")).thenReturn(true);
 
+    String id = request.getId();
     assertThrows(AlreadyExistedException.class,
-        () -> releaseLetterService.updateReleaseLetter(request.getId(), request),
-        "Expected AlreadyExistedException to be thrown when sprint name already exists");
+            () -> releaseLetterService.updateReleaseLetter(id, request),
+            "Expected AlreadyExistedException to be thrown when sprint name already exists");
   }
 
   @Test
@@ -382,7 +383,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     when(releaseLetterRepository.findById(id)).thenReturn(Optional.empty());
     assertThrows(NotFoundException.class,
-            () -> releaseLetterService.deleteReleaseLetterById(id));
+            () -> releaseLetterService.deleteReleaseLetterById(id),
+            "Expected NotFoundException to be thrown when id does not exist");
 
     verify(releaseLetterRepository).findById(id);
     verify(releaseLetterRepository, never()).deleteById(anyString());
