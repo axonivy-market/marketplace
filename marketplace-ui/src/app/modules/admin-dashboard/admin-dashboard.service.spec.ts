@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import {
-  HttpClientTestingModule,
-  HttpTestingController
+  HttpTestingController,
+  provideHttpClientTesting
 } from '@angular/common/http/testing';
 import {
   AdminDashboardService,
@@ -34,8 +34,8 @@ describe('AdminDashboardService', () => {
     adminAuthService.getAuthHeaders.and.returnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClientTesting(),
         AdminDashboardService,
         { provide: AdminAuthService, useValue: adminAuthService }
       ]
@@ -347,28 +347,30 @@ describe('AdminDashboardService', () => {
 
   describe('updateReleaseLetter', () => {
     it('should update release letter by sprint with ForwardingError context', () => {
-      const selectedSprint = 'S51';
+      const selectedId = '123';
 
       const releaseLetterRequest: ReleaseLetter = {
-        sprint: selectedSprint,
+        id: selectedId,
+        sprint: 'S42',
         content: 'Updated content',
         createdAt: '2024-02-01T00:00:00Z'
       } as any;
 
       const mockResponse: ReleaseLetterApiResponse = {
-        sprint: selectedSprint,
+        id: selectedId,
+        sprint: 'S42',
         content: 'Updated content',
         createdAt: '2024-02-01T00:00:00Z'
       } as any;
 
       service
-        .updateReleaseLetter(selectedSprint, releaseLetterRequest)
+        .updateReleaseLetter(selectedId, releaseLetterRequest)
         .subscribe(response => {
           expect(response).toEqual(mockResponse);
         });
 
       const req = httpMock.expectOne(
-        `${API_URI.RELEASE_LETTERS}/sprint/${selectedSprint}`
+        `${API_URI.RELEASE_LETTERS}/${selectedId}`
       );
 
       expect(req.request.method).toBe('PUT');

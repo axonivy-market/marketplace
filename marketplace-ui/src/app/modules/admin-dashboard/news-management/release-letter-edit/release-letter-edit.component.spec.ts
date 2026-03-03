@@ -13,10 +13,12 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 import { ReleaseLetterEditComponent } from './release-letter-edit.component';
 
 const mockResponse = {
+  id: '123',
   sprint: 'S43',
   content: 'content',
   latest: true,
-  createdAt: '2026-02-01'
+  createdAt: '2026-02-01',
+  updatedAt: '2026-02-02'
 };
 
 describe('ReleaseLetterEditComponent', () => {
@@ -35,6 +37,7 @@ describe('ReleaseLetterEditComponent', () => {
     };
 
     adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
+      'getReleaseLetterById',
       'getReleaseLetterBySprint',
       'createReleaseLetter',
       'updateReleaseLetter'
@@ -42,7 +45,6 @@ describe('ReleaseLetterEditComponent', () => {
 
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
 
-    // Start of mocking TranslateService with instant and get methods, and onLangChange event
     translateServiceMock = jasmine.createSpyObj('TranslateService', [
       'instant',
       'get'
@@ -106,18 +108,18 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should initialize in edit mode and load release letter', () => {
-    adminDashboardServiceMock.getReleaseLetterBySprint.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetterById.and.returnValue(
       of(mockResponse)
     );
 
-    activatedRouteMock.paramMap = of(convertToParamMap({ sprint: 'S43' }));
+    activatedRouteMock.paramMap = of(convertToParamMap({ id: '123' }));
 
     fixture = TestBed.createComponent(ReleaseLetterEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
     expect(component.isCreateMode).toBeFalse();
-    expect(component.selectedSprint).toBe('S43');
+    expect(component.selectedId).toBe('123');
   });
 
   it('should call createReleaseLetter in create mode', () => {
@@ -140,7 +142,6 @@ describe('ReleaseLetterEditComponent', () => {
     spyOn(component, 'updateReleaseLetter');
 
     component.isCreateMode = false;
-    component.selectedSprint = 'S43';
 
     const event = new Event('submit');
     spyOn(event, 'preventDefault');
@@ -148,7 +149,6 @@ describe('ReleaseLetterEditComponent', () => {
     component.onSubmit(event);
 
     expect(component.updateReleaseLetter).toHaveBeenCalledWith(
-      'S43',
       component.releaseLetter
     );
   });
@@ -186,7 +186,7 @@ describe('ReleaseLetterEditComponent', () => {
       of(mockResponse)
     );
 
-    component.updateReleaseLetter('S43', component.releaseLetter);
+    component.updateReleaseLetter(component.releaseLetter);
 
     expect(routerMock.navigate).toHaveBeenCalledWith([
       '/internal-dashboard/news-management'

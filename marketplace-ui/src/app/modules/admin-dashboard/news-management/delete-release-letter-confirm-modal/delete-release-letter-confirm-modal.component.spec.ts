@@ -16,7 +16,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
 
   beforeEach(async () => {
     adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'deleteReleaseLetterBySprint'
+      'deleteReleaseLetterById'
     ]);
 
     activeModalMock = jasmine.createSpyObj('NgbActiveModal', [
@@ -46,31 +46,31 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call deleteReleaseLetterBySprint and close modal on success', () => {
-    component.releaseLetterSprint = 'S42';
+  it('should call deleteReleaseLetterById and close modal on success', () => {
+    component.id = '123';
 
-    adminDashboardServiceMock.deleteReleaseLetterBySprint.and.returnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.and.returnValue(
       of(void 0)
     );
 
-    component.deleteReleaseLetterBySprint();
+    component.deleteReleaseLetterById();
 
     expect(
-      adminDashboardServiceMock.deleteReleaseLetterBySprint
-    ).toHaveBeenCalledWith('S42');
+      adminDashboardServiceMock.deleteReleaseLetterById
+    ).toHaveBeenCalledWith('123');
 
     expect(activeModalMock.close).toHaveBeenCalled();
   });
 
   it('should not close modal before observable emits', () => {
-    component.releaseLetterSprint = 'S42';
+    component.id = '123';
 
     const subject = new Subject<void>();
-    adminDashboardServiceMock.deleteReleaseLetterBySprint.and.returnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.and.returnValue(
       subject.asObservable()
     );
 
-    component.deleteReleaseLetterBySprint();
+    component.deleteReleaseLetterById();
 
     expect(activeModalMock.close).not.toHaveBeenCalled();
 

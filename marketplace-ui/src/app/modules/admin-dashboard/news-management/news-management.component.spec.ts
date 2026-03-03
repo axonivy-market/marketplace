@@ -21,16 +21,20 @@ describe('NewsManagementComponent', () => {
 
   const mockReleaseLetters: ReleaseLetter[] = [
     {
+      id: '123',
       sprint: 'S1',
       content: 'Content 1',
       latest: true,
-      createdAt: '2025-01-01'
+      createdAt: '2025-01-01',
+      updatedAt: '2025-01-02'
     },
     {
+      id: '345',
       sprint: 'S2',
       content: 'Content 2',
       latest: false,
-      createdAt: '2025-01-02'
+      createdAt: '2025-01-02',
+      updatedAt: '2025-01-02'
     }
   ];
 
@@ -137,11 +141,11 @@ describe('NewsManagementComponent', () => {
   it('should refresh list after delete confirmation', async () => {
     component.releaseLetterList.set([]);
 
-    await component.openDeleteConfirmModal('S1');
+    await component.openDeleteConfirmModal(mockReleaseLetters[0]);
 
     expect(
       appModalServiceMock.openDeleteReleaseLetterConfirmModal
-    ).toHaveBeenCalledWith('S1');
+    ).toHaveBeenCalledWith(mockReleaseLetters[0]);
 
     expect(
       adminDashboardServiceMock.getReleaseLetters

@@ -182,20 +182,6 @@ export class AdminDashboardService {
     releaseLetterRequest: ReleaseLetter
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/sprint/${selectedSprint}`,
-      releaseLetterRequest,
-      {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
-      }
-    );
-  }
-
-  updateReleaseLetter2(
-    selectedSprint: string,
-    releaseLetterRequest: ReleaseLetter
-  ): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${selectedSprint}`,
       releaseLetterRequest,
       {

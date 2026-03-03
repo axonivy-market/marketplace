@@ -8,6 +8,15 @@ import { SuccessDialogComponent } from '../../modules/product/product-detail/pro
 import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { AppModalService } from './app-modal.service';
 
+const mockResponse = {
+  id: '123',
+  sprint: 'S43',
+  content: 'content',
+  latest: true,
+  createdAt: '2026-02-01',
+  updatedAt: '2026-02-02'
+};
+
 describe('AppModalService', () => {
   let service: AppModalService;
   let modalServiceSpy: jasmine.SpyObj<NgbModal>;
@@ -84,6 +93,7 @@ describe('AppModalService', () => {
   });
 
   it('should open DeleteReleaseLetterConfirmModalComponent, set sprint, and return result', async () => {
+    const id = '123';
     const sprint = 'S43';
     const mockResult = Promise.resolve(true);
 
@@ -94,7 +104,7 @@ describe('AppModalService', () => {
 
     modalServiceSpy.open.and.returnValue(mockModalRef);
 
-    const result = await service.openDeleteReleaseLetterConfirmModal(sprint);
+    const result = await service.openDeleteReleaseLetterConfirmModal(mockResponse);
 
     expect(modalServiceSpy.open).toHaveBeenCalledWith(
       DeleteReleaseLetterConfirmModalComponent,
@@ -103,7 +113,8 @@ describe('AppModalService', () => {
       }
     );
 
-    expect(mockModalRef.componentInstance.releaseLetterSprint).toBe(sprint);
+    expect(mockModalRef.componentInstance.id).toBe(id);
+    expect(mockModalRef.componentInstance.sprint).toBe(sprint);
     expect(result).toBe(true);
   });
 });

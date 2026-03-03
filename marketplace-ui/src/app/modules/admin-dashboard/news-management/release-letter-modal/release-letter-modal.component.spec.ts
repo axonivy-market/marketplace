@@ -9,10 +9,12 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 import { of } from 'rxjs';
 
 const mockResponse = {
+  id: '123',
   sprint: 'S43',
   content: 'content',
   latest: true,
-  createdAt: '2026-02-01'
+  createdAt: '2026-02-01',
+  updatedAt: '2026-02-02'
 };
 
 describe('ReleaseLetterModalComponent', () => {
