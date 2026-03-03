@@ -30,6 +30,7 @@ import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.com
 
 const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
+const MESSAGE_DISPLAY_TIME = 3000;
 @Component({
   selector: 'app-custom-sort',
   imports: [
@@ -229,7 +230,7 @@ export class CustomSortComponent implements OnInit {
           );
           setTimeout(() => {
             this.sortSuccessMessage = '';
-          }, 3000);
+          }, MESSAGE_DISPLAY_TIME);
         },
         error: () => {
           this.sortErrorMessage = this.translateService.instant(
@@ -237,7 +238,7 @@ export class CustomSortComponent implements OnInit {
           );
           setTimeout(() => {
             this.sortErrorMessage = '';
-          }, 3000);
+          }, MESSAGE_DISPLAY_TIME);
         }
       });
   }
@@ -246,7 +247,7 @@ export class CustomSortComponent implements OnInit {
     this.isLoading = true;
     try {
       const productIds = await firstValueFrom(this.productService.fetchAllProductIds()) ?? [];
-      let customSort = await lastValueFrom(this.adminDashboardService.getCustomSort()) ?? null;
+      const customSort = await lastValueFrom(this.adminDashboardService.getCustomSort()) ?? null;
       this.applyCustomSort(productIds, customSort);
     } finally {
       this.isLoading = false;
