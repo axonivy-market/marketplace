@@ -178,11 +178,11 @@ export class AdminDashboardService {
   }
 
   updateReleaseLetter(
-    selectedSprint: string,
+    id: string,
     releaseLetterRequest: ReleaseLetter
   ): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/${selectedSprint}`,
+      `${API_URI.RELEASE_LETTERS}/${id}`,
       releaseLetterRequest,
       {
         headers: this.adminAuth.getAuthHeaders(),
@@ -191,29 +191,9 @@ export class AdminDashboardService {
     );
   }
 
-  getReleaseLetterBySprint(
-    sprint: string
-  ): Observable<ReleaseLetterApiResponse> {
-    return this.http.get<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
-  }
-
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
-  }
-
-  deleteReleaseLetterBySprint(sprint: string): Observable<void> {
-    return this.http.delete<void>(
-      `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`,
       {
         headers: this.adminAuth.getAuthHeaders()
       }

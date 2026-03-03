@@ -384,22 +384,23 @@ describe('AdminDashboardService', () => {
     });
   });
 
-  describe('getReleaseLetterBySprint', () => {
-    it('should get release letter by sprint', () => {
-      const sprint = 'S52';
+  describe('getReleaseLetterById', () => {
+    it('should get release letter by id', () => {
+      const id = '123';
 
       const mockResponse: ReleaseLetterApiResponse = {
-        sprint,
+        id,
+        sprint: 'S52',
         content: 'Sprint 52 release content',
         createdAt: '2024-02-10T00:00:00Z'
       } as any;
 
-      service.getReleaseLetterBySprint(sprint).subscribe(response => {
+      service.getReleaseLetterById(id).subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
       const req = httpMock.expectOne(
-        `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`
+        `${API_URI.RELEASE_LETTERS}/${id}`
       );
 
       expect(req.request.method).toBe('GET');
@@ -411,16 +412,16 @@ describe('AdminDashboardService', () => {
     });
   });
 
-  describe('deleteReleaseLetterBySprint', () => {
-    it('should delete release letter by sprint', () => {
-      const sprint = 'S53';
+  describe('deleteReleaseLetterById', () => {
+    it('should delete release letter by id', () => {
+      const id = '123';
 
-      service.deleteReleaseLetterBySprint(sprint).subscribe(response => {
+      service.deleteReleaseLetterById(id).subscribe(response => {
         expect(response).toBeNull();
       });
 
       const req = httpMock.expectOne(
-        `${API_URI.RELEASE_LETTERS}/sprint/${sprint}`
+        `${API_URI.RELEASE_LETTERS}/${id}`
       );
 
       expect(req.request.method).toBe('DELETE');

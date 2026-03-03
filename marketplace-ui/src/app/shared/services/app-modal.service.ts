@@ -41,14 +41,14 @@ export class AppModalService {
     });
   }
 
-  openReleaseLetterModal(sprint: string): void {
+  openReleaseLetterModal(id: string): void {
     const modalRef = this.modalService.open(ReleaseLetterModalComponent, {
       fullscreen: 'md',
       centered: true,
       size: 'xl'
     });
 
-    modalRef.componentInstance.sprint = sprint;
+    modalRef.componentInstance.id = id;
   }
 
   openDeleteReleaseLetterConfirmModal(releaseLetter: ReleaseLetter) {

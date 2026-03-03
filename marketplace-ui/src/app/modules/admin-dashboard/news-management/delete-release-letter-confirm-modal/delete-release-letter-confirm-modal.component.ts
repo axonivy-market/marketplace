@@ -5,7 +5,6 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { CommonModule } from '@angular/common';
 import { AdminDashboardService } from '../../admin-dashboard.service';
-import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 
 @Component({
   selector: 'app-delete-release-letter-confirm-modal',

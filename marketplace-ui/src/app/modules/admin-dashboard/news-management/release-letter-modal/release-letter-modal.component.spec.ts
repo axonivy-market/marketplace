@@ -4,7 +4,6 @@ import { ReleaseLetterModalComponent } from './release-letter-modal.component';
 import { MarkdownService } from '../../../../shared/services/markdown.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { SafeHtml } from '@angular/platform-browser';
 import { AdminDashboardService } from '../../admin-dashboard.service';
 import { of } from 'rxjs';
 
@@ -38,10 +37,10 @@ describe('ReleaseLetterModalComponent', () => {
       'dismiss'
     ]);
     adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'getReleaseLetterBySprint'
+      'getReleaseLetterById'
     ]);
 
-    adminDashboardServiceMock.getReleaseLetterBySprint.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetterById.and.returnValue(
       of(mockResponse)
     );
     markdownServiceMock.parseMarkdown.and.returnValue('<p>Mock</p>');
@@ -60,7 +59,7 @@ describe('ReleaseLetterModalComponent', () => {
     fixture = TestBed.createComponent(ReleaseLetterModalComponent);
     component = fixture.componentInstance;
 
-    component.sprint = 'S43';
+    component.id = '123';
 
     fixture.detectChanges();
   });
@@ -69,24 +68,34 @@ describe('ReleaseLetterModalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize sprintHeader correctly', () => {
+  it('should call getReleaseLetterById on init', () => {
+    expect(adminDashboardServiceMock.getReleaseLetterById).toHaveBeenCalledWith(
+      '123'
+    );
+  });
+
+  it('should set sprintHeader correctly', () => {
     expect(translateServiceMock.instant).toHaveBeenCalledWith(
       'common.admin.newsManagement.sprintHeader'
     );
 
-    expect(component.sprintHeader).toBe('Sprint: S43');
+    expect(component.sprintHeader).toBe('Sprint: ' + mockResponse.sprint);
   });
 
-  it('should render markdown and sanitize content on init', () => {
-    expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith(mockResponse.content);
+  it('should parse markdown and sanitize content', () => {
+    expect(markdownServiceMock.parseMarkdown).toHaveBeenCalledWith(
+      mockResponse.content
+    );
     expect(component.releaseLetterContent).toBeTruthy();
   });
 
-  it('getSprintHeader should concatenate translation and sprint', () => {
-    translateServiceMock.instant.and.returnValue('Version: ');
+  it('getSprintHeader should concatenate translated label and sprint', () => {
+    const header = component.getSprintHeader(mockResponse.sprint);
 
-    const result = component.getSprintHeader();
+    expect(translateServiceMock.instant).toHaveBeenCalledWith(
+      'common.admin.newsManagement.sprintHeader'
+    );
 
-    expect(result).toBe('Version: S43');
+    expect(header).toBe('Sprint: ' + mockResponse.sprint);
   });
 });

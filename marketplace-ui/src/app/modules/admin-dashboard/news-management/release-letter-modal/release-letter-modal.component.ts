@@ -14,7 +14,7 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 })
 export class ReleaseLetterModalComponent implements OnInit {
   @Input()
-  sprint!: string;
+  id!: string;
 
   markdownService = inject(MarkdownService);
   translateService = inject(TranslateService);
@@ -30,8 +30,8 @@ export class ReleaseLetterModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.sprintHeader = this.getSprintHeader();
-    this.adminDashboardService.getReleaseLetterBySprint(this.sprint).subscribe(response => {
+    this.adminDashboardService.getReleaseLetterById(this.id).subscribe(response => { 
+      this.sprintHeader = this.getSprintHeader(response.sprint);
       this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
     });
   }
@@ -41,11 +41,11 @@ export class ReleaseLetterModalComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   }
 
-  getSprintHeader() {
+  getSprintHeader(sprint: string) {
     return (
       this.translateService.instant(
         'common.admin.newsManagement.sprintHeader'
-      ) + this.sprint
+      ) + sprint
     );
   }
 }

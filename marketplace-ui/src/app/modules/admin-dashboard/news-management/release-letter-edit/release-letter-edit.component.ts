@@ -129,7 +129,7 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   updateReleaseLetter(releaseLetter: ReleaseLetter) {
     this.adminDashboardService
-      .updateReleaseLetter(releaseLetter.sprint, releaseLetter)
+      .updateReleaseLetter(releaseLetter.id, releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {
