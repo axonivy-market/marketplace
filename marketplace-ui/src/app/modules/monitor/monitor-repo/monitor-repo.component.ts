@@ -67,6 +67,7 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   styleUrl: './monitor-repo.component.scss'
 })
 export class MonitoringRepoComponent implements OnInit, OnDestroy {
+  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
   readonly COLUMN_NAME = NAME_COLUMN;
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
@@ -242,6 +243,4 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
       sub.unsubscribe();
     }
   }
-
-  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
 }

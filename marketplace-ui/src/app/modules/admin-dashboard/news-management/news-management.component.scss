@@ -1,0 +1,47 @@
+.input-group-text {
+  border-radius: 10px;
+  padding: 0 15px;
+}
+
+th h5 {
+  font-weight: 600;
+  line-height: 140%;
+  vertical-align: middle;
+}
+
+td {
+  height: 5rem;
+  vertical-align: middle;
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+#create-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+#release-letter-container {
+  margin-top: 9rem;
+}
+
+#release-letter-table {
+  tbody,
+  button {
+    font-size: 1.4rem;
+  }
+}
+
+#delete-button {
+  background-color: red;
+
+  &:hover {
+    background-color: #ff6868;
+  }
+}
