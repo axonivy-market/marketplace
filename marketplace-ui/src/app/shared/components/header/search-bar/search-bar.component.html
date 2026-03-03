@@ -8,7 +8,7 @@
   @if (isGoogleSearchBarDisplayed() == false) {
     <!-- Language Selection -->
     <ul
-      class="d-flex flex-row-reverse flex-lg-row justify-content-between border-top-md-gray header__button">
+      class="d-flex flex-row-reverse flex-lg-row border-top-md-gray header__button justify-content-center align-items-center">
       <li class="header__button--right">
         <app-language-selection></app-language-selection>
       </li>
@@ -26,15 +26,42 @@
             <div class="gcse-search"></div>
           </div>
         } @else {
-          <li class="search-icon">
+          <li class="d-flex search-icon">
             <i
               class="bi bi-search header__search-button"
               (click)="onClickSearchIcon()"></i>
           </li>
-          <li>
-            <app-github-user-badge></app-github-user-badge>
-          </li>
         }
+      </li>
+      <li>
+        <app-github-user-badge></app-github-user-badge>
+      </li>
+      <li>
+        <p>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="collapse.toggle()"
+            [attr.aria-expanded]="!isCollapsed"
+            aria-controls="collapseExample">
+            Toggle with Function
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary ms-2"
+            (click)="isCollapsed = !isCollapsed"
+            [attr.aria-expanded]="!isCollapsed"
+            aria-controls="collapseExample">
+            Toggle with Two Way Binding
+          </button>
+        </p>
+        <div #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed">
+          <div class="card">
+            <div class="card-body">
+              You can collapse this card by clicking one Toggle button
+            </div>
+          </div>
+        </div>
       </li>
     </ul>
   }

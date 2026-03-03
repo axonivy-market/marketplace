@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  signal
+} from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
@@ -7,6 +13,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { SEARCH_URL } from '../../../constants/common.constant';
 import { FormsModule } from '@angular/forms';
 import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
+import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-search-bar',
@@ -16,12 +23,14 @@ import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-ba
     ThemeSelectionComponent,
     FormsModule,
     LanguageSelectionComponent,
-    GithubUserBadgeComponent
+    GithubUserBadgeComponent,
+    NgbCollapse
   ],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
+  isCollapsed = false;
   searchUrl = SEARCH_URL;
   isGoogleSearchBarDisplayed = signal(false);
 
