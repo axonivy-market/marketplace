@@ -257,9 +257,8 @@ class ReleaseLetterControllerTest extends BaseSetup {
 
   @Test
   void testDeleteReleaseLetterShouldCallService() {
-    releaseLetterController.deleteReleaseLetter(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
-
-    verify(releaseLetterService).deleteReleaseLetterBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
+    releaseLetterController.deleteReleaseLetter(RELEASE_LETTER_ID_SAMPLE);
+    verify(releaseLetterService).deleteReleaseLetterById(RELEASE_LETTER_ID_SAMPLE);
   }
 
   private ReleaseLetter createReleaseLetterMock() {

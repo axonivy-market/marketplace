@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -118,21 +117,6 @@ public class ReleaseLetterController {
     return ResponseEntity.created(location).build();
   }
 
-//  @Authorized
-//  @PutMapping(BY_SPRINT)
-//  @Operation(hidden = true)
-//  public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
-//      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
-//          in = ParameterIn.PATH) String sprint,
-//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
-//  ) {
-//    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequest);
-//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-//    releaseLetterResource.add(
-//        linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
-//    return ResponseEntity.ok(releaseLetterResource);
-//  }
-
   @Authorized
   @PutMapping(BY_ID)
   @Operation(hidden = true)
@@ -147,15 +131,6 @@ public class ReleaseLetterController {
         linkTo(methodOn(this.getClass()).findReleaseLetterBySprint(updatedReleaseLetter.getSprint())).withSelfRel());
     return ResponseEntity.ok(releaseLetterResource);
   }
-
-//  @Authorized
-//  @DeleteMapping(BY_SPRINT)
-//  @Operation(hidden = true)
-//  public void deleteReleaseLetter(
-//      @PathVariable(SPRINT) @Parameter(description = "The sprint name", example = "S43",
-//          in = ParameterIn.PATH) String sprint) {
-//    releaseLetterService.deleteReleaseLetterBySprint(sprint);
-//  }
 
   @Authorized
   @DeleteMapping(BY_ID)
