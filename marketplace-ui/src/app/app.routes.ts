@@ -14,6 +14,9 @@ import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/qui
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
+import { NewsComponent } from './modules/news/news.component';
+import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
+import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -54,23 +57,31 @@ export const routes: Routes = [
     children: [
       {
         path: 'security-monitor',
-        component: SecurityMonitorComponent,
-        canActivate: [AdminAuthGuard]
+        component: SecurityMonitorComponent
       },
       {
         path: 'feedback-approval',
-        component: FeedbackApprovalComponent,
-        canActivate: [AdminAuthGuard]
+        component: FeedbackApprovalComponent
       },
       {
         path: 'sorting',
-        component: CustomSortComponent,
-        canActivate: [AdminAuthGuard]
+        component: CustomSortComponent
       },
       {
         path: 'quick-access',
-        component: QuickAccessComponent,
-        canActivate: [AdminAuthGuard]
+        component: QuickAccessComponent
+      },
+      {
+        path: 'news-management',
+        component: NewsManagementComponent
+      },
+      {
+        path: 'news-management/:id/edit',
+        component: ReleaseLetterEditComponent
+      },
+      {
+        path: 'news-management/create',
+        component: ReleaseLetterEditComponent
       },
       {
         path: 'logs',
@@ -89,6 +100,10 @@ export const routes: Routes = [
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
+  },
+  {
+    path: 'news',
+    component: NewsComponent
   },
 
   // Product route (dynamic)

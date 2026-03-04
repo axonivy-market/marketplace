@@ -12,7 +12,7 @@ export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 export const NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.news',
-    link: 'https://developer.axonivy.com/news'
+    link: '/news'
   },
   {
     label: 'common.nav.doc',
@@ -60,6 +60,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.logs',
     link: '/internal-dashboard/logs'
+  },
+  {
+    label: 'common.nav.newsManagement',
+    link: '/internal-dashboard/news-management'
   }
 ];
 
@@ -282,6 +286,8 @@ export const REQUEST_TIMEOUT = 408;
 export const BAD_GATEWAY = 502;
 export const SERVICE_UNAVAILABLE = 503;
 export const GATEWAY_TIMEOUT = 504;
+export const RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED = 1110;
+export const SPRINT_CANNOT_BE_BLANK = 1111;
 export const ERROR_CODES = [
   UNDEFINED_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
@@ -292,7 +298,9 @@ export const ERROR_CODES = [
   REQUEST_TIMEOUT,
   BAD_GATEWAY,
   SERVICE_UNAVAILABLE,
-  GATEWAY_TIMEOUT
+  GATEWAY_TIMEOUT,
+  RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED,
+  SPRINT_CANNOT_BE_BLANK
 ];
 export const TOKEN_KEY = 'token';
 export const BEARER = 'Bearer';
