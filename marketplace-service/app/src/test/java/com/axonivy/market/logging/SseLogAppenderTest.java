@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SseLogAppenderTest {
 
-  private SseLogAppender appender;
+  private SSELogAppender appender;
   
   @Mock
   private Encoder<ILoggingEvent> mockEncoder;
@@ -27,7 +27,7 @@ class SseLogAppenderTest {
 
   @BeforeEach
   void setUp() {
-    appender = new SseLogAppender();
+    appender = new SSELogAppender();
   }
 
   @Test

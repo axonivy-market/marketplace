@@ -374,6 +374,36 @@
         "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
         "monitoringTitle": "Überwachungsseite",
         "releasePreviewTitle": "Release-Vorschauseite"
+      },
+      "logsViewer": {
+        "tabs": {
+          "runtimeLog": "Protokoll zur Laufzeit",
+          "logsFile": "Protokolldateien"
+        },
+        "actions": {
+          "connect": "Verbinden",
+          "disconnect": "Trennen",
+          "clear": "Löschen",
+          "download": "Herunterladen",
+          "downloadOptions": "Download-Optionen",
+          "downloadAllLogs": "Alle Protokolle herunterladen",
+          "downloadFiltered": "Gefilterte herunterladen",
+          "downloadAsJSON": "Als JSON herunterladen",
+          "downloadAsCSV": "Als CSV herunterladen",
+          "autoScroll": "Auto-Scroll",
+          "clearFilter": "Filter löschen"
+        },
+        "table": {
+          "timestamp": "Zeitstempel",
+          "level": "Ebene",
+          "detail": "Detail"
+        },
+        "filter": {
+          "selectDate": "Datum wählen:"
+        },
+        "messages": {
+          "noLogsFound": "Keine Protokolldateien gefunden"
+        }
       }
     }
   }

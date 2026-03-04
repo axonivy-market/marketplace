@@ -27,6 +27,7 @@
   &.active {
     color: var(--text-primary, #333);
     border-bottom-color: var(--text-primary, #333);
+    background-color: rgba(13, 110, 253, 0.1);
   }
 }
 

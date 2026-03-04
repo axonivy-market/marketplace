@@ -8,6 +8,7 @@ import com.axonivy.market.util.FileUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -90,16 +91,7 @@ public class LogServiceImpl implements LogService {
       try (Stream<Path> stream = Files.list(path)) {
         return stream
           .filter((Path filePath) -> isLogFile(filePath.getFileName().toString()))
-          .map((Path filePath) -> {
-            try {
-              var fileName = filePath.getFileName().toString();
-              String date = extractDateFromFileName(fileName);
-              return new LogFileModel(fileName, Files.size(filePath), date);
-            } catch (IOException e) {
-              log.error("Failed to get size of log file: {}", filePath.getFileName(), e);
-              return new LogFileModel(filePath.getFileName().toString(), 0L, null);
-            }
-          })
+          .map(this::getLogFileModel)
           .toList();
       } catch (IOException e) {
         log.error("Failed to list log files in: {}", logPath, e);
@@ -108,22 +100,28 @@ public class LogServiceImpl implements LogService {
     return Collections.emptyList();
   }
 
+  private @NonNull LogFileModel getLogFileModel(Path filePath) {
+    try {
+      var fileName = filePath.getFileName().toString();
+      String date = extractDateFromFileName(fileName);
+      return new LogFileModel(fileName, Files.size(filePath), date);
+    } catch (IOException e) {
+      log.error("Failed to get size of log file: {}", filePath.getFileName(), e);
+      return new LogFileModel(filePath.getFileName().toString(), 0L, null);
+    }
+  }
+
   private boolean isLogFile(String fileName) {
     return fileName.endsWith(LOG_EXTENSION) || fileName.endsWith(CommonConstants.GZ_EXTENSION);
   }
 
   private String extractDateFromFileName(String fileName) {
-    // Pattern: application.yyyy-MM-dd.log or application.yyyy-MM-dd.log.gz
-    // or application.yyyy-MM-dd.1.log.gz, etc.
-    // Extract the date part (yyyy-MM-dd)
-    if (fileName == null || fileName.isEmpty()) {
+    if (StringUtils.isEmpty(fileName)) {
       return null;
     }
     String[] parts = DATE_YEAR_SEPARATOR_COMPILED.split(fileName);
     if (parts.length >= MIN_EXPECTED_PARTS) {
-      // The date is typically the second part: application.[DATE].log(.gz)
       String datePart = parts[1];
-      // Validate it looks like a date (yyyy-MM-dd format: 10 characters)
       if (datePart.length() == DATE_YEAR_CHAR_COUNT && DATE_PATTERN_COMPILED.matcher(datePart).matches()) {
         return datePart;
       }

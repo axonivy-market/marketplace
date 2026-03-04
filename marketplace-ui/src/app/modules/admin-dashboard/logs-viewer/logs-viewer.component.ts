@@ -10,6 +10,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';
 import { LogFileModel } from '../../../shared/models/apis/log-file-response.model';
 import { LogService } from '../log.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 
 interface ParsedLog {
   timestamp: string;
@@ -28,11 +30,12 @@ const LONG_MESSAGE_THRESHOLD = 150;
 @Component({
   selector: 'app-log-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './logs-viewer.component.html',
   styleUrls: ['./logs-viewer.component.scss']
 })
 export class LogViewerComponent {
+  translateService = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly logStream = inject(LogStreamService);
   private readonly logService = inject(LogService);

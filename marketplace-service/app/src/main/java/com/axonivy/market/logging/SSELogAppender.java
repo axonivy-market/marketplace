@@ -12,15 +12,14 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SseLogAppender extends AppenderBase<ILoggingEvent> {
+public class SSELogAppender extends AppenderBase<ILoggingEvent> {
   private Encoder<ILoggingEvent> encoder;
 
   @Override
   public void start() {
     if (encoder == null) {
       addWarn("No encoder configured for SSE_APPENDER. Initializing default encoder.");
-    }
-    if (encoder != null) {
+    } else {
       encoder.start();
     }
     super.start();
