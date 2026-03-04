@@ -12,6 +12,12 @@
   a {
     text-decoration: none;
   }
+
+  button {
+    &:active {
+      // background-color: transparent;
+    }
+  }
 }
 
 .user-badge-container {

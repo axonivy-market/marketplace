@@ -23,8 +23,7 @@ import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap';
     ThemeSelectionComponent,
     FormsModule,
     LanguageSelectionComponent,
-    GithubUserBadgeComponent,
-    NgbCollapse
+    GithubUserBadgeComponent
   ],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss'

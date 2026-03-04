@@ -45,6 +45,7 @@ export class AdminAuthService {
 
   logout() {
     sessionStorage.removeItem('GITHUB_USER');
+    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
     this._adminInfo.set(null);
   }
 

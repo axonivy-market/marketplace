@@ -8,10 +8,17 @@ import {
 } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-github-user-badge',
   imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
     NgbDropdown,
     NgbDropdownToggle,
     NgbDropdownMenu,
@@ -24,6 +31,7 @@ import { Router } from '@angular/router';
 export class GithubUserBadgeComponent {
   adminAuthService = inject(AdminAuthService);
   router = inject(Router);
+  themeService = inject(ThemeService);
 
   adminInfo = this.adminAuthService.adminInfo;
 
