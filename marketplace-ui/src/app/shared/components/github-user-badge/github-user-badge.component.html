@@ -5,22 +5,26 @@
     alt="GitHub avatar"
     class="github-avatar" /> -->
 
-  <div class="col">
+  <div class="col user-badge-container">
     <div ngbDropdown class="d-inline-block">
-        <img
-          type="button"
-          class="btn btn-outline-primary"
-          id="dropdownBasic1"
-          ngbDropdownToggle
-          id="user-avatar"
-          [src]="adminInfo()!.avatarUrl"
-          alt="GitHub avatar"
-          class="github-avatar" />
+      <img
+        type="button"
+        class="btn btn-outline-primary"
+        id="dropdownBasic1"
+        ngbDropdownToggle
+        id="user-avatar"
+        [src]="adminInfo()!.avatarUrl"
+        alt="GitHub avatar"
+        class="github-avatar" />
       <!-- </button> -->
-      <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="user-info-dropdown">
-        <button ngbDropdownItem>Action - 1</button>
-        <button ngbDropdownItem>Another Action</button>
-        <button ngbDropdownItem>Something else is here</button>
+      <div
+        ngbDropdownMenu
+        aria-labelledby="dropdownBasic1"
+        class="user-info-dropdown">
+        <button ngbDropdownItem>
+          <a [href]="this.adminInfo()!.url" target="_blank">Account info</a>
+        </button>
+        <button ngbDropdownItem (click)="logout()">Log out</button>
       </div>
     </div>
   </div>

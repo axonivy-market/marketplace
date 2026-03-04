@@ -7,6 +7,7 @@ import {
   NgbDropdownToggle
 } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-github-user-badge',
@@ -22,12 +23,16 @@ import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.se
 })
 export class GithubUserBadgeComponent {
   adminAuthService = inject(AdminAuthService);
+  router = inject(Router);
 
   adminInfo = this.adminAuthService.adminInfo;
 
   ngOnInit() {
-    // if (this.isBrowser) {
-    //   console.log("IS BROWSER");
-    // }
+    console.log(this.adminInfo());
+  }
+
+  logout() {
+    this.adminAuthService.logout();
+    this.router.navigate(['/']);
   }
 }
