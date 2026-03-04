@@ -32,7 +32,10 @@
     class="mt-4 btn border-0 text-center d-flex align-items-center justify-content-center"
     [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
     [routerLink]="['/internal-dashboard/news-management/create']">
-    <span>{{ 'common.admin.newsManagement.create' | translate }}</span>
+    <span>
+      <i class="fa-regular fa-square-plus me-2"></i>
+      {{ 'common.admin.newsManagement.create' | translate }}
+    </span>
   </button>
   <table id="release-letter-table" class="table mt-4" ngbAccordion>
     <thead>
@@ -76,7 +79,10 @@
                   ? 'btn-light text-dark'
                   : 'btn-primary text-light'
               "
-              (click)="openModal(releaseLetter.id)">
+              (click)="openModal(releaseLetter.id)"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.view' | translate"
+              tooltipClass="custom-tooltip-class">
               <i class="fa-solid fa-eye"></i>
             </button>
             <button
@@ -92,7 +98,10 @@
                 '/internal-dashboard/news-management',
                 releaseLetter.id,
                 'edit'
-              ]">
+              ]"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.edit' | translate"
+              tooltipClass="custom-tooltip-class">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
             <button
@@ -105,7 +114,10 @@
                   ? 'btn-light text-dark'
                   : 'btn-primary text-light'
               "
-              (click)="openDeleteConfirmModal(releaseLetter)">
+              (click)="openDeleteConfirmModal(releaseLetter)"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.delete' | translate"
+              tooltipClass="custom-tooltip-class">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
