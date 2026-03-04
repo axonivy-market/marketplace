@@ -276,10 +276,13 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call keepCurrentTabScroll when setActiveTab is called', () => {
-    spyOn(component, 'keepCurrentTabScroll');
+    const spy = spyOn(component, 'keepCurrentTabScroll');
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+    component['scrollPositions']['specifications'] = 100;
     const tab = 'specifications';
     component.setActiveTab(tab);
-    expect(component.keepCurrentTabScroll).toHaveBeenCalledWith(tab);
+    expect(spy).toHaveBeenCalledWith('specifications');
   });
 
   it('should call setActiveTab and updateDropdownSelection on setActiveTab', () => {
@@ -1101,19 +1104,24 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab with correct tab value from fragment', () => {
-    spyOn(component, 'setActiveTab');
+    const spy = spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
-    expect(component.setActiveTab).toHaveBeenCalledWith('description');
+    expect(spy).toHaveBeenCalled();
+    const args = (spy as jasmine.Spy).calls.mostRecent().args;
+    expect(args[0]).toBe('description');
   });
 
-  it('should restore scroll position for a tab', () => {
+  it('should restore scroll position for a tab', fakeAsync(() => {
     component.isBrowser = true;
     const tabId = 'demo';
     component['scrollPositions'][tabId] = 1234;
-    spyOn(window, 'scrollTo');
+    const scrollSpy = spyOn(window, 'scrollTo');
     component.keepCurrentTabScroll(tabId);
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
-  });
+    tick();
+    expect(scrollSpy).toHaveBeenCalled();
+    const arg = (scrollSpy as jasmine.Spy).calls.mostRecent().args[0] as any;
+    expect(arg.top).toBe(1234);
+  }));
 
   describe('loadChangelogs', () => {
     let productService: jasmine.SpyObj<ProductService>;
