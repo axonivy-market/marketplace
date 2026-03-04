@@ -31,102 +31,29 @@
   }
 }
 
-.tab-runtime-log {
-  &.active {
-    padding: calc(1.5rem - 2px);
-  }
-}
-
-.tab-logs-file {
-
-  &.active {
-    padding: calc(1.5rem - 2px);
-  }
-}
-
-.log-table {
-  thead {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border: 2px solid #dee2e6;
-    border-radius: 0.75rem 0.75rem 0 0;
-  }
-}
-
-.log-level-badge {
-  width: 70px;
-}
-
 // Log level colors
-.log-level {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  
-  &.log-level-debug {
-    color: #6c757d; // Gray
-    
-    i { color: #6c757d; }
-  }
-  
-  &.log-level-info {
-    color: #0d6efd; // Blue
-    
-    i { color: #0d6efd; }
-  }
-  
-  &.log-level-warn {
-    color: #ffc107; // Amber/Yellow
-    
-    i { color: #ffc107; }
-  }
-  
-  &.log-level-error {
-    color: #dc3545; // Red
-    
-    i { color: #dc3545; }
-  }
-  
-  &.log-level-fatal {
-    color: #bd2130; // Dark Red
-    
-    i { color: #bd2130; }
-  }
+.log-level-debug {
+  color: #6c757d;
 }
 
-// Log level background colors for cells
-.log-level-bg-debug {
-  background-color: rgba(108, 117, 125, 0.15); // Gray with transparency
+.log-level-info {
+  color: #0d6efd;
 }
 
-.log-level-bg-info {
-  background-color: rgba(13, 110, 253, 0.15); // Blue with transparency
+.log-level-warn {
+  color: #ffc107;
 }
 
-.log-level-bg-warn {
-  background-color: rgba(255, 193, 7, 0.15); // Yellow with transparency
+.log-level-error {
+  color: #dc3545;
 }
 
-.log-level-bg-error {
-  background-color: rgba(220, 53, 69, 0.15); // Red with transparency
-}
-
-.log-level-bg-fatal {
-  background-color: rgba(189, 33, 48, 0.15); // Dark Red with transparency
-}
-
-.btn-link:hover {
-    filter: brightness(1.2);
+.log-level-fatal {
+  color: #bd2130;
 }
 
 .auto-scroll-label {
   min-width: 80px;
-}
-
-.date-filter-input {
-  max-width: 200px;
 }
 
 .log-message-truncate {
@@ -142,16 +69,6 @@
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
-  }
-
-  .card-title {
-    color: #333;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .card-text {
-    font-size: 12px;
   }
 }
 

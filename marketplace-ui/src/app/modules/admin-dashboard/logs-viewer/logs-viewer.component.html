@@ -1,14 +1,14 @@
 <div class="d-flex flex-column h-100">
   <div class="d-flex gap-3 p-2 border-bottom bg-secondary">
     <button
-      class="tab-title tab-runtime-log text-primary"
+      class="tab-title text-primary"
       [class.active]="activeTab() === 'runtime-log'"
       (click)="activeTab.set('runtime-log')"
       [attr.aria-current]="activeTab() === 'runtime-log' ? 'page' : null">
       {{ 'common.admin.logsViewer.tabs.runtimeLog' | translate }}
     </button>
     <button
-      class="tab-title tab-logs-file text-primary"
+      class="tab-title text-primary"
       [class.active]="activeTab() === 'logs-file'"
       (click)="activeTab.set('logs-file')"
       [attr.aria-current]="activeTab() === 'logs-file' ? 'page' : null">
@@ -116,74 +116,68 @@
       <div
         id="log-container"
         class="flex-grow-1 overflow-auto bg-secondary text-primary p-2 text-wrap">
-        <table
-          class="table table-sm table-striped table-bordered rounded-3 mb-0 log-table">
-          <thead class="table-secondary rounded-top sticky-top">
-            <tr>
-              <th class="col-2 text-center">
-                {{ 'common.admin.logsViewer.table.timestamp' | translate }}
-              </th>
-              <th class="col-1 text-center">
-                {{ 'common.admin.logsViewer.table.level' | translate }}
-              </th>
-              <th class="col-9 text-center">
-                {{ 'common.admin.logsViewer.table.detail' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of parsedLogs(); track $index) {
+        <div class="rounded-3 overflow-hidden border border-secondary-subtle">
+          <table class="table table-sm table-striped table-bordered mb-0">
+            <thead class="table-secondary sticky-top">
+              <tr>
+                <th class="col-2 text-center">
+                  {{ 'common.admin.logsViewer.table.timestamp' | translate }}
+                </th>
+                <th class="col-1 text-center">
+                  {{ 'common.admin.logsViewer.table.level' | translate }}
+                </th>
+                <th class="col-9 text-center">
+                  {{ 'common.admin.logsViewer.table.detail' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of parsedLogs(); track $index) {
               <tr>
                 <td class="font-monospace small text-success fw-bold">
                   {{ log.timestamp }}
                 </td>
                 <td class="d-flex justify-content-center align-items-center">
-                  <div
-                    class="log-level d-flex align-items-center gap-2"
-                    [class]="'log-level-' + log.level.toLowerCase()">
+                  <div class="log-level d-flex align-items-center gap-2" [class]="'log-level-' + log.level.toLowerCase()">
                     <i class="bi" [class]="log.icon"></i>
                     <span class="font-monospace">{{ log.level }}</span>
                   </div>
                 </td>
-                <td
-                  class="font-monospace small cursor-pointer"
-                  (click)="log.isLong ? toggleExpand($index) : null">
+                <td class="font-monospace small cursor-pointer" (click)="log.isLong ? toggleExpand($index) : null">
                   @if (log.isLong && !isExpanded($index)) {
-                    <div
-                      class="text-truncate text-primary log-message-truncate">
-                      <span class="text-muted">{{ log.prefix }}</span>
-                      @if (log.prefix) {
-                        <span class="text-muted">-</span>
-                      }
-                      <span>{{ log.messageContent }}</span>
-                    </div>
+                  <div class="text-truncate text-primary log-message-truncate">
+                    <span class="text-muted">{{ log.prefix }}</span>
+                    @if (log.prefix) {
+                    <span class="text-muted">-</span>
+                    }
+                    <span>{{ log.messageContent }}</span>
+                  </div>
                   }
-                  <div
-                    class="collapse"
-                    [class.show]="!log.isLong || isExpanded($index)">
+                  <div class="collapse" [class.show]="!log.isLong || isExpanded($index)">
                     <div class="text-primary text-wrap text-break">
                       @if (log.isLong) {
-                        <div>
-                          <span class="text-muted">{{ log.prefix }}</span>
-                          @if (log.prefix) {
-                            <span class="text-muted">-</span>
-                          }
-                        </div>
-                        <div>{{ log.messageContent }}</div>
-                      } @else {
+                      <div>
                         <span class="text-muted">{{ log.prefix }}</span>
                         @if (log.prefix) {
-                          <span class="text-muted">-</span>
+                        <span class="text-muted">-</span>
                         }
-                        <span>{{ log.messageContent }}</span>
+                      </div>
+                      <div>{{ log.messageContent }}</div>
+                      } @else {
+                      <span class="text-muted">{{ log.prefix }}</span>
+                      @if (log.prefix) {
+                      <span class="text-muted">-</span>
+                      }
+                      <span>{{ log.messageContent }}</span>
                       }
                     </div>
                   </div>
                 </td>
               </tr>
-            }
-          </tbody>
-        </table>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   } @else if (activeTab() === 'logs-file') {
@@ -195,7 +189,7 @@
         </label>
         <input
           type="date"
-          class="form-control date-filter-input"
+          class="form-control w-auto"
           id="logDateFilter"
           [value]="selectedDate()"
           (change)="filterLogsByDate($event)" />
@@ -220,7 +214,7 @@
                     class="card-body d-flex flex-column justify-content-between">
                     <div>
                       <h6
-                        class="card-title font-monospace mb-2 text-truncate text-secondary"
+                        class="card-title font-monospace mb-2 text-truncate text-secondary fw-semibold small"
                         [title]="logFile.fileName">
                         {{ logFile.fileName }}
                       </h6>
