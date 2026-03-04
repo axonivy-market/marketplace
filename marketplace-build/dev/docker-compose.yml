@@ -16,7 +16,7 @@ services:
       - "5000:80"
     depends_on:
       - ui
-      - service
+      - app
 
   ui:
     container_name: marketplace-ui
@@ -41,8 +41,8 @@ services:
     expose:
       - 4000
 
-  service:
-    container_name: marketplace-service
+  app:
+    container_name: marketplace-app
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
@@ -85,6 +85,23 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - 8080
+
+  stable:
+    container_name: marketplace-stable
+    restart: always
+    volumes:
+      - ../logs/stable:/app/logs
+    environment:
+      - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    build:
+      context: ../marketplace-service
+      dockerfile: stable/Dockerfile
+      args:
+        - BUILD_VERSION=${BUILD_VERSION}
+    ports:
+      - "8085:8080"
 
 volumes:
   marketcache:

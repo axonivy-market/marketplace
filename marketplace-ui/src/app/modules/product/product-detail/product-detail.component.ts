@@ -35,8 +35,7 @@ import {
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   UNESCAPE_GITHUB_CONTENT_REGEX,
-  VERSION,
-  VERSION_PARAM
+  VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';

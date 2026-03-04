@@ -100,6 +100,10 @@ market:
       branch: '${MARKET_GITHUB_MARKET_BRANCH}'
   allowed:
     click-capacity: '${MARKET_CLICK_LIMIT}'
+  info:
+    title: "Marketplace app"
+    description: "The restful api for marketplace website"
+    version: '${BUILD_VERSION}'
 
 axon:
   ivy:

@@ -1,5 +1,6 @@
 import {
   HttpClient,
+  HttpContext,
   HttpErrorResponse,
   HttpHeaders,
   provideHttpClient,
@@ -20,8 +21,17 @@ import {
   ERROR_PAGE_PATH,
   UNAUTHORIZED
 } from '../../shared/constants/common.constant';
-import { apiInterceptor, handleHttpError } from './api.interceptor';
+import {
+  apiInterceptor,
+  ForwardingError,
+  handleHttpError,
+  invalidateGetCache
+} from './api.interceptor';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
+import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
+import { RuntimeConfigService } from '../configs/runtime-config.service';
+import { LoadingService } from '../services/loading/loading.service';
 
 describe('AuthInterceptor', () => {
   let mockRouter: jasmine.SpyObj<Router>;
@@ -40,7 +50,6 @@ describe('AuthInterceptor', () => {
       providers: [
         provideHttpClient(withInterceptors([apiInterceptor])),
         provideHttpClientTesting(),
-        HttpTestingController,
         {
           provide: ActivatedRoute,
           useValue: {
@@ -82,6 +91,237 @@ describe('AuthInterceptor', () => {
       error(e) {
         expect(e.status).not.toBe(200);
       }
+    });
+  });
+
+  it('should return cached GET response from TransferState and not call backend', () => {
+    const transferState = TestBed.inject(TransferState);
+
+    const url = 'product';
+    const expectedBody = { name: 'cached-product' };
+
+    const key = makeStateKey<unknown>(`GET ${url}`);
+
+    // Pre-populate TransferState
+    transferState.set(key, expectedBody);
+
+    let actualResponse: any;
+
+    httpClient.get(url).subscribe(response => {
+      actualResponse = response;
+    });
+
+    httpTestingController.expectNone(`${url}`);
+    expect(actualResponse).toEqual(expectedBody);
+    expect(transferState.hasKey(key)).toBeFalse();
+  });
+
+  it('should use API_INTERNAL_URL when running on server', () => {
+    const internalUrl = 'http://internal-api';
+
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([apiInterceptor])),
+        provideHttpClientTesting(),
+        { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: API_INTERNAL_URL, useValue: internalUrl },
+        {
+          provide: RuntimeConfigService,
+          useValue: {
+            get: () => 'http://public-api'
+          }
+        },
+        {
+          provide: LoadingService,
+          useValue: {
+            showLoading: () => {},
+            hideLoading: () => {}
+          }
+        }
+      ]
+    });
+
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    http.get('product').subscribe();
+
+    const req = httpMock.expectOne(`${internalUrl}/product`);
+
+    expect(req.request.url).toBe(`${internalUrl}/product`);
+
+    req.flush({});
+  });
+
+  describe('apiInterceptor - non-GET branch', () => {
+    let http: HttpClient;
+    let httpMock: HttpTestingController;
+
+    beforeEach(() => {
+      TestBed.resetTestingModule();
+
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(withInterceptors([apiInterceptor])),
+          provideHttpClientTesting(),
+          {
+            provide: RuntimeConfigService,
+            useValue: { get: () => '/app' } // match real behavior
+          },
+          {
+            provide: LoadingService,
+            useValue: {
+              showLoading: () => {},
+              hideLoading: () => {}
+            }
+          },
+          {
+            provide: Router,
+            useValue: jasmine.createSpyObj('Router', ['navigate'])
+          }
+        ]
+      });
+
+      http = TestBed.inject(HttpClient);
+      httpMock = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => {
+      httpMock.verify();
+    });
+
+    it('should invalidate GET cache when non-GET request succeeds', () => {
+      const transferState = TestBed.inject(TransferState);
+
+      const url = 'product';
+
+      const key = makeStateKey<any>(`GET ${url}`);
+      transferState.set(key, { old: 'data' });
+
+      http.post(url, { name: 'new' }).subscribe();
+
+      const req = httpMock.expectOne('/app/product');
+      req.flush({}, { status: 200, statusText: 'OK' });
+
+      expect(transferState.hasKey(key)).toBeFalse();
+    });
+  });
+
+  it('should cache GET response when status is 200 and not release letters API', () => {
+    const transferState = TestBed.inject(TransferState);
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const url = 'product';
+    const body = { id: 1 };
+
+    http.get(url).subscribe();
+
+    const req = httpMock.expectOne('/app/product');
+    req.flush(body);
+
+    const key = makeStateKey<any>(`GET ${url}`);
+
+    expect(transferState.get(key, null)).toEqual(body);
+  });
+
+  it('should call handleHttpError and navigate on server error', () => {
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    http.get('product').subscribe({
+      error: () => {}
+    });
+
+    const req = httpMock.expectOne('/app/product');
+
+    req.flush({}, { status: 500, statusText: 'Server Error' });
+
+    expect(router.navigate).toHaveBeenCalled();
+  });
+
+  it('should remove GET cache when key exists', () => {
+    const transferState = TestBed.inject(TransferState);
+
+    const url = 'product';
+
+    const key = makeStateKey<any>(`GET ${url}`);
+    transferState.set(key, { id: 1 });
+
+    expect(transferState.hasKey(key)).toBeTrue();
+    invalidateGetCache(transferState, url);
+    expect(transferState.hasKey(key)).toBeFalse();
+  });
+
+  it('should not throw or remove anything when key does not exist', () => {
+    const transferState = TestBed.inject(TransferState);
+
+    const url = 'non-existing';
+
+    const key = makeStateKey<any>(`GET ${url}`);
+
+    expect(transferState.hasKey(key)).toBeFalse();
+    invalidateGetCache(transferState, url);
+    expect(transferState.hasKey(key)).toBeFalse();
+  });
+
+  describe('apiInterceptor - ForwardingError branch', () => {
+    let http: HttpClient;
+    let httpMock: HttpTestingController;
+
+    beforeEach(() => {
+      TestBed.resetTestingModule();
+
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(withInterceptors([apiInterceptor])),
+          provideHttpClientTesting(),
+          {
+            provide: RuntimeConfigService,
+            useValue: {
+              get: () => 'http://api'
+            }
+          },
+          {
+            provide: LoadingService,
+            useValue: {
+              showLoading: () => {},
+              hideLoading: () => {}
+            }
+          }
+        ]
+      });
+
+      http = TestBed.inject(HttpClient);
+      httpMock = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => {
+      httpMock.verify(); // ensures no unexpected requests
+    });
+
+    it('should cache GET response when ForwardingError is true', () => {
+      const transferState = TestBed.inject(TransferState);
+
+      const url = 'product';
+      const body = { id: 1 };
+
+      const context = new HttpContext().set(ForwardingError, true);
+
+      http.get(url, { context }).subscribe();
+
+      const req = httpMock.expectOne('http://api/product');
+
+      req.flush(body);
+
+      const key = makeStateKey<unknown>(`GET ${url}`);
+
+      expect(transferState.get(key, null)).toEqual(body);
     });
   });
 
