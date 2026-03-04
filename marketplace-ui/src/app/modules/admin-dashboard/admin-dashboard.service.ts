@@ -160,10 +160,15 @@ export class AdminDashboardService {
   }
 
   getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }
@@ -194,10 +199,15 @@ export class AdminDashboardService {
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }

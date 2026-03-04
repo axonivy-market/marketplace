@@ -45,3 +45,7 @@ td {
     background-color: #ff6868;
   }
 }
+
+::ng-deep .custom-tooltip-class .tooltip-inner {
+  font-size: 1.4rem;
+}
