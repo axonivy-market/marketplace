@@ -23,8 +23,9 @@ interface ParsedLog {
   icon: string;
 }
 
-const LOG_LINE_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>\w+)\s+(?<message>.*(?:\n(?!\d{4}-\d{2}-\d{2}).*)*)/m;
+const LOG_HEADER_REGEX =
+  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s[\d:]{8})\s+(?<level>\w+)\s+(?<firstMessage>.*)$/;
+const LOG_TIMESTAMP_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s/;
 const LONG_MESSAGE_THRESHOLD = 150;
 
 @Component({
@@ -76,10 +77,18 @@ export class LogViewerComponent {
   }
 
   private parseLog(logLine: string): ParsedLog {
-    // Format: 2026-01-20 00:29:45 INFO  logger - message
-    const match = LOG_LINE_REGEX.exec(logLine);
+    const [firstLine, ...remainingLines] = logLine.split('\n');
+    const match = LOG_HEADER_REGEX.exec(firstLine);
     if (match?.groups) {
-      const { timestamp, level, message } = match.groups;
+      const { timestamp, level, firstMessage } = match.groups;
+      const messageLines = [firstMessage];
+      for (const line of remainingLines) {
+        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) {
+          break;
+        }
+        messageLines.push(line);
+      }
+      const message = messageLines.join('\n');
       const trimmedLevel = level.trim();
       const { prefix, content } = this.extractMessageParts(message);
       return {
@@ -219,17 +228,16 @@ export class LogViewerComponent {
 
   getLogLevelColor(level: string): string {
     const colors: { [key: string]: string } = {
-      DEBUG: '#ffffff', // White
-      INFO: '#7ed957', // Green
-      WARN: '#ffd966', // Yellow
-      ERROR: '#ffb6c1', // Pink
-      FATAL: '#ff6464' // Red
+      DEBUG: '#ffffff',
+      INFO: '#7ed957',
+      WARN: '#ffd966',
+      ERROR: '#ffb6c1',
+      FATAL: '#ff6464'
     };
     return colors[level] || '#ffffff';
   }
 
   private extractDateFromFilename(filename: string): string {
-    // Extract date from filename format: application.2026-02-12.log.gz
     const dateRegex = /(\d{4}-\d{2}-\d{2})/;
     const match = dateRegex.exec(filename);
     return match ? match[1] : '';

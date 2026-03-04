@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,16 +51,15 @@ public class LogServiceImpl implements LogService {
       log.debug("Empty or null date provided, returning empty list");
       return Collections.emptyList();
     }
-    List<LogFileModel> allLogs = getCachedLogFiles();
     LocalDate parsedDate;
     try {
       parsedDate = LocalDate.parse(date);
-    } catch (Exception e) {
+    } catch (DateTimeParseException e) {
       log.warn("Failed to parse date: {}", date);
       return Collections.emptyList();
     }
     boolean isToday = parsedDate.equals(LocalDate.now());
-    return allLogs.stream()
+    return getCachedLogFiles().stream()
         .filter(logFile -> isToday 
             ? (date.equals(logFile.getDate()) || logFile.getFileName().endsWith(LOG_EXTENSION))
             : date.equals(logFile.getDate()))
