@@ -126,8 +126,10 @@ export class AdminDashboardService {
     releaseLetterCriteria: ReleaseLetterCriteria,
     pageId: string = LoadingComponentId.NEWS_PAGE
   ): Observable<ReleaseLetterListApiResponse> {
+    const ts = Date.now().toString();
     let params = new HttpParams();
     let url = '';
+    params = params.set(RequestParam.TIMESTAMP, ts);
 
     if (releaseLetterCriteria.nextPageHref) {
       url = releaseLetterCriteria.nextPageHref;
