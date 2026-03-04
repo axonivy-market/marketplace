@@ -12,5 +12,7 @@ export enum RequestParam {
   SORT_DIRECTION = 'sortDirection',
   RESET_SYNC = 'resetSync',
   MARKET_ITEM_PATH = 'marketItemPath',
-  OVERRIDE_MARKET_ITEM_PATH = 'overrideMarketItemPath'
+  OVERRIDE_MARKET_ITEM_PATH = 'overrideMarketItemPath',
+  IS_READ_ONLY = 'isReadOnly',
+  TIMESTAMP = 'ts'
 }

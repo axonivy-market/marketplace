@@ -20,7 +20,7 @@
             [ngClass]="{
                 'text-primary': isMobileMode() || routerActive.isActive,
                 'text-secondary': !isMobileMode() && !routerActive.isActive,
-                active: isHomePage || routerActive.isActive }"
+                active: routerActive.isActive }"
             aria-current="page"
             [routerLink]="item.link" >
               {{ item.label | translate }}

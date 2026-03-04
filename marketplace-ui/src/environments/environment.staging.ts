@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: '/marketplace-service',
+  apiUrl: '/app',
   apiInternalUrl: '',
   githubOAuthAppClientId: '',
   githubOAuthCallback: '/auth/github/callback',
