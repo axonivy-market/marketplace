@@ -10,6 +10,7 @@ import { LogService } from '../log.service';
 import { of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { LogFileModel } from '../../../shared/models/apis/log-file-response.model';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('LogViewerComponent', () => {
   let component: LogViewerComponent;
@@ -32,7 +33,7 @@ describe('LogViewerComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [LogViewerComponent],
+      imports: [LogViewerComponent, TranslateModule.forRoot()],
       providers: [
         { provide: LogStreamService, useValue: logStreamServiceMock },
         { provide: LogService, useValue: logServiceMock }
@@ -193,8 +194,13 @@ describe('LogViewerComponent', () => {
       component.selectedDate.set('2026-02-12');
       component.clearDateFilter();
 
-      expect(component.selectedDate()).toBe('');
-      expect(logServiceMock.getLogFiles).toHaveBeenCalledWith('');
+      const today = new Date();
+      const expectedDate = `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+      ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      expect(component.selectedDate()).toBe(expectedDate);
+      expect(logServiceMock.getLogFiles).toHaveBeenCalledWith(expectedDate);
     });
 
     it('should trigger log file download', () => {

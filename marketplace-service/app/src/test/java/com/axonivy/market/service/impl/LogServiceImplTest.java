@@ -109,13 +109,15 @@ class LogServiceImplTest {
     Files.createFile(otherDateLog);
     List<LogFileModel> result = logService.listGzLogNamesByDate(todayString);
     assertNotNull(result, "Result should not be null");
-    assertEquals(2, result.size(), "Should contain 2 files: .log with today's date and uncompressed .log");
+    assertEquals(4, result.size(), "Should contain all .log files and today's dated files");
     assertTrue(result.stream().anyMatch(log -> ("application." + todayString + ".log").equals(log.getFileName())), 
         "Should include .log with today's date");
     assertTrue(result.stream().anyMatch(log -> "application.log".equals(log.getFileName())), 
         "Should include uncompressed .log");
-    assertFalse(result.stream().anyMatch(log -> "application." + todayString + ".log.gz".equals(log.getFileName())), 
-        "Should NOT include .gz files");
+    assertTrue(result.stream().anyMatch(log -> ("application." + todayString + ".log.gz").equals(log.getFileName())), 
+      "Should include .gz with today's date");
+    assertTrue(result.stream().anyMatch(log -> "application.2026-02-20.log".equals(log.getFileName())), 
+      "Should include .log files from other dates");
   }
 
   @Test
