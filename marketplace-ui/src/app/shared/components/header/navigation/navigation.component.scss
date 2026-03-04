@@ -15,7 +15,7 @@
 }
 
 .nav-link.active {
-  font-weight: 600; // Semi Bold
+  font-weight: 600;
 }
 
 .active-line {
@@ -58,16 +58,5 @@
     line-height: 140%;
     font-weight: 600;
     font-size: 1.8rem;
-  }
-
-  .nav-link.active {
-    height: 45px;
-    padding: 10px 15px 10px -15px;
-    gap: 0px;
-    border-radius: 5px;
-    opacity: 0px;
-    font-weight: 600;
-    transition: none;
-    background-color: var(--ivy-secondary-bg);
   }
 }

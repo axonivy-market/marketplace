@@ -3,8 +3,10 @@ package com.axonivy.market.exceptions;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
+import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -13,6 +15,7 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +25,29 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class MarketExceptionHandler {
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException exception) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(exception.getDetailMessageCode());
+    errorMessage.setMessageDetails(exception.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(MarketException.class)
+  public ResponseEntity<Object> handleAMarketException(MarketException marketException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(marketException.getCode());
+    errorMessage.setMessageDetails(marketException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(AlreadyExistedException.class)
+  public ResponseEntity<Object> handleAlreadyExistedException(AlreadyExistedException alreadyExistedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(alreadyExistedException.getCode());
+    errorMessage.setMessageDetails(alreadyExistedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
 
   @ExceptionHandler(MissingHeaderException.class)
   public ResponseEntity<Object> handleMissingServletRequestParameter(Throwable missingHeaderException) {
