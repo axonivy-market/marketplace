@@ -26,3 +26,9 @@ export interface MonitoringCriteria {
   workflowType: string | null;
   pageable: Pageable;
 }
+
+export interface ReleaseLetterCriteria {
+  pageable?: Pageable;
+  isReadOnly?: boolean;
+  nextPageHref?: string;
+}
