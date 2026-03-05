@@ -49,6 +49,11 @@ public class OAuth2Controller {
     System.out.println(token);
     AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(
         token.get(GitHubConstants.Json.TOKEN));
+
+    if (adminLoginResponse == null || ObjectUtils.isEmpty(adminLoginResponse.token())) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
     return ResponseEntity.ok(adminLoginResponse);
   }
 

@@ -62,7 +62,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
     }
 
-    GithubUser gitHubUser = gitHubService.validateUserInOrganizationAndTeam2(token,
+    GithubUser gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
