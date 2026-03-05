@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
 @ExtendWith(MockitoExtension.class)
 class MarketExceptionHandlerTest {
 
@@ -132,5 +134,68 @@ class MarketExceptionHandlerTest {
     assertEquals(HttpStatus.ACCEPTED, responseEntity.getStatusCode(),
         "Expected HTTP 202 ACCEPTED");
     assertNotNull(responseEntity.getBody(), "Response body should not be null");
+  }
+
+  @Test
+  void testHandleMarketException() {
+    MarketException exception = mock(MarketException.class);
+
+    when(exception.getCode()).thenReturn("ERR_001");
+    when(exception.getMessage()).thenReturn("Sprint cannot be blank");
+
+    ResponseEntity<Object> response = exceptionHandler.handleAMarketException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for MarketException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for MarketException");
+
+    assertEquals("ERR_001", body.getHelpCode(), "Help code in response does not match exception code");
+    assertEquals("Sprint cannot be blank", body.getMessageDetails(),
+        "Message details in response do not match exception message");
+  }
+
+  @Test
+  void testHandleValidationExceptions() {
+    MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+
+    when(exception.getDetailMessageCode()).thenReturn("VALIDATION_ERROR");
+    when(exception.getMessage()).thenReturn("Field 'sprint' must not be blank");
+
+    ResponseEntity<Object> response = exceptionHandler.handleValidationExceptions(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "Expected HTTP 400 BAD_REQUEST for validation exception");
+
+    assertNotNull(response.getBody(), "Response body must not be null");
+
+    Message body = (Message) response.getBody();
+
+    assertEquals("VALIDATION_ERROR", body.getHelpCode(),
+        "Help code should match exception detail message code");
+    assertEquals("Field 'sprint' must not be blank", body.getMessageDetails(),
+        "Message details should match exception message");
+  }
+
+  @Test
+  void testHandleAlreadyExistedException() {
+    AlreadyExistedException exception = mock(AlreadyExistedException.class);
+
+    when(exception.getCode()).thenReturn("ERR_409");
+    when(exception.getMessage()).thenReturn("Release letter already exists");
+
+    ResponseEntity<Object> response = exceptionHandler.handleAlreadyExistedException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for AlreadyExistedException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for AlreadyExistedException");
+
+    assertEquals("ERR_409", body.getHelpCode(),
+        "Help code in response does not match AlreadyExistedException code");
+    assertEquals("Release letter already exists", body.getMessageDetails(),
+        "Message details in response do not match AlreadyExistedException message");
   }
 }

@@ -13,6 +13,9 @@ import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-ap
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
+import { NewsComponent } from './modules/news/news.component';
+import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
+import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -53,34 +56,48 @@ export const routes: Routes = [
     children: [
       {
         path: 'security-monitor',
-        component: SecurityMonitorComponent,
-        canActivate: [AdminAuthGuard]
+        component: SecurityMonitorComponent
       },
       {
         path: 'feedback-approval',
-        component: FeedbackApprovalComponent,
-        canActivate: [AdminAuthGuard]
+        component: FeedbackApprovalComponent
       },
       {
         path: 'sorting',
-        component: CustomSortComponent,
-        canActivate: [AdminAuthGuard]
+        component: CustomSortComponent
       },
       {
         path: 'quick-access',
-        component: QuickAccessComponent,
-        canActivate: [AdminAuthGuard]
+        component: QuickAccessComponent
+      },
+      {
+        path: 'news-management',
+        component: NewsManagementComponent
+      },
+      {
+        path: 'news-management/:id/edit',
+        component: ReleaseLetterEditComponent
+      },
+      {
+        path: 'news-management/create',
+        component: ReleaseLetterEditComponent
       }
     ]
   },
   {
     path: 'monitoring/:repo/:workflow',
-    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
+    loadComponent: () =>
+      import('./modules/monitor/repo-report/repo-report.component').then(
+        m => m.RepoReportComponent
+      )
   },
-
   {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
+  },
+  {
+    path: 'news',
+    component: NewsComponent
   },
 
   // Product route (dynamic)
@@ -96,8 +113,7 @@ export const routes: Routes = [
   // Home module (static root)
   {
     path: '',
-    loadChildren: () =>
-      import('./modules/home/home.routes').then(m => m.routes)
+    loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
 
   // Wildcard route for unmatched paths (404)
