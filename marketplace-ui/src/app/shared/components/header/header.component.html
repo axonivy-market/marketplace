@@ -1,4 +1,4 @@
-<nav class="header-container navbar navbar-expand-xl">
+<nav class="navbar navbar-expand-xl">
   <div class="container-fluid">
     <a routerLink="/" class="logo navbar-brand">
       <img
@@ -8,9 +8,9 @@
             ? '/assets/images/misc/axonivy-logo.svg'
             : '/assets/images/misc/axonivy-logo-black.svg'
         "
-        alt="Axon Ivy"/>
+        alt="Axon Ivy" />
     </a>
-    <button
+    <!-- <button
       class="btn border-0 navbar-toggler rounded-3"
       data-bs-toggle="collapse"
       aria-expanded="false"
@@ -21,14 +21,28 @@
           [ngClass]="isMobileMenuCollapsed() ? 'bi bi-list' : 'bi bi-x-lg'"
           (click)="onCollapsedMobileMenu()"></i>
       </span>
-    </button>
-
+    </button> -->
+    <div class="d-flex gap-2">
+      <app-github-user-badge class="d-block d-xl-none"></app-github-user-badge>
+      <button
+        class="btn border-0 navbar-toggler rounded-3"
+        data-bs-toggle="collapse"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span>
+          <i
+            class="header__menu-button"
+            [ngClass]="isMobileMenuCollapsed() ? 'bi bi-list' : 'bi bi-x-lg'"
+            (click)="onCollapsedMobileMenu()"></i>
+        </span>
+      </button>
+    </div>
     <div
       class="collapse navbar-collapse"
       [ngClass]="{ show: !isMobileMenuCollapsed() }"
       id="navbarSupportedContent">
       <div
-        class="header__navbar-content d-flex flex-column flex-xl-row justify-content-between w-100 min-height-100 align-items-md-start align-items-xl-center flex-1">
+        class="header__navbar-content d-flex flex-column flex-xl-row justify-content-between w-100 min-height-100 align-items-md-start align-items-xl-center">
         <div class="d-none d-xl-block"></div>
         <app-navigation [isAdminPage]="isAdminRoute" />
         <app-search-bar></app-search-bar>
