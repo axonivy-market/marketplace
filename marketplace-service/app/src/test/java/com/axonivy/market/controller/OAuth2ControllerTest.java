@@ -2,6 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.OAuth2Service;
 
@@ -24,7 +26,6 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
-
   private static final String JWT_TOKEN = "sampleJwtToken";
 
   @Mock
@@ -60,7 +61,10 @@ class OAuth2ControllerTest {
 
   @Test
   void testRequestAccessSuccess() {
-    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(JWT_TOKEN);
+    var mockUser = getMockGithubUser();
+    var mockResponse = new AdminLoginResponse(JWT_TOKEN, mockUser);
+
+    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(mockResponse);
     ResponseEntity<?> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
 
     assertEquals(200, response.getStatusCode().value(),
@@ -85,5 +89,15 @@ class OAuth2ControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when authorization code is validated.");
+  }
+
+  private GithubUser getMockGithubUser() {
+    var mockUser = new GithubUser();
+    mockUser.setUrl("https://github.com/mockuser");
+    mockUser.setName("mockUser");
+    mockUser.setUsername("mockUser");
+    mockUser.setAvatarUrl("https://avatar.url");
+
+    return mockUser;
   }
 }

@@ -1,15 +1,15 @@
-import { Inject, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Observable } from 'rxjs';
+import { GitHubUser } from '../../auth/auth.service';
+import { ForwardingError } from '../../core/interceptors/api.interceptor';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
+import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
   BEARER
 } from '../../shared/constants/common.constant';
-import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { API_URI } from '../../shared/constants/api.constant';
-import { ForwardingError } from '../../core/interceptors/api.interceptor';
-import { GitHubUser } from '../../auth/auth.service';
-import { isPlatformBrowser } from '@angular/common';
 
 export interface JwtDTO {
   token: string;

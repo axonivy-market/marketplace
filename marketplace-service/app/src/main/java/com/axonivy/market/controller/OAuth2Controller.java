@@ -44,16 +44,10 @@ public class OAuth2Controller {
     return responseJWTData(jwt);
   }
 
-//  @PostMapping(GITHUB_REQUEST_ACCESS)
-//  public ResponseEntity<Map<String, String>> requestAccess(@RequestBody Map<String, String> token) {
-//    String jwt = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
-//    return responseJWTData(jwt);
-//  }
-
   @PostMapping(GITHUB_REQUEST_ACCESS)
   public ResponseEntity<AdminLoginResponse> requestAccess(@RequestBody Map<String, String> token) {
     System.out.println(token);
-    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT2(
+    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(
         token.get(GitHubConstants.Json.TOKEN));
     return ResponseEntity.ok(adminLoginResponse);
   }

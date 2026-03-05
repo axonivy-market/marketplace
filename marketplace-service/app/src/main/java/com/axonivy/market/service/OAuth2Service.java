@@ -9,7 +9,5 @@ public interface OAuth2Service {
 
   String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode);
 
-  String validateTokenAndGenerateJWT(String authorizationHeader);
-
-  AdminLoginResponse validateTokenAndGenerateJWT2(String authorizationHeader);
+  AdminLoginResponse validateTokenAndGenerateJWT(String authorizationHeader);
 }

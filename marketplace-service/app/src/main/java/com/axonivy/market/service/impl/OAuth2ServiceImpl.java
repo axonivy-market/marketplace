@@ -53,22 +53,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   }
 
   @Override
-  public String validateTokenAndGenerateJWT(String token) {
-    if (ObjectUtils.isEmpty(token)) {
-      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
-    }
-    token = token.trim();
-    if (!StandardCharsets.US_ASCII.newEncoder().canEncode(token)) {
-      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
-    }
-    gitHubService.validateUserInOrganizationAndTeam(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    return jwtService.generateJWTFromGitHubToken(token);
-  }
-
-  @Override
-  public AdminLoginResponse validateTokenAndGenerateJWT2(String token) {
+  public AdminLoginResponse validateTokenAndGenerateJWT(String token) {
     if (ObjectUtils.isEmpty(token)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
     }
