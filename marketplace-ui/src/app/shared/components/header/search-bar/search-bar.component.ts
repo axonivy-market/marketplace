@@ -13,7 +13,6 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { SEARCH_URL } from '../../../constants/common.constant';
 import { FormsModule } from '@angular/forms';
 import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
-import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-search-bar',

@@ -13,13 +13,9 @@
     text-decoration: none;
   }
 
-  button {
+  .dropdown-item {
     &:active {
-      // background-color: transparent;
+      background: none !important;
     }
   }
-}
-
-.user-badge-container {
-
 }

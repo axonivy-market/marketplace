@@ -1,41 +1,38 @@
 <div
-  class="navbar-nav navbar-nav--right mr-auto flex-lg-row flex-column-reverse align-items-lg-center align-items-sm-stretch header__action">
-  <div
-    class="google-search-container text-primary google-search-svg-primary"
-    [ngStyle]="{ display: isGoogleSearchBarDisplayed() ? 'block' : 'none' }">
-    <div class="gcse-search"></div>
-  </div>
+  class="google-search-container text-primary google-search-svg-primary"
+  [ngStyle]="{ display: isGoogleSearchBarDisplayed() ? 'block' : 'none' }">
+  <div class="gcse-search"></div>
+</div>
+<ul
+  class="navbar-nav header__action d-flex flex-row-reverse flex-xl-row justify-content-between border-top-md-gray header__button align-items-lg-center align-items-center">
   @if (isGoogleSearchBarDisplayed() == false) {
     <!-- Language Selection -->
-    <ul
-      class="d-flex flex-row-reverse flex-lg-row border-top-md-gray header__button justify-content-center align-items-center">
-      <li class="header__button--right">
-        <app-language-selection></app-language-selection>
-      </li>
+    <li class="header__button--right">
+      <app-language-selection></app-language-selection>
+    </li>
 
-      <!-- Theme Mode -->
-      <li class="header__button--right">
-        <app-theme-selection></app-theme-selection>
-      </li>
+    <!-- Theme Mode -->
+    <li class="header__button--right">
+      <app-theme-selection></app-theme-selection>
+    </li>
 
-      <!-- Collapse Search -->
-      <li class="d-none d-lg-flex header__button--right">
-        @if (isGoogleSearchBarDisplayed()) {
-          <div
-            class="google-search-container text-primary google-search-svg-primary">
-            <div class="gcse-search"></div>
-          </div>
-        } @else {
-          <li class="d-flex search-icon">
-            <i
-              class="bi bi-search header__search-button"
-              (click)="onClickSearchIcon()"></i>
-          </li>
-        }
-      </li>
-      <li>
-        <app-github-user-badge></app-github-user-badge>
-      </li>
-    </ul>
+    <!-- Collapse Search -->
+    <li class="d-none d-lg-flex header__button--right">
+      @if (isGoogleSearchBarDisplayed()) {
+        <div
+          class="google-search-container text-primary google-search-svg-primary">
+          <div class="gcse-search"></div>
+        </div>
+      } @else {
+        <div class="search-icon">
+          <i
+            class="bi bi-search header__search-button"
+            (click)="onClickSearchIcon()"></i>
+        </div>
+      }
+    </li>
+    <li class="d-none d-xl-block">
+      <app-github-user-badge></app-github-user-badge>
+    </li>
   }
-</div>
+</ul>
