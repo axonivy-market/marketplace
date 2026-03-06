@@ -452,7 +452,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   scrollToTop(): void {
-    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
   getContent(value: string): boolean {
@@ -588,7 +588,7 @@ export class ProductDetailComponent implements AfterViewInit {
   keepCurrentTabScroll(tabId: string) {
     const pos = this.scrollPositions[tabId] ?? 0;
     if (pos > 0) {
-      setTimeout(() => window.scrollTo({ top: pos, behavior: 'instant' }), 0);
+      setTimeout(() => globalThis.scrollTo({ top: pos, behavior: 'instant' }), 0);
     }
   }
 
@@ -620,7 +620,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   checkMediaSize(): void {
-    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const mediaQuery = globalThis.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.isMobileMode.set(true);
     } else {
