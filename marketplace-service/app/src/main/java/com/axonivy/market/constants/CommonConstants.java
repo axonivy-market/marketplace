@@ -21,6 +21,8 @@ public class CommonConstants {
   public static final int PAGE_SIZE_20 = 20;
   public static final int ZERO = 0;
   public static final String ZIP_EXTENSION = ".zip";
+  public static final String GZ_EXTENSION = ".gz";
+  public static final String LOG_EXTENSION = ".log";
   public static final String INDEX_HTML = "index.html";
   public static final String SAFE_PATH_REGEX = "^[a-zA-Z0-9._-]+$";
   public static final String IVY_HEADER = "ivy";

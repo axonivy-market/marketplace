@@ -58,6 +58,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     link: '/internal-dashboard/quick-access'
   },
   {
+    label: 'common.nav.logs',
+    link: '/internal-dashboard/logs'
+  },
+  {
     label: 'common.nav.newsManagement',
     link: '/internal-dashboard/news-management'
   }
