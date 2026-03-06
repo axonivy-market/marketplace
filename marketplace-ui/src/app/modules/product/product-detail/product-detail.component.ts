@@ -151,6 +151,7 @@ export class ProductDetailComponent implements AfterViewInit {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
+    this.getReadmeContent();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -177,12 +178,12 @@ export class ProductDetailComponent implements AfterViewInit {
 
   @HostListener('window:popstate')
   onPopState() {
-    const fragment = window.location.hash.replace('#', '');
+    const fragment = globalThis.location.hash.replace('#', '');
     const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
 
     if (tabValue !== this.activeTab) {
       if (this.activeTab) {
-        this.scrollPositions[this.activeTab] = window.scrollY;
+        this.scrollPositions[this.activeTab] = globalThis.scrollY;
       }
 
       this.activeTab = tabValue;
@@ -198,7 +199,7 @@ export class ProductDetailComponent implements AfterViewInit {
       this.updateDropdownSelection();
       setTimeout(() => {
         const savedScroll = this.scrollPositions[tabValue] ?? 0;
-        window.scrollTo({ top: savedScroll, behavior: 'instant' });
+        globalThis.scrollTo({ top: savedScroll, behavior: 'instant' });
       }, 0);
     }
   }
@@ -505,35 +506,35 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   setActiveTab(tab: string, updateUrl = true): void {
-
     if (!this.isDataLoaded) {
       return;
     }
 
-    const isFirstTime = !this.initialFragmentHandled;
-    if (isFirstTime) {
-      updateUrl = false;
-      this.initialFragmentHandled = true;
-      this.router.navigate([], {
-        fragment: tab || DEFAULT_ACTIVE_TAB,
-        queryParamsHandling: 'preserve',
-        replaceUrl: true
-      });
-      this.activeTab = tab;
-      this.scrollToTop();
-
-      const savedTab = {
-        productId: this.productDetail().id,
-        savedActiveTab: this.activeTab
-      };
-      localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
-
-      if (tab === 'changelog') {
-        setTimeout(() => this.setupIntersectionObserver(), 100);
-      }
+    if (!this.initialFragmentHandled) {
+      this.handleFirstTabActivation(tab);
       return;
     }
 
+    this.handleSubsequentTabActivation(tab, updateUrl);
+  }
+
+  private handleFirstTabActivation(tab: string): void {
+    this.initialFragmentHandled = true;
+    this.router.navigate([], {
+      fragment: tab || DEFAULT_ACTIVE_TAB,
+      queryParamsHandling: 'preserve',
+      replaceUrl: true
+    });
+    this.activeTab = tab;
+    this.scrollToTop();
+    this.saveActiveTab();
+
+    if (tab === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver(), 100);
+    }
+  }
+
+  private handleSubsequentTabActivation(tab: string, updateUrl: boolean): void {
     const currentFragment = this.route.snapshot.fragment;
 
     if (updateUrl && currentFragment !== tab) {
@@ -545,25 +546,30 @@ export class ProductDetailComponent implements AfterViewInit {
     }
 
     if (this.activeTab && this.activeTab !== tab) {
-      this.scrollPositions[this.activeTab] = window.scrollY;
+      this.scrollPositions[this.activeTab] = globalThis.scrollY;
     }
 
     this.activeTab = tab;
+
     if (tab in this.scrollPositions) {
       this.keepCurrentTabScroll(tab);
     } else {
       this.scrollToTop();
     }
 
+    this.saveActiveTab();
+
+    if (tab === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver());
+    }
+  }
+
+  private saveActiveTab(): void {
     const savedTab = {
       productId: this.productDetail().id,
       savedActiveTab: this.activeTab
     };
-
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
-    if (tab === 'changelog') {
-      setTimeout(() => this.setupIntersectionObserver());
-    }
   }
 
   getSelectedTabLabel(): string {
@@ -763,9 +769,7 @@ export class ProductDetailComponent implements AfterViewInit {
         if (fragment) {
           const shouldUpdateUrl = this.initialFragmentHandled;
           this.setActiveTab(tabValue, shouldUpdateUrl);
-        } else if (!this.initialFragmentHandled) {
-          this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
-        } else {
+        } else if (this.initialFragmentHandled) {
           const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
           const currentFragment = this.route.snapshot.fragment;
           if (currentFragment !== currentTab) {
@@ -775,6 +779,8 @@ export class ProductDetailComponent implements AfterViewInit {
               replaceUrl: true
             });
           }
+        } else {
+          this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
         }
       })
     );
