@@ -215,6 +215,7 @@ describe('ProductDetailComponent', () => {
     if ((window.scrollTo as any).calls) {
       (window.scrollTo as jasmine.Spy).and.callThrough();
     }
+    history.pushState(null, '', window.location.pathname);
   });
 
   it('should create', () => {
@@ -745,8 +746,8 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'matchMedia').and.returnValue({
       matches: true,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: () => { },
+      removeEventListener: () => { },
       onchange: null,
       addListener: function (
         callback:
@@ -773,8 +774,8 @@ describe('ProductDetailComponent', () => {
     (window.matchMedia as jasmine.Spy).and.returnValue({
       matches: false,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {}
+      addEventListener: () => { },
+      removeEventListener: () => { }
     });
 
     component.checkMediaSize();
@@ -814,7 +815,7 @@ describe('ProductDetailComponent', () => {
     );
   });
 
- it('should call handleProductDetailOnInit when version is empty', () => {
+  it('should call handleProductDetailOnInit when version is empty', () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.snapshot.queryParamMap = convertToParamMap({ version: '' });
 
@@ -826,7 +827,7 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
 
     expect(spy).toHaveBeenCalled();
- });
+  });
 
   it('should return CUSTOM_SOLUTION as action type when productDetail.sourceUrl is undefined', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
@@ -1556,7 +1557,7 @@ describe('ProductDetailComponent', () => {
       ];
       observerCallback(mockEntries, mockObserver);
       expect(component.loadChangelogs).not.toHaveBeenCalled();
-    });  
+    });
 
     it('should handle multiple entries in intersection callback', () => {
       // Arrange
@@ -1645,4 +1646,146 @@ describe('ProductDetailComponent', () => {
       expect(component.loadChangelogs).toHaveBeenCalled();
     });
   });
+
+  // Test onPopState
+  it('should handle popstate event and update activeTab', () => {
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+    component.activeTab = 'description';
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+    history.pushState(null, '', '#demo');
+
+    component.onPopState();
+
+    expect(component.activeTab).toBe('demo');
+  });
+
+  it('should not update activeTab if tabValue equals activeTab on popstate', () => {
+    component.activeTab = 'description';
+
+    history.pushState(null, '', '#description');
+
+    component.onPopState();
+
+    expect(component.activeTab).toBe('description');
+  });
+
+  it('should save scroll position of previous tab on popstate', () => {
+    (component as any).isDataLoaded = true;
+    component.activeTab = 'description';
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    history.pushState(null, '', '#demo');
+
+    Object.defineProperty(globalThis, 'scrollY', {
+      value: 300,
+      configurable: true,
+      writable: true
+    });
+
+    component.onPopState();
+
+    expect(component['scrollPositions']['description']).toBe(300);
+  });
+
+  it('should save activeTab to localStorage when productDetail has id on popstate', () => {
+    (component as any).isDataLoaded = true;
+    component.activeTab = 'description';
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    history.pushState(null, '', '#demo');
+
+    spyOn(localStorage, 'setItem');
+
+    component.onPopState();
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      'activeTab',
+      jasmine.stringContaining('demo')
+    );
+  });
+
+  // Test handleFirstTabActivation
+  it('should navigate with DEFAULT_ACTIVE_TAB when tab is empty in handleFirstTabActivation', () => {
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = false;
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    component.setActiveTab('');
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(
+      [],
+      jasmine.objectContaining({
+        fragment: 'description' // DEFAULT_ACTIVE_TAB
+      })
+    );
+  });
+
+  // Test handleSubsequentTabActivation - changelog
+  it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', fakeAsync(() => {
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    spyOn(component, 'setupIntersectionObserver');
+
+    component.setActiveTab('changelog');
+    tick();
+
+    expect(component.setupIntersectionObserver).toHaveBeenCalled();
+  }));
+
+  // Test navigateToProductDetailsWithTabFragment
+  it('should navigate to currentTab when initialFragmentHandled is true and fragment is null', fakeAsync(() => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of(null);
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+    component.activeTab = 'demo';
+
+    component.navigateToProductDetailsWithTabFragment();
+    tick();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(
+      [],
+      jasmine.objectContaining({
+        fragment: 'demo',
+        replaceUrl: true
+      })
+    );
+  }));
+
+  it('should call setActiveTab with DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of(null);
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = false;
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    const spy = spyOn(component, 'setActiveTab').and.callThrough();
+
+    component.navigateToProductDetailsWithTabFragment();
+    tick();
+
+    expect(spy).toHaveBeenCalledWith('description', false);
+  }));
+
+  it('should not navigate if currentFragment already equals currentTab', fakeAsync(() => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of(null);
+    activatedRoute.snapshot.fragment = 'demo';
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+    component.activeTab = 'demo';
+
+    mockRouter.navigate.calls.reset();
+
+    component.navigateToProductDetailsWithTabFragment();
+    tick();
+
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  }));
 });
