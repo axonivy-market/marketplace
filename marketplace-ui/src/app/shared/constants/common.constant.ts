@@ -363,6 +363,7 @@ export const UTF8 = 'utf8';
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
 export const ADMIN_SESSION_TOKEN = 'admin-session-token';
+export const GITHUB_USER = 'github-user';
 
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 

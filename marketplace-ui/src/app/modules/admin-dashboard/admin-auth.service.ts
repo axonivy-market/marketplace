@@ -8,7 +8,8 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
-  BEARER
+  BEARER,
+  GITHUB_USER
 } from '../../shared/constants/common.constant';
 
 export interface JwtDTO {
@@ -25,27 +26,29 @@ export class AdminAuthService {
   private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      const user = this.loadFromSession();
-      if (user) {
-        this._adminInfo.set(user);
-      }
+    if(this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) == null) {
+      this.logout();
+    }
+
+    const user = this.loadFromSession();
+    if (user) {
+      this._adminInfo.set(user);
     }
   }
 
   loadFromSession(): GitHubUser | null {
-    const stored = sessionStorage.getItem('GITHUB_USER');
+    const stored = this.storageRef.session?.getItem(GITHUB_USER);
     return stored ? JSON.parse(stored) : null;
   }
 
   setUser(user: GitHubUser) {
-    sessionStorage.setItem('GITHUB_USER', JSON.stringify(user));
+    this.storageRef.session?.setItem(GITHUB_USER, JSON.stringify(user));
     this._adminInfo.set(user);
   }
 
   logout() {
-    sessionStorage.removeItem('GITHUB_USER');
-    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
+    this.storageRef.session?.removeItem(GITHUB_USER);
+    this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
     this._adminInfo.set(null);
   }
 
