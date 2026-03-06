@@ -46,6 +46,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
@@ -282,19 +283,6 @@ class GitHubServiceImplTest {
         "Expected exception errorDescription field to match the GitHub response error description");
   }
 
-//  @Test
-//  void testValidateUserInOrganizationAndTeamValid() throws Exception {
-//    String accessToken = "validToken";
-//    String organization = "testOrg";
-//    String team = "devTeam";
-//
-//    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
-//
-//    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
-//
-//    gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
-//  }
-
   @Test
   void testValidateUserInOrganizationAndTeamValid() throws Exception {
     String accessToken = "validToken";
@@ -324,7 +312,7 @@ class GitHubServiceImplTest {
       @Override
       public URL getHtmlUrl() {
         try {
-          return new URL("https://github.com/test-user");
+          return URI.create("https://github.com/tan").toURL();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -1016,15 +1004,5 @@ class GitHubServiceImplTest {
         "Returned InputStream should contain exactly the bytes provided by the artifact download callback.");
 
     verify(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
-  }
-
-  private GithubUser getMockGithubUser() {
-    var mockUser = new GithubUser();
-    mockUser.setUrl("https://github.com/mockuser");
-    mockUser.setName("mockUser");
-    mockUser.setUsername("mockUser");
-    mockUser.setAvatarUrl("https://avatar.url");
-
-    return mockUser;
   }
 }
