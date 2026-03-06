@@ -141,6 +141,10 @@ export class AdminDashboardService {
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }
     }
+    
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
         context: new HttpContext().set(LoadingComponent, pageId),
@@ -156,17 +160,20 @@ export class AdminDashboardService {
   }
 
   getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }
 
-  createReleaseLetter(
-    releaseLetterRequest: ReleaseLetter
-  ): Observable<void> {
+  createReleaseLetter(releaseLetterRequest: ReleaseLetter): Observable<void> {
     return this.http.post<void>(
       `${API_URI.RELEASE_LETTERS}`,
       releaseLetterRequest,
@@ -192,20 +199,22 @@ export class AdminDashboardService {
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }
 
   deleteReleaseLetterById(id: string): Observable<void> {
-    return this.http.delete<void>(
-      `${API_URI.RELEASE_LETTERS}/${id}`,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
+    return this.http.delete<void>(`${API_URI.RELEASE_LETTERS}/${id}`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 }

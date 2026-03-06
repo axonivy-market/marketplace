@@ -27,10 +27,14 @@ describe('AdminDashboardService', () => {
   let httpMock: HttpTestingController;
   let adminAuthService: jasmine.SpyObj<AdminAuthService>;
 
-  const mockAuthHeaders = new HttpHeaders({ 'Authorization': 'Bearer test-token' });
+  const mockAuthHeaders = new HttpHeaders({
+    Authorization: 'Bearer test-token'
+  });
 
   beforeEach(() => {
-    adminAuthService = jasmine.createSpyObj('AdminAuthService', ['getAuthHeaders']);
+    adminAuthService = jasmine.createSpyObj('AdminAuthService', [
+      'getAuthHeaders'
+    ]);
     adminAuthService.getAuthHeaders.and.returnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({
@@ -65,9 +69,10 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync` && 
-        request.params.get(RequestParam.RESET_SYNC) === 'true'
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.PRODUCT}/sync` &&
+          request.params.get(RequestParam.RESET_SYNC) === 'true'
       );
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
@@ -80,14 +85,18 @@ describe('AdminDashboardService', () => {
         triggeredAt: '2024-01-01T00:00:00Z'
       };
 
-      service.syncOneProduct('product-2', '/market/path2', true).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
+      service
+        .syncOneProduct('product-2', '/market/path2', true)
+        .subscribe(response => {
+          expect(response).toEqual(mockResponse);
+        });
 
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync/product-2` &&
-        request.params.get(RequestParam.MARKET_ITEM_PATH) === '/market/path2' &&
-        request.params.get(RequestParam.OVERRIDE_MARKET_ITEM_PATH) === 'true'
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.PRODUCT}/sync/product-2` &&
+          request.params.get(RequestParam.MARKET_ITEM_PATH) ===
+            '/market/path2' &&
+          request.params.get(RequestParam.OVERRIDE_MARKET_ITEM_PATH) === 'true'
       );
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
@@ -98,9 +107,13 @@ describe('AdminDashboardService', () => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
+      );
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       req.flush(null);
     });
 
@@ -113,7 +126,9 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_GITHUB_MONITOR);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       expect(req.request.responseType).toBe('text');
       req.flush(mockResponse);
     });
@@ -139,7 +154,9 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_TASK_EXECUTION);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       req.flush(mockExecutions);
     });
 
@@ -150,9 +167,13 @@ describe('AdminDashboardService', () => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
+      );
       expect(req.request.method).toBe('POST');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       expect(req.request.body).toEqual({
         orderedListOfProducts: orderedList,
         ruleForRemainder: 'alphabetically'
@@ -164,11 +185,15 @@ describe('AdminDashboardService', () => {
       const orderedList = ['product-1', 'product-2'];
       const remainderRule = 'custom-rule';
 
-      service.sortMarketExtensions(orderedList, remainderRule).subscribe(response => {
-        expect(response).toBeNull();
-      });
+      service
+        .sortMarketExtensions(orderedList, remainderRule)
+        .subscribe(response => {
+          expect(response).toBeNull();
+        });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
+      );
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({
         orderedListOfProducts: orderedList,
@@ -248,10 +273,12 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne('/api/release-letters?page=1&size=5');
+      const req = httpMock.expectOne(
+        req => req.url === '/api/release-letters?page=1&size=5'
+      );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.params.keys().length).toBe(0);
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush(mockResponse);
     });
@@ -262,8 +289,11 @@ describe('AdminDashboardService', () => {
 
       service.getReleaseLetters(criteria, customPageId).subscribe();
 
-      const req = httpMock.expectOne(API_URI.RELEASE_LETTERS);
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.RELEASE_LETTERS
+      );
 
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
       expect(req.request.context.get(LoadingComponent)).toBe(customPageId);
 
       req.flush({} as ReleaseLetterListApiResponse);
@@ -276,7 +306,11 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual({} as ReleaseLetterListApiResponse);
       });
 
-      const req = httpMock.expectOne(API_URI.RELEASE_LETTERS);
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.RELEASE_LETTERS
+      );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush('Error', { status: 500, statusText: 'Server Error' });
     });
@@ -303,12 +337,15 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(API_URI.ACTIVE_RELEASE_LETTERS);
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.ACTIVE_RELEASE_LETTERS
+      );
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('Authorization')).toBe(
         'Bearer test-token'
       );
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush(mockResponse);
     });
@@ -394,13 +431,15 @@ describe('AdminDashboardService', () => {
       });
 
       const req = httpMock.expectOne(
-        `${API_URI.RELEASE_LETTERS}/${id}`
+        req => req.url === `${API_URI.RELEASE_LETTERS}/${id}`
       );
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('Authorization')).toBe(
         'Bearer test-token'
       );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush(mockResponse);
     });
@@ -414,9 +453,7 @@ describe('AdminDashboardService', () => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(
-        `${API_URI.RELEASE_LETTERS}/${id}`
-      );
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
 
       expect(req.request.method).toBe('DELETE');
       expect(req.request.headers.get('Authorization')).toBe(
