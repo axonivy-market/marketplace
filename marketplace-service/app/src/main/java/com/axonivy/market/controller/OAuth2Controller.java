@@ -46,9 +46,7 @@ public class OAuth2Controller {
 
   @PostMapping(GITHUB_REQUEST_ACCESS)
   public ResponseEntity<AdminLoginResponse> requestAccess(@RequestBody Map<String, String> token) {
-    System.out.println(token);
-    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(
-        token.get(GitHubConstants.Json.TOKEN));
+    var adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
 
     if (adminLoginResponse == null || ObjectUtils.isEmpty(adminLoginResponse.token())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

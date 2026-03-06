@@ -184,7 +184,7 @@ public class GitHubServiceImpl implements GitHubService {
       var gitHub = getGitHub(accessToken);
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
         GHMyself myself = gitHub.getMyself();
-        GithubUser githubUser = new GithubUser();
+        var githubUser = new GithubUser();
         githubUser.setGitHubId(String.valueOf(myself.getId()));
         githubUser.setName(myself.getName());
         githubUser.setUsername(myself.getLogin());

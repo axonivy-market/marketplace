@@ -23,6 +23,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -91,7 +92,7 @@ class MonitorDashBoardControllerTest {
       @Override
       public URL getHtmlUrl() {
         try {
-          return new URL("https://github.com/test-user");
+          return URI.create("https://github.com/tan").toURL();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -137,7 +138,7 @@ class MonitorDashBoardControllerTest {
       @Override
       public URL getHtmlUrl() {
         try {
-          return new URL("https://github.com/test-user");
+          return URI.create("https://github.com/tan").toURL();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -182,7 +183,7 @@ class MonitorDashBoardControllerTest {
       @Override
       public URL getHtmlUrl() {
         try {
-          return new URL("https://github.com/test-user");
+          return URI.create("https://github.com/tan").toURL();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

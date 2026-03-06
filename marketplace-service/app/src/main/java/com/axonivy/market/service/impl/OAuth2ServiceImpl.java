@@ -1,31 +1,22 @@
 package com.axonivy.market.service.impl;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import com.axonivy.market.constants.ErrorMessageConstants;
-import com.axonivy.market.core.enums.ErrorCode;
-import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
-import com.axonivy.market.model.AdminLoginResponse;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
-import org.kohsuke.github.GHMyself;
-import org.kohsuke.github.GitHub;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.OAuth2Service;
-
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -62,7 +53,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
     }
 
-    GithubUser gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
+    var gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
