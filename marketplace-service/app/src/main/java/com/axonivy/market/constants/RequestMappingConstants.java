@@ -52,10 +52,13 @@ public class RequestMappingConstants {
   public static final String FEEDBACK_APPROVAL = "/approval";
   public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
   public static final String SYNC_TASK_EXECUTION = API + "/sync-task-execution";
+  public static final String LOGS = API + "/logs";
   public static final String REPOS = "repos";
   public static final String REPOS_REPORT = "/{productId}/{workflow}";
   public static final String WORKFLOW = "workflow";
   public static final String FOCUSED = "focus";
   public static final String ERROR_PAGE_404 = "/error-page/404";
+  public static final String DOWNLOAD_LOG_ARTIFACT = "/download";
+  public static final String LOG_STREAM = "/stream";
   public static final String RELEASE_LETTER = API + "/release-letters";
 }

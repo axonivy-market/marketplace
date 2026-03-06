@@ -13,6 +13,7 @@ import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-ap
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
+import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
 import { NewsComponent } from './modules/news/news.component';
 import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
 import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
@@ -81,6 +82,11 @@ export const routes: Routes = [
       {
         path: 'news-management/create',
         component: ReleaseLetterEditComponent
+      },
+      {
+        path: 'logs',
+        component: LogViewerComponent,
+        canActivate: [AdminAuthGuard]
       }
     ]
   },
