@@ -4,10 +4,12 @@ import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -94,7 +96,7 @@ public class CoreVersionUtils {
     return getBestMatchVersion(versions, designerVersion, true);
   }
 
-    public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
+  public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
     if (CollectionUtils.isEmpty(versions)) {
       return null;
     }
@@ -118,5 +120,17 @@ public class CoreVersionUtils {
           CollectionUtils.firstElement(versions));
     }
     return bestMatchVersion;
+  }
+
+
+  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    List<String> installableVersions = new ArrayList<>();
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return installableVersions;
+    }
+    metadataList.stream().filter(
+        metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
+        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
 }

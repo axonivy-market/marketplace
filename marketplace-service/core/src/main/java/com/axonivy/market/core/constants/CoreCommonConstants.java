@@ -9,6 +9,7 @@ public class CoreCommonConstants {
   public static final String DOT_SEPARATOR = ".";
   public static final String DASH_SEPARATOR = "-";
   public static final String COMMA = ",";
+  public static final String IMAGE_ID_PREFIX = "imageId-";
   public static final String DIGIT_REGEX = "([0-9]+.*)";
   public static final String DEFAULT_DATE_TIME = "1900-01-01 00:00:00";
   public static final String LIKE_PATTERN = "%%%s%%";

@@ -5,7 +5,7 @@ import com.axonivy.market.core.repository.CoreCustomProductRepository;
 
 import java.util.List;
 
-public interface CustomProductRepository extends CoreCustomProductRepository {
+public interface CustomProductRepository {
   Product getProductByIdAndVersion(String id, String version);
 
   Product findProductByIdAndRelatedData(String id);

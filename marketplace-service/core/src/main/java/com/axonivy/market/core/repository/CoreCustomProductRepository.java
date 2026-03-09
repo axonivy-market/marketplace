@@ -9,4 +9,6 @@ public interface CoreCustomProductRepository {
   Page<Product> searchByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 
   Product findByCriteria(ProductSearchCriteria criteria);
+
+  Product getProductByIdAndVersion(String id, String version);
 }
