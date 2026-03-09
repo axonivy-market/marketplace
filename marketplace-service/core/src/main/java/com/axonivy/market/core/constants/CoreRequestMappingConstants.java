@@ -12,4 +12,5 @@ public class CoreRequestMappingConstants {
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";
   public static final String PRODUCT_DETAILS = API + "/product-details";
+  public static final String PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION = "/{id}/{version}/json";
 }

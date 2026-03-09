@@ -1,9 +1,11 @@
 package com.axonivy.market.core.service.impl;
 
 import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.controller.CoreProductDetailsController;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -16,10 +18,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +91,26 @@ public class CoreVersionServiceImpl implements CoreVersionService {
         coreMetadataRepository.findByProductId(productId)).stream().dropWhile(
         version -> !CoreVersionUtils.isReleasedVersion(version)).toList();
     return CollectionUtils.firstElement(releasedVersions);
+  }
+
+  @Override
+  public List<VersionAndUrlModel> getInstallableVersions(String productId,
+      Boolean isShowDevVersion, String designerVersion) {
+    List<String> releasedVersions =
+        CoreVersionUtils.getInstallableVersionsFromMetadataList(coreMetadataRepository.findByProductId(productId));
+    if (CollectionUtils.isEmpty(releasedVersions)) {
+      return Collections.emptyList();
+    }
+
+    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
+    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
+      var link = linkTo(
+          methodOn(CoreProductDetailsController.class).findProductJsonContent(productId, version,
+              designerVersion)).withSelfRel();
+      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+      versionAndUrlList.add(versionAndUrlModel);
+    }
+    return versionAndUrlList;
   }
 
   protected List<MavenArtifactVersion> filterArtifactByVersion(List<MavenArtifactVersion> mavenArtifactVersions,

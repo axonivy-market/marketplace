@@ -1,16 +1,21 @@
-package com.axonivy.market.core.controller;
+package com.axonivy.market.stable.controller;
 
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.*;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.DESIGNER_VERSION;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
-import com.axonivy.market.core.model.ProductDetailModel;
-import com.axonivy.market.core.service.CoreProductService;
-import com.axonivy.market.core.service.CoreVersionService;
+import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
+
+import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.AllArgsConstructor;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,18 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import java.util.Map;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
-@Tag(name = "Product Detail Controllers", description = "API collection to get product's detail.")
-public class CoreProductDetailsController {
-  private final CoreVersionService coreVersionService;
-  private final CoreProductService coreProductService;
+public class ProductDetailsController {
+  private final VersionService versionService;
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
   @Operation(summary = "Find best match product detail by product id and version.",
@@ -40,7 +40,7 @@ public class CoreProductDetailsController {
           in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
-    var productDetail = coreProductService.fetchBestMatchProductDetail(id, version);
+    var productDetail = productService.fetchBestMatchProductDetail(id, version);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     var findProductJsonLink = methodOn(this.getClass()).findProductJsonContent(id,
         productDetail.getBestMatchVersion(), version);
@@ -51,13 +51,14 @@ public class CoreProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
+  @TrackApiCallFromNeo
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version,
       @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    Map<String, Object> productJsonContent = coreVersionService.getProductJsonContentByIdAndVersion(productId, version,
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,
         designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }

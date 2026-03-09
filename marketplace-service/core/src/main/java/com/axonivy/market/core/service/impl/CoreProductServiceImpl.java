@@ -8,12 +8,15 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.core.service.CoreProductMarketplaceDataService;
 import com.axonivy.market.core.service.CoreProductService;
+import com.axonivy.market.core.service.CoreVersionService;
+import com.axonivy.market.core.utils.CoreMavenUtils;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -40,6 +43,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   private final CoreProductMarketplaceDataService coreProductMarketplaceDataService;
   private final CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository;
   private final CoreProductJsonContentRepository coreProductJsonContentRepo;
+  private final CoreVersionService coreVersionService;
 
   /**
    * @deprecated This method is deprecated and will be no longer use in future release.
@@ -111,7 +115,19 @@ public class CoreProductServiceImpl implements CoreProductService {
     var product = coreProductRepo.getProductByIdAndVersion(id, version);
     coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
         ProductJsonContent::getContent).findFirst().ifPresent(
-        jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
+        jsonContent -> product.setMavenDropins(CoreMavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
     return product;
+  }
+
+  /**
+   * Retrieve the list containing all installable released versions and
+   * split the versions to obtain the first prefix,then format them for compatibility range.
+   * ex: 11.0+ , 10.0 - 12.0+ , ...
+   */
+  private String getCompatibilityRange(String productId, Boolean isDeprecatedProduct) {
+    return Optional.of(coreVersionService.getInstallableVersions(productId, false, null))
+        .filter(ObjectUtils::isNotEmpty)
+        .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
+        .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 }
