@@ -14,7 +14,8 @@ describe('RuntimeConfigService', () => {
     githubApiUrl: 'https://test.api.github.com',
     dayInMiliseconds: 86400000,
     matomoSiteId: 999,
-    matomoTrackerUrl: '//test.tracker.com'
+    matomoTrackerUrl: '//test.tracker.com',
+    siblingNodeAppIp: '/test-ip'
   };
 
   beforeEach(() => {
