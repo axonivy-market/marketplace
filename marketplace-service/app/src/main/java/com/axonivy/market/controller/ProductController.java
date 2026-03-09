@@ -36,9 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -88,10 +86,10 @@ public class ProductController {
     return ResponseEntity.ok(pageResources);
   }
 
-  @GetMapping(PRODUCT_ID)
+  @GetMapping(IDS)
   @Operation(summary = "Get the list of product ID", description = "Return all product IDs")
   public ResponseEntity<List<String>> getAllProductIds() {
-    List<String> productIds = productService.getProductIdList();
+    List<String> productIds = productService.getProductIds();
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 

@@ -7,11 +7,11 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -69,11 +69,6 @@ class ProductControllerTest extends BaseSetup {
   @Mock
   private ProductDependencyService productDependencyService;
 
-  @BeforeEach
-  void setup() {
-    assembler = new ProductModelAssembler();
-  }
-
   @Test
   void testFindProductsAsEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
@@ -95,8 +90,13 @@ class ProductControllerTest extends BaseSetup {
 
     Page<Product> mockProducts = new PageImpl<>(List.of(mockProduct), pageable, 1);
     when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
-    assembler = new ProductModelAssembler();
-    var mockProductModel = assembler.toModel(mockProduct);
+        var mockProductModel = new ProductModel();
+        mockProductModel.setId(mockProduct.getId());
+        mockProductModel.setNames(mockProduct.getNames());
+        mockProductModel.setShortDescriptions(mockProduct.getShortDescriptions());
+        mockProductModel.setType(mockProduct.getType());
+        mockProductModel.setTags(mockProduct.getTags());
+        mockProductModel.setMarketDirectory(mockProduct.getMarketDirectory());
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
     var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", false, pageable);
@@ -180,7 +180,7 @@ class ProductControllerTest extends BaseSetup {
     @Test
     void testGetAllProductIds() {
       List<String> productIds = List.of("a-trust", "amazon-comprehend");
-      when(service.getProductIdList()).thenReturn(productIds);
+      when(service.getProductIds()).thenReturn(productIds);
 
       var response = productController.getAllProductIds();
 
@@ -189,7 +189,7 @@ class ProductControllerTest extends BaseSetup {
       assertTrue(response.hasBody(),
           "Response body should not be null or empty when getProductIdList succeeds");
       assertEquals(productIds, response.getBody(), "Expected response body to match product ID list");
-      verify(service, times(1)).getProductIdList();
+      verify(service, times(1)).getProductIds();
     }
 
   private Product createProductMock() {

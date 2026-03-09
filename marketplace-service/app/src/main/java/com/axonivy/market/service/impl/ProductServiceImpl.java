@@ -774,7 +774,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  public List<String> getProductIdList() {
-    return this.productRepo.findAll().stream().map(Product::getId).sorted().toList();
+  public List<String> getProductIds() {
+    return productRepo.findAllIds();
   }
 }

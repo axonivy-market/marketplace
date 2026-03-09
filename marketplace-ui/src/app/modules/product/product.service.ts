@@ -177,7 +177,7 @@ export class ProductService {
   }
 
   fetchAllProductIds(): Observable<string[]> {
-    return this.httpClient.get<string[]>(`${API_URI.PRODUCT_ID}`);
+    return this.httpClient.get<string[]>(`${API_URI.IDS}`);
   }
 
   fetchAllProductsForSync(

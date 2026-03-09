@@ -444,7 +444,7 @@ describe('ProductService', () => {
     it('should request all product ids', async () => {
       const resultPromise = firstValueFrom(service.fetchAllProductIds());
 
-      const req = httpMock.expectOne(request => request.url === API_URI.PRODUCT_ID);
+      const req = httpMock.expectOne(request => request.url === API_URI.IDS);
       expect(req.request.method).toBe('GET');
       req.flush(['product-1']);
 
