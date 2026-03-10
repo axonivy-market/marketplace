@@ -43,7 +43,7 @@ import org.springframework.util.CollectionUtils;
 @RequiredArgsConstructor
 public class CoreProductServiceImpl implements CoreProductService {
   private final CoreProductRepository coreProductRepo;
-  private final CoreMetadataRepository metadataRepo;
+  private final CoreMetadataRepository coreMetadataRepo;
   private final CoreProductMarketplaceDataService coreProductMarketplaceDataService;
   private final CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository;
   private final CoreProductJsonContentRepository coreProductJsonContentRepo;
@@ -78,7 +78,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
     List<String> installableVersions = CoreVersionUtils.getInstallableVersionsFromMetadataList(
-        metadataRepo.findByProductId(id));
+        coreMetadataRepo.findByProductId(id));
     String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file
     Product product;

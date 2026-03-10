@@ -1,7 +1,5 @@
 package com.axonivy.market.stable.constants;
 
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

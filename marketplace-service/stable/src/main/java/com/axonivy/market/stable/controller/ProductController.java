@@ -46,7 +46,6 @@ public class ProductController {
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
-
   @GetMapping(PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in "

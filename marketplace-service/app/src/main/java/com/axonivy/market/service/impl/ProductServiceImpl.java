@@ -10,18 +10,24 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.core.entity.ProductModuleContent;
-import com.axonivy.market.core.enums.DocumentField;
-import com.axonivy.market.core.enums.ErrorCode;
-import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.repository.CoreProductRepository;
-import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
-import com.axonivy.market.core.utils.CoreVersionUtils;
-import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.DocumentField;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.repository.CoreGithubRepository;
+import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
+import com.axonivy.market.core.repository.CoreMetadataRepository;
+import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
+import com.axonivy.market.core.repository.CoreProductRepository;
+import com.axonivy.market.core.service.CoreProductMarketplaceDataService;
+import com.axonivy.market.core.service.CoreVersionService;
+import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
+import com.axonivy.market.core.utils.CoreVersionUtils;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SyncTaskType;
@@ -76,9 +82,18 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static com.axonivy.market.constants.MavenConstants.*;
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE;
+import static com.axonivy.market.constants.MavenConstants.PRODUCT_ARTIFACT_POSTFIX;
 import static com.axonivy.market.core.constants.CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -110,7 +125,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(CoreProductRepository coreProductRepo, ProductRepository productRepo,
+  public ProductServiceImpl(CoreProductRepository coreProductRepo, CoreMetadataRepository coreMetadataRepo,
+      CoreProductMarketplaceDataService coreProductMarketplaceDataService,
+      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository,
+      CoreProductJsonContentRepository coreProductJsonContentRepo, CoreGithubRepository coreGithubRepository,
+      CoreVersionService coreVersionService,
+      ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepo,
       GitHubService gitHubService, MetadataRepository metadataRepo, ProductJsonContentRepository productJsonContentRepo,
@@ -120,7 +140,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
       VersionService versionService, GithubRepoRepository githubRepo) {
-    super(coreProductRepo);
+    super(coreProductRepo, coreMetadataRepo, coreProductMarketplaceDataService, coreMavenArtifactVersionRepository,
+        coreProductJsonContentRepo, coreGithubRepository, coreVersionService);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -213,7 +234,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     groupGitHubFiles.forEach((String key, List<GitHubFile> value) ->
-      value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)))
+        value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)))
     );
 
     return syncedProductIds.stream().toList();
@@ -497,7 +518,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse((List<String> releasedVersion) -> {},
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse((List<String> releasedVersion) -> {
+        },
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -758,7 +780,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
