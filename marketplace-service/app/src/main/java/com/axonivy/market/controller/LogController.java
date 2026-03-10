@@ -29,6 +29,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 @RequestMapping(LOGS)
 @Tag(name = "Log Viewer API", description = "API to list and view compressed log files")
 public class LogController {
+  private static final String STREAM_STARTED_MESSAGE = "[INFO] Log stream connected";
   private final LogService logService;
 
   @GetMapping
@@ -55,10 +56,12 @@ public class LogController {
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
   public Flux<ServerSentEvent<String>> stream() {
+    Flux<ServerSentEvent<String>> streamStarted = Flux.just(
+        ServerSentEvent.<String>builder().event("info").data(STREAM_STARTED_MESSAGE).build());
     Flux<ServerSentEvent<String>> logEvents = LogStreamRegistry.asFlux()
         .map(logLine -> ServerSentEvent.builder(logLine).build());
     Flux<ServerSentEvent<String>> heartbeats = Flux.interval(Duration.ofSeconds(20))
         .map(tick -> ServerSentEvent.<String>builder().comment("keep-alive").build());
-    return Flux.merge(logEvents, heartbeats);
+    return Flux.concat(streamStarted, Flux.merge(logEvents, heartbeats));
   }
 }

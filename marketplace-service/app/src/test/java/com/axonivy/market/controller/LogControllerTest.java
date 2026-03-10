@@ -160,10 +160,11 @@ class LogControllerTest {
       assertNotNull(result, "Stream result should not be null");
       List<String> collected = result
           .flatMap(event -> event.data() == null ? Flux.empty() : Flux.just(event.data()))
-          .take(logLines.size())
+          .take(logLines.size() + 1)
           .collectList()
           .block();
-      assertEquals(3, collected.size(), "Collected list should contain 3 log lines");
+      assertEquals(4, collected.size(), "Collected list should contain start message plus 3 log lines");
+      assertEquals("[INFO] Log stream connected", collected.get(0), "First event should indicate stream start");
       assertTrue(collected.containsAll(logLines), "Collected list should contain all expected log lines");
     }
   }
