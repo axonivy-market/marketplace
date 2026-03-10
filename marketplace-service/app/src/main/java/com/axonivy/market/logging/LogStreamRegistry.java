@@ -2,9 +2,12 @@ package com.axonivy.market.logging;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.util.concurrent.Queues;
 
 public final class LogStreamRegistry {
-  private static final Sinks.Many<String> SINK = Sinks.many().multicast().onBackpressureBuffer();
+  // Keep sink active after last subscriber disconnects so clients can reconnect later.
+  private static final Sinks.Many<String> SINK =
+      Sinks.many().multicast().onBackpressureBuffer(Queues.SMALL_BUFFER_SIZE, false);
 
   private LogStreamRegistry() {}
 

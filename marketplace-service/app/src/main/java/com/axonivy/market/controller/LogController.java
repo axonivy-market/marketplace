@@ -6,7 +6,10 @@ import com.axonivy.market.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.log4j.Log4j2;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +28,11 @@ import java.util.List;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @RestController
+@Log4j2
 @RequiredArgsConstructor
 @RequestMapping(LOGS)
 @Tag(name = "Log Viewer API", description = "API to list and view compressed log files")
 public class LogController {
-  private static final String STREAM_STARTED_MESSAGE = "[INFO] Log stream connected";
   private final LogService logService;
 
   @GetMapping
@@ -55,13 +58,26 @@ public class LogController {
 
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
-  public Flux<ServerSentEvent<String>> stream() {
-    Flux<ServerSentEvent<String>> streamStarted = Flux.just(
-        ServerSentEvent.<String>builder().event("info").data(STREAM_STARTED_MESSAGE).build());
-    Flux<ServerSentEvent<String>> logEvents = LogStreamRegistry.asFlux()
-        .map(logLine -> ServerSentEvent.builder(logLine).build());
-    Flux<ServerSentEvent<String>> heartbeats = Flux.interval(Duration.ofSeconds(20))
-        .map(tick -> ServerSentEvent.<String>builder().comment("keep-alive").build());
-    return Flux.concat(streamStarted, Flux.merge(logEvents, heartbeats));
+  public Flux<String> stream(HttpServletRequest request) {
+    String requesterIp = resolveRequesterIp(request);
+    return LogStreamRegistry.asFlux()
+        .doOnSubscribe(subscription -> log.info("Log stream client connected from IP: {}", requesterIp))
+        .doOnCancel(() -> log.info("Log stream client disconnected from IP: {}", requesterIp))
+        .onErrorResume(error -> {
+          log.error("Error in log stream for IP {}: {}", requesterIp, error.getMessage(), error);
+          return Flux.empty();
+        });
+  }
+
+  private String resolveRequesterIp(HttpServletRequest request) {
+    String forwardedFor = request.getHeader("X-Forwarded-For");
+    if (StringUtils.isNotBlank(forwardedFor)) {
+      return forwardedFor.split(",")[0].trim();
+    }
+    String realIp = request.getHeader("X-Real-IP");
+    if (StringUtils.isNotBlank(realIp)) {
+      return realIp;
+    }
+    return request.getRemoteAddr();
   }
 }
