@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
@@ -47,10 +48,11 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   public VersionServiceImpl(CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
-      CoreMetadataRepository coreMetadataRepository, ProductJsonContentRepository productJsonRepo,
+      CoreMetadataRepository coreMetadataRepository,
+      ProductJsonLinkBuilder productJsonLinkBuilder, ProductJsonContentRepository productJsonRepo,
       ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo) {
-    super(productJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository);
+    super(productJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository, productJsonLinkBuilder);
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.metadataRepo = metadataRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
@@ -66,25 +68,25 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     return result;
   }
 
-  @Override
-  public List<VersionAndUrlModel> getInstallableVersions(String productId,
-      Boolean isShowDevVersion, String designerVersion) {
-    List<String> releasedVersions =
-        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
-    if (CollectionUtils.isEmpty(releasedVersions)) {
-      return Collections.emptyList();
-    }
-
-    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-      var link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
-              designerVersion)).withSelfRel();
-      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
-      versionAndUrlList.add(versionAndUrlModel);
-    }
-    return versionAndUrlList;
-  }
+//  @Override
+//  public List<VersionAndUrlModel> getInstallableVersions(String productId,
+//      Boolean isShowDevVersion, String designerVersion) {
+//    List<String> releasedVersions =
+//        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
+//    if (CollectionUtils.isEmpty(releasedVersions)) {
+//      return Collections.emptyList();
+//    }
+//
+//    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
+//    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
+//      var link = linkTo(
+//          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
+//              designerVersion)).withSelfRel();
+//      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+//      versionAndUrlList.add(versionAndUrlModel);
+//    }
+//    return versionAndUrlList;
+//  }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
     String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));

@@ -10,10 +10,10 @@ import static com.axonivy.market.constants.RequestParamConstants.VERSION;
 
 import com.axonivy.market.core.controller.CoreProductDetailsController;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
@@ -54,30 +54,17 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 @Tag(name = "Product Detail Controllers", description = "API collection to get product's detail.")
-public class ProductDetailsController extends CoreProductDetailsController {
+public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
   private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
   private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
-
-  public ProductDetailsController(CoreVersionService coreVersionService, VersionService versionService,
-      ProductService productService,
-      ProductContentService productContentService, ProductDetailModelAssembler detailModelAssembler,
-      GithubReleaseModelAssembler githubReleaseModelAssembler,
-      PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler) {
-    super(coreVersionService);
-    this.versionService = versionService;
-    this.productService = productService;
-    this.productContentService = productContentService;
-    this.detailModelAssembler = detailModelAssembler;
-    this.githubReleaseModelAssembler = githubReleaseModelAssembler;
-    this.pagedResourcesAssembler = pagedResourcesAssembler;
-  }
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -167,18 +154,18 @@ public class ProductDetailsController extends CoreProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-//  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-//  @TrackApiCallFromNeo
-//  @Operation(summary = "Get product json content for designer to install",
-//      description = "When we click install in designer, this API will send content of product json for installing in " +
-//          "Ivy designer")
-//  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-//      @PathVariable(VERSION) String version,
-//      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-//    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,
-//        designerVersion);
-//    return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
-//  }
+  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
+  @TrackApiCallFromNeo
+  @Operation(summary = "Get product json content for designer to install",
+      description = "When we click install in designer, this API will send content of product json for installing in " +
+          "Ivy designer")
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
+      @PathVariable(VERSION) String version,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,
+        designerVersion);
+    return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
+  }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product",

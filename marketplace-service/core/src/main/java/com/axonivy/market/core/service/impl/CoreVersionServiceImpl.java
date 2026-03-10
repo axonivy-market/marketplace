@@ -1,5 +1,6 @@
 package com.axonivy.market.core.service.impl;
 
+import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.controller.CoreProductDetailsController;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -42,6 +43,7 @@ public class CoreVersionServiceImpl implements CoreVersionService {
   private final CoreProductJsonContentRepository coreProductJsonRepo;
   protected final CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo;
   private final CoreMetadataRepository coreMetadataRepository;
+  private final ProductJsonLinkBuilder productJsonLinkBuilder;
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
@@ -104,11 +106,19 @@ public class CoreVersionServiceImpl implements CoreVersionService {
 
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-      var link = linkTo(
-          methodOn(CoreProductDetailsController.class).findProductJsonContent(productId, version,
-              designerVersion)).withSelfRel();
-      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
-      versionAndUrlList.add(versionAndUrlModel);
+//      var link = linkTo(
+//          methodOn(CoreProductDetailsController.class).findProductJsonContent(productId, version,
+//              designerVersion)).withSelfRel();
+//      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+//      versionAndUrlList.add(versionAndUrlModel);
+
+      String url = productJsonLinkBuilder.buildProductJsonUrl(
+          productId,
+          version,
+          designerVersion
+      );
+
+      versionAndUrlList.add(new VersionAndUrlModel(version, url));
     }
     return versionAndUrlList;
   }
