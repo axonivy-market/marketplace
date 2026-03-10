@@ -520,11 +520,7 @@ export class ProductDetailComponent implements AfterViewInit {
 
   private handleFirstTabActivation(tab: string): void {
     this.initialFragmentHandled = true;
-    this.router.navigate([], {
-      fragment: tab || DEFAULT_ACTIVE_TAB,
-      queryParamsHandling: 'preserve',
-      replaceUrl: true
-    });
+    this.navigateToFragment(tab || DEFAULT_ACTIVE_TAB);
     this.activeTab = tab;
     this.scrollToTop();
     this.saveActiveTab();
@@ -538,11 +534,7 @@ export class ProductDetailComponent implements AfterViewInit {
     const currentFragment = this.route.snapshot.fragment;
 
     if (updateUrl && currentFragment !== tab) {
-      this.router.navigate([], {
-        fragment: tab,
-        queryParamsHandling: 'preserve',
-        replaceUrl: true
-      });
+      this.navigateToFragment(tab);
     }
 
     if (this.activeTab && this.activeTab !== tab) {
@@ -773,17 +765,21 @@ export class ProductDetailComponent implements AfterViewInit {
           const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
           const currentFragment = this.route.snapshot.fragment;
           if (currentFragment !== currentTab) {
-            this.router.navigate([], {
-              fragment: currentTab,
-              queryParamsHandling: 'preserve',
-              replaceUrl: true
-            });
+            this.navigateToFragment(currentTab);
           }
         } else {
           this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
         }
       })
     );
+  }
+
+  private navigateToFragment(fragment: string): void {
+    this.router.navigate([], {
+      fragment,
+      queryParamsHandling: 'preserve',
+      replaceUrl: true
+    });
   }
 
   ngOnDestroy(): void {
