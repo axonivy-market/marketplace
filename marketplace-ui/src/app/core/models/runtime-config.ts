@@ -8,6 +8,7 @@ export interface RuntimeConfig {
   dayInMiliseconds: number;
   matomoSiteId: number;
   matomoTrackerUrl: string;
+  siblingNodeAppIp: string;
 }
 
 export const ENV_VAR_NAMES = {
@@ -17,7 +18,8 @@ export const ENV_VAR_NAMES = {
   MARKET_GITHUB_API_URL: 'MARKET_GITHUB_API_URL',
   MARKET_DAY_IN_MILLISECONDS: 'MARKET_DAY_IN_MILLISECONDS',
   MARKET_MATOMO_SITE_ID: 'MARKET_MATOMO_SITE_ID',
-  MARKET_MATOMO_TRACKER_URL: 'MARKET_MATOMO_TRACKER_URL'
+  MARKET_MATOMO_TRACKER_URL: 'MARKET_MATOMO_TRACKER_URL',
+  MARKET_SIBLING_NODE_APP_IP: 'MARKET_SIBLING_NODE_APP_IP'
 } as const;
 
 export const RUNTIME_CONFIG_KEYS = {
@@ -27,7 +29,8 @@ export const RUNTIME_CONFIG_KEYS = {
   MARKET_GITHUB_API_URL: 'githubApiUrl',
   MARKET_DAY_IN_MILLISECONDS: 'dayInMiliseconds',
   MARKET_MATOMO_SITE_ID: 'matomoSiteId',
-  MARKET_MATOMO_TRACKER_URL: 'matomoTrackerUrl'
+  MARKET_MATOMO_TRACKER_URL: 'matomoTrackerUrl',
+  MARKET_SIBLING_NODE_APP_IP: 'siblingNodeAppIp'
 } as const satisfies Record<string, keyof RuntimeConfig>;
 
 // TransferState Key for Runtime Configuration

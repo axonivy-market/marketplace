@@ -21,6 +21,7 @@ export const API_URI = {
   SECURITY_MONITOR: `${API}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
+  LOGS: `${API}/logs`,
   RELEASE_LETTERS: `${API}/release-letters`,
   ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`
 };

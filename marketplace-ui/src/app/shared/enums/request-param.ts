@@ -13,5 +13,6 @@ export enum RequestParam {
   RESET_SYNC = 'resetSync',
   MARKET_ITEM_PATH = 'marketItemPath',
   OVERRIDE_MARKET_ITEM_PATH = 'overrideMarketItemPath',
-  IS_READ_ONLY = 'isReadOnly'
+  IS_READ_ONLY = 'isReadOnly',
+  TIMESTAMP = 'ts'
 }
