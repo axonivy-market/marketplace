@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -52,7 +54,11 @@ public class LogController {
 
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
-  public Flux<String> stream() {
-    return LogStreamRegistry.asFlux();
+  public Flux<ServerSentEvent<String>> stream() {
+    Flux<ServerSentEvent<String>> logEvents = LogStreamRegistry.asFlux()
+        .map(logLine -> ServerSentEvent.builder(logLine).build());
+    Flux<ServerSentEvent<String>> heartbeats = Flux.interval(Duration.ofSeconds(20))
+        .map(tick -> ServerSentEvent.<String>builder().comment("keep-alive").build());
+    return Flux.merge(logEvents, heartbeats);
   }
 }
