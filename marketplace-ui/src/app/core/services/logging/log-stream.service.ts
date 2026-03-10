@@ -14,6 +14,8 @@ import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
+import { HttpParams } from '@angular/common/http';
+import { RequestParam } from '../../../shared/enums/request-param';
 
 @Injectable({
   providedIn: 'root'
@@ -46,8 +48,12 @@ export class LogStreamService {
     } else {
       baseUrl = this.apiInternalUrl || environment.apiInternalUrl;
     }
-
-    const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream`;
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+    const queryString = params.toString();
+    const querySuffix = queryString ? '?' + queryString : '';
+    const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream${querySuffix}`;
     this.eventSource = new EventSource(logsUrl);
 
     this.eventSource.onmessage = event => {
