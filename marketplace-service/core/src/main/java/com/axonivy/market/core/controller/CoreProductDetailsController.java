@@ -1,9 +1,5 @@
 package com.axonivy.market.core.controller;
 
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.DESIGNER_VERSION;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
