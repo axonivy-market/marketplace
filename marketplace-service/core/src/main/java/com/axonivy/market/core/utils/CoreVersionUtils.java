@@ -4,11 +4,16 @@ import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -94,7 +99,7 @@ public class CoreVersionUtils {
     return getBestMatchVersion(versions, designerVersion, true);
   }
 
-    public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
+  public static String getBestMatchVersion(List<String> versions, String designerVersion, Boolean allowDevVersion) {
     if (CollectionUtils.isEmpty(versions)) {
       return null;
     }
@@ -118,5 +123,42 @@ public class CoreVersionUtils {
           CollectionUtils.firstElement(versions));
     }
     return bestMatchVersion;
+  }
+
+  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    List<String> installableVersions = new ArrayList<>();
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return installableVersions;
+    }
+    metadataList.stream().filter(
+        metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
+        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
+  }
+
+  public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
+    String versionRangeSuffix = CoreCommonConstants.PLUS;
+    if (BooleanUtils.isTrue(isDeprecatedProduct)) {
+      versionRangeSuffix = EMPTY;
+    }
+    if (versions.size() == 1) {
+      return splitVersion(versions.get(0)).concat(versionRangeSuffix);
+    }
+    String maxVersion = splitVersion(versions.get(0)).concat(versionRangeSuffix);
+    String minVersion = splitVersion(versions.get(versions.size() - 1));
+    if (CoreVersionUtils.getPrefixOfVersion(minVersion).equals(CoreVersionUtils.getPrefixOfVersion(maxVersion))) {
+      return minVersion.concat(versionRangeSuffix);
+    }
+    return String.format(CoreCommonConstants.COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+  }
+
+  private static String splitVersion(String version) {
+    int firstDot = version.indexOf(DOT_SEPARATOR);
+    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
+    return version.substring(0, secondDot);
+  }
+
+  public static String getPrefixOfVersion(String version) {
+    return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 }

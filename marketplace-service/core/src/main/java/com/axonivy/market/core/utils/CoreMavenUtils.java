@@ -1,6 +1,7 @@
 package com.axonivy.market.core.utils;
 
 import com.axonivy.market.core.constants.CoreMavenConstants;
+import com.axonivy.market.core.constants.CoreProductJsonConstants;
 import com.axonivy.market.core.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,11 @@ public class CoreMavenUtils {
   public static boolean isProductMetadata(Metadata metadata) {
     return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
         CoreMavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+  }
+
+  public static boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
+    return jsonContent.contains(CoreProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
+        CoreProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
+        CoreProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
   }
 }

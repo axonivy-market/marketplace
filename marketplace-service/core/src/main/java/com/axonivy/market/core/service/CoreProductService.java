@@ -14,4 +14,6 @@ public interface CoreProductService {
   Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
 
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
+
+  Product fetchBestMatchProductDetail(String id, String version);
 }

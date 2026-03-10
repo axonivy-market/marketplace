@@ -14,4 +14,7 @@ public class CorePostgresDBConstants {
   public static final String FIRST_PUBLISHED_DATE = "firstPublishedDate";
   public static final String LISTED = "listed";
   public static final String TYPE = "type";
+  public static final String PRODUCT_SHORT_DESCRIPTION = "shortDescriptions";
+  public static final String PRODUCT_ARTIFACT = "artifacts";
+  public static final String SYNCHRONIZED_INSTALLATION_COUNT = "synchronizedInstallationCount";
 }
