@@ -51,9 +51,7 @@ export class LogStreamService {
     let params = new HttpParams();
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
-    const queryString = params.toString();
-    const querySuffix = queryString ? '?' + queryString : '';
-    const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream${querySuffix}`;
+    const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream?${params.toString()}`;
     this.eventSource = new EventSource(logsUrl);
 
     this.eventSource.onmessage = event => {
