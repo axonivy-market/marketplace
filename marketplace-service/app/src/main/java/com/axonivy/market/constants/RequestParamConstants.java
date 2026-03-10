@@ -17,4 +17,5 @@ public class RequestParamConstants {
   public static final String IS_FOCUSED = "isFocused";
   public static final String FILE = "file";
   public static final String CUSTOM_ID = "customId";
+  public static final String SPRINT = "sprint";
 }

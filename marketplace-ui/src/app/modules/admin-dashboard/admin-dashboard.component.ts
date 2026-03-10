@@ -1,8 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { EMPTY, finalize, Observable } from 'rxjs';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterModule
+} from '@angular/router';
+import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
@@ -27,12 +38,7 @@ import { AdminAuthService } from './admin-auth.service';
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -45,6 +51,9 @@ export class AdminDashboardComponent implements OnInit {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   authService = inject(AdminAuthService);
+  cdr = inject(ChangeDetectorRef);
+  router = inject(Router);
+  activatedRoute = inject(ActivatedRoute);
 
   isAuthenticated = false;
   errorMessage = '';
@@ -62,6 +71,20 @@ export class AdminDashboardComponent implements OnInit {
   overrideMarketItemPath = false;
   dropdownOpen = false;
 
+  onRouteActivate(): void {
+    queueMicrotask(() => {
+      this.showSyncTask = false;
+      this.cdr.markForCheck();
+    });
+  }
+
+  onRouteDeactivate(): void {
+    queueMicrotask(() => {
+      this.showSyncTask = true;
+      this.cdr.markForCheck();
+    });
+  }
+
   private readonly syncTaskTriggers: Record<
     SyncTaskKey,
     () => Observable<unknown>
@@ -75,15 +98,22 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExecutions();
+    this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.urlAfterRedirects === '/internal-dashboard') {
+          this.pageTitleService.setTitleOnLangChange(
+            'common.admin.sync.pageTitle'
+          );
+        }
+      });
   }
 
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
         this.applySyncTaskExecutions(executions);
-        this.pageTitleService.setTitleOnLangChange(
-          'common.admin.sync.pageTitle'
-        );
       },
       error: err => {
         this.handleAuthError(err);

@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 import { MonitoringRepoComponent } from './monitor-repo.component';
 import { Repository, TestResult } from '../github.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
@@ -83,11 +83,11 @@ describe('MonitoringRepoComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         MonitoringRepoComponent,
-        HttpClientTestingModule,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
       providers: [
+        provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
           useValue: {

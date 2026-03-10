@@ -20,7 +20,8 @@ function loadRuntimeConfigFromEnv(): RuntimeConfig {
     githubApiUrl: process.env[ENV_VAR_NAMES.MARKET_GITHUB_API_URL] || environment.githubApiUrl,
     dayInMiliseconds: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_DAY_IN_MILLISECONDS] || '', 10) || environment.dayInMiliseconds,
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,
-    matomoTrackerUrl: process.env[ENV_VAR_NAMES.MARKET_MATOMO_TRACKER_URL] || environment.matomoTrackerUrl
+    matomoTrackerUrl: process.env[ENV_VAR_NAMES.MARKET_MATOMO_TRACKER_URL] || environment.matomoTrackerUrl,
+    siblingNodeAppIp: process.env[ENV_VAR_NAMES.MARKET_SIBLING_NODE_APP_IP] || environment.siblingNodeAppIp
   };
 }
 

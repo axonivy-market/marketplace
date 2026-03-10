@@ -19,6 +19,8 @@ public class RequestMappingConstants {
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
+  public static final String BY_SPRINT = "/sprint/{sprint}";
+  public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_CUSTOM_ID = "/custom/{customId}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
@@ -51,9 +53,13 @@ public class RequestMappingConstants {
   public static final String FEEDBACK_APPROVAL = "/approval";
   public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
   public static final String SYNC_TASK_EXECUTION = API + "/sync-task-execution";
+  public static final String LOGS = API + "/logs";
   public static final String REPOS = "repos";
   public static final String REPOS_REPORT = "/{productId}/{workflow}";
   public static final String WORKFLOW = "workflow";
   public static final String FOCUSED = "focus";
   public static final String ERROR_PAGE_404 = "/error-page/404";
+  public static final String DOWNLOAD_LOG_ARTIFACT = "/download";
+  public static final String LOG_STREAM = "/stream";
+  public static final String RELEASE_LETTER = API + "/release-letters";
 }
