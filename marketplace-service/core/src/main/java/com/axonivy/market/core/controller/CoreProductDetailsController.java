@@ -1,9 +1,5 @@
 package com.axonivy.market.core.controller;
 
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
+
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 
 @AllArgsConstructor
 @Tag(name = "Product Detail Controllers", description = "API collection to get product's detail.")
