@@ -29,7 +29,7 @@ public interface ProductService {
 
   GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 
-  List<String> getProductIdList();
+  List<String> getProductIds();
 
   Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 

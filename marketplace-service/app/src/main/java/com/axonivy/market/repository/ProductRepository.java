@@ -16,4 +16,7 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
   @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions LEFT JOIN FETCH p" +
       ".artifacts a LEFT JOIN FETCH a.archivedArtifacts")
   List<Product> findAllProductsWithNamesAndShortDescriptions();
+
+  @Query("SELECT p.id FROM Product p ORDER BY p.id")
+  List<String> findAllIds();
 }

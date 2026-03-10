@@ -7,7 +7,6 @@ import {
   Renderer2,
   ViewEncapsulation
 } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -17,30 +16,31 @@ import {
   CdkDragEnd,
   CdkDragEnter,
   CdkDragPlaceholder,
-  CdkDragPreview,
   CdkDragStart,
   CdkDropList,
   moveItemInArray
 } from '@angular/cdk/drag-drop';
 import { ProductService } from '../../product/product.service';
-import { AdminDashboardService } from '../admin-dashboard.service';
+import { AdminDashboardService, CustomSortConfig } from '../admin-dashboard.service';
 import { finalize } from 'rxjs/operators';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.component';
 
 const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
+const MESSAGE_DISPLAY_TIME = 3000;
 @Component({
   selector: 'app-custom-sort',
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule,
     TranslateModule,
     CdkDrag,
     CdkDropList,
     CdkDragPlaceholder,
-    CdkDragPreview
+    CustomSortCardComponent
   ],
   templateUrl: './custom-sort.component.html',
   styleUrls: ['./custom-sort.component.scss'],
@@ -59,6 +59,7 @@ export class CustomSortComponent implements OnInit {
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
+  remainderRule: string = SortOption.ALPHABETICALLY;
 
   searchTerm = '';
   isLoading = false;
@@ -220,18 +221,24 @@ export class CustomSortComponent implements OnInit {
     this.isSaving = true;
 
     this.adminDashboardService
-      .sortMarketExtensions(this.sortingExtensions, SortOption.ALPHABETICALLY)
+      .sortMarketExtensions(this.sortingExtensions, this.remainderRule)
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
           this.sortSuccessMessage = this.translateService.instant(
             'common.admin.customSort.sortSuccessMessage'
           );
+          setTimeout(() => {
+            this.sortSuccessMessage = '';
+          }, MESSAGE_DISPLAY_TIME);
         },
         error: () => {
           this.sortErrorMessage = this.translateService.instant(
             'common.admin.customSort.sortErrorMessage'
           );
+          setTimeout(() => {
+            this.sortErrorMessage = '';
+          }, MESSAGE_DISPLAY_TIME);
         }
       });
   }
@@ -239,12 +246,27 @@ export class CustomSortComponent implements OnInit {
   private async loadAllProductIds(): Promise<void> {
     this.isLoading = true;
     try {
-      this.allExtensions =
-        await this.productService.fetchAllProductIds();
-    } catch {
-      this.allExtensions = [];
+      const productIds = await firstValueFrom(this.productService.fetchAllProductIds()) ?? [];
+      const customSort = await lastValueFrom(this.adminDashboardService.getCustomSort()) ?? null;
+      this.applyCustomSort(productIds, customSort);
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private applyCustomSort(
+    productIds: string[],
+    customSort: CustomSortConfig | null
+  ): void {
+    const orderedIds = customSort?.orderedListOfProducts ?? [];
+    const remainderRule = customSort?.ruleForRemainder ?? SortOption.ALPHABETICALLY;
+
+    const sortedSet = new Set(
+      orderedIds.filter(productId => productIds.includes(productId))
+    );
+
+    this.sortingExtensions = Array.from(sortedSet);
+    this.allExtensions = productIds.filter(productId => !sortedSet.has(productId));
+    this.remainderRule = remainderRule;
   }
 }
