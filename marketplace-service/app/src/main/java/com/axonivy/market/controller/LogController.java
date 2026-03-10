@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
@@ -17,11 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 public class LogController {
   private final LogService logService;
 
+  @Authorized
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<List<LogFileModel>> listGzLogs(
@@ -43,6 +43,7 @@ public class LogController {
     return ResponseEntity.ok(logService.listGzLogNamesByDate(String.valueOf(date)));
   }
 
+  @Authorized
   @GetMapping(DOWNLOAD_LOG_ARTIFACT)
   @Operation(hidden = true)
   public ResponseEntity<StreamingResponseBody> downloadLog(@RequestParam String fileName) {
@@ -56,6 +57,7 @@ public class LogController {
         .body(streamingBody);
   }
 
+  @Authorized
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
   public Flux<String> stream(HttpServletRequest request) {

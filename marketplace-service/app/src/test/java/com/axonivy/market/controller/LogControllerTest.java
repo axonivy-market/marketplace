@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
@@ -32,6 +32,9 @@ class LogControllerTest {
   
   @Mock
   private LogService logService;
+
+  @Mock
+  private HttpServletRequest request;
 
   @BeforeEach
   void setUp() {
@@ -132,11 +135,12 @@ class LogControllerTest {
   @Test
   void testStreamLogsReturnsFlux() {
     Flux<String> flux = Flux.just("Log 1", "Log 2", "Log 3");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<ServerSentEvent<String>> result = logController.stream();
+      Flux<String> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       assertNotNull(result, "Stream result should not be null");
@@ -151,32 +155,32 @@ class LogControllerTest {
         "[WARN] Warning occurred"
     );
     Flux<String> flux = Flux.fromIterable(logLines);
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<ServerSentEvent<String>> result = logController.stream();
+      Flux<String> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       List<String> collected = result
-          .flatMap(event -> event.data() == null ? Flux.empty() : Flux.just(event.data()))
-          .take(logLines.size() + 1)
+          .take(logLines.size())
           .collectList()
           .block();
-      assertEquals(4, collected.size(), "Collected list should contain start message plus 3 log lines");
-      assertEquals("[INFO] Log stream connected", collected.get(0), "First event should indicate stream start");
-      assertTrue(collected.containsAll(logLines), "Collected list should contain all expected log lines");
+      assertEquals(logLines.size(), collected.size(), "Collected list should contain all expected log lines");
+      assertEquals(logLines, collected, "Collected log lines should match source stream");
     }
   }
 
   @Test
   void testStreamLogsReturnsEmptyFlux() {
     Flux<String> emptyFlux = Flux.empty();
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(emptyFlux);
       
-      Flux<ServerSentEvent<String>> result = logController.stream();
+      Flux<String> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
@@ -200,11 +204,12 @@ class LogControllerTest {
   @Test
   void testStreamCallsLogStreamRegistry() {
     Flux<String> expectedFlux = Flux.just("test");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
       
-      Flux<ServerSentEvent<String>> result = logController.stream();
+      Flux<String> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
