@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.entity.TestStep;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
 import com.fasterxml.jackson.databind.JsonNode;
 

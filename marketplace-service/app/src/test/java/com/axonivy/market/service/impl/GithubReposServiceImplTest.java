@@ -1,12 +1,8 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;

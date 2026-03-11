@@ -1,7 +1,5 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.criteria.MonitoringSearchCriteria;
-import com.axonivy.market.entity.GithubRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.reflect.FieldUtils;

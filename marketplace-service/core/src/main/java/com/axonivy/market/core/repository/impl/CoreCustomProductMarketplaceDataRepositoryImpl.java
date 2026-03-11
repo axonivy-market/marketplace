@@ -5,9 +5,13 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.core.repository.CoreCustomProductMarketplaceDataRepository;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Builder
+@AllArgsConstructor
 public class CoreCustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBaseRepository<ProductMarketplaceData>
     implements CoreCustomProductMarketplaceDataRepository {
 

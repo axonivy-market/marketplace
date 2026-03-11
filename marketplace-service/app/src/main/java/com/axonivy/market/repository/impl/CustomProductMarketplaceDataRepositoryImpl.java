@@ -8,12 +8,11 @@ import com.axonivy.market.core.repository.impl.CoreCustomProductMarketplaceDataR
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 
-
-@Builder
+@Log4j2
 public class CustomProductMarketplaceDataRepositoryImpl extends CoreCustomProductMarketplaceDataRepositoryImpl
     implements CustomProductMarketplaceDataRepository {
-
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
           UPDATE product_marketplace_data
           SET installation_count = installation_count + 1

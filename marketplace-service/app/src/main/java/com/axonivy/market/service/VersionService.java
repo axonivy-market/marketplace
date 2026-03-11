@@ -1,9 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.core.service.CoreVersionService;
-import com.axonivy.market.model.VersionAndUrlModel;
 
-import java.util.List;
 import java.util.Map;
 
 public interface VersionService extends CoreVersionService {
