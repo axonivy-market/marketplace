@@ -22,6 +22,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -38,12 +39,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
 @Log4j2
+@Service
 //@RequiredArgsConstructor
-public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
+public class ProductMarketplaceDataServiceImpl
+    extends CoreProductMarketplaceDataServiceImpl
+    implements ProductMarketplaceDataService {
 
-//  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+  //  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
 //  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
@@ -51,8 +54,8 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
   private final ProductRepository productRepo;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final SecureRandom random = new SecureRandom();
+//  private final ObjectMapper mapper = new ObjectMapper();
+//  private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
 

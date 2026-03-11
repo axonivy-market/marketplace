@@ -1,6 +1,14 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.TestStep;
+
+import com.axonivy.market.core.entity.WorkflowInformation;
+import com.axonivy.market.core.enums.WorkFlowType;
+
+import static com.axonivy.market.core.enums.WorkFlowType.CI;
+
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -33,7 +41,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static com.axonivy.market.enums.WorkFlowType.CI;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

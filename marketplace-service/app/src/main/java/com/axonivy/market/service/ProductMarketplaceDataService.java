@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.OutputStream;
 
-public interface ProductMarketplaceDataService extends CoreProductMarketplaceDataService {
+public interface ProductMarketplaceDataService
+    extends CoreProductMarketplaceDataService
+{
   void addCustomSortProduct(ProductCustomSortRequest customSort);
 
   int updateInstallationCountForProduct(String id, String designerVersion);

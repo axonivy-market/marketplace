@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.ProductDesignerInstallation;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

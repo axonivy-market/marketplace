@@ -13,6 +13,7 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.CodeScanning;

@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;

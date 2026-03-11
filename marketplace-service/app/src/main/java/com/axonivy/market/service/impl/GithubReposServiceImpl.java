@@ -114,7 +114,7 @@ public class GithubReposServiceImpl implements GithubReposService {
           repo.setProductId(resolvedProductId);
           return repo;
         }).orElse(GithubRepo.from(ghRepo, resolvedProductId));
-    List<TestStep> testSteps = Arrays.stream(values()).map(
+    List<TestStep> testSteps = Arrays.stream(WorkFlowType.values()).map(
         workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
     githubRepoRepository.save(githubRepo);

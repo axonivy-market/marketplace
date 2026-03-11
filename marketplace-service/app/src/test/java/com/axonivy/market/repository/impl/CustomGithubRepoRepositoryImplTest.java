@@ -1,5 +1,7 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.core.criteria.MonitoringSearchCriteria;
+import com.axonivy.market.core.entity.GithubRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -12,7 +14,8 @@ import org.springframework.data.domain.Pageable;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 
@@ -118,7 +121,6 @@ class CustomGithubRepoRepositoryImplTest {
         .workFlowType(workflowType)
         .sortDirection(sortDirection)
         .build();
-
 
     // Act
     Page<GithubRepo> result = customGithubRepoRepository.findAllByFocusedSorted(criteria, pageable);
