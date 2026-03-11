@@ -16,14 +16,17 @@ import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 import { HttpParams } from '@angular/common/http';
 import { RequestParam } from '../../../shared/enums/request-param';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LogStreamService {
-  private eventSource: EventSource | null = null;
+  private ctrl: AbortController | null = null;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeConfig = inject(RuntimeConfigService);
+  private readonly adminAuth = inject(AdminAuthService);
   private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
     optional: true
   });
@@ -37,7 +40,7 @@ export class LogStreamService {
   private readonly MAX_LINES = 2000;
 
   connect(): void {
-    if (this.eventSource || isPlatformServer(this.platformId)) {
+    if (this.ctrl || isPlatformServer(this.platformId)) {
       return;
     }
 
@@ -52,25 +55,39 @@ export class LogStreamService {
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
     const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream?${params.toString()}`;
-    this.eventSource = new EventSource(logsUrl);
 
-    this.eventSource.onmessage = event => {
-      this._logs.update(lines => {
-        const next = [...lines, event.data];
-        return next.length > this.MAX_LINES
-          ? next.slice(next.length - this.MAX_LINES)
-          : next;
-      });
-    };
+    const headersObj: Record<string, string> = {};
+    const headers = this.adminAuth.getAuthHeaders();
+    headers.keys().forEach(key => {
+      const val = headers.get(key);
+      if (val) {
+        headersObj[key] = val;
+      }
+    });
 
-    this.eventSource.onerror = () => {
-      this.disconnect();
-    };
+    this.ctrl = new AbortController();
+    fetchEventSource(logsUrl, {
+      headers: headersObj,
+      signal: this.ctrl.signal,
+      onmessage: event => {
+        this._logs.update(lines => {
+          const next = [...lines, event.data];
+          return next.length > this.MAX_LINES
+            ? next.slice(next.length - this.MAX_LINES)
+            : next;
+        });
+      },
+      onerror: () => {
+        this.disconnect();
+      }
+    }).catch(err => {
+      // AbortError is expected when we disconnect.
+    });
   }
 
   disconnect(): void {
-    this.eventSource?.close();
-    this.eventSource = null;
+    this.ctrl?.abort();
+    this.ctrl = null;
   }
 
   clear(): void {
@@ -78,6 +95,6 @@ export class LogStreamService {
   }
 
   isConnected(): boolean {
-    return !!this.eventSource;
+    return !!this.ctrl;
   }
 }
