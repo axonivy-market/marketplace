@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CoreGithubRepository extends JpaRepository<GithubRepo, String>, CoreCustomGithubRepoRepository {
+public interface CoreGithubRepository extends JpaRepository<GithubRepo, String> {
   @EntityGraph(attributePaths = {"workflowInformation","testSteps"})
   List<GithubRepo> findByNameOrProductId(String name, String productId);
 

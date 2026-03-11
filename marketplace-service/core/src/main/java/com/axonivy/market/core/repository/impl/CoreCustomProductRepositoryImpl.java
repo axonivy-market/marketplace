@@ -51,7 +51,7 @@ import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 @AllArgsConstructor
 public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<Product> implements CoreCustomProductRepository {
   private final CoreProductCustomSortRepository coreProductCustomSortRepository;
-  private final CoreProductModuleContentRepository contentRepository;
+  private final CoreProductModuleContentRepository coreProductModuleContentRepository;
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
@@ -71,7 +71,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   public Product getProductByIdAndVersion(String id, String version) {
     var result = findProductByIdAndRelatedData(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
+      ProductModuleContent content = coreProductModuleContentRepository.findByVersionAndProductId(version, id);
       if (content != null) {
         Hibernate.initialize(content.getDescription());
         Hibernate.initialize(content.getSetup());

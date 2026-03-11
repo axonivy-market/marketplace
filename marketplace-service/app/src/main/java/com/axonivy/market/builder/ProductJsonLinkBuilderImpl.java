@@ -11,16 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductJsonLinkBuilderImpl implements ProductJsonLinkBuilder {
   @Override
-  public String buildProductJsonUrl(
-      String productId,
-      String version,
-      String designerVersion) {
-
+  public String buildProductJsonUrl(String productId, String version, String designerVersion) {
     var link = linkTo(
-        methodOn(ProductDetailsController.class)
-            .findProductJsonContent(productId, version, designerVersion))
+        methodOn(ProductDetailsController.class).findProductJsonContent(productId, version, designerVersion))
         .withSelfRel();
-
     return link.getHref();
   }
 }

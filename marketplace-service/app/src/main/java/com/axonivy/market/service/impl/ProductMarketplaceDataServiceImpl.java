@@ -43,8 +43,8 @@ import java.util.Map;
 //@RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
 
-  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
-  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
+//  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+//  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -115,26 +115,26 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
     return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
   }
 
-  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
-    log.info("synchronizing installation count for product {}", productId);
-    var result = 0;
-    try {
-      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
-      Map<String, Integer> mapping = mapper.readValue(installationCounts,
-          new TypeReference<HashMap<String, Integer>>() {
-          });
-      List<String> keyList = mapping.keySet().stream().toList();
-      if (keyList.contains(productId)) {
-        result = mapping.get(productId);
-      } else {
-        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
-      }
-      log.info("synchronized installation count for product {} successfully", productId);
-    } catch (IOException ex) {
-      log.error("Could not read the marketplace-installation file to synchronize", ex);
-    }
-    return result;
-  }
+//  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
+//    log.info("synchronizing installation count for product {}", productId);
+//    var result = 0;
+//    try {
+//      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
+//      Map<String, Integer> mapping = mapper.readValue(installationCounts,
+//          new TypeReference<HashMap<String, Integer>>() {
+//          });
+//      List<String> keyList = mapping.keySet().stream().toList();
+//      if (keyList.contains(productId)) {
+//        result = mapping.get(productId);
+//      } else {
+//        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
+//      }
+//      log.info("synchronized installation count for product {} successfully", productId);
+//    } catch (IOException ex) {
+//      log.error("Could not read the marketplace-installation file to synchronize", ex);
+//    }
+//    return result;
+//  }
 
 //  @Override
 //  public int updateProductInstallationCount(String id) {

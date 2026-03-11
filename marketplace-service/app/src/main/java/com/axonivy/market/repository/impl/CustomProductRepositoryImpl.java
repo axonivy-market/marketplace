@@ -3,6 +3,8 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
+import com.axonivy.market.core.repository.CoreProductModuleContentRepository;
 import com.axonivy.market.core.repository.impl.CoreCustomProductRepositoryImpl;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -26,9 +28,10 @@ import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_
 public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl implements CustomProductRepository {
   private final ProductModuleContentRepository contentRepository;
 
-  public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
+  public CustomProductRepositoryImpl(CoreProductCustomSortRepository coreProductCustomSortRepo,
+      CoreProductModuleContentRepository coreProductModuleContentRepository,
       ProductModuleContentRepository contentRepository) {
-    super(productCustomSortRepo);
+    super(coreProductCustomSortRepo, coreProductModuleContentRepository);
     this.contentRepository = contentRepository;
   }
 

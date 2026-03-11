@@ -11,12 +11,12 @@ import lombok.Builder;
 public class CoreCustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBaseRepository<ProductMarketplaceData>
     implements CoreCustomProductMarketplaceDataRepository {
 
-  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
-          UPDATE product_marketplace_data  
-          SET installation_count = installation_count + 1 
-          WHERE id = :productId 
-          RETURNING installation_count
-      """;
+//  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
+//          UPDATE product_marketplace_data
+//          SET installation_count = installation_count + 1
+//          WHERE id = :productId
+//          RETURNING installation_count
+//      """;
 
   @Override
   @Transactional

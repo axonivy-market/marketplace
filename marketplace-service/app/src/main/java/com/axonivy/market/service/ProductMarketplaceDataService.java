@@ -12,9 +12,9 @@ public interface ProductMarketplaceDataService {
 
   int updateInstallationCountForProduct(String id, String designerVersion);
 
-  int updateProductInstallationCount(String id);
+//  int updateProductInstallationCount(String id);
 
-  ProductMarketplaceData getProductMarketplaceData(String id);
+//  ProductMarketplaceData getProductMarketplaceData(String id);
 
   Integer getInstallationCount(String id);
 
