@@ -274,4 +274,58 @@ class LogControllerTest {
     verify(logService, times(1)).isLogFileExisted(fileName);
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK after service call");
   }
+
+  @Test
+  void testStreamUsesFirstIpFromXForwardedFor() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1, 10.0.0.2");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<String> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader("X-Forwarded-For");
+      verify(request, never()).getHeader("X-Real-IP");
+      verify(request, never()).getRemoteAddr();
+    }
+  }
+
+  @Test
+  void testStreamUsesXRealIpWhenForwardedForIsBlank() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader("X-Forwarded-For")).thenReturn("   ");
+    when(request.getHeader("X-Real-IP")).thenReturn("192.168.1.10");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<String> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader("X-Forwarded-For");
+      verify(request, times(1)).getHeader("X-Real-IP");
+      verify(request, never()).getRemoteAddr();
+    }
+  }
+
+  @Test
+  void testStreamUsesRemoteAddrWhenProxyHeadersMissing() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+    when(request.getHeader("X-Real-IP")).thenReturn(" ");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<String> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader("X-Forwarded-For");
+      verify(request, times(1)).getHeader("X-Real-IP");
+      verify(request, times(1)).getRemoteAddr();
+    }
+  }
 }

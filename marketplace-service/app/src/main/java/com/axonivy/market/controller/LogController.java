@@ -65,7 +65,7 @@ public class LogController {
     return LogStreamRegistry.asFlux()
         .doOnSubscribe(subscription -> log.info("Log stream client connected from IP: {}", requesterIp))
         .doOnCancel(() -> log.info("Log stream client disconnected from IP: {}", requesterIp))
-        .onErrorResume(error -> {
+        .onErrorResume((Throwable error) -> {
           log.error("Error in log stream for IP {}: {}", requesterIp, error.getMessage(), error);
           return Flux.empty();
         });
