@@ -34,4 +34,5 @@ public class CoreEntityConstants {
   public static final String REPOSITORY_ID = "repository_id";
   public static final String WORKFLOW_INFORMATION = "workflow_information";
   public static final String TEST_STEP = "test_step";
+  public static final String PRODUCT_DESIGNER_INSTALLATION = "product_designer_installation";
 }

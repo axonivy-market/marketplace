@@ -6,7 +6,7 @@ public interface CustomProductMarketplaceDataRepository extends CoreCustomProduc
 
 //  int updateInitialCount(String productId, int initialCount);
 
-  int increaseInstallationCount(String productId);
+//  int increaseInstallationCount(String productId);
 
   void checkAndInitProductMarketplaceDataIfNotExist(String productId);
 }

@@ -9,7 +9,7 @@ import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.VersionAndUrlModel;
-import com.axonivy.market.core.repository.CoreGithubRepository;
+import com.axonivy.market.core.repository.CoreGithubRepoRepository;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -47,7 +47,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   private final CoreProductMarketplaceDataService coreProductMarketplaceDataService;
   private final CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository;
   private final CoreProductJsonContentRepository coreProductJsonContentRepo;
-  private final CoreGithubRepository coreGithubRepository;
+  private final CoreGithubRepoRepository coreGithubRepoRepository;
   private final CoreVersionService coreVersionService;
 
   /**
@@ -137,7 +137,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   }
 
   private void updateFocusedStatusForProduct(Product product) {
-    var repos = coreGithubRepository.findByNameOrProductId(EMPTY, product.getId());
+    var repos = coreGithubRepoRepository.findByNameOrProductId(EMPTY, product.getId());
     boolean isFocused = repos != null && repos.stream().anyMatch(repo -> Boolean.TRUE.equals(repo.getFocused()));
     product.setIsFocused(isFocused);
   }

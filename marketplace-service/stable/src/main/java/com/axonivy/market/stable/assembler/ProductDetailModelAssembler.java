@@ -1,11 +1,9 @@
-package com.axonivy.market.assembler;
+package com.axonivy.market.stable.assembler;
 
 import com.axonivy.market.core.config.MarketplaceConfig;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.model.ProductDetailModel;
-
+import com.axonivy.market.core.model.ProductDetailModel;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 

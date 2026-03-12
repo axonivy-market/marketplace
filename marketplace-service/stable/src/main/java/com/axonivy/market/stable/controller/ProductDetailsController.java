@@ -1,11 +1,16 @@
 package com.axonivy.market.stable.controller;
 
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.DESIGNER_VERSION;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
+
+import com.axonivy.market.core.model.ProductDetailModel;
+
+import com.axonivy.market.stable.assembler.ProductDetailModelAssembler;
 
 import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
+import com.axonivy.market.stable.service.ProductService;
 import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +36,8 @@ import java.util.Map;
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
   private final VersionService versionService;
+  private final ProductService productService;
+  private final ProductDetailModelAssembler detailModelAssembler;
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
   @Operation(summary = "Find best match product detail by product id and version.",
@@ -51,7 +58,6 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-  @TrackApiCallFromNeo
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")

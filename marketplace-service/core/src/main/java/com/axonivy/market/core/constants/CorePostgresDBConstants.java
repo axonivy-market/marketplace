@@ -17,4 +17,5 @@ public class CorePostgresDBConstants {
   public static final String PRODUCT_SHORT_DESCRIPTION = "shortDescriptions";
   public static final String PRODUCT_ARTIFACT = "artifacts";
   public static final String SYNCHRONIZED_INSTALLATION_COUNT = "synchronizedInstallationCount";
+  public static final String DESIGNER_VERSION = "designerVersion";
 }

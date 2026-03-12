@@ -43,13 +43,13 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CoreCustomProduc
 //    return 0;
 //  }
 
-  @Override
-  @Transactional
-  public int increaseInstallationCount(String productId) {
-    var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
-    query.setParameter(CorePostgresDBConstants.PRODUCT_ID, productId);
-    return ((Number) query.getSingleResult()).intValue();
-  }
+//  @Override
+//  @Transactional
+//  public int increaseInstallationCount(String productId) {
+//    var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+//    query.setParameter(CorePostgresDBConstants.PRODUCT_ID, productId);
+//    return ((Number) query.getSingleResult()).intValue();
+//  }
 
   @Override
   @Transactional
@@ -65,10 +65,5 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CoreCustomProduc
       productMarketplaceData.setId(productId);
       save(productMarketplaceData);
     }
-  }
-
-  @Override
-  protected Class<ProductMarketplaceData> getType() {
-    return ProductMarketplaceData.class;
   }
 }

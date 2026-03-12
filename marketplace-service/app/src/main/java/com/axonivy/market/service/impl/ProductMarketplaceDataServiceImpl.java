@@ -59,11 +59,12 @@ public class ProductMarketplaceDataServiceImpl
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
 
-  public ProductMarketplaceDataServiceImpl(CoreProductMarketplaceDataRepository coreProductMarketplaceDataRepo,
+  public ProductMarketplaceDataServiceImpl(
+//      CoreProductMarketplaceDataRepository coreProductMarketplaceDataRepo,
       ProductMarketplaceDataRepository productMarketplaceDataRepo, ProductCustomSortRepository productCustomSortRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo, ProductRepository productRepo,
       ProductDesignerInstallationRepository productDesignerInstallationRepo, FileDownloadService fileDownloadService) {
-    super(coreProductMarketplaceDataRepo);
+    super(productMarketplaceDataRepo, productDesignerInstallationRepo, productRepo);
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;

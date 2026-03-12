@@ -15,12 +15,12 @@ import lombok.extern.log4j.Log4j2;
 public class CoreCustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBaseRepository<ProductMarketplaceData>
     implements CoreCustomProductMarketplaceDataRepository {
 
-//  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
-//          UPDATE product_marketplace_data
-//          SET installation_count = installation_count + 1
-//          WHERE id = :productId
-//          RETURNING installation_count
-//      """;
+  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
+          UPDATE product_marketplace_data
+          SET installation_count = installation_count + 1
+          WHERE id = :productId
+          RETURNING installation_count
+      """;
 
   @Override
   @Transactional
@@ -43,6 +43,14 @@ public class CoreCustomProductMarketplaceDataRepositoryImpl extends CoreAbstract
       return getEntityManager().find(getType(), productId).getInstallationCount();
     }
     return 0;
+  }
+
+  @Override
+  @Transactional
+  public int increaseInstallationCount(String productId) {
+    var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    query.setParameter(CorePostgresDBConstants.PRODUCT_ID, productId);
+    return ((Number) query.getSingleResult()).intValue();
   }
 
   @Override

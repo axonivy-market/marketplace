@@ -8,6 +8,7 @@ import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
@@ -130,9 +131,9 @@ public class BaseSetup extends CoreBaseSetup {
     return new PageImpl<>(mockProducts);
   }
 
-  protected List<ProductDesignerInstallation> createProductDesignerInstallationsMock() {
-    var mockProductDesignerInstallations = new ArrayList<ProductDesignerInstallation>();
-    ProductDesignerInstallation mockProductDesignerInstallation = new ProductDesignerInstallation();
+  protected List<com.axonivy.market.core.entity.ProductDesignerInstallation> createProductDesignerInstallationsMock() {
+    var mockProductDesignerInstallations = new ArrayList<com.axonivy.market.core.entity.ProductDesignerInstallation>();
+    com.axonivy.market.core.entity.ProductDesignerInstallation mockProductDesignerInstallation = new com.axonivy.market.core.entity.ProductDesignerInstallation();
     mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
     mockProductDesignerInstallation.setDesignerVersion("10.0.22");
     mockProductDesignerInstallation.setInstallationCount(50);

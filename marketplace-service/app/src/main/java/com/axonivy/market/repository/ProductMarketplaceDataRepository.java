@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 //}
 
 @Repository
+@Primary
 public interface ProductMarketplaceDataRepository
     extends CoreProductMarketplaceDataRepository, CustomProductMarketplaceDataRepository {
 

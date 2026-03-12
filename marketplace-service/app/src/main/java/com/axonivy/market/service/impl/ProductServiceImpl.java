@@ -19,7 +19,7 @@ import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.VersionAndUrlModel;
-import com.axonivy.market.core.repository.CoreGithubRepository;
+import com.axonivy.market.core.repository.CoreGithubRepoRepository;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -126,10 +126,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private GitHubRepoMeta marketRepoMeta;
 
   public ProductServiceImpl(CoreProductRepository coreProductRepo, CoreMetadataRepository coreMetadataRepo,
-      CoreProductMarketplaceDataService coreProductMarketplaceDataService,
-      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository,
-      CoreProductJsonContentRepository coreProductJsonContentRepo, CoreGithubRepository coreGithubRepository,
-      CoreVersionService coreVersionService, ProductRepository productRepo,
+//      CoreProductMarketplaceDataService coreProductMarketplaceDataService,
+//      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository,
+//      CoreProductJsonContentRepository coreProductJsonContentRepo,
+//      CoreGithubRepoRepository coreGithubRepository,
+//      CoreVersionService coreVersionService
+      ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepo,
       GitHubService gitHubService, MetadataRepository metadataRepo, ProductJsonContentRepository productJsonContentRepo,
@@ -139,8 +141,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
       VersionService versionService, GithubRepoRepository githubRepo) {
-    super(coreProductRepo, coreMetadataRepo, coreProductMarketplaceDataService, coreMavenArtifactVersionRepository,
-        coreProductJsonContentRepo, coreGithubRepository, coreVersionService);
+    super(coreProductRepo, metadataRepo, productMarketplaceDataService, mavenArtifactVersionRepository,
+        productJsonContentRepo, githubRepo, versionService);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -584,30 +586,30 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
   }
 
-  @Override
-  public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
-        metadataRepo.findByProductId(id));
-    String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
-    // Cover exception case of employee onboarding without any product.json file
-    Product product;
-    if (StringUtils.isBlank(bestMatchVersion)) {
-      product = getProductByIdWithNewestReleaseVersion(id, false);
-    } else {
-      product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
-    }
-
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
-
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
-      productItem.setBestMatchVersion(bestMatchVersion);
-      return productItem;
-    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
-  }
+//  @Override
+//  public Product fetchBestMatchProductDetail(String id, String version) {
+//    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
+//        metadataRepo.findByProductId(id));
+//    String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
+//    // Cover exception case of employee onboarding without any product.json file
+//    Product product;
+//    if (StringUtils.isBlank(bestMatchVersion)) {
+//      product = getProductByIdWithNewestReleaseVersion(id, false);
+//    } else {
+//      product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
+//    }
+//
+//    return Optional.ofNullable(product).map((Product productItem) -> {
+//      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
+//      productItem.setInstallationCount(installationCount);
+//
+//      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
+//      productItem.setCompatibilityRange(compatibilityRange);
+//      updateFocusedStatusForProduct(product);
+//      productItem.setBestMatchVersion(bestMatchVersion);
+//      return productItem;
+//    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
+//  }
 
   @Override
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {

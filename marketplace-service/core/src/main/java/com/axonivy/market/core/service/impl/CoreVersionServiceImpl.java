@@ -37,7 +37,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.TEST_ARTIFACT
 import static com.axonivy.market.core.constants.CoreProductJsonConstants.NAME;
 
 @Log4j2
-@Service
+//@Service
 @AllArgsConstructor
 public class CoreVersionServiceImpl implements CoreVersionService {
   private final CoreProductJsonContentRepository coreProductJsonRepo;

@@ -40,12 +40,13 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
-  public VersionServiceImpl(CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
-      CoreMetadataRepository coreMetadataRepository,
+  public VersionServiceImpl(
+//      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
+//      CoreMetadataRepository coreMetadataRepository,
       ProductJsonLinkBuilder productJsonLinkBuilder, ProductJsonContentRepository productJsonRepo,
       ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo) {
-    super(productJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository, productJsonLinkBuilder);
+    super(productJsonRepo, mavenArtifactVersionRepo, metadataRepo, productJsonLinkBuilder);
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.metadataRepo = metadataRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;

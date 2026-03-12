@@ -1,10 +1,12 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.core.repository.CoreGithubRepository;
+import com.axonivy.market.core.repository.CoreGithubRepoRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface GithubRepoRepository extends CoreGithubRepository, CustomGithubRepoRepository {
+@Primary
+public interface GithubRepoRepository extends CoreGithubRepoRepository, CustomGithubRepoRepository {
 //  @EntityGraph(attributePaths = {"workflowInformation","testSteps"})
 //  List<GithubRepo> findByNameOrProductId(String name, String productId);
 
