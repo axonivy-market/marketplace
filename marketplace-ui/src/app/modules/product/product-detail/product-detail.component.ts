@@ -776,7 +776,7 @@ export class ProductDetailComponent implements AfterViewInit {
 
   private navigateToFragment(fragment: string): void {
     this.router.navigate([], {
-      fragment,
+      fragment: fragment,
       queryParamsHandling: 'preserve',
       replaceUrl: true
     });
