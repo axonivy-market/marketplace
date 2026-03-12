@@ -16,7 +16,10 @@ import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 import { HttpParams } from '@angular/common/http';
 import { RequestParam } from '../../../shared/enums/request-param';
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import {
+  EventSourceMessage,
+  fetchEventSource
+} from '@microsoft/fetch-event-source';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
 @Injectable({
@@ -58,18 +61,18 @@ export class LogStreamService {
 
     const headersObj: Record<string, string> = {};
     const headers = this.adminAuth.getAuthHeaders();
-    headers.keys().forEach(key => {
+    for (const key of headers.keys()) {
       const val = headers.get(key);
       if (val) {
         headersObj[key] = val;
       }
-    });
+    }
 
     this.ctrl = new AbortController();
     fetchEventSource(logsUrl, {
       headers: headersObj,
       signal: this.ctrl.signal,
-      onmessage: (event: any) => {
+      onmessage: (event: EventSourceMessage) => {
         this._logs.update(lines => {
           const next = [...lines, event.data];
           return next.length > this.MAX_LINES
@@ -80,8 +83,7 @@ export class LogStreamService {
       onerror: () => {
         this.disconnect();
       }
-    }).catch(err => {
-      // AbortError is expected when we disconnect.
+    }).catch(() => {
     });
   }
 
