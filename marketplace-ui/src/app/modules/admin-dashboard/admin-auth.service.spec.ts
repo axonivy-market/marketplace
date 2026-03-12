@@ -1,9 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { AdminAuthService } from './admin-auth.service';
+import { AdminAuthService, JwtDTO } from './admin-auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
-import { ADMIN_SESSION_TOKEN, BEARER } from '../../shared/constants/common.constant';
+import { ADMIN_SESSION_TOKEN, BEARER, GITHUB_USER } from '../../shared/constants/common.constant';
+import { GitHubUser } from '../../auth/auth.service';
+import { PLATFORM_ID } from '@angular/core';
+import { ForwardingError } from '../../core/interceptors/api.interceptor';
+import { API_URI } from '../../shared/constants/api.constant';
 
 describe('AdminAuthService', () => {
   let service: AdminAuthService;
@@ -42,6 +46,107 @@ describe('AdminAuthService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  describe('AdminAuthService', () => {
+    it('should set adminInfo from sessionStorage in constructor when user exists', () => {
+      const mockUser: GitHubUser = {
+        login: 'octocat',
+        name: 'The Octocat',
+        avatarUrl: 'https://avatar.url',
+        url: 'https://github.com/octocat'
+      };
+
+      sessionStorageMock.getItem.and.callFake((key: string) => {
+        if (key === GITHUB_USER) {
+          return JSON.stringify(mockUser);
+        }
+        return null;
+      });
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          AdminAuthService,
+          { provide: SessionStorageRef, useValue: sessionStorageRef },
+          { provide: PLATFORM_ID, useValue: 'browser' }
+        ]
+      });
+
+      const recreatedService = TestBed.inject(AdminAuthService);
+
+      expect(recreatedService.adminInfo()).toEqual(mockUser);
+      expect(sessionStorageMock.getItem).toHaveBeenCalledWith(GITHUB_USER);
+    });
+
+    it('should store user via SessionStorageRef and update adminInfo signal', () => {
+      const mockUser: GitHubUser = {
+        login: 'octocat',
+        name: 'The Octocat',
+        avatarUrl: 'https://avatar.url',
+        url: 'https://github.com/octocat'
+      };
+
+      service.setUser(mockUser);
+
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        GITHUB_USER,
+        JSON.stringify(mockUser)
+      );
+
+      expect(service.adminInfo()).toEqual(mockUser);
+    });
+
+    it('should remove user and token via SessionStorageRef and clear adminInfo', () => {
+      const mockUser: GitHubUser = {
+        login: 'octocat',
+        name: 'The Octocat',
+        avatarUrl: 'https://avatar.url',
+        url: 'https://github.com/octocat'
+      };
+      service.setUser(mockUser);
+
+      service.logout();
+
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(GITHUB_USER);
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(ADMIN_SESSION_TOKEN);
+
+      expect(service.adminInfo()).toBeNull();
+    });
+  });
+  
+  describe('requestAccessToken', () => {
+    it('should clear token and call POST with correct payload and context', () => {
+      const testToken = 'github-oauth-token';
+
+      const jwtResponse: JwtDTO = {
+        token: 'jwt-token',
+        user: {
+          login: 'octocat',
+          name: 'The Octocat',
+          avatarUrl: 'https://avatar.url',
+          url: 'https://github.com/octocat'
+        }
+      };
+
+      const setTokenSpy = spyOn(service, 'setToken').and.callThrough();
+
+      service.requestAccessToken(testToken).subscribe(response => {
+        expect(response).toEqual(jwtResponse);
+      });
+
+      expect(setTokenSpy).toHaveBeenCalledWith('');
+
+      const req = httpTestingController.expectOne(API_URI.GITHUB_REQUEST_ACCESS);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ token: testToken });
+      expect(req.request.context.get(ForwardingError)).toBeTrue();
+
+      req.flush(jwtResponse);
+    });
   });
 
   describe('token', () => {

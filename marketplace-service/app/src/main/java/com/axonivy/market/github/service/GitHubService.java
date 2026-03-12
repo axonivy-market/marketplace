@@ -45,7 +45,8 @@ public interface GitHubService {
 
   GithubUser getAndUpdateUser(String accessToken);
 
-  void validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
+  GithubUser validateUserInOrganizationAndTeam(String accessToken, String org,
+      String team) throws UnauthorizedException;
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException;
 

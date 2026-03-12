@@ -453,6 +453,10 @@
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
         "genericErrorMessage": "An error occurred while processing your request. Please try again."
+      },
+      "githubUserBadge": {
+        "gitHubAccount": "GitHub account",
+        "logout": "Logout"
       }
     }
   }

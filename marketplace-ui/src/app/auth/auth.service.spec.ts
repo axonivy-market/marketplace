@@ -138,7 +138,9 @@ describe('AuthService', () => {
     const token = 'mockToken';
     const mockUserResponse = {
       login: 'mockuser',
-      name: 'Mock User'
+      name: 'mockuser',
+      avatarUrl: 'https://avatar.url',
+      url: 'https://github.com/mockuser'
     };
 
     service.getUserInfo(token).subscribe(user => {
@@ -157,7 +159,7 @@ describe('AuthService', () => {
     const token = 'mockToken';
 
     service.getUserInfo(token).subscribe(user => {
-      expect(user).toEqual({ login: '', name: null });
+      expect(user).toEqual({ login: '', name: null, avatarUrl: '', url: '' });
     });
 
     const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
@@ -166,9 +168,14 @@ describe('AuthService', () => {
     req.error(new ErrorEvent('Network error'));
   });
 
-  it('getDisplayNameFromAccessToken should return user\'s name if available', () => {
+  it("getDisplayNameFromAccessToken should return user's name if available", () => {
     const token = 'mockToken';
-    const mockUser = { login: 'mockuser', name: 'Mock User' };
+    const mockUser = {
+      login: 'mockuser',
+      name: 'Mock User',
+      avatarUrl: 'https://avatar.url',
+      url: 'https://github.com/mockuser'
+    };
 
     service.getDisplayNameFromAccessToken(token).subscribe(name => {
       expect(name).toBe('Mock User');
@@ -180,7 +187,12 @@ describe('AuthService', () => {
 
   it('getDisplayNameFromAccessToken should return login if name is null', () => {
     const token = 'mockToken';
-    const mockUser = { login: 'mockuser', name: null };
+    const mockUser = {
+      login: 'mockuser',
+      name: null,
+      avatarUrl: 'https://avatar.url',
+      url: 'https://github.com/mockuser'
+    };
 
     service.getDisplayNameFromAccessToken(token).subscribe(name => {
       expect(name).toBe('mockuser');

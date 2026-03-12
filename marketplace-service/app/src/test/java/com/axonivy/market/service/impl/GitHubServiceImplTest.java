@@ -46,6 +46,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -281,18 +283,53 @@ class GitHubServiceImplTest {
         "Expected exception errorDescription field to match the GitHub response error description");
   }
 
-
   @Test
   void testValidateUserInOrganizationAndTeamValid() throws Exception {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
+    GHMyself fakeMyself = new GHMyself() {
+      @Override
+      public long getId() {
+        return 123L;
+      }
+
+      @Override
+      public String getName() {
+        return "test-user";
+      }
+
+      @Override
+      public String getLogin() {
+        return "test-user";
+      }
+
+      @Override
+      public String getAvatarUrl() {
+        return "avatarUrl";
+      }
+
+      @Override
+      public URL getHtmlUrl() {
+        try {
+          return URI.create("https://github.com/tan").toURL();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
 
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
-
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+    GithubUser result =
+        gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+
+    assertEquals(String.valueOf(123L), result.getGitHubId(), "GitHub ID should match the fake user");
+    assertEquals("test-user", result.getName(), "Name should match the fake user");
+    assertEquals("test-user", result.getUsername(), "Username should match the fake user");
+    assertEquals("avatarUrl", result.getAvatarUrl(), "Avatar URL should match the fake user");
   }
 
   @Test
@@ -887,7 +924,8 @@ class GitHubServiceImplTest {
         () -> gitHubService.getAndUpdateUser(accessToken),
         "IOException should be translated into NotFoundException");
 
-    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+    assertEquals(
+        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
   }
@@ -952,7 +990,7 @@ class GitHubServiceImplTest {
   @Test
   void testDownloadArtifactZipReturnsStreamWithDownloadedBytes() throws Exception {
     GHArtifact artifact = mock(GHArtifact.class);
-    byte[] expected = new byte[] {1, 2, 3};
+    byte[] expected = new byte[]{1, 2, 3};
 
     doAnswer(inv -> {
       InputStreamFunction<Void> fn = inv.getArgument(0);

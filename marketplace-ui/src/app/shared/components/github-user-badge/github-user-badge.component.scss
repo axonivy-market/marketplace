@@ -1,0 +1,21 @@
+#user-avatar {
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+}
+
+.user-info-dropdown {
+  right: 0 !important;
+  left: auto;
+  font-size: 1.2rem;
+
+  a {
+    text-decoration: none;
+  }
+
+  .dropdown-item {
+    &:active {
+      background: none !important;
+    }
+  }
+}

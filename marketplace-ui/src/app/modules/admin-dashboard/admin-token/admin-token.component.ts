@@ -43,6 +43,7 @@ export class AdminTokenComponent implements OnInit {
       next: jwtObject => {
         this.errorMessage = '';
         this.authService.setToken(jwtObject.token);
+        this.authService.setUser(jwtObject.user);
         this.isProcessing = false;
         this.tokenControl.enable();
         this.router.navigate(['/internal-dashboard']);
@@ -56,5 +57,4 @@ export class AdminTokenComponent implements OnInit {
       }
     });
   }
-
 }

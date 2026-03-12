@@ -1,11 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  signal
+} from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { SEARCH_URL } from '../../../constants/common.constant';
 import { FormsModule } from '@angular/forms';
+import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
 
 @Component({
   selector: 'app-search-bar',
@@ -15,11 +22,13 @@ import { FormsModule } from '@angular/forms';
     ThemeSelectionComponent,
     FormsModule,
     LanguageSelectionComponent,
+    GithubUserBadgeComponent
   ],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
+  isCollapsed = false;
   searchUrl = SEARCH_URL;
   isGoogleSearchBarDisplayed = signal(false);
 

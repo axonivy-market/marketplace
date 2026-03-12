@@ -72,7 +72,6 @@ import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -179,12 +178,21 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void validateUserInOrganizationAndTeam(String accessToken, String organization,
+  public GithubUser validateUserInOrganizationAndTeam(String accessToken, String organization,
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        return;
+        GHMyself myself = gitHub.getMyself();
+        var githubUser = new GithubUser();
+        githubUser.setGitHubId(String.valueOf(myself.getId()));
+        githubUser.setName(myself.getName());
+        githubUser.setUsername(myself.getLogin());
+        githubUser.setAvatarUrl(myself.getAvatarUrl());
+        githubUser.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        githubUser.setUrl(String.valueOf(myself.getHtmlUrl()));
+
+        return githubUser;
       }
     } catch (IOException e) {
       log.error(e);

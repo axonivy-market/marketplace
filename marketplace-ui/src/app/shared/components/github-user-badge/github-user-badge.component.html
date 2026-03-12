@@ -1,0 +1,36 @@
+@if (adminInfo()) {
+  <div class="col user-badge-container">
+    <div ngbDropdown class="d-inline-block">
+      <img
+        type="button"
+        class="btn btn-outline-primary"
+        id="dropdownBasic1"
+        ngbDropdownToggle
+        id="user-avatar"
+        [src]="adminInfo()!.avatarUrl"
+        alt="GitHub avatar"
+        class="github-avatar" />
+      <div
+        ngbDropdownMenu
+        aria-labelledby="dropdownBasic1"
+        class="user-info-dropdown mt-2">
+        <button ngbDropdownItem>
+          <a
+            class="text-primary"
+            [href]="this.adminInfo()!.url"
+            target="_blank">
+            {{
+              translateService.get('common.admin.githubUserBadge.gitHubAccount')
+                | async
+            }}
+          </a>
+        </button>
+        <button ngbDropdownItem (click)="logout()">
+          {{
+            translateService.get('common.admin.githubUserBadge.logout') | async
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

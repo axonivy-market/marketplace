@@ -1,12 +1,12 @@
+<div
+  class="google-search-container text-primary google-search-svg-primary"
+  [ngStyle]="{ display: isGoogleSearchBarDisplayed() ? 'block' : 'none' }">
+  <div class="gcse-search"></div>
+</div>
 <ul
-  class="navbar-nav navbar-nav--right mr-auto flex-lg-row flex-column-reverse align-items-lg-center align-items-sm-stretch header__action">
-  <div class="google-search-container text-primary google-search-svg-primary"
-    [ngStyle]="{'display' : isGoogleSearchBarDisplayed() ? 'block' : 'none'}">
-    <div class="gcse-search"></div>
-  </div>
+  class="navbar-nav header__action d-flex flex-row-reverse flex-xl-row justify-content-between border-top-md-gray header__button align-items-lg-center align-items-center">
   @if (isGoogleSearchBarDisplayed() == false) {
-  <!-- Language Selection -->
-  <div class="d-flex flex-row-reverse flex-lg-row justify-content-between border-top-md-gray header__button">
+    <!-- Language Selection -->
     <li class="header__button--right">
       <app-language-selection></app-language-selection>
     </li>
@@ -15,20 +15,24 @@
     <li class="header__button--right">
       <app-theme-selection></app-theme-selection>
     </li>
-  </div>
 
-  <!-- Collapse Search -->
-  <li class="d-none d-lg-flex header__button--right">
-    @if (isGoogleSearchBarDisplayed()) {
-    <div class="google-search-container text-primary google-search-svg-primary">
-      <div class="gcse-search"></div>
-    </div>
-    }
-    @else {
-    <div class="search-icon">
-      <i class="bi bi-search header__search-button" (click)="onClickSearchIcon()"></i>
-    </div>
-    }
-  </li>
+    <!-- Collapse Search -->
+    <li class="d-none d-lg-flex header__button--right">
+      @if (isGoogleSearchBarDisplayed()) {
+        <div
+          class="google-search-container text-primary google-search-svg-primary">
+          <div class="gcse-search"></div>
+        </div>
+      } @else {
+        <div class="search-icon">
+          <i
+            class="bi bi-search header__search-button"
+            (click)="onClickSearchIcon()"></i>
+        </div>
+      }
+    </li>
+    <li class="d-none d-xl-block">
+      <app-github-user-badge></app-github-user-badge>
+    </li>
   }
 </ul>
