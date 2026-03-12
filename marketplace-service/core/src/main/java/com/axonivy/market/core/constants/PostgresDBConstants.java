@@ -1,4 +1,4 @@
-package com.axonivy.market.constants;
+package com.axonivy.market.core.constants;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

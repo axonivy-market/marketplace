@@ -9,7 +9,7 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
+import com.axonivy.market.core.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;

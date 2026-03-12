@@ -8,7 +8,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.PostgresDBConstants.DESIGNER_VERSION;
+import static com.axonivy.market.core.constants.PostgresDBConstants.DESIGNER_VERSION;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
 
 

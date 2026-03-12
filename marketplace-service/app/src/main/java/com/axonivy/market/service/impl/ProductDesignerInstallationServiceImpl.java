@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.PostgresDBConstants;
+import com.axonivy.market.core.constants.PostgresDBConstants;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;

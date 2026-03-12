@@ -9,7 +9,7 @@ import java.util.List;
 
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
 
-import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
+import static com.axonivy.market.core.constants.PostgresDBConstants.VERSION;
 
 @Builder
 public class CustomProductModuleContentRepositoryImpl extends CoreAbstractBaseRepository<ProductModuleContent>

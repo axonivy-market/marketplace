@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.PostgresDBConstants.*;
+import static com.axonivy.market.core.constants.PostgresDBConstants.*;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_NAMES;
 

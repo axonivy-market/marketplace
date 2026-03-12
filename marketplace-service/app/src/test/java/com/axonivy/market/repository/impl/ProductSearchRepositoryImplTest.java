@@ -22,7 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.PostgresDBConstants.*;
+import static com.axonivy.market.core.constants.PostgresDBConstants.*;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.CUSTOM_ORDER;
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_MARKETPLACE_DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;

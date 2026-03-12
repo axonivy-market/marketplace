@@ -19,7 +19,7 @@ import java.util.List;
 
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ID;
 
-import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
+import static com.axonivy.market.core.constants.PostgresDBConstants.VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;

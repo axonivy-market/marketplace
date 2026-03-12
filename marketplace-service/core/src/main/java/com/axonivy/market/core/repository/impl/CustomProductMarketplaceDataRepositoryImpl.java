@@ -1,10 +1,10 @@
-package com.axonivy.market.repository.impl;
+package com.axonivy.market.core.repository.impl;
 
-import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.core.constants.CorePostgresDBConstants;
+import com.axonivy.market.core.constants.PostgresDBConstants;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
-import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
+import com.axonivy.market.core.repository.CustomProductMarketplaceDataRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 

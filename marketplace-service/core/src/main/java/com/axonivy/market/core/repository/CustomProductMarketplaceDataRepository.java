@@ -1,4 +1,4 @@
-package com.axonivy.market.repository;
+package com.axonivy.market.core.repository;
 
 public interface CustomProductMarketplaceDataRepository {
 

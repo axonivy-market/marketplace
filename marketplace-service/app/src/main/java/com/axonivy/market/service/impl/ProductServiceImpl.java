@@ -40,7 +40,7 @@ import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
+import com.axonivy.market.core.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
