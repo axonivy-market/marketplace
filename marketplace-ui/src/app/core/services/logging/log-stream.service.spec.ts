@@ -102,6 +102,23 @@ describe('LogStreamService', () => {
       service.connect();
       expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
+
+    it('should include auth headers in connection', () => {
+      const dummyHeaders = new HttpHeaders().set(
+        'Authorization',
+        'Bearer token'
+      );
+      mockAdminAuthService.getAuthHeaders.and.returnValue(dummyHeaders);
+
+      service.connect();
+
+      expect(fetchSpy).toHaveBeenCalled();
+      const args = fetchSpy.calls.mostRecent().args;
+      const options = args[1];
+      expect(options.headers).toEqual(
+        jasmine.objectContaining({ Authorization: 'Bearer token' })
+      );
+    });
   });
 
   describe('disconnection and state', () => {
