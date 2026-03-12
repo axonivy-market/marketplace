@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -278,7 +280,7 @@ class LogControllerTest {
   @Test
   void testStreamUsesFirstIpFromXForwardedFor() {
     Flux<String> expectedFlux = Flux.just("test");
-    when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1, 10.0.0.2");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("10.0.0.1, 10.0.0.2");
 
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
@@ -286,8 +288,8 @@ class LogControllerTest {
       Flux<String> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
-      verify(request, times(1)).getHeader("X-Forwarded-For");
-      verify(request, never()).getHeader("X-Real-IP");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, never()).getHeader(X_REAL_IP);
       verify(request, never()).getRemoteAddr();
     }
   }
@@ -295,8 +297,8 @@ class LogControllerTest {
   @Test
   void testStreamUsesXRealIpWhenForwardedForIsBlank() {
     Flux<String> expectedFlux = Flux.just("test");
-    when(request.getHeader("X-Forwarded-For")).thenReturn("   ");
-    when(request.getHeader("X-Real-IP")).thenReturn("192.168.1.10");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("   ");
+    when(request.getHeader(X_REAL_IP)).thenReturn("192.168.1.10");
 
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
@@ -304,8 +306,8 @@ class LogControllerTest {
       Flux<String> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
-      verify(request, times(1)).getHeader("X-Forwarded-For");
-      verify(request, times(1)).getHeader("X-Real-IP");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, times(1)).getHeader(X_REAL_IP);
       verify(request, never()).getRemoteAddr();
     }
   }
@@ -313,8 +315,8 @@ class LogControllerTest {
   @Test
   void testStreamUsesRemoteAddrWhenProxyHeadersMissing() {
     Flux<String> expectedFlux = Flux.just("test");
-    when(request.getHeader("X-Forwarded-For")).thenReturn(null);
-    when(request.getHeader("X-Real-IP")).thenReturn(" ");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn(null);
+    when(request.getHeader(X_REAL_IP)).thenReturn(" ");
     when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
@@ -323,8 +325,8 @@ class LogControllerTest {
       Flux<String> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
-      verify(request, times(1)).getHeader("X-Forwarded-For");
-      verify(request, times(1)).getHeader("X-Real-IP");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, times(1)).getHeader(X_REAL_IP);
       verify(request, times(1)).getRemoteAddr();
     }
   }

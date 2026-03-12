@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
+import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -89,7 +90,7 @@ class LimitCallingConfigTest {
 
   @Test
   void testShouldReturnFirstIpWhenXForwardedForHasMultipleIps() {
-    when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.45, 10.0.0.1, proxy");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("203.0.113.45, 10.0.0.1, proxy");
     when(request.getRemoteAddr()).thenReturn("192.168.0.5");
 
     String result = ReflectionTestUtils.invokeMethod(LimitCallingConfig.class,

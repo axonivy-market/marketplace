@@ -1,6 +1,8 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
@@ -24,6 +26,8 @@ import reactor.core.publisher.Flux;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @RestController
@@ -72,11 +76,11 @@ public class LogController {
   }
 
   private String resolveRequesterIp(HttpServletRequest request) {
-    String forwardedFor = request.getHeader("X-Forwarded-For");
+    String forwardedFor = request.getHeader(X_FORWARDED_FOR);
     if (StringUtils.isNotBlank(forwardedFor)) {
-      return forwardedFor.split(",")[0].trim();
+      return forwardedFor.split(CoreCommonConstants.COMMA)[0].trim();
     }
-    String realIp = request.getHeader("X-Real-IP");
+    String realIp = request.getHeader(X_REAL_IP);
     if (StringUtils.isNotBlank(realIp)) {
       return realIp;
     }
