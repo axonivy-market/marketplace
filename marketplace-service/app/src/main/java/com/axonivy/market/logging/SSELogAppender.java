@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -27,14 +29,22 @@ public class SSELogAppender extends AppenderBase<ILoggingEvent> {
 
   @Override
   protected void append(ILoggingEvent event) {
-    if (LogStreamRegistry.hasSubscribers()) {
-      String logsRecord;
-      if (encoder != null) {
-        logsRecord = new String(encoder.encode(event)).trim();
-      } else {
-        logsRecord = event.getFormattedMessage();
-      }
-      LogStreamRegistry.push(logsRecord);
+    LogStreamRegistry.push(resolveLogRecord(event));
+  }
+
+  private String resolveLogRecord(ILoggingEvent event) {
+    if (encoder == null) {
+      return formattedMessage(event);
     }
+
+    byte[] encoded = encoder.encode(event);
+    if (encoded == null) {
+      return formattedMessage(event);
+    }
+    return new String(encoded).trim();
+  }
+
+  private String formattedMessage(ILoggingEvent event) {
+    return Objects.toString(event.getFormattedMessage(), "");
   }
 }

@@ -61,13 +61,13 @@ class SseLogAppenderTest {
 
   @Test
   void testAppendWithNoSubscribers() {
+    String encodedMessage = "Encoded log message\n";
     appender.setEncoder(mockEncoder);
     appender.start();
+    when(mockEncoder.encode(mockEvent)).thenReturn(encodedMessage.getBytes());
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(false);
       appender.append(mockEvent);
-      mockedRegistry.verify( LogStreamRegistry::hasSubscribers);
-      mockedRegistry.verify(() -> LogStreamRegistry.push(anyString()), never());
+      mockedRegistry.verify(() -> LogStreamRegistry.push(anyString()), times(1));
     }
   }
 
@@ -78,7 +78,6 @@ class SseLogAppenderTest {
     appender.start();
     when(mockEncoder.encode(mockEvent)).thenReturn(encodedMessage.getBytes());
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
       appender.append(mockEvent);
       ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
@@ -93,7 +92,6 @@ class SseLogAppenderTest {
     appender.start();
     when(mockEvent.getFormattedMessage()).thenReturn(formattedMessage);
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
       appender.append(mockEvent);
       ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
@@ -109,7 +107,6 @@ class SseLogAppenderTest {
     appender.start();
     when(mockEncoder.encode(mockEvent)).thenReturn(encodedMessageWithWhitespace.getBytes());
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
       appender.append(mockEvent);
       ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
@@ -128,7 +125,6 @@ class SseLogAppenderTest {
         .thenReturn(message1.getBytes())
         .thenReturn(message2.getBytes());
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
       appender.append(mockEvent);
       appender.append(mockEvent);
       mockedRegistry.verify(() -> LogStreamRegistry.push(anyString()), times(2));
@@ -152,7 +148,6 @@ class SseLogAppenderTest {
     appender.start();
     when(mockEvent.getFormattedMessage()).thenReturn(emptyMessage);
     try (MockedStatic<LogStreamRegistry> mockedRegistry = mockStatic(LogStreamRegistry.class)) {
-      mockedRegistry.when(LogStreamRegistry::hasSubscribers).thenReturn(true);
       appender.append(mockEvent);
       ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
       mockedRegistry.verify(() -> LogStreamRegistry.push(captor.capture()), times(1));
