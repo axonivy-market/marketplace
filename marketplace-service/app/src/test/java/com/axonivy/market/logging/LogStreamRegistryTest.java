@@ -104,21 +104,21 @@ class LogStreamRegistryTest {
 
   @Test
   void testPushLogFailure(CapturedOutput output) {
-    Object originalSink = ReflectionTestUtils.getField(LogStreamRegistry.class, "SINK");
+    Object originalSink = ReflectionTestUtils.getField(LogStreamRegistry.class, "sink");
     Sinks.Many<String> mockSink = org.mockito.Mockito.mock(Sinks.Many.class);
     org.mockito.Mockito.when(mockSink.tryEmitNext(org.mockito.ArgumentMatchers.anyString()))
         .thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
     org.mockito.Mockito.when(mockSink.currentSubscriberCount()).thenReturn(0);
 
     try {
-      ReflectionTestUtils.setField(LogStreamRegistry.class, "SINK", mockSink);
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", mockSink);
 
       LogStreamRegistry.push("Test Failure");
 
       assertTrue(output.getOut().contains("Failed to emit log line to stream registry"), 
           "Should log warning on failure");
     } finally {
-      ReflectionTestUtils.setField(LogStreamRegistry.class, "SINK", originalSink);
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
     }
   }
 }
