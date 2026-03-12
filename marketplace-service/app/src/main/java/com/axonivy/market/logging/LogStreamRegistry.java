@@ -9,7 +9,7 @@ import reactor.core.publisher.Sinks;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LogStreamRegistry {
-  private static final Sinks.Many<String> SINK = Sinks.many().replay().limit(1);
+  private static Sinks.Many<String> SINK = Sinks.many().replay().limit(1);
 
   public static Flux<String> asFlux() {
     return SINK.asFlux();
