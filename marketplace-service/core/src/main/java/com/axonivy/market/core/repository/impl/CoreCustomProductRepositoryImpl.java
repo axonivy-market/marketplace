@@ -65,6 +65,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
+    detachExludedField(searchCriteria, resultList);
+
     long total = resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
       total = getTotalCount(criteriaContext.builder(), searchCriteria);
@@ -247,5 +249,19 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   @Override
   protected Class<Product> getType() {
     return Product.class;
+  }
+
+  private void detachExludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
+    if (isFieldExcluded(searchCriteria, DocumentField.SHORT_DESCRIPTIONS)) {
+      resultList.forEach(product -> {
+        getEntityManager().detach(product);
+        product.setShortDescriptions(null);
+      });
+    }
+  }
+
+  private boolean isFieldExcluded(ProductSearchCriteria criteria, DocumentField field) {
+    return criteria.getExcludeFields() != null
+        && criteria.getExcludeFields().contains(field);
   }
 }
