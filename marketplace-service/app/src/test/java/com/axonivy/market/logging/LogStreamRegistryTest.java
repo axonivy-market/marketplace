@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.boot.test.system.CapturedOutput;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
