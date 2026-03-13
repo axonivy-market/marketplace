@@ -6,7 +6,7 @@ on:
     - cron: '0 0 * * *'
 
 env:
-  API_URL: "https://market.axonivy.com/marketplace-service/api/product?type=all&language=en&isRESTClient=false"
+  API_URL: "https://market.axonivy.com/app/api/product?type=all&language=en&isRESTClient=false"
   BASE_URL: "https://market.axonivy.com"
   BATCH_SIZE: 8
 

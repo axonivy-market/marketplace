@@ -11,5 +11,6 @@ export const environment = {
   githubApiUrl: 'https://api.github.com',
   dayInMiliseconds: 86400000,
   matomoSiteId: 0,
-  matomoTrackerUrl: '//matomo-web'
+  matomoTrackerUrl: '//matomo-web',
+  siblingNodeAppIp: ''
 };

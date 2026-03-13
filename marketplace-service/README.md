@@ -1,44 +1,100 @@
-# Getting Started
+# Marketplace Service
 
-### Reference Documentation
+Spring Boot 3.2.5 backend application for AxonIvy Marketplace with three specialized Maven modules.
 
-For further reference, please consider the following sections:
+## Modules
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/)
-* [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
+### Core Module
+**Shared foundation**: Data entities, repositories, services, utilities
+**Key components**: Product, Metadata, Image entities; service layer for all modules
+**Dependency**: Base module used by App and Stable
+**Learn more**: See [core/README.md](core/README.md)
 
-### Guides
+### App Module
+**Production marketplace API**: Full CRUD operations with GitHub integration
+**Features**: Product management, image handling, Maven artifact indexing
+**API Port**: 8080
+**Learn more**: See [app/README.md](app/README.md)
 
-The following guides illustrate how to use some features concretely:
+### Stable Module
+**Read-only API**: For Neo Designer, VSCode v14, and AI features
+**Features**: Versioned product queries, optimized for reads
+**API Port**: 8085
+**Learn more**: See [stable/README.md](stable/README.md)
 
-* Installing postgresql, and access it as Url jdbc:postgresql://localhost:5432/marketplace-service, and you can create
-  and name whatever you want,then you should put them to application.properties
-* You can change the postgreSQL configuration in file `application.properties`
-    ```
-    spring.datasource.url=${POSTGRES_HOST_URL}
-    spring.datasource.username=${POSTGRES_USERNAME}
-    spring.datasource.password=${POSTGRES_PASSWORD}
-    spring.jpa.show-sql=true/false
-    spring.datasource.driver-class-name=org.postgresql.Driver
-    ```
-* Update GitHub token in file `github.token`
-* Run mvn clean install to build project
-* Run mvn test to test all tests
+## Prerequisites
 
-### Access Swagger URL: http://{your-host}/swagger-ui/index.html
+- JDK 21+
+- Maven 3.9+
+- PostgreSQL 17+
 
-### Install Lombok for Eclipse IDE
+## Environment Setup
 
-* Download lombok here https://projectlombok.org/download
-* run command "java -jar lombok.jar" then you can access file “eclipse.ini“ in eclipse folder where you install → there
-  is a text like this:  -javaagent:C:\Users\tvtphuc\eclipse\jee-2024-032\eclipse\lombok.jar → it means you are
-  successful
-* Start eclipse
-* Import the project then in the eclipse , you should run the command “mvn clean install“
-* After that you go to class MarketplaceServiceApplication → right click to main method → click run as → choose Java
-  Application
-* Then you can send a request in postman
-* If you want to run single test in class UserServiceImplTest. You can right-click to method testFindAllUser and right
-  click → select Run as → choose JUnit Test
+All modules use the same database configuration via environment variables:
+
+```bash
+export POSTGRES_HOST_URL=jdbc:postgresql://localhost:5432/marketplace
+export POSTGRES_USERNAME=postgres
+export POSTGRES_PASSWORD=your_password
+
+# App module only
+export GITHUB_TOKEN=your_github_token
+```
+
+## Build All Modules
+
+```bash
+mvn clean install
+```
+
+## Run Individual Modules
+
+```bash
+# Build and run App module (Port 8080)
+mvn -f app/pom.xml spring-boot:run
+
+# Build and run Stable module (Port 8085)
+mvn -f stable/pom.xml spring-boot:run
+```
+
+## Module Dependencies
+
+```
+app ──┐
+      ├─→ core
+      │
+stable┘
+```
+
+Both App and Stable depend on Core for shared data models and repositories.
+
+## Technology Stack
+
+Java 21 LTS • Spring Boot 3.2.5 • Spring Data JPA • PostgreSQL • Lombok • Swagger/OpenAPI 3.1
+
+## Testing
+
+```bash
+# All modules
+mvn test
+
+# Specific module
+mvn -f app/pom.xml test
+mvn -f stable/pom.xml test
+mvn -f core/pom.xml test
+```
+
+## API Documentation
+
+After running either module, access API docs:
+
+- App: http://localhost:8080/swagger-ui/index.html
+- Stable: http://localhost:8085/swagger-ui/index.html
+
+## References
+
+- [Core Module](core/README.md) - Shared data models and services
+- [App Module](app/README.md) - Production marketplace API
+- [Stable Module](stable/README.md) - Read-only integrations API
+
+

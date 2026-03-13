@@ -46,7 +46,7 @@ pipeline {
         withSonarQubeEnv('Sonar') {
           sh '''
             mvn -B verify sonar:sonar \
-              --file ./marketplace-service/pom.xml \
+              --file marketplace-service/app/pom.xml \
               -Dsonar.projectKey=$SONAR_PROJECT_KEY \
               -Dsonar.projectName="${SONAR_PROJECT_NAME}"
           '''
