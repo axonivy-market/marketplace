@@ -1,20 +1,16 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.service.CoreProductMarketplaceDataService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.OutputStream;
 
-public interface ProductMarketplaceDataService {
+public interface ProductMarketplaceDataService extends CoreProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
 
-  int updateInstallationCountForProduct(String id, String designerVersion);
-
-  int updateProductInstallationCount(String id);
-
-  ProductMarketplaceData getProductMarketplaceData(String id);
+//  int updateInstallationCountForProduct(String id, String designerVersion);
 
   Integer getInstallationCount(String id);
 

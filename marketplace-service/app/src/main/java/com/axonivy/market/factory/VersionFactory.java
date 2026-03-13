@@ -118,7 +118,7 @@ public class VersionFactory extends CoreVersionFactory {
 
     List<String> artifactVersions = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
         new LatestVersionComparator()).toList();
-    List<String> releasedVersions = artifactVersions.stream().filter(VersionUtils::isReleasedVersion).sorted(
+    List<String> releasedVersions = artifactVersions.stream().filter(CoreVersionUtils::isReleasedVersion).sorted(
         new LatestVersionComparator()).toList();
 
     // Get latest released version from metadata

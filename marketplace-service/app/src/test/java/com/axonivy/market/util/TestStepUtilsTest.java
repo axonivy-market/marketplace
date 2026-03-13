@@ -1,8 +1,8 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.entity.TestStep;
+import com.axonivy.market.core.enums.TestStatus;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

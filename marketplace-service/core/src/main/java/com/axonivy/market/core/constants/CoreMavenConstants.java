@@ -12,5 +12,6 @@ public class CoreMavenConstants {
   public static final String TEST_ARTIFACT_ID = "-test";
   public static final String DEFAULT_IVY_MAVEN_BASE_URL = "https://maven.axonivy.com";
   public static final String DEV_RELEASE_PREFIX = "dev-";
+  public static final String DEFAULT_PRODUCT_FOLDER_TYPE = "zip";
 }
 

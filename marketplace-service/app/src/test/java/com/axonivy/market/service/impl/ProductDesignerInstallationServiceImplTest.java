@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import org.junit.jupiter.api.BeforeEach;

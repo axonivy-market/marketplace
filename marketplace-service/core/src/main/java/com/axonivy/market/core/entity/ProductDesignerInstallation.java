@@ -1,4 +1,6 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
+
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_DESIGNER_INSTALLATION;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -11,8 +13,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serial;
-
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INSTALLATION;
 
 @Getter
 @Setter

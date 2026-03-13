@@ -23,6 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import static org.mockito.Mockito.*;
+
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -38,8 +41,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductMarketplaceDataServiceImplTest extends BaseSetup {
@@ -119,23 +120,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateProductInstallationCountWhenNotSynchronized() {
-    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-    mockProductMarketplaceData.setSynchronizedInstallationCount(false);
-    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
-        INSTALLATION_FILE_PATH);
-
-    when(productMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
-    when(productMarketplaceDataRepo.updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt())).thenReturn(10);
-
-    int result = productMarketplaceDataService.updateProductInstallationCount(SAMPLE_PRODUCT_ID);
-
-    assertEquals(10, result,
-        "Installation count should match 10 when not synchronized");
-    verify(productMarketplaceDataRepo).updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt());
-  }
-
-  @Test
   void testUpdateInstallationCountForProduct() {
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     mockProductMarketplaceData.setSynchronizedInstallationCount(true);
@@ -152,32 +136,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID, StringUtils.EMPTY);
     assertEquals(4, result, "Installation count should match 4");
-  }
-
-  @Test
-  void testSyncInstallationCountWithNewProduct() {
-    ProductMarketplaceData mockProductMarketplaceData = ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).build();
-    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
-        INSTALLATION_FILE_PATH);
-
-    int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
-        mockProductMarketplaceData.getId());
-
-    assertTrue(installationCount >= 20 && installationCount <= 50,
-        "Installation count should be more than 20 and less than 50");
-  }
-
-  @Test
-  void testGetInstallationCountFromFileOrInitializeRandomly() {
-    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
-        INSTALLATION_FILE_PATH);
-    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-
-    int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
-        mockProductMarketplaceData.getId());
-
-    assertEquals(40, installationCount,
-        "Installation count should match 40 from file");
   }
 
   @Test

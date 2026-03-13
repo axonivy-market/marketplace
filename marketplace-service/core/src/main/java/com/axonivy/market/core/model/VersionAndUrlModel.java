@@ -1,4 +1,4 @@
-package com.axonivy.market.model;
+package com.axonivy.market.core.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

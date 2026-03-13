@@ -6,10 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import static com.axonivy.market.core.constants.BasePackageConstants.*;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = {CORE_BASE_PACKAGE_NAME, STABLE_PACKAGE_NAME})
-@EnableJpaRepositories(basePackages = CORE_BASE_PACKAGE_REPO_NAME)
+@EnableJpaRepositories(basePackages = {CORE_BASE_PACKAGE_REPO_NAME, STABLE_PACKAGE_REPO_NAME})
+@EnableJpaAuditing
 @EntityScan(basePackages = CORE_BASE_PACKAGE_ENTITY_NAME)
 public class MarketplaceStableApplication {
   public static void main(String[] args) {

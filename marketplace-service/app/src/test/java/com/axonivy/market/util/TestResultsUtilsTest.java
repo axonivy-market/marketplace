@@ -1,9 +1,9 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.entity.GithubRepo;
+import com.axonivy.market.core.entity.TestStep;
+import com.axonivy.market.core.enums.TestStatus;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.axonivy.market.model.TestResults;
 import org.junit.jupiter.api.Test;
 

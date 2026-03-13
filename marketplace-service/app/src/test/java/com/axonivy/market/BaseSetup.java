@@ -8,11 +8,13 @@ import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.CodeScanning;
@@ -21,7 +23,6 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
-import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
@@ -130,9 +131,9 @@ public class BaseSetup extends CoreBaseSetup {
     return new PageImpl<>(mockProducts);
   }
 
-  protected List<ProductDesignerInstallation> createProductDesignerInstallationsMock() {
-    var mockProductDesignerInstallations = new ArrayList<ProductDesignerInstallation>();
-    ProductDesignerInstallation mockProductDesignerInstallation = new ProductDesignerInstallation();
+  protected List<com.axonivy.market.core.entity.ProductDesignerInstallation> createProductDesignerInstallationsMock() {
+    var mockProductDesignerInstallations = new ArrayList<com.axonivy.market.core.entity.ProductDesignerInstallation>();
+    com.axonivy.market.core.entity.ProductDesignerInstallation mockProductDesignerInstallation = new com.axonivy.market.core.entity.ProductDesignerInstallation();
     mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
     mockProductDesignerInstallation.setDesignerVersion("10.0.22");
     mockProductDesignerInstallation.setInstallationCount(50);

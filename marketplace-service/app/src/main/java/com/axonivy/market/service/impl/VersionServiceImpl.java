@@ -1,43 +1,35 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
-import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.service.impl.CoreVersionServiceImpl;
-import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.factory.VersionFactory;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.util.VersionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 @Log4j2
 @Service
+@Primary
 public class VersionServiceImpl extends CoreVersionServiceImpl implements VersionService {
   private static final Pattern MAIN_VERSION_PATTERN =
       Pattern.compile(CoreMavenConstants.MAIN_VERSION_REGEX);
@@ -46,11 +38,11 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
-  public VersionServiceImpl(CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
-      CoreMetadataRepository coreMetadataRepository, ProductJsonContentRepository productJsonRepo,
+  public VersionServiceImpl(
+      ProductJsonLinkBuilder productJsonLinkBuilder, ProductJsonContentRepository productJsonRepo,
       ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo) {
-    super(productJsonRepo, coreMavenArtifactVersionRepo, coreMetadataRepository);
+    super(productJsonRepo, mavenArtifactVersionRepo, metadataRepo, productJsonLinkBuilder);
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.metadataRepo = metadataRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
@@ -59,31 +51,12 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   @Override
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {
-    Map<String, Object> result = getProductJsonContentByIdAndVersion(productId, designerVersion);
+    Map<String, Object> result = getProductJsonContentByIdAndVersion(productId, version);
+
     if (!CollectionUtils.isEmpty(result)) {
       productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     }
     return result;
-  }
-
-  @Override
-  public List<VersionAndUrlModel> getInstallableVersions(String productId,
-      Boolean isShowDevVersion, String designerVersion) {
-    List<String> releasedVersions =
-        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
-    if (CollectionUtils.isEmpty(releasedVersions)) {
-      return Collections.emptyList();
-    }
-
-    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-      var link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
-              designerVersion)).withSelfRel();
-      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
-      versionAndUrlList.add(versionAndUrlModel);
-    }
-    return versionAndUrlList;
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {

@@ -1,6 +1,9 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.entity.GenericIdEntity;
+import static com.axonivy.market.core.constants.CoreEntityConstants.GITHUB_REPO;
+
+import static com.axonivy.market.core.constants.CoreEntityConstants.REPOSITORY_ID;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -17,9 +20,6 @@ import java.io.IOException;
 import java.io.Serial;
 import java.util.HashSet;
 import java.util.Set;
-
-import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
-import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 
 @Getter
 @Setter

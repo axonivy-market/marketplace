@@ -1,7 +1,7 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.entity.TestStep;
+import com.axonivy.market.core.enums.WorkFlowType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

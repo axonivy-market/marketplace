@@ -1,7 +1,7 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.criteria.MonitoringSearchCriteria;
-import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.core.criteria.MonitoringSearchCriteria;
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.repository.CustomGithubRepoRepository;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import org.apache.commons.lang3.BooleanUtils;

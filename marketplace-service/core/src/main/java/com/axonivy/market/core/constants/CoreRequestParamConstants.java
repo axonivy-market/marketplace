@@ -13,4 +13,5 @@ public class CoreRequestParamConstants {
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String PRODUCT_VERSION = "productVersion";
   public static final String URL = "url";
+  public static final String VERSION = "version";
 }

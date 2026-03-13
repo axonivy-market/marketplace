@@ -1,4 +1,4 @@
-package com.axonivy.market.criteria;
+package com.axonivy.market.core.criteria;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

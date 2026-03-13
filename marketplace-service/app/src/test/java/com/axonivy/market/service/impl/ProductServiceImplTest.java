@@ -4,13 +4,13 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
@@ -457,7 +457,7 @@ class ProductServiceImplTest extends BaseSetup {
          MockedStatic<CoreVersionUtils> mockCoreVersionUtils = Mockito.mockStatic(CoreVersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
           mockMavenArtifactVersions);
-      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
+      when(CoreVersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);

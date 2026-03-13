@@ -1,7 +1,7 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;

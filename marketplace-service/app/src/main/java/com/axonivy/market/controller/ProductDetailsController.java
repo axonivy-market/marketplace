@@ -5,10 +5,13 @@ import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
+
+import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.core.model.ProductDetailModel;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;

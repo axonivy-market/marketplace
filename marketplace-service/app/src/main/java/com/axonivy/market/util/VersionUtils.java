@@ -7,6 +7,11 @@ import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.utils.CoreVersionUtils;
+
+import static com.axonivy.market.core.utils.CoreVersionUtils.isReleasedVersion;
+
+import static com.axonivy.market.core.utils.CoreVersionUtils.isSprintVersion;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -41,36 +46,36 @@ public class VersionUtils {
     return version.endsWith(SNAPSHOT_RELEASE_POSTFIX);
   }
 
-  public static boolean isSprintVersion(String version) {
-    return version.contains(SPRINT_RELEASE_POSTFIX);
-  }
+//  public static boolean isSprintVersion(String version) {
+//    return version.contains(SPRINT_RELEASE_POSTFIX);
+//  }
 
-  public static boolean isValidFormatReleasedVersion(String version) {
-    return StringUtils.isNumeric(MAIN_VERSION_PATTERN.split(version)[0]);
-  }
+//  public static boolean isValidFormatReleasedVersion(String version) {
+//    return StringUtils.isNumeric(MAIN_VERSION_PATTERN.split(version)[0]);
+//  }
 
-  public static boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
-  }
+//  public static boolean isReleasedVersion(String version) {
+//    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
+//  }
 
   public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
     return isReleasedVersion(version) && version.startsWith(designerVersion);
   }
 
-  public static String getBugfixVersion(String version) {
-    if (isSnapshotVersion(version)) {
-      version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
-    } else if (isSprintVersion(version)) {
-      version = SPRINT_RELEASE_PATTERN.split(version)[0];
-    }
-    String[] segments = MAIN_VERSION_PATTERN.split(version);
-
-    if (segments.length >= THREE) {
-      segments[TWO] = segments[TWO].split(DASH_SEPARATOR)[0];
-      return segments[0] + DOT_SEPARATOR + segments[ONE] + DOT_SEPARATOR + segments[TWO];
-    }
-    return version;
-  }
+//  public static String getBugfixVersion(String version) {
+//    if (isSnapshotVersion(version)) {
+//      version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
+//    } else if (isSprintVersion(version)) {
+//      version = SPRINT_RELEASE_PATTERN.split(version)[0];
+//    }
+//    String[] segments = MAIN_VERSION_PATTERN.split(version);
+//
+//    if (segments.length >= THREE) {
+//      segments[TWO] = segments[TWO].split(DASH_SEPARATOR)[0];
+//      return segments[0] + DOT_SEPARATOR + segments[ONE] + DOT_SEPARATOR + segments[TWO];
+//    }
+//    return version;
+//  }
 
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
       Set<String> syncTags) {
@@ -94,30 +99,30 @@ public class VersionUtils {
         isReleasedVersion(version);
   }
 
-  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
-    List<String> installableVersions = new ArrayList<>();
-    if (CollectionUtils.isEmpty(metadataList)) {
-      return installableVersions;
-    }
-    metadataList.stream().filter(
-        metadata -> MavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
-        productMeta -> installableVersions.addAll(productMeta.getVersions()));
-    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
-  }
+//  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+//    List<String> installableVersions = new ArrayList<>();
+//    if (CollectionUtils.isEmpty(metadataList)) {
+//      return installableVersions;
+//    }
+//    metadataList.stream().filter(
+//        metadata -> MavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
+//        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+//    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
+//  }
 
-  public static String getPrefixOfVersion(String version) {
-    return version.substring(0, version.indexOf(DOT_SEPARATOR));
-  }
+//  public static String getPrefixOfVersion(String version) {
+//    return version.substring(0, version.indexOf(DOT_SEPARATOR));
+//  }
 
-  public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
-      boolean isShowDevVersion) {
-    Set<String> versions = existingMavenArtifactVersion.stream()
-        .map(MavenArtifactVersion::getId)
-        .map(MavenArtifactKey::getProductVersion)
-        .collect(Collectors.toSet());
-
-    return CoreVersionUtils.getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
-  }
+//  public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
+//      boolean isShowDevVersion) {
+//    Set<String> versions = existingMavenArtifactVersion.stream()
+//        .map(MavenArtifactVersion::getId)
+//        .map(MavenArtifactKey::getProductVersion)
+//        .collect(Collectors.toSet());
+//
+//    return CoreVersionUtils.getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
+//  }
 
   public static boolean isMavenVersion(String versionStr) {
     if (StringUtils.isBlank(versionStr)) {
@@ -127,27 +132,27 @@ public class VersionUtils {
     return VERSION_PATTERN.matcher(versionStr).matches();
   }
 
-  public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
-    String versionRangeSuffix = CommonConstants.PLUS;
-    if (BooleanUtils.isTrue(isDeprecatedProduct)) {
-      versionRangeSuffix = EMPTY;
-    }
-    if (versions.size() == 1) {
-      return splitVersion(versions.get(0)).concat(versionRangeSuffix);
-    }
-    String maxVersion = splitVersion(versions.get(0)).concat(versionRangeSuffix);
-    String minVersion = splitVersion(versions.get(versions.size() - 1));
-    if (VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion))) {
-      return minVersion.concat(versionRangeSuffix);
-    }
-    return String.format(CommonConstants.COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
-  }
+//  public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
+//    String versionRangeSuffix = CommonConstants.PLUS;
+//    if (BooleanUtils.isTrue(isDeprecatedProduct)) {
+//      versionRangeSuffix = EMPTY;
+//    }
+//    if (versions.size() == 1) {
+//      return splitVersion(versions.get(0)).concat(versionRangeSuffix);
+//    }
+//    String maxVersion = splitVersion(versions.get(0)).concat(versionRangeSuffix);
+//    String minVersion = splitVersion(versions.get(versions.size() - 1));
+//    if (VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion))) {
+//      return minVersion.concat(versionRangeSuffix);
+//    }
+//    return String.format(CommonConstants.COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+//  }
 
-  private static String splitVersion(String version) {
-    int firstDot = version.indexOf(DOT_SEPARATOR);
-    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
-    return version.substring(0, secondDot);
-  }
+//  private static String splitVersion(String version) {
+//    int firstDot = version.indexOf(DOT_SEPARATOR);
+//    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
+//    return version.substring(0, secondDot);
+//  }
 
   public static boolean isDevelopmentVersion(String version) {
     if (StringUtils.isBlank(version)) {
