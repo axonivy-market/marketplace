@@ -145,7 +145,12 @@ class LogControllerTest {
       Flux<String> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      assertNotNull(result, "Stream result should not be null");
+      List<String> collected = result
+          .take(3)
+          .collectList()
+          .block();
+      assertNotNull(collected, "Collected list should not be null");
+      assertEquals(Arrays.asList("Log 1", "Log 2", "Log 3"), collected, "Streamed log lines should match source Flux");
     }
   }
 
