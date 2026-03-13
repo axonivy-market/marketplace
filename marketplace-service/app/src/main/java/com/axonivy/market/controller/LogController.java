@@ -5,6 +5,7 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
+import com.axonivy.market.util.FileUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,14 +54,17 @@ public class LogController {
   @GetMapping(DOWNLOAD_LOG_ARTIFACT)
   @Operation(hidden = true)
   public ResponseEntity<StreamingResponseBody> downloadLog(@RequestParam String fileName) {
-    if (!logService.isLogFileExisted(fileName)) {
+    if (StringUtils.isBlank(fileName)) {
+      return ResponseEntity.badRequest().build();
+    }
+    var safeFileName = FileUtils.sanitizeFileName(fileName);
+    if (StringUtils.isBlank(safeFileName) || !logService.isLogFileExisted(safeFileName)) {
       return ResponseEntity.notFound().build();
     }
-    StreamingResponseBody streamingBody = outputStream -> logService.streamLogContent(fileName, outputStream);
     return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", fileName))
-        .body(streamingBody);
+        .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", safeFileName))
+        .body(outputStream -> logService.streamLogContent(safeFileName, outputStream));
   }
 
   @Authorized

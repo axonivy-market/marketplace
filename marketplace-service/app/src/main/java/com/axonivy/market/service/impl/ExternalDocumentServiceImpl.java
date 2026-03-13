@@ -3,9 +3,9 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
@@ -64,7 +64,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  private static final Pattern SAFE_PATH_PATTERN = Pattern.compile(CommonConstants.SAFE_PATH_REGEX);
+  private static final Pattern SAFE_PATH_PATTERN = RegexConstants.SAFE_PATH_PATTERN;
   private final ProductRepository productRepo;
   private final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   private final FileDownloadService fileDownloadService;
