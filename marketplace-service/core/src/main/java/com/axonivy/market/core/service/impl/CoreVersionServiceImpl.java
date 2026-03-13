@@ -2,7 +2,6 @@ package com.axonivy.market.core.service.impl;
 
 import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
-import com.axonivy.market.core.controller.CoreProductDetailsController;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
@@ -21,7 +20,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -37,7 +35,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.TEST_ARTIFACT
 import static com.axonivy.market.core.constants.CoreProductJsonConstants.NAME;
 
 @Log4j2
-//@Service
+@Service
 @AllArgsConstructor
 public class CoreVersionServiceImpl implements CoreVersionService {
   private final CoreProductJsonContentRepository coreProductJsonRepo;

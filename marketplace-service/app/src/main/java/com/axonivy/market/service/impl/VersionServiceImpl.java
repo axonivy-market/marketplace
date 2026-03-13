@@ -7,8 +7,6 @@ import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
-import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.service.impl.CoreVersionServiceImpl;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -19,6 +17,7 @@ import com.axonivy.market.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,10 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
 @Log4j2
 @Service
+@Primary
 public class VersionServiceImpl extends CoreVersionServiceImpl implements VersionService {
   private static final Pattern MAIN_VERSION_PATTERN =
       Pattern.compile(CoreMavenConstants.MAIN_VERSION_REGEX);
@@ -41,8 +39,6 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   public VersionServiceImpl(
-//      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo,
-//      CoreMetadataRepository coreMetadataRepository,
       ProductJsonLinkBuilder productJsonLinkBuilder, ProductJsonContentRepository productJsonRepo,
       ProductMarketplaceDataService productMarketplaceDataService, MetadataRepository metadataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepo) {
@@ -62,26 +58,6 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     }
     return result;
   }
-
-//  @Override
-//  public List<VersionAndUrlModel> getInstallableVersions(String productId,
-//      Boolean isShowDevVersion, String designerVersion) {
-//    List<String> releasedVersions =
-//        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
-//    if (CollectionUtils.isEmpty(releasedVersions)) {
-//      return Collections.emptyList();
-//    }
-//
-//    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-//    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-//      var link = linkTo(
-//          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
-//              designerVersion)).withSelfRel();
-//      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
-//      versionAndUrlList.add(versionAndUrlModel);
-//    }
-//    return versionAndUrlList;
-//  }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
     String[] artifactParts = MAIN_VERSION_PATTERN.split(StringUtils.defaultString(artifact));

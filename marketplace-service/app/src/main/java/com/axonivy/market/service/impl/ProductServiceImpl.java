@@ -19,13 +19,7 @@ import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.VersionAndUrlModel;
-import com.axonivy.market.core.repository.CoreGithubRepoRepository;
-import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
-import com.axonivy.market.core.repository.CoreMetadataRepository;
-import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
-import com.axonivy.market.core.service.CoreProductMarketplaceDataService;
-import com.axonivy.market.core.service.CoreVersionService;
 import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.entity.GitHubRepoMeta;
@@ -125,12 +119,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(CoreProductRepository coreProductRepo, CoreMetadataRepository coreMetadataRepo,
-//      CoreProductMarketplaceDataService coreProductMarketplaceDataService,
-//      CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository,
-//      CoreProductJsonContentRepository coreProductJsonContentRepo,
-//      CoreGithubRepoRepository coreGithubRepository,
-//      CoreVersionService coreVersionService
+  public ProductServiceImpl(CoreProductRepository coreProductRepo,
       ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepo,
@@ -586,60 +575,11 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
   }
 
-//  @Override
-//  public Product fetchBestMatchProductDetail(String id, String version) {
-//    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
-//        metadataRepo.findByProductId(id));
-//    String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
-//    // Cover exception case of employee onboarding without any product.json file
-//    Product product;
-//    if (StringUtils.isBlank(bestMatchVersion)) {
-//      product = getProductByIdWithNewestReleaseVersion(id, false);
-//    } else {
-//      product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
-//    }
-//
-//    return Optional.ofNullable(product).map((Product productItem) -> {
-//      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-//      productItem.setInstallationCount(installationCount);
-//
-//      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-//      productItem.setCompatibilityRange(compatibilityRange);
-//      updateFocusedStatusForProduct(product);
-//      productItem.setBestMatchVersion(bestMatchVersion);
-//      return productItem;
-//    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
-//  }
-
   @Override
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return VersionFactory.get(versions, version);
-  }
-
-  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
-    List<String> versions;
-    String version = StringUtils.EMPTY;
-
-    List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(id);
-
-    if (ObjectUtils.isNotEmpty(mavenArtifactVersions)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion));
-      version = CollectionUtils.firstElement(versions);
-    }
-
-    // Cover exception case of employee onboarding without any product.json file
-    if (StringUtils.isBlank(version)) {
-      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
-      version = CollectionUtils.firstElement(versions);
-    }
-
-    var product = productRepo.getProductByIdAndVersion(id, version);
-    productJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
-        ProductJsonContent::getContent).findFirst().ifPresent(
-        jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
-    return product;
   }
 
   @Override

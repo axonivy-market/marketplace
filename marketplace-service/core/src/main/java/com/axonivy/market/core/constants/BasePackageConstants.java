@@ -9,5 +9,6 @@ public class BasePackageConstants {
   public static final String APP_PACKAGE_NAME = "com.axonivy.market";
   public static final String STABLE_PACKAGE_NAME = "com.axonivy.market.stable";
   public static final String CORE_BASE_PACKAGE_REPO_NAME = CORE_BASE_PACKAGE_NAME + ".repository";
+  public static final String STABLE_PACKAGE_REPO_NAME = STABLE_PACKAGE_NAME + ".repository";
   public static final String CORE_BASE_PACKAGE_ENTITY_NAME = CORE_BASE_PACKAGE_NAME + ".entity";
 }

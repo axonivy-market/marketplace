@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@Service
+@Service
 @Log4j2
 @RequiredArgsConstructor
 public class CoreProductMarketplaceDataServiceImpl implements CoreProductMarketplaceDataService {

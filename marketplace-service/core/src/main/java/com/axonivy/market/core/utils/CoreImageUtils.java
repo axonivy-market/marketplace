@@ -1,20 +1,19 @@
 package com.axonivy.market.core.utils;
 
-import static com.axonivy.market.core.constants.CoreCommonConstants.IMAGE_ID_PREFIX;
-
 import com.axonivy.market.core.controller.CoreImageController;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import static com.axonivy.market.core.constants.CoreCommonConstants.IMAGE_ID_PREFIX;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public class CoreImageUtils {
   public static final String IMAGE_ID_FORMAT_REGEX = "imageId-\\w+";

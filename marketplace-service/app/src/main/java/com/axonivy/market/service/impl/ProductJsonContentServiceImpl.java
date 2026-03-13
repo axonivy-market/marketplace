@@ -14,7 +14,7 @@ public class ProductJsonContentServiceImpl implements ProductJsonContentService 
   private final ProductJsonContentRepository productJsonRepo;
 
   @Override
-  public ProductJsonContent updateProductJsonContent(String jsonContent, String currentVersion, String replaceVersion,
+  public void updateProductJsonContent(String jsonContent, String currentVersion, String replaceVersion,
       String productId, String productName) {
     if (ObjectUtils.isNotEmpty(jsonContent)) {
       var productJsonContent = new ProductJsonContent();

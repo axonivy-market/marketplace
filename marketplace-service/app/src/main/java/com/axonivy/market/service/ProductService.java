@@ -16,8 +16,6 @@ public interface ProductService extends CoreProductService {
 
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
-//  Product fetchBestMatchProductDetail(String id, String version);
-
   Product fetchProductDetailByIdAndVersion(String id, String version);
 
   boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath);
