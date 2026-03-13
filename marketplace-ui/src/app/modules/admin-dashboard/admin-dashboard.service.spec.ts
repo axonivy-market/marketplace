@@ -1,26 +1,45 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { AdminDashboardService, SyncTaskExecution } from './admin-dashboard.service';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
+import {
+  AdminDashboardService,
+  SyncTaskExecution
+} from './admin-dashboard.service';
 import { AdminAuthService } from './admin-auth.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { HttpHeaders } from '@angular/common/http';
+import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
+import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import {
+  ForwardingError,
+  LoadingComponent
+} from '../../core/interceptors/api.interceptor';
+import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
+import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
 
 describe('AdminDashboardService', () => {
   let service: AdminDashboardService;
   let httpMock: HttpTestingController;
   let adminAuthService: jasmine.SpyObj<AdminAuthService>;
 
-  const mockAuthHeaders = new HttpHeaders({ 'Authorization': 'Bearer test-token' });
+  const mockAuthHeaders = new HttpHeaders({
+    Authorization: 'Bearer test-token'
+  });
 
   beforeEach(() => {
-    adminAuthService = jasmine.createSpyObj('AdminAuthService', ['getAuthHeaders']);
+    adminAuthService = jasmine.createSpyObj('AdminAuthService', [
+      'getAuthHeaders'
+    ]);
     adminAuthService.getAuthHeaders.and.returnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClientTesting(),
         AdminDashboardService,
         { provide: AdminAuthService, useValue: adminAuthService }
       ]
@@ -50,9 +69,10 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync` && 
-        request.params.get(RequestParam.RESET_SYNC) === 'true'
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.PRODUCT}/sync` &&
+          request.params.get(RequestParam.RESET_SYNC) === 'true'
       );
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
@@ -65,14 +85,18 @@ describe('AdminDashboardService', () => {
         triggeredAt: '2024-01-01T00:00:00Z'
       };
 
-      service.syncOneProduct('product-2', '/market/path2', true).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
+      service
+        .syncOneProduct('product-2', '/market/path2', true)
+        .subscribe(response => {
+          expect(response).toEqual(mockResponse);
+        });
 
-      const req = httpMock.expectOne(request => 
-        request.url === `${API_URI.PRODUCT}/sync/product-2` &&
-        request.params.get(RequestParam.MARKET_ITEM_PATH) === '/market/path2' &&
-        request.params.get(RequestParam.OVERRIDE_MARKET_ITEM_PATH) === 'true'
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.PRODUCT}/sync/product-2` &&
+          request.params.get(RequestParam.MARKET_ITEM_PATH) ===
+            '/market/path2' &&
+          request.params.get(RequestParam.OVERRIDE_MARKET_ITEM_PATH) === 'true'
       );
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
@@ -83,9 +107,13 @@ describe('AdminDashboardService', () => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
+      );
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       req.flush(null);
     });
 
@@ -98,7 +126,9 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_GITHUB_MONITOR);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       expect(req.request.responseType).toBe('text');
       req.flush(mockResponse);
     });
@@ -124,7 +154,9 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_TASK_EXECUTION);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       req.flush(mockExecutions);
     });
 
@@ -135,9 +167,13 @@ describe('AdminDashboardService', () => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
+      );
       expect(req.request.method).toBe('POST');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       expect(req.request.body).toEqual({
         orderedListOfProducts: orderedList,
         ruleForRemainder: 'alphabetically'
@@ -149,11 +185,15 @@ describe('AdminDashboardService', () => {
       const orderedList = ['product-1', 'product-2'];
       const remainderRule = 'custom-rule';
 
-      service.sortMarketExtensions(orderedList, remainderRule).subscribe(response => {
-        expect(response).toBeNull();
-      });
+      service
+        .sortMarketExtensions(orderedList, remainderRule)
+        .subscribe(response => {
+          expect(response).toBeNull();
+        });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
+      );
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({
         orderedListOfProducts: orderedList,
@@ -185,8 +225,242 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SECURITY_MONITOR);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
       req.flush(mockSecurityInfo);
+    });
+  });
+
+  describe('getReleaseLetters', () => {
+    it('should call RELEASE_LETTERS with pageable params and default pageId', () => {
+      const criteria: ReleaseLetterCriteria = {
+        pageable: { page: 0, size: 10 }
+      } as any;
+
+      const mockResponse: ReleaseLetterListApiResponse = {
+        _embedded: { releaseLetterModelList: [] }
+      } as any;
+
+      service.getReleaseLetters(criteria).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.RELEASE_LETTERS &&
+          request.params.get(RequestParam.PAGE) === '0' &&
+          request.params.get(RequestParam.SIZE) === '10'
+      );
+
+      expect(req.request.method).toBe('GET');
+
+      expect(req.request.context.get(LoadingComponent)).toBe(
+        LoadingComponentId.NEWS_PAGE
+      );
+
+      req.flush(mockResponse);
+    });
+
+    it('should call nextPageHref when provided', () => {
+      const criteria: ReleaseLetterCriteria = {
+        nextPageHref: '/api/release-letters?page=1&size=5'
+      } as any;
+
+      const mockResponse = {} as ReleaseLetterListApiResponse;
+
+      service.getReleaseLetters(criteria).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        req => req.url === '/api/release-letters?page=1&size=5'
+      );
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+
+      req.flush(mockResponse);
+    });
+
+    it('should use custom pageId in HttpContext', () => {
+      const criteria: ReleaseLetterCriteria = {} as any;
+      const customPageId = 'CUSTOM_PAGE';
+
+      service.getReleaseLetters(criteria, customPageId).subscribe();
+
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.RELEASE_LETTERS
+      );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.context.get(LoadingComponent)).toBe(customPageId);
+
+      req.flush({} as ReleaseLetterListApiResponse);
+    });
+
+    it('should return empty object when request fails', () => {
+      const criteria: ReleaseLetterCriteria = {} as any;
+
+      service.getReleaseLetters(criteria).subscribe(response => {
+        expect(response).toEqual({} as ReleaseLetterListApiResponse);
+      });
+
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.RELEASE_LETTERS
+      );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+
+      req.flush('Error', { status: 500, statusText: 'Server Error' });
+    });
+  });
+
+  describe('getActiveReleaseLetters', () => {
+    it('should get active release letters', () => {
+      const mockResponse: ReleaseLetterListApiResponse = {
+        _embedded: {
+          releaseLetterModelList: [
+            {
+              sprint: 'S50',
+              createdAt: '2024-02-01T00:00:00Z',
+              content: 'Active release content'
+            } as any
+          ]
+        },
+        _links: {
+          self: { href: '/api/active-release-letters' }
+        }
+      } as any;
+
+      service.getActiveReleaseLetters().subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.ACTIVE_RELEASE_LETTERS
+      );
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('createReleaseLetter', () => {
+    it('should create a release letter with ForwardingError context', () => {
+      const releaseLetterRequest: ReleaseLetter = {
+        sprint: 'S51',
+        content: 'New release content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      service.createReleaseLetter(releaseLetterRequest).subscribe(response => {
+        expect(response).toBeNull();
+      });
+
+      const req = httpMock.expectOne(API_URI.RELEASE_LETTERS);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
+      expect(req.request.context.get(ForwardingError)).toBeTrue();
+
+      req.flush(null);
+    });
+  });
+
+  describe('updateReleaseLetter', () => {
+    it('should update release letter by sprint with ForwardingError context', () => {
+      const selectedId = '123';
+
+      const releaseLetterRequest: ReleaseLetter = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      const mockResponse: ReleaseLetterApiResponse = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      service
+        .updateReleaseLetter(selectedId, releaseLetterRequest)
+        .subscribe(response => {
+          expect(response).toEqual(mockResponse);
+        });
+
+      const req = httpMock.expectOne(
+        `${API_URI.RELEASE_LETTERS}/${selectedId}`
+      );
+
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
+      expect(req.request.context.get(ForwardingError)).toBeTrue();
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('getReleaseLetterById', () => {
+    it('should get release letter by id', () => {
+      const id = '123';
+
+      const mockResponse: ReleaseLetterApiResponse = {
+        id,
+        sprint: 'S52',
+        content: 'Sprint 52 release content',
+        createdAt: '2024-02-10T00:00:00Z'
+      } as any;
+
+      service.getReleaseLetterById(id).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        req => req.url === `${API_URI.RELEASE_LETTERS}/${id}`
+      );
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('deleteReleaseLetterById', () => {
+    it('should delete release letter by id', () => {
+      const id = '123';
+
+      service.deleteReleaseLetterById(id).subscribe(response => {
+        expect(response).toBeNull();
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
+
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.headers.get('Authorization')).toBe(
+        'Bearer test-token'
+      );
+
+      req.flush(null);
     });
   });
 });

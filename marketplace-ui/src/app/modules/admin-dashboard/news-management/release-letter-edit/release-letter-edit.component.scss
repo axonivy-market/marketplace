@@ -1,0 +1,54 @@
+.release-letter-edit-container {
+  margin-top: 7.2rem;
+}
+
+#back-to-news-management-button {
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 120%;
+  cursor: pointer;
+}
+
+.submit-button {
+  padding: 5px 16px;
+  gap: 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+.input__search {
+  height: 43px;
+}
+
+#sprint-name {
+  font-size: 1.4rem;
+}
+
+.error-message {
+  color: red;
+}
+
+.error-input {
+  border: 1px solid red;
+}
+
+.active-checkbox-container {
+  width: fit-content;
+  font-size: 1.6rem;
+
+  &:hover {
+    .form-check-input {
+      background-color: #00445c;
+    }
+  }
+}
+
+.active-checkbox-color {
+  background-color: #007095;
+}
