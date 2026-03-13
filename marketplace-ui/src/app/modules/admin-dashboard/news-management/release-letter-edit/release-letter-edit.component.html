@@ -1,0 +1,141 @@
+<div class="release-letter-edit-container container-fluid">
+  <div
+    id="back-to-news-management-button"
+    [ngClass]="themeService.isDarkMode() ? 'text-light' : 'text-link-blue'"
+    [routerLink]="['/internal-dashboard/news-management']">
+    &lt;
+    <span [lang]="languageService.selectedLanguage()">
+      {{ 'common.admin.releaseLetterEdit.backToNewsManagement' | translate }}
+    </span>
+  </div>
+  <div class="row col-md-12">
+    <h1
+      class="text-primary admin-title"
+      [lang]="languageService.selectedLanguage()">
+      {{
+        isCreateMode
+          ? (translateService.get('common.admin.releaseLetterEdit.createTitle')
+            | async)
+          : (translateService.get('common.admin.releaseLetterEdit.editTitle')
+            | async)
+      }}
+    </h1>
+    <div class="introduction-container">
+      <div class="d-sm-block admin-about">
+        <h3 class="text-secondary">
+          {{
+            isCreateMode
+              ? (translateService.get(
+                  'common.admin.releaseLetterEdit.createDescription'
+                ) | async)
+              : (translateService.get(
+                  'common.admin.releaseLetterEdit.editDescription'
+                ) | async)
+          }}
+        </h3>
+      </div>
+      @if (!isCreateMode) {
+        <div
+          class="d-sm-block align-items-center admin-help-text-container flex-fill">
+          <h4
+            [lang]="languageService.selectedLanguage()"
+            class="text-secondary help-text">
+            {{
+              translateService.get(
+                'common.admin.releaseLetterEdit.editHelpText'
+              ) | async
+            }}
+          </h4>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="mt-5">
+    <form (submit)="onSubmit($event)">
+      <div>
+        <h4>
+          {{
+            translateService.get(
+              'common.admin.releaseLetterEdit.sprintNameLabel'
+            ) | async
+          }}
+        </h4>
+        <input
+          id="sprint-name"
+          name="sprint-name"
+          autocomplete="on"
+          type="text"
+          [disabled]="isSubmitting()"
+          [lang]="languageService.selectedLanguage()"
+          class="form-control input__search bg-secondary my-4"
+          [class]="(sprintErrorMessage !== null && sprintErrorMessage !== '') ? 'error-input' : ''"
+          [(ngModel)]="releaseLetter.sprint"
+          (ngModelChange)="onReleaseVersionChange()"
+          [placeholder]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.sprintPlaceholder'
+            ) | async
+          "
+          [ariaLabel]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.sprintPlaceholder'
+            ) | async
+          "
+          aria-describedby="search" />
+      </div>
+      @if (
+        sprintErrorMessage !== null && sprintErrorMessage !== ''
+      ) {
+        <p id="sprint-error-message" class="error-message">
+          {{ sprintErrorMessage }}
+        </p>
+      }
+      <div>
+        <app-markdown-editor
+          [isSubmittingSignal]="isSubmitting"
+          [(contentValue)]="releaseLetter.content!"
+          [placeholder]="
+            translateService.get(
+              'common.admin.releaseLetterEdit.contentPlaceholder'
+            ) | async
+          "
+          [autosaveId]="releaseLetter.sprint"></app-markdown-editor>
+      </div>
+      <div class="active-checkbox-container mt-4">
+        <input
+          name="active-checkbox"
+          class="form-check-input me-2"
+          type="checkbox"
+          id="flexCheckDefault"
+          [ngClass]="releaseLetter.latest ? 'active-checkbox-color' : ''"
+          [(ngModel)]="releaseLetter.latest" />
+        <label class="form-check-label" for="flexCheckDefault">
+          {{
+            translateService.get(
+              'common.admin.releaseLetterEdit.makeReleaseLetterLatest'
+            ) | async
+          }}
+        </label>
+      </div>
+      <button
+        id="submit-button"
+        type="submit"
+        class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+        [disabled]="isSubmitting()"
+        [lang]="languageService.selectedLanguage()">
+        @if (isSubmitting()) {
+          <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        }
+        <span>Submit</span>
+      </button>
+      @if (genericErrorMessage !== null && genericErrorMessage !== '') {
+        <p id="generic-error-message">
+          {{ genericErrorMessage }}
+        </p>
+      }
+    </form>
+  </div>
+</div>

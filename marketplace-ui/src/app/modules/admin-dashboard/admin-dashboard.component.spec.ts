@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { AdminDashboardService, SyncTaskExecution } from './admin-dashboard.service';
 import { ProductService } from '../../modules/product/product.service';
@@ -7,11 +7,13 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { AdminAuthService } from './admin-auth.service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { NavigationEnd, provideRouter, Router } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -47,6 +49,8 @@ const expectSyncTaskState = (
 };
 
 describe('AdminDashboardComponent', () => {
+  let router: Router;
+  let cdr: ChangeDetectorRef;
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
   let mockAdminService: jasmine.SpyObj<AdminDashboardService>;
@@ -102,6 +106,7 @@ describe('AdminDashboardComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AdminDashboardComponent, TranslateModule.forRoot()],
       providers: [
+        provideRouter([]),
         { provide: AdminDashboardService, useValue: mockAdminService },
         { provide: ProductService, useValue: mockProductService },
         { provide: AdminAuthService, useValue: mockAuthService },
@@ -114,6 +119,10 @@ describe('AdminDashboardComponent', () => {
     mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
+
+    router = TestBed.inject(Router);
+    cdr = component.cdr;
+    spyOn(cdr, 'markForCheck');
   });
 
   describe('ngOnInit', () => {
@@ -456,5 +465,61 @@ describe('AdminDashboardComponent', () => {
       expect(component.marketDirectory).toBe('');
       expect(component.dropdownOpen).toBe(false);
     });
+  });
+
+  it('should set showSyncTask to false on route activate', fakeAsync(() => {
+    component.showSyncTask = true;
+
+    component.onRouteActivate();
+
+    expect(component.showSyncTask).toBeTrue();
+
+    flushMicrotasks();
+
+    expect(component.showSyncTask).toBeFalse();
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  }));
+
+  it('should set showSyncTask to true on route deactivate', fakeAsync(() => {
+    component.showSyncTask = false;
+
+    component.onRouteDeactivate();
+
+    expect(component.showSyncTask).toBeFalse();
+
+    flushMicrotasks();
+
+    expect(component.showSyncTask).toBeTrue();
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  }));
+
+  it('should set page title when navigating to /internal-dashboard', () => {
+    const events$ = new Subject<any>();
+
+    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+
+    component.ngOnInit();
+
+    events$.next(
+      new NavigationEnd(1, '/internal-dashboard', '/internal-dashboard')
+    );
+
+    expect(mockPageTitleService.setTitleOnLangChange)
+      .toHaveBeenCalledWith('common.admin.sync.pageTitle');
+  });
+
+  it('should not set page title for other routes', () => {
+    const events$ = new Subject<any>();
+
+    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+
+    component.ngOnInit();
+
+    events$.next(
+      new NavigationEnd(1, '/other', '/other')
+    );
+
+    expect(mockPageTitleService.setTitleOnLangChange)
+      .toHaveBeenCalledTimes(1); // only initial call
   });
 });
