@@ -5,7 +5,6 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
-import com.axonivy.market.util.FileValidator;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -15,7 +14,6 @@ import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,4 +133,5 @@ public class ImageServiceImpl implements ImageService {
       return new byte[0];
     }
   }
+
 }
