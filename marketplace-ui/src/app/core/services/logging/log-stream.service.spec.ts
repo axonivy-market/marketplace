@@ -119,6 +119,47 @@ describe('LogStreamService', () => {
         jasmine.objectContaining({ Authorization: 'Bearer token' })
       );
     });
+
+    it('should append log lines from onmessage callback', () => {
+      service.connect();
+
+      expect(fetchSpy).toHaveBeenCalled();
+      const args = fetchSpy.calls.mostRecent().args;
+      const options: any = args[1];
+
+      expect(options.onmessage).toEqual(jasmine.any(Function));
+      const onmessage = options.onmessage as (event: { data: string }) => void;
+
+      onmessage({ data: 'line1\nline2\n' });
+
+      const logs = service.logs();
+      expect(logs).toEqual(jasmine.arrayContaining(['line1', 'line2']));
+    });
+
+    it('should trim old log lines when max buffer size is exceeded', () => {
+      service.connect();
+
+      expect(fetchSpy).toHaveBeenCalled();
+      const args = fetchSpy.calls.mostRecent().args;
+      const options: any = args[1];
+
+      expect(options.onmessage).toEqual(jasmine.any(Function));
+      const onmessage = options.onmessage as (event: { data: string }) => void;
+
+      const totalLines = 2000;
+      for (let i = 0; i < totalLines; i++) {
+        onmessage({ data: `line${i}` });
+      }
+
+      const logs = service.logs();
+
+      // The log buffer should not grow indefinitely.
+      expect(logs.length).toBeLessThan(totalLines);
+      // The most recent line should be present.
+      expect(logs[logs.length - 1]).toBe(`line${totalLines - 1}`);
+      // At least some of the earliest lines should have been trimmed.
+      expect(logs[0]).not.toBe('line0');
+    });
   });
 
   describe('disconnection and state', () => {
