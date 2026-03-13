@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
-import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
+import { API_INTERNAL_URL, API_URI } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
 
 export const REQUEST_BY = 'X-Requested-By';
@@ -35,11 +35,13 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
   const transferState = inject(TransferState);
-  const key = makeStateKey<unknown>(req.urlWithParams);
+  const key = makeStateKey<unknown>(`${req.method} ${req.urlWithParams}`);
 
   if (req.url.includes('i18n')) {
     return next(req);
   }
+
+  const isReleaseLettersApi = req.url.includes(API_URI.RELEASE_LETTERS);
 
   // Only cache GET requests to API
   if (req.method === 'GET' && transferState.hasKey(key)) {
@@ -55,13 +57,16 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
   let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+
   if (isPlatformServer(platformId)) {
     apiURL = injector.get(API_INTERNAL_URL, environment.apiInternalUrl);
   }
+
   let requestURL = req.url;
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
+  
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers)
@@ -70,7 +75,12 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.context.get(ForwardingError)) {
     return next(cloneReq).pipe(
       tap(event => {
-        if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+        if (
+          req.method === 'GET' &&
+          !isReleaseLettersApi &&
+          event instanceof HttpResponse &&
+          event.status === HttpStatusCode.Ok
+        ) {
           transferState.set(key, event.body);
         }
       })
@@ -78,9 +88,21 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(cloneReq).pipe(
-    catchError(error => handleHttpError(router,error)),
+    catchError(error => handleHttpError(router, error)),
     tap(event => {
-      if (event instanceof HttpResponse && event.status === HttpStatusCode.Ok) {
+      if (
+        event instanceof HttpResponse &&
+        event.status === HttpStatusCode.Ok &&
+        req.method !== 'GET'
+      ) {
+        invalidateGetCache(transferState, req.urlWithParams);
+      }
+      if (
+        req.method === 'GET' &&
+        !isReleaseLettersApi &&
+        event instanceof HttpResponse &&
+        event.status === HttpStatusCode.Ok
+      ) {
         transferState.set(key, event.body);
       }
     }),
@@ -113,4 +135,11 @@ export function handleHttpError(
     router.navigate([ERROR_PAGE_PATH]);
   }
   return EMPTY;
+}
+
+export function invalidateGetCache(transferState: TransferState, url: string) {
+  const key = makeStateKey(`GET ${url}`);
+  if (transferState.hasKey(key)) {
+    transferState.remove(key);
+  }
 }

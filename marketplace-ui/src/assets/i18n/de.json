@@ -36,10 +36,12 @@
       "feedbackApproval": "Feedback-Freigabe",
       "customSort": "Benutzerdefinierte Sortierung",
       "quickAccess": "Schnellzugriff",
+      "newsManagement": "News Management",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
-      "logout": "Logout"
+      "logout": "Logout",
+      "logs": "Protokoll-Viewer"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
@@ -291,7 +293,7 @@
     "admin": {
       "pageTitle": "Müheloser Zugriff auf das Admin-Dashboard",
       "description": "Greifen Sie schnell auf wichtige administrative Tools und Konfigurationen zu",
-      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen", 
+      "enterToken": "Bitte geben Sie Ihren Token ein, um auf das Admin-Dashboard zuzugreifen",
       "enterTokenPlaceholder": "Gebe Deinen Token ein",
       "proceedBtnLabel": "Weiter",
       "proceedingBtnLabel": "Weiter...",
@@ -373,6 +375,84 @@
         "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
         "monitoringTitle": "Überwachungsseite",
         "releasePreviewTitle": "Release-Vorschauseite"
+      },
+      "logsViewer": {
+        "tabs": {
+          "runtimeLog": "Protokoll zur Laufzeit",
+          "logsFile": "Protokolldateien"
+        },
+        "actions": {
+          "connect": "Verbinden",
+          "disconnect": "Trennen",
+          "clear": "Löschen",
+          "download": "Herunterladen",
+          "downloadOptions": "Download-Optionen",
+          "downloadAllLogs": "Alle Protokolle herunterladen",
+          "downloadFiltered": "Gefilterte herunterladen",
+          "downloadAsJSON": "Als JSON herunterladen",
+          "downloadAsCSV": "Als CSV herunterladen",
+          "autoScroll": "Auto-Scroll",
+          "clearFilter": "Filter löschen"
+        },
+        "table": {
+          "timestamp": "Zeitstempel",
+          "level": "Ebene",
+          "detail": "Detail"
+        },
+        "filter": {
+          "selectDate": "Datum wählen:"
+        },
+        "messages": {
+          "noLogsFound": "Keine Protokolldateien gefunden"
+        }
+      },
+      "news": {
+        "pageTitle": "Axon Ivy Market News",
+        "title": "Axon Ivy Market News",
+        "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
+        "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
+        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "sprint": "Sprint: ",
+        "latest": "Latest"
+      },
+      "newsManagement": {
+        "pageTitle": "News Management",
+        "title": "News Management",
+        "description": "Manage how market news are displayed",
+        "helpText": "Configure the latest market news. Administrators can add, edit, or remove news.",
+        "sprintPlaceholder": "Enter the desired sprint",
+        "number": "No.",
+        "sprint": "Sprint",
+        "createdAt": "Created at",
+        "updatedAt": "Updated at",
+        "sprintHeader": "Sprint: ",
+        "latest": "Latest",
+        "actions": "Actions",
+        "create": "Create",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "warning": "Warning",
+        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+      },
+      "releaseLetterEdit": {
+        "createPageTitle": "Create release letter",
+        "editPageTitle": "Edit release letter",
+        "createTitle": "Create release letter",
+        "editTitle": "Edit release letter",
+        "createDescription": "Create a new release letter",
+        "editDescription": "Edit selected release letter",
+        "editHelpText": "Update the release letter content for the selected sprint.",
+        "sprintNameLabel": "Sprint name",
+        "sprintPlaceholder": "Enter the desired sprint",
+        "contentPlaceholder": "Type your release letter content here...",
+        "sprint": "Sprint",
+        "makeReleaseLetterLatest": "Make this release letter latest",
+        "backToNewsManagement": "Back to News Management",
+        "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
+        "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
+        "genericErrorMessage": "An error occurred while processing your request. Please try again."
       }
     }
   }
