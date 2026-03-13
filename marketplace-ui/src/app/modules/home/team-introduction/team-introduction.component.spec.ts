@@ -17,15 +17,17 @@ describe('TeamIntroductionComponent', () => {
     expect(component.members.length).toBe(8);
   });
 
-  it('should check the value after create', () => {
-    const member = component['createMember']('John Doe', 'Developer', 'Code Writer', 'johndoe', 'I love coding', '💻');
-    
-    expect(member.name).toBe('John Doe');
-    expect(member.title).toBe('Developer');
-    expect(member.intro).toBe('Code Writer');
-    expect(member.githubUserName).toBe('johndoe');
-    expect(member.quote).toBe('I love coding');
-    expect(member.statusEmoji).toBe('💻');
+  it('should expose PO and team member data from assets', () => {
+    expect(component.po).toBeTruthy();
+    expect(component.po.name).toBeTruthy();
+    expect(component.po.avatarName).toContain('.png');
+
+    const firstMember = component.members[0];
+    expect(firstMember).toBeTruthy();
+    expect(firstMember.name).toBeTruthy();
+    expect(firstMember.title).toBeTruthy();
+    expect(firstMember.githubUserName).toBeTruthy();
+    expect(firstMember.avatarName).toContain('.png');
   });
 });
 
