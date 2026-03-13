@@ -9,7 +9,9 @@ import reactor.core.publisher.Sinks;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LogStreamRegistry {
-  private static Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer(256, false);
+  private static final int BACKPRESSURE_BUFFER_SIZE = 256;
+  private static Sinks.Many<String> sink = Sinks.many().multicast()
+      .onBackpressureBuffer(BACKPRESSURE_BUFFER_SIZE, false);
 
   public static Flux<String> asFlux() {
     return sink.asFlux();

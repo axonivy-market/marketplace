@@ -39,6 +39,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 @Tag(name = "Log Viewer API", description = "API to list and view compressed log files")
 public class LogController {
   private static final String HEART_BEAT_MESSAGE = "keep-alive";
+  private static final int HEART_BEAT_INTERVAL_SECONDS = 30;
   private final LogService logService;
 
   @Authorized
@@ -72,7 +73,7 @@ public class LogController {
   @Operation(hidden = true)
   public Flux<ServerSentEvent<String>> stream(HttpServletRequest request) {
     String requesterIp = resolveRequesterIp(request);
-    Flux<ServerSentEvent<String>> heartbeat = Flux.interval(Duration.ofSeconds(3))
+    Flux<ServerSentEvent<String>> heartbeat = Flux.interval(Duration.ofSeconds(HEART_BEAT_INTERVAL_SECONDS))
         .map(tick -> ServerSentEvent.<String>builder().comment(HEART_BEAT_MESSAGE).build());
 
     Flux<ServerSentEvent<String>> logs = LogStreamRegistry.asFlux()

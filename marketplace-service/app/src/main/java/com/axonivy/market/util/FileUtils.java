@@ -190,6 +190,6 @@ public class FileUtils {
     if (fileName == null) {
       return StringUtils.EMPTY;
     }
-    return fileName.replaceAll(RegexConstants.SAFE_FILE_NAME_REGEX, StringUtils.EMPTY);
+    return RegexConstants.SAFE_FILE_NAME_PATTERN.matcher(fileName).replaceAll(StringUtils.EMPTY);
   }
 }

@@ -152,9 +152,9 @@ class LogControllerTest {
           .block();
       assertNotNull(collected, "Collected list should not be null");
       assertEquals(3, collected.size(), "Should have 3 events");
-      assertEquals("Log 1", collected.get(0).data());
-      assertEquals("Log 2", collected.get(1).data());
-      assertEquals("Log 3", collected.get(2).data());
+      assertEquals("Log 1", collected.get(0).data(), "First event data should match the first emitted log line");
+      assertEquals("Log 2", collected.get(1).data(), "Second event data should match the second emitted log line");
+      assertEquals("Log 3", collected.get(2).data(), "Third event data should match the third emitted log line");
     }
   }
 
