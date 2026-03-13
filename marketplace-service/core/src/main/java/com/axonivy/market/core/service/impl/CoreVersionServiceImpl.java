@@ -104,12 +104,6 @@ public class CoreVersionServiceImpl implements CoreVersionService {
 
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
-//      var link = linkTo(
-//          methodOn(CoreProductDetailsController.class).findProductJsonContent(productId, version,
-//              designerVersion)).withSelfRel();
-//      var versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
-//      versionAndUrlList.add(versionAndUrlModel);
-
       String url = productJsonLinkBuilder.buildProductJsonUrl(
           productId,
           version,

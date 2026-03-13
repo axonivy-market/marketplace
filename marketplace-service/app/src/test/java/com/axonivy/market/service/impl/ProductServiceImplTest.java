@@ -457,7 +457,7 @@ class ProductServiceImplTest extends BaseSetup {
          MockedStatic<CoreVersionUtils> mockCoreVersionUtils = Mockito.mockStatic(CoreVersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
           mockMavenArtifactVersions);
-      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
+      when(CoreVersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);

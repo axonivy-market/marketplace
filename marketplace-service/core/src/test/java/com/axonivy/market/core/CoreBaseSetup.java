@@ -2,6 +2,7 @@ package com.axonivy.market.core;
 
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,9 @@ public class CoreBaseSetup {
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
+  protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
+  protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
+  protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
     Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
 
@@ -52,5 +56,9 @@ public class CoreBaseSetup {
             MOCK_GROUP_ID).isProductArtifact(true).repoUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
             CoreMavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE)
         .name(MOCK_ARTIFACT_NAME).build();
+  }
+
+  protected ProductMarketplaceData getMockProductMarketplaceData() {
+    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
   }
 }

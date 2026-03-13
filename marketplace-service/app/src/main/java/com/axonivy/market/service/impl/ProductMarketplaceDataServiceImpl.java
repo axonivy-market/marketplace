@@ -15,6 +15,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,10 +42,7 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductRepository productRepo;
-  private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
-  @Value("${market.legacy.installation.counts.path}")
-  private String legacyInstallationCountPath;
 
   public ProductMarketplaceDataServiceImpl(
       ProductMarketplaceDataRepository productMarketplaceDataRepo, ProductCustomSortRepository productCustomSortRepo,
@@ -55,7 +53,6 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
     this.productCustomSortRepo = productCustomSortRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.productRepo = productRepo;
-    this.productDesignerInstallationRepo = productDesignerInstallationRepo;
     this.fileDownloadService = fileDownloadService;
   }
 
@@ -87,23 +84,23 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
     return productEntries;
   }
 
-  @Override
-  public int updateInstallationCountForProduct(String productId, String designerVersion) {
-    validateProductExists(productId);
-    var productMarketplaceData = getProductMarketplaceData(productId);
-
-    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
-    if (StringUtils.isNotBlank(designerVersion)) {
-      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
-    }
-
-    log.info("updating installation count for product {}", productId);
-    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.increaseInstallationCount(productId);
-    }
-    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
-    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
-  }
+//  @Override
+//  public int updateInstallationCountForProduct(String productId, String designerVersion) {
+//    validateProductExists(productId);
+//    var productMarketplaceData = getProductMarketplaceData(productId);
+//
+//    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
+//    if (StringUtils.isNotBlank(designerVersion)) {
+//      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
+//    }
+//
+//    log.info("updating installation count for product {}", productId);
+//    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
+//      return productMarketplaceDataRepo.increaseInstallationCount(productId);
+//    }
+//    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
+//    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
+//  }
 
   @Override
   public Integer getInstallationCount(String id) {

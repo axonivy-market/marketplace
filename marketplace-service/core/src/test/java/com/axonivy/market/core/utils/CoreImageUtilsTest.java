@@ -1,7 +1,9 @@
 package com.axonivy.market.core.utils;
 
+import com.axonivy.market.core.builder.ImageLinkBuilder;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,6 +13,22 @@ import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 public class CoreImageUtilsTest {
+  
+  @BeforeEach
+  void setup() {
+    CoreImageUtils.setImageLinkBuilder(new ImageLinkBuilder() {
+      @Override
+      public String createImageUrl(String imageId) {
+        return "/api/image/" + imageId;
+      }
+
+      @Override
+      public String createImageUrlForProduction(String imageId) {
+        return "/api/image/" + imageId;
+      }
+    });
+  }
+
   @Test
   void testMappingImageForProductModuleContent() {
     String expectedValue = "Login or create a new account.[demo-process](/api/image/66e2b13c68f2f95b2f95548c)";

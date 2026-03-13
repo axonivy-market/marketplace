@@ -494,7 +494,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
     List<String> versionChanges =
         mavenVersions.stream().filter(
-            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+            version -> !currentVersions.contains(version) || (!CoreVersionUtils.isReleasedVersion(
                 version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 
@@ -707,7 +707,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     return Optional.of(versionService.getInstallableVersions(productId, false, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
-        .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
+        .map(versions -> CoreVersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
   @Override
