@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
@@ -142,15 +143,18 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      List<String> collected = result
+      List<ServerSentEvent<String>> collected = result
           .take(3)
           .collectList()
           .block();
       assertNotNull(collected, "Collected list should not be null");
-      assertEquals(Arrays.asList("Log 1", "Log 2", "Log 3"), collected, "Streamed log lines should match source Flux");
+      assertEquals(3, collected.size(), "Should have 3 events");
+      assertEquals("Log 1", collected.get(0).data());
+      assertEquals("Log 2", collected.get(1).data());
+      assertEquals("Log 3", collected.get(2).data());
     }
   }
 
@@ -167,15 +171,18 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      List<String> collected = result
+      List<ServerSentEvent<String>> collected = result
           .take(logLines.size())
           .collectList()
           .block();
       assertEquals(logLines.size(), collected.size(), "Collected list should contain all expected log lines");
-      assertEquals(logLines, collected, "Collected log lines should match source stream");
+      
+      for (int i = 0; i < logLines.size(); i++) {
+        assertEquals(logLines.get(i), collected.get(i).data(), "Event data should match log line");
+      }
     }
   }
 
@@ -187,7 +194,7 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(emptyFlux);
       
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
@@ -216,7 +223,7 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
       
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
@@ -290,7 +297,7 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
 
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
       verify(request, times(1)).getHeader(X_FORWARDED_FOR);
@@ -308,7 +315,7 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
 
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
       verify(request, times(1)).getHeader(X_FORWARDED_FOR);
@@ -327,7 +334,7 @@ class LogControllerTest {
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
 
-      Flux<String> result = logController.stream(request);
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
 
       assertNotNull(result, "Stream result should not be null");
       verify(request, times(1)).getHeader(X_FORWARDED_FOR);

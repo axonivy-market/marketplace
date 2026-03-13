@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SseLogAppenderTest {
+class SSELogAppenderTest {
 
   private SSELogAppender appender;
   

@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.List;
 
 import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
@@ -63,9 +65,15 @@ public class LogController {
   @Authorized
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
-  public Flux<String> stream(HttpServletRequest request) {
+  public Flux<ServerSentEvent<String>> stream(HttpServletRequest request) {
     String requesterIp = resolveRequesterIp(request);
-    return LogStreamRegistry.asFlux()
+    Flux<ServerSentEvent<String>> heartbeat = Flux.interval(Duration.ofSeconds(30))
+        .map(tick -> ServerSentEvent.<String>builder().comment("keep-alive").build());
+
+    Flux<ServerSentEvent<String>> logs = LogStreamRegistry.asFlux()
+        .map(msg -> ServerSentEvent.builder(msg).build());
+
+    return Flux.merge(heartbeat, logs)
         .doOnSubscribe(subscription -> log.info("Log stream client connected from IP: {}", requesterIp))
         .doOnCancel(() -> log.info("Log stream client disconnected from IP: {}", requesterIp))
         .onErrorResume((Throwable error) -> {
