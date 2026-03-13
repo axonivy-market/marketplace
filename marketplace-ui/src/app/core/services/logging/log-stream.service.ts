@@ -73,6 +73,9 @@ export class LogStreamService {
       headers: headersObj,
       signal: this.ctrl.signal,
       onmessage: (event: EventSourceMessage) => {
+        if (event.data === '') {
+          return;
+        }
         this._logs.update(lines => {
           const next = [...lines, event.data];
           return next.length > this.MAX_LINES
