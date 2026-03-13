@@ -1,0 +1,16 @@
+${AnsiColor.RED}888b     d888${AnsiColor.BRIGHT_GREEN}                  888${AnsiColor.BRIGHT_CYAN}               888${AnsiColor.BRIGHT_BLUE}             888
+${AnsiColor.RED}8888b   d8888${AnsiColor.BRIGHT_GREEN}                  888${AnsiColor.BRIGHT_CYAN}               888${AnsiColor.BRIGHT_BLUE}             888
+${AnsiColor.RED}88888b d88888${AnsiColor.BRIGHT_GREEN}                  888${AnsiColor.BRIGHT_CYAN}               888${AnsiColor.BRIGHT_BLUE}             888
+${AnsiColor.RED}888Y88888P888${AnsiColor.YELLOW}  8888b'${AnsiColor.GREEN}  88 888${AnsiColor.BRIGHT_GREEN}  888  888${AnsiColor.CYAN}   d888b${AnsiColor.BRIGHT_CYAN}  888888${AnsiColor.BLUE}  88888b${AnsiColor.BRIGHT_BLUE}  888${AnsiColor.MAGENTA}  8888b${AnsiColor.BRIGHT_MAGENTA}     d8888b${AnsiColor.WHITE} d88b
+${AnsiColor.RED}888 Y888P 888${AnsiColor.YELLOW}     "88b${AnsiColor.GREEN} 888P"${AnsiColor.BRIGHT_GREEN}   888 88P${AnsiColor.CYAN}  d8P  Y8b${AnsiColor.BRIGHT_CYAN} 888${AnsiColor.BLUE}    888 "88b${AnsiColor.BRIGHT_BLUE} 888${AnsiColor.MAGENTA}    "88b${AnsiColor.BRIGHT_MAGENTA} d88P   ${AnsiColor.WHITE}d8P  Y8b
+${AnsiColor.RED}888  Y8P  888${AnsiColor.YELLOW}  d888888${AnsiColor.GREEN} 888${AnsiColor.BRIGHT_GREEN}     888888K${AnsiColor.CYAN}  88888888${AnsiColor.BRIGHT_CYAN} 888${AnsiColor.BLUE}    888  888${AnsiColor.BRIGHT_BLUE} 888${AnsiColor.MAGENTA} d888888${AnsiColor.BRIGHT_MAGENTA} 888${AnsiColor.WHITE}    88888888
+${AnsiColor.RED}888   "   888${AnsiColor.YELLOW} 888  888${AnsiColor.GREEN} 888${AnsiColor.BRIGHT_GREEN}     888 "88b${AnsiColor.CYAN} Y8b${AnsiColor.BRIGHT_CYAN}      Y88b${AnsiColor.BLUE}   888 d88P${AnsiColor.BRIGHT_BLUE} 888${AnsiColor.MAGENTA} 888  888${AnsiColor.BRIGHT_MAGENTA} Y88b${AnsiColor.WHITE}   Y8b
+${AnsiColor.RED}888       888${AnsiColor.YELLOW} "Y888888${AnsiColor.GREEN} 888${AnsiColor.BRIGHT_GREEN}     888  888${AnsiColor.CYAN}  "Y8888${AnsiColor.BRIGHT_CYAN}   "Y888${AnsiColor.BLUE} 88888P"${AnsiColor.BRIGHT_BLUE}  888${AnsiColor.MAGENTA} "Y888888${AnsiColor.BRIGHT_MAGENTA}  "Y8888P${AnsiColor.WHITE} "Y8888
+${AnsiColor.BLUE}                                                        888
+                                                        888
+                                                        888${AnsiColor.DEFAULT}
+
+Powered by ${AnsiColor.BRIGHT_MAGENTA}Octopus team 🐙${AnsiColor.DEFAULT} - https://market.axonivy.com/teams
+Spring version: ${spring-boot.version}, Port: ${server.port}
+Java: ${java.version} | ${os.name} ${os.arch}
+
