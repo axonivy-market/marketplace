@@ -1,4 +1,4 @@
-package com.axonivy.market.util;
+package com.axonivy.market.core.utils;
 
 import com.axonivy.market.core.entity.ProductModuleContent;
 import org.junit.jupiter.api.Assertions;
@@ -10,12 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
-class ImageUtilsTest {
-
+public class CoreImageUtilsTest {
   @Test
   void testMappingImageForProductModuleContent() {
     String expectedValue = "Login or create a new account.[demo-process](/api/image/66e2b13c68f2f95b2f95548c)";
-    var result = ImageUtils.mappingImageForProductModuleContent(mockProductModuleContent(), true);
+    var result = CoreImageUtils.mappingImageForProductModuleContent(mockProductModuleContent(), true);
     Assertions.assertEquals(expectedValue, result.getDescription().get("en"),
         "Product module content description should match input");
     Assertions.assertEquals(expectedValue, result.getSetup().get("de"),
