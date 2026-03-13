@@ -1,0 +1,128 @@
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{ translateService.get('common.admin.newsManagement.title') | async }}
+  </h1>
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{
+          translateService.get('common.admin.newsManagement.description')
+            | async
+        }}
+      </h3>
+    </div>
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        [lang]="languageService.selectedLanguage()"
+        class="text-secondary help-text"
+        [innerHTML]="
+          translateService.get('common.admin.newsManagement.helpText') | async
+        "></h4>
+    </div>
+  </div>
+</div>
+<div id="release-letter-container">
+  <button
+    id="create-button"
+    type="button"
+    [lang]="languageService.selectedLanguage()"
+    class="mt-4 btn border-0 text-center d-flex align-items-center justify-content-center"
+    [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+    [routerLink]="['/internal-dashboard/news-management/create']">
+    <span>
+      <i class="fa-regular fa-square-plus me-2"></i>
+      {{ 'common.admin.newsManagement.create' | translate }}
+    </span>
+  </button>
+  <table id="release-letter-table" class="table mt-4" ngbAccordion>
+    <thead>
+      <tr>
+        @for (tableHeader of tableHeaders; track tableHeader.key) {
+          <th
+            [class]="tableHeader.class"
+            [lang]="languageService.selectedLanguage()">
+            <h5>
+              {{ 'common.admin.newsManagement' + tableHeader.key | translate }}
+            </h5>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (releaseLetter of releaseLetterList(); track releaseLetter.sprint) {
+        <tr>
+          <td>{{ $index + 1 }}</td>
+          <td class="text-center">{{ releaseLetter.sprint }}</td>
+          <td class="text-center">
+            {{ releaseLetter.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}
+          </td>
+          <td class="text-center">
+            {{ releaseLetter.updatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}
+          </td>
+          @if (releaseLetter.latest) {
+            <td class="text-center">
+              <i class="fa-solid fa-square-check"></i>
+            </td>
+          } @else {
+            <td></td>
+          }
+          <td class="text-center">
+            <button
+              type="button"
+              [lang]="languageService.selectedLanguage()"
+              class="btn border-0 mb-0 me-2"
+              [ngClass]="
+                themeService.isDarkMode()
+                  ? 'btn-light text-dark'
+                  : 'btn-primary text-light'
+              "
+              (click)="openModal(releaseLetter.id)"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.view' | translate"
+              tooltipClass="custom-tooltip-class">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button
+              type="button"
+              [lang]="languageService.selectedLanguage()"
+              class="btn border-0 mb-0 me-2"
+              [ngClass]="
+                themeService.isDarkMode()
+                  ? 'btn-light text-dark'
+                  : 'btn-primary text-light'
+              "
+              [routerLink]="[
+                '/internal-dashboard/news-management',
+                releaseLetter.id,
+                'edit'
+              ]"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.edit' | translate"
+              tooltipClass="custom-tooltip-class">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button
+              id="delete-button"
+              type="button"
+              [lang]="languageService.selectedLanguage()"
+              class="btn border-0 mb-0"
+              [ngClass]="
+                themeService.isDarkMode()
+                  ? 'btn-light text-dark'
+                  : 'btn-primary text-light'
+              "
+              (click)="openDeleteConfirmModal(releaseLetter)"
+              placement="top"
+              [ngbTooltip]="'common.admin.newsManagement.delete' | translate"
+              tooltipClass="custom-tooltip-class">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
