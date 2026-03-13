@@ -1,0 +1,74 @@
+#log-container {
+  line-height: 1.4;
+  height: 700px;
+}
+
+.tab-title {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+
+  &:not(.active) {
+    color: var(--text-secondary, #666);
+
+    &:hover {
+      color: var(--text-primary, #333);
+    }
+  }
+
+  &.active {
+    color: var(--text-primary, #333);
+    border-bottom-color: var(--text-primary, #333);
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+}
+
+// Log level colors
+.log-level-debug {
+  color: #6c757d;
+}
+
+.log-level-info {
+  color: #0d6efd;
+}
+
+.log-level-warn {
+  color: #ffc107;
+}
+
+.log-level-error {
+  color: #dc3545;
+}
+
+.log-level-fatal {
+  color: #bd2130;
+}
+
+.auto-scroll-label {
+  min-width: 80px;
+}
+
+.log-message-truncate {
+  max-width: 800px;
+}
+
+.log-file-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #dee2e6;
+  background-color: var(--bs-body-bg);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
