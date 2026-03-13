@@ -16,6 +16,7 @@ import com.axonivy.market.stable.service.ProductMarketplaceDataService;
 import com.axonivy.market.stable.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -25,10 +26,8 @@ import java.util.regex.Pattern;
 
 @Service
 @Log4j2
+@Primary
 public class VersionServiceImpl extends CoreVersionServiceImpl implements VersionService {
-  private static final Pattern MAIN_VERSION_PATTERN =
-      Pattern.compile(CoreMavenConstants.MAIN_VERSION_REGEX);
-
   private final ProductMarketplaceDataService productMarketplaceDataService;
 
   public VersionServiceImpl(
