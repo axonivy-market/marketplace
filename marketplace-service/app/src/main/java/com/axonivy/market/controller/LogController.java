@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
