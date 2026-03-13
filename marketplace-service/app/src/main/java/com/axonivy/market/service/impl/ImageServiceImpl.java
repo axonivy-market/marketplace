@@ -113,15 +113,6 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public byte[] getImageByCustomId(String customId) {
-    List<Image> images = imageRepository.findByCustomId(customId);
-    if (CollectionUtils.isEmpty(images)) {
-      return new byte[0];
-    }
-    return images.get(0).getImageData();
-  }
-
-  @Override
   public byte[] readPreviewImageByName(String imageName) {
     var previewPath = Paths.get(PREVIEW_DIR);
     if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
@@ -143,23 +134,5 @@ public class ImageServiceImpl implements ImageService {
       log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
       return new byte[0];
     }
-  }
-
-  @Override
-  public String saveImageWithCustomId(String customId, MultipartFile file) throws IOException {
-    FileValidator.validateImageFile(file);
-    List<Image> existingImages = imageRepository.findByCustomId(customId);
-    if (!CollectionUtils.isEmpty(existingImages)) {
-      imageRepository.deleteAll(existingImages);
-      log.info("Deleted existing {} image(s) with customId: {}", existingImages.size(), customId);
-    }
-    byte[] fileBytes = file.getBytes();
-    var image = new Image();
-    image.setImageData(fileBytes);
-    image.setImageUrl(file.getOriginalFilename());
-    image.setCustomId(customId);
-    image = imageRepository.save(image);
-    log.info("Image saved successfully with id: {}", image.getId());
-    return image.getId();
   }
 }

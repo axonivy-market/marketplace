@@ -17,9 +17,5 @@ public interface ImageService extends CoreImageService {
 
   byte[] readImage(String id);
 
-  byte[] getImageByCustomId(String customId);
-
   byte[] readPreviewImageByName(String imageName);
-
-  String saveImageWithCustomId(String id, MultipartFile file) throws IOException;
 }
