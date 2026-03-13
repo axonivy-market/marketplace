@@ -22,7 +22,6 @@ public class RequestMappingConstants {
   public static final String BY_SPRINT = "/sprint/{sprint}";
   public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
-  public static final String BY_CUSTOM_ID = "/custom/{customId}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";
   public static final String BEST_MATCH_VERSION_BY_ID_AND_VERSION = "/{id}/{version}/best-match-version";

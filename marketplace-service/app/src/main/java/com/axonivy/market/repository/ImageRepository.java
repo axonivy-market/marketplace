@@ -18,6 +18,4 @@ public interface ImageRepository extends CoreImageRepository {
   List<Image> findByProductId(String productId);
 
   void deleteAllByProductId(String productId);
-
-  List<Image> findByCustomId(String customID);
 }
