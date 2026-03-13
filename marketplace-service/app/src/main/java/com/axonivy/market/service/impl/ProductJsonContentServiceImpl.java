@@ -1,0 +1,30 @@
+package com.axonivy.market.service.impl;
+
+import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ProductJsonContentService;
+import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.stereotype.Service;
+
+@Service
+@AllArgsConstructor
+public class ProductJsonContentServiceImpl implements ProductJsonContentService {
+  private final ProductJsonContentRepository productJsonRepo;
+
+  @Override
+  public ProductJsonContent updateProductJsonContent(String jsonContent, String currentVersion, String replaceVersion,
+      String productId, String productName) {
+    if (ObjectUtils.isNotEmpty(jsonContent)) {
+      var productJsonContent = new ProductJsonContent();
+      productJsonContent.setVersion(currentVersion);
+      productJsonContent.setProductId(productId);
+      ProductFactory.mappingIdForProductJsonContent(productJsonContent);
+      productJsonContent.setName(productName);
+      productJsonContent.setContent(jsonContent.replace(replaceVersion, currentVersion));
+      return productJsonRepo.save(productJsonContent);
+    }
+    return null;
+  }
+}
