@@ -25,6 +25,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 market:
+  legacy:
+    installation:
+      counts:
+        path: '/stable/data/market-installation.json'
   info:
     title: "Marketplace stable"
     description: "The stable public api"
