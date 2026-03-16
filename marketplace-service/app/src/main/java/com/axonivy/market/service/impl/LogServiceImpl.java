@@ -141,6 +141,9 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public boolean isLogFileExisted(String fileName) {
+    if (!isLogFile(fileName)) {
+      return false;
+    }
     var filePath = getLogFilePath(fileName);
     return Files.exists(filePath) && !Files.isDirectory(filePath);
   }
