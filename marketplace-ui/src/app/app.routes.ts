@@ -90,8 +90,7 @@ export const routes: Routes = [
       },
       {
         path: 'logs',
-        component: LogViewerComponent,
-        canActivate: [AdminAuthGuard]
+        component: LogViewerComponent
       }
     ]
   },
