@@ -27,8 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT_ID;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
 
 @RestController
 @RequestMapping(PRODUCT_MARKETPLACE_DATA)
