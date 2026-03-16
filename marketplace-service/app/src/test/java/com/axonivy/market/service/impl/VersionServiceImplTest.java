@@ -143,38 +143,6 @@ class VersionServiceImplTest extends BaseSetup {
         "Archived artifact ID should match input artifact ID");
   }
 
-//  @Test
-//  void testGetInstallableVersions() {
-//    List<String> mockVersions = List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2");
-//    Metadata mockMetadata = getMockMetadata();
-//    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
-//    mockMetadata.setVersions(new HashSet<>());
-//    mockMetadata.getVersions().addAll(mockVersions);
-//    List<VersionAndUrlModel> result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true,
-//        MOCK_DESIGNER_VERSION);
-//    Assertions.assertTrue(CollectionUtils.isEmpty(result), "Installation version list should be empty");
-//    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-//    result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
-//    Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions,
-//        "Result version list should match mock version list");
-//    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
-//            ".0-SNAPSHOT/json?designerVersion=12.0.4"),
-//        "First installable version should end with /api/product-details/bpmn-statistic/11.3" +
-//            ".0-SNAPSHOT/json?designerVersion=12.0.4");
-//    Assertions.assertTrue(
-//        result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json?designerVersion=12.0.4"),
-//        "Second installable version should end with /api/product-details/bpmn-statistic/11.1" +
-//            ".1/json?designerVersion=12.0.4");
-//    Assertions.assertTrue(
-//        result.get(2).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.0/json?designerVersion=12.0.4"),
-//        "Third installable version should end with /api/product-details/bpmn-statistic/11.1.0/json?designerVersion=12" +
-//            ".0.4");
-//    Assertions.assertTrue(
-//        result.get(3).getUrl().endsWith("/api/product-details/bpmn-statistic/10.0.2/json?designerVersion=12.0.4"),
-//        "Forth installable version should end with /api/product-details/bpmn-statistic/10.0.2/json?designerVersion=12" +
-//            ".0.4");
-//  }
-
   @Test
   void testGetProductJsonContentByIdAndVersion() {
     ProductJsonContent mockProductJsonContent = getMockProductJsonContent();
