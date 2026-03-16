@@ -49,6 +49,8 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     const productId = route.params[ROUTER.ID];
     const version = route.queryParamMap.get('version');
     this.productDetailService.productId.set(productId);
+    this.routingQueryParamService.checkSessionStorageForDesignerVersion(route.queryParams);
+    this.routingQueryParamService.checkSessionStorageForDesignerEnv(route.queryParams);
 
     this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
     return this.getProductDetailObservable(productId, version).pipe(
