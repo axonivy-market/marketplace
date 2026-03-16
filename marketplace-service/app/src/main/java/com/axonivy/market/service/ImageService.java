@@ -13,7 +13,5 @@ public interface ImageService extends CoreImageService {
 
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
 
-//  byte[] readImage(String id);
-
   byte[] readPreviewImageByName(String imageName);
 }

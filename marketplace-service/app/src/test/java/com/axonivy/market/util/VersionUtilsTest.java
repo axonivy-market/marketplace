@@ -70,25 +70,6 @@ class VersionUtilsTest extends BaseSetup {
         "Remaining version should be 2.0.0 after removing 1.0.0");
   }
 
-//  @Test
-//  void testGetInstallableVersionsFromMetadataList() {
-//    Metadata mockProductMeta1 = getMockMetadataWithVersions();
-//    mockProductMeta1.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
-//    Metadata mockProductMeta2 = getMockMetadataWithVersions();
-//    mockProductMeta2.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
-//    mockProductMeta2.setVersions(Set.of(MOCK_BUGFIX_VERSION));
-//
-//    Assertions.assertEquals(3, mockProductMeta1.getVersions().size(),
-//        "Expected mockProductMeta1 to contain 3 versions");
-//    Assertions.assertEquals(1, mockProductMeta2.getVersions().size(),
-//        "Expected mockProductMeta2 to contain 1 version");
-//
-//    List<String> results = VersionUtils.getInstallableVersionsFromMetadataList(
-//        List.of(mockProductMeta1, mockProductMeta2));
-//    Assertions.assertEquals(4, results.size(),
-//        "Expected total installable versions from both metadata objects to be 4");
-//  }
-
   @Test
   void testNormalizeVersion() {
     Assertions.assertEquals("", VersionUtils.normalizeVersion(""),

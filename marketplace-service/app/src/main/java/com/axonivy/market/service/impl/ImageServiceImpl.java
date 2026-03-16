@@ -4,15 +4,9 @@ import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.service.impl.CoreImageServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductDesignerInstallationRepository;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -36,7 +30,6 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 @Service
 @Log4j2
 @Primary
-//@AllArgsConstructor
 public class ImageServiceImpl extends CoreImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;

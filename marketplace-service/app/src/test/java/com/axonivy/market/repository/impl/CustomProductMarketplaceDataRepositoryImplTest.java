@@ -7,7 +7,6 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -37,30 +36,6 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
     int updatedCount = repo.increaseInstallationCount(MOCK_PRODUCT_ID);
     assertEquals(3, updatedCount, "Expected installation count to be incremented to 3");
   }
-
-//  @Test
-//  void testUpdateInitialCount() {
-//    int initialCount = 10;
-//    Query query = mock(Query.class);
-//    CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-//    CriteriaUpdate<ProductMarketplaceData> mockCriteriaUpdate = mock(CriteriaUpdate.class);
-//    Root<ProductMarketplaceData> root = mock(Root.class);
-//
-//    ProductMarketplaceData updatedProductMarketplaceData = new ProductMarketplaceData();
-//    updatedProductMarketplaceData.setId(MOCK_PRODUCT_ID);
-//    updatedProductMarketplaceData.setInstallationCount(11);
-//
-//    when(em.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-//    when(mockCriteriaBuilder.createCriteriaUpdate(ProductMarketplaceData.class)).thenReturn(mockCriteriaUpdate);
-//    when(mockCriteriaUpdate.from(ProductMarketplaceData.class)).thenReturn(root);
-//
-//    when(em.createQuery(mockCriteriaUpdate)).thenReturn(query);
-//    when(query.executeUpdate()).thenReturn(1);
-//    when(em.find(ProductMarketplaceData.class, MOCK_PRODUCT_ID)).thenReturn(updatedProductMarketplaceData);
-//
-//    int updatedCount = repo.updateInitialCount(MOCK_PRODUCT_ID, initialCount);
-//    assertEquals(11, updatedCount, "Expected installation count to be updated from 10 to 11");
-//  }
 
   @Test
   void testCheckAndInitProductMarketplaceDataIfNotExist() {

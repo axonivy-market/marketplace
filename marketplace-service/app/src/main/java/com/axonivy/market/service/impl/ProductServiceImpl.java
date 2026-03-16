@@ -707,7 +707,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     return Optional.of(versionService.getInstallableVersions(productId, false, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
-        .map(versions -> CoreVersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
+        .map(versions -> CoreVersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct))
+        .orElse(null);
   }
 
   @Override
