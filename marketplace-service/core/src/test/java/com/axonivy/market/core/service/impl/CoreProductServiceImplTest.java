@@ -10,7 +10,6 @@ import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.repository.CoreGithubRepoRepository;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
-import com.axonivy.market.core.repository.CoreProductDesignerInstallationRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.repository.CoreProductMarketplaceDataRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
@@ -21,8 +20,6 @@ import com.axonivy.market.core.utils.CoreVersionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -44,8 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class CoreProductServiceImplTest extends CoreBaseSetup {

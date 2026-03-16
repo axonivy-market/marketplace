@@ -3,31 +3,23 @@ package com.axonivy.market.core.service.impl;
 import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
-
 import com.axonivy.market.core.repository.CoreProductDesignerInstallationRepository;
 import com.axonivy.market.core.repository.CoreProductMarketplaceDataRepository;
-
 import com.axonivy.market.core.repository.CoreProductRepository;
 import org.apache.commons.lang3.StringUtils;
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.mockito.ArgumentMatchers.*;
-
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
-
 import org.mockito.Mock;
-
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +44,8 @@ public class CoreProductMarketplaceDataServiceImplTest extends CoreBaseSetup {
             INSTALLATION_FILE_PATH);
 
     when(coreProductRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(new Product()));
-    when(coreProductMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
+    when(coreProductMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID))
+            .thenReturn(Optional.of(mockProductMarketplaceData));
     when(coreProductMarketplaceDataRepo.increaseInstallationCount(SAMPLE_PRODUCT_ID)).thenReturn(4);
 
     int result = coreProductMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID,
@@ -70,7 +63,8 @@ public class CoreProductMarketplaceDataServiceImplTest extends CoreBaseSetup {
     ReflectionTestUtils.setField(coreProductMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
 
-    when(coreProductMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
+    when(coreProductMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID))
+            .thenReturn(Optional.of(mockProductMarketplaceData));
     when(coreProductMarketplaceDataRepo.updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt())).thenReturn(10);
 
     int result = coreProductMarketplaceDataService.updateProductInstallationCount(SAMPLE_PRODUCT_ID);

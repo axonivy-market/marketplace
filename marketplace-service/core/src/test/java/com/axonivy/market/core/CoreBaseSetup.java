@@ -2,13 +2,16 @@ package com.axonivy.market.core;
 
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.core.enums.Language;
+import com.axonivy.market.core.enums.SortOption;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -16,10 +19,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import com.axonivy.market.core.entity.MavenArtifactVersion;
-import com.axonivy.market.core.entity.key.MavenArtifactKey;
-import com.axonivy.market.core.enums.SortOption;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,7 +51,7 @@ public class CoreBaseSetup {
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
-    Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final Pageable PAGEABLE_ALPHABETICALLY = PageRequest.of(0, 1,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final Pageable PAGEABLE_STANDARD = PageRequest.of(0, 20,
@@ -128,7 +127,8 @@ public class CoreBaseSetup {
 
   protected List<ProductDesignerInstallation> createProductDesignerInstallationsMock() {
     var mockProductDesignerInstallations = new ArrayList<ProductDesignerInstallation>();
-    com.axonivy.market.core.entity.ProductDesignerInstallation mockProductDesignerInstallation = new com.axonivy.market.core.entity.ProductDesignerInstallation();
+    com.axonivy.market.core.entity.ProductDesignerInstallation mockProductDesignerInstallation =
+            new com.axonivy.market.core.entity.ProductDesignerInstallation();
     mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
     mockProductDesignerInstallation.setDesignerVersion("10.0.22");
     mockProductDesignerInstallation.setInstallationCount(50);
