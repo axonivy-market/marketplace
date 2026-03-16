@@ -12,6 +12,9 @@ import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -67,12 +70,16 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
 
   @Test
   void testUsesLatestVersionWhenVersionIsEmpty() {
+    Metadata metadata = Metadata.builder()
+        .artifactId("test-product")
+        .isProductArtifact(true)
+        .versions(Set.of("10.0.1", "10.0.2"))
+        .build();
+    when(coreMetadataRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(metadata));
+
     ProductJsonContent content = new ProductJsonContent();
     content.setContent("{}");
     content.setName(MOCK_PRODUCT_NAME);
-
-//    when(coreMetadataRepository.findByProductId(MOCK_PRODUCT_ID))
-//        .thenReturn(getMockMetadataWithVersions());
 
     when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(
         eq(MOCK_PRODUCT_ID), anyString()))
@@ -85,11 +92,67 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
   }
 
   @Test
+  void testReturnsEmptyMapWhenProductJsonContentNotFound() {
+    when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(anyString(), anyString()))
+        .thenReturn(Collections.emptyList());
+
+    Map<String, Object> result =
+        coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,MOCK_RELEASED_VERSION);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testAddsNameWhenJsonDoesNotContainName() {
+    ProductJsonContent content = new ProductJsonContent();
+    content.setName(MOCK_PRODUCT_NAME);
+    content.setContent("{}");
+
+    when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(anyString(), anyString()))
+        .thenReturn(List.of(content));
+
+    Map<String, Object> result =
+        coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+
+    assertEquals(MOCK_PRODUCT_NAME, result.get("name"));
+  }
+
+  @Test
+  void testDoesNotOverrideNameIfAlreadyPresentInJson() {
+    ProductJsonContent content = new ProductJsonContent();
+    content.setName("database-name");
+    content.setContent("{\"name\":\"json-name\"}");
+
+    when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(anyString(), anyString()))
+        .thenReturn(List.of(content));
+
+    Map<String, Object> result =
+        coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+
+    assertEquals("json-name", result.get("name"));
+  }
+
+  @Test
+  void testReturnsEmptyMapWhenJsonIsInvalid() {
+    ProductJsonContent content = new ProductJsonContent();
+    content.setName(MOCK_PRODUCT_NAME);
+    content.setContent("invalid-json");
+
+    when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(anyString(), anyString()))
+        .thenReturn(List.of(content));
+
+    Map<String, Object> result =
+        coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
   void testGetArtifactsAndVersionToDisplay() {
     when(coreMavenArtifactVersionRepository.findByProductId(anyString())).thenReturn(List.of());
     when(coreMavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
 
-    Assertions.assertTrue(CollectionUtils.isEmpty(
+    assertTrue(CollectionUtils.isEmpty(
             coreVersionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)),
         "Artifacts and version to be displayed should be empty");
 
@@ -101,7 +164,7 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
     proceededData.add(mockModel);
 
     when(coreMavenArtifactVersionRepository.findByProductId(anyString())).thenReturn(proceededData);
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(
+    assertTrue(ObjectUtils.isNotEmpty(
             coreVersionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)),
         "Artifacts and version to be displayed should not be empty");
   }
@@ -126,24 +189,24 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
 
     List<VersionAndUrlModel> result = coreVersionService.getInstallableVersions(MOCK_PRODUCT_ID, true,
         MOCK_DESIGNER_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result), "Installation version list should be empty");
+    assertTrue(CollectionUtils.isEmpty(result), "Installation version list should be empty");
     when(coreMetadataRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     result = coreVersionService.getInstallableVersions(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions,
         "Result version list should match mock version list");
-    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
+    assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
             ".0-SNAPSHOT/json?designerVersion=12.0.4"),
         "First installable version should end with /api/product-details/bpmn-statistic/11.3" +
             ".0-SNAPSHOT/json?designerVersion=12.0.4");
-    Assertions.assertTrue(
+    assertTrue(
         result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json?designerVersion=12.0.4"),
         "Second installable version should end with /api/product-details/bpmn-statistic/11.1" +
             ".1/json?designerVersion=12.0.4");
-    Assertions.assertTrue(
+    assertTrue(
         result.get(2).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.0/json?designerVersion=12.0.4"),
         "Third installable version should end with /api/product-details/bpmn-statistic/11.1.0/json?designerVersion=12" +
             ".0.4");
-    Assertions.assertTrue(
+    assertTrue(
         result.get(3).getUrl().endsWith("/api/product-details/bpmn-statistic/10.0.2/json?designerVersion=12.0.4"),
         "Forth installable version should end with /api/product-details/bpmn-statistic/10.0.2/json?designerVersion=12" +
             ".0.4");

@@ -50,6 +50,7 @@ public class CoreBaseSetup {
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
   protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
+  protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
     Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final Pageable PAGEABLE_ALPHABETICALLY = PageRequest.of(0, 1,
@@ -182,5 +183,34 @@ public class CoreBaseSetup {
     mockArtifact.setType("zip");
     mockArtifact.setName(MOCK_PRODUCT_NAME);
     return mockArtifact;
+  }
+
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersion() {
+    return new ArrayList<>();
+  }
+
+  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId) {
+    return mockMavenArtifactVersion(version, artifactId, "");
+  }
+
+  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId, String downloadUrl) {
+    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
+        .productVersion(version)
+        .artifactId(artifactId)
+        .build();
+
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(downloadUrl).build();
+  }
+
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersionWithData() {
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    mockMavenArtifactVersion.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null));
+    return mockMavenArtifactVersion;
+  }
+
+  protected static ProductJsonContent getMockProductJsonContentContainMavenDropins() {
+    ProductJsonContent result = new ProductJsonContent();
+    result.setContent(getContentFromTestResourcePath(MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH));
+    return result;
   }
 }
