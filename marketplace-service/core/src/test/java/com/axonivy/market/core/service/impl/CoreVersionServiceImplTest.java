@@ -5,6 +5,7 @@ import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,8 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,17 +37,21 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CoreVersionServiceImplTest extends CoreBaseSetup {
+  @Mock
+  private CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository;
+
+  @Mock
+  private CoreMetadataRepository coreMetadataRepository;
+
+  @Mock
+  private CoreProductJsonContentRepository coreProductJsonContentRepo;
+
+  @Mock
+  private ProductJsonLinkBuilder productJsonLinkBuilder;
+
   @Spy
   @InjectMocks
   private CoreVersionServiceImpl coreVersionService;
-  @Mock
-  private CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepository;
-  @Mock
-  private CoreMetadataRepository coreMetadataRepository;
-  @Mock
-  private CoreProductJsonContentRepository coreProductJsonRepo;
-  @Mock
-  private ProductJsonLinkBuilder productJsonLinkBuilder;
 
   @Test
   void testGetLatestInstallableVersion() {
@@ -58,8 +66,27 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
   }
 
   @Test
+  void testUsesLatestVersionWhenVersionIsEmpty() {
+    ProductJsonContent content = new ProductJsonContent();
+    content.setContent("{}");
+    content.setName(MOCK_PRODUCT_NAME);
+
+//    when(coreMetadataRepository.findByProductId(MOCK_PRODUCT_ID))
+//        .thenReturn(getMockMetadataWithVersions());
+
+    when(coreProductJsonContentRepo.findByProductIdAndVersionIgnoreCase(
+        eq(MOCK_PRODUCT_ID), anyString()))
+        .thenReturn(List.of(content));
+
+    Map<String, Object> result =
+        coreVersionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, null);
+
+    assertEquals(MOCK_PRODUCT_NAME, result.get("name"));
+  }
+
+  @Test
   void testGetArtifactsAndVersionToDisplay() {
-    when(coreMavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(List.of());
+    when(coreMavenArtifactVersionRepository.findByProductId(anyString())).thenReturn(List.of());
     when(coreMavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
 
     Assertions.assertTrue(CollectionUtils.isEmpty(
@@ -73,7 +100,7 @@ public class CoreVersionServiceImplTest extends CoreBaseSetup {
     mockModel.setDownloadUrl(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     proceededData.add(mockModel);
 
-    when(coreMavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(proceededData);
+    when(coreMavenArtifactVersionRepository.findByProductId(anyString())).thenReturn(proceededData);
     Assertions.assertTrue(ObjectUtils.isNotEmpty(
             coreVersionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)),
         "Artifacts and version to be displayed should not be empty");

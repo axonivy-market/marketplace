@@ -3,18 +3,37 @@ package com.axonivy.market.core.utils;
 import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
+import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
+import com.axonivy.market.core.service.CoreVersionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.mockito.ArgumentMatchers.anyString;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
+import static org.mockito.Mockito.when;
+
 class CoreVersionUtilsTest extends CoreBaseSetup {
+
+  @Mock
+  private CoreProductJsonContentRepository coreProductJsonContentRepository;
+
+  @InjectMocks
+  private CoreVersionService coreVersionService;
 
   @Test
   void testExtractAllVersions_ReleasedOnly() {

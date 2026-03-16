@@ -15,11 +15,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +31,6 @@ import java.util.List;
 @Log4j2
 @Service
 @Primary
-//@RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDataServiceImpl
     implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;

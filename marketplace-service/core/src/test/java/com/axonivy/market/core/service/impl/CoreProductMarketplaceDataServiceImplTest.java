@@ -1,10 +1,14 @@
 package com.axonivy.market.core.service.impl;
 
 import com.axonivy.market.core.CoreBaseSetup;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 
+import com.axonivy.market.core.repository.CoreProductDesignerInstallationRepository;
 import com.axonivy.market.core.repository.CoreProductMarketplaceDataRepository;
 
+import com.axonivy.market.core.repository.CoreProductRepository;
+import org.apache.commons.lang3.StringUtils;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -29,10 +33,35 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 public class CoreProductMarketplaceDataServiceImplTest extends CoreBaseSetup {
   @Mock
+  private CoreProductRepository coreProductRepo;
+
+  @Mock
   private CoreProductMarketplaceDataRepository coreProductMarketplaceDataRepo;
+
+  @Mock
+  private CoreProductDesignerInstallationRepository coreProductDesignerInstallationRepo;
 
   @InjectMocks
   private CoreProductMarketplaceDataServiceImpl coreProductMarketplaceDataService;
+
+  @Test
+  void testUpdateInstallationCountForProduct() {
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    mockProductMarketplaceData.setSynchronizedInstallationCount(true);
+    ReflectionTestUtils.setField(coreProductMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
+            INSTALLATION_FILE_PATH);
+
+    when(coreProductRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(new Product()));
+    when(coreProductMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
+    when(coreProductMarketplaceDataRepo.increaseInstallationCount(SAMPLE_PRODUCT_ID)).thenReturn(4);
+
+    int result = coreProductMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID,
+            MOCK_RELEASED_VERSION);
+    assertEquals(4, result, "Installation count should match 4");
+
+    result = coreProductMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID, StringUtils.EMPTY);
+    assertEquals(4, result, "Installation count should match 4");
+  }
 
   @Test
   void testUpdateProductInstallationCountWhenNotSynchronized() {

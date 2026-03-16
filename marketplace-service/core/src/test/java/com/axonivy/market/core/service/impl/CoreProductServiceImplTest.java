@@ -1,13 +1,23 @@
 package com.axonivy.market.core.service.impl;
 
 import com.axonivy.market.core.CoreBaseSetup;
+import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.repository.CoreGithubRepoRepository;
+import com.axonivy.market.core.repository.CoreMetadataRepository;
+import com.axonivy.market.core.repository.CoreProductDesignerInstallationRepository;
+import com.axonivy.market.core.repository.CoreProductMarketplaceDataRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
+import com.axonivy.market.core.service.CoreProductMarketplaceDataService;
+import com.axonivy.market.core.service.CoreVersionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -28,13 +38,32 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 @ExtendWith(MockitoExtension.class)
 class CoreProductServiceImplTest extends CoreBaseSetup {
   @Mock
   private CoreProductRepository productRepo;
+
+  @Mock
+  private CoreGithubRepoRepository coreGithubRepoRepository;
+
+  @Mock
+  private CoreMetadataRepository coreMetadataRepo;
+
+  @Mock
+  private CoreProductMarketplaceDataRepository coreProductMarketplaceDataRepo;
+
+  @Mock
+  private CoreProductMarketplaceDataService coreProductMarketplaceDataService;
+
+  @Mock
+  private CoreVersionService coreVersionService;
+
   @Spy
   @InjectMocks
   private CoreProductServiceImpl productService;
+
   private String language;
   private String keyword;
   private Page<Product> mockResultReturn;
@@ -92,6 +121,26 @@ class CoreProductServiceImplTest extends CoreBaseSetup {
     var result = productService.findProducts(type, keyword, language, false, simplePageable);
     assertEquals(result, mockResultReturn, "Product list from search query should match mock product list");
     verify(productRepo).searchByCriteria(any(), any(Pageable.class));
+  }
+
+  @Test
+  void testFetchBestMatchProductDetailByIdAndVersion() {
+//    ReflectionTestUtils.setField(
+//        coreProductMarketplaceDataService,
+//        LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
+//        INSTALLATION_FILE_PATH
+//    );
+    Product mockProduct = getMockProduct();
+    Metadata mockMetadata = getMockMetadataWithVersions();
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    when(coreMetadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(coreProductMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData.getInstallationCount());
+    Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    assertEquals(mockProduct, result,
+        "Found best match product version should match mock product");
   }
 
   protected Page<Product> createPageProductsMock() {

@@ -1,8 +1,14 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.core.entity.Image;
+import com.axonivy.market.core.service.impl.CoreImageServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
@@ -12,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,11 +35,19 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 
 @Service
 @Log4j2
-@AllArgsConstructor
-public class ImageServiceImpl implements ImageService {
+@Primary
+//@AllArgsConstructor
+public class ImageServiceImpl extends CoreImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
   private final FileDownloadService fileDownloadService;
+
+  public ImageServiceImpl(
+     ImageRepository imageRepository, FileDownloadService fileDownloadService) {
+    super(imageRepository);
+    this.imageRepository = imageRepository;
+    this.fileDownloadService = fileDownloadService;
+  }
 
   @Override
   public byte[] getImageBinary(GHContent ghContent, String downloadUrl) {
@@ -105,10 +120,10 @@ public class ImageServiceImpl implements ImageService {
     }
   }
 
-  @Override
-  public byte[] readImage(String id) {
-    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
-  }
+//  @Override
+//  public byte[] readImage(String id) {
+//    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
+//  }
 
   @Override
   public byte[] readPreviewImageByName(String imageName) {

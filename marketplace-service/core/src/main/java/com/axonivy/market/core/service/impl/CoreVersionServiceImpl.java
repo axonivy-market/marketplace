@@ -18,9 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 

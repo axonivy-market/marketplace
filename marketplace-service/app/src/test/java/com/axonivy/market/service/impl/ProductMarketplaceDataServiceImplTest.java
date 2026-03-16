@@ -120,25 +120,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateInstallationCountForProduct() {
-    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-    mockProductMarketplaceData.setSynchronizedInstallationCount(true);
-    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
-        INSTALLATION_FILE_PATH);
-
-    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(new Product()));
-    when(productMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
-    when(productMarketplaceDataRepo.increaseInstallationCount(SAMPLE_PRODUCT_ID)).thenReturn(4);
-
-    int result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID,
-        MOCK_RELEASED_VERSION);
-    assertEquals(4, result, "Installation count should match 4");
-
-    result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID, StringUtils.EMPTY);
-    assertEquals(4, result, "Installation count should match 4");
-  }
-
-  @Test
   void testBuildArtifactStreamFromResource() {
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
