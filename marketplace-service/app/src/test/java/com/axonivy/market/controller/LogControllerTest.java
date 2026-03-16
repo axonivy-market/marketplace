@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
@@ -20,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -31,6 +35,9 @@ class LogControllerTest {
   
   @Mock
   private LogService logService;
+
+  @Mock
+  private HttpServletRequest request;
 
   @BeforeEach
   void setUp() {
@@ -131,14 +138,23 @@ class LogControllerTest {
   @Test
   void testStreamLogsReturnsFlux() {
     Flux<String> flux = Flux.just("Log 1", "Log 2", "Log 3");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<String> result = logController.stream();
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      assertEquals(flux, result, "Stream result should match expected Flux");
+      List<ServerSentEvent<String>> collected = result
+          .take(3)
+          .collectList()
+          .block();
+      assertNotNull(collected, "Collected list should not be null");
+      assertEquals(3, collected.size(), "Should have 3 events");
+      assertEquals("Log 1", collected.get(0).data(), "First event data should match the first emitted log line");
+      assertEquals("Log 2", collected.get(1).data(), "Second event data should match the second emitted log line");
+      assertEquals("Log 3", collected.get(2).data(), "Third event data should match the third emitted log line");
     }
   }
 
@@ -150,31 +166,38 @@ class LogControllerTest {
         "[WARN] Warning occurred"
     );
     Flux<String> flux = Flux.fromIterable(logLines);
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(flux);
       
-      Flux<String> result = logController.stream();
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      List<String> collected = result.collectList().block();
-      assertEquals(3, collected.size(), "Collected list should contain 3 log lines");
-      assertTrue(collected.containsAll(logLines), "Collected list should contain all expected log lines");
+      List<ServerSentEvent<String>> collected = result
+          .take(logLines.size())
+          .collectList()
+          .block();
+      assertEquals(logLines.size(), collected.size(), "Collected list should contain all expected log lines");
+      
+      for (int i = 0; i < logLines.size(); i++) {
+        assertEquals(logLines.get(i), collected.get(i).data(), "Event data should match log line");
+      }
     }
   }
 
   @Test
   void testStreamLogsReturnsEmptyFlux() {
     Flux<String> emptyFlux = Flux.empty();
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(emptyFlux);
       
-      Flux<String> result = logController.stream();
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
-      List<String> collected = result.collectList().block();
-      assertTrue(collected.isEmpty(), "Collected list from empty Flux should be empty");
+      mock.verify(LogStreamRegistry::asFlux, times(1));
     }
   }
 
@@ -195,11 +218,12 @@ class LogControllerTest {
   @Test
   void testStreamCallsLogStreamRegistry() {
     Flux<String> expectedFlux = Flux.just("test");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
     
     try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
       mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
       
-      Flux<String> result = logController.stream();
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
       
       assertNotNull(result, "Stream result should not be null");
       mock.verify(LogStreamRegistry::asFlux, times(1));
@@ -263,5 +287,59 @@ class LogControllerTest {
     
     verify(logService, times(1)).isLogFileExisted(fileName);
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK after service call");
+  }
+
+  @Test
+  void testStreamUsesFirstIpFromXForwardedFor() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("10.0.0.1, 10.0.0.2");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, never()).getHeader(X_REAL_IP);
+      verify(request, never()).getRemoteAddr();
+    }
+  }
+
+  @Test
+  void testStreamUsesXRealIpWhenForwardedForIsBlank() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("   ");
+    when(request.getHeader(X_REAL_IP)).thenReturn("192.168.1.10");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, times(1)).getHeader(X_REAL_IP);
+      verify(request, never()).getRemoteAddr();
+    }
+  }
+
+  @Test
+  void testStreamUsesRemoteAddrWhenProxyHeadersMissing() {
+    Flux<String> expectedFlux = Flux.just("test");
+    when(request.getHeader(X_FORWARDED_FOR)).thenReturn(null);
+    when(request.getHeader(X_REAL_IP)).thenReturn(" ");
+    when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(LogStreamRegistry::asFlux).thenReturn(expectedFlux);
+
+      Flux<ServerSentEvent<String>> result = logController.stream(request);
+
+      assertNotNull(result, "Stream result should not be null");
+      verify(request, times(1)).getHeader(X_FORWARDED_FOR);
+      verify(request, times(1)).getHeader(X_REAL_IP);
+      verify(request, times(1)).getRemoteAddr();
+    }
   }
 }
