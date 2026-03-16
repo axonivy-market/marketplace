@@ -3,5 +3,4 @@ package com.axonivy.market.repository;
 import com.axonivy.market.core.repository.CoreCustomProductDesignerInstallationRepository;
 
 public interface CustomProductDesignerInstallationRepository extends CoreCustomProductDesignerInstallationRepository {
-//  void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
 }

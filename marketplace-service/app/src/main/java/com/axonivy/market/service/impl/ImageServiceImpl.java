@@ -120,11 +120,6 @@ public class ImageServiceImpl extends CoreImageServiceImpl implements ImageServi
     }
   }
 
-//  @Override
-//  public byte[] readImage(String id) {
-//    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
-//  }
-
   @Override
   public byte[] readPreviewImageByName(String imageName) {
     var previewPath = Paths.get(PREVIEW_DIR);

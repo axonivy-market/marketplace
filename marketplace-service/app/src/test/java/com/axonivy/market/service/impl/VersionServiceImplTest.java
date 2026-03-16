@@ -1,23 +1,19 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.ArchivedArtifact;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
-import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
-import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

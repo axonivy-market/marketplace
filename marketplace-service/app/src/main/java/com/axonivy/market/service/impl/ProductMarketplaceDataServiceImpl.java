@@ -79,24 +79,6 @@ public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDat
     return productEntries;
   }
 
-//  @Override
-//  public int updateInstallationCountForProduct(String productId, String designerVersion) {
-//    validateProductExists(productId);
-//    var productMarketplaceData = getProductMarketplaceData(productId);
-//
-//    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
-//    if (StringUtils.isNotBlank(designerVersion)) {
-//      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
-//    }
-//
-//    log.info("updating installation count for product {}", productId);
-//    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-//      return productMarketplaceDataRepo.increaseInstallationCount(productId);
-//    }
-//    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
-//    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
-//  }
-
   @Override
   public Integer getInstallationCount(String id) {
     return productMarketplaceDataRepo.findById(id)

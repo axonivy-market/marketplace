@@ -10,7 +10,7 @@ public class RequestParamConstants {
   public static final String USER_ID = "userId";
   public static final String X_AUTHORIZATION = "X-Authorization";
   public static final String RESET_SYNC = "resetSync";
-  public static final String VERSION = "version";
+//  public static final String VERSION = "version";
   public static final String ARTIFACT = "artifact";
   public static final String MARKET_ITEM_PATH = "marketItemPath";
   public static final String OVERRIDE_MARKET_ITEM_PATH = "overrideMarketItemPath";
