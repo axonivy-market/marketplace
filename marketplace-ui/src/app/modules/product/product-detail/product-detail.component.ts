@@ -35,8 +35,7 @@ import {
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   UNESCAPE_GITHUB_CONTENT_REGEX,
-  VERSION,
-  VERSION_PARAM
+  VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
@@ -174,12 +173,35 @@ export class ProductDetailComponent implements AfterViewInit {
   private readonly changelogIntersectionObserver?: IntersectionObserver;
 
   private scrollPositions: { [tabId: string]: number } = {};
+  private initialFragmentHandled = false;
+  private isDataLoaded = false;
 
   @HostListener('window:popstate')
   onPopState() {
-    this.activeTab = window.location.hash;
-    this.activeTab ??= DEFAULT_ACTIVE_TAB;
-    this.updateDropdownSelection();
+    const fragment = globalThis.location.hash.replace('#', '');
+    const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
+
+    if (tabValue !== this.activeTab) {
+      if (this.activeTab) {
+        this.scrollPositions[this.activeTab] = globalThis.scrollY;
+      }
+
+      this.activeTab = tabValue;
+
+      if (this.productDetail()?.id) {
+        const savedTab = {
+          productId: this.productDetail().id,
+          savedActiveTab: this.activeTab
+        };
+        localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+      }
+
+      this.updateDropdownSelection();
+      setTimeout(() => {
+        const savedScroll = this.scrollPositions[tabValue] ?? 0;
+        globalThis.scrollTo({ top: savedScroll, behavior: 'instant' });
+      }, 0);
+    }
   }
 
   constructor(
@@ -189,7 +211,6 @@ export class ProductDetailComponent implements AfterViewInit {
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
-      this.scrollToTop();
       this.resizeObserver = new ResizeObserver(() => {
         this.updateDropdownSelection();
       });
@@ -259,7 +280,10 @@ export class ProductDetailComponent implements AfterViewInit {
 
         this.handlePopupLogic();
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-        this.navigateToProductDetailsWithTabFragment();
+        this.isDataLoaded = true;
+        setTimeout(() => {
+          this.navigateToProductDetailsWithTabFragment();
+        }, 0);
       });
     }
   }
@@ -428,7 +452,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   scrollToTop(): void {
-    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
   getContent(value: string): boolean {
@@ -481,25 +505,63 @@ export class ProductDetailComponent implements AfterViewInit {
       });
   }
 
-  setActiveTab(tab: string): void {
-    this.router.navigate([], {
-      fragment: tab,
-      queryParamsHandling: 'preserve',
-      replaceUrl: true
-    });
-    this.scrollPositions[this.activeTab] = window.scrollY;
-    this.activeTab = tab;
-    this.keepCurrentTabScroll(tab);
+  setActiveTab(tab: string, updateUrl = true): void {
+    if (!this.isDataLoaded) {
+      return;
+    }
 
+    if (!this.initialFragmentHandled) {
+      this.handleFirstTabActivation(tab);
+      return;
+    }
+
+    this.handleSubsequentTabActivation(tab, updateUrl);
+  }
+
+  private handleFirstTabActivation(tab: string): void {
+    this.initialFragmentHandled = true;
+    this.navigateToFragment(tab || DEFAULT_ACTIVE_TAB);
+    this.activeTab = tab;
+    this.scrollToTop();
+    this.saveActiveTab();
+
+    if (tab === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver(), 100);
+    }
+  }
+
+  private handleSubsequentTabActivation(tab: string, updateUrl: boolean): void {
+    const currentFragment = this.route.snapshot.fragment;
+
+    if (updateUrl && currentFragment !== tab) {
+      this.navigateToFragment(tab);
+    }
+
+    if (this.activeTab && this.activeTab !== tab) {
+      this.scrollPositions[this.activeTab] = globalThis.scrollY;
+    }
+
+    this.activeTab = tab;
+
+    if (tab in this.scrollPositions) {
+      this.keepCurrentTabScroll(tab);
+    } else {
+      this.scrollToTop();
+    }
+
+    this.saveActiveTab();
+
+    if (tab === 'changelog') {
+      setTimeout(() => this.setupIntersectionObserver());
+    }
+  }
+
+  private saveActiveTab(): void {
     const savedTab = {
       productId: this.productDetail().id,
       savedActiveTab: this.activeTab
     };
-
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
-    if (tab === 'changelog') {
-      setTimeout(() => this.setupIntersectionObserver());
-    }
   }
 
   getSelectedTabLabel(): string {
@@ -517,7 +579,9 @@ export class ProductDetailComponent implements AfterViewInit {
 
   keepCurrentTabScroll(tabId: string) {
     const pos = this.scrollPositions[tabId] ?? 0;
-    window.scrollTo(0, pos);
+    if (pos > 0) {
+      setTimeout(() => globalThis.scrollTo({ top: pos, behavior: 'instant' }), 0);
+    }
   }
 
   onShowInfoContent(): void {
@@ -548,7 +612,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   checkMediaSize(): void {
-    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const mediaQuery = globalThis.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.isMobileMode.set(true);
     } else {
@@ -693,9 +757,29 @@ export class ProductDetailComponent implements AfterViewInit {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
         const tabValue = RouteUtils.getTabFragment(fragment);
-        this.setActiveTab(tabValue);
+
+        if (fragment) {
+          const shouldUpdateUrl = this.initialFragmentHandled;
+          this.setActiveTab(tabValue, shouldUpdateUrl);
+        } else if (this.initialFragmentHandled) {
+          const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
+          const currentFragment = this.route.snapshot.fragment;
+          if (currentFragment !== currentTab) {
+            this.navigateToFragment(currentTab);
+          }
+        } else {
+          this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
+        }
       })
     );
+  }
+
+  private navigateToFragment(fragment: string): void {
+    this.router.navigate([], {
+      fragment: fragment,
+      queryParamsHandling: 'preserve',
+      replaceUrl: true
+    });
   }
 
   ngOnDestroy(): void {

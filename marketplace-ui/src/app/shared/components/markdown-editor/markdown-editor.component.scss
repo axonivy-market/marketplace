@@ -1,0 +1,89 @@
+.mde-hidden {
+  visibility: hidden;
+}
+
+::ng-deep .EasyMDEContainer .editor-toolbar button:hover,
+::ng-deep .EasyMDEContainer .editor-toolbar button.active {
+  color: black;
+}
+
+::ng-deep .EasyMDEContainer .CodeMirror .editor-preview-full.bg-secondary,
+::ng-deep .EasyMDEContainer .editor-preview-side.bg-secondary {
+  padding: 1rem;
+}
+
+::ng-deep .EasyMDEContainer {
+  a {
+    color: #007095;
+  }
+
+  .editor-toolbar {
+    font-size: 1.6rem;
+  }
+
+  .CodeMirror {
+    font-size: 1.8rem;
+  }
+
+  .editor-preview {
+    h2 {
+      padding-bottom: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: solid 0.1rem var(--ivy-text-secondary-color);
+    }
+
+    ul li {
+      margin: 0.25rem 0 0 0;
+    }
+  }
+
+  h1 {
+    font-size: 2.4rem;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+  }
+
+  h3 {
+    font-size: 2rem;
+  }
+
+  h4 {
+    font-size: 1.8rem;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  p,
+  ul,
+  li {
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--ivy-text-primary-color);
+  }
+
+  ul,
+  li {
+    margin: 2.52rem 0;
+  }
+
+  a {
+    word-break: break-all;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  pre code {
+    font-size: 1.4rem;
+  }
+}
+
+.spinner-border {
+  width: 12px;
+  height: 12px;
+}
