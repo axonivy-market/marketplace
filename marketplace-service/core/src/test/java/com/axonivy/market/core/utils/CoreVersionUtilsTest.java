@@ -3,29 +3,20 @@ package com.axonivy.market.core.utils;
 import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
-import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.service.CoreVersionService;
 import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static org.mockito.ArgumentMatchers.anyString;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 class CoreVersionUtilsTest extends CoreBaseSetup {
 
@@ -145,5 +136,105 @@ class CoreVersionUtilsTest extends CoreBaseSetup {
         List.of(mockProductMeta1, mockProductMeta2));
     Assertions.assertEquals(4, results.size(),
         "Expected total installable versions from both metadata objects to be 4");
+  }
+
+  @Test
+  void testGetCompatibilityRangeFromSingleVersion() {
+    List<String> versions = List.of("10.2.5");
+    String result = CoreVersionUtils.getCompatibilityRangeFromVersions(versions, false);
+
+    assertEquals("10.2+", result,
+        "Single version should return its major.minor with '+' suffix");
+  }
+
+  @Test
+  void testGetCompatibilityRangeFromVersionsSameMajorVersion() {
+    List<String> versions = List.of(
+        "10.3.2",
+        "10.2.4",
+        "10.1.1"
+    );
+    String result = CoreVersionUtils.getCompatibilityRangeFromVersions(versions, false);
+
+    assertEquals("10.1+", result,
+        "Versions with the same major prefix should return the minimum version with '+' suffix");
+  }
+
+  @Test
+  void testGetCompatibilityRangeFromVersionsDifferentMajorVersions() {
+    List<String> versions = List.of(
+        "11.0.1",
+        "10.3.4",
+        "9.2.1"
+    );
+    String result = CoreVersionUtils.getCompatibilityRangeFromVersions(versions, false);
+
+    assertEquals("9.2 - 11.0+", result,
+        "Versions with different major prefixes should return a formatted compatibility range");
+  }
+
+  @Test
+  void testGetCompatibilityRangeFromVersionsDeprecatedProduct() {
+    List<String> versions = List.of("10.2.5");
+    String result = CoreVersionUtils.getCompatibilityRangeFromVersions(versions, true);
+
+    assertEquals("10.2", result,
+        "Deprecated products should not include '+' suffix in compatibility range");
+  }
+
+  @Test
+  void testGetBestMatchVersionEmptyVersions() {
+    String result = CoreVersionUtils.getBestMatchVersion(List.of(), "10.0.0");
+
+    assertNull(result, "Empty version list should return null");
+  }
+
+  @Test
+  void testGetBestMatchVersionExactMatch() {
+    List<String> versions = List.of("10.0.0", "9.9.0");
+    String result = CoreVersionUtils.getBestMatchVersion(versions, "10.0.0");
+
+    assertEquals("10.0.0", result, "Exact designer version match should be returned");
+  }
+
+  @Test
+  void testGetBestMatchVersionPriorReleasedVersion() {
+    List<String> versions = List.of("10.0.0", "9.5.0");
+    String result = CoreVersionUtils.getBestMatchVersion(versions, "10.1.0");
+
+    assertEquals("10.0.0", result, "Closest prior released version should be returned when exact match is not found");
+  }
+
+  @Test
+  void testGetBestMatchVersionPriorDevVersion() {
+    List<String> versions = List.of("10.0.0-SNAPSHOT", "11.0.0-SNAPSHOT");
+    String result = CoreVersionUtils.getBestMatchVersion(versions, "12.0.0", true);
+
+    assertEquals("10.0.0-SNAPSHOT", result,
+        "Prior development version should be returned when allowDevVersion is true");
+  }
+
+  @Test
+  void testGetBestMatchVersionFallbackReleasedVersion() {
+    List<String> versions = List.of(
+        "11.0.0",
+        "12.0.0"
+    );
+    String result = CoreVersionUtils.getBestMatchVersion(versions, "10.0.0");
+
+    assertEquals("11.0.0", result,
+        "If no prior version exists, the first available released version should be returned");
+  }
+
+  @Test
+  void testGetBestMatchVersionFallbackFirstElement() {
+    List<String> versions = List.of(
+        "11.0.0-SNAPSHOT",
+        "12.0.0-SNAPSHOT"
+    );
+    String result = CoreVersionUtils.getBestMatchVersion(versions, "10.0.0", false);
+
+    assertEquals("11.0.0-SNAPSHOT", result,
+        "If no released versions exist and dev versions are not allowed, the first element should be returned");
   }
 }
