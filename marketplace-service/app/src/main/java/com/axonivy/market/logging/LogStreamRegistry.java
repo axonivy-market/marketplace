@@ -1,22 +1,31 @@
 package com.axonivy.market.logging;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+@Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LogStreamRegistry {
-  private static final Sinks.Many<String> SINK = Sinks.many().multicast().onBackpressureBuffer();
-
-  private LogStreamRegistry() {}
+  private static final int BACKPRESSURE_BUFFER_SIZE = 256;
+  private static Sinks.Many<String> sink = Sinks.many().multicast()
+      .onBackpressureBuffer(BACKPRESSURE_BUFFER_SIZE, false);
 
   public static Flux<String> asFlux() {
-    return SINK.asFlux();
+    return sink.asFlux();
   }
 
   public static boolean hasSubscribers() {
-    return SINK.currentSubscriberCount() > 0;
+    return sink.currentSubscriberCount() > 0;
   }
 
   public static void push(String logLine) {
-    SINK.tryEmitNext(logLine);
+    Sinks.EmitResult result = sink.tryEmitNext(logLine);
+    if (result.isFailure() && result != Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER) {
+      log.warn("Failed to emit log line to stream registry. Result: {}, Subscribers: {}",
+          result, sink.currentSubscriberCount());
+    }
   }
 }
