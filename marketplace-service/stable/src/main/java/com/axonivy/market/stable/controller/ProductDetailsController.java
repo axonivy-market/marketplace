@@ -1,27 +1,15 @@
 package com.axonivy.market.stable.controller;
 
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
-
 import com.axonivy.market.core.model.ProductDetailModel;
-
 import com.axonivy.market.stable.assembler.ProductDetailModelAssembler;
-
-import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
-import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
-
 import com.axonivy.market.stable.service.ProductService;
 import com.axonivy.market.stable.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-
 import lombok.AllArgsConstructor;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,9 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
+import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @AllArgsConstructor
 @RestController
-@RequestMapping(PRODUCT_DETAILS)
+@RequestMapping(value = PRODUCT_DETAILS, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
