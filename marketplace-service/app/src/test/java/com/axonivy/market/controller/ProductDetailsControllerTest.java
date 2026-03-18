@@ -315,14 +315,14 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testSyncLatestReleasesForProducts() throws IOException {
-    List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
-    when(productService.getProductIdList()).thenReturn(productIdList);
+    List<String> productIds = List.of(DOCKER_CONNECTOR_ID);
+    when(productService.getProductIds()).thenReturn(productIds);
     when(productService.syncGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(
         Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
-    verify(productService, times(1)).getProductIdList();
+    verify(productService, times(1)).getProductIds();
   }
 
   @Test

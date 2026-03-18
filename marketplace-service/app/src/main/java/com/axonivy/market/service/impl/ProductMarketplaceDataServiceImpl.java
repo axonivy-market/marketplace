@@ -66,6 +66,20 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
+  @Override
+  public ProductCustomSortRequest getCustomSortProducts() {
+    List<String> orderedProducts = productMarketplaceDataRepo.findByCustomOrderIsNotNullOrderByCustomOrderDesc()
+        .stream()
+        .map(ProductMarketplaceData::getId)
+        .toList();
+
+    String remainderRule = productCustomSortRepo.findAll().stream().findFirst()
+        .map(ProductCustomSort::getRuleForRemainder)
+        .orElse(SortOption.ALPHABETICALLY.getOption());
+
+    return new ProductCustomSortRequest(orderedProducts, remainderRule);
+  }
+
   public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(
       Collection<String> orderedListOfProducts) {
     List<ProductMarketplaceData> productEntries = new ArrayList<>();

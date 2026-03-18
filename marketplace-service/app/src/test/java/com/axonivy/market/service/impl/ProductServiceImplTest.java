@@ -70,6 +70,10 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -880,13 +884,14 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetProductIdList() {
-    List<Product> products = List.of(new Product(), new Product());
-    when(productRepo.findAll()).thenReturn(products);
+  void testGetProductIds() {
+    List<String> ids = List.of(MOCK_PRODUCT_ID, "tel-search-ch-connector");
+    when(productRepo.findAllIds()).thenReturn(ids);
 
-    List<String> result = productService.getProductIdList();
-    assertEquals(products.size(), result.size(),
-        "Github release model list size should match total products size");
+    List<String> results = productService.getProductIds();
+
+    assertEquals(ids, results, "Product id list should be sorted");
+    verify(productRepo).findAllIds();
   }
 
   @Test

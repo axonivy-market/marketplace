@@ -30,6 +30,11 @@ export interface SyncTaskExecution {
   message?: string;
 }
 
+export interface CustomSortConfig {
+  orderedListOfProducts: string[];
+  ruleForRemainder: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
   constructor(
@@ -104,12 +109,15 @@ export class AdminDashboardService {
     };
 
     return this.http.post<void>(
-      `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`,
-      body,
+      `${API_URI.CUSTOM_SORT}`, body,
       {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
+  }
+
+  getCustomSort(): Observable<CustomSortConfig> {
+    return this.http.get<CustomSortConfig>(`${API_URI.CUSTOM_SORT}`);
   }
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {

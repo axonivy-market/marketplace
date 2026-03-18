@@ -176,16 +176,11 @@ export class ProductService {
     return productDetail;
   }
 
-  async fetchAllProductIds(
-    pageSize = PAGE_SIZE,
-    language: Language = Language.EN
-  ): Promise<string[]> {
-    const products = await this.fetchAllProducts(pageSize, language);
-
-    return products.map(product => product.id);
+  fetchAllProductIds(): Observable<string[]> {
+    return this.httpClient.get<string[]>(`${API_URI.IDS}`);
   }
 
-  async fetchAllProductsForSync(
+  fetchAllProductsForSync(
     pageSize = PAGE_SIZE,
     language: Language = Language.EN
   ): Promise<MarketProduct[]> {
