@@ -82,9 +82,6 @@
               <td>
                 <span class="extension-id">{{ item }}</span>
               </td>
-              <ng-template cdkDragPreview>
-                <span></span>
-              </ng-template>
               <ng-template cdkDragPlaceholder>
                 <tr class="drag-placeholder">
                   <td class="index border-0">&nbsp;</td>
@@ -95,9 +92,11 @@
               </ng-template>
             </tr>
           }
-          <tr class="drop-target-row">
-            <td colspan="2"></td>
-          </tr>
+          @if (sortingExtensions.length != 0) {
+            <tr class="empty-row text-center">
+              <td colspan="2" class="border-bottom-0"></td>
+            </tr>
+          }
         </tbody>
       </app-custom-sort-card>
 
