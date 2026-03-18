@@ -18,10 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+
 @Log4j2
 @Component
 public class LimitCallingConfig extends OncePerRequestFilter {
-  private static final String REQUEST_HEADER = "X-Forwarded-For";
   @Value("${market.allowed.click-capacity}")
   private int capacity;
 
@@ -66,7 +67,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private static String getClientIp(HttpServletRequest request) {
-    String forwardedFor = request.getHeader(REQUEST_HEADER);
+    String forwardedFor = request.getHeader(X_FORWARDED_FOR);
     if (StringUtils.isNotEmpty(forwardedFor)) {
       return forwardedFor.split(",")[0];
     }
