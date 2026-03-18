@@ -1,7 +1,12 @@
 package com.axonivy.market.logging;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(OutputCaptureExtension.class)
 class LogStreamRegistryTest {
 
   @Test
@@ -94,5 +100,25 @@ class LogStreamRegistryTest {
     await().atMost(5, TimeUnit.SECONDS).until(() -> received1.size() >= 1 && received2.size() >= 1);
     assertTrue(received1.size() >= 1, "First subscriber should receive at least one message");
     assertTrue(received2.size() >= 1, "Second subscriber should receive at least one message");
+  }
+
+  @Test
+  void testPushLogFailure(CapturedOutput output) {
+    Object originalSink = ReflectionTestUtils.getField(LogStreamRegistry.class, "sink");
+    Sinks.Many<String> mockSink = org.mockito.Mockito.mock(Sinks.Many.class);
+    org.mockito.Mockito.when(mockSink.tryEmitNext(org.mockito.ArgumentMatchers.anyString()))
+        .thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
+    org.mockito.Mockito.when(mockSink.currentSubscriberCount()).thenReturn(0);
+
+    try {
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", mockSink);
+
+      LogStreamRegistry.push("Test Failure");
+
+      assertTrue(output.getOut().contains("Failed to emit log line to stream registry"), 
+          "Should log warning on failure");
+    } finally {
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
+    }
   }
 }

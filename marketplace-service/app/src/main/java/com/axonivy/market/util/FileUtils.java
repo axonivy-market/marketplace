@@ -1,8 +1,11 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.constants.RegexConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
@@ -181,5 +184,12 @@ public class FileUtils {
     } finally {
       zipOut.closeEntry();
     }
+  }
+
+  public static String sanitizeFileName(String fileName) {
+    if (fileName == null) {
+      return StringUtils.EMPTY;
+    }
+    return RegexConstants.SAFE_FILE_NAME_PATTERN.matcher(fileName).replaceAll(StringUtils.EMPTY);
   }
 }
