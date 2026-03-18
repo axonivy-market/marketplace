@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductMarketplaceDataRepository
     extends JpaRepository<ProductMarketplaceData, String>, CustomProductMarketplaceDataRepository {
@@ -15,4 +17,6 @@ public interface ProductMarketplaceDataRepository
   @Transactional
   @Query("UPDATE ProductMarketplaceData p SET p.customOrder = NULL")
   void resetCustomOrderForAllProducts();
+
+  List<ProductMarketplaceData> findByCustomOrderIsNotNullOrderByCustomOrderDesc();
 }

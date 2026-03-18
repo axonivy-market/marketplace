@@ -201,6 +201,21 @@ describe('AdminDashboardService', () => {
       });
       req.flush(null);
     });
+
+    it('should fetch custom sort configuration', () => {
+      const mockConfig = {
+        orderedListOfProducts: ['a', 'b'],
+        ruleForRemainder: 'alphabetically'
+      };
+
+      service.getCustomSort().subscribe(config => {
+        expect(config).toEqual(mockConfig);
+      });
+
+      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockConfig);
+    });
   });
 
   describe('getSecurityDetails', () => {

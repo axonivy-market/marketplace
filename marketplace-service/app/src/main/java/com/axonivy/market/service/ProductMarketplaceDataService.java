@@ -10,6 +10,8 @@ import java.io.OutputStream;
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
 
+  ProductCustomSortRequest getCustomSortProducts();
+
   int updateInstallationCountForProduct(String id, String designerVersion);
 
   int updateProductInstallationCount(String id);
