@@ -1,12 +1,12 @@
-<p [lang]="languageService.selectedLanguage()" [innerHTML]="'common.product.detail.maven.description' | translate"></p>
+<p [innerHTML]="'common.product.detail.maven.description' | translate"></p>
 <pre>
   <code>
-    &lt;!-- {{ getProductName() }} --&gt;
+    &lt;!-- {{ productName }} --&gt;
     &lt;dependency&gt;
-    &nbsp;&nbsp;&lt;groupId&gt;{{ productDetail.productModuleContent.groupId }}&lt;/groupId&gt;
-    &nbsp;&nbsp;&lt;artifactId&gt;{{productDetail.productModuleContent.artifactId}}&lt;/artifactId&gt;
+    &nbsp;&nbsp;&lt;groupId&gt;{{ productModuleContent.groupId }}&lt;/groupId&gt;
+    &nbsp;&nbsp;&lt;artifactId&gt;{{productModuleContent.artifactId}}&lt;/artifactId&gt;
     &nbsp;&nbsp;&lt;version&gt;{{ selectedVersion.replaceAll('Version ', '') }}&lt;/version&gt;
-    &nbsp;&nbsp;&lt;type&gt;{{ productDetail.productModuleContent.type }}&lt;/type&gt;
+    &nbsp;&nbsp;&lt;type&gt;{{ productModuleContent.type }}&lt;/type&gt;
     &lt;/dependency&gt;
   </code>
 </pre>
