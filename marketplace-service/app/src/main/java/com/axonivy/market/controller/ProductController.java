@@ -86,6 +86,13 @@ public class ProductController {
     return ResponseEntity.ok(pageResources);
   }
 
+  @GetMapping(IDS)
+  @Operation(summary = "Get the list of product ID", description = "Return all product IDs")
+  public ResponseEntity<List<String>> getAllProductIds() {
+    List<String> productIds = productService.getProductIds();
+    return new ResponseEntity<>(productIds, HttpStatus.OK);
+  }
+
   @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)

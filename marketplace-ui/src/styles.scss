@@ -21,3 +21,8 @@ html {
 .gssb_c {
   display: none;
 }
+
+// Custom Sort: hide drag preview overlay text
+.custom-sort-drag-preview {
+  display: none !important;
+}

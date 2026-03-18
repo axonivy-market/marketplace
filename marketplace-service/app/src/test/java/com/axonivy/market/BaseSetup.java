@@ -255,8 +255,15 @@ public class BaseSetup extends CoreBaseSetup {
     return mockProduct;
   }
 
+  protected Product getMockProduct2() {
+    Product mockProduct = Product.builder().id("tel-search-ch-connector").releasedVersions(new ArrayList<>()).artifacts(
+        List.of(getMockArtifact(), getMockArtifact2())).build();
+    mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
+    return mockProduct;
+  }
+
   protected List<Product> getMockProducts() {
-    return List.of(getMockProduct());
+    return List.of(getMockProduct(), getMockProduct2());
   }
 
   protected Metadata getMockMetadata() {
@@ -299,7 +306,11 @@ public class BaseSetup extends CoreBaseSetup {
   }
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
-    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).customOrder(2).build();
+  }
+
+  protected ProductMarketplaceData getMockProductMarketplaceData2() {
+    return ProductMarketplaceData.builder().id(SAMPLE_PRODUCT_ID).installationCount(3).customOrder(1).build();
   }
 
   protected ProductModuleContent getMockProductModuleContent() {
