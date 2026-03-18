@@ -4,6 +4,7 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductCustomSort;
+import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
@@ -11,6 +12,8 @@ import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.core.repository.CoreCustomProductRepository;
 import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
+import com.axonivy.market.core.repository.CoreProductModuleContentRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -26,6 +29,7 @@ import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,8 +38,11 @@ import org.springframework.data.domain.Sort;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 
@@ -44,6 +51,7 @@ import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 @AllArgsConstructor
 public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<Product> implements CoreCustomProductRepository {
   private final CoreProductCustomSortRepository coreProductCustomSortRepository;
+  private final CoreProductModuleContentRepository coreProductModuleContentRepository;
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
@@ -57,6 +65,43 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
       return null;
     }
     return results.get(0);
+  }
+
+  @Override
+  public Product getProductByIdAndVersion(String id, String version) {
+    var result = findProductByIdAndRelatedData(id);
+    if (!Objects.isNull(result)) {
+      ProductModuleContent content = coreProductModuleContentRepository.findByVersionAndProductId(version, id);
+      if (content != null) {
+        Hibernate.initialize(content.getDescription());
+        Hibernate.initialize(content.getSetup());
+        Hibernate.initialize(content.getDemo());
+        result.setProductModuleContent(content);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public Product findProductByIdAndRelatedData(String id) {
+    CriteriaQueryContext<Product> context = createCriteriaQueryContext();
+    context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
+    context.query().where(context.builder().equal(context.root().get(ID), id));
+    try {
+      return getEntityManager().createQuery(context.query()).getSingleResult();
+    } catch (NoResultException e) {
+      log.error("Cannot find product: ", e);
+      return null;
+    }
+  }
+
+  @Override
+  public List<String> getReleasedVersionsById(String id) {
+    return Optional.ofNullable(findProductByIdAndRelatedData(id))
+        .map(Product::getReleasedVersions)
+        .orElse(Collections.emptyList());
   }
 
   @Override

@@ -1,9 +1,12 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.entity.TestStep;
+
+import static com.axonivy.market.core.entity.TestStep.createTestStep;
+
+import com.axonivy.market.core.enums.TestStatus;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -12,8 +15,6 @@ import lombok.extern.log4j.Log4j2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static com.axonivy.market.entity.TestStep.createTestStep;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

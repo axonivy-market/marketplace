@@ -3,6 +3,7 @@ package com.axonivy.market.entity;
 import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
 import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
 
+import com.axonivy.market.core.entity.AuditableIdEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

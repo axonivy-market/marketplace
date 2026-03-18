@@ -1,10 +1,8 @@
 package com.axonivy.market.repository;
 
-public interface CustomProductMarketplaceDataRepository {
+import com.axonivy.market.core.repository.CoreCustomProductMarketplaceDataRepository;
 
-  int updateInitialCount(String productId, int initialCount);
-
-  int increaseInstallationCount(String productId);
+public interface CustomProductMarketplaceDataRepository extends CoreCustomProductMarketplaceDataRepository {
 
   void checkAndInitProductMarketplaceDataIfNotExist(String productId);
 }

@@ -30,4 +30,9 @@ public class CoreEntityConstants {
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String PRODUCT_NAME = "product_name";
   public static final String PRODUCT_DESCRIPTION = "product_description";
+  public static final String GITHUB_REPO = "github_repo";
+  public static final String REPOSITORY_ID = "repository_id";
+  public static final String WORKFLOW_INFORMATION = "workflow_information";
+  public static final String TEST_STEP = "test_step";
+  public static final String PRODUCT_DESIGNER_INSTALLATION = "product_designer_installation";
 }

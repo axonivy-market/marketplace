@@ -1,6 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.enums.WorkFlowType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

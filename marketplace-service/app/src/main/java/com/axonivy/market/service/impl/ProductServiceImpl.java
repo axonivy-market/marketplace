@@ -10,18 +10,19 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.core.entity.ProductModuleContent;
-import com.axonivy.market.core.enums.DocumentField;
-import com.axonivy.market.core.enums.ErrorCode;
-import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.repository.CoreProductRepository;
-import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
-import com.axonivy.market.core.utils.CoreVersionUtils;
-import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductJsonContent;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.DocumentField;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.model.VersionAndUrlModel;
+import com.axonivy.market.core.repository.CoreProductRepository;
+import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
+import com.axonivy.market.core.utils.CoreVersionUtils;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SyncTaskType;
@@ -33,7 +34,6 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ImageRepository;
@@ -76,9 +76,18 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static com.axonivy.market.constants.MavenConstants.*;
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE;
+import static com.axonivy.market.constants.MavenConstants.PRODUCT_ARTIFACT_POSTFIX;
 import static com.axonivy.market.core.constants.CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -110,7 +119,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(CoreProductRepository coreProductRepo, ProductRepository productRepo,
+  public ProductServiceImpl(CoreProductRepository coreProductRepo,
+      ProductRepository productRepo,
       ProductModuleContentRepository productModuleContentRepo, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepo,
       GitHubService gitHubService, MetadataRepository metadataRepo, ProductJsonContentRepository productJsonContentRepo,
@@ -120,7 +130,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
       VersionService versionService, GithubRepoRepository githubRepo) {
-    super(coreProductRepo);
+    super(coreProductRepo, metadataRepo, productMarketplaceDataService, mavenArtifactVersionRepository,
+        productJsonContentRepo, githubRepo, versionService);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -213,7 +224,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     groupGitHubFiles.forEach((String key, List<GitHubFile> value) ->
-      value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)))
+        value.forEach(file -> syncedProductIds.add(resolveProductId(file, key)))
     );
 
     return syncedProductIds.stream().toList();
@@ -483,7 +494,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
     List<String> versionChanges =
         mavenVersions.stream().filter(
-            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+            version -> !currentVersions.contains(version) || (!CoreVersionUtils.isReleasedVersion(
                 version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 
@@ -497,7 +508,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse((List<String> releasedVersion) -> {},
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse((List<String> releasedVersion) -> {
+        },
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -564,59 +576,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
-        metadataRepo.findByProductId(id));
-    String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
-    // Cover exception case of employee onboarding without any product.json file
-    Product product;
-    if (StringUtils.isBlank(bestMatchVersion)) {
-      product = getProductByIdWithNewestReleaseVersion(id, false);
-    } else {
-      product = productRepo.getProductByIdAndVersion(id, bestMatchVersion);
-    }
-
-    return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
-
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
-      productItem.setBestMatchVersion(bestMatchVersion);
-      return productItem;
-    }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
-  }
-
-  @Override
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return versions.contains(version) ? version : VersionFactory.get(versions, version);
-  }
-
-  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
-    List<String> versions;
-    String version = StringUtils.EMPTY;
-
-    List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(id);
-
-    if (ObjectUtils.isNotEmpty(mavenArtifactVersions)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion));
-      version = CollectionUtils.firstElement(versions);
-    }
-
-    // Cover exception case of employee onboarding without any product.json file
-    if (StringUtils.isBlank(version)) {
-      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
-      version = CollectionUtils.firstElement(versions);
-    }
-
-    var product = productRepo.getProductByIdAndVersion(id, version);
-    productJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
-        ProductJsonContent::getContent).findFirst().ifPresent(
-        jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
-    return product;
   }
 
   @Override
@@ -744,7 +707,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     return Optional.of(versionService.getInstallableVersions(productId, false, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
-        .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
+        .map(versions -> CoreVersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct))
+        .orElse(null);
   }
 
   @Override
@@ -758,7 +722,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {

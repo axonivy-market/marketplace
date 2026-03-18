@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.AuditableIdEntity;
 import com.axonivy.market.enums.DocumentLanguage;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

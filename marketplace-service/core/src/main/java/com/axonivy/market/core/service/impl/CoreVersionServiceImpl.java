@@ -1,9 +1,11 @@
 package com.axonivy.market.core.service.impl;
 
+import com.axonivy.market.core.builder.ProductJsonLinkBuilder;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +38,7 @@ public class CoreVersionServiceImpl implements CoreVersionService {
   private final CoreProductJsonContentRepository coreProductJsonRepo;
   protected final CoreMavenArtifactVersionRepository coreMavenArtifactVersionRepo;
   private final CoreMetadataRepository coreMetadataRepository;
+  private final ProductJsonLinkBuilder productJsonLinkBuilder;
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
@@ -84,6 +88,28 @@ public class CoreVersionServiceImpl implements CoreVersionService {
         coreMetadataRepository.findByProductId(productId)).stream().dropWhile(
         version -> !CoreVersionUtils.isReleasedVersion(version)).toList();
     return CollectionUtils.firstElement(releasedVersions);
+  }
+
+  @Override
+  public List<VersionAndUrlModel> getInstallableVersions(String productId,
+      Boolean isShowDevVersion, String designerVersion) {
+    List<String> releasedVersions =
+        CoreVersionUtils.getInstallableVersionsFromMetadataList(coreMetadataRepository.findByProductId(productId));
+    if (CollectionUtils.isEmpty(releasedVersions)) {
+      return Collections.emptyList();
+    }
+
+    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
+    for (String version : CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
+      String url = productJsonLinkBuilder.buildProductJsonUrl(
+          productId,
+          version,
+          designerVersion
+      );
+
+      versionAndUrlList.add(new VersionAndUrlModel(version, url));
+    }
+    return versionAndUrlList;
   }
 
   protected List<MavenArtifactVersion> filterArtifactByVersion(List<MavenArtifactVersion> mavenArtifactVersions,

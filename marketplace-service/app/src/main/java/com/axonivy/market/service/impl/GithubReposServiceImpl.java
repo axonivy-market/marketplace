@@ -2,16 +2,16 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.criteria.MonitoringSearchCriteria;
-import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.core.criteria.MonitoringSearchCriteria;
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.core.entity.TestStep;
+import com.axonivy.market.core.entity.WorkflowInformation;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.entity.WorkflowInformation;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -48,8 +48,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
-import static com.axonivy.market.entity.GithubRepo.from;
-import static com.axonivy.market.enums.WorkFlowType.values;
 
 @Service
 @RequiredArgsConstructor
@@ -115,8 +113,8 @@ public class GithubReposServiceImpl implements GithubReposService {
           repo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
           repo.setProductId(resolvedProductId);
           return repo;
-        }).orElse(from(ghRepo, resolvedProductId));
-    List<TestStep> testSteps = Arrays.stream(values()).map(
+        }).orElse(GithubRepo.from(ghRepo, resolvedProductId));
+    List<TestStep> testSteps = Arrays.stream(WorkFlowType.values()).map(
         workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
     githubRepoRepository.save(githubRepo);

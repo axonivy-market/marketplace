@@ -1,6 +1,6 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import lombok.Getter;
 
 @Getter

@@ -8,11 +8,13 @@ import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductDesignerInstallation;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.model.VersionAndUrlModel;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.CodeScanning;
@@ -21,7 +23,6 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
-import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
@@ -55,29 +56,18 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String ACCESS_TOKEN = "sampleAccessToken";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_REPOSITORY_NAME = "axonivy-market/amazon-comprehend";
-  protected static final Pageable PAGEABLE_ALPHABETICALLY = PageRequest.of(0, 1,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
-  protected static final Pageable PAGEABLE_STANDARD = PageRequest.of(0, 20,
-      Sort.by(SortOption.STANDARD.getOption()).descending());
-  protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_FIRST_RELEASED_VERSION_FOR_TEN = "10.0.0";
-  protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
-  protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
-  protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
   protected static final String MOCK_SPRINT_RELEASED_VERSION = "10.0.10-m123";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
-  protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
   protected static final String MOCK_PRODUCT_REPOSITORY_NAME = "axonivy-market/bpmn-statistic";
   protected static final String MOCK_IMAGE_ID_FORMAT_1 = "imageId-66e2b14868f2f95b2f95549a";
   protected static final String MOCK_IMAGE_ID_FORMAT_2 = "imageId-66e2b14868f2f95b2f95550a";
   protected static final String MOCK_IMAGE_ID_FORMAT_3 = "imageId-66e2b14868f2f95b2f95551a";
-  protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
-  protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
   protected static final String MOCK_PRODUCT_JSON_DIR_PATH = "src/test/resources";
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
@@ -97,10 +87,8 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String MOCK_DUMP_DOWNLOAD_URL = "octopus.com";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
-  protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
   protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
-  protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   protected static final String IMAGE_NAME = "test.png";
   protected static final String SAMPLE_LOGO_ID = "1234";
   public static final String DEFAULT_HOST = "http://localhost:";
@@ -131,8 +119,8 @@ public class BaseSetup extends CoreBaseSetup {
   }
 
   protected List<ProductDesignerInstallation> createProductDesignerInstallationsMock() {
-    var mockProductDesignerInstallations = new ArrayList<ProductDesignerInstallation>();
-    ProductDesignerInstallation mockProductDesignerInstallation = new ProductDesignerInstallation();
+    var mockProductDesignerInstallations = new ArrayList<com.axonivy.market.core.entity.ProductDesignerInstallation>();
+    com.axonivy.market.core.entity.ProductDesignerInstallation mockProductDesignerInstallation = new com.axonivy.market.core.entity.ProductDesignerInstallation();
     mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
     mockProductDesignerInstallation.setDesignerVersion("10.0.22");
     mockProductDesignerInstallation.setInstallationCount(50);

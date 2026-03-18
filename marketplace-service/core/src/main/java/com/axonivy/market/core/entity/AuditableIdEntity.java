@@ -1,6 +1,5 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.entity.AbstractAuditableEntity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;

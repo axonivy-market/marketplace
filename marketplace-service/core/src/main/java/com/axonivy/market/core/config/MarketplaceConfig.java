@@ -1,12 +1,10 @@
-package com.axonivy.market.config;
+package com.axonivy.market.core.config;
 
+import com.axonivy.market.core.enums.Environment;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.axonivy.market.enums.Environment;
-
-import lombok.Getter;
 
 @Getter
 @RequiredArgsConstructor

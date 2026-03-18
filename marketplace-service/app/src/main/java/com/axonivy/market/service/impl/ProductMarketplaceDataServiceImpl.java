@@ -5,6 +5,7 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.core.service.impl.CoreProductMarketplaceDataServiceImpl;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -14,13 +15,8 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,32 +24,32 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@Service
 @Log4j2
-@RequiredArgsConstructor
-public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
-
-  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
-  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
+@Service
+@Primary
+public class ProductMarketplaceDataServiceImpl extends CoreProductMarketplaceDataServiceImpl
+    implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductRepository productRepo;
-  private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final SecureRandom random = new SecureRandom();
-  @Value("${market.legacy.installation.counts.path}")
-  private String legacyInstallationCountPath;
+
+  public ProductMarketplaceDataServiceImpl(
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, ProductCustomSortRepository productCustomSortRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepo, ProductRepository productRepo,
+      ProductDesignerInstallationRepository productDesignerInstallationRepo, FileDownloadService fileDownloadService) {
+    super(productMarketplaceDataRepo, productDesignerInstallationRepo, productRepo);
+    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.productCustomSortRepo = productCustomSortRepo;
+    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+    this.productRepo = productRepo;
+    this.fileDownloadService = fileDownloadService;
+  }
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
@@ -81,61 +77,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
-  }
-
-  @Override
-  public int updateInstallationCountForProduct(String productId, String designerVersion) {
-    validateProductExists(productId);
-    var productMarketplaceData = getProductMarketplaceData(productId);
-
-    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
-    if (StringUtils.isNotBlank(designerVersion)) {
-      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
-    }
-
-    log.info("updating installation count for product {}", productId);
-    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.increaseInstallationCount(productId);
-    }
-    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
-    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
-  }
-
-  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
-    log.info("synchronizing installation count for product {}", productId);
-    var result = 0;
-    try {
-      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
-      Map<String, Integer> mapping = mapper.readValue(installationCounts,
-          new TypeReference<HashMap<String, Integer>>() {
-          });
-      List<String> keyList = mapping.keySet().stream().toList();
-      if (keyList.contains(productId)) {
-        result = mapping.get(productId);
-      } else {
-        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
-      }
-      log.info("synchronized installation count for product {} successfully", productId);
-    } catch (IOException ex) {
-      log.error("Could not read the marketplace-installation file to synchronize", ex);
-    }
-    return result;
-  }
-
-  @Override
-  public int updateProductInstallationCount(String id) {
-    var productMarketplaceData = getProductMarketplaceData(id);
-    if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.updateInitialCount(id,
-          getInstallationCountFromFileOrInitializeRandomly(id));
-    }
-    return productMarketplaceData.getInstallationCount();
-  }
-
-  @Override
-  public ProductMarketplaceData getProductMarketplaceData(String productId) {
-    return productMarketplaceDataRepo.findById(productId).orElse(
-        ProductMarketplaceData.builder().id(productId).build());
   }
 
   @Override

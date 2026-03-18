@@ -1,17 +1,18 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.core.entity.Image;
+import com.axonivy.market.core.service.impl.CoreImageServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,11 +29,18 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 
 @Service
 @Log4j2
-@AllArgsConstructor
-public class ImageServiceImpl implements ImageService {
+@Primary
+public class ImageServiceImpl extends CoreImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
   private final FileDownloadService fileDownloadService;
+
+  public ImageServiceImpl(
+     ImageRepository imageRepository, FileDownloadService fileDownloadService) {
+    super(imageRepository);
+    this.imageRepository = imageRepository;
+    this.fileDownloadService = fileDownloadService;
+  }
 
   @Override
   public byte[] getImageBinary(GHContent ghContent, String downloadUrl) {
@@ -103,11 +111,6 @@ public class ImageServiceImpl implements ImageService {
       log.error("Cannot get image from downloaded folder {}", e.getMessage());
       return null;
     }
-  }
-
-  @Override
-  public byte[] readImage(String id) {
-    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
   }
 
   @Override

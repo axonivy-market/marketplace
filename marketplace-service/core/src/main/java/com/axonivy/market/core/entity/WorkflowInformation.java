@@ -1,7 +1,8 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.entity.GenericIdEntity;
-import com.axonivy.market.enums.WorkFlowType;
+import static com.axonivy.market.core.constants.CoreEntityConstants.WORKFLOW_INFORMATION;
+
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,8 +16,6 @@ import lombok.Setter;
 
 import java.io.Serial;
 import java.util.Date;
-
-import static com.axonivy.market.constants.EntityConstants.WORKFLOW_INFORMATION;
 
 @NoArgsConstructor
 @AllArgsConstructor

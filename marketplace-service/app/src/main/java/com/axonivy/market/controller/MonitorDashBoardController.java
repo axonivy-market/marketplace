@@ -2,7 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.constants.CorePostgresDBConstants;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;

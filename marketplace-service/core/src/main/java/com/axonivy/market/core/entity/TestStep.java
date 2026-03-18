@@ -1,14 +1,20 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.entity.GenericIdEntity;
-import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.WorkFlowType;
-import jakarta.persistence.*;
-import lombok.*;
+import static com.axonivy.market.core.constants.CoreEntityConstants.TEST_STEP;
+
+import com.axonivy.market.core.enums.TestStatus;
+import com.axonivy.market.core.enums.WorkFlowType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serial;
-
-import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
 
 @Getter
 @Setter

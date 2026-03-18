@@ -25,6 +25,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 market:
+  environment: '${MARKET_ENVIRONMENT}'
+  legacy:
+    installation:
+      counts:
+        path: '/stable/data/market-installation.json'
   info:
     title: "Marketplace stable"
     description: "The stable public api"
@@ -32,4 +37,5 @@ market:
 
 springdoc:
   api-docs:
+    path: /api-docs
     version: OPENAPI_3_1

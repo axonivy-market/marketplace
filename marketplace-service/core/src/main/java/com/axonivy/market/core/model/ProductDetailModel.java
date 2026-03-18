@@ -1,10 +1,9 @@
-package com.axonivy.market.model;
+package com.axonivy.market.core.model;
 
-import com.axonivy.market.controller.ImageController;
+import com.axonivy.market.core.controller.CoreImageController;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductModuleContent;
-import com.axonivy.market.core.model.ProductModel;
-import com.axonivy.market.util.ImageUtils;
+import com.axonivy.market.core.utils.CoreImageUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -82,7 +81,7 @@ public class ProductDetailModel extends ProductModel {
     model.setTags(product.getTags());
     model.setMarketDirectory(product.getMarketDirectory());
 
-    var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
+    var logoLink = linkTo(methodOn(CoreImageController.class).findImageById(product.getLogoId())).withSelfRel();
     model.setLogoUrl(logoLink.getHref());
 
     createDetailResource(model, product, isProduction);
@@ -104,19 +103,19 @@ public class ProductDetailModel extends ProductModel {
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(
-        ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
+        CoreImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
       if (isProduction) {
-        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
+        model.setVendorImage(CoreImageUtils.createImageUrlForProduction(product.getVendorImage()));
       } else {
-        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
+        model.setVendorImage(CoreImageUtils.createImageUrl(product.getVendorImage()));
       }
     }
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
       if (isProduction) {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
+        model.setVendorImageDarkMode(CoreImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
       } else {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
+        model.setVendorImageDarkMode(CoreImageUtils.createImageUrl(product.getVendorImageDarkMode()));
       }
     }
     model.setMavenDropins(product.isMavenDropins());

@@ -4,17 +4,16 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
-import com.axonivy.market.core.entity.ProductModuleContent;
-import com.axonivy.market.core.enums.Language;
-import com.axonivy.market.core.enums.TypeOption;
-import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.utils.CoreVersionUtils;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.core.entity.GithubRepo;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.Language;
+import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
@@ -32,7 +31,6 @@ import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,9 +63,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -445,37 +443,6 @@ class ProductServiceImplTest extends BaseSetup {
         "Product compatibility range should match 10.0 - 12.0");
     verify(versionService, atLeastOnce()).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
     verify(versionService, never()).getInstallableVersions(MOCK_PRODUCT_ID, true, null);
-  }
-
-  @Test
-  void testGetProductByIdWithNewestReleaseVersion() {
-    List<MavenArtifactVersion> mockMavenArtifactVersions = getMockMavenArtifactVersionWithData();
-    Product mockProduct = getMockProduct();
-
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class);
-         MockedStatic<CoreVersionUtils> mockCoreVersionUtils = Mockito.mockStatic(CoreVersionUtils.class)) {
-      mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
-          mockMavenArtifactVersions);
-      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
-          .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-
-      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(productJsonContentRepo.findByProductIdAndVersionIgnoreCase(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
-          .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
-
-      Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-      assertEquals(mockProduct, result,
-          "Product with newest release version should match mock product");
-
-      when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
-      when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(CoreVersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-      assertEquals(mockProduct, result,
-          "Product with newest release version should match mock product");
-    }
   }
 
   @Test

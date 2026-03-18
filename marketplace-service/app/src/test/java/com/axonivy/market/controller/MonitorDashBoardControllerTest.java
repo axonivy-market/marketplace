@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.enums.WorkFlowType;
+import com.axonivy.market.core.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;

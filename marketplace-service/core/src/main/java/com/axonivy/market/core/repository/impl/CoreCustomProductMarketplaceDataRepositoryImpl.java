@@ -1,0 +1,60 @@
+package com.axonivy.market.core.repository.impl;
+
+import com.axonivy.market.core.constants.CorePostgresDBConstants;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
+import com.axonivy.market.core.repository.CoreCustomProductMarketplaceDataRepository;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
+@Builder
+@AllArgsConstructor
+public class CoreCustomProductMarketplaceDataRepositoryImpl extends CoreAbstractBaseRepository<ProductMarketplaceData>
+    implements CoreCustomProductMarketplaceDataRepository {
+
+  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
+          UPDATE product_marketplace_data
+          SET installation_count = installation_count + 1
+          WHERE id = :productId
+          RETURNING installation_count
+      """;
+
+  @Override
+  @Transactional
+  public int updateInitialCount(String productId, int initialCount) {
+    CoreAbstractBaseRepository.CriteriaUpdateContext<ProductMarketplaceData> criteriaUpdateContext = createCriteriaUpdateContext();
+    // Set the fields
+    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(CorePostgresDBConstants.INSTALLATION_COUNT),
+        initialCount);
+    criteriaUpdateContext.query().set(
+        criteriaUpdateContext.root().get(CorePostgresDBConstants.SYNCHRONIZED_INSTALLATION_COUNT), true);
+    // Where condition (filter by productId)
+    criteriaUpdateContext.query().where(
+        criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(CorePostgresDBConstants.ID),
+            productId));
+    // Execute the update
+    int updatedRows = executeQuery(criteriaUpdateContext);
+    getEntityManager().clear();
+    // Fetch the updated entity if needed
+    if (updatedRows > 0) {
+      return getEntityManager().find(getType(), productId).getInstallationCount();
+    }
+    return 0;
+  }
+
+  @Override
+  @Transactional
+  public int increaseInstallationCount(String productId) {
+    var query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    query.setParameter(CorePostgresDBConstants.PRODUCT_ID, productId);
+    return ((Number) query.getSingleResult()).intValue();
+  }
+
+  @Override
+  protected Class<ProductMarketplaceData> getType() {
+    return ProductMarketplaceData.class;
+  }
+}

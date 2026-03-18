@@ -1,6 +1,7 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.model.ProductDetailModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
