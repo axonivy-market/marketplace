@@ -68,7 +68,11 @@ describe('ProductDetailResolver', () => {
     const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get']);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
-      ['getDesignerVersionFromSessionStorage']
+      [
+        'getDesignerVersionFromSessionStorage',
+        'checkSessionStorageForDesignerVersion',
+        'checkSessionStorageForDesignerEnv'
+      ]
     );
     const faviconServiceSpy = jasmine.createSpyObj('FaviconService', [
       'setFavicon'
