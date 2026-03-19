@@ -1,0 +1,15 @@
+<div class="release-letter-modal-container">
+  <div class="modal-header">
+    <h1 class="m-0">{{ sprintHeader }}</h1>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="activeModal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div
+      class="p-0 release-letter-content"
+      [innerHtml]="releaseLetterContent"></div>
+  </div>
+</div>

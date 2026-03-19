@@ -1,11 +1,12 @@
 export const environment = {
   production: true,
-  apiUrl: '/marketplace-service',
+  apiUrl: '/app',
   apiInternalUrl: '',
   githubOAuthAppClientId: '',
   githubOAuthCallback: '/auth/github/callback',
   githubApiUrl: 'https://api.github.com',
   dayInMiliseconds: 86400000,
   matomoSiteId: 0,
-  matomoTrackerUrl: '//matomo-web'
+  matomoTrackerUrl: '//matomo-web',
+  siblingNodeAppIp: ''
 };

@@ -1,0 +1,20 @@
+<div class="table-card border rounded-4 shadow-sm d-flex flex-column min-vh-25">
+  <header
+    class="d-flex justify-content-between align-items-center gap-3 flex-wrap px-4 py-3 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="text-primary m-0">
+        {{ title }}
+      </h2>
+      <span class="badge d-inline-flex align-items-center justify-content-center">
+        {{ badge }}
+      </span>
+    </div>
+    <ng-content select="[card-header-right]" />
+  </header>
+
+  <div class="table-scroll flex-grow-1">
+    <table class="w-100">
+      <ng-content />
+    </table>
+  </div>
+</div>
