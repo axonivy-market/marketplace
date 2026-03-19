@@ -32,7 +32,7 @@
       "title": "Developer",
       "intro": "Tool Pusher",
       "githubUserName": "ntqdinh-axonivy",
-      "quote": "Another tool. Big dreams",
+      "quote": "Another tool. Big dreams.",
       "statusEmoji": "🛠️",
       "avatarName": "ntqdinh-axonivy.png"
     },
@@ -48,7 +48,7 @@
     {
       "name": "Phuc Tran",
       "title": "Developer",
-      "intro": "Problem solver.",
+      "intro": "Problem solver",
       "githubUserName": "tvtphuc-axonivy",
       "quote": "Built by logic, driven by passion.",
       "statusEmoji": "🌍",
@@ -57,25 +57,25 @@
     {
       "name": "Thuy Nguyen",
       "title": "Developer",
-      "intro": "Admin Panel Architect.",
+      "intro": "Admin Panel Architect",
       "githubUserName": "nntthuy-axonivy",
       "quote": "I build tools for people who build tools.",
       "statusEmoji": "🏗️",
       "avatarName": "nntthuy-axonivy.png"
     },
     {
-      "name": "Quan Nguyen",
+      "name": "Quan Pham",
       "title": "Developer",
       "intro": "Mass PR engineer",
       "githubUserName": "quanpham-axonivy",
-      "quote": "One script. Many notifications",
+      "quote": "One script. Many notifications.",
       "statusEmoji": "📢",
       "avatarName": "quanpham-axonivy.png"
     },
     {
       "name": "Huy Truong",
       "title": "Developer",
-      "intro": "API master.",
+      "intro": "API master",
       "githubUserName": "thxhuy-axonivy",
       "quote": "Connecting systems, one endpoint at a time.",
       "statusEmoji": "🔌",
