@@ -12,7 +12,7 @@
     {
       "name": "Hoan Nguyen",
       "title": "Scrum Master",
-      "intro": "Refactor Machine.",
+      "intro": "Refactor Machine",
       "githubUserName": "nqhoan-axonivy",
       "quote": "Delete half the code, double the features.",
       "statusEmoji": "🗑️",
@@ -30,10 +30,10 @@
     {
       "name": "Dinh Nguyen",
       "title": "Developer",
-      "intro": "Tool Pusher",
+      "intro": "Idea Translator",
       "githubUserName": "ntqdinh-axonivy",
-      "quote": "Another tool. Big dreams.",
-      "statusEmoji": "🛠️",
+      "quote": "From 'just a small change' to 3-week sprint plans.",
+      "statusEmoji": "💡",
       "avatarName": "ntqdinh-axonivy.png"
     },
     {
