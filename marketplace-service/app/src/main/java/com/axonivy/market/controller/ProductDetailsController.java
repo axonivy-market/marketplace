@@ -211,8 +211,8 @@ public class ProductDetailsController {
       description = "Sync latest releases from GitHub for all products")
   public void syncLatestReleasesForProducts() throws IOException {
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
-    List<String> productIdList = this.productService.getProductIdList();
-    for (String productId : productIdList) {
+    List<String> productIds = this.productService.getProductIds();
+    for (String productId : productIds) {
       this.productService.syncGitHubReleaseModels(productId, pageable);
     }
   }

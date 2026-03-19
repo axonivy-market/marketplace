@@ -77,6 +77,7 @@ import { ChangeLogCriteria } from '../../../shared/models/criteria.model';
 import { Link } from '../../../shared/models/apis/link.model';
 import { Page } from '../../../shared/models/apis/page.model';
 import { RouteUtils } from '../../../shared/utils/route.utils';
+import { Language } from '../../../shared/enums/language.enum';
 
 export interface DetailTab {
   activeClass: string;
@@ -140,6 +141,7 @@ export class ProductDetailComponent implements AfterViewInit {
   changeLogPages!: Page;
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
+  protected Language = Language;
 
   resizeObserver?: ResizeObserver;
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
