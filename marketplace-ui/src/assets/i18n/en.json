@@ -6,6 +6,14 @@
       "french": "Français",
       "german": "Deutsch"
     },
+    "team": {
+      "title": "Meet Team Octopus",
+      "description": "As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.",
+      "accessibilityTitle" : {
+        "poImage" : "Image of the Product Owner of Axon Ivy Market",
+        "teamMemberImage" : "Image of a team member of Axon Ivy Market"
+      }
+    },
     "preview": {
       "pageTitle": "Release Preview",
       "title": "Product Release Preview",
@@ -30,7 +38,6 @@
       "tutorial": "Tutorial",
       "community": "Community",
       "team": "Team",
-      "market": "Market",
       "sync": "Sync Tasks",
       "security": "Security Monitor",
       "feedbackApproval": "Feedback Approval",

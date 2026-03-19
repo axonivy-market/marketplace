@@ -1,0 +1,85 @@
+﻿{
+  "po": {
+    "name": "Dr. Sabine Gillner",
+    "title": "Senior Product Owner & Team Lead",
+    "intro": "Dr. Gillner is an experienced Team Manager and Product Owner specializing in Digitalization and Process Orchestration. With a background in Cognitive Neuroscience and over a decade of leadership in tech and automotive sectors, she brings a unique perspective to innovation and AI.",
+    "quote": "Innovation starts with understanding the human mind and empowering teams to build intelligent solutions.",
+    "githubUserName": "sabinegillner",
+    "statusEmoji": "🧠",
+    "avatarName": "sabinegillner.png"
+  },
+  "members": [
+    {
+      "name": "Hoan Nguyen",
+      "title": "Scrum Master",
+      "intro": "Refactor Machine",
+      "githubUserName": "nqhoan-axonivy",
+      "quote": "Delete half the code, double the features.",
+      "statusEmoji": "🗑️",
+      "avatarName": "nqhoan-axonivy.png"
+    },
+    {
+      "name": "Hung Pham",
+      "title": "Senior Software Engineer",
+      "intro": "Version Bumper",
+      "githubUserName": "phhung-axonivy",
+      "quote": "Another version, another future.",
+      "statusEmoji": "📦",
+      "avatarName": "phhung-axonivy.png"
+    },
+    {
+      "name": "Dinh Nguyen",
+      "title": "Software Engineer",
+      "intro": "Idea Translator",
+      "githubUserName": "ntqdinh-axonivy",
+      "quote": "From 'just a small change' to 3-week sprint plans.",
+      "statusEmoji": "💡",
+      "avatarName": "ntqdinh-axonivy.png"
+    },
+    {
+      "name": "Hoang Vu",
+      "title": "Software Engineer",
+      "intro": "Spacing Therapist",
+      "githubUserName": "vhhoang-axonivy",
+      "quote": "I don't fix bugs. I heal margins.",
+      "statusEmoji": "📏",
+      "avatarName": "vhhoang-axonivy.png"
+    },
+    {
+      "name": "Phuc Tran",
+      "title": "Software Engineer",
+      "intro": "Problem solver",
+      "githubUserName": "tvtphuc-axonivy",
+      "quote": "Built by logic, driven by passion.",
+      "statusEmoji": "🌍",
+      "avatarName": "tvtphuc-axonivy.png"
+    },
+    {
+      "name": "Thuy Nguyen",
+      "title": "Software Engineer",
+      "intro": "Admin Panel Architect",
+      "githubUserName": "nntthuy-axonivy",
+      "quote": "I build tools for people who build tools.",
+      "statusEmoji": "🏗️",
+      "avatarName": "nntthuy-axonivy.png"
+    },
+    {
+      "name": "Quan Pham",
+      "title": "Software Engineer",
+      "intro": "Mass PR engineer",
+      "githubUserName": "quanpham-axonivy",
+      "quote": "One script. Many notifications.",
+      "statusEmoji": "📢",
+      "avatarName": "quanpham-axonivy.png"
+    },
+    {
+      "name": "Huy Truong",
+      "title": "Software Engineer",
+      "intro": "API master",
+      "githubUserName": "thxhuy-axonivy",
+      "quote": "Connecting systems, one endpoint at a time.",
+      "statusEmoji": "🔌",
+      "avatarName": "thxhuy-axonivy.png"
+    }
+  ]
+}
