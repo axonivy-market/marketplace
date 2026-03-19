@@ -183,9 +183,10 @@
                   role="tabpanel"
                   [attr.aria-labelledby]="displayedTab.value + '-tab'"
                   (click)="setActiveTab(displayedTab.value)">
-                  @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
+                  @if (displayedTab.value === 'dependency' && !isEmptyProductContent()) {
                     <app-product-detail-maven-content
-                      [productDetail]="productDetail()"
+                      [productName]="productDetail().names[Language.EN]"
+                      [productModuleContent]="productModuleContent()"
                       [selectedVersion]="
                         selectedVersion
                       "></app-product-detail-maven-content>
