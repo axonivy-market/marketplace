@@ -1,6 +1,5 @@
 package com.axonivy.market.stable.controller;
 
-import com.axonivy.market.core.service.CoreProductService;
 import com.axonivy.market.stable.model.BestMatchVersion;
 import com.axonivy.market.stable.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;

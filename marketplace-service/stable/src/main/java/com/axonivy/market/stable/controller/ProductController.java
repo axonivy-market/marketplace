@@ -97,10 +97,4 @@ public class ProductController {
 
     return ResponseEntity.ok(resources);
   }
-
-  private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        ProductModel.class);
-    return ResponseEntity.ok(emptyPagedModel);
-  }
 }
