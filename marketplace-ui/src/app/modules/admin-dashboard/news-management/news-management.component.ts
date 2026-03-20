@@ -26,10 +26,17 @@ import { ReleaseLetter } from '../../../shared/models/release-letter-request.mod
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { AdminDashboardService } from './../admin-dashboard.service';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-news-management',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule,
+    NgbTooltip
+  ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
 })

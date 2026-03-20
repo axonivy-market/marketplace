@@ -30,6 +30,11 @@ export interface SyncTaskExecution {
   message?: string;
 }
 
+export interface CustomSortConfig {
+  orderedListOfProducts: string[];
+  ruleForRemainder: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
   constructor(
@@ -104,12 +109,15 @@ export class AdminDashboardService {
     };
 
     return this.http.post<void>(
-      `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`,
-      body,
+      `${API_URI.CUSTOM_SORT}`, body,
       {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
+  }
+
+  getCustomSort(): Observable<CustomSortConfig> {
+    return this.http.get<CustomSortConfig>(`${API_URI.CUSTOM_SORT}`);
   }
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
@@ -160,10 +168,15 @@ export class AdminDashboardService {
   }
 
   getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }
@@ -194,10 +207,15 @@ export class AdminDashboardService {
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
+    let params = new HttpParams();
+    const ts = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, ts);
+
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
-        headers: this.adminAuth.getAuthHeaders()
+        headers: this.adminAuth.getAuthHeaders(),
+        params
       }
     );
   }

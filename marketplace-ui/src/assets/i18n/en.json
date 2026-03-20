@@ -6,6 +6,14 @@
       "french": "Français",
       "german": "Deutsch"
     },
+    "team": {
+      "title": "Meet Team Octopus",
+      "description": "As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.",
+      "accessibilityTitle": {
+        "poImage": "Image of the Product Owner of Axon Ivy Market",
+        "teamMemberImage": "Image of a team member of Axon Ivy Market"
+      }
+    },
     "preview": {
       "pageTitle": "Release Preview",
       "title": "Product Release Preview",
@@ -30,7 +38,6 @@
       "tutorial": "Tutorial",
       "community": "Community",
       "team": "Team",
-      "market": "Market",
       "sync": "Sync Tasks",
       "security": "Security Monitor",
       "feedbackApproval": "Feedback Approval",
@@ -40,7 +47,8 @@
       "test": "Test",
       "monitor": "Monitor",
       "login": "Login with GitHub",
-      "logout": "Logout"
+      "logout": "Logout",
+      "logs": "Logs Viewer"
     },
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
@@ -374,6 +382,36 @@
         "releasePreviewNote": "Use this to verify extension's README before publishing on the marketplace.",
         "monitoringTitle": "Monitoring Page",
         "releasePreviewTitle": "Release Preview Page"
+      },
+      "logsViewer": {
+        "tabs": {
+          "runtimeLog": "Runtime Log",
+          "logsFile": "Logs File"
+        },
+        "actions": {
+          "connect": "Connect",
+          "disconnect": "Disconnect",
+          "clear": "Clear",
+          "download": "Download",
+          "downloadOptions": "Download options",
+          "downloadAllLogs": "Download All Logs",
+          "downloadFiltered": "Download Filtered",
+          "downloadAsJSON": "Download as JSON",
+          "downloadAsCSV": "Download as CSV",
+          "autoScroll": "Auto-scroll",
+          "clearFilter": "Clear Filter"
+        },
+        "table": {
+          "timestamp": "Timestamp",
+          "level": "Level",
+          "detail": "Detail"
+        },
+        "filter": {
+          "selectDate": "Select Date:"
+        },
+        "messages": {
+          "noLogsFound": "No log files found"
+        }
       },
       "news": {
         "pageTitle": "Axon Ivy Market News",

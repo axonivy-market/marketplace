@@ -6,6 +6,14 @@
       "german": "Deutsch",
       "french": "Französisch"
     },
+    "team": {
+      "title": "Meet Team Octopus",
+      "description": "As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.",
+      "accessibilityTitle": {
+        "poImage": "Image of the Product Owner of Axon Ivy Market",
+        "teamMemberImage": "Image of a team member of Axon Ivy Market"
+      }
+    },
     "preview": {
       "pageTitle": "Release Preview",
       "title": "Vorschau auf die Produktfreigabe",
@@ -30,7 +38,6 @@
       "tutorial": "Tutorial",
       "community": "Community",
       "team": "Team",
-      "market": "Marktplatz",
       "sync": "Aufgaben synchronisieren",
       "security": "Sicherheitsmonitor",
       "feedbackApproval": "Feedback-Freigabe",
@@ -40,7 +47,8 @@
       "test": "Test",
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
-      "logout": "Logout"
+      "logout": "Logout",
+      "logs": "Protokoll-Viewer"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
@@ -374,6 +382,36 @@
         "releasePreviewNote": "Nutzen Sie dies, um die README einer Erweiterung vor der Veröffentlichung im Marketplace zu prüfen.",
         "monitoringTitle": "Überwachungsseite",
         "releasePreviewTitle": "Release-Vorschauseite"
+      },
+      "logsViewer": {
+        "tabs": {
+          "runtimeLog": "Protokoll zur Laufzeit",
+          "logsFile": "Protokolldateien"
+        },
+        "actions": {
+          "connect": "Verbinden",
+          "disconnect": "Trennen",
+          "clear": "Löschen",
+          "download": "Herunterladen",
+          "downloadOptions": "Download-Optionen",
+          "downloadAllLogs": "Alle Protokolle herunterladen",
+          "downloadFiltered": "Gefilterte herunterladen",
+          "downloadAsJSON": "Als JSON herunterladen",
+          "downloadAsCSV": "Als CSV herunterladen",
+          "autoScroll": "Auto-Scroll",
+          "clearFilter": "Filter löschen"
+        },
+        "table": {
+          "timestamp": "Zeitstempel",
+          "level": "Ebene",
+          "detail": "Detail"
+        },
+        "filter": {
+          "selectDate": "Datum wählen:"
+        },
+        "messages": {
+          "noLogsFound": "Keine Protokolldateien gefunden"
+        }
       },
       "news": {
         "pageTitle": "Axon Ivy Market News",

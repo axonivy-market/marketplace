@@ -20,7 +20,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'common.nav.tutorial',
-    link: 'https://developer.axonivy.com/tutorial'
+    link: 'https://app.supademo.com/demo/cmj01aoib02it0g0iuw4w5nwm?utm_source=link'
   },
   {
     label: 'common.nav.community',
@@ -28,11 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'common.nav.team',
-    link: 'https://developer.axonivy.com/team'
-  },
-  {
-    label: 'common.nav.market',
-    link: '/'
+    link: '/teams'
   }
 ];
 
@@ -56,6 +52,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.quickAccess',
     link: '/internal-dashboard/quick-access'
+  },
+  {
+    label: 'common.nav.logs',
+    link: '/internal-dashboard/logs'
   },
   {
     label: 'common.nav.newsManagement',

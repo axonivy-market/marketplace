@@ -201,6 +201,21 @@ describe('AdminDashboardService', () => {
       });
       req.flush(null);
     });
+
+    it('should fetch custom sort configuration', () => {
+      const mockConfig = {
+        orderedListOfProducts: ['a', 'b'],
+        ruleForRemainder: 'alphabetically'
+      };
+
+      service.getCustomSort().subscribe(config => {
+        expect(config).toEqual(mockConfig);
+      });
+
+      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockConfig);
+    });
   });
 
   describe('getSecurityDetails', () => {
@@ -289,7 +304,7 @@ describe('AdminDashboardService', () => {
 
       service.getReleaseLetters(criteria, customPageId).subscribe();
 
-        const req = httpMock.expectOne(
+      const req = httpMock.expectOne(
         req => req.url === API_URI.RELEASE_LETTERS
       );
 
@@ -337,12 +352,15 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(API_URI.ACTIVE_RELEASE_LETTERS);
+      const req = httpMock.expectOne(
+        req => req.url === API_URI.ACTIVE_RELEASE_LETTERS
+      );
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('Authorization')).toBe(
         'Bearer test-token'
       );
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush(mockResponse);
     });
@@ -427,12 +445,16 @@ describe('AdminDashboardService', () => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
+      const req = httpMock.expectOne(
+        req => req.url === `${API_URI.RELEASE_LETTERS}/${id}`
+      );
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('Authorization')).toBe(
         'Bearer test-token'
       );
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
 
       req.flush(mockResponse);
     });

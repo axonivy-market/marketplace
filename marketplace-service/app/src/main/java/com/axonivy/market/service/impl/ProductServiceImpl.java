@@ -592,7 +592,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public String getBestMatchVersion(String id, String version, Boolean isShowDevVersion) {
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
-    return VersionFactory.get(versions, version);
+    return versions.contains(version) ? version : VersionFactory.get(versions, version);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
@@ -774,7 +774,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  public List<String> getProductIdList() {
-    return this.productRepo.findAll().stream().map(Product::getId).toList();
+  public List<String> getProductIds() {
+    return productRepo.findAllIds();
   }
 }
