@@ -1,4 +1,4 @@
-@if (adminInfo()) {
+@if (userInfo()) {
   <div class="col user-badge-container">
     <div ngbDropdown class="d-inline-block">
       <img
@@ -7,7 +7,7 @@
         id="dropdownBasic1"
         ngbDropdownToggle
         id="user-avatar"
-        [src]="adminInfo()!.avatarUrl"
+        [src]="userInfo()!.avatarUrl"
         alt="GitHub avatar"
         class="github-avatar" />
       <div
@@ -17,7 +17,7 @@
         <button ngbDropdownItem>
           <a
             class="text-primary"
-            [href]="this.adminInfo()!.url"
+            [href]="this.userInfo()!.url"
             target="_blank">
             {{
               translateService.get('common.admin.githubUserBadge.gitHubAccount')

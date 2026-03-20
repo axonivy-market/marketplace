@@ -9,6 +9,7 @@ import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UserInfo;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -46,6 +47,9 @@ public interface GitHubService {
   GithubUser getAndUpdateUser(String accessToken);
 
   GithubUser validateUserInOrganizationAndTeam(String accessToken, String org,
+      String team) throws UnauthorizedException;
+
+  UserInfo validateUserInOrganizationAndTeam2(String accessToken, String org,
       String team) throws UnauthorizedException;
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException;

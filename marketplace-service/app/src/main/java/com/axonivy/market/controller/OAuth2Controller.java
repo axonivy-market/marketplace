@@ -3,8 +3,10 @@ package com.axonivy.market.controller;
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
 
 import io.swagger.v3.oas.annotations.Hidden;
@@ -45,14 +47,16 @@ public class OAuth2Controller {
   }
 
   @PostMapping(GITHUB_REQUEST_ACCESS)
-  public ResponseEntity<AdminLoginResponse> requestAccess(@RequestBody Map<String, String> token) {
-    var adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
+  public ResponseEntity<UserInfo> requestAccess(@RequestBody Map<String, String> token) {
+//    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
 
-    if (adminLoginResponse == null || ObjectUtils.isEmpty(adminLoginResponse.token())) {
+    var userInfo = oAuth2Service.validateTokenAndGenerateJWT2(token.get(GitHubConstants.Json.TOKEN));
+
+    if (userInfo == null || ObjectUtils.isEmpty(userInfo.getToken())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    return ResponseEntity.ok(adminLoginResponse);
+    return ResponseEntity.ok(userInfo);
   }
 
   @Authorized

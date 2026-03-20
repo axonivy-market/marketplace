@@ -19,6 +19,7 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
@@ -193,6 +194,32 @@ public class GitHubServiceImpl implements GitHubService {
         githubUser.setUrl(String.valueOf(myself.getHtmlUrl()));
 
         return githubUser;
+      }
+    } catch (IOException e) {
+      log.error(e);
+    }
+
+    throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), team,
+            organization));
+  }
+
+  @Override
+  public UserInfo validateUserInOrganizationAndTeam2(String accessToken, String organization,
+      String team) throws UnauthorizedException {
+    try {
+      var gitHub = getGitHub(accessToken);
+      if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
+        GHMyself myself = gitHub.getMyself();
+        var userInfo = new UserInfo();
+        userInfo.setGitHubId(String.valueOf(myself.getId()));
+        userInfo.setName(myself.getName());
+        userInfo.setUsername(myself.getLogin());
+        userInfo.setAvatarUrl(myself.getAvatarUrl());
+        userInfo.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        userInfo.setUrl(String.valueOf(myself.getHtmlUrl()));
+
+        return userInfo;
       }
     } catch (IOException e) {
       log.error(e);

@@ -59,14 +59,12 @@ describe('AdminTokenComponent', () => {
 
   describe('onSubmit', () => {
     it('should call requestAccessToken and navigate on success', () => {
-      const mockResponse = {
-        token: 'jwt-token-123',
-        user: {
-          login: 'mockuser',
-          name: null,
-          avatarUrl: 'https://avatar.url',
-          url: 'https://github.com/mockuser'
-        }
+      const mockResponse = {      
+        login: 'mockuser',
+        name: null,
+        avatarUrl: 'https://avatar.url',
+        url: 'https://github.com/mockuser',
+        token: 'jwt-token-123'
       };
       authService.requestAccessToken.and.returnValue(of(mockResponse));
       component.tokenControl.setValue('valid-github-token');
@@ -77,7 +75,7 @@ describe('AdminTokenComponent', () => {
       expect(authService.requestAccessToken).toHaveBeenCalledWith(
         'valid-github-token'
       );
-      expect(authService.setToken).toHaveBeenCalledWith('jwt-token-123');
+      expect(authService.setUserInfo).toHaveBeenCalledWith(mockResponse);
       expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
       expect(component.errorMessage).toBe('');
     });
@@ -93,19 +91,17 @@ describe('AdminTokenComponent', () => {
       expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
       expect(component.isProcessing).toBe(false);
       expect(component.isButtonDisabled).toBe(true);
-      expect(authService.setToken).not.toHaveBeenCalled();
+      expect(authService.setUserInfo).not.toHaveBeenCalled();
       expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('should disable control during processing', () => {
-      const mockResponse = {
-        token: 'jwt-token-123',
-        user: {
-          login: 'mockuser',
-          name: null,
-          avatarUrl: 'https://avatar.url',
-          url: 'https://github.com/mockuser'
-        }
+      const mockResponse = {      
+        login: 'mockuser',
+        name: null,
+        avatarUrl: 'https://avatar.url',
+        url: 'https://github.com/mockuser',
+        token: 'jwt-token-123'
       };
       authService.requestAccessToken.and.returnValue(of(mockResponse));
       component.tokenControl.setValue('valid-token');

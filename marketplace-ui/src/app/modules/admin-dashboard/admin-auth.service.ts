@@ -1,67 +1,53 @@
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
-import { GitHubUser } from '../../auth/auth.service';
+import { UserInfo } from '../../auth/auth.service';
 import { ForwardingError } from '../../core/interceptors/api.interceptor';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
-  BEARER,
-  GITHUB_USER
+  BEARER
 } from '../../shared/constants/common.constant';
-
-export interface JwtDTO {
-  token: string;
-  user: GitHubUser;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
-  private readonly _adminInfo = signal<GitHubUser | null>(null);
-  readonly adminInfo = this._adminInfo.asReadonly();
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly _userInfo = signal<UserInfo | null>(null);
+  readonly userInfo = this._userInfo.asReadonly();
 
   constructor() {
-    if(this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) == null) {
+    const user = this.loadFromSessionStorage();
+    if (user) {
+      this._userInfo.set(user);
+    } else {
       this.logout();
     }
-
-    const user = this.loadFromSession();
-    if (user) {
-      this._adminInfo.set(user);
-    }
   }
-
-  loadFromSession(): GitHubUser | null {
-    const stored = this.storageRef.session?.getItem(GITHUB_USER);
-    return stored ? JSON.parse(stored) : null;
-  }
-
-  setUser(user: GitHubUser) {
-    this.storageRef.session?.setItem(GITHUB_USER, JSON.stringify(user));
-    this._adminInfo.set(user);
+  loadFromSessionStorage(): UserInfo | null {
+    const storedUserInfo = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN);
+    return storedUserInfo ? JSON.parse(storedUserInfo) : null;
   }
 
   logout() {
-    this.storageRef.session?.removeItem(GITHUB_USER);
-    this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
-    this._adminInfo.set(null);
+    this.clearToken();
+    this._userInfo.set(null);
   }
 
   get token(): string | null {
-    return this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? null;
+    const storedUserInfo = this.loadFromSessionStorage();
+    return storedUserInfo ? storedUserInfo.token : null;
   }
 
-  setToken(token: string): void {
-    this.storageRef.session?.setItem(ADMIN_SESSION_TOKEN, token);
+  setUserInfo(userInfo: UserInfo): void {
+    this.storageRef.session?.setItem(ADMIN_SESSION_TOKEN, JSON.stringify(userInfo));
+    this._userInfo.set(userInfo);
   }
 
-  requestAccessToken(token: string): Observable<JwtDTO> {
-    this.setToken('');
-    return this.httpClient.post<JwtDTO>(
+  requestAccessToken(token: string): Observable<UserInfo> {
+    this.clearToken();
+    return this.httpClient.post<UserInfo>(
       API_URI.GITHUB_REQUEST_ACCESS,
       { token },
       { context: new HttpContext().set(ForwardingError, true) }

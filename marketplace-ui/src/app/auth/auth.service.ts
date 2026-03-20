@@ -32,6 +32,10 @@ export interface GitHubUser {
   url: string;
 }
 
+export interface UserInfo extends GitHubUser {
+  token: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })

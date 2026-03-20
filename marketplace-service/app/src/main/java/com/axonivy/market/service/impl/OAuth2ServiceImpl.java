@@ -8,6 +8,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.OAuth2Service;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +44,28 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
 
+//  @Override
+//  public AdminLoginResponse validateTokenAndGenerateJWT(String token) {
+//    if (ObjectUtils.isEmpty(token)) {
+//      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
+//    }
+//    token = token.trim();
+//    if (!StandardCharsets.US_ASCII.newEncoder().canEncode(token)) {
+//      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
+//    }
+//
+//    var gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
+//        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+//        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+//
+//    String jwt = jwtService.generateJWTFromGitHubToken(token);
+//
+//
+//    return new AdminLoginResponse(jwt, gitHubUser);
+//  }
+
   @Override
-  public AdminLoginResponse validateTokenAndGenerateJWT(String token) {
+  public UserInfo validateTokenAndGenerateJWT2(String token) {
     if (ObjectUtils.isEmpty(token)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
     }
@@ -53,12 +74,13 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
     }
 
-    var gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
+    var userInfo = gitHubService.validateUserInOrganizationAndTeam2(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
     String jwt = jwtService.generateJWTFromGitHubToken(token);
+    userInfo.setToken(jwt);
 
-    return new AdminLoginResponse(jwt, gitHubUser);
+    return userInfo;
   }
 }

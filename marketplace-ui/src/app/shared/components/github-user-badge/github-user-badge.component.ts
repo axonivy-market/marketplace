@@ -34,7 +34,7 @@ export class GithubUserBadgeComponent {
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
 
-  adminInfo = this.adminAuthService.adminInfo;
+  userInfo = this.adminAuthService.userInfo;
 
   logout() {
     this.adminAuthService.logout();
