@@ -127,10 +127,8 @@ public class CoreVersionUtils {
     if (CollectionUtils.isEmpty(metadataList)) {
       return installableVersions;
     }
-    metadataList.stream().filter(
-        metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
-        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    metadataList.stream().filter(metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(
+        metadata.getVersions())).forEach(productMeta -> installableVersions.addAll(productMeta.getVersions()));
     return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
-
 }
