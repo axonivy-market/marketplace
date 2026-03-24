@@ -47,8 +47,7 @@ export class AdminAuthService {
 
   requestAccessToken(token: string): Observable<UserInfo> {
     this.clearToken();
-    return this.httpClient.post<UserInfo>(
-      API_URI.GITHUB_REQUEST_ACCESS,
+    return this.httpClient.post<UserInfo>(API_URI.GITHUB_REQUEST_ACCESS,
       { token },
       { context: new HttpContext().set(ForwardingError, true) }
     );
@@ -59,14 +58,8 @@ export class AdminAuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    return this.httpClient.put<boolean>(
-      API_URI.GITHUB_VALIDATE_TOKEN,
-      {},
-      {
-        headers: this.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
-      }
-    );
+    return this.httpClient.put<boolean>(API_URI.GITHUB_VALIDATE_TOKEN, {},
+      { headers: this.getAuthHeaders(), context: new HttpContext().set(ForwardingError, true) });
   }
 
   getAuthHeaders(): HttpHeaders {

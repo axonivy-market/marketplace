@@ -1,6 +1,7 @@
 package com.axonivy.market;
 
 import com.axonivy.market.constants.MavenConstants;
+
 import com.axonivy.market.core.CoreBaseSetup;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Artifact;
@@ -21,6 +22,7 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -103,6 +105,7 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   protected static final String IMAGE_NAME = "test.png";
   protected static final String SAMPLE_LOGO_ID = "1234";
+  protected static final String JWT_TOKEN = "sampleJwtToken";
   public static final String DEFAULT_HOST = "http://localhost:";
   public static final String OPEN_API_SPEC_PATH = "src/test/resources/generated-spec.yaml";
 
@@ -478,5 +481,16 @@ public class BaseSetup extends CoreBaseSetup {
     githubUser.setAvatarUrl("http://avatar.url");
     githubUser.setProvider("github");
     return githubUser;
+  }
+
+  protected UserInfo getMockUserInfo() {
+    var mockUserInfo = new UserInfo();
+    mockUserInfo.setUrl("https://github.com/mockuser");
+    mockUserInfo.setName("mockUser");
+    mockUserInfo.setUsername("mockUser");
+    mockUserInfo.setAvatarUrl("https://avatar.url");
+    mockUserInfo.setToken(JWT_TOKEN);
+
+    return mockUserInfo;
   }
 }

@@ -1,5 +1,7 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
+
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
@@ -24,9 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OAuth2ControllerTest {
-  private static final String JWT_TOKEN = "sampleJwtToken";
-
+class OAuth2ControllerTest extends BaseSetup {
   @Mock
   private OAuth2Service oAuth2Service;
   @InjectMocks
@@ -129,16 +129,5 @@ class OAuth2ControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when authorization code is validated.");
-  }
-
-  private UserInfo getMockUserInfo() {
-    var mockUserInfo = new UserInfo();
-    mockUserInfo.setUrl("https://github.com/mockuser");
-    mockUserInfo.setName("mockUser");
-    mockUserInfo.setUsername("mockUser");
-    mockUserInfo.setAvatarUrl("https://avatar.url");
-    mockUserInfo.setToken(JWT_TOKEN);
-
-    return mockUserInfo;
   }
 }

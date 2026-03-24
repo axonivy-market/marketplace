@@ -3,16 +3,14 @@
     <div ngbDropdown class="d-inline-block">
       <img
         type="button"
-        class="btn btn-outline-primary"
-        id="dropdownBasic1"
         ngbDropdownToggle
         id="user-avatar"
         [src]="userInfo()!.avatarUrl"
-        alt="GitHub avatar"
-        class="github-avatar" />
+        alt="User avatar"
+        />
       <div
         ngbDropdownMenu
-        aria-labelledby="dropdownBasic1"
+        aria-labelledby="user-info-dropdown"
         class="user-info-dropdown mt-2">
         <button ngbDropdownItem>
           <a

@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -69,36 +68,8 @@ class MonitorDashBoardControllerTest {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
-    GHMyself fakeMyself = new GHMyself() {
-      @Override
-      public long getId() {
-        return 123L;
-      }
+    GHMyself fakeMyself = getFakeGHMyself();
 
-      @Override
-      public String getName() {
-        return "test-user";
-      }
-
-      @Override
-      public String getLogin() {
-        return "test-user";
-      }
-
-      @Override
-      public String getAvatarUrl() {
-        return "avatarUrl";
-      }
-
-      @Override
-      public URL getHtmlUrl() {
-        try {
-          return URI.create("https://github.com/tan").toURL();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
@@ -115,36 +86,8 @@ class MonitorDashBoardControllerTest {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
-    GHMyself fakeMyself = new GHMyself() {
-      @Override
-      public long getId() {
-        return 123L;
-      }
+    GHMyself fakeMyself = getFakeGHMyself();
 
-      @Override
-      public String getName() {
-        return "test-user";
-      }
-
-      @Override
-      public String getLogin() {
-        return "test-user";
-      }
-
-      @Override
-      public String getAvatarUrl() {
-        return "avatarUrl";
-      }
-
-      @Override
-      public URL getHtmlUrl() {
-        try {
-          return URI.create("https://github.com/tan").toURL();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
@@ -160,36 +103,7 @@ class MonitorDashBoardControllerTest {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
-    GHMyself fakeMyself = new GHMyself() {
-      @Override
-      public long getId() {
-        return 123L;
-      }
-
-      @Override
-      public String getName() {
-        return "test-user";
-      }
-
-      @Override
-      public String getLogin() {
-        return "test-user";
-      }
-
-      @Override
-      public String getAvatarUrl() {
-        return "avatarUrl";
-      }
-
-      @Override
-      public URL getHtmlUrl() {
-        try {
-          return URI.create("https://github.com/tan").toURL();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
+    GHMyself fakeMyself = getFakeGHMyself();
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
@@ -214,11 +128,9 @@ class MonitorDashBoardControllerTest {
         eq(true), eq("feedback"), eq("name"), eq("ASC"), any(PageRequest.class)))
         .thenReturn(page);
 
-    // Act
     ResponseEntity<PagedModel<GithubReposModel>> response = controller.findAllFeedbacks(
         true, PageRequest.of(0, 10), "feedback", "name", "ASC");
 
-    // Assert
     PagedModel<GithubReposModel> pagedModel = response.getBody();
     assertNotNull(pagedModel, "PagedModel should not be null");
     assertEquals(1, pagedModel.getContent().size(), "Content size should be 1");
@@ -230,5 +142,38 @@ class MonitorDashBoardControllerTest {
     assertEquals(0, metadata.getNumber(), "Page number should be 0");
     assertEquals(1, metadata.getTotalElements(), "Total elements should be 1");
     assertEquals(1, metadata.getTotalPages(), "Total pages should be 1");
+  }
+
+  private GHMyself getFakeGHMyself() {
+    return new GHMyself() {
+      @Override
+      public long getId() {
+        return 123L;
+      }
+
+      @Override
+      public String getName() {
+        return "test-user";
+      }
+
+      @Override
+      public String getLogin() {
+        return "test-user";
+      }
+
+      @Override
+      public String getAvatarUrl() {
+        return "avatarUrl";
+      }
+
+      @Override
+      public URL getHtmlUrl() {
+        try {
+          return URI.create("https://github.com/tan").toURL();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 }
