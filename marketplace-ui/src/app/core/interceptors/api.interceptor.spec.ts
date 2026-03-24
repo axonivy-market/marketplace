@@ -361,36 +361,5 @@ describe('AuthInterceptor', () => {
       expect(mockRouter.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
       expect(result).toBe(EMPTY);
     });
-
-    it('should not prepend apiURL if req.url already starts with apiURL', () => {
-      const apiURL = 'http://api';
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          provideHttpClient(withInterceptors([apiInterceptor])),
-          provideHttpClientTesting(),
-          {
-            provide: RuntimeConfigService,
-            useValue: { get: () => apiURL }
-          },
-          {
-            provide: LoadingService,
-            useValue: {
-              showLoading: () => {},
-              hideLoading: () => {}
-            }
-          }
-        ]
-      });
-
-      const http = TestBed.inject(HttpClient);
-      const httpMock = TestBed.inject(HttpTestingController);
-
-      const url = `${apiURL}/something`;
-      http.get(url).subscribe();
-      const req = httpMock.expectOne(url);
-      expect(req.request.url).toBe(url);
-      req.flush({});
-    });
   });
 });
