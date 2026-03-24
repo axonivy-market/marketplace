@@ -70,13 +70,12 @@ class GithubUserTest {
   }
 
   @Test
-  void testHashCodeDifferentObjects() {
+  void testEqualsWhenOtherIdIsNull() {
     GithubUser user1 = new GithubUser();
     user1.setId("1");
-    GithubUser user2 = new GithubUser();
-    user2.setId("2");
 
-    assertNotEquals(user1.hashCode(), user2.hashCode(),
-        "HashCode should differ when objects have different ids");
+    GithubUser user2 = new GithubUser(); // id = null
+
+    assertNotEquals(user1, user2, "Object with non-null ID should not equal object with null ID");
   }
 }
