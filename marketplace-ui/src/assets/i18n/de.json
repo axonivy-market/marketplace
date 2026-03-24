@@ -53,7 +53,7 @@
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
       "contribute": "Hier findest du Erweiterungen für die Anbindung von  Standard-Softwarelösungen führender Anbieter wie Microsoft, Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder -signierung.",
-      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> implementiere deine eigene Erweiterung!</a>"
+      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"GitHub - How to contribute\"> implementiere deine eigene Erweiterung!</a>"
     },
     "filter": {
       "label": "Filter",
@@ -176,7 +176,7 @@
       "currentProductTitle": "In Prüfung",
       "commentLabel": "Du kannst gerne einen Kommentar hinterlassen",
       "submitBtnLabel": "Review einreichen",
-      "loggedGithubAsLabel": "Eingeloggt bei Github als",
+      "loggedGithubAsLabel": "Eingeloggt bei GitHub als",
       "reviewLabel": "Review",
       "detailedReviews": "Ausführliche Reviews",
       "showMoreBtnLabel": "Mehr anzeigen",
@@ -239,13 +239,13 @@
     "monitor": {
       "dashboard": {
         "title": "Axon Ivy Marktplatz – Monitoring",
-        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">auf GitHub verfügbar</a>.",
+        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"GitHub - Axon Ivy Market\">auf GitHub verfügbar</a>.",
         "noRepositories": "Keine Repositories gefunden.",
         "connector": "Konnektor",
         "ciLabel": "CI-Build",
         "devLabel": "DEV-Build",
         "e2eLabel": "E2E-Build",
-        "github": "Github",
+        "github": "GitHub",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
         "ciLastBuilt": "Letzter CI Built",
@@ -461,7 +461,7 @@
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
         "genericErrorMessage": "An error occurred while processing your request. Please try again."
       },
-      "githubUserBadge": {
+      "gitHubUserBadge": {
         "gitHubAccount": "GitHub account",
         "logout": "Logout"
       }
