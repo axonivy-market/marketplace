@@ -1,12 +1,10 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.JwtService;
@@ -44,28 +42,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
 
-//  @Override
-//  public AdminLoginResponse validateTokenAndGenerateJWT(String token) {
-//    if (ObjectUtils.isEmpty(token)) {
-//      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
-//    }
-//    token = token.trim();
-//    if (!StandardCharsets.US_ASCII.newEncoder().canEncode(token)) {
-//      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
-//    }
-//
-//    var gitHubUser = gitHubService.validateUserInOrganizationAndTeam(token,
-//        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-//        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-//
-//    String jwt = jwtService.generateJWTFromGitHubToken(token);
-//
-//
-//    return new AdminLoginResponse(jwt, gitHubUser);
-//  }
-
   @Override
-  public UserInfo validateTokenAndGenerateJWT2(String token) {
+  public UserInfo validateTokenAndGenerateJWT(String token) {
     if (ObjectUtils.isEmpty(token)) {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Invalid Authorization header");
     }
@@ -74,7 +52,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), "Token contains non-ASCII characters");
     }
 
-    var userInfo = gitHubService.validateUserInOrganizationAndTeam2(token,
+    var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 

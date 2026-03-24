@@ -3,33 +3,25 @@ package com.axonivy.market.controller;
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
-
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
-import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_LOGIN;
-import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_REQUEST_ACCESS;
-import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_VALIDATE_TOKEN;
-
-import org.springframework.web.bind.annotation.PutMapping;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -48,9 +40,7 @@ public class OAuth2Controller {
 
   @PostMapping(GITHUB_REQUEST_ACCESS)
   public ResponseEntity<UserInfo> requestAccess(@RequestBody Map<String, String> token) {
-//    AdminLoginResponse adminLoginResponse = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
-
-    var userInfo = oAuth2Service.validateTokenAndGenerateJWT2(token.get(GitHubConstants.Json.TOKEN));
+    var userInfo = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
 
     if (userInfo == null || ObjectUtils.isEmpty(userInfo.getToken())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -5,6 +5,15 @@ import { AdminAuthService } from '../admin-auth.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
 import { of, throwError } from 'rxjs';
+import { UserInfo } from '../../../auth/auth.service';
+
+const mockUser: UserInfo = {
+  login: 'octocat',
+  name: 'The Octocat',
+  avatarUrl: 'https://avatar.url',
+  url: 'https://github.com/octocat',
+  token: 'test-token'
+};
 
 describe('AdminTokenComponent', () => {
   let component: AdminTokenComponent;
@@ -14,8 +23,7 @@ describe('AdminTokenComponent', () => {
 
   beforeEach(async () => {
     authService = jasmine.createSpyObj('AdminAuthService', [
-      'setToken',
-      'setUser',
+      'setUserInfo',
       'logout',
       'loadFromSession',
       'requestAccessToken'
@@ -59,14 +67,7 @@ describe('AdminTokenComponent', () => {
 
   describe('onSubmit', () => {
     it('should call requestAccessToken and navigate on success', () => {
-      const mockResponse = {      
-        login: 'mockuser',
-        name: null,
-        avatarUrl: 'https://avatar.url',
-        url: 'https://github.com/mockuser',
-        token: 'jwt-token-123'
-      };
-      authService.requestAccessToken.and.returnValue(of(mockResponse));
+      authService.requestAccessToken.and.returnValue(of(mockUser));
       component.tokenControl.setValue('valid-github-token');
 
       component.onSubmit();
@@ -75,7 +76,7 @@ describe('AdminTokenComponent', () => {
       expect(authService.requestAccessToken).toHaveBeenCalledWith(
         'valid-github-token'
       );
-      expect(authService.setUserInfo).toHaveBeenCalledWith(mockResponse);
+      expect(authService.setUserInfo).toHaveBeenCalledWith(mockUser);
       expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
       expect(component.errorMessage).toBe('');
     });
@@ -96,14 +97,7 @@ describe('AdminTokenComponent', () => {
     });
 
     it('should disable control during processing', () => {
-      const mockResponse = {      
-        login: 'mockuser',
-        name: null,
-        avatarUrl: 'https://avatar.url',
-        url: 'https://github.com/mockuser',
-        token: 'jwt-token-123'
-      };
-      authService.requestAccessToken.and.returnValue(of(mockResponse));
+      authService.requestAccessToken.and.returnValue(of(mockUser));
       component.tokenControl.setValue('valid-token');
 
       component.onSubmit();

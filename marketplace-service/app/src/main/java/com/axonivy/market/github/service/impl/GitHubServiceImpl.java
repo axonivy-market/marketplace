@@ -179,33 +179,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GithubUser validateUserInOrganizationAndTeam(String accessToken, String organization,
-      String team) throws UnauthorizedException {
-    try {
-      var gitHub = getGitHub(accessToken);
-      if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        GHMyself myself = gitHub.getMyself();
-        var githubUser = new GithubUser();
-        githubUser.setGitHubId(String.valueOf(myself.getId()));
-        githubUser.setName(myself.getName());
-        githubUser.setUsername(myself.getLogin());
-        githubUser.setAvatarUrl(myself.getAvatarUrl());
-        githubUser.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
-        githubUser.setUrl(String.valueOf(myself.getHtmlUrl()));
-
-        return githubUser;
-      }
-    } catch (IOException e) {
-      log.error(e);
-    }
-
-    throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), team,
-            organization));
-  }
-
-  @Override
-  public UserInfo validateUserInOrganizationAndTeam2(String accessToken, String organization,
+  public UserInfo validateUserInOrganizationAndTeam(String accessToken, String organization,
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);

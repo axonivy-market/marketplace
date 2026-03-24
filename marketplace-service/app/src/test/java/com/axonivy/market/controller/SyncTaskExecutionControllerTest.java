@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.SyncTaskExecutionModel;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,9 +12,12 @@ import org.springframework.http.ResponseEntity;
 import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.constants.GitHubConstants.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME;
+import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_TEAM_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SyncTaskExecutionControllerTest {
 
@@ -74,8 +77,8 @@ class SyncTaskExecutionControllerTest {
     assertNull(response.getBody(), "Response body should be null when not found");
   }
 
-  private GithubUser getMockGithubUser() {
-    var mockUser = new GithubUser();
+  private UserInfo getMockGithubUser() {
+    var mockUser = new UserInfo();
     mockUser.setUrl("https://github.com/mockuser");
     mockUser.setName("mockUser");
     mockUser.setUsername("mockUser");

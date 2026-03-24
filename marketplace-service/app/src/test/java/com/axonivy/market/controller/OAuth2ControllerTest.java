@@ -2,15 +2,10 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.model.AdminLoginResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
-
 import jakarta.servlet.http.HttpServletRequest;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +19,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
@@ -62,23 +58,20 @@ class OAuth2ControllerTest {
         "Response status should be 401 UNAUTHORIZED when OAuth2 exchange fails");
   }
 
-//  @Test
-//  void testRequestAccessSuccess() {
-//    var mockUser = getMockGithubUser();
-//    var mockResponse = new AdminLoginResponse(JWT_TOKEN, mockUser);
-//
-//    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(mockResponse);
-//
-//    ResponseEntity<AdminLoginResponse> response =
-//        oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-//
-//    assertEquals(HttpStatus.OK, response.getStatusCode(),
-//        "Response status should be 200 OK when GitHub login succeeds");
-//    assertEquals(mockResponse.token(), Objects.requireNonNull(response.getBody()).token(),
-//        "Response body should contain the generated JWT token");
-//    assertEquals(mockResponse.user(), response.getBody().user(),
-//        "Response body should contain the Github user");
-//  }
+  @Test
+  void testRequestAccessSuccess() {
+    var mockUserInfo = getMockUserInfo();
+
+    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(mockUserInfo);
+
+    ResponseEntity<UserInfo> response =
+        oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when GitHub login succeeds");
+    assertEquals(mockUserInfo.getToken(), Objects.requireNonNull(response.getBody()).getToken(),
+        "Response body should contain the generated JWT token");
+  }
 
   @Test
   void testRequestAccessEmptyAuthorizationCode() {
@@ -88,50 +81,45 @@ class OAuth2ControllerTest {
         "Response status should be 401 UNAUTHORIZED when authorization code is empty.");
   }
 
-//  @Test
-//  void testRequestAccessReturnsUnauthorizedWhenServiceReturnsNull() {
-//    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(null);
-//
-//    ResponseEntity<AdminLoginResponse> response =
-//        oAuth2Controller.requestAccess(
-//            Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-//
-//    assertEquals(
-//        HttpStatus.UNAUTHORIZED,
-//        response.getStatusCode(),
-//        "Expected 401 UNAUTHORIZED when service returns null AdminLoginResponse"
-//    );
-//
-//    assertNull(
-//        response.getBody(),
-//        "Response body should be null when unauthorized"
-//    );
-//  }
+  @Test
+  void testRequestAccessReturnsUnauthorizedWhenServiceReturnsNull() {
+    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(null);
 
-//  @Test
-//  void testRequestAccessReturnsUnauthorizedWhenTokenIsEmpty() {
-//    var mockUser = getMockGithubUser();
-//    var responseWithEmptyToken =
-//        new AdminLoginResponse("", mockUser);
-//
-//    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN))
-//        .thenReturn(responseWithEmptyToken);
-//
-//    ResponseEntity<AdminLoginResponse> response =
-//        oAuth2Controller.requestAccess(
-//            Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-//
-//    assertEquals(
-//        HttpStatus.UNAUTHORIZED,
-//        response.getStatusCode(),
-//        "Expected 401 UNAUTHORIZED when JWT token in response is empty"
-//    );
-//
-//    assertNull(
-//        response.getBody(),
-//        "Response body should be null when JWT token is empty"
-//    );
-//  }
+    ResponseEntity<UserInfo> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
+
+    assertEquals(
+        HttpStatus.UNAUTHORIZED,
+        response.getStatusCode(),
+        "Expected 401 UNAUTHORIZED when service returns null AdminLoginResponse"
+    );
+
+    assertNull(
+        response.getBody(),
+        "Response body should be null when unauthorized"
+    );
+  }
+
+  @Test
+  void testRequestAccessReturnsUnauthorizedWhenTokenIsEmpty() {
+    var mockUserInfo = getMockUserInfo();
+    mockUserInfo.setToken("");
+
+    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN))
+        .thenReturn(mockUserInfo);
+
+    ResponseEntity<UserInfo> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
+
+    assertEquals(
+        HttpStatus.UNAUTHORIZED,
+        response.getStatusCode(),
+        "Expected 401 UNAUTHORIZED when JWT token in response is empty"
+    );
+
+    assertNull(
+        response.getBody(),
+        "Response body should be null when JWT token is empty"
+    );
+  }
 
   @Test
   void testValidateAuthorizationCode() {
@@ -143,13 +131,14 @@ class OAuth2ControllerTest {
         "Response status should be 200 OK when authorization code is validated.");
   }
 
-  private GithubUser getMockGithubUser() {
-    var mockUser = new GithubUser();
-    mockUser.setUrl("https://github.com/mockuser");
-    mockUser.setName("mockUser");
-    mockUser.setUsername("mockUser");
-    mockUser.setAvatarUrl("https://avatar.url");
+  private UserInfo getMockUserInfo() {
+    var mockUserInfo = new UserInfo();
+    mockUserInfo.setUrl("https://github.com/mockuser");
+    mockUserInfo.setName("mockUser");
+    mockUserInfo.setUsername("mockUser");
+    mockUserInfo.setAvatarUrl("https://avatar.url");
+    mockUserInfo.setToken(JWT_TOKEN);
 
-    return mockUser;
+    return mockUserInfo;
   }
 }
