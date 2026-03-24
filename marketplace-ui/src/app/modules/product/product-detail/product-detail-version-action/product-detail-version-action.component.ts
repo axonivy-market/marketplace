@@ -287,12 +287,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDownloading.set(true);
     const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${this.productId}/${this.selectedArtifactId}/${version}`;
+      downloadUrl = `${environment.apiUrl}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${this.productId}/${this.selectedArtifactId}/${version}`;
       if (this.selectedArtifact) {
         this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf('/') + 1));
       }
     } else if (this.isCheckedAppForEngine) {
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${this.selectedArtifactId}/${version}/zip-file`;
+      downloadUrl = `${environment.apiUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${this.selectedArtifactId}/${version}/zip-file`;
       this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
