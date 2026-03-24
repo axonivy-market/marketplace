@@ -65,7 +65,8 @@ class MonitorDashBoardControllerTest {
   }
 
   @Test
-  void testSyncGithubMonitorReturnsOk() throws IOException {   String accessToken = "validToken";
+  void testSyncGithubMonitorReturnsOk() throws IOException {
+    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = new GHMyself() {
