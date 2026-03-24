@@ -32,14 +32,14 @@ public class GithubUser extends GenericIdEntity {
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder().append(getId()).hashCode();
+    return getClass().hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || this.getClass() != obj.getClass()) {
-      return false;
-    }
-    return new EqualsBuilder().append(getId(), ((GithubUser) obj).getId()).isEquals();
+    if (this == obj) return true;
+    if (!(obj instanceof GithubUser other)) return false;
+
+    return getId() != null && getId().equals(other.getId());
   }
 }
