@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -11,11 +12,14 @@ import org.springframework.http.ResponseEntity;
 import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.constants.GitHubConstants.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME;
+import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_TEAM_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-class SyncTaskExecutionControllerTest {
+class SyncTaskExecutionControllerTest extends BaseSetup {
 
   private static final String TOKEN = "token";
   private static final String JOB_KEY = "jobKey";
@@ -35,8 +39,11 @@ class SyncTaskExecutionControllerTest {
   void testGetAllSyncTaskExecutions() {
     List<SyncTaskExecutionModel> models = Collections.singletonList(new SyncTaskExecutionModel());
     when(syncTaskExecutionService.getAllSyncTaskExecutions()).thenReturn(models);
-    doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
-        TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
+    when(gitHubService.validateUserInOrganizationAndTeam(
+        TOKEN,
+        AXONIVY_MARKET_ORGANIZATION_NAME,
+        AXONIVY_MARKET_TEAM_NAME))
+        .thenReturn(getMockGithubUser());
     ResponseEntity<List<SyncTaskExecutionModel>> response = controller.getAllSyncTaskExecutions();
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for getAllSyncTaskExecutions");
     assertEquals(models, response.getBody(), "Response body should match the expected models");
@@ -46,8 +53,11 @@ class SyncTaskExecutionControllerTest {
   void testGetSyncTaskExecutionByKeyFound() {
     SyncTaskExecutionModel model = new SyncTaskExecutionModel();
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(model);
-    doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
-        TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
+    when(gitHubService.validateUserInOrganizationAndTeam(
+        TOKEN,
+        AXONIVY_MARKET_ORGANIZATION_NAME,
+        AXONIVY_MARKET_TEAM_NAME))
+        .thenReturn(getMockGithubUser());
     ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(JOB_KEY);
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for found SyncTaskExecution");
     assertEquals(model, response.getBody(), "Response body should match the expected model");
@@ -56,8 +66,11 @@ class SyncTaskExecutionControllerTest {
   @Test
   void testGetSyncTaskExecutionByKeyNotFound() {
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(null);
-    doNothing().when(gitHubService).validateUserInOrganizationAndTeam(
-        TOKEN, AXONIVY_MARKET_ORGANIZATION_NAME, AXONIVY_MARKET_TEAM_NAME);
+    when(gitHubService.validateUserInOrganizationAndTeam(
+        TOKEN,
+        AXONIVY_MARKET_ORGANIZATION_NAME,
+        AXONIVY_MARKET_TEAM_NAME))
+        .thenReturn(getMockGithubUser());
     ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(JOB_KEY);
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
         "Status should be NOT_FOUND for missing SyncTaskExecution");

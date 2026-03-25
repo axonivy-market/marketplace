@@ -8,6 +8,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { NavigationComponent } from './navigation/navigation.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { filter } from 'rxjs';
+import { GithubUserBadgeComponent } from '../github-user-badge/github-user-badge.component';
 
 @Component({
   selector: 'app-header',
@@ -17,7 +18,8 @@ import { filter } from 'rxjs';
     TranslateModule,
     NavigationComponent,
     SearchBarComponent,
-    RouterLink
+    RouterLink,
+    GithubUserBadgeComponent
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
