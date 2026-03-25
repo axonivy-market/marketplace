@@ -19,6 +19,7 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
@@ -71,7 +72,6 @@ import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
-
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private final RestTemplate restTemplate;
@@ -179,12 +179,21 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void validateUserInOrganizationAndTeam(String accessToken, String organization,
+  public UserInfo validateUserInOrganizationAndTeam(String accessToken, String organization,
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        return;
+        GHMyself myself = gitHub.getMyself();
+        var userInfo = new UserInfo();
+        userInfo.setGitHubId(String.valueOf(myself.getId()));
+        userInfo.setName(myself.getName());
+        userInfo.setUsername(myself.getLogin());
+        userInfo.setAvatarUrl(myself.getAvatarUrl());
+        userInfo.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        userInfo.setUrl(String.valueOf(myself.getHtmlUrl()));
+
+        return userInfo;
       }
     } catch (IOException e) {
       log.error(e);

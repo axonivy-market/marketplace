@@ -20,9 +20,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -33,7 +31,6 @@ import static com.axonivy.market.constants.CommonConstants.LOG_EXTENSION;
 @NoArgsConstructor
 public class LogServiceImpl implements LogService {
   private static final long CACHE_TTL_MILLIS = 30 * 60 * 1000L;
-  private static final String NULL_STRING = "null";
   private static final String DATE_YEAR_SEPARATOR = "\\.";
   private static final Pattern DATE_YEAR_SEPARATOR_COMPILED = Pattern.compile(DATE_YEAR_SEPARATOR);
   private static final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
@@ -60,7 +57,7 @@ public class LogServiceImpl implements LogService {
     }
     boolean isToday = parsedDate.equals(LocalDate.now());
     return getCachedLogFiles().stream()
-        .filter(logFile -> isToday 
+        .filter(logFile -> isToday
             ? (date.equals(logFile.getDate()) || logFile.getFileName().endsWith(LOG_EXTENSION))
             : date.equals(logFile.getDate()))
         .toList();
@@ -90,9 +87,9 @@ public class LogServiceImpl implements LogService {
       }
       try (Stream<Path> stream = Files.list(path)) {
         return stream
-          .filter((Path filePath) -> isLogFile(filePath.getFileName().toString()))
-          .map(this::getLogFileModel)
-          .toList();
+            .filter((Path filePath) -> isLogFile(filePath.getFileName().toString()))
+            .map(this::getLogFileModel)
+            .toList();
       } catch (IOException e) {
         log.error("Failed to list log files in: {}", logPath, e);
       }
