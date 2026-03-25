@@ -11,22 +11,7 @@ import { LogStreamService } from '../../../core/services/logging/log-stream.serv
 import { LogFileModel } from '../../../shared/models/apis/log-file-response.model';
 import { LogService } from '../log.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-
-
-interface ParsedLog {
-  timestamp: string;
-  level: string;
-  message: string;
-  prefix: string;
-  messageContent: string;
-  isLong: boolean;
-  icon: string;
-}
-
-const LOG_HEADER_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s[\d:]{8})\s+(?<level>\w+)\s+(?<firstMessage>.*)$/;
-const LOG_TIMESTAMP_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s/;
-const LONG_MESSAGE_THRESHOLD = 150;
+import { LogParserService, ParsedLog } from './logs-viewer.service';
 
 @Component({
   selector: 'app-log-viewer',
@@ -50,6 +35,7 @@ export class LogViewerComponent {
   readonly selectedDate = signal<string>(this.getTodayDate());
   readonly logFiles = signal<LogFileModel[]>([]);
   readonly filteredLogFiles = signal<LogFileModel[]>([]);
+  private readonly logParser = inject(LogParserService);
 
   constructor() {
     if (this.isBrowser) {
@@ -61,7 +47,7 @@ export class LogViewerComponent {
       });
       effect(() => {
         const allLogs = this.logs();
-        this.parsedLogs.set(allLogs.map(log => this.parseLog(log)));
+        this.parsedLogs.set(allLogs.map(log => this.logParser.parseLog(log)));
       });
       effect(() => {
         const tab = this.activeTab();
@@ -74,66 +60,6 @@ export class LogViewerComponent {
     this.destroyRef.onDestroy(() => {
       this.logStream.disconnect();
     });
-  }
-
-  private parseLog(logLine: string): ParsedLog {
-    const [firstLine, ...remainingLines] = logLine.split('\n');
-    const match = LOG_HEADER_REGEX.exec(firstLine);
-    if (match?.groups) {
-      const { timestamp, level, firstMessage } = match.groups;
-      const messageLines = [firstMessage];
-      for (const line of remainingLines) {
-        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) {
-          break;
-        }
-        messageLines.push(line);
-      }
-      const message = messageLines.join('\n');
-      const trimmedLevel = level.trim();
-      const { prefix, content } = this.extractMessageParts(message);
-      return {
-        timestamp,
-        message,
-        prefix,
-        messageContent: content,
-        level: trimmedLevel,
-        icon: this.getLogLevelIconClass(trimmedLevel),
-        isLong: message.length > LONG_MESSAGE_THRESHOLD
-      };
-    }
-    return {
-      timestamp: new Date().toISOString(),
-      level: 'INFO',
-      message: logLine,
-      prefix: '',
-      messageContent: logLine,
-      icon: this.getLogLevelIconClass('INFO'),
-      isLong: logLine.length > LONG_MESSAGE_THRESHOLD
-    };
-  }
-
-  private extractMessageParts(message: string): {
-    prefix: string;
-    content: string;
-  } {
-    const parts = message.split(' - ');
-    if (parts.length > 1) {
-      const prefix = parts[0];
-      const content = parts.slice(1).join(' - ');
-      return { prefix, content };
-    }
-    return { prefix: '', content: message };
-  }
-
-  private getLogLevelIconClass(level: string): string {
-    const icons: { [key: string]: string } = {
-      DEBUG: 'bi-bug',
-      INFO: 'bi-info-circle',
-      WARN: 'bi-exclamation-circle',
-      ERROR: 'bi-x-circle',
-      FATAL: 'bi-stop-circle'
-    };
-    return icons[level] || 'bi-info-circle';
   }
 
   toggleExpand(index: number): void {

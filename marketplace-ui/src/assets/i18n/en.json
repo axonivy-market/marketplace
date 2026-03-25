@@ -316,7 +316,7 @@
         "status": "Status",
         "lastRun": "Last run at",
         "completed": "Completed at",
-        "message": "Message",
+        "message": "View changelog",
         "syncLabel": "Synchronize",
         "syncingLabel": "Synchronizing...",
         "cancelLabel": "Cancel",

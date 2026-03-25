@@ -5,7 +5,10 @@ import {
   Component,
   inject,
   OnInit,
-  ViewEncapsulation
+  ViewEncapsulation,
+  TemplateRef,
+  ViewChild,
+  signal
 } from '@angular/core';
 import {
   ActivatedRoute,
@@ -34,6 +37,9 @@ import { SyncTaskRow } from '../../shared/models/sync-task-execution.model';
 import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { AdminAuthService } from './admin-auth.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import { LogService } from './log.service';
+import { LogParserService, ParsedLog } from './logs-viewer/logs-viewer.service';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
@@ -54,6 +60,15 @@ export class AdminDashboardComponent implements OnInit {
   cdr = inject(ChangeDetectorRef);
   router = inject(Router);
   activatedRoute = inject(ActivatedRoute);
+  modalService = inject(NgbModal);
+  logStream = inject(LogService);
+  logViewer = inject(LogParserService);
+  readonly parsedLogs = signal<ParsedLog[]>([]);
+  selectedTask = signal<SyncTaskRow | null>(null);
+  logs = this.logStream.getLogsSignal(() => this.selectedTask()?.key);
+  readonly expandedLogs = signal<Set<number>>(new Set());
+
+  @ViewChild('changelogContent') changelogContent!: TemplateRef<any>;
 
   isAuthenticated = false;
   errorMessage = '';
@@ -142,7 +157,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private runSyncTask(syncTask: SyncTaskRow): void {
     this.setSyncTaskRunning(syncTask);
-
+    this.logStream.reset(syncTask.key);
     this.syncTaskTriggers[syncTask.key]()
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
@@ -247,6 +262,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private executeSyncOneProduct(syncTask: SyncTaskRow): void {
     this.setSyncTaskRunning(syncTask);
+    this.logStream.reset(syncTask.key);
     this.showSyncOneProductDialog = false;
 
     this.service
@@ -308,5 +324,45 @@ export class AdminDashboardComponent implements OnInit {
     this.productSearch = product.id;
     this.marketDirectory = product.marketDirectory ?? '';
     this.dropdownOpen = false;
+  }
+
+  openLog(syncTask: SyncTaskRow) {
+    this.selectedTask.set(syncTask);
+
+    const hasLogs = this.logStream.hasLogs(syncTask.key);
+    const isRunning = syncTask.status === SyncTaskStatus.RUNNING;
+
+    const showLogsUI = isRunning || hasLogs;
+
+    const modalRef = this.modalService.open(this.changelogContent, {
+      size: showLogsUI ? 'xl' : 'md',
+      centered: true,
+      windowClass: showLogsUI ? 'log-modal has-logs' : 'log-modal no-logs',
+      modalDialogClass: showLogsUI ? 'log-modal has-logs' : 'log-modal no-logs'
+    });
+
+    modalRef.shown.subscribe(() => {
+      if (isRunning) {
+        this.logStream.connect(syncTask.key);
+      }
+
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    });
+  }
+
+  toggleExpand(index: number): void {
+    const current = new Set(this.expandedLogs());
+    if (current.has(index)) {
+      current.delete(index);
+    } else {
+      current.add(index);
+    }
+    this.expandedLogs.set(current);
+  }
+
+  isExpanded(index: number): boolean {
+    return this.expandedLogs().has(index);
   }
 }

@@ -316,7 +316,7 @@
         "status": "Status",
         "lastRun": "Zuletzt ausgeführt am",
         "completed": "Abgeschlossen am",
-        "message": "Nachricht",
+        "message": "Änderungsprotokoll anzeigen",
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",

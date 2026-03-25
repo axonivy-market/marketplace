@@ -53,7 +53,7 @@
               <h5>{{ 'common.admin.sync.completed' | translate }}</h5>
             </th>
             <th
-              class="text-primary content-column"
+              class="text-primary date-column action-column text-center"
               [lang]="languageService.selectedLanguage()">
               <h5>{{ 'common.admin.sync.message' | translate }}</h5>
             </th>
@@ -80,8 +80,64 @@
               <td>
                 {{ syncTask.completedAt | date: 'short' }}
               </td>
-              <td class="message-cell">
-                {{ syncTask.message }}
+              <td class="text-center">
+                <button
+                  type="button"
+                  class="btn btn-link changelog-btn"
+                  placement="bottom"
+                  (click)="openLog(syncTask)"
+                >
+                  📋
+                </button>
+                <ng-template #changelogContent let-modal>
+                  <div class="modal-header">
+                    <h4 class="modal-title">📋 {{ ('common.admin.sync.tasks.' + selectedTask()?.key) | translate }}</h4>
+                    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+                  </div>
+
+                  <div class="modal-body p-0">
+                    @if (!logs().length) {
+                      @if (selectedTask()?.status === 'RUNNING') {
+                        <div class="log-waiting">
+                          <span class="spinner-border spinner-border-sm me-2"></span>
+                          Waiting for logs...
+                        </div>
+                      } @else {
+                        <div class="log-empty">No logs available.</div>
+                      }
+                    } @else {
+                      <div class="log-scroll-container">
+                        @for (line of logs(); track $index) {
+                          @let parsed = logViewer.parseLog(line);
+                          @let hasStack = parsed.messageContent.includes('at ');
+                          <div class="log-entry log-level-{{ parsed.level }}">
+                            <div class="log-main" [class.clickable]="hasStack" (click)="hasStack && toggleExpand($index)">
+                              <span class="log-timestamp">{{ parsed.timestamp }}</span>
+                              <span class="log-badge">{{ parsed.level }}</span>
+                              <span class="log-prefix">{{ parsed.prefix }}</span>
+                              <span class="log-content">{{ parsed.messageContent | slice:0:120 }}{{ parsed.messageContent.length > 120 && !isExpanded($index) ? '…' : '' }}</span>
+                              @if (hasStack) {
+                                <span class="log-toggle">{{ isExpanded($index) ? '▲' : '▼' }}</span>
+                              }
+                            </div>
+                            @if (hasStack && isExpanded($index)) {
+                              <pre class="log-stack">{{ parsed.messageContent }}</pre>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <div class="modal-footer">
+                    <span class="log-footer-lines me-auto">
+                      {{ logStream.getLogs(selectedTask()?.key).length }} lines
+                    </span>
+                    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+                      Close
+                    </button>
+                  </div>
+                </ng-template>
               </td>
               <td class="text-center">
                 <button
