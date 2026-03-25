@@ -11,7 +11,7 @@ export interface ParsedLog {
 }
 
 const LOG_HEADER_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s[\d:]{8})\s+(?<level>\w+)\s+(?<firstMessage>.*)$/;
+  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(?<level>[A-Z]+)\s+(?<firstMessage>[^\r\n]*)$/;
 
 const LOG_TIMESTAMP_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s/;
 const LONG_MESSAGE_THRESHOLD = 150;
