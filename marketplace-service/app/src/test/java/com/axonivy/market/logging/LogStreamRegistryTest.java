@@ -10,6 +10,7 @@ import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.*;
@@ -207,11 +208,23 @@ class LogStreamRegistryTest {
 
     Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<String> received = new ArrayList<>();
-    flux.subscribe(received::add);
+
+    CountDownLatch subscribed = new CountDownLatch(1);
+
+    flux.doOnSubscribe(sub -> subscribed.countDown())
+        .subscribe(received::add);
+
+    try {
+      subscribed.await();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
 
     LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
 
-    await().atMost(5, TimeUnit.SECONDS).until(() -> received.contains("pushed line"));
+    await().atMost(5, TimeUnit.SECONDS)
+        .until(() -> received.contains("pushed line"));
+
     assertTrue(received.contains("pushed line"));
   }
 
