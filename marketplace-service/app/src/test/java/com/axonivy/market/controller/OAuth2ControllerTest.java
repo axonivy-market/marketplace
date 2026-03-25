@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
@@ -21,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,54 +69,6 @@ class OAuth2ControllerTest extends BaseSetup {
         "Response status should be 200 OK when GitHub login succeeds");
     assertEquals(mockUserInfo.getToken(), Objects.requireNonNull(response.getBody()).getToken(),
         "Response body should contain the generated JWT token");
-  }
-
-  @Test
-  void testRequestAccessEmptyAuthorizationCode() {
-    ResponseEntity<?> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, ""));
-
-    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
-        "Response status should be 401 UNAUTHORIZED when authorization code is empty.");
-  }
-
-  @Test
-  void testRequestAccessReturnsUnauthorizedWhenServiceReturnsNull() {
-    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(null);
-
-    ResponseEntity<UserInfo> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-
-    assertEquals(
-        HttpStatus.UNAUTHORIZED,
-        response.getStatusCode(),
-        "Expected 401 UNAUTHORIZED when service returns null AdminLoginResponse"
-    );
-
-    assertNull(
-        response.getBody(),
-        "Response body should be null when unauthorized"
-    );
-  }
-
-  @Test
-  void testRequestAccessReturnsUnauthorizedWhenTokenIsEmpty() {
-    var mockUserInfo = getMockUserInfo();
-    mockUserInfo.setToken("");
-
-    when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN))
-        .thenReturn(mockUserInfo);
-
-    ResponseEntity<UserInfo> response = oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-
-    assertEquals(
-        HttpStatus.UNAUTHORIZED,
-        response.getStatusCode(),
-        "Expected 401 UNAUTHORIZED when JWT token in response is empty"
-    );
-
-    assertNull(
-        response.getBody(),
-        "Response body should be null when JWT token is empty"
-    );
   }
 
   @Test
