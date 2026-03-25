@@ -3,6 +3,7 @@ package com.axonivy.market.logging;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
+import com.axonivy.market.constants.LoggingConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,7 +30,13 @@ public class SSELogAppender extends AppenderBase<ILoggingEvent> {
 
   @Override
   protected void append(ILoggingEvent event) {
-    LogStreamRegistry.push(resolveLogRecord(event));
+    String logLine = resolveLogRecord(event);
+    LogStreamRegistry.push(logLine);
+
+    String taskKey = event.getMDCPropertyMap().get(LoggingConstants.TASK_KEY);
+    if (taskKey != null) {
+      LogStreamRegistry.pushTask(taskKey, logLine);
+    }
   }
 
   private String resolveLogRecord(ILoggingEvent event) {
