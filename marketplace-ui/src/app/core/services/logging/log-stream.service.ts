@@ -19,7 +19,8 @@ import { HttpParams } from '@angular/common/http';
 import { RequestParam } from '../../../shared/enums/request-param';
 import {
   EventSourceMessage,
-  fetchEventSource
+  fetchEventSource,
+  FetchEventSourceInit 
 } from '@microsoft/fetch-event-source';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
@@ -39,7 +40,7 @@ export class LogStreamService {
   private readonly apiPublicUrl = inject(API_PUBLIC_URL, {
     optional: true
   });
-  private _fetchEventSource(url: string, options: any) {
+  private _fetchEventSource(url: string, options: FetchEventSourceInit) {
     return fetchEventSource(url, options);
   }
 
@@ -151,7 +152,7 @@ export class LogStreamService {
         }
       },
 
-      onmessage: (event: MessageEvent) => {
+      onmessage: (event: EventSourceMessage) => {
         if (!event.data) { return; }
 
         this.taskLogs.update(map => {
@@ -161,8 +162,7 @@ export class LogStreamService {
         });
       },
 
-      onerror: (err: any) => {
-        console.error('SSE error', err);
+      onerror: () => {
         this.disconnectTask(taskKey);
       }
     });

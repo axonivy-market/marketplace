@@ -67,7 +67,7 @@ export class AdminDashboardComponent implements OnInit {
   selectedTask = signal<SyncTaskRow | null>(null);
   logs = this.logStream.getLogsSignal(() => this.selectedTask()?.key);
   readonly expandedLogs = signal<Set<number>>(new Set());
-  @ViewChild('changelogContent') changelogContent!: TemplateRef<any>;
+  @ViewChild('changelogContent') changelogContent!: TemplateRef<unknown>;
 
   isAuthenticated = false;
   errorMessage = '';

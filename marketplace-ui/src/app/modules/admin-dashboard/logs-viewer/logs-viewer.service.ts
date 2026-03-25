@@ -30,7 +30,7 @@ export class LogParserService {
 
       const messageLines = [firstMessage];
       for (const line of remainingLines) {
-        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)){ break;}
+        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) { break; }
         messageLines.push(line);
       }
 
@@ -40,9 +40,9 @@ export class LogParserService {
 
       return {
         timestamp,
-        level: trimmedLevel,
         message,
         prefix,
+        level: trimmedLevel,
         messageContent: content,
         icon: this.getLogLevelIconClass(trimmedLevel),
         isLong: message.length > LONG_MESSAGE_THRESHOLD
