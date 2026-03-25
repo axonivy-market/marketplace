@@ -7,6 +7,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -203,29 +204,23 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testPushTaskEmitsToSubscriber() {
+  void testPushTaskEmitsToSubscriber() throws InterruptedException {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<String> received = new ArrayList<>();
+    CountDownLatch latch = new CountDownLatch(1);
 
-    CountDownLatch subscribed = new CountDownLatch(1);
-
-    flux.doOnSubscribe(sub -> subscribed.countDown())
-        .subscribe(received::add);
-
-    try {
-      subscribed.await();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    LogStreamRegistry.asFlux(TASK_KEY)
+        .publishOn(Schedulers.immediate())
+        .subscribe(v -> {
+          received.add(v);
+          latch.countDown();
+        });
 
     LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
 
-    await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> received.contains("pushed line"));
-
-    assertTrue(received.contains("pushed line"));
+    assertTrue(latch.await(5, TimeUnit.SECONDS));
+    assertEquals(List.of("pushed line"), received);
   }
 
   @Test
