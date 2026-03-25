@@ -28,7 +28,7 @@ export class LogParserService {
     if (match?.groups) {
       const { timestamp, level, firstMessage } = match.groups;
 
-      const messageLines = [firstMessage];
+      const messageLines = [firstMessage.trim()];
       for (const line of remainingLines) {
         if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) { break; }
         messageLines.push(line);
@@ -64,11 +64,11 @@ export class LogParserService {
     const parts = message.split(' - ');
     if (parts.length > 1) {
       return {
-        prefix: parts[0],
-        content: parts.slice(1).join(' - ')
+        prefix: parts[0].trim(),
+        content: parts.slice(1).join(' - ').trim()
       };
     }
-    return { prefix: '', content: message };
+    return { prefix: '', content: message.trim() };
   }
 
   private getLogLevelIconClass(level: string): string {

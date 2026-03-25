@@ -485,7 +485,7 @@ class LogControllerTest {
 
       Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
 
-      assertNotNull(result);
+      assertNotNull(result, "Stream result should not be null");
 
       Mono<List<String>> collectedFlux = result.collectList();
 
