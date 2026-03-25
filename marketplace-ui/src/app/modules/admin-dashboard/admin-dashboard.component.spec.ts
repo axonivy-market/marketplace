@@ -14,6 +14,8 @@ import { MarketProduct } from '../../shared/models/product.model';
 import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import { LogStreamService } from '../../core/services/logging/log-stream.service';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -242,7 +244,7 @@ describe('AdminDashboardComponent', () => {
         }
       ];
       mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(executionsWithNulls));
-      
+
       fixture.detectChanges();
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
 
@@ -263,7 +265,7 @@ describe('AdminDashboardComponent', () => {
         }
       ];
       mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(executionsWithUnknown));
-      
+
       expect(() => fixture.detectChanges()).not.toThrow();
     });
   });
@@ -520,6 +522,205 @@ describe('AdminDashboardComponent', () => {
     );
 
     expect(mockPageTitleService.setTitleOnLangChange)
-      .toHaveBeenCalledTimes(1); // only initial call
+      .toHaveBeenCalledTimes(1);
+  });
+
+  describe('openLog', () => {
+    let modalServiceSpy: jasmine.SpyObj<NgbModal>;
+    let logStreamSpy: jasmine.SpyObj<LogStreamService>;
+    let mockModalRef: any;
+
+    beforeEach(() => {
+      mockModalRef = {
+        shown: {
+          subscribe: jasmine.createSpy('subscribe').and.callFake((cb: () => void) => cb())
+        },
+        dismissed: { subscribe: jasmine.createSpy() },
+        close: jasmine.createSpy(),
+        dismiss: jasmine.createSpy()
+      };
+
+      modalServiceSpy = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
+      spyOn(modalServiceSpy, 'open').and.returnValue(mockModalRef);
+
+      logStreamSpy = component.logStream as jasmine.SpyObj<LogStreamService>;
+      spyOn(logStreamSpy, 'hasLogs').and.returnValue(false);
+      spyOn(logStreamSpy, 'connectTask'); // ← đổi từ connect sang connectTask
+
+      fixture.detectChanges();
+    });
+
+    it('should set selectedTask to the given syncTask', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      component.openLog(task);
+      expect(component.selectedTask()).toEqual(task);
+    });
+
+    it('should open modal with size xl when task is RUNNING', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ size: 'xl' })
+      );
+    });
+
+    it('should open modal with size xl when task has logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+      (logStreamSpy.hasLogs as jasmine.Spy).and.returnValue(true);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ size: 'xl' })
+      );
+    });
+
+    it('should open modal with size md when task is not running and has no logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+      (logStreamSpy.hasLogs as jasmine.Spy).and.returnValue(false);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ size: 'md' })
+      );
+    });
+
+    it('should set windowClass has-logs when task is RUNNING', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ windowClass: 'log-modal has-logs' })
+      );
+    });
+
+    it('should set windowClass no-logs when task has no logs and is not running', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ windowClass: 'log-modal no-logs' })
+      );
+    });
+
+    it('should set modalDialogClass has-logs when has logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      (logStreamSpy.hasLogs as jasmine.Spy).and.returnValue(true);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({ modalDialogClass: 'log-modal has-logs' })
+      );
+    });
+
+    it('should call logStream.connectTask when task is RUNNING and modal shown', fakeAsync(() => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+      tick();
+
+      expect(logStreamSpy.connectTask).toHaveBeenCalledWith('syncProducts'); // ← connectTask
+    }));
+
+    it('should NOT call logStream.connectTask when task is not RUNNING', fakeAsync(() => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+
+      component.openLog(task);
+      tick();
+
+      expect(logStreamSpy.connectTask).not.toHaveBeenCalled(); // ← connectTask
+    }));
+
+    it('should dispatch resize event after modal shown', fakeAsync(() => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const dispatchSpy = spyOn(globalThis, 'dispatchEvent');
+
+      component.openLog(task);
+      tick();
+
+      expect(dispatchSpy).toHaveBeenCalledWith(jasmine.any(Event));
+    }));
+  });
+
+  describe('toggleExpand', () => {
+    beforeEach(() => fixture.detectChanges());
+
+    it('should add index when not expanded', () => {
+      component.toggleExpand(0);
+      expect(component.expandedLogs().has(0)).toBeTrue();
+    });
+
+    it('should remove index when already expanded', () => {
+      component.toggleExpand(1);
+      component.toggleExpand(1);
+      expect(component.expandedLogs().has(1)).toBeFalse();
+    });
+
+    it('should toggle multiple indexes independently', () => {
+      component.toggleExpand(0);
+      component.toggleExpand(2);
+
+      expect(component.expandedLogs().has(0)).toBeTrue();
+      expect(component.expandedLogs().has(2)).toBeTrue();
+      expect(component.expandedLogs().has(1)).toBeFalse();
+    });
+
+    it('should not affect other indexes when collapsing one', () => {
+      component.toggleExpand(0);
+      component.toggleExpand(1);
+      component.toggleExpand(0);
+
+      expect(component.expandedLogs().has(0)).toBeFalse();
+      expect(component.expandedLogs().has(1)).toBeTrue();
+    });
+
+    it('should create new Set reference on each toggle', () => {
+      const before = component.expandedLogs();
+      component.toggleExpand(0);
+      expect(component.expandedLogs()).not.toBe(before);
+    });
+  });
+
+  describe('isExpanded', () => {
+    beforeEach(() => fixture.detectChanges());
+
+    it('should return false when index not expanded', () => {
+      expect(component.isExpanded(0)).toBeFalse();
+    });
+
+    it('should return true after toggleExpand', () => {
+      component.toggleExpand(3);
+      expect(component.isExpanded(3)).toBeTrue();
+    });
+
+    it('should return false after toggling twice', () => {
+      component.toggleExpand(5);
+      component.toggleExpand(5);
+      expect(component.isExpanded(5)).toBeFalse();
+    });
+
+    it('should be consistent with expandedLogs signal', () => {
+      component.toggleExpand(2);
+      expect(component.isExpanded(2)).toBe(component.expandedLogs().has(2));
+    });
   });
 });

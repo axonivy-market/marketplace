@@ -38,7 +38,7 @@ import { MarketProduct } from '../../shared/models/product.model';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { AdminAuthService } from './admin-auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
-import { LogService } from './log.service';
+import { LogStreamService } from '../../core/services/logging/log-stream.service';
 import { LogParserService, ParsedLog } from './logs-viewer/logs-viewer.service';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
@@ -61,13 +61,12 @@ export class AdminDashboardComponent implements OnInit {
   router = inject(Router);
   activatedRoute = inject(ActivatedRoute);
   modalService = inject(NgbModal);
-  logStream = inject(LogService);
+  logStream = inject(LogStreamService);
   logViewer = inject(LogParserService);
   readonly parsedLogs = signal<ParsedLog[]>([]);
   selectedTask = signal<SyncTaskRow | null>(null);
   logs = this.logStream.getLogsSignal(() => this.selectedTask()?.key);
   readonly expandedLogs = signal<Set<number>>(new Set());
-
   @ViewChild('changelogContent') changelogContent!: TemplateRef<any>;
 
   isAuthenticated = false;
@@ -157,7 +156,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private runSyncTask(syncTask: SyncTaskRow): void {
     this.setSyncTaskRunning(syncTask);
-    this.logStream.reset(syncTask.key);
+    this.logStream.resetTask(syncTask.key);
     this.syncTaskTriggers[syncTask.key]()
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
@@ -262,7 +261,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private executeSyncOneProduct(syncTask: SyncTaskRow): void {
     this.setSyncTaskRunning(syncTask);
-    this.logStream.reset(syncTask.key);
+    this.logStream.resetTask(syncTask.key);
     this.showSyncOneProductDialog = false;
 
     this.service
@@ -343,11 +342,11 @@ export class AdminDashboardComponent implements OnInit {
 
     modalRef.shown.subscribe(() => {
       if (isRunning) {
-        this.logStream.connect(syncTask.key);
+        this.logStream.connectTask(syncTask.key);
       }
 
       setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
+        globalThis.dispatchEvent(new Event('resize'));
       }, 0);
     });
   }

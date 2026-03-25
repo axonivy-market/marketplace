@@ -24,7 +24,7 @@ describe('LogStreamService', () => {
     ]);
     mockAdminAuthService.getAuthHeaders.and.returnValue(new HttpHeaders());
 
-    fetchSpy = spyOn(window, 'fetch').and.returnValue(new Promise(() => {}));
+    fetchSpy = spyOn(window, 'fetch').and.returnValue(new Promise(() => { }));
 
     TestBed.configureTestingModule({
       providers: [
@@ -141,6 +141,250 @@ describe('LogStreamService', () => {
       expect(service.isConnected()).toBe(true);
       service.disconnect();
       expect(service.isConnected()).toBe(false);
+    });
+  });
+
+  describe('task-key stream methods', () => {
+    const TASK_KEY = 'syncProducts';
+
+    beforeEach(() => {
+      Object.defineProperty(mockAdminAuthService, 'token', {
+        get: () => 'mock-token',
+        configurable: true
+      });
+    });
+
+    afterEach(() => {
+      service.disconnectTask(TASK_KEY);
+      service.disconnectTask('syncGithubMonitor');
+    });
+
+    describe('getLogs', () => {
+      it('should return empty array when taskKey is undefined', () => {
+        expect(service.getLogs(undefined)).toEqual([]);
+      });
+
+      it('should return empty array when taskKey is empty string', () => {
+        expect(service.getLogs('')).toEqual([]);
+      });
+
+      it('should return empty array when taskKey has no logs', () => {
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should return logs after added', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1', 'line 2']);
+          return next;
+        });
+
+        expect(service.getLogs(TASK_KEY)).toEqual(['line 1', 'line 2']);
+      });
+
+      it('should return empty for unknown taskKey', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        expect(service.getLogs('unknownKey')).toEqual([]);
+      });
+    });
+
+    describe('getLogsSignal', () => {
+      it('should return empty array when taskKey signal returns undefined', () => {
+        const sig = service.getLogsSignal(() => undefined);
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+
+      it('should return empty array when taskKey signal returns empty string', () => {
+        const sig = service.getLogsSignal(() => '');
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+
+      it('should return logs reactively when taskLogs updates', () => {
+        const sig = service.getLogsSignal(() => TASK_KEY);
+
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+
+          service['taskLogs'].update(map => {
+            const next = new Map(map);
+            next.set(TASK_KEY, ['line 1', 'line 2']);
+            return next;
+          });
+
+          expect(sig()).toEqual(['line 1', 'line 2']);
+        });
+      });
+
+      it('should return empty array for different taskKey than stored', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        const sig = service.getLogsSignal(() => 'syncGithubMonitor');
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+    });
+
+    describe('hasLogs', () => {
+      it('should return false when no logs', () => {
+        expect(service.hasLogs(TASK_KEY)).toBeFalse();
+      });
+
+      it('should return true when has logs', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        expect(service.hasLogs(TASK_KEY)).toBeTrue();
+      });
+
+      it('should return false after resetTask', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.hasLogs(TASK_KEY)).toBeFalse();
+      });
+    });
+
+    describe('connectTask', () => {
+      it('should not connect when token is missing', () => {
+        Object.defineProperty(mockAdminAuthService, 'token', {
+          get: () => null,
+          configurable: true
+        });
+
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).not.toHaveBeenCalled();
+      });
+
+      it('should call fetch with correct url containing taskKey', () => {
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).toHaveBeenCalled();
+        const url = fetchSpy.calls.mostRecent().args[0] as string;
+        expect(url).toContain(`stream/${TASK_KEY}`);
+      });
+
+      it('should use public URL in browser', () => {
+        service.connectTask(TASK_KEY);
+
+        const url = fetchSpy.calls.mostRecent().args[0] as string;
+        expect(url).toContain('http://public:8080');
+      });
+
+      it('should set controller for taskKey after connect', () => {
+        service.connectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeTrue();
+      });
+
+      it('should not reconnect if already connected for same taskKey', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should connect different taskKeys independently', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask('syncGithubMonitor');
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('should include Authorization header', () => {
+        service.connectTask(TASK_KEY);
+
+        const options = fetchSpy.calls.mostRecent().args[1];
+        expect(options.headers).toEqual(
+          jasmine.objectContaining({ Authorization: 'Bearer mock-token' })
+        );
+      });
+    });
+
+    describe('disconnectTask', () => {
+      it('should remove controller after disconnect', () => {
+        service.connectTask(TASK_KEY);
+        expect(service['controllers'].has(TASK_KEY)).toBeTrue();
+
+        service.disconnectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+      });
+
+      it('should not throw when disconnecting non-connected taskKey', () => {
+        expect(() => service.disconnectTask('nonExistent')).not.toThrow();
+      });
+
+      it('should only disconnect specified taskKey', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask('syncGithubMonitor');
+
+        service.disconnectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+        expect(service['controllers'].has('syncGithubMonitor')).toBeTrue();
+      });
+    });
+
+    describe('resetTask', () => {
+      it('should clear logs for taskKey', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1', 'line 2']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should disconnect when resetting', () => {
+        service.connectTask(TASK_KEY);
+        service.resetTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+      });
+
+      it('should not affect other taskKeys', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          next.set('syncGithubMonitor', ['line 2']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+        expect(service.getLogs('syncGithubMonitor')).toEqual(['line 2']);
+      });
+
+      it('should not throw when resetting non-existent taskKey', () => {
+        expect(() => service.resetTask('nonExistent')).not.toThrow();
+      });
     });
   });
 });

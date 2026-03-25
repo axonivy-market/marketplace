@@ -30,7 +30,7 @@ export class LogParserService {
 
       const messageLines = [firstMessage];
       for (const line of remainingLines) {
-        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) break;
+        if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)){ break;}
         messageLines.push(line);
       }
 

@@ -1,5 +1,5 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { LogService } from './log.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LogFileModel } from '../../shared/models/apis/log-file-response.model';

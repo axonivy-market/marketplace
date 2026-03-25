@@ -3,7 +3,8 @@ import {
   Injectable,
   PLATFORM_ID,
   signal,
-  WritableSignal
+  WritableSignal,
+  computed
 } from '@angular/core';
 import {
   API_INTERNAL_URL,
@@ -30,6 +31,8 @@ export class LogStreamService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly adminAuth = inject(AdminAuthService);
+  private readonly taskLogs = signal<Map<string, string[]>>(new Map());
+  private readonly controllers = new Map<string, AbortController>();
   private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
     optional: true
   });
@@ -101,5 +104,75 @@ export class LogStreamService {
 
   isConnected(): boolean {
     return !!this.ctrl;
+  }
+
+  getLogs(taskKey?: string): string[] {
+    if (!taskKey) return [];
+    return this.taskLogs().get(taskKey) ?? [];
+  }
+
+  getLogsSignal(taskKeySignal: () => string | undefined) {
+    return computed(() => {
+      const taskKey = taskKeySignal();
+      if (!taskKey) return [];
+      return this.taskLogs().get(taskKey) ?? [];
+    });
+  }
+
+  hasLogs(taskKey: string): boolean {
+    return this.getLogs(taskKey).length > 0;
+  }
+
+  connectTask(taskKey: string): void {
+    if (this.controllers.has(taskKey)) return;
+
+    const token = this.adminAuth.token;
+    if (!token) return;
+
+    let baseUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+    if (isPlatformBrowser(this.platformId)) {
+      baseUrl = this.apiPublicUrl || baseUrl;
+    }
+
+    const url = `${baseUrl}/${API_URI.LOGS}/stream/${taskKey}`;
+    const ctrl = new AbortController();
+    this.controllers.set(taskKey, ctrl);
+
+    fetchEventSource(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: ctrl.signal,
+      onopen: async (response) => {
+        if (!response.ok) {
+          this.disconnectTask(taskKey);
+          throw new Error(`SSE failed: ${response.status}`);
+        }
+      },
+      onmessage: (event) => {
+        if (!event.data) return;
+        this.taskLogs.update(map => {
+          const next = new Map(map);
+          next.set(taskKey, [...(next.get(taskKey) ?? []), event.data]);
+          return next;
+        });
+      },
+      onerror: (err) => {
+        this.disconnectTask(taskKey);
+        throw err;
+      }
+    }).catch(() => {});
+  }
+
+  disconnectTask(taskKey: string): void {
+    this.controllers.get(taskKey)?.abort();
+    this.controllers.delete(taskKey);
+  }
+
+  resetTask(taskKey: string): void {
+    this.disconnectTask(taskKey);
+    this.taskLogs.update(map => {
+      const next = new Map(map);
+      next.delete(taskKey);
+      return next;
+    });
   }
 }
