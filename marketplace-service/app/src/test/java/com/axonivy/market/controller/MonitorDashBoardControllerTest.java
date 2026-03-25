@@ -64,7 +64,6 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Test
   void testSyncGithubMonitorReturnsOk() throws IOException {
-//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
@@ -82,7 +81,6 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Test
   void testSyncGithubMonitorHandlesException() throws IOException {
-//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
@@ -99,7 +97,6 @@ class MonitorDashBoardControllerTest extends BaseSetup {
   @Test
   void testUpdateRepoPriorities() throws IOException {
     List<String> updates = List.of("repo1", "repo2");
-//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
@@ -118,7 +115,6 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Test
   void testFindAllFeedbacksReturnPagedModel() {
-    // Arrange
     GithubReposModel model = new GithubReposModel();
     List<GithubReposModel> models = List.of(model);
     Page<GithubReposModel> page = new PageImpl<>(models, PageRequest.of(0, 10), 1);

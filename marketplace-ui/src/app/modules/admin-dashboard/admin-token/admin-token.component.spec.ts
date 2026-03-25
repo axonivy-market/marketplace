@@ -73,9 +73,7 @@ describe('AdminTokenComponent', () => {
       component.onSubmit();
 
       expect(component.isProcessing).toBe(false);
-      expect(authService.requestAccessToken).toHaveBeenCalledWith(
-        'valid-github-token'
-      );
+      expect(authService.requestAccessToken).toHaveBeenCalledWith('valid-github-token');
       expect(authService.setUserInfo).toHaveBeenCalledWith(mockUser);
       expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
       expect(component.errorMessage).toBe('');
@@ -106,9 +104,7 @@ describe('AdminTokenComponent', () => {
     });
 
     it('should re-enable control after error', () => {
-      authService.requestAccessToken.and.returnValue(
-        throwError(() => new Error('Error'))
-      );
+      authService.requestAccessToken.and.returnValue(throwError(() => new Error('Error')));
       component.tokenControl.setValue('invalid-token');
 
       component.onSubmit();

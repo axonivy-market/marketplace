@@ -293,8 +293,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    GithubUser result =
-        gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+    GithubUser result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
 
     assertEquals(String.valueOf(123L), result.getGitHubId(), "GitHub ID should match the fake user");
     assertEquals("test-user", result.getName(), "Name should match the fake user");
