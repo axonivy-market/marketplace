@@ -39,6 +39,9 @@ export class LogStreamService {
   private readonly apiPublicUrl = inject(API_PUBLIC_URL, {
     optional: true
   });
+  private _fetchEventSource(url: string, options: any) {
+    return fetchEventSource(url, options);
+  }
 
   private readonly _logs: WritableSignal<string[]> = signal([]);
   readonly logs = this._logs.asReadonly();
@@ -107,14 +110,14 @@ export class LogStreamService {
   }
 
   getLogs(taskKey?: string): string[] {
-    if (!taskKey) return [];
+    if (!taskKey) { return []; }
     return this.taskLogs().get(taskKey) ?? [];
   }
 
   getLogsSignal(taskKeySignal: () => string | undefined) {
     return computed(() => {
       const taskKey = taskKeySignal();
-      if (!taskKey) return [];
+      if (!taskKey) { return []; }
       return this.taskLogs().get(taskKey) ?? [];
     });
   }
@@ -124,10 +127,10 @@ export class LogStreamService {
   }
 
   connectTask(taskKey: string): void {
-    if (this.controllers.has(taskKey)) return;
+    if (this.controllers.has(taskKey)) { return; }
 
     const token = this.adminAuth.token;
-    if (!token) return;
+    if (!token) { return; }
 
     let baseUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
     if (isPlatformBrowser(this.platformId)) {
@@ -138,28 +141,31 @@ export class LogStreamService {
     const ctrl = new AbortController();
     this.controllers.set(taskKey, ctrl);
 
-    fetchEventSource(url, {
+    this._fetchEventSource(url, {
       headers: { Authorization: `Bearer ${token}` },
       signal: ctrl.signal,
-      onopen: async (response) => {
+
+      onopen: async (response: Response) => {
         if (!response.ok) {
           this.disconnectTask(taskKey);
-          throw new Error(`SSE failed: ${response.status}`);
         }
       },
-      onmessage: (event) => {
-        if (!event.data) return;
+
+      onmessage: (event: MessageEvent) => {
+        if (!event.data) { return; }
+
         this.taskLogs.update(map => {
           const next = new Map(map);
           next.set(taskKey, [...(next.get(taskKey) ?? []), event.data]);
           return next;
         });
       },
-      onerror: (err) => {
+
+      onerror: (err: any) => {
+        console.error('SSE error', err);
         this.disconnectTask(taskKey);
-        throw err;
       }
-    }).catch(() => {});
+    });
   }
 
   disconnectTask(taskKey: string): void {

@@ -4,7 +4,6 @@ import { LogStreamService } from './log-stream.service';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { API_INTERNAL_URL, API_PUBLIC_URL, API_URI } from '../../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
-
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { HttpHeaders } from '@angular/common/http';
 
@@ -320,6 +319,56 @@ describe('LogStreamService', () => {
         expect(options.headers).toEqual(
           jasmine.objectContaining({ Authorization: 'Bearer mock-token' })
         );
+      });
+
+      it('should handle onmessage and update logs', async () => {
+        spyOn<any>(service, '_fetchEventSource').and.callFake(
+          (url: string, options: any) => {
+            options.onmessage({
+              data: 'log line 1'
+            });
+            return Promise.resolve();
+          }
+        );
+
+        service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
+
+        expect(service.getLogs(TASK_KEY)).toEqual(["log line 1"]);
+      });
+
+      it('should ignore empty event data', async () => {
+        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
+          options.onmessage({ data: null });
+          return Promise.resolve();
+        });
+
+        service.connectTask(TASK_KEY);
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should handle onerror and disconnect task', async () => {
+        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
+          options.onerror(new Error('fail'));
+          return Promise.reject();
+        });
+
+        service.connectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+      });
+
+      it('should handle onopen error response', async () => {
+        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
+          options.onopen({ ok: false, status: 500 });
+          return Promise.resolve();
+        });
+
+        service.connectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
       });
     });
 
