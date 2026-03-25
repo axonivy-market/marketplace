@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -357,9 +358,9 @@ class LogControllerTest {
       List<String> collected = result.collectList().block();
       assertNotNull(collected, "Collected list should not be null");
       assertEquals(3, collected.size(), "Should have 3 log lines");
-      assertEquals("Log 1", collected.get(0));
-      assertEquals("Log 2", collected.get(1));
-      assertEquals("Log 3", collected.get(2));
+      assertEquals("Log 1", collected.get(0), "First log line should be 'Log 1'");
+      assertEquals("Log 2", collected.get(1), "Second log line should be 'Log 2'");
+      assertEquals("Log 3", collected.get(2), "Third log line should be 'Log 3'");
     }
   }
 
@@ -378,9 +379,13 @@ class LogControllerTest {
       Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
 
       List<String> collected = result.collectList().block();
-      assertEquals(logLines.size(), collected.size());
+      assertEquals(
+          logLines.size(),
+          collected.size(),
+          "Collected log size should match the expected number of log lines"
+      );
       for (int i = 0; i < logLines.size(); i++) {
-        assertEquals(logLines.get(i), collected.get(i));
+        assertEquals(logLines.get(i), collected.get(i), "Log line at index " + i + " should match expected value");
       }
     }
   }
@@ -396,7 +401,7 @@ class LogControllerTest {
 
       assertNotNull(result, "Stream result should not be null");
       List<String> collected = result.collectList().block();
-      assertNotNull(collected);
+      assertNotNull(collected, "Stream result should not be null");
       assertTrue(collected.isEmpty(), "Should return empty list when no logs");
     }
   }
@@ -435,8 +440,17 @@ class LogControllerTest {
         Flux<String> result = logController.streamLogsByTaskKey(key);
         assertNotNull(result, "Result should not be null for key: " + key);
         List<String> collected = result.collectList().block();
-        assertEquals(1, collected.size());
-        assertEquals("log for " + key, collected.get(0));
+        assertNotNull(collected, "Stream result should not be null");
+        assertEquals(
+            1,
+            collected.size(),
+            "Collected log size should be 1 for task key: " + key
+        );
+        assertEquals(
+            "log for " + key,
+            collected.getFirst(),
+            "Log content should match expected value for task key: " + key
+        );
       });
     }
   }
@@ -450,9 +464,10 @@ class LogControllerTest {
 
       Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
 
-      assertNotNull(result);
+      assertNotNull(result, "Stream result should not be null");
       // Simulate client cancel
       List<String> collected = result.take(2).collectList().block();
+      assertNotNull(collected,"Stream result should not be null");
       assertEquals(2, collected.size(), "Should collect 2 lines before cancel");
     }
   }
@@ -471,8 +486,14 @@ class LogControllerTest {
       Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
 
       assertNotNull(result);
-      assertThrows(RuntimeException.class, () -> result.collectList().block(),
-          "Should propagate stream error");
+
+      Mono<List<String>> collectedFlux = result.collectList();
+
+      assertThrows(
+          RuntimeException.class,
+          collectedFlux::block,
+          "Should throw RuntimeException when stream emits error"
+      );
     }
   }
 }

@@ -10,11 +10,9 @@ import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -31,7 +29,10 @@ class LogStreamRegistryTest {
   @Test
   void testHasSubscribersReturnsTrueWhenSubscribed() {
     Flux<String> flux = LogStreamRegistry.asFlux();
-    flux.subscribe(value -> {}, error -> {}, () -> {});
+    flux.subscribe(value -> {
+    }, error -> {
+    }, () -> {
+    });
     // After subscribing, should have subscribers
     boolean afterSubscriptionHasSubscribers = LogStreamRegistry.hasSubscribers();
     assertTrue(afterSubscriptionHasSubscribers, "LogStreamRegistry should have subscribers after subscription");
@@ -86,7 +87,8 @@ class LogStreamRegistryTest {
     flux.subscribe(subscriber1Records::add);
     flux.subscribe(subscriber2Records::add);
     LogStreamRegistry.push(testMessage);
-    await().atMost(5, TimeUnit.SECONDS).until(() -> subscriber1Records.contains(testMessage) && subscriber2Records.contains(testMessage));
+    await().atMost(5, TimeUnit.SECONDS).until(
+        () -> subscriber1Records.contains(testMessage) && subscriber2Records.contains(testMessage));
     assertTrue(subscriber1Records.contains(testMessage), "First subscriber should receive the message");
     assertTrue(subscriber2Records.contains(testMessage), "Second subscriber should receive the message");
   }
@@ -119,7 +121,7 @@ class LogStreamRegistryTest {
 
       LogStreamRegistry.push("Test Failure");
 
-      assertTrue(output.getOut().contains("Failed to emit log line to stream registry"), 
+      assertTrue(output.getOut().contains("Failed to emit log line to stream registry"),
           "Should log warning on failure");
     } finally {
       ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
@@ -144,7 +146,7 @@ class LogStreamRegistryTest {
     Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<String> collected = flux.collectList().block();
 
-    assertNotNull(collected);
+    assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.contains("buffered line 1"), "Should return buffered line 1");
     assertTrue(collected.contains("buffered line 2"), "Should return buffered line 2");
   }
@@ -156,7 +158,7 @@ class LogStreamRegistryTest {
     Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<String> collected = flux.collectList().block();
 
-    assertNotNull(collected);
+    assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.isEmpty(), "Should return empty when no buffer and no sink");
   }
 
@@ -194,13 +196,35 @@ class LogStreamRegistryTest {
     List<String> collectedA = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
     List<String> collectedB = LogStreamRegistry.asFlux(ANOTHER_TASK_KEY).collectList().block();
 
-    assertNotNull(collectedA);
-    assertTrue(collectedA.contains("log for syncProducts"));
-    assertFalse(collectedA.contains("log for syncGithubMonitor"), "Task A should not contain Task B logs");
+    assertNotNull(
+        collectedA,
+        "Collected logs for task A (syncProducts) should not be null"
+    );
 
-    assertNotNull(collectedB);
-    assertTrue(collectedB.contains("log for syncGithubMonitor"));
-    assertFalse(collectedB.contains("log for syncProducts"), "Task B should not contain Task A logs");
+    assertTrue(
+        collectedA.contains("log for syncProducts"),
+        "Task A should contain its own log entry"
+    );
+
+    assertFalse(
+        collectedA.contains("log for syncGithubMonitor"),
+        "Task A should not contain Task B logs"
+    );
+
+    assertNotNull(
+        collectedB,
+        "Collected logs for task B (syncGithubMonitor) should not be null"
+    );
+
+    assertTrue(
+        collectedB.contains("log for syncGithubMonitor"),
+        "Task B should contain its own log entry"
+    );
+
+    assertFalse(
+        collectedB.contains("log for syncProducts"),
+        "Task B should not contain Task A logs"
+    );
   }
 
   @Test
@@ -214,7 +238,11 @@ class LogStreamRegistryTest {
         .collectList()
         .block();
 
-    assertEquals(List.of("pushed line"), result);
+    assertEquals(
+        List.of("pushed line"),
+        result,
+        "Result should contain exactly one pushed line"
+    );
   }
 
   @Test
@@ -225,7 +253,7 @@ class LogStreamRegistryTest {
     LogStreamRegistry.completeTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected);
+    assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.contains("buffered"), "pushTask should add line to buffer");
   }
 
@@ -238,8 +266,9 @@ class LogStreamRegistryTest {
     LogStreamRegistry.completeTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected);
-    assertEquals(lines.size(), collected.size());
+    assertNotNull(collected, "Stream result should not be null");
+    assertEquals(lines.size(), collected.size(),
+        "Collected list size should match the number of input lines");
     assertEquals(lines, collected, "Buffer order should be preserved");
   }
 
@@ -251,7 +280,8 @@ class LogStreamRegistryTest {
     List<String> received = new ArrayList<>();
     List<Boolean> completed = new ArrayList<>();
 
-    flux.subscribe(received::add, err -> {}, () -> completed.add(true));
+    flux.subscribe(received::add, err -> {
+    }, () -> completed.add(true));
 
     LogStreamRegistry.pushTask(TASK_KEY, "before complete");
     LogStreamRegistry.completeTask(TASK_KEY);
@@ -268,7 +298,7 @@ class LogStreamRegistryTest {
 
     // After complete, asFlux should return only buffer (no live sink)
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected);
+    assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.contains("line"), "Buffer should remain after completeTask");
   }
 
@@ -279,7 +309,7 @@ class LogStreamRegistryTest {
     assertDoesNotThrow(() -> {
       LogStreamRegistry.completeTask(TASK_KEY);
       LogStreamRegistry.completeTask(TASK_KEY);
-    });
+    }, "Calling completeTask twice should not throw any exception");
   }
 
   @Test
@@ -289,7 +319,7 @@ class LogStreamRegistryTest {
     LogStreamRegistry.completeTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected);
+    assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.isEmpty(), "Buffer should be empty after resetTask");
   }
 
@@ -299,9 +329,11 @@ class LogStreamRegistryTest {
 
     Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<Boolean> completed = new ArrayList<>();
-    flux.subscribe(v -> {}, err -> {}, () -> completed.add(true));
+    flux.subscribe(v -> {
+    }, err -> {
+    }, () -> completed.add(true));
 
-    LogStreamRegistry.resetTask(TASK_KEY); // should complete old sink
+    LogStreamRegistry.resetTask(TASK_KEY);
 
     await().atMost(5, TimeUnit.SECONDS).until(() -> !completed.isEmpty());
     assertFalse(completed.isEmpty(), "resetTask should complete the existing sink");
@@ -312,6 +344,6 @@ class LogStreamRegistryTest {
     assertDoesNotThrow(() -> {
       LogStreamRegistry.resetTask(TASK_KEY);
       LogStreamRegistry.resetTask(TASK_KEY);
-    });
+    }, "Calling resetTask twice should not throw any exception");
   }
 }
