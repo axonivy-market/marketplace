@@ -25,6 +25,7 @@ export class AdminAuthService {
       this.logout();
     }
   }
+  
   loadFromSessionStorage(): UserInfo | null {
     const storedUserInfo = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN);
     return storedUserInfo ? JSON.parse(storedUserInfo) : null;
