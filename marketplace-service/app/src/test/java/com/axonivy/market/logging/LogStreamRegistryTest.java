@@ -204,24 +204,17 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testPushTaskEmitsToSubscriber() throws InterruptedException {
+  void testPushTaskEmitsToSubscriber() {
     LogStreamRegistry.resetTask(TASK_KEY);
-
-    CountDownLatch latch = new CountDownLatch(1);
-    List<String> received = new CopyOnWriteArrayList<>();
-
-    LogStreamRegistry.asFlux(TASK_KEY)
-        .subscribe(v -> {
-          received.add(v);
-          latch.countDown();
-        });
-
-    Thread.sleep(50);
 
     LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
 
-    assertTrue(latch.await(5, TimeUnit.SECONDS));
-    assertTrue(received.contains("pushed line"));
+    List<String> result = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(1)
+        .collectList()
+        .block();
+
+    assertEquals(List.of("pushed line"), result);
   }
 
   @Test
