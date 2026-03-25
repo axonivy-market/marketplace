@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -22,16 +23,14 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class MonitorDashBoardControllerTest {
+class MonitorDashBoardControllerTest extends BaseSetup {
 
-  private static final String TOKEN = "dummy-token";
+  private static final String TOKEN = "validToken";
 
   @Mock
   private GithubReposService githubReposService;
@@ -65,12 +64,12 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testSyncGithubMonitorReturnsOk() throws IOException {
-    String accessToken = "validToken";
+//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
     doNothing().when(githubReposService).loadAndStoreTestReports();
@@ -83,12 +82,12 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testSyncGithubMonitorHandlesException() throws IOException {
-    String accessToken = "validToken";
+//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
     doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
@@ -100,13 +99,13 @@ class MonitorDashBoardControllerTest {
   @Test
   void testUpdateRepoPriorities() throws IOException {
     List<String> updates = List.of("repo1", "repo2");
-    String accessToken = "validToken";
+//    String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
@@ -142,38 +141,5 @@ class MonitorDashBoardControllerTest {
     assertEquals(0, metadata.getNumber(), "Page number should be 0");
     assertEquals(1, metadata.getTotalElements(), "Total elements should be 1");
     assertEquals(1, metadata.getTotalPages(), "Total pages should be 1");
-  }
-
-  private GHMyself getFakeGHMyself() {
-    return new GHMyself() {
-      @Override
-      public long getId() {
-        return 123L;
-      }
-
-      @Override
-      public String getName() {
-        return "test-user";
-      }
-
-      @Override
-      public String getLogin() {
-        return "test-user";
-      }
-
-      @Override
-      public String getAvatarUrl() {
-        return "avatarUrl";
-      }
-
-      @Override
-      public URL getHtmlUrl() {
-        try {
-          return URI.create("https://github.com/tan").toURL();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
   }
 }

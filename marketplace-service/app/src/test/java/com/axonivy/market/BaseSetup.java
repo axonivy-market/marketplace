@@ -26,6 +26,7 @@ import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHMyself;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,8 @@ import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -492,5 +495,48 @@ public class BaseSetup extends CoreBaseSetup {
     mockUserInfo.setToken(JWT_TOKEN);
 
     return mockUserInfo;
+  }
+
+  protected UserInfo getMockGithubUser() {
+    var mockUser = new UserInfo();
+    mockUser.setUrl("https://github.com/mockuser");
+    mockUser.setName("mockUser");
+    mockUser.setUsername("mockUser");
+    mockUser.setAvatarUrl("https://avatar.url");
+
+    return mockUser;
+  }
+
+  protected GHMyself getFakeGHMyself() {
+    return new GHMyself() {
+      @Override
+      public long getId() {
+        return 123L;
+      }
+
+      @Override
+      public String getName() {
+        return "test-user";
+      }
+
+      @Override
+      public String getLogin() {
+        return "test-user";
+      }
+
+      @Override
+      public String getAvatarUrl() {
+        return "avatarUrl";
+      }
+
+      @Override
+      public URL getHtmlUrl() {
+        try {
+          return URI.create("https://github.com/tan").toURL();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 }

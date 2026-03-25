@@ -42,10 +42,6 @@ public class OAuth2Controller {
   public ResponseEntity<UserInfo> requestAccess(@RequestBody Map<String, String> token) {
     var userInfo = oAuth2Service.validateTokenAndGenerateJWT(token.get(GitHubConstants.Json.TOKEN));
 
-    if (userInfo == null || ObjectUtils.isEmpty(userInfo.getToken())) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
     return ResponseEntity.ok(userInfo);
   }
 

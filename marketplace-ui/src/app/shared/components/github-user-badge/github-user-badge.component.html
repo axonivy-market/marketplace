@@ -18,14 +18,14 @@
             [href]="this.userInfo()!.url"
             target="_blank">
             {{
-              translateService.get('common.admin.githubUserBadge.gitHubAccount')
+              translateService.get('common.admin.gitHubUserBadge.gitHubAccount')
                 | async
             }}
           </a>
         </button>
         <button ngbDropdownItem (click)="logout()">
           {{
-            translateService.get('common.admin.githubUserBadge.logout') | async
+            translateService.get('common.admin.gitHubUserBadge.logout') | async
           }}
         </button>
       </div>

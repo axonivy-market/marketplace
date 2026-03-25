@@ -28,22 +28,17 @@ public class GithubUser extends GenericIdEntity {
   private String username;
   private String name;
   private String avatarUrl;
-  private String url;
 
   @Override
   public int hashCode() {
-    return getClass().hashCode();
+    return new HashCodeBuilder().append(getId()).hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)  {
-      return true;
-    }
-    if (!(obj instanceof GithubUser other)) {
+    if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-
-    return getId() != null && getId().equals(other.getId());
+    return new EqualsBuilder().append(getId(), ((GithubUser) obj).getId()).isEquals();
   }
 }

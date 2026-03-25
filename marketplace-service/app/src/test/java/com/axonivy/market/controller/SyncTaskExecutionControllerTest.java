@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.SyncTaskExecutionModel;
-import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class SyncTaskExecutionControllerTest {
+class SyncTaskExecutionControllerTest extends BaseSetup {
 
   private static final String TOKEN = "token";
   private static final String JOB_KEY = "jobKey";
@@ -75,15 +75,5 @@ class SyncTaskExecutionControllerTest {
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
         "Status should be NOT_FOUND for missing SyncTaskExecution");
     assertNull(response.getBody(), "Response body should be null when not found");
-  }
-
-  private UserInfo getMockGithubUser() {
-    var mockUser = new UserInfo();
-    mockUser.setUrl("https://github.com/mockuser");
-    mockUser.setName("mockUser");
-    mockUser.setUsername("mockUser");
-    mockUser.setAvatarUrl("https://avatar.url");
-
-    return mockUser;
   }
 }
