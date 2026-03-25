@@ -63,7 +63,6 @@ public final class LogStreamRegistry {
   }
 
   public static void completeTask(String taskKey) {
-    // Complete sink → Angular biết stream kết thúc
     Sinks.Many<String> taskSink = taskSinks.remove(taskKey);
     if (taskSink != null) {
       taskSink.tryEmitComplete();

@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(OutputCaptureExtension.class)
 class LogStreamRegistryTest {
+  private static final String TASK_KEY = "syncProducts";
+  private static final String ANOTHER_TASK_KEY = "syncGithubMonitor";
 
   @Test
   void testAsFluxReturnsNonNullFlux() {
@@ -120,5 +122,194 @@ class LogStreamRegistryTest {
     } finally {
       ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
     }
+  }
+
+  @Test
+  void testAsFluxByTaskKeyReturnsNonNull() {
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    assertNotNull(flux, "asFlux(taskKey) should return non-null");
+  }
+
+  @Test
+  void testAsFluxByTaskKeyReturnsBufferedLogsWhenNoSinkExists() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    // Push directly to buffer via pushTask then complete to remove sink
+    LogStreamRegistry.pushTask(TASK_KEY, "buffered line 1");
+    LogStreamRegistry.pushTask(TASK_KEY, "buffered line 2");
+    LogStreamRegistry.completeTask(TASK_KEY); // removes sink, keeps buffer
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<String> collected = flux.collectList().block();
+
+    assertNotNull(collected);
+    assertTrue(collected.contains("buffered line 1"), "Should return buffered line 1");
+    assertTrue(collected.contains("buffered line 2"), "Should return buffered line 2");
+  }
+
+  @Test
+  void testAsFluxByTaskKeyReturnsEmptyWhenNoBufferAndNoSink() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<String> collected = flux.collectList().block();
+
+    assertNotNull(collected);
+    assertTrue(collected.isEmpty(), "Should return empty when no buffer and no sink");
+  }
+
+  @Test
+  void testAsFluxByTaskKeyConcatsBufferWithLive() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    // Push first to build buffer, keep sink alive
+    LogStreamRegistry.pushTask(TASK_KEY, "buffered line");
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<String> received = new ArrayList<>();
+    flux.subscribe(received::add);
+
+    // Push live after subscribe
+    LogStreamRegistry.pushTask(TASK_KEY, "live line");
+
+    await().atMost(5, TimeUnit.SECONDS)
+        .until(() -> received.contains("buffered line") && received.contains("live line"));
+
+    assertTrue(received.contains("buffered line"), "Should contain buffered line");
+    assertTrue(received.contains("live line"), "Should contain live line");
+  }
+
+  @Test
+  void testAsFluxByTaskKeyIsolatedPerKey() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+    LogStreamRegistry.resetTask(ANOTHER_TASK_KEY);
+
+    LogStreamRegistry.pushTask(TASK_KEY, "log for syncProducts");
+    LogStreamRegistry.pushTask(ANOTHER_TASK_KEY, "log for syncGithubMonitor");
+    LogStreamRegistry.completeTask(TASK_KEY);
+    LogStreamRegistry.completeTask(ANOTHER_TASK_KEY);
+
+    List<String> collectedA = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    List<String> collectedB = LogStreamRegistry.asFlux(ANOTHER_TASK_KEY).collectList().block();
+
+    assertNotNull(collectedA);
+    assertTrue(collectedA.contains("log for syncProducts"));
+    assertFalse(collectedA.contains("log for syncGithubMonitor"), "Task A should not contain Task B logs");
+
+    assertNotNull(collectedB);
+    assertTrue(collectedB.contains("log for syncGithubMonitor"));
+    assertFalse(collectedB.contains("log for syncProducts"), "Task B should not contain Task A logs");
+  }
+
+  @Test
+  void testPushTaskEmitsToSubscriber() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<String> received = new ArrayList<>();
+    flux.subscribe(received::add);
+
+    LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
+
+    await().atMost(5, TimeUnit.SECONDS).until(() -> received.contains("pushed line"));
+    assertTrue(received.contains("pushed line"));
+  }
+
+  @Test
+  void testPushTaskAddsToBuffer() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    LogStreamRegistry.pushTask(TASK_KEY, "buffered");
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    assertNotNull(collected);
+    assertTrue(collected.contains("buffered"), "pushTask should add line to buffer");
+  }
+
+  @Test
+  void testPushTaskMultipleLinesPreservesOrder() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    List<String> lines = List.of("line 1", "line 2", "line 3");
+    lines.forEach(l -> LogStreamRegistry.pushTask(TASK_KEY, l));
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    assertNotNull(collected);
+    assertEquals(lines.size(), collected.size());
+    assertEquals(lines, collected, "Buffer order should be preserved");
+  }
+
+  @Test
+  void testCompleteTaskCompletesFlux() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<String> received = new ArrayList<>();
+    List<Boolean> completed = new ArrayList<>();
+
+    flux.subscribe(received::add, err -> {}, () -> completed.add(true));
+
+    LogStreamRegistry.pushTask(TASK_KEY, "before complete");
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    await().atMost(5, TimeUnit.SECONDS).until(() -> !completed.isEmpty());
+    assertFalse(completed.isEmpty(), "Flux should complete after completeTask");
+  }
+
+  @Test
+  void testCompleteTaskRemovesSink() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+    LogStreamRegistry.pushTask(TASK_KEY, "line");
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    // After complete, asFlux should return only buffer (no live sink)
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    assertNotNull(collected);
+    assertTrue(collected.contains("line"), "Buffer should remain after completeTask");
+  }
+
+  @Test
+  void testCompleteTaskIsIdempotent() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    assertDoesNotThrow(() -> {
+      LogStreamRegistry.completeTask(TASK_KEY);
+      LogStreamRegistry.completeTask(TASK_KEY);
+    });
+  }
+
+  @Test
+  void testResetTaskClearsBuffer() {
+    LogStreamRegistry.pushTask(TASK_KEY, "should be cleared");
+    LogStreamRegistry.resetTask(TASK_KEY);
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    assertNotNull(collected);
+    assertTrue(collected.isEmpty(), "Buffer should be empty after resetTask");
+  }
+
+  @Test
+  void testResetTaskCompletesExistingSink() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
+    List<Boolean> completed = new ArrayList<>();
+    flux.subscribe(v -> {}, err -> {}, () -> completed.add(true));
+
+    LogStreamRegistry.resetTask(TASK_KEY); // should complete old sink
+
+    await().atMost(5, TimeUnit.SECONDS).until(() -> !completed.isEmpty());
+    assertFalse(completed.isEmpty(), "resetTask should complete the existing sink");
+  }
+
+  @Test
+  void testResetTaskIsIdempotent() {
+    assertDoesNotThrow(() -> {
+      LogStreamRegistry.resetTask(TASK_KEY);
+      LogStreamRegistry.resetTask(TASK_KEY);
+    });
   }
 }

@@ -30,6 +30,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LogControllerTest {
+  private static final String TASK_KEY = "syncProducts";
 
   private LogController logController;
   
@@ -340,6 +341,138 @@ class LogControllerTest {
       verify(request, times(1)).getHeader(X_FORWARDED_FOR);
       verify(request, times(1)).getHeader(X_REAL_IP);
       verify(request, times(1)).getRemoteAddr();
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyReturnsFlux() {
+    Flux<String> flux = Flux.just("Log 1", "Log 2", "Log 3");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(flux);
+
+      Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
+
+      assertNotNull(result, "Stream result should not be null");
+      List<String> collected = result.collectList().block();
+      assertNotNull(collected, "Collected list should not be null");
+      assertEquals(3, collected.size(), "Should have 3 log lines");
+      assertEquals("Log 1", collected.get(0));
+      assertEquals("Log 2", collected.get(1));
+      assertEquals("Log 3", collected.get(2));
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyEmitsAllEvents() {
+    List<String> logLines = Arrays.asList(
+        "2026-03-25 10:00:00 INFO c.a.m.ProductService - Starting sync",
+        "2026-03-25 10:00:01 WARN c.a.m.ProductService - Warning occurred",
+        "2026-03-25 10:00:02 ERROR c.a.m.ProductService - Error occurred"
+    );
+    Flux<String> flux = Flux.fromIterable(logLines);
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(flux);
+
+      Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
+
+      List<String> collected = result.collectList().block();
+      assertEquals(logLines.size(), collected.size());
+      for (int i = 0; i < logLines.size(); i++) {
+        assertEquals(logLines.get(i), collected.get(i));
+      }
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyReturnsEmptyFlux() {
+    Flux<String> emptyFlux = Flux.empty();
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(emptyFlux);
+
+      Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
+
+      assertNotNull(result, "Stream result should not be null");
+      List<String> collected = result.collectList().block();
+      assertNotNull(collected);
+      assertTrue(collected.isEmpty(), "Should return empty list when no logs");
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyCallsRegistryWithCorrectKey() {
+    Flux<String> flux = Flux.just("test log");
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(flux);
+
+      logController.streamLogsByTaskKey(TASK_KEY);
+
+      mock.verify(() -> LogStreamRegistry.asFlux(TASK_KEY), times(1));
+      // Verify other task keys are NOT called
+      mock.verify(() -> LogStreamRegistry.asFlux("syncLatestReleasesForProducts"), never());
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyWithDifferentTaskKeys() {
+    List<String> taskKeys = Arrays.asList(
+        "syncProducts",
+        "syncOneProduct",
+        "syncLatestReleasesForProducts",
+        "syncGithubMonitor"
+    );
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      taskKeys.forEach(key ->
+          mock.when(() -> LogStreamRegistry.asFlux(key))
+              .thenReturn(Flux.just("log for " + key))
+      );
+
+      taskKeys.forEach(key -> {
+        Flux<String> result = logController.streamLogsByTaskKey(key);
+        assertNotNull(result, "Result should not be null for key: " + key);
+        List<String> collected = result.collectList().block();
+        assertEquals(1, collected.size());
+        assertEquals("log for " + key, collected.get(0));
+      });
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyHandlesClientDisconnect() {
+    Flux<String> flux = Flux.just("line 1", "line 2").concatWith(Flux.never());
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(flux);
+
+      Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
+
+      assertNotNull(result);
+      // Simulate client cancel
+      List<String> collected = result.take(2).collectList().block();
+      assertEquals(2, collected.size(), "Should collect 2 lines before cancel");
+    }
+  }
+
+  @Test
+  void testStreamLogsByTaskKeyHandlesStreamError() {
+    RuntimeException error = new RuntimeException("Stream error");
+    Flux<String> flux = Flux.concat(
+        Flux.just("line before error"),
+        Flux.error(error)
+    );
+
+    try (MockedStatic<LogStreamRegistry> mock = mockStatic(LogStreamRegistry.class)) {
+      mock.when(() -> LogStreamRegistry.asFlux(TASK_KEY)).thenReturn(flux);
+
+      Flux<String> result = logController.streamLogsByTaskKey(TASK_KEY);
+
+      assertNotNull(result);
+      assertThrows(RuntimeException.class, () -> result.collectList().block(),
+          "Should propagate stream error");
     }
   }
 }
