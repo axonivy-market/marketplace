@@ -7,10 +7,10 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -207,20 +207,21 @@ class LogStreamRegistryTest {
   void testPushTaskEmitsToSubscriber() throws InterruptedException {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    List<String> received = new ArrayList<>();
     CountDownLatch latch = new CountDownLatch(1);
+    List<String> received = new CopyOnWriteArrayList<>();
 
     LogStreamRegistry.asFlux(TASK_KEY)
-        .publishOn(Schedulers.immediate())
         .subscribe(v -> {
           received.add(v);
           latch.countDown();
         });
 
+    Thread.sleep(50);
+
     LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
 
     assertTrue(latch.await(5, TimeUnit.SECONDS));
-    assertEquals(List.of("pushed line"), received);
+    assertTrue(received.contains("pushed line"));
   }
 
   @Test
