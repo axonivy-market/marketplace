@@ -565,7 +565,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
+    List<String> installableVersions = CoreVersionUtils.getInstallableVersionsFromMetadataList(
         metadataRepo.findByProductId(id));
     String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file

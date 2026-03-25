@@ -2,6 +2,9 @@ package com.axonivy.market.stable.service.impl;
 
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
@@ -13,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Log4j2
