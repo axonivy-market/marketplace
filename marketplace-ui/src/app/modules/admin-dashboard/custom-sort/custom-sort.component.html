@@ -12,7 +12,7 @@
         }}
         <span class="d-inline-flex align-items-center justify-content-center hint-icon">
           <i
-            class="bi bi-info-circle"
+            class="ti ti-info-circle"
             [title]="
               translateService.get('common.admin.customSort.dragAndDropHint')
                 | async
@@ -61,7 +61,7 @@
             <tr class="empty-row text-center">
               @if (isLoading) {
                 <td colspan="2" class="text-primary">
-                  <i class="fa fa-spinner fa-spin me-2"></i>
+                  <i class="ti ti-spinner ti-spin me-2"></i>
                   {{ 'common.admin.customSort.loadingLabel' | translate }}
                 </td>
               } @else {
@@ -141,7 +141,7 @@
                   colspan="2"
                   class="text-primary"
                   [lang]="languageService.selectedLanguage()">
-                  <i class="fa fa-spinner fa-spin me-2"></i>
+                  <i class="ti ti-spinner ti-spin me-2"></i>
                   {{ 'common.admin.customSort.loadingLabel' | translate }}
                 </td>
               } @else {
@@ -195,7 +195,7 @@
           translateService.get('common.admin.customSort.sortHint') | async
         ">
         @if (isSaving) {
-          <i class="fa fa-spinner fa-spin me-2"></i>
+          <i class="ti ti-spinner ti-spin me-2"></i>
           {{ 'common.admin.customSort.sortingLabel' | translate }}
         } @else {
           {{ 'common.admin.customSort.sortLabel' | translate }}
@@ -204,14 +204,14 @@
 
       @if (sortSuccessMessage) {
         <div class="sort-message d-inline-flex align-items-center mt-0 mb-0 gap-2 px-3 py-2 success">
-          <i class="bi bi-check2"></i>
+          <i class="ti ti-check"></i>
           <span>{{ sortSuccessMessage }}</span>
         </div>
       }
 
       @if (sortErrorMessage) {
         <div class="sort-message d-inline-flex align-items-center mt-0 mb-0 gap-2 px-3 py-2 error">
-          <i class="bi bi-exclamation-triangle"></i>
+          <i class="ti ti-alert-triangle"></i>
           <span>{{ sortErrorMessage }}</span>
         </div>
       }
