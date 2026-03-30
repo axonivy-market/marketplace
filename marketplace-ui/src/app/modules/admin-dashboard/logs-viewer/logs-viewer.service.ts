@@ -10,9 +10,6 @@ export interface ParsedLog {
   icon: string;
 }
 
-// const LOG_HEADER_REGEX =
-//   /^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) (?<level>[A-Z]{1,10}) (?<firstMessage>[^\r\n]{0,1000})$/
-
 const LOG_HEADER_REGEX =
   /^(?<timestamp>\d{4}-\d{2}-\d{2}\s[\d:]{8})\s+(?<level>\w+)\s+(?<firstMessage>[^\r\n]*)$/;
 const LOG_TIMESTAMP_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s/;
