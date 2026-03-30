@@ -31,12 +31,12 @@ public class SSELogAppender extends AppenderBase<ILoggingEvent> {
   @Override
   protected void append(ILoggingEvent event) {
     String logLine = resolveLogRecord(event);
-    LogStreamRegistry.push(logLine);
-
     String taskKey = event.getMDCPropertyMap().get(LoggingConstants.TASK_KEY);
     if (taskKey != null) {
       LogStreamRegistry.pushTask(taskKey, logLine);
     }
+
+    LogStreamRegistry.push(logLine);
   }
 
   private String resolveLogRecord(ILoggingEvent event) {
