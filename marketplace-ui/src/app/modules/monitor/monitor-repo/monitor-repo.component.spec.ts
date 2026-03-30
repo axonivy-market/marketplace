@@ -229,11 +229,11 @@ describe('MonitoringRepoComponent', () => {
 
   it('should update sort icons correctly', () => {
     const header = fixture.debugElement.query(By.css('th h5.table-header'));
-    expect(header.nativeElement.className).toContain('bi-arrow-up');
+    expect(header.nativeElement.className).toContain('ti-arrow-up');
 
     component.sortRepositoriesByColumn(component.COLUMN_NAME);
     fixture.detectChanges();
-    expect(header.nativeElement.className).toContain('bi-arrow-down');
+    expect(header.nativeElement.className).toContain('ti-arrow-down');
   });
 
   it('should update page, pageable.page, pageable.size and call loadRepositories on page change', () => {
