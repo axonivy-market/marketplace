@@ -13,10 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
-import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
@@ -34,9 +34,13 @@ public class ProductDetailsController {
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
-          in = ParameterIn.PATH) String version) {
-    var bestMatchVersion = productService.fetchBestMatchVersion(id, version);
+          in = ParameterIn.PATH) String version,
+      @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
+          "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+
+    var bestMatchVersion = productService.getBestMatchVersion(id, version, isShowDevVersion);
     var result = new BestMatchVersion(bestMatchVersion);
+
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 }

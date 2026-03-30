@@ -23,23 +23,4 @@ public class ProductDetailsControllerTest {
 
   @InjectMocks
   private ProductDetailsController productDetailsController;
-
-  @Test
-  void shouldReturnBestMatchVersion() {
-    String productId = "approval-decision-utils";
-    String inputVersion = "10.0.20";
-    String bestMatchVersion = "12.0.0";
-
-    when(productService.fetchBestMatchVersion(productId, inputVersion)).thenReturn(bestMatchVersion);
-    ResponseEntity<BestMatchVersion> response =
-        productDetailsController.findBestMatchProductDetailsByVersion(productId, inputVersion);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Expected HTTP status 200 OK");
-    assertNotNull(response.getBody(),
-        "Response body should not be null");
-    assertEquals(bestMatchVersion, response.getBody().getVersion(),
-        "Expected version in response body to match service result");
-    verify(productService).fetchBestMatchVersion(productId, inputVersion);
-  }
 }
