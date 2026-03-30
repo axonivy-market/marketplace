@@ -11,7 +11,7 @@ export interface ParsedLog {
 }
 
 const LOG_HEADER_REGEX =
-  /^(?<timestamp>\d{4}-\d{2}-\d{2}\s[\d:]{8})\s+(?<level>\w+)\s+(?<firstMessage>[^\r\n]*)$/;
+  /^(?<timestamp>\d{4}-\d{2}-\d{2} [0-9:]{8}) (?<level>[A-Z]{1,10}) /;
 const LOG_TIMESTAMP_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s/;
 const LONG_MESSAGE_THRESHOLD = 150;
 
@@ -25,9 +25,11 @@ export class LogParserService {
     const match = LOG_HEADER_REGEX.exec(firstLine);
 
     if (match?.groups) {
-      const { timestamp, level, firstMessage } = match.groups;
+      const { timestamp, level } = match.groups;
 
-      const messageLines = [firstMessage.trim()];
+      const firstMessage = firstLine.substring(match[0].length).trim();
+
+      const messageLines = [firstMessage];
       for (const line of remainingLines) {
         if (LOG_TIMESTAMP_PREFIX_REGEX.test(line)) { break; }
         messageLines.push(line);
