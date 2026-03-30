@@ -65,7 +65,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'ti ti-brand-linkedin',
+    styleClass: 'ti ti-brand-linkedin-filled',
     title: 'Axon Ivy | LinkedIn',
     url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
@@ -75,12 +75,12 @@ export const SOCIAL_MEDIA_LINK = [
     url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'ti ti-brand-facebook',
+    styleClass: 'ti ti-brand-facebook-filled',
     title: 'Axon Ivy | Facebook',
     url: 'https://www.facebook.com/axonivy'
   },
   {
-    styleClass: 'ti ti-brand-youtube',
+    styleClass: 'ti ti-brand-youtube-filled',
     title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
   }
