@@ -60,6 +60,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.newsManagement',
     link: '/internal-dashboard/news-management'
+  },
+  {
+    label: 'common.nav.deprecatedManagement',
+    link: '/internal-dashboard/deprecated-management'
   }
 ];
 

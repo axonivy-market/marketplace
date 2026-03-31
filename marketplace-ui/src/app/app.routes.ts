@@ -18,6 +18,9 @@ import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-v
 import { NewsComponent } from './modules/news/news.component';
 import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
 import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
+import {
+  DeprecatedManagementComponent
+} from './modules/admin-dashboard/deprecated-management/deprecated-management.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -87,6 +90,10 @@ export const routes: Routes = [
       {
         path: 'news-management/create',
         component: ReleaseLetterEditComponent
+      },
+      {
+        path: 'deprecated-management',
+        component: DeprecatedManagementComponent
       },
       {
         path: 'logs',

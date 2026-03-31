@@ -131,6 +131,8 @@
             "implementedBy": "Implementiert von",
             "version": "Version",
             "compatibility": "Kompatibilität",
+            "successor": "Nachfolger",
+            "successorToolTip": "Bitte beachten Sie, dass diese Market-Erweiterung als veraltet markiert ist. Wir empfehlen, stattdessen die Nachfolgeversion zu verwenden. Diese Erweiterung wird nicht mehr um neue Funktionen erweitert; es werden lediglich Fehlerbehebungen und Sicherheitsupdates bereitgestellt.",
             "cost": "Kosten",
             "language": "Sprache",
             "tag": "Tags",
@@ -442,6 +444,12 @@
         "cancel": "Cancel",
         "warning": "Warning",
         "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+      },
+      "deprecated": {
+        "pageTitle": "Axon Ivy Market Deprecated Products",
+        "title": "Axon Ivy Market Deprecated",
+        "description": "Manage how deprecated extensions are displayed",
+        "helpText": "Configure the deprecated extensions. Administrators can add, update for products"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

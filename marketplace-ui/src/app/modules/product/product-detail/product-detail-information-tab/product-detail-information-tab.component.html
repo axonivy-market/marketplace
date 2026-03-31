@@ -38,6 +38,24 @@
         </span>
       </div>
     }
+    @if (productDetail.deprecated) {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{ 'common.product.detail.information.value.successor' | translate }}
+          <i
+            class="bi bi-info-circle hint-icon"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="{{ 'common.product.detail.information.value.successorToolTip' | translate }}"></i>
+        </span>
+        <span class="text-primary">
+          {{ productDetail.deprecated }}
+        </span>
+      </div>
+    }
     <hr class="border-top-0" />
     <div class="d-flex flex-row justify-content-between p-0">
       <span [lang]="languageService.selectedLanguage()" class="text-secondary">

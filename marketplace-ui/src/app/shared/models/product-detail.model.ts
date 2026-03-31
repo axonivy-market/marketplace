@@ -20,6 +20,7 @@ export interface ProductDetail {
   language: string;
   industry: string;
   contactUs: boolean;
+  deprecated: boolean;
   installationCount: number;
   productModuleContent: ProductModuleContent;
   mavenDropins: boolean;
