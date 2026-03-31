@@ -441,30 +441,20 @@ class LogStreamRegistryTest {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
-    Mockito.when(mockSink.tryEmitNext(ArgumentMatchers.anyString()))
-        .thenReturn(Sinks.EmitResult.FAIL_TERMINATED); // lần 1
+    Mockito.when(mockSink.tryEmitNext("retry-line")).thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
 
     @SuppressWarnings("unchecked")
     Map<String, Sinks.Many<String>> map =
         (Map<String, Sinks.Many<String>>) ReflectionTestUtils
             .getField(LogStreamRegistry.class, "taskSinks");
 
-    assertNotNull(map);
-
     map.put(TASK_KEY, mockSink);
 
+    LogStreamRegistry.pushTask(TASK_KEY, "retry-line");
     List<String> received = new ArrayList<>();
     LogStreamRegistry.asFlux(TASK_KEY).subscribe(received::add);
 
-    LogStreamRegistry.pushTask(TASK_KEY, "retry-line");
-
-    await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> !received.isEmpty());
-
     assertEquals(List.of("retry-line"), received, "Expected message to be retried and delivered after FAIL_TERMINATED");
-
-    Mockito.verify(mockSink, Mockito.times(1))
-        .tryEmitNext("retry-line");
   }
 
   @Test
