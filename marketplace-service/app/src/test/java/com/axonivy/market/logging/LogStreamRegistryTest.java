@@ -152,7 +152,7 @@ class LogStreamRegistryTest {
         .collectList()
         .block(Duration.ofSeconds(2));
 
-    assertEquals(List.of("line 1", "line 2"), collected);
+    assertEquals(List.of("line 1", "line 2"), collected, "Expected collected logs to match the pushed lines in correct order");
   }
 
   @Test
@@ -165,7 +165,7 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertTrue(collected.isEmpty());
+    assertTrue(collected.isEmpty(), "Expected no logs but some were found");
   }
 
   @Test
@@ -184,7 +184,7 @@ class LogStreamRegistryTest {
     await().atMost(5, TimeUnit.SECONDS)
         .until(() -> received.size() >= 2);
 
-    assertEquals(List.of("buffered line", "live line"), received);
+    assertEquals(List.of("buffered line", "live line"), received, "Expected to receive buffered log first, then live log in order");
   }
 
   @Test
@@ -249,7 +249,7 @@ class LogStreamRegistryTest {
     await().atMost(5, TimeUnit.SECONDS)
         .until(() -> !result.isEmpty());
 
-    assertEquals(List.of("pushed line"), result);
+    assertEquals(List.of("pushed line"), result, "Expected the pushed line to be received by subscriber");
   }
 
   @Test
@@ -264,7 +264,7 @@ class LogStreamRegistryTest {
         .collectList()
         .block(Duration.ofSeconds(2));
 
-    assertEquals(lines, collected);
+    assertEquals(lines, collected, "Expected collected logs to match input lines in the same order");
   }
 
   @Test
@@ -348,7 +348,7 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testPushDoesNotLogWhenNoSubscriber() {
+  void testPushDoesNotLogWhenNoSubscriber(CapturedOutput output) {
     Object originalSink = ReflectionTestUtils.getField(LogStreamRegistry.class, "sink");
 
     Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
@@ -360,10 +360,14 @@ class LogStreamRegistryTest {
       ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", mockSink);
 
       LogStreamRegistry.push("no subscriber");
-
+      assertFalse(
+          output.getOut().contains("Failed to emit log line to stream registry"),
+          "Should not log warning when there are no subscribers"
+      );
     } finally {
       ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
     }
+
   }
 
   @Test
@@ -380,8 +384,8 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertEquals(1000, collected.size());
-    assertEquals("line 100", collected.getFirst());
+    assertEquals(1000, collected.size(), "Expected replay buffer to contain exactly 1000 log lines");
+    assertEquals("line 100", collected.getFirst(), "Expected oldest retained log to be 'line 100' after applying buffer limit");
   }
 
   @Test
@@ -413,7 +417,7 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertTrue(collected.size() >= threads * perThread * 0.8);
+    assertTrue(collected.size() >= threads * perThread * 0.8, "Expected at least 80% of logs to be collected under concurrent push");
   }
 
   @Test
@@ -429,35 +433,46 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertTrue(collected.isEmpty());
+    assertTrue(collected.isEmpty(), "Expected collected logs to be empty when no data is pushed");
   }
 
   @Test
-  void testPushTaskFailureLogsWarning(CapturedOutput output) {
+  void testPushTaskRetriesWhenTerminated() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
     Mockito.when(mockSink.tryEmitNext(ArgumentMatchers.anyString()))
-        .thenReturn(Sinks.EmitResult.FAIL_NON_SERIALIZED);
+        .thenReturn(Sinks.EmitResult.FAIL_TERMINATED); // lần 1
 
     @SuppressWarnings("unchecked")
     Map<String, Sinks.Many<String>> map =
         (Map<String, Sinks.Many<String>>) ReflectionTestUtils
             .getField(LogStreamRegistry.class, "taskSinks");
 
-    assertNotNull(map,"taskSinks can not be null");
+    assertNotNull(map);
+
     map.put(TASK_KEY, mockSink);
 
-    LogStreamRegistry.pushTask(TASK_KEY, "fail");
+    List<String> received = new ArrayList<>();
+    LogStreamRegistry.asFlux(TASK_KEY).subscribe(received::add);
 
-    assertTrue(output.getOut().contains("Failed to emit log for task"));
+    LogStreamRegistry.pushTask(TASK_KEY, "retry-line");
+
+    await().atMost(5, TimeUnit.SECONDS)
+        .until(() -> !received.isEmpty());
+
+    assertEquals(List.of("retry-line"), received, "Expected message to be retried and delivered after FAIL_TERMINATED");
+
+    Mockito.verify(mockSink, Mockito.times(1))
+        .tryEmitNext("retry-line");
   }
 
   @Test
   void testCompleteTaskWithoutExistingSink() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    assertDoesNotThrow(() -> LogStreamRegistry.completeTask(TASK_KEY));
+    assertDoesNotThrow(() -> LogStreamRegistry.completeTask(TASK_KEY),
+        "Calling completeTask on a non-existing task should be safe and not throw");
   }
 
   @Test
@@ -467,7 +482,8 @@ class LogStreamRegistryTest {
     var disposable = flux.subscribe();
     disposable.dispose();
 
-    assertDoesNotThrow(() -> LogStreamRegistry.push("after dispose"));
+    assertDoesNotThrow(() -> LogStreamRegistry.push("after dispose"),
+        "Pushing log after unsubscribe should be safe and not throw any exception");
   }
 
   @Test
@@ -481,6 +497,6 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertTrue(collected.isEmpty());
+    assertTrue(collected.isEmpty(), "Expected no logs but some were found");
   }
 }
