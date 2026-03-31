@@ -524,7 +524,6 @@ export class ProductDetailComponent implements AfterViewInit {
     this.initialFragmentHandled = true;
     this.navigateToFragment(tab || DEFAULT_ACTIVE_TAB);
     this.activeTab = tab;
-    this.scrollToTop();
     this.saveActiveTab();
 
     if (tab === 'changelog') {
@@ -533,6 +532,9 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   private handleSubsequentTabActivation(tab: string, updateUrl: boolean): void {
+    if (this.activeTab === tab) {
+      return;
+    }
     const currentFragment = this.route.snapshot.fragment;
 
     if (updateUrl && currentFragment !== tab) {
