@@ -16,15 +16,6 @@ public class SameMajorVersionStrategy implements VersionMatchStrategy {
 
     String targetMajor = requestedVersion.split("\\.")[0];
 
-//    return versions.stream()
-//        .filter(v -> {
-//          if (v == null) return false;
-//          String[] parts = v.split("\\.");
-//          return parts.length > 0 && parts[0].equals(targetMajor);
-//        })
-//        .findFirst()
-//        .orElse(versions.get(0));
-
     return versions.stream()
         .filter(v -> {
           if (v == null) return false;
@@ -34,7 +25,7 @@ public class SameMajorVersionStrategy implements VersionMatchStrategy {
         .findFirst()
         .orElseThrow(() -> new NotFoundException(
             ErrorCode.VERSION_NOT_FOUND,
-            "No version found for major: " + targetMajor
+            "Cannot found version: " + requestedVersion
         ));
   }
 }
