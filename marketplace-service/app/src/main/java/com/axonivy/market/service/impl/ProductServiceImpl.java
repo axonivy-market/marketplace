@@ -758,7 +758,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {

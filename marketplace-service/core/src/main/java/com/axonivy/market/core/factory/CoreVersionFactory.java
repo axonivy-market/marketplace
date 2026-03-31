@@ -6,6 +6,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_P
 import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_PREFIX;
 
 import com.axonivy.market.core.enums.DevelopmentVersion;
+import com.axonivy.market.core.strategy.VersionMatchStrategy;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -35,7 +36,7 @@ public class CoreVersionFactory {
         null);
   }
 
-  public static String get(List<String> versions, String requestedVersion) {
+  public static String get(List<String> versions, String requestedVersion, VersionMatchStrategy matchStrategy) {
     var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()
         .filter(Objects::nonNull)
         .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1)).toList();
@@ -45,8 +46,10 @@ public class CoreVersionFactory {
 
     // Get latest released version if requested version is 'latest' or 'sprint'
     if (version == DevelopmentVersion.LATEST || version == DevelopmentVersion.SPRINT) {
-      return sortedVersions.stream().filter(CoreVersionUtils::isReleasedVersion)
-          .findFirst().orElse(null);
+      return sortedVersions.stream()
+          .filter(CoreVersionUtils::isReleasedVersion)
+          .findFirst()
+          .orElse(null);
     }
 
     if (version != null && !sortedVersions.isEmpty()) {
@@ -63,7 +66,7 @@ public class CoreVersionFactory {
       requestedVersion = requestedVersion.replace(DEV_RELEASE_PREFIX, EMPTY);
     }
 
-    return findVersionStartWith(sortedVersions, requestedVersion);
+    return matchStrategy.findMatch(sortedVersions, requestedVersion);
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
