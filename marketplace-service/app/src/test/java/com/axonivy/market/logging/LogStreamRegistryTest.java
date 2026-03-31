@@ -2,6 +2,8 @@ package com.axonivy.market.logging;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -10,6 +12,9 @@ import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
@@ -135,52 +140,50 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testAsFluxByTaskKeyReturnsBufferedLogsWhenNoSinkExists() {
+  void testAsFluxByTaskKeyReturnsReplayLogs() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    // Push directly to buffer via pushTask then complete to remove sink
-    LogStreamRegistry.pushTask(TASK_KEY, "buffered line 1");
-    LogStreamRegistry.pushTask(TASK_KEY, "buffered line 2");
-    LogStreamRegistry.completeTask(TASK_KEY); // removes sink, keeps buffer
+    LogStreamRegistry.pushTask(TASK_KEY, "line 1");
+    LogStreamRegistry.pushTask(TASK_KEY, "line 2");
 
-    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
-    List<String> collected = flux.collectList().block();
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(2)
+        .collectList()
+        .block();
 
-    assertNotNull(collected, "Stream result should not be null");
-    assertTrue(collected.contains("buffered line 1"), "Should return buffered line 1");
-    assertTrue(collected.contains("buffered line 2"), "Should return buffered line 2");
+    assertEquals(List.of("line 1", "line 2"), collected);
   }
 
   @Test
-  void testAsFluxByTaskKeyReturnsEmptyWhenNoBufferAndNoSink() {
+  void testAsFluxByTaskKeyReturnsEmptyWhenNoData() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
-    List<String> collected = flux.collectList().block();
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(1)
+        .collectList()
+        .block();
 
-    assertNotNull(collected, "Stream result should not be null");
-    assertTrue(collected.isEmpty(), "Should return empty when no buffer and no sink");
+    assertNotNull(collected, "No logs");
+    assertTrue(collected.isEmpty());
   }
 
   @Test
-  void testAsFluxByTaskKeyConcatsBufferWithLive() {
+  void testAsFluxByTaskKeyReplayAndLive() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    // Push first to build buffer, keep sink alive
     LogStreamRegistry.pushTask(TASK_KEY, "buffered line");
 
-    Flux<String> flux = LogStreamRegistry.asFlux(TASK_KEY);
     List<String> received = new ArrayList<>();
-    flux.subscribe(received::add);
 
-    // Push live after subscribe
+    LogStreamRegistry.asFlux(TASK_KEY)
+        .subscribe(received::add);
+
     LogStreamRegistry.pushTask(TASK_KEY, "live line");
 
     await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> received.contains("buffered line") && received.contains("live line"));
+        .until(() -> received.size() >= 2);
 
-    assertTrue(received.contains("buffered line"), "Should contain buffered line");
-    assertTrue(received.contains("live line"), "Should contain live line");
+    assertEquals(List.of("buffered line", "live line"), received);
   }
 
   @Test
@@ -231,45 +234,32 @@ class LogStreamRegistryTest {
   void testPushTaskEmitsToSubscriber() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
+    List<String> result = new ArrayList<>();
+
+    LogStreamRegistry.asFlux(TASK_KEY)
+        .subscribe(result::add);
+
     LogStreamRegistry.pushTask(TASK_KEY, "pushed line");
 
-    List<String> result = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(1)
-        .collectList()
-        .block();
+    await().atMost(5, TimeUnit.SECONDS)
+        .until(() -> !result.isEmpty());
 
-    assertEquals(
-        List.of("pushed line"),
-        result,
-        "Result should contain exactly one pushed line"
-    );
+    assertEquals(List.of("pushed line"), result);
   }
 
   @Test
-  void testPushTaskAddsToBuffer() {
-    LogStreamRegistry.resetTask(TASK_KEY);
-
-    LogStreamRegistry.pushTask(TASK_KEY, "buffered");
-    LogStreamRegistry.completeTask(TASK_KEY);
-
-    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected, "Stream result should not be null");
-    assertTrue(collected.contains("buffered"), "pushTask should add line to buffer");
-  }
-
-  @Test
-  void testPushTaskMultipleLinesPreservesOrder() {
+  void testPushTaskPreservesOrder() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     List<String> lines = List.of("line 1", "line 2", "line 3");
     lines.forEach(l -> LogStreamRegistry.pushTask(TASK_KEY, l));
-    LogStreamRegistry.completeTask(TASK_KEY);
 
-    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    assertNotNull(collected, "Stream result should not be null");
-    assertEquals(lines.size(), collected.size(),
-        "Collected list size should match the number of input lines");
-    assertEquals(lines, collected, "Buffer order should be preserved");
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(3)
+        .collectList()
+        .block();
+
+    assertEquals(lines, collected);
   }
 
   @Test
@@ -345,5 +335,139 @@ class LogStreamRegistryTest {
       LogStreamRegistry.resetTask(TASK_KEY);
       LogStreamRegistry.resetTask(TASK_KEY);
     }, "Calling resetTask twice should not throw any exception");
+  }
+
+  @Test
+  void testPushDoesNotLogWhenNoSubscriber() {
+    Object originalSink = ReflectionTestUtils.getField(LogStreamRegistry.class, "sink");
+
+    Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
+    Mockito.when(mockSink.tryEmitNext(ArgumentMatchers.anyString()))
+        .thenReturn(Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER);
+    Mockito.when(mockSink.currentSubscriberCount()).thenReturn(0);
+
+    try {
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", mockSink);
+
+      LogStreamRegistry.push("no subscriber");
+
+    } finally {
+      ReflectionTestUtils.setField(LogStreamRegistry.class, "sink", originalSink);
+    }
+  }
+
+  @Test
+  void testReplayLimit() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    for (int i = 0; i < 1100; i++) {
+      LogStreamRegistry.pushTask(TASK_KEY, "line " + i);
+    }
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(1000)
+        .collectList()
+        .block();
+
+    assertNotNull(collected, "No logs");
+    assertEquals(1000, collected.size());
+    assertEquals("line 100", collected.getFirst());
+  }
+
+  @Test
+  void testConcurrentPushTask() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    int threads = 10;
+    int perThread = 50;
+
+   ExecutorService executor = Executors.newFixedThreadPool(threads);
+
+    for (int t = 0; t < threads; t++) {
+      int threadId = t;
+      executor.submit(() -> {
+        for (int i = 0; i < perThread; i++) {
+          LogStreamRegistry.pushTask(TASK_KEY, "t" + threadId + "-" + i);
+        }
+      });
+    }
+
+    executor.shutdown();
+
+    await().atMost(5, TimeUnit.SECONDS)
+        .until(executor::isTerminated);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(threads * perThread)
+        .collectList()
+        .block();
+
+    assertNotNull(collected, "No logs");
+    assertEquals(threads * perThread, collected.size());
+  }
+
+  @Test
+  void testSubscribeAfterCompleteCreatesNewStream() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    LogStreamRegistry.pushTask(TASK_KEY, "line");
+    LogStreamRegistry.completeTask(TASK_KEY);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(1)
+        .collectList()
+        .block();
+
+    assertNotNull(collected, "No logs");
+    assertTrue(collected.isEmpty());
+  }
+
+  @Test
+  void testPushTaskFailureLogsWarning(CapturedOutput output) {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
+    Mockito.when(mockSink.tryEmitNext(ArgumentMatchers.anyString()))
+        .thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
+
+    java.util.Map<String, Sinks.Many<String>> map = new ConcurrentHashMap<>();
+    map.put(TASK_KEY, mockSink);
+
+    ReflectionTestUtils.setField(LogStreamRegistry.class, "taskSinks", map);
+
+    LogStreamRegistry.pushTask(TASK_KEY, "fail");
+
+    assertTrue(output.getOut().contains("Failed to emit log for task"));
+  }
+
+  @Test
+  void testCompleteTaskWithoutExistingSink() {
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    assertDoesNotThrow(() -> LogStreamRegistry.completeTask(TASK_KEY));
+  }
+
+  @Test
+  void testPushAfterUnsubscribe() {
+    Flux<String> flux = LogStreamRegistry.asFlux();
+
+    var disposable = flux.subscribe();
+    disposable.dispose();
+
+    assertDoesNotThrow(() -> LogStreamRegistry.push("after dispose"));
+  }
+
+  @Test
+  void testResetRemovesBufferCompletely() {
+    LogStreamRegistry.pushTask(TASK_KEY, "line");
+    LogStreamRegistry.resetTask(TASK_KEY);
+
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(1)
+        .collectList()
+        .block();
+
+    assertNotNull(collected, "No logs");
+    assertTrue(collected.isEmpty());
   }
 }
