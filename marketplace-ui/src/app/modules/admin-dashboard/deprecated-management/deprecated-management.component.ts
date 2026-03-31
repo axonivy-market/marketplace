@@ -31,7 +31,7 @@ export class DeprecatedManagementComponent {
     'html-dialog-demo',
     'asana-connector'
   ];
-  isClosing = false;
+  dropdownOpen = false;
   syncData = {
     extensionId: '',
     marketItemPath: '',
@@ -40,6 +40,12 @@ export class DeprecatedManagementComponent {
 
   trigger() {
     this.showDeprecatedProductDialog = true;
+  }
+
+  // Product search dropdown in sync one product dialog
+  openDropdown(): void {
+    this.dropdownOpen = true;
+    this.extensions = this.extensions.slice(0, 10);
   }
 
   closeDialog() {
@@ -52,5 +58,9 @@ export class DeprecatedManagementComponent {
     // TODO: call API here
 
     this.closeDialog();
+  }
+
+  selectExtension(productId: string) {
+    console.log('selectExtension', productId);
   }
 }

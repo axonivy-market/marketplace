@@ -36,7 +36,7 @@
         [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
 
       <button
-        type="button" (click)="trigger()"
+        type="button" (click)="trigger()"  (focus)="openDropdown()"
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark': 'btn-primary text-light'"
         [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 deprecated-button text-center">
         {{ 'common.admin.deprecated.deprecatedButton' | translate }}
@@ -102,6 +102,13 @@
             [(ngModel)]="syncData.extensionId"
             placeholder="html-dialog-demo"
           />
+          @if (dropdownOpen && extensions.length) {
+            <ul class="form-control show w-100">
+              @for (productId of extensions; track $index) {
+                <li (click)="selectExtension(productId)" class="dropdown-item"> {{ productId }} </li>
+              }
+            </ul>
+          }
         </div>
 
         <div class="mb-2">
