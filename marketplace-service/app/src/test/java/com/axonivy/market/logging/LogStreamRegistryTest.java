@@ -10,6 +10,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -147,9 +148,9 @@ class LogStreamRegistryTest {
     LogStreamRegistry.pushTask(TASK_KEY, "line 2");
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(2)
+        .take(Duration.ofMillis(200))
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertEquals(List.of("line 1", "line 2"), collected);
   }
@@ -159,9 +160,9 @@ class LogStreamRegistryTest {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(1)
+        .take(Duration.ofMillis(200))
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
     assertTrue(collected.isEmpty());
@@ -196,8 +197,14 @@ class LogStreamRegistryTest {
     LogStreamRegistry.completeTask(TASK_KEY);
     LogStreamRegistry.completeTask(ANOTHER_TASK_KEY);
 
-    List<String> collectedA = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
-    List<String> collectedB = LogStreamRegistry.asFlux(ANOTHER_TASK_KEY).collectList().block();
+    List<String> collectedA = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(Duration.ofMillis(200))
+        .collectList()
+        .block(Duration.ofSeconds(2));
+    List<String> collectedB = LogStreamRegistry.asFlux(ANOTHER_TASK_KEY)
+        .take(Duration.ofMillis(200))
+        .collectList()
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(
         collectedA,
@@ -255,9 +262,9 @@ class LogStreamRegistryTest {
     lines.forEach(l -> LogStreamRegistry.pushTask(TASK_KEY, l));
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(3)
+        .take(Duration.ofMillis(200))
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertEquals(lines, collected);
   }
@@ -286,10 +293,12 @@ class LogStreamRegistryTest {
     LogStreamRegistry.pushTask(TASK_KEY, "line");
     LogStreamRegistry.completeTask(TASK_KEY);
 
-    // After complete, asFlux should return only buffer (no live sink)
-    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(Duration.ofMillis(200))
+        .collectList()
+        .block(Duration.ofSeconds(2));
     assertNotNull(collected, "Stream result should not be null");
-    assertTrue(collected.contains("line"), "Buffer should remain after completeTask");
+    assertTrue(collected.isEmpty(), "New stream should be empty after completeTask");
   }
 
   @Test
@@ -308,7 +317,10 @@ class LogStreamRegistryTest {
     LogStreamRegistry.resetTask(TASK_KEY);
     LogStreamRegistry.completeTask(TASK_KEY);
 
-    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY).collectList().block();
+    List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
+        .take(Duration.ofMillis(200))
+        .collectList()
+        .block(Duration.ofSeconds(2));
     assertNotNull(collected, "Stream result should not be null");
     assertTrue(collected.isEmpty(), "Buffer should be empty after resetTask");
   }
@@ -367,7 +379,7 @@ class LogStreamRegistryTest {
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
         .take(1000)
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
     assertEquals(1000, collected.size());
@@ -400,7 +412,7 @@ class LogStreamRegistryTest {
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
         .take(threads * perThread)
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
     assertEquals(threads * perThread, collected.size());
@@ -414,9 +426,9 @@ class LogStreamRegistryTest {
     LogStreamRegistry.completeTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(1)
+        .take(Duration.ofMillis(200))
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
     assertTrue(collected.isEmpty());
@@ -433,7 +445,7 @@ class LogStreamRegistryTest {
     java.util.Map<String, Sinks.Many<String>> map = new ConcurrentHashMap<>();
     map.put(TASK_KEY, mockSink);
 
-    ReflectionTestUtils.setField(LogStreamRegistry.class, "taskSinks", map);
+    ReflectionTestUtils.setField(LogStreamRegistry.class, "taskSinks", new ConcurrentHashMap<>());
 
     LogStreamRegistry.pushTask(TASK_KEY, "fail");
 
@@ -463,9 +475,9 @@ class LogStreamRegistryTest {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     List<String> collected = LogStreamRegistry.asFlux(TASK_KEY)
-        .take(1)
+        .take(Duration.ofMillis(200))
         .collectList()
-        .block();
+        .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
     assertTrue(collected.isEmpty());

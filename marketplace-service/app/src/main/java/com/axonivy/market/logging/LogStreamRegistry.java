@@ -18,7 +18,6 @@ public final class LogStreamRegistry {
   private static Sinks.Many<String> sink = Sinks.many().multicast()
       .onBackpressureBuffer(BACKPRESSURE_BUFFER_SIZE, false);
   private static final Map<String, Sinks.Many<String>> taskSinks = new ConcurrentHashMap<>();
-  private static final Map<String, List<String>> taskBuffers = new ConcurrentHashMap<>();
   private static final int CURRENT_LOG_LINES_LIMIT = 1000;
 
   public static Flux<String> asFlux() {
@@ -43,11 +42,17 @@ public final class LogStreamRegistry {
   }
 
   public static void pushTask(String taskKey, String logLine) {
-    taskBuffers.computeIfAbsent(taskKey, k -> new CopyOnWriteArrayList<>()).add(logLine);
     Sinks.Many<String> taskSink = getOrCreateSink(taskKey);
 
     if (taskSink != null) {
       Sinks.EmitResult result = taskSink.tryEmitNext(logLine);
+
+      if (result == Sinks.EmitResult.FAIL_TERMINATED) {
+        taskSinks.remove(taskKey);
+        pushTask(taskKey, logLine);
+        return;
+      }
+
       if (result.isFailure() && result != Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER) {
         log.warn("Failed to emit log for task: {}. Result: {}", taskKey, result);
       }
@@ -62,7 +67,6 @@ public final class LogStreamRegistry {
   }
 
   public static void resetTask(String taskKey) {
-    taskBuffers.remove(taskKey);
     completeTask(taskKey);
   }
 
