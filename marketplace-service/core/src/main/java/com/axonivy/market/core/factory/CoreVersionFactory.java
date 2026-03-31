@@ -40,9 +40,6 @@ public class CoreVersionFactory {
         .filter(Objects::nonNull)
         .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1)).toList();
 
-    System.out.println("Sorted versions: ");
-    sortedVersions.forEach(System.out::println);
-
     // Redirect to the newest version for special keywords
     var version = DevelopmentVersion.of(requestedVersion);
 
@@ -70,8 +67,6 @@ public class CoreVersionFactory {
   }
 
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    System.out.println("Sorted versions in findVersionStartWith: ");
-    releaseVersions.forEach(System.out::println);
     if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
     }
