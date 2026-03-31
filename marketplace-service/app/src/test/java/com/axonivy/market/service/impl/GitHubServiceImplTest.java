@@ -1,12 +1,13 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -53,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GitHubServiceImplTest {
+class GitHubServiceImplTest extends BaseSetup {
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -281,18 +282,23 @@ class GitHubServiceImplTest {
         "Expected exception errorDescription field to match the GitHub response error description");
   }
 
-
   @Test
   void testValidateUserInOrganizationAndTeamValid() throws Exception {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";
+    GHMyself fakeMyself = getFakeGHMyself();
 
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
-
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+    GithubUser result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+
+    assertEquals(String.valueOf(123L), result.getGitHubId(), "GitHub ID should match the fake user");
+    assertEquals("test-user", result.getName(), "Name should match the fake user");
+    assertEquals("test-user", result.getUsername(), "Username should match the fake user");
+    assertEquals("avatarUrl", result.getAvatarUrl(), "Avatar URL should match the fake user");
   }
 
   @Test
@@ -720,7 +726,6 @@ class GitHubServiceImplTest {
 
   @Test
   void testGetRepoOfficialReleasesWithEmptyReleases() throws IOException {
-    // Arrange
     String repoName = "test-org/empty-repo";
     String productId = "test-product-id";
 
@@ -731,10 +736,8 @@ class GitHubServiceImplTest {
     when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
     doAnswer(invocation -> null).when(mockPagedIterable).forEach(any());
 
-    // Act
     List<GHRelease> result = gitHubService.getRepoOfficialReleases(repoName, productId);
 
-    // Assert
     assertNotNull(result, "Result should not be null");
     assertTrue(result.isEmpty(), "Should return empty list when no releases exist");
 
@@ -840,20 +843,8 @@ class GitHubServiceImplTest {
   @Test
   void testGetAndUpdateUserShouldUpdateAndReturnUserWhenUserExists() throws Exception {
     String accessToken = "token";
-    // Use anonymous class as a fake
-    GHMyself myself = new GHMyself() {
-      @Override
-      public long getId() {return 123L;}
+    GHMyself myself = getFakeGHMyself();
 
-      @Override
-      public String getName() {return "Test User";}
-
-      @Override
-      public String getLogin() {return "testuser";}
-
-      @Override
-      public String getAvatarUrl() {return "avatar_url";}
-    };
     when(gitHub.getMyself()).thenReturn(myself);
     doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
 
@@ -865,9 +856,9 @@ class GitHubServiceImplTest {
 
     assertNotNull(result, "Returned GithubUser should not be null");
     assertEquals("123", result.getGitHubId(), "GitHubId should be set correctly");
-    assertEquals("Test User", result.getName(), "Name should be updated from GHMyself");
-    assertEquals("testuser", result.getUsername(), "Username should be updated from GHMyself");
-    assertEquals("avatar_url", result.getAvatarUrl(), "Avatar URL should be updated from GHMyself");
+    assertEquals("test-user", result.getName(), "Name should be updated from GHMyself");
+    assertEquals("test-user", result.getUsername(), "Username should be updated from GHMyself");
+    assertEquals("avatarUrl", result.getAvatarUrl(), "Avatar URL should be updated from GHMyself");
     assertEquals(GitHubConstants.GITHUB_PROVIDER_NAME, result.getProvider(), "Provider should be set to 'github'");
 
     ArgumentCaptor<GithubUser> captor = ArgumentCaptor.forClass(GithubUser.class);
@@ -887,7 +878,8 @@ class GitHubServiceImplTest {
         () -> gitHubService.getAndUpdateUser(accessToken),
         "IOException should be translated into NotFoundException");
 
-    assertEquals(ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+    assertEquals(
+        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
   }
@@ -952,7 +944,7 @@ class GitHubServiceImplTest {
   @Test
   void testDownloadArtifactZipReturnsStreamWithDownloadedBytes() throws Exception {
     GHArtifact artifact = mock(GHArtifact.class);
-    byte[] expected = new byte[] {1, 2, 3};
+    byte[] expected = new byte[]{1, 2, 3};
 
     doAnswer(inv -> {
       InputStreamFunction<Void> fn = inv.getArgument(0);

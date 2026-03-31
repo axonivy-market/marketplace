@@ -53,7 +53,7 @@
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
       "contribute": "Here you will find connectors to standard software solutions from leading providers such as Microsoft, Amazon, or Adobe, as well as ready-made process models, business solutions, and practical tools for document processing, storage, or signing.",
-      "link": "Contribute to the community and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\">build your own market extension!</a>"
+      "link": "Contribute to the community and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"GitHub - How to contribute\">build your own market extension!</a>"
     },
     "filter": {
       "label": "Filter",
@@ -176,7 +176,7 @@
       "currentProductTitle": "Under review",
       "commentLabel": "Please leave a comment",
       "submitBtnLabel": "Submit review",
-      "loggedGithubAsLabel": "Logged in Github as",
+      "loggedGithubAsLabel": "Logged in GitHub as",
       "reviewLabel": "Review",
       "detailedReviews": "Detailed reviews",
       "showMoreBtnLabel": "Show more",
@@ -239,13 +239,13 @@
     "monitor": {
       "dashboard": {
         "title": "Axon Ivy Market – Monitoring",
-        "subtitle": "This page summarizes the monitoring results of the Axon Ivy Market Extensions – including build pipelines (CI/DEV), end-to-end tests, and unit test results. The source code is open source and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">available on GitHub</a>.",
+        "subtitle": "This page summarizes the monitoring results of the Axon Ivy Market Extensions – including build pipelines (CI/DEV), end-to-end tests, and unit test results. The source code is open source and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"GitHub - Axon Ivy Market\">available on GitHub</a>.",
         "noRepositories": "No repositories found.",
         "connector": "Connector",
         "ciLabel": "CI-Build",
         "devLabel": "DEV-Build",
         "e2eLabel": "E2E-Build",
-        "github": "Github",
+        "github": "GitHub",
         "passed": "Passed",
         "failed": "Failed",
         "ciLastBuilt": "Last CI Built",
@@ -460,6 +460,10 @@
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
         "genericErrorMessage": "An error occurred while processing your request. Please try again."
+      },
+      "gitHubUserBadge": {
+        "gitHubAccount": "GitHub account",
+        "logout": "Logout"
       }
     }
   }

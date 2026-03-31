@@ -1,17 +1,21 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kohsuke.github.GHMyself;
+import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +28,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class MonitorDashBoardControllerTest {
+class MonitorDashBoardControllerTest extends BaseSetup {
 
-  private static final String TOKEN = "dummy-token";
+  private static final String TOKEN = "validToken";
 
   @Mock
   private GithubReposService githubReposService;
@@ -34,8 +38,14 @@ class MonitorDashBoardControllerTest {
   private GitHubService githubService;
   @Mock
   private TestStepsService testStepsService;
+  @Mock
+  private GitHub gitHub;
   @InjectMocks
   private MonitorDashBoardController controller;
+
+  @Spy
+  @InjectMocks
+  private GitHubServiceImpl gitHubService;
 
   @BeforeEach
   void setUp() {
@@ -54,10 +64,13 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testSyncGithubMonitorReturnsOk() throws IOException {
-    // Mock static method
-    doNothing().when(githubService).validateUserInOrganizationAndTeam(TOKEN,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    String organization = "testOrg";
+    String team = "devTeam";
+    GHMyself fakeMyself = getFakeGHMyself();
+
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
     doNothing().when(githubReposService).loadAndStoreTestReports();
 
     ResponseEntity<String> response = controller.syncGithubMonitor();
@@ -68,8 +81,13 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testSyncGithubMonitorHandlesException() throws IOException {
-    doNothing().when(githubService).validateUserInOrganizationAndTeam(TOKEN,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    String organization = "testOrg";
+    String team = "devTeam";
+    GHMyself fakeMyself = getFakeGHMyself();
+
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
     doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
 
     assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
@@ -77,13 +95,16 @@ class MonitorDashBoardControllerTest {
   }
 
   @Test
-  void testUpdateRepoPriorities() {
+  void testUpdateRepoPriorities() throws IOException {
     List<String> updates = List.of("repo1", "repo2");
+    String organization = "testOrg";
+    String team = "devTeam";
+    GHMyself fakeMyself = getFakeGHMyself();
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
-    doNothing().when(githubService).validateUserInOrganizationAndTeam("token",
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
 
     ResponseEntity<String> response = controller.updateFocusedRepo(updates);
 
@@ -94,7 +115,6 @@ class MonitorDashBoardControllerTest {
 
   @Test
   void testFindAllFeedbacksReturnPagedModel() {
-    // Arrange
     GithubReposModel model = new GithubReposModel();
     List<GithubReposModel> models = List.of(model);
     Page<GithubReposModel> page = new PageImpl<>(models, PageRequest.of(0, 10), 1);
@@ -103,11 +123,9 @@ class MonitorDashBoardControllerTest {
         eq(true), eq("feedback"), eq("name"), eq("ASC"), any(PageRequest.class)))
         .thenReturn(page);
 
-    // Act
     ResponseEntity<PagedModel<GithubReposModel>> response = controller.findAllFeedbacks(
         true, PageRequest.of(0, 10), "feedback", "name", "ASC");
 
-    // Assert
     PagedModel<GithubReposModel> pagedModel = response.getBody();
     assertNotNull(pagedModel, "PagedModel should not be null");
     assertEquals(1, pagedModel.getContent().size(), "Content size should be 1");

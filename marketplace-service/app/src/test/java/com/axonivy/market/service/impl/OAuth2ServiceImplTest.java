@@ -7,8 +7,8 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.JwtService;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,8 +87,11 @@ class OAuth2ServiceImplTest extends BaseSetup {
     String mockToken = "Bearer sampleAccessToken";
     when(jwtService.generateJWTFromGitHubToken(any())).thenReturn("mockToken");
 
-    var token = oAuth2Service.validateTokenAndGenerateJWT(mockToken);
-    assertTrue(ObjectUtils.isNotEmpty(token),
+    UserInfo mockUser = new UserInfo();
+    when(gitHubService.validateUserInOrganizationAndTeam(any(), any(), any())).thenReturn(mockUser);
+
+    var userInfo = oAuth2Service.validateTokenAndGenerateJWT(mockToken);
+    assertTrue(ObjectUtils.isNotEmpty(userInfo),
         "Response status should be 200 OK when GitHub login succeeds");
   }
 
