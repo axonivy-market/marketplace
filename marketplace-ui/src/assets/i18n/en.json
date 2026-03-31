@@ -451,11 +451,14 @@
         "title": "Axon Ivy Market Deprecated",
         "description": "Manage how deprecated extensions are displayed",
         "helpText": "Configure the deprecated extensions. Administrators can add, update for products",
-        "availableExtensions": "Available Extensions",
+        "availableExtensions": "Deprecated Extensions",
         "searchPlaceholder": "Search an extension",
         "order": "Order",
         "noExtensions": "No extensions available.",
-        "deprecatedCheckBox": "deprecated"
+        "deprecatedCheckBox": "deprecated",
+        "deprecatedButton": "Deprecate",
+        "updateForReadmeText": "Create Pull Request to update Readme",
+        "successor": "Successor"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

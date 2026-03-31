@@ -6,3 +6,167 @@
 .deprecated-container {
   margin-top: 9rem;
 }
+
+.deprecated-button {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #{white};
+  cursor: pointer;
+  background-color: var(--product-feedback-approve-button-color);
+}
+
+/* ===== Wrapper (center modal) ===== */
+.custom-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+/* ===== Backdrop ===== */
+.custom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1040;
+}
+
+/* ===== Modal ===== */
+.custom-modal {
+  width: 600px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: modalFadeIn 0.25s ease;
+  z-index: 1051;
+}
+
+/* ===== Header ===== */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 10px;
+  border-bottom: none;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ===== Body ===== */
+.modal-body {
+  padding: 10px 24px 20px;
+}
+
+/* ===== Footer ===== */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: none;
+}
+
+/* ===== Input ===== */
+.form-control {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid #dcdfe4;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2);
+}
+
+/* ===== Checkbox ===== */
+.form-check-input {
+  cursor: pointer;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  border-radius: 10px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4da3ff, #1e88e5);
+  border: none;
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(30, 136, 229, 0.3);
+}
+
+.btn-light {
+  background: #f1f3f5;
+  border: none;
+}
+
+.btn-light:hover {
+  background: #e2e6ea;
+}
+
+/* ===== Close button ===== */
+.btn-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* ===== Animation ===== */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.delete-icon {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 12px;
+  transition: all 0.2s ease;
+}
+
+.delete-icon:hover {
+  transform: scale(1.2);
+  color: #b02a37;
+}
+
+.extension-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.extension-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

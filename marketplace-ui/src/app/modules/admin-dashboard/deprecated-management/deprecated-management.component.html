@@ -34,6 +34,13 @@
         type="search"
         class="search-input"
         [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
+
+      <button
+        type="button" (click)="trigger()"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark': 'btn-primary text-light'"
+        [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 deprecated-button text-center">
+        {{ 'common.admin.deprecated.deprecatedButton' | translate }}
+      </button>
     </div>
 
     <thead>
@@ -41,7 +48,6 @@
       <th class="text-primary text-start order-column available-order-spacer" aria-hidden="true"></th>
       <th class="text-primary text-start order-column"> {{ 'common.admin.deprecated.order' | translate }}</th>
       <th class="text-primary text-start">{{ 'common.admin.extensionId' | translate }}</th>
-      <th class="text-primary text-start">{{ 'common.admin.deprecated.deprecatedCheckBox' | translate }}</th>
     </tr>
     </thead>
 
@@ -61,10 +67,82 @@
         <tr>
           <td class="index available-index-spacer" aria-hidden="true"></td>
           <td class="index">{{ index + 1 }}</td>
-          <td><span>{{ item }}</span></td>
-          <td><input type="checkbox" /></td>
+          <td class="extension-cell">
+            <div class="extension-item">
+              <span class="extension-text">{{ item }}</span>
+              <i class="bi bi-trash-fill delete-icon">
+              </i>
+            </div>
+          </td>
         </tr>
       }
     </tbody>
   </app-custom-sort-card>
 </div>
+
+@if (showDeprecatedProductDialog) {
+  <div class="custom-modal-wrapper">
+    <div class="modal-content custom-modal">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Deprecate One Product
+        </h5>
+        <button type="button" class="btn-close" (click)="closeDialog()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        <div class="mb-4">
+          <label class="form-label">Extension ID</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="syncData.extensionId"
+            placeholder="html-dialog-demo"
+          />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'common.admin.deprecated.successor' | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="syncData.marketItemPath"
+            placeholder="market/demos/html-dialog/"
+          />
+          <small class="text-muted">
+            https://market.axonivy.com/portal
+          </small>
+        </div>
+
+        <div class="form-check mt-3">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="syncData.override"
+            id="overrideCheckbox"
+          />
+          <label class="form-check-label" for="overrideCheckbox">
+            {{ 'common.admin.deprecated.updateForReadmeText' | translate }}
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-primary " (click)="closeDialog()">
+          {{ 'common.admin.deprecated.deprecatedButton' | translate }}
+        </button>
+        <button class="btn btn-light" (click)="synchronize()">
+          {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="custom-backdrop" (click)="closeDialog()"></div>
+}
