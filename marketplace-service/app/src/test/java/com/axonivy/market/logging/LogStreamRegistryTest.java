@@ -438,7 +438,7 @@ class LogStreamRegistryTest {
 
     Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
     Mockito.when(mockSink.tryEmitNext(ArgumentMatchers.anyString()))
-        .thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
+        .thenReturn(Sinks.EmitResult.FAIL_NON_SERIALIZED);
 
     @SuppressWarnings("unchecked")
     Map<String, Sinks.Many<String>> map =
