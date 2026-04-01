@@ -40,6 +40,9 @@ export class DeprecatedManagementComponent {
   selectableProductIds: string[] = [];
   deprecatedProductIds: string[] = [];
 
+  // Validation state
+  validationErrors: { productId?: string; successorUrl?: string } = {};
+
   async ngOnInit(): Promise<void> {
     this.deprecatedProductIds = await this.loadAllProductIds(true);
   }
@@ -62,6 +65,11 @@ export class DeprecatedManagementComponent {
   }
 
   async deprecatedProduct() {
+    // Validate inputs
+    if (!this.validateForm()) {
+      return;
+    }
+
     this.deprecatedProductIds = await firstValueFrom(
       this.productService.updateDeprecatedProduct(this.deprecatedItems)
     );
@@ -72,7 +80,29 @@ export class DeprecatedManagementComponent {
       addReadme: false,
       deprecated: false
     };
+    this.validationErrors = {};
+  }
 
+  validateForm(): boolean {
+    this.validationErrors = {};
+    let isValid = true;
+
+    // Validate productId (required)
+    if (!this.deprecatedItems.productId || this.deprecatedItems.productId.trim() === '') {
+      this.validationErrors['productId'] = 'Extension ID is required';
+      isValid = false;
+    }
+
+    // Validate successorUrl (optional but must match pattern if provided)
+    if (this.deprecatedItems.successorUrl && this.deprecatedItems.successorUrl.trim() !== '') {
+      const urlPattern = /^(http|https):\/\/.*$/;
+      if (!urlPattern.test(this.deprecatedItems.successorUrl)) {
+        this.validationErrors['successorUrl'] = 'URL must start with http:// or https://';
+        isValid = false;
+      }
+    }
+
+    return isValid;
   }
 
   selectExtension(productId: string) {

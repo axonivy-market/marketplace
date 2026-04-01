@@ -98,12 +98,18 @@
           <label class="form-label">Extension ID</label>
           <input
             type="text"
-            class="form-control"
+            [class.form-control]="true"
+            [class.is-invalid]="validationErrors['productId']"
             [(ngModel)]="deprecatedItems.productId"
             placeholder="html-dialog-demo"
             (click)="openExtensionDropdown()"
             (blur)="dropdownOpen = false"
           />
+          @if (validationErrors['productId']) {
+            <div class="invalid-feedback d-block">
+              {{ validationErrors['productId'] }}
+            </div>
+          }
           @if (dropdownOpen && selectableProductIds.length) {
             <ul class="form-control show w-100 dropdown-menu-custom">
               @for (productId of selectableProductIds; track $index) {
@@ -117,13 +123,21 @@
           <label class="form-label">{{ 'common.admin.deprecated.successor' | translate }}</label>
           <input
             type="text"
-            class="form-control"
+            [class.form-control]="true"
+            [class.is-invalid]="validationErrors['successorUrl']"
             [(ngModel)]="deprecatedItems.successorUrl"
             placeholder="https://market.axonivy.com/portal"
           />
-          <small class="text-muted">
-            https://market.axonivy.com/portal
-          </small>
+          @if (validationErrors['successorUrl']) {
+            <div class="invalid-feedback d-block">
+              {{ validationErrors['successorUrl'] }}
+            </div>
+          }
+          @if (!validationErrors['successorUrl']) {
+            <small class="text-muted">
+              https://market.axonivy.com/portal
+            </small>
+          }
         </div>
 
         <div class="form-check mt-3">
