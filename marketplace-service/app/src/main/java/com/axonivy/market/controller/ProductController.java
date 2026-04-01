@@ -98,8 +98,6 @@ public class ProductController {
       description = "Return product IDs filtered by deprecated flag")
   public ResponseEntity<List<String>> getProductIdsByDeprecated(@RequestParam(required = false) Boolean deprecated) {
     List<String> productIds = productService.getProductIdsByDeprecated(deprecated);
-    System.out.println(productIds.size());
-    productIds.forEach(a -> System.out.println(a + " "));
     return ResponseEntity.ok(productIds);
   }
 
