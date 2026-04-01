@@ -36,9 +36,11 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Log4j2
@@ -195,21 +197,20 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Transactional
   @Override
   public List<String> updateSuccessorForProduct(DeprecatedRequest request) {
-    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(request.getProductId());
-    Product product = productRepo.findById(request.getProductId()).orElse(null);
+    productRepo.findById(request.getProductId()).ifPresent(product -> {
+          product.setDeprecated(request.getDeprecated());
+          product.setUpdatedAt(new Date());
+          productRepo.save(product);
+          log.info("Successfully set deprecated for product: {}", product.getId());
+        });
 
-    if (product != null) {
-      product.setDeprecated(request.getDeprecated());
+    if (StringUtils.isBlank(request.getSuccessorUrl())) {
+      Optional.ofNullable(getProductMarketplaceData(request.getProductId())).ifPresent(data -> {
+            data.setSuccessor(request.getSuccessorUrl());
+            productMarketplaceDataRepo.save(data);
+            log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
+          });
     }
-
-    if (productMarketplaceData != null) {
-      productMarketplaceData.setSuccessor(request.getSuccessorUrl());
-    }
-
-    productRepo.save(product);
-    productMarketplaceDataRepo.save(productMarketplaceData);
-    System.out.println(productRepo.findProductIdsByDeprecated(true).size());
     return productRepo.findProductIdsByDeprecated(true);
-
   }
 }

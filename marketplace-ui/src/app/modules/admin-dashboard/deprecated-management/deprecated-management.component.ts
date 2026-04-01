@@ -23,13 +23,19 @@ import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
   styleUrl: './deprecated-management.component.scss'
 })
 export class DeprecatedManagementComponent {
+  productService = inject(ProductService);
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
+
+  // Undeprecate confirm dialog state
+  showUndeprecateConfirmDialog = false;
+  isClosingUndeprecateDialog = false;
   showDeprecatedProductDialog = false;
   isClosing = false;
+  undeprecateProductId = '';
 
-  private readonly productService = inject(ProductService);
+
 
   dropdownOpen = false;
   deprecatedItems: DeprecatedRequest = {
@@ -130,6 +136,34 @@ export class DeprecatedManagementComponent {
     this.deprecatedItems.productId = productId;
     this.deprecatedItems.deprecated = true;
     this.dropdownOpen = false;
+  }
+
+  async confirmUndeprecate(productId: string): Promise<void> {
+    this.undeprecateProductId = productId;
+    this.showUndeprecateConfirmDialog = true;
+  }
+
+  closeUndeprecateDialog(): void {
+    this.isClosingUndeprecateDialog = true;
+    setTimeout(() => {
+      this.showUndeprecateConfirmDialog = false;
+      this.isClosingUndeprecateDialog = false;
+      this.undeprecateProductId = '';
+    }, 250);
+  }
+
+  async executeUndeprecate(): Promise<void> {
+    const request: DeprecatedRequest = {
+      productId: this.undeprecateProductId,
+      successorUrl: '',
+      addReadme: false,
+      deprecated: false
+    };
+
+    this.deprecatedProductIds = await firstValueFrom(
+      this.productService.updateDeprecatedProduct(request)
+    );
+    this.closeUndeprecateDialog();
   }
 
   filterProducts(searchTerm: string) {

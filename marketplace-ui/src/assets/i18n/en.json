@@ -458,7 +458,11 @@
         "deprecatedCheckBox": "deprecated",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Create Pull Request to update Readme",
-        "successor": "Successor"
+        "successor": "Successor:",
+        "confirmUndeprecatedContent": "Are you sure to undeprecate this extension?",
+        "confirmUndeprecatedTitle": "Undeprecated confirmation",
+        "undeprecate": "Undeprecate",
+        "extensionId": "Extension ID:"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

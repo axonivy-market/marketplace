@@ -33,10 +33,10 @@
       <input
         type="search"
         class="search-input"
-        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
+        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async"/>
 
       <button
-        type="button" (click)="trigger()"  (focus)="openDialog()"
+        type="button" (click)="trigger()" (focus)="openDialog()"
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark': 'btn-primary text-light'"
         [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 deprecated-button text-center">
         {{ 'common.admin.deprecated.deprecatedButton' | translate }}
@@ -70,7 +70,9 @@
           <td class="extension-cell">
             <div class="extension-item">
               <span class="extension-text">{{ item }}</span>
-              <i class="bi bi-trash-fill delete-icon">
+              <i class="bi bi-trash-fill delete-icon"
+                 role="button"
+                 (click)="confirmUndeprecate(item)">
               </i>
             </div>
           </td>
@@ -95,7 +97,7 @@
       <!-- Body -->
       <div class="modal-body">
         <div class="mb-4 position-relative">
-          <label class="form-label">Extension ID</label>
+          <label class="form-label">{{ 'common.admin.deprecated.extensionId' | translate }}</label>
           <input
             type="text"
             [class.form-control]="true"
@@ -114,7 +116,7 @@
           @if (dropdownOpen && filteredProductIds.length) {
             <ul class="form-control show w-100 dropdown-menu-custom">
               @for (productId of filteredProductIds; track $index) {
-                <li (mousedown)="selectExtension(productId)" class="dropdown-item"> {{ productId }} </li>
+                <li (mousedown)="selectExtension(productId)" class="dropdown-item"> {{ productId }}</li>
               }
             </ul>
           }
@@ -170,3 +172,44 @@
   <!-- Backdrop -->
   <div class="custom-backdrop" [class.backdrop-closing]="isClosing" (click)="closeDialog()"></div>
 }
+
+@if (showUndeprecateConfirmDialog) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosingUndeprecateDialog">
+    <div class="modal-content custom-modal confirm-modal" [class.modal-closing]="isClosingUndeprecateDialog">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ 'common.admin.deprecated.confirmUndeprecatedTitle' | translate }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeUndeprecateDialog()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        <p class="confirm-message">
+          {{ 'common.admin.deprecated.confirmUndeprecatedContent' | translate }}
+        </p>
+        <p class="text-muted">
+          <strong> {{ 'common.admin.deprecated.extensionId' | translate }}</strong> {{ undeprecateProductId }}
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="closeUndeprecateDialog()">
+          {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+        <button class="btn btn-danger" (click)="executeUndeprecate()">
+          {{ 'common.admin.deprecated.undeprecate' | translate }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="custom-backdrop" [class.backdrop-closing]="isClosingUndeprecateDialog"
+       (click)="closeUndeprecateDialog()"></div>
+}
+
