@@ -27,6 +27,7 @@ export class DeprecatedManagementComponent {
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
   showDeprecatedProductDialog = false;
+  isClosing = false;
 
   private readonly productService = inject(ProductService);
 
@@ -56,14 +57,18 @@ export class DeprecatedManagementComponent {
   }
 
   closeDialog() {
-    this.showDeprecatedProductDialog = false;
-    this.deprecatedItems = {
-      productId: '',
-      successorUrl: '',
-      addReadme: false,
-      deprecated: false
-    };
-    this.validationErrors = {};
+    this.isClosing = true;
+    setTimeout(() => {
+      this.showDeprecatedProductDialog = false;
+      this.isClosing = false;
+      this.deprecatedItems = {
+        productId: '',
+        successorUrl: '',
+        addReadme: false,
+        deprecated: false
+      };
+      this.validationErrors = {};
+    }, 250);
   }
 
   async openExtensionDropdown() {

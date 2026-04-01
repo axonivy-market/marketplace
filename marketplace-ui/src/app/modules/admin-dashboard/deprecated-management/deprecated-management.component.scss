@@ -154,6 +154,34 @@
   }
 }
 
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+}
+
+.custom-modal.modal-closing {
+  animation: modalFadeOut 0.25s ease;
+}
+
+.custom-backdrop.backdrop-closing {
+  animation: backdropFadeOut 0.25s ease;
+}
+
+@keyframes backdropFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .delete-icon {
   color: #dc3545;
   cursor: pointer;

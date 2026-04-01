@@ -81,8 +81,8 @@
 </div>
 
 @if (showDeprecatedProductDialog) {
-  <div class="custom-modal-wrapper">
-    <div class="modal-content custom-modal">
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
+    <div class="modal-content custom-modal" [class.modal-closing]="isClosing">
 
       <!-- Header -->
       <div class="modal-header">
@@ -167,5 +167,5 @@
   </div>
 
   <!-- Backdrop -->
-  <div class="custom-backdrop" (click)="closeDialog()"></div>
+  <div class="custom-backdrop" [class.backdrop-closing]="isClosing" (click)="closeDialog()"></div>
 }
