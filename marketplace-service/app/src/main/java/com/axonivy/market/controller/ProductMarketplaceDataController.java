@@ -4,6 +4,7 @@ import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.model.DeprecatedRequest;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -19,12 +20,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -81,4 +85,13 @@ public class ProductMarketplaceDataController {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
+
+  @PostMapping("/deprecated")
+  @Operation(summary = "Update successor and deprecated for product",
+      description = "Partially update successor URL and deprecated flag for a product")
+  public ResponseEntity<List<String>> updateDeprecatedMarketplaceData(@RequestBody DeprecatedRequest request) {
+    List<String> deprecatedProducts = productMarketplaceDataService.updateSuccessorForProduct(request);
+    return new ResponseEntity<>(deprecatedProducts,HttpStatus.OK);
+  }
+
 }

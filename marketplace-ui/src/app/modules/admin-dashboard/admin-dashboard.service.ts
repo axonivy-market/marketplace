@@ -15,6 +15,7 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
+import { DeprecatedRequest } from '../../shared/models/deprecated-request';
 
 export type SyncTaskKey =
   | 'syncProducts'
@@ -149,7 +150,7 @@ export class AdminDashboardService {
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }
     }
-    
+
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
@@ -225,4 +226,5 @@ export class AdminDashboardService {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
+
 }

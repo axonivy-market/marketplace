@@ -1,10 +1,12 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductCustomSort;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.model.DeprecatedRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -16,6 +18,7 @@ import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -187,5 +190,26 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
     }
     return outputStream;
+  }
+
+  @Transactional
+  @Override
+  public List<String> updateSuccessorForProduct(DeprecatedRequest request) {
+    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(request.getProductId());
+    Product product = productRepo.findById(request.getProductId()).orElse(null);
+
+    if (product != null) {
+      product.setDeprecated(request.getDeprecated());
+    }
+
+    if (productMarketplaceData != null) {
+      productMarketplaceData.setSuccessor(request.getSuccessorUrl());
+    }
+
+    productRepo.save(product);
+    productMarketplaceDataRepo.save(productMarketplaceData);
+    System.out.println(productRepo.findProductIdsByDeprecated(true).size());
+    return productRepo.findProductIdsByDeprecated(true);
+
   }
 }

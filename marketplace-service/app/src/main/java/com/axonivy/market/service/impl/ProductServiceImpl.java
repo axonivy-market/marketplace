@@ -777,4 +777,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public List<String> getProductIds() {
     return productRepo.findAllIds();
   }
+
+  @Override
+  public List<String> getProductIdsByDeprecated(Boolean deprecated) {
+    return productRepo.findProductIdsByDeprecated(deprecated);
+  }
 }

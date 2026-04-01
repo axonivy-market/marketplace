@@ -31,6 +31,8 @@ public interface ProductService {
 
   List<String> getProductIds();
 
+  List<String> getProductIdsByDeprecated(Boolean deprecated);
+
   Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 
   String getBestMatchVersion(String productId, String version, Boolean isShowDevVersion);

@@ -28,7 +28,7 @@
 <div class="table-grid d-grid deprecated-container">
   <app-custom-sort-card class="custom-card"
                         [title]="'common.admin.deprecated.availableExtensions' | translate"
-                        [badge]="extensions.length + ' / ' + extensions.length">
+                        [badge]="deprecatedProductIds.length + ' / ' + deprecatedProductIds.length">
     <div card-header-right class="search-box d-flex align-items-center">
       <input
         type="search"
@@ -36,7 +36,7 @@
         [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
 
       <button
-        type="button" (click)="trigger()"  (focus)="openDropdown()"
+        type="button" (click)="trigger()"  (focus)="openDialog()"
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark': 'btn-primary text-light'"
         [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 deprecated-button text-center">
         {{ 'common.admin.deprecated.deprecatedButton' | translate }}
@@ -52,7 +52,7 @@
     </thead>
 
     <tbody>
-      @if (extensions.length === 0) {
+      @if (deprecatedProductIds.length === 0) {
         <tr class="empty-row text-center">
           <td
             colspan="2"
@@ -63,7 +63,7 @@
         </tr>
       }
 
-      @for (item of extensions; track item; let index = $index) {
+      @for (item of deprecatedProductIds; track item; let index = $index) {
         <tr>
           <td class="index available-index-spacer" aria-hidden="true"></td>
           <td class="index">{{ index + 1 }}</td>
@@ -94,18 +94,20 @@
 
       <!-- Body -->
       <div class="modal-body">
-        <div class="mb-4">
+        <div class="mb-4 position-relative">
           <label class="form-label">Extension ID</label>
           <input
             type="text"
             class="form-control"
-            [(ngModel)]="syncData.extensionId"
+            [(ngModel)]="deprecatedItems.productId"
             placeholder="html-dialog-demo"
+            (click)="openExtensionDropdown()"
+            (blur)="dropdownOpen = false"
           />
-          @if (dropdownOpen && extensions.length) {
-            <ul class="form-control show w-100">
-              @for (productId of extensions; track $index) {
-                <li (click)="selectExtension(productId)" class="dropdown-item"> {{ productId }} </li>
+          @if (dropdownOpen && selectableProductIds.length) {
+            <ul class="form-control show w-100 dropdown-menu-custom">
+              @for (productId of selectableProductIds; track $index) {
+                <li (mousedown)="selectExtension(productId)" class="dropdown-item"> {{ productId }} </li>
               }
             </ul>
           }
@@ -116,8 +118,8 @@
           <input
             type="text"
             class="form-control"
-            [(ngModel)]="syncData.marketItemPath"
-            placeholder="market/demos/html-dialog/"
+            [(ngModel)]="deprecatedItems.successorUrl"
+            placeholder="https://market.axonivy.com/portal"
           />
           <small class="text-muted">
             https://market.axonivy.com/portal
@@ -128,10 +130,10 @@
           <input
             type="checkbox"
             class="form-check-input"
-            [(ngModel)]="syncData.override"
-            id="overrideCheckbox"
+            [(ngModel)]="deprecatedItems.addReadme"
+            id="addReadmeCheckbox"
           />
-          <label class="form-check-label" for="overrideCheckbox">
+          <label class="form-check-label" for="addReadmeCheckbox">
             {{ 'common.admin.deprecated.updateForReadmeText' | translate }}
           </label>
         </div>
@@ -139,11 +141,11 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-primary " (click)="closeDialog()">
-          {{ 'common.admin.deprecated.deprecatedButton' | translate }}
-        </button>
-        <button class="btn btn-light" (click)="synchronize()">
+        <button class="btn btn-light" (click)="closeDialog()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+        <button class="btn btn-primary" (click)="deprecatedProduct()">
+          {{ 'common.admin.deprecated.deprecatedButton' | translate }}
         </button>
       </div>
 

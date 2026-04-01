@@ -6,7 +6,9 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { SyncTaskRow } from '../../../shared/models/sync-task-execution.model';
+import { firstValueFrom } from 'rxjs';
+import { ProductService } from '../../product/product.service';
+import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -25,42 +27,64 @@ export class DeprecatedManagementComponent {
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
   showDeprecatedProductDialog = false;
-  extensions = [
-    'ai-assistant',
-    'approval-decision-utils',
-    'html-dialog-demo',
-    'asana-connector'
-  ];
+
+  private readonly productService = inject(ProductService);
+
   dropdownOpen = false;
-  syncData = {
-    extensionId: '',
-    marketItemPath: '',
-    override: false
+  deprecatedItems: DeprecatedRequest = {
+    productId: '',
+    successorUrl: '',
+    addReadme: false,
+    deprecated: false
   };
+  selectableProductIds: string[] = [];
+  deprecatedProductIds: string[] = [];
+
+  async ngOnInit(): Promise<void> {
+    this.deprecatedProductIds = await this.loadAllProductIds(true);
+  }
 
   trigger() {
     this.showDeprecatedProductDialog = true;
   }
 
-  // Product search dropdown in sync one product dialog
-  openDropdown(): void {
-    this.dropdownOpen = true;
-    this.extensions = this.extensions.slice(0, 10);
+  openDialog(): void {
+    this.deprecatedProductIds = this.deprecatedProductIds.slice(0, 10);
   }
 
   closeDialog() {
     this.showDeprecatedProductDialog = false;
   }
 
-  synchronize() {
-    console.log('Sync data:', this.syncData);
+  async openExtensionDropdown() {
+    this.selectableProductIds = await this.loadAllProductIds(null);
+    this.dropdownOpen = true;
+  }
 
-    // TODO: call API here
-
+  async deprecatedProduct() {
+    this.deprecatedProductIds = await firstValueFrom(
+      this.productService.updateDeprecatedProduct(this.deprecatedItems)
+    );
     this.closeDialog();
+    this.deprecatedItems = {
+      productId: '',
+      successorUrl: '',
+      addReadme: false,
+      deprecated: false
+    };
+
   }
 
   selectExtension(productId: string) {
-    console.log('selectExtension', productId);
+    this.deprecatedItems.productId = productId;
+    this.deprecatedItems.deprecated = true;
+  }
+
+  private async loadAllProductIds(
+    predicated: Boolean | null
+  ): Promise<string[]> {
+    return await firstValueFrom(
+      this.productService.fetchAllProductIdsByDeprecated(predicated)
+    );
   }
 }

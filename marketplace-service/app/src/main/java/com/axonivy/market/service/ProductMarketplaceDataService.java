@@ -1,11 +1,13 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.model.DeprecatedRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.OutputStream;
+import java.util.List;
 
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
@@ -23,4 +25,6 @@ public interface ProductMarketplaceDataService {
   ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version);
 
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
+
+  List<String> updateSuccessorForProduct(DeprecatedRequest deprecatedRequest);
 }

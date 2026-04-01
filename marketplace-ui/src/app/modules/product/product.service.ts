@@ -22,6 +22,7 @@ import {
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../shared/constants/common.constant';
+import { DeprecatedRequest } from '../../shared/models/deprecated-request';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
@@ -122,14 +123,16 @@ export class ProductService {
       .append('version', version)
       .append('artifact', artifact);
     const url = `${API_URI.PRODUCT_DETAILS}/${id}/artifact`;
-    return this.httpClient.get<string>(url, {
-      params,
-      responseType: 'text' as 'json'
-    }).pipe(
-       catchError(() => {
-        return of('');
+    return this.httpClient
+      .get<string>(url, {
+        params,
+        responseType: 'text' as 'json'
+      })
+      .pipe(
+        catchError(() => {
+          return of('');
         })
-    );
+      );
   }
 
   getProductChangelogs(
@@ -178,6 +181,25 @@ export class ProductService {
 
   fetchAllProductIds(): Observable<string[]> {
     return this.httpClient.get<string[]>(`${API_URI.IDS}`);
+  }
+
+  fetchAllProductIdsByDeprecated(deprecated: Boolean | null) {
+    let requestParams = new HttpParams();
+    if (deprecated !== null && deprecated !== undefined) {
+      requestParams = requestParams.set('deprecated', deprecated.toString());
+    }
+    return this.httpClient.get<string[]>(`api/product/deprecated/ids`, {
+      params: requestParams
+    });
+  }
+
+  updateDeprecatedProduct(
+    deprecatedRequest: DeprecatedRequest
+  ): Observable<string[]> {
+    return this.httpClient.post<string[]>(
+      `api/product-marketplace-data/deprecated`,
+      deprecatedRequest
+    );
   }
 
   fetchAllProductsForSync(

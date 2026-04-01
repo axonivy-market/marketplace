@@ -3,6 +3,7 @@ package com.axonivy.market.core.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class ProductMarketplaceData extends AbstractGenericEntity<String> {
   private int installationCount;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
+
+  @Pattern(regexp = "^(http|https)://.*$", message = "Invalid URL")
+  private String successor;
 
   @Override
   public String getId() {

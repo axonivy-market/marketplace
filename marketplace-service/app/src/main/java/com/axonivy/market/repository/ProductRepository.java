@@ -3,7 +3,9 @@ package com.axonivy.market.repository;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,4 +21,7 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
 
   @Query("SELECT p.id FROM Product p ORDER BY p.id")
   List<String> findAllIds();
+
+  @Query("SELECT p.id FROM Product p WHERE (:deprecated IS NULL OR p.deprecated = :deprecated)")
+  List<String> findProductIdsByDeprecated(@Param("deprecated") Boolean deprecated);
 }
