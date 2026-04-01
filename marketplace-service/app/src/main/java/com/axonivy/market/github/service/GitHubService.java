@@ -18,6 +18,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GHPullRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -62,4 +63,6 @@ public interface GitHubService {
   GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException;
 
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
+
+  GHPullRequest createReadmeUnsupportedPullRequest(String accessToken, String repositoryPath) throws IOException;
 }

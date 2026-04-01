@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -74,6 +75,8 @@ import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
 public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
+  private static final String README_FILE_PATH = "README.md";
+  static final String UNSUPPORTED_NOTICE = "Product is not SUpported anymore";
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -453,6 +456,61 @@ public class GitHubServiceImpl implements GitHubService {
         .filter(artifact -> CommonConstants.TEST_REPORT_FILE.equals(artifact.getName()))
         .findFirst()
         .orElse(null);
+  }
+
+  @Override
+  public GHPullRequest createReadmeUnsupportedPullRequest(String accessToken, String repositoryPath) throws IOException {
+    Assert.hasText(accessToken, "Access token must not be blank");
+    Assert.hasText(repositoryPath, "Repository path must not be blank");
+
+    var gitHub = getGitHub(accessToken);
+    var repository = gitHub.getRepository(repositoryPath);
+    String baseBranch = repository.getDefaultBranch();
+    var readme = repository.getFileContent(README_FILE_PATH, baseBranch);
+
+    String currentReadmeContent;
+    try (InputStream inputStream = readme.read()) {
+      currentReadmeContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    String updatedReadmeContent = insertUnsupportedNoticeBelowFirstHeading(currentReadmeContent);
+    boolean hasReadmeChanges = !Objects.equals(currentReadmeContent, updatedReadmeContent);
+    String branchName = "chore/readme-unsupported-" + System.currentTimeMillis();
+
+    String baseBranchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
+    repository.createRef("refs/heads/" + branchName, baseBranchSha);
+
+    if (hasReadmeChanges) {
+      readme.update(updatedReadmeContent, "docs: add unsupported notice to README", branchName);
+    }
+
+    String pullRequestBody = hasReadmeChanges
+        ? "Adds `Product is not SUpported anymore` right below the first heading in root README.md."
+        : "README.md already contains `Product is not SUpported anymore` below the first heading.";
+
+    return repository.createPullRequest("docs: update README unsupported notice", branchName, baseBranch,
+        pullRequestBody);
+  }
+
+  static String insertUnsupportedNoticeBelowFirstHeading(String readmeContent) {
+    String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
+    String[] lines = readmeContent.split("\\R", -1);
+
+    for (int i = 0; i < lines.length; i++) {
+      if (!lines[i].trim().startsWith("#")) {
+        continue;
+      }
+
+      if (i + 1 < lines.length && UNSUPPORTED_NOTICE.equals(lines[i + 1].trim())) {
+        return readmeContent;
+      }
+
+      var updatedLines = new ArrayList<>(List.of(lines));
+      updatedLines.add(i + 1, UNSUPPORTED_NOTICE);
+      return String.join(lineSeparator, updatedLines);
+    }
+
+    throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
   }
 
   @Override

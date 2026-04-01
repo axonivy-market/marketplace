@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -89,7 +90,7 @@ public class ProductMarketplaceDataController {
   @PostMapping("/deprecated")
   @Operation(summary = "Update successor and deprecated for product",
       description = "Partially update successor URL and deprecated flag for a product")
-  public ResponseEntity<List<String>> updateDeprecatedMarketplaceData(@RequestBody DeprecatedRequest request) {
+  public ResponseEntity<List<String>> updateDeprecatedMarketplaceData(@RequestBody DeprecatedRequest request) throws IOException {
     List<String> deprecatedProducts = productMarketplaceDataService.updateSuccessorForProduct(request);
     return new ResponseEntity<>(deprecatedProducts,HttpStatus.OK);
   }

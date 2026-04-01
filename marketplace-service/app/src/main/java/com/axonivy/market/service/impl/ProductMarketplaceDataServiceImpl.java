@@ -6,6 +6,7 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.DeprecatedRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -55,6 +56,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductRepository productRepo;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
+  private final GitHubService gitHubService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
@@ -196,7 +198,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Transactional
   @Override
-  public List<String> updateSuccessorForProduct(DeprecatedRequest request) {
+  public List<String> updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
     productRepo.findById(request.getProductId()).ifPresent(product -> {
           product.setDeprecated(request.getDeprecated());
           product.setUpdatedAt(new Date());
@@ -211,6 +213,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
             log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
           });
     }
+    gitHubService.createReadmeUnsupportedPullRequest("", "axonivy-market/cms-live-editor");
     return productRepo.findProductIdsByDeprecated(true);
   }
 }
