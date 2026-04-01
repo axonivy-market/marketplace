@@ -11,6 +11,7 @@ public class StartsWithVersionStrategy implements VersionMatchStrategy {
     if (CollectionUtils.isEmpty(releaseVersions)) {
       return version;
     }
+
     return releaseVersions.stream().filter(ver -> ver.startsWith(version)).findAny().orElse(releaseVersions.get(0));
   }
 }

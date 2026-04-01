@@ -8,24 +8,31 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 
 public class SameMajorVersionStrategy implements VersionMatchStrategy {
+  private static final String VERSION_NOT_FOUND_MESSAGE = "Cannot find version: %s";
+
   @Override
   public String findMatch(List<String> versions, String requestedVersion) {
     if (CollectionUtils.isEmpty(versions)) {
-      throw new NotFoundException(ErrorCode.VERSION_NOT_FOUND, "Cannot found version: " + requestedVersion);
+      throw new NotFoundException(
+          ErrorCode.VERSION_NOT_FOUND, String.format(VERSION_NOT_FOUND_MESSAGE, requestedVersion));
     }
 
     String targetMajor = requestedVersion.split("\\.")[0];
 
     return versions.stream()
-        .filter(v -> {
-          if (v == null) return false;
-          String[] parts = v.split("\\.");
-          return parts.length > 0 && parts[0].equals(targetMajor);
-        })
+        .filter(version -> hasSameMajorVersion(version, targetMajor))
         .findFirst()
-        .orElseThrow(() -> new NotFoundException(
-            ErrorCode.VERSION_NOT_FOUND,
-            "Cannot found version: " + requestedVersion
-        ));
+        .orElseThrow(() -> versionNotFound(requestedVersion));
+  }
+
+  private boolean hasSameMajorVersion(String version, String targetMajor) {
+    String[] parts = version.split("\\.");
+    return parts.length > 0 && parts[0].equals(targetMajor);
+  }
+
+  private NotFoundException versionNotFound(String requestedVersion) {
+    return new NotFoundException(
+        ErrorCode.VERSION_NOT_FOUND, String.format(VERSION_NOT_FOUND_MESSAGE, requestedVersion)
+    );
   }
 }

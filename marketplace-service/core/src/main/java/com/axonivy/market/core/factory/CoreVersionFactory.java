@@ -1,23 +1,19 @@
 package com.axonivy.market.core.factory;
 
 import com.axonivy.market.core.comparator.MavenVersionComparator;
-
-import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_POSTFIX;
-import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_PREFIX;
-
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.strategy.VersionMatchStrategy;
 import com.axonivy.market.core.utils.CoreVersionUtils;
-
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
+
+import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_POSTFIX;
+import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_PREFIX;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class CoreVersionFactory {
 
@@ -67,28 +63,5 @@ public class CoreVersionFactory {
     }
 
     return matchStrategy.findMatch(sortedVersions, requestedVersion);
-  }
-
-  private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    if (CollectionUtils.isEmpty(releaseVersions)) {
-      return version;
-    }
-
-    return releaseVersions.stream()
-        .filter(sameMajorVersion(version))
-        .findFirst()
-        .orElse(releaseVersions.get(0));
-  }
-
-  private static Predicate<String> sameMajorVersion(String requestedVersion) {
-    String targetMajor = requestedVersion.split("\\.")[0];
-
-    return version -> {
-      if (version == null) {
-        return false;
-      }
-      String[] parts = version.split("\\.");
-      return parts.length > 0 && parts[0].equals(targetMajor);
-    };
   }
 }
