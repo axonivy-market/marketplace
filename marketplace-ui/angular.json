@@ -129,21 +129,12 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "codeCoverage": true,
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing",
-              "src/test-setup.ts"
-            ],
+            "setupFiles": ["src/test-setup.ts"],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": ["src/assets"],
-            "styles": ["src/styles.scss"],
-            "scripts": ["node_modules/emoji-toolkit/lib/js/joypixels.min.js"],
-            "karmaConfig": "karma.conf.js",
-            "sourceMap": true,
+            "runnerConfig": "vitest.config.ts",
+            "browsers": ["chromium"],
             "watch": false
           }
         }

@@ -1,3 +1,6 @@
+import 'zone.js';
+import 'zone.js/testing';
+
 // Inject styles.css manually since it's not being injected by Karma
 const link = document.createElement('link');
 link.rel = 'stylesheet';
