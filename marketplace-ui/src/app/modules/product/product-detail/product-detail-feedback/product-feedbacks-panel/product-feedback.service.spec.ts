@@ -1,10 +1,17 @@
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import type { MockedObject } from 'vitest';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../../../../../auth/auth.service';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import { ProductFeedbackService } from './product-feedback.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import {
@@ -19,23 +26,21 @@ import { MOCK_APPROVED_FEEDBACK } from '../../../../../shared/mocks/mock-data';
 describe('ProductFeedbackService', () => {
   let service: ProductFeedbackService;
   let httpMock: HttpTestingController;
-  let authService: jasmine.SpyObj<AuthService>;
-  let productDetailService: jasmine.SpyObj<ProductDetailService>;
-  let productStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
+  let authService: MockedObject<AuthService>;
+  let productDetailService: MockedObject<ProductDetailService>;
+  let productStarRatingService: MockedObject<ProductStarRatingService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [
-      'getToken',
-      'getUserId'
-    ]);
-    const productDetailServiceSpy = jasmine.createSpyObj(
-      'ProductDetailService',
-      ['productId']
-    );
-    const productStarRatingServiceSpy = jasmine.createSpyObj(
-      'ProductStarRatingService',
-      ['fetchData']
-    );
+    const authServiceSpy = {
+      getToken: vi.fn().mockName('AuthService.getToken'),
+      getUserId: vi.fn().mockName('AuthService.getUserId')
+    };
+    const productDetailServiceSpy = {
+      productId: vi.fn().mockName('ProductDetailService.productId')
+    };
+    const productStarRatingServiceSpy = {
+      fetchData: vi.fn().mockName('ProductStarRatingService.fetchData')
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -53,13 +58,13 @@ describe('ProductFeedbackService', () => {
 
     service = TestBed.inject(ProductFeedbackService);
     httpMock = TestBed.inject(HttpTestingController);
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    authService = TestBed.inject(AuthService) as MockedObject<AuthService>;
     productDetailService = TestBed.inject(
       ProductDetailService
-    ) as jasmine.SpyObj<ProductDetailService>;
+    ) as MockedObject<ProductDetailService>;
     productStarRatingService = TestBed.inject(
       ProductStarRatingService
-    ) as jasmine.SpyObj<ProductStarRatingService>;
+    ) as MockedObject<ProductStarRatingService>;
   });
 
   it('should be created', () => {
@@ -77,7 +82,7 @@ describe('ProductFeedbackService', () => {
       version: 0,
       productNames: {}
     };
-    authService.getToken.and.returnValue('mockToken');
+    authService.getToken.mockReturnValue('mockToken');
 
     service.submitFeedback(feedback).subscribe(result => {
       expect(result).toEqual(feedback);
@@ -90,7 +95,7 @@ describe('ProductFeedbackService', () => {
     expect(productStarRatingService.fetchData).toHaveBeenCalled();
   });
 
-  it('should initialize feedbacks', done => {
+  it('should initialize feedbacks', async () => {
     const mockResponse = {
       _embedded: {
         feedbacks: [
@@ -108,7 +113,7 @@ describe('ProductFeedbackService', () => {
       page: { totalPages: 2, totalElements: 5 }
     };
 
-    productDetailService.productId.and.returnValue('123');
+    productDetailService.productId.mockReturnValue('123');
 
     service.fetchFeedbacks();
     const req = httpMock.expectOne(
@@ -121,7 +126,6 @@ describe('ProductFeedbackService', () => {
       expect(service.totalPages()).toBe(2);
       expect(service.totalElements()).toBe(5);
       expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
-      done();
     }, 0);
   });
 
@@ -151,7 +155,7 @@ describe('ProductFeedbackService', () => {
       }
     ];
 
-    productDetailService.productId.and.returnValue('123');
+    productDetailService.productId.mockReturnValue('123');
     service.fetchFeedbacks();
     const initReq = httpMock.expectOne(
       'api/feedback/product/123?page=0&size=8&sort=newest'
@@ -173,7 +177,7 @@ describe('ProductFeedbackService', () => {
     ]);
   });
 
-  it('should change sort and fetch feedbacks', done => {
+  it('should change sort and fetch feedbacks', async () => {
     const mockDate = new Date();
     const mockResponse = {
       _embedded: {
@@ -193,7 +197,7 @@ describe('ProductFeedbackService', () => {
       page: { totalPages: 1, totalElements: 1 }
     };
 
-    productDetailService.productId.and.returnValue('123');
+    productDetailService.productId.mockReturnValue('123');
 
     service.changeSort('rating,desc');
     const req = httpMock.expectOne(
@@ -204,7 +208,6 @@ describe('ProductFeedbackService', () => {
 
     setTimeout(() => {
       expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
-      done();
     }, 0);
   });
 
@@ -227,7 +230,7 @@ describe('ProductFeedbackService', () => {
     };
     const token = 'mockToken';
 
-    spyOn(sessionStorage, 'getItem').and.returnValue(token);
+    vi.spyOn(sessionStorage, 'getItem').mockReturnValue(token);
     service.findProductFeedbacks().subscribe(() => {
       expect(service.allFeedbacks().length).toBe(0);
       expect(service.pendingFeedbacks().length).toBe(1);
@@ -267,7 +270,9 @@ describe('ProductFeedbackService', () => {
 
     service.updateFeedbackStatus(MOCK_APPROVED_FEEDBACK).subscribe(response => {
       expect(response).toEqual(updatedFeedback);
-      expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
+      expect(service.allFeedbacks()[0].feedbackStatus).toBe(
+        FeedbackStatus.APPROVED
+      );
       expect(service.pendingFeedbacks().length).toBe(0);
     });
 
@@ -276,13 +281,13 @@ describe('ProductFeedbackService', () => {
     req.flush(updatedFeedback);
   });
 
-  it('should handle empty feedback response', done => {
+  it('should handle empty feedback response', async () => {
     const mockResponse = {
       _embedded: { feedbacks: [] },
       page: { totalPages: 1, totalElements: 0 }
     };
 
-    productDetailService.productId.and.returnValue('123');
+    productDetailService.productId.mockReturnValue('123');
 
     service.fetchFeedbacks();
     const req = httpMock.expectOne(
@@ -294,7 +299,6 @@ describe('ProductFeedbackService', () => {
       expect(service.feedbacks().length).toBe(0);
       expect(service.totalPages()).toBe(1);
       expect(service.totalElements()).toBe(0);
-      done();
     }, 0);
   });
 
@@ -343,8 +347,8 @@ describe('ProductFeedbackService', () => {
         productNames: {}
       }
     ];
-    productDetailService.productId.and.returnValue('123');
-    authService.getUserId.and.returnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    authService.getUserId.mockReturnValue('user1');
 
     service.findProductFeedbackOfUser().subscribe(() => {
       expect(service.userFeedback()?.id).toBe('1');
@@ -359,8 +363,8 @@ describe('ProductFeedbackService', () => {
   });
 
   it('should handle no user feedback found', () => {
-    productDetailService.productId.and.returnValue('123');
-    authService.getUserId.and.returnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    authService.getUserId.mockReturnValue('user1');
 
     service.findProductFeedbackOfUser().subscribe(() => {
       expect(service.userFeedback()).toBeDefined();
@@ -402,8 +406,8 @@ describe('ProductFeedbackService', () => {
         productNames: {}
       }
     ];
-    productDetailService.productId.and.returnValue('123');
-    authService.getUserId.and.returnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    authService.getUserId.mockReturnValue('user1');
 
     service.findProductFeedbackOfUser().subscribe(() => {
       expect(service.userFeedback()?.id).toBe('2');
@@ -419,10 +423,10 @@ describe('ProductFeedbackService', () => {
   it('should correctly determine if all feedbacks are loaded', () => {
     service.page.set(0);
     service.totalPages.set(2);
-    expect(service.areAllFeedbacksLoaded()).toBeFalse();
+    expect(service.areAllFeedbacksLoaded()).toBe(false);
 
     service.page.set(1);
-    expect(service.areAllFeedbacksLoaded()).toBeTrue();
+    expect(service.areAllFeedbacksLoaded()).toBe(true);
   });
 
   it('should handle feedback approval API error', () => {
@@ -462,7 +466,7 @@ describe('ProductFeedbackService', () => {
       },
       page: { totalPages: 1, totalElements: 2 }
     };
-    productDetailService.productId.and.returnValue('123');
+    productDetailService.productId.mockReturnValue('123');
 
     service.findProductFeedbacksByCriteria().subscribe(() => {
       expect(service.feedbacks().length).toBe(1);
@@ -489,12 +493,14 @@ describe('ProductFeedbackService', () => {
         productNames: {}
       }
     ];
-    authService.getUserId.and.returnValue('user1');
-    productDetailService.productId.and.returnValue('123');
-    spyOn(service, 'findProductFeedbackOfUser').and.returnValue(of(mockFeedbacks));
+    authService.getUserId.mockReturnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    vi.spyOn(service, 'findProductFeedbackOfUser').mockReturnValue(
+      of(mockFeedbacks)
+    );
 
     service['processUserFeedbacks']();
-    httpMock.expectNone("api/feedback");
+    httpMock.expectNone('api/feedback');
     expect(service.feedbacks()).toEqual([]);
   });
 
@@ -512,12 +518,14 @@ describe('ProductFeedbackService', () => {
         productNames: {}
       }
     ];
-    authService.getUserId.and.returnValue('user1');
-    productDetailService.productId.and.returnValue('123');
-    spyOn(service, 'findProductFeedbackOfUser').and.returnValue(of(mockFeedbacks));
+    authService.getUserId.mockReturnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    vi.spyOn(service, 'findProductFeedbackOfUser').mockReturnValue(
+      of(mockFeedbacks)
+    );
 
     service['processUserFeedbacks']();
-    httpMock.expectNone("api/feedback");
+    httpMock.expectNone('api/feedback');
     expect(service.feedbacks()).toEqual([]);
   });
 
@@ -545,9 +553,11 @@ describe('ProductFeedbackService', () => {
       productNames: {}
     };
     service.feedbacks.set([approvedFeedback]);
-    authService.getUserId.and.returnValue('user1');
-    productDetailService.productId.and.returnValue('123');
-    spyOn(service, 'findProductFeedbackOfUser').and.returnValue(of([pendingFeedback, approvedFeedback]));
+    authService.getUserId.mockReturnValue('user1');
+    productDetailService.productId.mockReturnValue('123');
+    vi.spyOn(service, 'findProductFeedbackOfUser').mockReturnValue(
+      of([pendingFeedback, approvedFeedback])
+    );
 
     service['processUserFeedbacks']();
     expect(service.feedbacks()).toEqual([pendingFeedback]);
@@ -555,8 +565,28 @@ describe('ProductFeedbackService', () => {
 
   it('should handle invalid dates in sortByDate', () => {
     const feedbacks: Feedback[] = [
-      { id: '1', content: 'First', reviewDate: null as any, rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0, productNames: {} },
-      { id: '2', content: 'Second', reviewDate: new Date('2023-01-01'), rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0, productNames: {} }
+      {
+        id: '1',
+        content: 'First',
+        reviewDate: null as any,
+        rating: 0,
+        productId: '',
+        feedbackStatus: FeedbackStatus.APPROVED,
+        moderatorName: '',
+        version: 0,
+        productNames: {}
+      },
+      {
+        id: '2',
+        content: 'Second',
+        reviewDate: new Date('2023-01-01'),
+        rating: 0,
+        productId: '',
+        feedbackStatus: FeedbackStatus.APPROVED,
+        moderatorName: '',
+        version: 0,
+        productNames: {}
+      }
     ];
 
     const sorted = service['sortByDate'](feedbacks, 'reviewDate');
@@ -566,11 +596,16 @@ describe('ProductFeedbackService', () => {
 
   it('should reset page to 0 in getInitFeedbacksObservable', () => {
     service.page.set(5);
-    productDetailService.productId.and.returnValue('123');
-    const mockResponse = { _embedded: { feedbacks: [] }, page: { totalPages: 1, totalElements: 0 } };
+    productDetailService.productId.mockReturnValue('123');
+    const mockResponse = {
+      _embedded: { feedbacks: [] },
+      page: { totalPages: 1, totalElements: 0 }
+    };
 
     service.getInitFeedbacksObservable().subscribe();
-    const req = httpMock.expectOne('api/feedback/product/123?page=0&size=8&sort=newest');
+    const req = httpMock.expectOne(
+      'api/feedback/product/123?page=0&size=8&sort=newest'
+    );
     req.flush(mockResponse);
 
     expect(service.page()).toBe(0);
@@ -579,7 +614,9 @@ describe('ProductFeedbackService', () => {
   it('should not fetch more feedbacks if all are loaded', () => {
     service.page.set(1);
     service.totalPages.set(2);
-    spyOn(service, 'findProductFeedbacksByCriteria').and.returnValue(of({} as FeedbackApiResponse));
+    vi.spyOn(service, 'findProductFeedbacksByCriteria').mockReturnValue(
+      of({} as FeedbackApiResponse)
+    );
 
     service.loadMoreFeedbacks();
     expect(service.findProductFeedbacksByCriteria).toHaveBeenCalled();

@@ -1,6 +1,5 @@
-import {
-  ComponentFixture,
-  TestBed} from '@angular/core/testing';
+import type { MockedObject } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback.component';
 import { ProductStarRatingPanelComponent } from './product-star-rating-panel/product-star-rating-panel.component';
 import { ProductFeedbacksPanelComponent } from './product-feedbacks-panel/product-feedbacks-panel.component';
@@ -24,41 +23,50 @@ import { Feedback } from '../../../../shared/models/feedback.model';
 describe('ProductDetailFeedbackComponent', () => {
   let component: ProductDetailFeedbackComponent;
   let fixture: ComponentFixture<ProductDetailFeedbackComponent>;
-  let mockAppModalService: jasmine.SpyObj<AppModalService>;
-  let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
-  let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockAppModalService: MockedObject<AppModalService>;
+  let mockProductFeedbackService: MockedObject<ProductFeedbackService>;
+  let mockProductStarRatingService: MockedObject<ProductStarRatingService>;
+  let mockAuthService: MockedObject<AuthService>;
   let mockActivatedRoute: any;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockRouter: MockedObject<Router>;
 
   beforeEach(async () => {
-    mockAppModalService = jasmine.createSpyObj('AppModalService', [
-      'openAddFeedbackDialog',
-      'openShowFeedbacksDialog'
-    ]);
-    mockProductFeedbackService = jasmine.createSpyObj(
-      'ProductFeedbackService',
-      [
-        'fetchFeedbacks',
-        'findProductFeedbackOfUser',
-        'loadMoreFeedbacks',
-        'areAllFeedbacksLoaded',
-        'totalElements'
-      ],
-      { feedbacks: signal([] as Feedback[]), sort: signal('updatedAt,desc') }
-    );
-    mockProductStarRatingService = jasmine.createSpyObj(
-      'ProductStarRatingService',
-      ['fetchData'],
-      { 
-        reviewNumber: signal(0),
-        totalComments: signal(0),
-        starRatings: signal([] as StarRatingCounting[])
-      }
-    );
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken']);
+    mockAppModalService = {
+      openAddFeedbackDialog: vi
+        .fn()
+        .mockName('AppModalService.openAddFeedbackDialog'),
+      openShowFeedbacksDialog: vi
+        .fn()
+        .mockName('AppModalService.openShowFeedbacksDialog')
+    };
+    mockProductFeedbackService = {
+      fetchFeedbacks: vi.fn().mockName('ProductFeedbackService.fetchFeedbacks'),
+      findProductFeedbackOfUser: vi
+        .fn()
+        .mockName('ProductFeedbackService.findProductFeedbackOfUser'),
+      loadMoreFeedbacks: vi
+        .fn()
+        .mockName('ProductFeedbackService.loadMoreFeedbacks'),
+      areAllFeedbacksLoaded: vi
+        .fn()
+        .mockName('ProductFeedbackService.areAllFeedbacksLoaded'),
+      totalElements: vi.fn().mockName('ProductFeedbackService.totalElements'),
+      feedbacks: signal([] as Feedback[]),
+      sort: signal('updatedAt,desc')
+    };
+    mockProductStarRatingService = {
+      fetchData: vi.fn().mockName('ProductStarRatingService.fetchData'),
+      reviewNumber: signal(0),
+      totalComments: signal(0),
+      starRatings: signal([] as StarRatingCounting[])
+    };
+    mockAuthService = {
+      getToken: vi.fn().mockName('AuthService.getToken')
+    };
     mockActivatedRoute = { queryParams: of({ showPopup: 'true' }) };
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = {
+      navigate: vi.fn().mockName('Router.navigate')
+    };
 
     await TestBed.configureTestingModule({
       imports: [ProductDetailFeedbackComponent, TranslateModule.forRoot()],
@@ -104,7 +112,7 @@ describe('ProductDetailFeedbackComponent', () => {
   });
 
   it('should call openShowFeedbacksDialog on button click if not in mobile mode', () => {
-    spyOn(component, 'isMobileMode').and.returnValue(false);
+    vi.spyOn(component, 'isMobileMode').mockReturnValue(false);
     const button = fixture.debugElement.query(
       By.css('.btn-show-more')
     ).nativeElement;
@@ -113,7 +121,7 @@ describe('ProductDetailFeedbackComponent', () => {
   });
 
   it('should call loadMoreFeedbacks on button click if in mobile mode', () => {
-    spyOn(component, 'isMobileMode').and.returnValue(true);
+    vi.spyOn(component, 'isMobileMode').mockReturnValue(true);
     const button = fixture.debugElement.query(
       By.css('.btn-show-more')
     ).nativeElement;
@@ -123,44 +131,44 @@ describe('ProductDetailFeedbackComponent', () => {
 
   describe('isShowBtnMore computed signal', () => {
     it('should return false when all feedbacks are loaded and in mobile mode', () => {
-      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
-      mockProductFeedbackService.totalElements.and.returnValue(10);
-      
+      mockProductFeedbackService.areAllFeedbacksLoaded.mockReturnValue(true);
+      mockProductFeedbackService.totalElements.mockReturnValue(10);
+
       // IMPORTANT: Recreate component AFTER setting mock return values
       fixture = TestBed.createComponent(ProductDetailFeedbackComponent);
       component = fixture.componentInstance;
-      spyOn(component, 'isMobileMode').and.returnValue(true);
+      vi.spyOn(component, 'isMobileMode').mockReturnValue(true);
 
       fixture.detectChanges();
-      expect(component.isShowBtnMore()).toBeFalse();
+      expect(component.isShowBtnMore()).toBe(false);
     });
 
     it('should return false when all feedbacks are loaded and totalElements <= MAX_ELEMENTS', () => {
-      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
-      mockProductFeedbackService.totalElements.and.returnValue(3); // <= MAX_ELEMENTS
+      mockProductFeedbackService.areAllFeedbacksLoaded.mockReturnValue(true);
+      mockProductFeedbackService.totalElements.mockReturnValue(3); // <= MAX_ELEMENTS
 
       fixture = TestBed.createComponent(ProductDetailFeedbackComponent);
       component = fixture.componentInstance;
-      spyOn(component, 'isMobileMode').and.returnValue(false);
+      vi.spyOn(component, 'isMobileMode').mockReturnValue(false);
 
       fixture.detectChanges();
-      expect(component.isShowBtnMore()).toBeFalse();
+      expect(component.isShowBtnMore()).toBe(false);
     });
 
     it('should return true when not all feedbacks are loaded', () => {
-      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(false);
-      mockProductFeedbackService.totalElements.and.returnValue(100);
-      spyOn(component, 'isMobileMode').and.returnValue(false);
+      mockProductFeedbackService.areAllFeedbacksLoaded.mockReturnValue(false);
+      mockProductFeedbackService.totalElements.mockReturnValue(100);
+      vi.spyOn(component, 'isMobileMode').mockReturnValue(false);
 
-      expect(component.isShowBtnMore()).toBeTrue();
+      expect(component.isShowBtnMore()).toBe(true);
     });
 
     it('should return true when feedbacks are loaded but not in mobile mode and totalElements > MAX_ELEMENTS', () => {
-      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
-      mockProductFeedbackService.totalElements.and.returnValue(10); // > MAX_ELEMENTS
-      spyOn(component, 'isMobileMode').and.returnValue(false);
+      mockProductFeedbackService.areAllFeedbacksLoaded.mockReturnValue(true);
+      mockProductFeedbackService.totalElements.mockReturnValue(10); // > MAX_ELEMENTS
+      vi.spyOn(component, 'isMobileMode').mockReturnValue(false);
 
-      expect(component.isShowBtnMore()).toBeTrue();
+      expect(component.isShowBtnMore()).toBe(true);
     });
-});
+  });
 });

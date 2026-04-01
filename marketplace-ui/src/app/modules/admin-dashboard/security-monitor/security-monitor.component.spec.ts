@@ -13,14 +13,18 @@ describe('SecurityMonitorComponent', () => {
   let fixture: ComponentFixture<SecurityMonitorComponent>;
 
   beforeEach(async () => {
-    const securityMonitorSpy = jasmine.createSpyObj('AdminDashboardService', [
-      'getSecurityDetails'
-    ]);
-    const pageTitleSpy = jasmine.createSpyObj('PageTitleService', [
-      'setTitleOnLangChange'
-    ]);
+    const securityMonitorSpy = {
+      getSecurityDetails: vi
+        .fn()
+        .mockName('AdminDashboardService.getSecurityDetails')
+    };
+    const pageTitleSpy = {
+      setTitleOnLangChange: vi
+        .fn()
+        .mockName('PageTitleService.setTitleOnLangChange')
+    };
 
-    securityMonitorSpy.getSecurityDetails.and.returnValue(of([]));
+    securityMonitorSpy.getSecurityDetails.mockReturnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule, TranslateModule.forRoot()],
@@ -42,7 +46,7 @@ describe('SecurityMonitorComponent', () => {
   });
 
   it('should navigate to the correct URL for a repo page', () => {
-    spyOn(window, 'open');
+    vi.spyOn(window, 'open');
     component.navigateToRepoPage('example-repo', 'secretScanning');
     expect(window.open).toHaveBeenCalledWith(
       'https://github.com/axonivy-market/example-repo/security/secret-scanning',
@@ -57,8 +61,8 @@ describe('SecurityMonitorComponent', () => {
   });
 
   it('should handle empty alerts correctly in hasAlerts', () => {
-    expect(component.hasAlerts({})).toBeFalse();
-    expect(component.hasAlerts({ alert1: 1 })).toBeTrue();
+    expect(component.hasAlerts({})).toBe(false);
+    expect(component.hasAlerts({ alert1: 1 })).toBe(true);
   });
 
   it('should return correct alert keys from alertKeys', () => {
@@ -105,26 +109,32 @@ describe('SecurityMonitorComponent', () => {
       new Date().getTime() - 365 * 24 * 60 * 60 * 1000
     ).toISOString();
     const result = component.formatCommitDate(oneYearAgo);
-    
+
     expect(result).toBe('');
 
     TIME_UNITS.push(...originalUnits);
   });
 
   it('should clear session data', () => {
-    spyOn(sessionStorage, 'removeItem');
-    
+    vi.spyOn(sessionStorage, 'removeItem');
+
     component['clearSessionData']();
-    
-    expect(sessionStorage.removeItem).toHaveBeenCalledWith('security-monitor-data');
+
+    expect(sessionStorage.removeItem).toHaveBeenCalledWith(
+      'security-monitor-data'
+    );
   });
 
   it('should call clearSessionData when loadSessionData throws error', () => {
-    spyOn(sessionStorage, 'getItem').and.throwError('Parse error');
-    spyOn(sessionStorage, 'removeItem');
-    
+    vi.spyOn(sessionStorage, 'getItem').mockImplementation(() => {
+      throw new Error('Parse error');
+    });
+    vi.spyOn(sessionStorage, 'removeItem');
+
     component['loadSessionData']();
-    
-    expect(sessionStorage.removeItem).toHaveBeenCalledWith('security-monitor-data');
+
+    expect(sessionStorage.removeItem).toHaveBeenCalledWith(
+      'security-monitor-data'
+    );
   });
 });

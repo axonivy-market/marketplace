@@ -24,7 +24,7 @@ describe('LanguageSelectionComponent', () => {
   });
 
   it('selectLanguage should call translateService', () => {
-    spyOn(component.translateService, 'use').and.stub();
+    vi.spyOn(component.translateService, 'use').mockImplementation(() => {});
     component.onSelectLanguage(Language.EN);
     expect(component.translateService.use).toHaveBeenCalled();
   });

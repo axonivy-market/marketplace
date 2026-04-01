@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ShowFeedbacksDialogComponent } from './show-feedbacks-dialog.component';
@@ -7,20 +8,27 @@ import { AppModalService } from '../../../../../shared/services/app-modal.servic
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ShowFeedbacksDialogComponent', () => {
   let component: ShowFeedbacksDialogComponent;
   let fixture: ComponentFixture<ShowFeedbacksDialogComponent>;
-  let mockActiveModal: jasmine.SpyObj<NgbActiveModal>;
-  let mockAppModalService: jasmine.SpyObj<AppModalService>;
+  let mockActiveModal: MockedObject<NgbActiveModal>;
+  let mockAppModalService: MockedObject<AppModalService>;
 
   beforeEach(async () => {
-    mockActiveModal = jasmine.createSpyObj('NgbActiveModal', ['dismiss']);
-    mockAppModalService = jasmine.createSpyObj('AppModalService', [
-      'openAddFeedbackDialog'
-    ]);
+    mockActiveModal = {
+      dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
+    };
+    mockAppModalService = {
+      openAddFeedbackDialog: vi
+        .fn()
+        .mockName('AppModalService.openAddFeedbackDialog')
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -74,12 +82,10 @@ describe('ShowFeedbacksDialogComponent', () => {
 
   it('should call activeModal.dismiss when the window is resized to less than or equal to 767px', () => {
     // Set up a media query list that matches
-    spyOn(window, 'matchMedia').and.returnValue({
+    vi.spyOn(window, 'matchMedia').mockReturnValue({
       matches: true,
-      addListener: () => {
-      },
-      removeListener: () => {
-      }
+      addListener: () => {},
+      removeListener: () => {}
     } as any);
 
     // Trigger the resize event
@@ -91,12 +97,10 @@ describe('ShowFeedbacksDialogComponent', () => {
 
   it('should not call activeModal.dismiss when the window is resized to more than 767px', () => {
     // Set up a media query list that does not match
-    spyOn(window, 'matchMedia').and.returnValue({
+    vi.spyOn(window, 'matchMedia').mockReturnValue({
       matches: false,
-      addListener: () => {
-      },
-      removeListener: () => {
-      }
+      addListener: () => {},
+      removeListener: () => {}
     } as any);
 
     // Trigger the resize event
@@ -105,5 +109,4 @@ describe('ShowFeedbacksDialogComponent', () => {
     // Check that dismiss was not called
     expect(mockActiveModal.dismiss).not.toHaveBeenCalled();
   });
-
 });

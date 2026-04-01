@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ReleaseLetterModalComponent } from './release-letter-modal.component';
@@ -20,31 +21,33 @@ describe('ReleaseLetterModalComponent', () => {
   let component: ReleaseLetterModalComponent;
   let fixture: ComponentFixture<ReleaseLetterModalComponent>;
 
-  let markdownServiceMock: jasmine.SpyObj<MarkdownService>;
-  let translateServiceMock: jasmine.SpyObj<TranslateService>;
-  let adminDashboardServiceMock: jasmine.SpyObj<AdminDashboardService>;
-  let activeModalMock: jasmine.SpyObj<NgbActiveModal>;
+  let markdownServiceMock: MockedObject<MarkdownService>;
+  let translateServiceMock: MockedObject<TranslateService>;
+  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
+  let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
-    markdownServiceMock = jasmine.createSpyObj('MarkdownService', [
-      'parseMarkdown'
-    ]);
-    translateServiceMock = jasmine.createSpyObj('TranslateService', [
-      'instant'
-    ]);
-    activeModalMock = jasmine.createSpyObj('NgbActiveModal', [
-      'close',
-      'dismiss'
-    ]);
-    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'getReleaseLetterById'
-    ]);
+    markdownServiceMock = {
+      parseMarkdown: vi.fn().mockName('MarkdownService.parseMarkdown')
+    };
+    translateServiceMock = {
+      instant: vi.fn().mockName('TranslateService.instant')
+    };
+    activeModalMock = {
+      close: vi.fn().mockName('NgbActiveModal.close'),
+      dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
+    };
+    adminDashboardServiceMock = {
+      getReleaseLetterById: vi
+        .fn()
+        .mockName('AdminDashboardService.getReleaseLetterById')
+    };
 
-    adminDashboardServiceMock.getReleaseLetterById.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetterById.mockReturnValue(
       of(mockResponse)
     );
-    markdownServiceMock.parseMarkdown.and.returnValue('<p>Mock</p>');
-    translateServiceMock.instant.and.returnValue('Sprint: ');
+    markdownServiceMock.parseMarkdown.mockReturnValue('<p>Mock</p>');
+    translateServiceMock.instant.mockReturnValue('Sprint: ');
 
     await TestBed.configureTestingModule({
       imports: [ReleaseLetterModalComponent],

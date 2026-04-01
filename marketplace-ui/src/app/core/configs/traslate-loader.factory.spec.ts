@@ -52,20 +52,19 @@ describe('TranslateUniversalLoader', () => {
     httpMock.verify();
   });
 
-  it('should return cached translations from TransferState', done => {
+  it('should return cached translations from TransferState', async () => {
     const key = makeStateKey<object>(`${TRANSLATE_KEY}-${Language.EN}`);
     const cachedTranslations = { hello: 'world' };
     transferState.set(key, cachedTranslations);
 
     loader.getTranslation(Language.EN).subscribe((result: Object) => {
       expect(result).toEqual(cachedTranslations);
-      done();
     });
   });
 
-  it('should load translations from filesystem on the server', done => {
-    spyOn(isPlatformServer as any, 'call').and.returnValue(true);
-    spyOn<any>(loader, 'loadTranslationsFromFileSystem').and.returnValue(
+  it('should load translations from filesystem on the server', async () => {
+    vi.spyOn(isPlatformServer as any, 'call').mockReturnValue(true);
+    vi.spyOn<any>(loader, 'loadTranslationsFromFileSystem').mockReturnValue(
       of({ hi: 'there' })
     );
 
@@ -73,12 +72,11 @@ describe('TranslateUniversalLoader', () => {
 
     loader.getTranslation('en').subscribe((result: Object) => {
       expect(result).toEqual({ hi: 'there' });
-      done();
     });
   });
 
-  it('should fetch translations via HttpClient on browser', done => {
-    spyOn(isPlatformServer as any, 'call').and.returnValue(false);
+  it('should fetch translations via HttpClient on browser', async () => {
+    vi.spyOn(isPlatformServer as any, 'call').mockReturnValue(false);
 
     const mockResponse = { hello: BROWSER };
 
@@ -86,10 +84,11 @@ describe('TranslateUniversalLoader', () => {
       expect(result).toEqual(mockResponse);
       const key = makeStateKey<object>(`${TRANSLATE_KEY}-${Language.EN}`);
       expect(transferState.get(key, null)).toEqual(mockResponse);
-      done();
     });
 
-    const req = httpMock.expectOne(`/${ASSETS}/${I18N}/${Language.EN}${JSON_EXTENSION}`);
+    const req = httpMock.expectOne(
+      `/${ASSETS}/${I18N}/${Language.EN}${JSON_EXTENSION}`
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });

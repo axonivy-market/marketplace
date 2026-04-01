@@ -34,18 +34,22 @@ describe('CustomSortCardComponent', () => {
   it('should show structural elements expected by consumers', () => {
     fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.css('.table-card')))
-      .withContext('card wrapper')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('header')))
-      .withContext('header region')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('.table-scroll')))
-      .withContext('scroll container')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('table')))
-      .withContext('inner table')
-      .not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('.table-card')),
+      'card wrapper'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('header')),
+      'header region'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('.table-scroll')),
+      'scroll container'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('table')),
+      'inner table'
+    ).not.toBeNull();
   });
 
   it('should keep header badge present even when inputs change', () => {

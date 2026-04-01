@@ -46,22 +46,22 @@ describe('NewsManagementComponent', () => {
 
   beforeEach(async () => {
     adminDashboardServiceMock = {
-      getReleaseLetters: jasmine.createSpy().and.returnValue(of(mockResponse))
+      getReleaseLetters: vi.fn().mockReturnValue(of(mockResponse))
     };
 
     appModalServiceMock = {
-      openReleaseLetterModal: jasmine.createSpy(),
-      openDeleteReleaseLetterConfirmModal: jasmine
-        .createSpy()
-        .and.returnValue(Promise.resolve())
+      openReleaseLetterModal: vi.fn(),
+      openDeleteReleaseLetterConfirmModal: vi
+        .fn()
+        .mockReturnValue(Promise.resolve())
     };
 
     pageTitleServiceMock = {
-      setTitleOnLangChange: jasmine.createSpy()
+      setTitleOnLangChange: vi.fn()
     };
 
     routerMock = {
-      navigate: jasmine.createSpy()
+      navigate: vi.fn()
     };
 
     await TestBed.configureTestingModule({
@@ -93,9 +93,7 @@ describe('NewsManagementComponent', () => {
       'common.admin.newsManagement.pageTitle'
     );
 
-    expect(
-      adminDashboardServiceMock.getReleaseLetters
-    ).toHaveBeenCalled();
+    expect(adminDashboardServiceMock.getReleaseLetters).toHaveBeenCalled();
   });
 
   it('should load release letters into signal', () => {
@@ -127,8 +125,8 @@ describe('NewsManagementComponent', () => {
   it('should open release letter modal', () => {
     const sprint = mockReleaseLetters[0].sprint;
 
-    spyOnProperty(document, 'activeElement', 'get').and.returnValue({
-      blur: jasmine.createSpy()
+    vi.spyOn(document, 'activeElement', 'get').mockReturnValue({
+      blur: vi.fn()
     } as any);
 
     component.openModal(sprint);
@@ -147,9 +145,7 @@ describe('NewsManagementComponent', () => {
       appModalServiceMock.openDeleteReleaseLetterConfirmModal
     ).toHaveBeenCalledWith(mockReleaseLetters[0]);
 
-    expect(
-      adminDashboardServiceMock.getReleaseLetters
-    ).toHaveBeenCalled();
+    expect(adminDashboardServiceMock.getReleaseLetters).toHaveBeenCalled();
 
     expect(component.releaseLetterList()).toEqual(mockReleaseLetters);
   });
@@ -157,7 +153,7 @@ describe('NewsManagementComponent', () => {
   it('should unsubscribe on destroy', () => {
     component.loadReleaseLetters();
 
-    spyOn(component.subscriptions[0], 'unsubscribe');
+    vi.spyOn(component.subscriptions[0], 'unsubscribe');
 
     component.ngOnDestroy();
 
@@ -165,9 +161,7 @@ describe('NewsManagementComponent', () => {
   });
 
   it('should do nothing if backend response is null', () => {
-    adminDashboardServiceMock.getReleaseLetters.and.returnValue(
-      of(null)
-    );
+    adminDashboardServiceMock.getReleaseLetters.mockReturnValue(of(null));
 
     component.releaseLetterList.set([]);
     component.subscriptions = [];

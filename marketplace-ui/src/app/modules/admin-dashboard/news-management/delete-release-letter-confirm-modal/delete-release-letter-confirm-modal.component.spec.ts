@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -11,18 +12,20 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
   let component: DeleteReleaseLetterConfirmModalComponent;
   let fixture: ComponentFixture<DeleteReleaseLetterConfirmModalComponent>;
 
-  let adminDashboardServiceMock: jasmine.SpyObj<AdminDashboardService>;
-  let activeModalMock: jasmine.SpyObj<NgbActiveModal>;
+  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
+  let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
-    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'deleteReleaseLetterById'
-    ]);
+    adminDashboardServiceMock = {
+      deleteReleaseLetterById: vi
+        .fn()
+        .mockName('AdminDashboardService.deleteReleaseLetterById')
+    };
 
-    activeModalMock = jasmine.createSpyObj('NgbActiveModal', [
-      'close',
-      'dismiss'
-    ]);
+    activeModalMock = {
+      close: vi.fn().mockName('NgbActiveModal.close'),
+      dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -49,7 +52,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
   it('should call deleteReleaseLetterById and close modal on success', () => {
     component.id = '123';
 
-    adminDashboardServiceMock.deleteReleaseLetterById.and.returnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.mockReturnValue(
       of(void 0)
     );
 
@@ -66,7 +69,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
     component.id = '123';
 
     const subject = new Subject<void>();
-    adminDashboardServiceMock.deleteReleaseLetterById.and.returnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.mockReturnValue(
       subject.asObservable()
     );
 

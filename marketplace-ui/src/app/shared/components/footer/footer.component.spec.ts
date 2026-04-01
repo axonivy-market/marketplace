@@ -3,7 +3,11 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { IVY_FOOTER_LINKS, DOWNLOAD_URL, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import {
+  IVY_FOOTER_LINKS,
+  DOWNLOAD_URL,
+  SOCIAL_MEDIA_LINK
+} from '../../constants/common.constant';
 import { RouterModule } from '@angular/router';
 
 declare const viewport: Viewport;
@@ -16,13 +20,17 @@ describe('FooterComponent', () => {
   beforeEach(async () => {
     let testMockDate: Date;
 
-    jasmine.clock().uninstall();
-    jasmine.clock().install();
+    vi.useRealTimers();
+    vi.useFakeTimers();
     testMockDate = new Date('2019-09-15T05:00:00Z');
-    jasmine.clock().mockDate(testMockDate);
+    vi.setSystemTime(testMockDate);
 
     await TestBed.configureTestingModule({
-      imports: [FooterComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
+      imports: [
+        FooterComponent,
+        TranslateModule.forRoot(),
+        RouterModule.forRoot([])
+      ],
       providers: [TranslateService]
     }).compileComponents();
 
@@ -38,17 +46,17 @@ describe('FooterComponent', () => {
           legalNotice: 'Legal Notice',
           ivyCompanyInfoUrl: '',
           privacyPolicyUrl: 'https://www.axonivy.com/privacy-policy',
-          legalNoticeUrl: 'https://www.axonivy.com/legal-notice',
-        },
-      },
+          legalNoticeUrl: 'https://www.axonivy.com/legal-notice'
+        }
+      }
     });
     translate.use('en');
-    
+
     fixture.detectChanges();
   });
 
-  afterEach(function() {
-    jasmine.clock().uninstall();
+  afterEach(function () {
+    vi.useRealTimers();
   });
 
   it('should create', () => {
@@ -82,7 +90,9 @@ describe('FooterComponent', () => {
   it('Ivy tag in ivy policy section should be display in higher row', () => {
     viewport.set(540);
 
-    const ivyTag = fixture.nativeElement.querySelector('.footer__ivy-company-tag');
+    const ivyTag = fixture.nativeElement.querySelector(
+      '.footer__ivy-company-tag'
+    );
 
     const ivyTermOfService = fixture.nativeElement.querySelector(
       '.footer__ivy-footer-link-tag'
@@ -109,7 +119,7 @@ describe('FooterComponent', () => {
 
     for (let index = 0; index < socialMediaLinks.length; index++) {
       const socialMediaLinkElement: HTMLAnchorElement =
-      socialMediaLinks[index].nativeElement;
+        socialMediaLinks[index].nativeElement;
 
       socialMediaLinkElement.click();
 
@@ -127,7 +137,9 @@ describe('FooterComponent', () => {
 
   it('should render all footer links with correct href', () => {
     const links = fixture.debugElement.queryAll(By.css('a.ivy-footer-link'));
-    const socialMediaLinksWithoutCompanyInfo = IVY_FOOTER_LINKS.filter((element) => element.label !== 'common.footer.ivyCompanyInfo');
+    const socialMediaLinksWithoutCompanyInfo = IVY_FOOTER_LINKS.filter(
+      element => element.label !== 'common.footer.ivyCompanyInfo'
+    );
     expect(links.length).toBe(socialMediaLinksWithoutCompanyInfo.length);
 
     socialMediaLinksWithoutCompanyInfo.forEach((footerLink, index) => {
@@ -141,16 +153,16 @@ describe('FooterComponent', () => {
     component.getCurrentYear();
 
     expect(component.year).toBe('2019');
-  })
+  });
 
   it('should get year of current year', () => {
     let currentDate = new Date();
     let currentYear = currentDate.getFullYear();
 
-    jasmine.clock().mockDate(currentDate);
+    vi.setSystemTime(currentDate);
 
     component.getCurrentYear();
 
     expect(component.year).toBe(currentYear.toString());
-  })
+  });
 });

@@ -1,3 +1,4 @@
+import type { Mock, MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -25,31 +26,37 @@ import { MOCK_APPROVED_FEEDBACK } from '../../../shared/mocks/mock-data';
 describe('FeedbackApprovalComponent', () => {
   let component: FeedbackApprovalComponent;
   let fixture: ComponentFixture<FeedbackApprovalComponent>;
-  let authServiceMock: jasmine.SpyObj<AuthService>;
-  let productFeedbackServiceMock: jasmine.SpyObj<ProductFeedbackService>;
+  let authServiceMock: MockedObject<AuthService>;
+  let productFeedbackServiceMock: MockedObject<ProductFeedbackService>;
 
   beforeEach(async () => {
-    const authSpy = jasmine.createSpyObj('AuthService', [
-      'getToken',
-      'redirectToGitHub',
-      'getDisplayName',
-      'getUserInfo',
-      'getDisplayNameFromAccessToken',
-      'decodeToken'
-    ]);
-    authSpy.getDisplayName.and.returnValue('TestUser');
-    authSpy.getDisplayNameFromAccessToken.and.returnValue(of('TestUser'));
-    authSpy.getUserInfo.and.returnValue(of({ name: 'TestUser' }));
-    authSpy.decodeToken.and.returnValue({ accessToken: 'decodedAccessToken' });
+    const authSpy = {
+      getToken: vi.fn().mockName('AuthService.getToken'),
+      redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub'),
+      getDisplayName: vi.fn().mockName('AuthService.getDisplayName'),
+      getUserInfo: vi.fn().mockName('AuthService.getUserInfo'),
+      getDisplayNameFromAccessToken: vi
+        .fn()
+        .mockName('AuthService.getDisplayNameFromAccessToken'),
+      decodeToken: vi.fn().mockName('AuthService.decodeToken')
+    };
+    authSpy.getDisplayName.mockReturnValue('TestUser');
+    authSpy.getDisplayNameFromAccessToken.mockReturnValue(of('TestUser'));
+    authSpy.getUserInfo.mockReturnValue(of({ name: 'TestUser' }));
+    authSpy.decodeToken.mockReturnValue({ accessToken: 'decodedAccessToken' });
 
-    const productFeedbackSpy = jasmine.createSpyObj('ProductFeedbackService', [
-      'findProductFeedbacks',
-      'updateFeedbackStatus'
-    ]);
+    const productFeedbackSpy = {
+      findProductFeedbacks: vi
+        .fn()
+        .mockName('ProductFeedbackService.findProductFeedbacks'),
+      updateFeedbackStatus: vi
+        .fn()
+        .mockName('ProductFeedbackService.updateFeedbackStatus')
+    };
     productFeedbackSpy.allFeedbacks = signal([]);
     productFeedbackSpy.pendingFeedbacks = signal([]);
-    productFeedbackSpy.findProductFeedbacks.and.returnValue(of([]));
-    productFeedbackSpy.updateFeedbackStatus.and.returnValue(of(null));
+    productFeedbackSpy.findProductFeedbacks.mockReturnValue(of([]));
+    productFeedbackSpy.updateFeedbackStatus.mockReturnValue(of(null));
 
     await TestBed.configureTestingModule({
       imports: [FeedbackApprovalComponent, TranslateModule.forRoot()],
@@ -60,9 +67,11 @@ describe('FeedbackApprovalComponent', () => {
         { provide: ProductFeedbackService, useValue: productFeedbackSpy },
         {
           provide: LanguageService,
-          useValue: jasmine.createSpyObj('LanguageService', [
-            'selectedLanguage'
-          ])
+          useValue: {
+            selectedLanguage: vi
+              .fn()
+              .mockName('LanguageService.selectedLanguage')
+          }
         },
         { provide: ActivatedRoute, useValue: {} }
       ]
@@ -70,18 +79,16 @@ describe('FeedbackApprovalComponent', () => {
 
     fixture = TestBed.createComponent(FeedbackApprovalComponent);
     component = fixture.componentInstance;
-    authServiceMock = TestBed.inject(
-      AuthService
-    ) as jasmine.SpyObj<AuthService>;
+    authServiceMock = TestBed.inject(AuthService) as MockedObject<AuthService>;
     productFeedbackServiceMock = TestBed.inject(
       ProductFeedbackService
-    ) as jasmine.SpyObj<ProductFeedbackService>;
+    ) as MockedObject<ProductFeedbackService>;
     fixture.detectChanges();
 
     // Mock sessionStorage
-    spyOn(sessionStorage, 'getItem').and.returnValue(null);
-    spyOn(sessionStorage, 'setItem');
-    spyOn(sessionStorage, 'removeItem');
+    vi.spyOn(sessionStorage, 'getItem').mockReturnValue(null);
+    vi.spyOn(sessionStorage, 'setItem');
+    vi.spyOn(sessionStorage, 'removeItem');
   });
 
   it('should create the component', () => {
@@ -106,12 +113,12 @@ describe('FeedbackApprovalComponent', () => {
       feedbackStatus: FeedbackStatus.APPROVED
     };
 
-    productFeedbackServiceMock.updateFeedbackStatus.and.returnValue(
+    productFeedbackServiceMock.updateFeedbackStatus.mockReturnValue(
       of(updatedFeedback)
     );
 
     component.moderatorName = 'TestUser';
-    spyOn(component, 'fetchFeedbacks');
+    vi.spyOn(component, 'fetchFeedbacks');
     component.onClickReviewButton(feedback, true);
     tick();
 
@@ -140,7 +147,7 @@ describe('FeedbackApprovalComponent', () => {
     tick();
 
     expect(component.activeTab).toBe('history');
-    expect(historyTab.classes['active']).toBeTrue();
+    expect(historyTab.classes['active']).toBe(true);
 
     const reviewTab = fixture.debugElement.query(By.css('#review-tab'));
     expect(reviewTab.classes['active']).toBeUndefined();
@@ -152,7 +159,7 @@ describe('FeedbackApprovalComponent', () => {
       By.css('.tab-pane[aria-labelledby="history-tab"]')
     );
     expect(reviewPane.classes['active']).toBeUndefined();
-    expect(historyPane.classes['active']).toBeTrue();
+    expect(historyPane.classes['active']).toBe(true);
   }));
 
   it('should pass pending feedbacks to review tab’s FeedbackTableComponent', () => {
@@ -169,7 +176,7 @@ describe('FeedbackApprovalComponent', () => {
     expect(reviewTable.componentInstance.feedbacks).toEqual(
       mockPendingFeedbacks
     );
-    expect(reviewTable.componentInstance.isHistoryTab).toBeFalse();
+    expect(reviewTable.componentInstance.isHistoryTab).toBe(false);
   });
 
   it('should pass all feedbacks to history tab’s FeedbackTableComponent', () => {
@@ -184,18 +191,18 @@ describe('FeedbackApprovalComponent', () => {
     const historyTable = feedbackTables[1];
 
     expect(historyTable.componentInstance.feedbacks).toEqual(mockAllFeedbacks);
-    expect(historyTable.componentInstance.isHistoryTab).toBeTrue();
+    expect(historyTable.componentInstance.isHistoryTab).toBe(true);
   });
 
   it('should initialize with stored token', fakeAsync(() => {
-    const fetchFeedbacksSpy = spyOn(component, 'fetchFeedbacks').and.callThrough();
-    (sessionStorage.getItem as jasmine.Spy).and.returnValue('storedToken');
+    const fetchFeedbacksSpy = vi.spyOn(component, 'fetchFeedbacks');
+    (sessionStorage.getItem as Mock).mockReturnValue('storedToken');
 
     component.ngOnInit();
     tick();
 
     expect(component.token).toBe('storedToken');
-    expect(component.isAuthenticated).toBeTrue();
+    expect(component.isAuthenticated).toBe(true);
     expect(fetchFeedbacksSpy).toHaveBeenCalled();
   }));
 
@@ -212,38 +219,38 @@ describe('FeedbackApprovalComponent', () => {
 
   it('should handle non-unauthorized errors in fetchFeedbacks', fakeAsync(() => {
     const errorResponse = new HttpErrorResponse({ status: 500 });
-    productFeedbackServiceMock.findProductFeedbacks.and.returnValue(
+    productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
       throwError(() => errorResponse)
     );
-    (sessionStorage.getItem as jasmine.Spy).and.returnValue('testToken');
+    (sessionStorage.getItem as Mock).mockReturnValue('testToken');
     component.fetchFeedbacks();
     tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.FETCH_FAILURE);
-    expect(component.isAuthenticated).toBeFalse();
+    expect(component.isAuthenticated).toBe(false);
   }));
 
   it('should handle unauthorized error in fetchFeedbacks', fakeAsync(() => {
     const errorResponse = new HttpErrorResponse({ status: 401 });
-    productFeedbackServiceMock.findProductFeedbacks.and.returnValue(    
+    productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
       throwError(() => errorResponse)
     );
-    (sessionStorage.getItem as jasmine.Spy).and.returnValue('testToken');
+    (sessionStorage.getItem as Mock).mockReturnValue('testToken');
     component.fetchFeedbacks();
     tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isAuthenticated).toBeFalse();
+    expect(component.isAuthenticated).toBe(false);
   }));
 
   it('should return early from fetchFeedbacks if not authenticated', fakeAsync(() => {
-    authServiceMock.getUserInfo.and.returnValue(of());
-    authServiceMock.getDisplayNameFromAccessToken.and.returnValue(of(''));
+    authServiceMock.getUserInfo.mockReturnValue(of());
+    authServiceMock.getDisplayNameFromAccessToken.mockReturnValue(of(''));
     component.isAuthenticated = false;
-    
+
     component.fetchFeedbacks();
     tick();
-    
+
     expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isLoading).toBeFalse();
+    expect(component.isLoading).toBe(false);
   }));
 
   it('should toggle between tabs correctly', fakeAsync(() => {
@@ -257,14 +264,14 @@ describe('FeedbackApprovalComponent', () => {
     tick();
     fixture.detectChanges();
     expect(component.activeTab).toBe('history');
-    expect(historyTab.classes['active']).toBeTrue();
+    expect(historyTab.classes['active']).toBe(true);
     expect(reviewTab.classes['active']).toBeUndefined();
 
     reviewTab.triggerEventHandler('click', null);
     tick();
     fixture.detectChanges();
     expect(component.activeTab).toBe('review');
-    expect(reviewTab.classes['active']).toBeTrue();
+    expect(reviewTab.classes['active']).toBe(true);
     expect(historyTab.classes['active']).toBeUndefined();
   }));
 
@@ -274,9 +281,9 @@ describe('FeedbackApprovalComponent', () => {
       statusText: 'Internal Server Error'
     });
 
-    spyOn(component as any, 'handleError');
+    vi.spyOn(component as any, 'handleError');
 
-    authServiceMock.getDisplayNameFromAccessToken.and.returnValue(
+    authServiceMock.getDisplayNameFromAccessToken.mockReturnValue(
       throwError(() => errorResponse)
     );
 

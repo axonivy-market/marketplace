@@ -17,39 +17,39 @@ describe('LoadingService', () => {
 
   it('show should update isLoading to true', () => {
     service.showLoading(LoadingComponentId.DETAIL_PAGE);
-    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBeTrue();
-  })
+    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBe(true);
+  });
 
   it('hide should update isLoading to false', () => {
     service.hideLoading(LoadingComponentId.DETAIL_PAGE);
-    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBeFalse();
-  })
+    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBe(false);
+  });
 
   it('should return false for component that was never set', () => {
     const result = service.isLoading('non-existent-component');
-    expect(result).toBeFalse();
+    expect(result).toBe(false);
   });
 
   it('should return true when component is loading', () => {
     service.showLoading(LoadingComponentId.DETAIL_PAGE);
     const result = service.isLoading(LoadingComponentId.DETAIL_PAGE);
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
   });
 
   it('should return false when component is not loading', () => {
     service.hideLoading(LoadingComponentId.DETAIL_PAGE);
     const result = service.isLoading(LoadingComponentId.DETAIL_PAGE);
-    expect(result).toBeFalse();
+    expect(result).toBe(false);
   });
 
   it('should return correct state after multiple state changes', () => {
     const componentId = LoadingComponentId.DETAIL_PAGE;
-    expect(service.isLoading(componentId)).toBeFalse();
+    expect(service.isLoading(componentId)).toBe(false);
     service.showLoading(componentId);
-    expect(service.isLoading(componentId)).toBeTrue();
+    expect(service.isLoading(componentId)).toBe(true);
     service.hideLoading(componentId);
-    expect(service.isLoading(componentId)).toBeFalse();
+    expect(service.isLoading(componentId)).toBe(false);
     service.showLoading(componentId);
-    expect(service.isLoading(componentId)).toBeTrue();
+    expect(service.isLoading(componentId)).toBe(true);
   });
 });

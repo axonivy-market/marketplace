@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GithubCallbackComponent } from './github-callback.component';
 import { ActivatedRoute } from '@angular/router';
@@ -7,11 +8,13 @@ import { of } from 'rxjs';
 describe('GithubCallbackComponent', () => {
   let component: GithubCallbackComponent;
   let fixture: ComponentFixture<GithubCallbackComponent>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockAuthService: MockedObject<AuthService>;
   let activatedRouteStub: Partial<ActivatedRoute>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthService', ['handleGitHubCallback']);
+    mockAuthService = {
+      handleGitHubCallback: vi.fn().mockName('AuthService.handleGitHubCallback')
+    };
     activatedRouteStub = {
       queryParams: of({ code: 'testCode', state: 'testState' })
     };
@@ -35,7 +38,10 @@ describe('GithubCallbackComponent', () => {
   });
 
   it('should call handleGitHubCallback with correct parameters', () => {
-    expect(mockAuthService.handleGitHubCallback).toHaveBeenCalledWith('testCode', 'testState');
+    expect(mockAuthService.handleGitHubCallback).toHaveBeenCalledWith(
+      'testCode',
+      'testState'
+    );
   });
 
   it('should not call handleGitHubCallback if code or state is missing', () => {
@@ -44,13 +50,19 @@ describe('GithubCallbackComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith('testCode', undefined!);
+    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith(
+      'testCode',
+      undefined!
+    );
 
     activatedRouteStub.queryParams = of({ state: 'testState' }); // Missing code
     fixture = TestBed.createComponent(GithubCallbackComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith(undefined!, 'testState');
+    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith(
+      undefined!,
+      'testState'
+    );
   });
 });

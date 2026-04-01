@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import {
   GithubService,
   Repository,
@@ -14,7 +17,7 @@ const mockRepos: Repository[] = [
     repoName: 'repo1',
     productId: 'id1',
     htmlUrl: 'https://github.com/user/repo1',
-    workflowInformation:[],
+    workflowInformation: [],
     focused: true,
     testResults: []
   }
@@ -32,10 +35,7 @@ describe('GithubService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClientTesting(),
-        GithubService
-      ]
+      providers: [provideHttpClientTesting(), GithubService]
     });
     service = TestBed.inject(GithubService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -79,11 +79,11 @@ describe('GithubService', () => {
   };
 
   it('should call getRepositories and return RepositoryPages', () => {
-    service.getRepositories(mockCriteria).subscribe((res) => {
+    service.getRepositories(mockCriteria).subscribe(res => {
       expect(res).toEqual(mockResponse);
     });
 
-    const req = httpMock.expectOne((request) => {
+    const req = httpMock.expectOne(request => {
       return (
         request.url === API_URI.MONITOR_DASHBOARD &&
         request.params.get('search') === mockCriteria.search &&
@@ -112,7 +112,7 @@ describe('GithubService', () => {
     let error: any;
     service.getTestReport('repo1', 'CI').subscribe({
       next: () => {},
-      error: err => error = err
+      error: err => (error = err)
     });
     const req = httpMock.expectOne(`${API_URI.GITHUB_REPORT}/repo1/CI`);
     req.flush('Error', { status: 404, statusText: 'Not Found' });

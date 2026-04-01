@@ -82,7 +82,7 @@ describe('MarkdownEditorComponent', () => {
   });
 
   function mockDynamicImport() {
-    spyOn<any>(window, 'import').and.callFake((module: string) => {
+    vi.spyOn<any>(window, 'import').mockImplementation((module: string) => {
       if (module === 'easymde') {
         return Promise.resolve({ default: FakeEasyMDE });
       }
@@ -95,18 +95,18 @@ describe('MarkdownEditorComponent', () => {
   });
 
   it('should initialize EasyMDE', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
     await component.ngAfterViewInit();
 
     expect(component['mde']).toBeTruthy();
-    expect(component.isMDEReady).toBeTrue();
+    expect(component.isMDEReady).toBe(true);
   });
 
   it('should update content when editor changes', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
@@ -121,14 +121,14 @@ describe('MarkdownEditorComponent', () => {
   });
 
   it('should toggle readOnly when submitting changes', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
     await component.ngAfterViewInit();
 
     const fakeMde = component['mde'] as any;
-    const setOptionSpy = spyOn(fakeMde.codemirror, 'setOption');
+    const setOptionSpy = vi.spyOn(fakeMde.codemirror, 'setOption');
 
     submittingSignal.set(true);
     fixture.detectChanges();
@@ -142,7 +142,7 @@ describe('MarkdownEditorComponent', () => {
   });
 
   it('should cleanup on destroy', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
@@ -150,8 +150,8 @@ describe('MarkdownEditorComponent', () => {
 
     const fakeMde = component['mde'] as any;
 
-    const toTextAreaSpy = spyOn(fakeMde, 'toTextArea');
-    const cleanupSpy = spyOn(fakeMde, 'cleanup');
+    const toTextAreaSpy = vi.spyOn(fakeMde, 'toTextArea');
+    const cleanupSpy = vi.spyOn(fakeMde, 'cleanup');
 
     component.ngOnDestroy();
 
@@ -160,7 +160,7 @@ describe('MarkdownEditorComponent', () => {
   });
 
   it('should sync editor value and preserve cursor when contentValue changes', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
@@ -171,13 +171,13 @@ describe('MarkdownEditorComponent', () => {
 
     fakeMde.value('old');
 
-    const getCursorSpy = spyOn(cm, 'getCursor').and.returnValue({
+    const getCursorSpy = vi.spyOn(cm, 'getCursor').mockReturnValue({
       line: 3,
       ch: 5
     });
 
-    const setCursorSpy = spyOn(cm, 'setCursor').and.callThrough();
-    const valueSpy = spyOn(fakeMde, 'value').and.callThrough();
+    const setCursorSpy = vi.spyOn(cm, 'setCursor');
+    const valueSpy = vi.spyOn(fakeMde, 'value');
 
     component.contentValue.set('new');
 
@@ -199,7 +199,7 @@ describe('MarkdownEditorComponent', () => {
     const serverFixture = TestBed.createComponent(MarkdownEditorComponent);
     const serverComponent = serverFixture.componentInstance;
 
-    spyOn(serverComponent as any, 'initializeEditor');
+    vi.spyOn(serverComponent as any, 'initializeEditor');
 
     serverFixture.detectChanges();
 
@@ -208,14 +208,14 @@ describe('MarkdownEditorComponent', () => {
   });
 
   it('should set content when mde is initialized', async () => {
-    spyOn(component as any, 'loadEasyMDE').and.resolveTo({
+    vi.spyOn(component as any, 'loadEasyMDE').mockResolvedValue({
       default: FakeEasyMDE
     });
 
     await component.ngAfterViewInit();
 
     const fakeMde = component['mde'] as any;
-    const valueSpy = spyOn(fakeMde, 'value');
+    const valueSpy = vi.spyOn(fakeMde, 'value');
 
     component.setEasyMDEContent('hello world');
 

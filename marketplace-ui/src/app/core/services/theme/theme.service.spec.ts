@@ -8,7 +8,7 @@ describe('ThemeService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [],
-      providers: [ThemeService],
+      providers: [ThemeService]
     });
     service = TestBed.inject(ThemeService);
   });

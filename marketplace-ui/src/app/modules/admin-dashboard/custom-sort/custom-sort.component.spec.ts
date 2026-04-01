@@ -1,4 +1,10 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import type { MockedObject } from 'vitest';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
 import { CustomSortComponent } from './custom-sort.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product/product.service';
@@ -8,19 +14,26 @@ import { of, throwError } from 'rxjs';
 describe('CustomSortComponent', () => {
   let component: CustomSortComponent;
   let fixture: ComponentFixture<CustomSortComponent>;
-  let productService: jasmine.SpyObj<ProductService>;
-  let adminDashboardService: jasmine.SpyObj<AdminDashboardService>;
+  let productService: MockedObject<ProductService>;
+  let adminDashboardService: MockedObject<AdminDashboardService>;
   let translateService: TranslateService;
 
   beforeEach(async () => {
-    productService = jasmine.createSpyObj('ProductService', ['fetchAllProductIds']);
-    adminDashboardService = jasmine.createSpyObj('AdminDashboardService', ['sortMarketExtensions', 'getCustomSort']);
+    productService = {
+      fetchAllProductIds: vi.fn().mockName('ProductService.fetchAllProductIds')
+    };
+    adminDashboardService = {
+      sortMarketExtensions: vi
+        .fn()
+        .mockName('AdminDashboardService.sortMarketExtensions'),
+      getCustomSort: vi.fn().mockName('AdminDashboardService.getCustomSort')
+    };
 
-    productService.fetchAllProductIds.and.returnValue(
+    productService.fetchAllProductIds.mockReturnValue(
       of(['portal', 'coffee-machine-connector', 'persistence-utils'])
     );
-    adminDashboardService.sortMarketExtensions.and.returnValue(of(undefined));
-    adminDashboardService.getCustomSort.and.returnValue(
+    adminDashboardService.sortMarketExtensions.mockReturnValue(of(undefined));
+    adminDashboardService.getCustomSort.mockReturnValue(
       of({
         orderedListOfProducts: ['portal'],
         ruleForRemainder: 'alphabetically'
@@ -49,15 +62,22 @@ describe('CustomSortComponent', () => {
     tick();
 
     expect(component.sortingExtensions).toEqual(['portal']);
-    expect(component.allExtensions).toEqual(['coffee-machine-connector', 'persistence-utils']);
+    expect(component.allExtensions).toEqual([
+      'coffee-machine-connector',
+      'persistence-utils'
+    ]);
     expect(component.isLoading).toBe(false);
   }));
 
   it('should reset loading flag when loading product IDs fails', async () => {
-    productService.fetchAllProductIds.and.returnValue(throwError(() => new Error('error')));
-    adminDashboardService.getCustomSort.and.returnValue(of({ orderedListOfProducts: [], ruleForRemainder: 'alphabetically' }));
+    productService.fetchAllProductIds.mockReturnValue(
+      throwError(() => new Error('error'))
+    );
+    adminDashboardService.getCustomSort.mockReturnValue(
+      of({ orderedListOfProducts: [], ruleForRemainder: 'alphabetically' })
+    );
 
-    await expectAsync((component as any).loadAllProductIds()).toBeRejected();
+    await expect((component as any).loadAllProductIds()).rejects.toThrow();
 
     expect(component.allExtensions).toEqual([]);
     expect(component.sortingExtensions).toEqual([]);
@@ -72,7 +92,11 @@ describe('CustomSortComponent', () => {
     it('should return all extensions when search term is empty', () => {
       component.searchTerm = '';
 
-      expect(component.filteredAvailableExtensions).toEqual(['portal', 'coffee-machine-connector', 'demos']);
+      expect(component.filteredAvailableExtensions).toEqual([
+        'portal',
+        'coffee-machine-connector',
+        'demos'
+      ]);
     });
 
     it('should filter extensions by search term', () => {
@@ -100,7 +124,12 @@ describe('CustomSortComponent', () => {
 
   describe('drop', () => {
     beforeEach(() => {
-      component.allExtensions = ['portal', 'coffee-machine-connector', 'persistence-utils', 'ext-4'];
+      component.allExtensions = [
+        'portal',
+        'coffee-machine-connector',
+        'persistence-utils',
+        'ext-4'
+      ];
       component.searchTerm = '';
     });
 
@@ -123,7 +152,10 @@ describe('CustomSortComponent', () => {
 
     it('should move from sorted to available', () => {
       component.sortingExtensions = ['portal'];
-      component.allExtensions = ['coffee-machine-connector', 'persistence-utils'];
+      component.allExtensions = [
+        'coffee-machine-connector',
+        'persistence-utils'
+      ];
 
       const event = {
         previousContainer: { id: 'sorted-extensions', data: [] },
@@ -140,8 +172,15 @@ describe('CustomSortComponent', () => {
     });
 
     it('should reorder within sorted table', () => {
-      component.sortingExtensions = ['portal', 'coffee-machine-connector', 'persistence-utils'];
-      const container = { id: 'sorted-extensions', data: component.sortingExtensions };
+      component.sortingExtensions = [
+        'portal',
+        'coffee-machine-connector',
+        'persistence-utils'
+      ];
+      const container = {
+        id: 'sorted-extensions',
+        data: component.sortingExtensions
+      };
 
       const event = {
         previousContainer: container,
@@ -153,12 +192,23 @@ describe('CustomSortComponent', () => {
 
       component.drop(event);
 
-      expect(component.sortingExtensions).toEqual(['coffee-machine-connector', 'persistence-utils', 'portal']);
+      expect(component.sortingExtensions).toEqual([
+        'coffee-machine-connector',
+        'persistence-utils',
+        'portal'
+      ]);
     });
 
     it('should reorder within available table', () => {
-      component.allExtensions = ['portal', 'coffee-machine-connector', 'persistence-utils'];
-      const container = { id: 'available-extensions', data: component.allExtensions };
+      component.allExtensions = [
+        'portal',
+        'coffee-machine-connector',
+        'persistence-utils'
+      ];
+      const container = {
+        id: 'available-extensions',
+        data: component.allExtensions
+      };
 
       const event = {
         previousContainer: container,
@@ -170,7 +220,11 @@ describe('CustomSortComponent', () => {
 
       component.drop(event);
 
-      expect(component.allExtensions).toEqual(['coffee-machine-connector', 'persistence-utils', 'portal']);
+      expect(component.allExtensions).toEqual([
+        'coffee-machine-connector',
+        'persistence-utils',
+        'portal'
+      ]);
     });
   });
 
@@ -181,7 +235,7 @@ describe('CustomSortComponent', () => {
     }));
 
     it('should call service and show success message', fakeAsync(() => {
-      spyOn(translateService, 'instant').and.returnValue('Success');
+      vi.spyOn(translateService, 'instant').mockReturnValue('Success');
       component.sortingExtensions = ['portal', 'coffee-machine-connector'];
 
       component.sortMarketExtensions();
@@ -193,8 +247,10 @@ describe('CustomSortComponent', () => {
     }));
 
     it('should show error message on failure', fakeAsync(() => {
-      adminDashboardService.sortMarketExtensions.and.returnValue(throwError(() => new Error('error')));
-      spyOn(translateService, 'instant').and.returnValue('Error');
+      adminDashboardService.sortMarketExtensions.mockReturnValue(
+        throwError(() => new Error('error'))
+      );
+      vi.spyOn(translateService, 'instant').mockReturnValue('Error');
 
       component.sortMarketExtensions();
       tick();

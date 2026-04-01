@@ -1,14 +1,21 @@
+import type { MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { ProductStarRatingService } from './product-star-rating.service';
 import { ProductDetailService } from '../../product-detail.service';
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 describe('ProductStarRatingService', () => {
   let service: ProductStarRatingService;
   let httpMock: HttpTestingController;
-  let productDetailService: jasmine.SpyObj<ProductDetailService>;
+  let productDetailService: MockedObject<ProductDetailService>;
 
   const mockStarRatings: StarRatingCounting[] = [
     { starRating: 5, commentNumber: 10 },
@@ -17,7 +24,9 @@ describe('ProductStarRatingService', () => {
   ];
 
   beforeEach(() => {
-    const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['productId']);
+    const productDetailServiceSpy = {
+      productId: vi.fn().mockName('ProductDetailService.productId')
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,7 +39,9 @@ describe('ProductStarRatingService', () => {
 
     service = TestBed.inject(ProductStarRatingService);
     httpMock = TestBed.inject(HttpTestingController);
-    productDetailService = TestBed.inject(ProductDetailService) as jasmine.SpyObj<ProductDetailService>;
+    productDetailService = TestBed.inject(
+      ProductDetailService
+    ) as MockedObject<ProductDetailService>;
   });
 
   it('should be created', () => {
@@ -39,7 +50,7 @@ describe('ProductStarRatingService', () => {
 
   it('should fetch data and set star ratings', () => {
     const productId = '123';
-    productDetailService.productId.and.returnValue(productId);
+    productDetailService.productId.mockReturnValue(productId);
 
     service.fetchData();
 

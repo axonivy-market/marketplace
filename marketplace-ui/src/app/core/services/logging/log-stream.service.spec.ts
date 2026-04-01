@@ -1,8 +1,13 @@
+import type { Mock, MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { LogStreamService } from './log-stream.service';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
-import { API_INTERNAL_URL, API_PUBLIC_URL, API_URI } from '../../../shared/constants/api.constant';
+import {
+  API_INTERNAL_URL,
+  API_PUBLIC_URL,
+  API_URI
+} from '../../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
@@ -10,21 +15,23 @@ import { HttpHeaders } from '@angular/common/http';
 
 describe('LogStreamService', () => {
   let service: LogStreamService;
-  let mockRuntimeConfig: jasmine.SpyObj<RuntimeConfigService>;
-  let mockAdminAuthService: jasmine.SpyObj<AdminAuthService>;
+  let mockRuntimeConfig: MockedObject<RuntimeConfigService>;
+  let mockAdminAuthService: MockedObject<AdminAuthService>;
   const mockBaseUrl = 'http://localhost:8080';
-  let fetchSpy: jasmine.Spy;
+  let fetchSpy: Mock;
 
   beforeEach(() => {
-    mockRuntimeConfig = jasmine.createSpyObj('RuntimeConfigService', ['get']);
-    mockRuntimeConfig.get.and.returnValue(mockBaseUrl);
+    mockRuntimeConfig = {
+      get: vi.fn().mockName('RuntimeConfigService.get')
+    };
+    mockRuntimeConfig.get.mockReturnValue(mockBaseUrl);
 
-    mockAdminAuthService = jasmine.createSpyObj('AdminAuthService', [
-      'getAuthHeaders'
-    ]);
-    mockAdminAuthService.getAuthHeaders.and.returnValue(new HttpHeaders());
+    mockAdminAuthService = {
+      getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
+    };
+    mockAdminAuthService.getAuthHeaders.mockReturnValue(new HttpHeaders());
 
-    fetchSpy = spyOn(window, 'fetch').and.returnValue(new Promise(() => {}));
+    fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => {}));
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,7 +59,7 @@ describe('LogStreamService', () => {
     it('should establish connection with public URL in browser', () => {
       service.connect();
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
+      const args = vi.mocked(fetchSpy).mock.lastCall;
       const url = args[0] as string;
       expect(url).toContain('http://public:8080');
       expect(url).toContain('/logs/stream');
@@ -76,7 +83,7 @@ describe('LogStreamService', () => {
         RUNTIME_CONFIG_KEYS.MARKET_API_URL
       );
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
+      const args = vi.mocked(fetchSpy).mock.lastCall;
       const url = args[0] as string;
       expect(url).toContain(mockBaseUrl);
     });
@@ -94,7 +101,7 @@ describe('LogStreamService', () => {
       const serverService = TestBed.inject(LogStreamService);
       serverService.connect();
       expect(fetchSpy).not.toHaveBeenCalled();
-      expect(serverService.isConnected()).toBeFalse();
+      expect(serverService.isConnected()).toBe(false);
     });
 
     it('should not connect if already connected', () => {
@@ -108,15 +115,15 @@ describe('LogStreamService', () => {
         'Authorization',
         'Bearer token'
       );
-      mockAdminAuthService.getAuthHeaders.and.returnValue(dummyHeaders);
+      mockAdminAuthService.getAuthHeaders.mockReturnValue(dummyHeaders);
 
       service.connect();
 
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
+      const args = vi.mocked(fetchSpy).mock.lastCall;
       const options = args[1];
       expect(options.headers).toEqual(
-        jasmine.objectContaining({ Authorization: 'Bearer token' })
+        expect.objectContaining({ Authorization: 'Bearer token' })
       );
     });
   });

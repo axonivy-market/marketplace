@@ -41,7 +41,7 @@ describe('ErrorPageComponentComponent', () => {
 
   it('should call checkMediaSize on window resize', () => {
     setupComponent(undefined);
-    spyOn(component, 'checkMediaSize');
+    vi.spyOn(component, 'checkMediaSize');
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
@@ -84,7 +84,7 @@ describe('ErrorPageComponentComponent', () => {
 
   it('should back to the home page', () => {
     setupComponent(undefined);
-    spyOn(component, 'backToHomePage');
+    vi.spyOn(component, 'backToHomePage');
     let buttonElement = fixture.debugElement.query(By.css('button'));
     buttonElement.nativeElement.click();
     expect(component.backToHomePage).toHaveBeenCalled();
@@ -92,7 +92,7 @@ describe('ErrorPageComponentComponent', () => {
 
   it('should redirect to the home page', () => {
     setupComponent(undefined);
-    const navigateSpy = spyOn(router, 'navigate');
+    const navigateSpy = vi.spyOn(router, 'navigate');
     component.backToHomePage();
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
@@ -120,7 +120,7 @@ describe('ErrorPageComponentComponent', () => {
 
     it('should set error id to the same as in route param', () => {
       const translateService = TestBed.inject(TranslateService);
-      spyOn(translateService, 'get').and.returnValue(of({ '404': 'test' }));
+      vi.spyOn(translateService, 'get').mockReturnValue(of({ '404': 'test' }));
       component.ngOnInit();
       fixture.detectChanges();
       const errorCode = fixture.debugElement.query(By.css('.error-code'));

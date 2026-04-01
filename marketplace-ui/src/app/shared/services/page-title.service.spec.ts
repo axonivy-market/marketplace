@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
@@ -6,16 +7,19 @@ import { PageTitleService } from './page-title.service';
 
 describe('PageTitleService', () => {
   let service: PageTitleService;
-  let translateService: jasmine.SpyObj<TranslateService>;
-  let titleService: jasmine.SpyObj<Title>;
+  let translateService: MockedObject<TranslateService>;
+  let titleService: MockedObject<Title>;
   let langChangeSubject: Subject<LangChangeEvent>;
 
   beforeEach(() => {
     langChangeSubject = new Subject<LangChangeEvent>();
-    const translateSpy = jasmine.createSpyObj('TranslateService', ['get'], {
+    const translateSpy = {
+      get: vi.fn().mockName('TranslateService.get'),
       onLangChange: langChangeSubject.asObservable()
-    });
-    const titleSpy = jasmine.createSpyObj('Title', ['setTitle']);
+    };
+    const titleSpy = {
+      setTitle: vi.fn().mockName('Title.setTitle')
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -26,8 +30,10 @@ describe('PageTitleService', () => {
     });
 
     service = TestBed.inject(PageTitleService);
-    translateService = TestBed.inject(TranslateService) as jasmine.SpyObj<TranslateService>;
-    titleService = TestBed.inject(Title) as jasmine.SpyObj<Title>;
+    translateService = TestBed.inject(
+      TranslateService
+    ) as MockedObject<TranslateService>;
+    titleService = TestBed.inject(Title) as MockedObject<Title>;
   });
 
   afterEach(() => {
@@ -42,7 +48,7 @@ describe('PageTitleService', () => {
   it('should set initial title with translated text', () => {
     const titleLabel = 'common.preview.pageTitle';
     const pageTitle = 'Release Preview';
-    translateService.get.and.returnValue(of(pageTitle));
+    translateService.get.mockReturnValue(of(pageTitle));
 
     service.setTitleOnLangChange(titleLabel);
 
@@ -55,10 +61,9 @@ describe('PageTitleService', () => {
     const enTitle = 'Release Preview';
     const deTitle = 'Veröffentlichungsvorschau';
 
-    translateService.get.and.returnValues(
-      of(enTitle),
-      of(deTitle)
-    );
+    translateService.get
+      .mockReturnValueOnce(of(enTitle))
+      .mockReturnValueOnce(of(deTitle));
 
     service.setTitleOnLangChange(titleLabel);
 
@@ -77,12 +82,12 @@ describe('PageTitleService', () => {
 
   it('should unsubscribe from language change subscription', () => {
     const titleLabel = 'common.preview.pageTitle';
-    translateService.get.and.returnValue(of('Release Preview'));
+    translateService.get.mockReturnValue(of('Release Preview'));
 
     service.setTitleOnLangChange(titleLabel);
 
     const subscription = (service as any).langSub;
-    spyOn(subscription, 'unsubscribe').and.callThrough();
+    vi.spyOn(subscription, 'unsubscribe');
 
     service.ngOnDestroy();
 

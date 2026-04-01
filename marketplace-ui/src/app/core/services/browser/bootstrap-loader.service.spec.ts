@@ -18,14 +18,15 @@ describe('BootstrapLoaderService', () => {
     });
 
     it('should call loadNgbModule() in browser', async () => {
-      const spy = spyOn(service as any, 'loadNgbModule').and.resolveTo({});
+      const spy = vi
+        .spyOn(service as any, 'loadNgbModule')
+        .mockResolvedValue({});
       await service.init();
       expect(spy).toHaveBeenCalled();
     });
   });
 
   describe('in server platform', () => {
-
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
@@ -38,7 +39,7 @@ describe('BootstrapLoaderService', () => {
     });
 
     it('should not call loadNgbModule() on server', async () => {
-      const spy = spyOn(service as any, 'loadNgbModule');
+      const spy = vi.spyOn(service as any, 'loadNgbModule');
       await service.init();
       expect(spy).not.toHaveBeenCalled();
     });

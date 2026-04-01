@@ -8,7 +8,7 @@ describe('LanguageService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [],
-      providers: [LanguageService],
+      providers: [LanguageService]
     });
     service = TestBed.inject(LanguageService);
   });
@@ -23,7 +23,7 @@ describe('LanguageService', () => {
     expect(service.selectedLanguage()).toEqual(Language.EN);
   });
 
-  it('should change to language de-DE', ()=> {
+  it('should change to language de-DE', () => {
     service.loadLanguage(Language.DE);
     expect(service.selectedLanguage()).toEqual(Language.DE);
   });

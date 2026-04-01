@@ -8,7 +8,7 @@ describe('BackToTopComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BackToTopComponent],
+      imports: [BackToTopComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BackToTopComponent);
@@ -25,36 +25,36 @@ describe('BackToTopComponent', () => {
     window.scrollY = component.backToTopShowThreshold + 1;
     window.dispatchEvent(new Event('scroll'));
 
-    expect(component.showScrollButton).toBeTrue();
+    expect(component.showScrollButton).toBe(true);
   });
 
   it('should hide the button when scrolling above the threshold', () => {
     // Simulate scrolling past the threshold, then scroll back up
     window.scrollY = component.backToTopShowThreshold + 1;
     window.dispatchEvent(new Event('scroll'));
-    expect(component.showScrollButton).toBeTrue();
+    expect(component.showScrollButton).toBe(true);
 
     // Scroll up above the threshold
     window.scrollY = component.backToTopShowThreshold - 1;
     window.dispatchEvent(new Event('scroll'));
-    expect(component.showScrollButton).toBeFalse();
+    expect(component.showScrollButton).toBe(false);
   });
 
   it('should scroll to top when button is clicked and showScrollButton is true', () => {
-    const scrollToSpy = spyOn<Window>(window, 'scrollTo');
-    
+    const scrollToSpy = vi.spyOn<Window>(window, 'scrollTo');
+
     const mockScrollOption = {
       top: 0,
-      behavior: "smooth"
-  }
+      behavior: 'smooth'
+    };
     component.showScrollButton = true;
     component.scrollToTop();
 
-    expect(scrollToSpy.calls.argsFor(0)).toEqual([mockScrollOption]);
+    expect(vi.mocked(scrollToSpy).mock.calls[0]).toEqual([mockScrollOption]);
   });
 
   it('should not scroll to top when button is clicked and showScrollButton is false', () => {
-    const scrollToSpy = spyOn(window, 'scrollTo');
+    const scrollToSpy = vi.spyOn(window, 'scrollTo');
     component.showScrollButton = false;
     component.scrollToTop();
 
@@ -65,15 +65,23 @@ describe('BackToTopComponent', () => {
     component.showScrollButton = true;
     fixture.detectChanges();
 
-    const scrollToTopButtonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
-    expect(getComputedStyle(scrollToTopButtonElement.nativeElement).opacity).toEqual('1');
+    const scrollToTopButtonElement = fixture.debugElement.query(
+      By.css('.scroll-to-top')
+    );
+    expect(
+      getComputedStyle(scrollToTopButtonElement.nativeElement).opacity
+    ).toEqual('1');
   });
 
   it('should not render the button when showScrollButton is false', () => {
     component.showScrollButton = false;
     fixture.detectChanges();
 
-    const scrollToTopButtonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
-    expect(getComputedStyle(scrollToTopButtonElement.nativeElement).opacity).toEqual('0');
+    const scrollToTopButtonElement = fixture.debugElement.query(
+      By.css('.scroll-to-top')
+    );
+    expect(
+      getComputedStyle(scrollToTopButtonElement.nativeElement).opacity
+    ).toEqual('0');
   });
 });

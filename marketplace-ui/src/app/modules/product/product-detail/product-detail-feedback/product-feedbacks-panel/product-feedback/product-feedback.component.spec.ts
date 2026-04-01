@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductFeedbackComponent } from './product-feedback.component';
 import { CommonModule } from '@angular/common';
@@ -5,7 +6,10 @@ import { StarRatingComponent } from '../../../../../../shared/components/star-ra
 import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { ProductFeedbackService } from '../product-feedback.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
@@ -15,17 +19,18 @@ describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
   let fixture: ComponentFixture<ProductFeedbackComponent>;
   let mockElementRef: ElementRef;
-  let authService: jasmine.SpyObj<AuthService>;
-  let translateServiceSpy: jasmine.SpyObj<TranslateService>;
+  let authService: MockedObject<AuthService>;
+  let translateServiceSpy: MockedObject<TranslateService>;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [
-      'getToken',
-      'getUserId'
-    ]);
-    translateServiceSpy = jasmine.createSpyObj('TranslateService', [
-      'getTranslation', 'setDefaultLang'
-    ]);
+    const authServiceSpy = {
+      getToken: vi.fn().mockName('AuthService.getToken'),
+      getUserId: vi.fn().mockName('AuthService.getUserId')
+    };
+    translateServiceSpy = {
+      getTranslation: vi.fn().mockName('TranslateService.getTranslation'),
+      setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang')
+    };
     mockElementRef = {
       nativeElement: {
         scrollHeight: 200,
@@ -34,11 +39,7 @@ describe('ProductFeedbackComponent', () => {
     } as ElementRef;
 
     await TestBed.configureTestingModule({
-      imports: [
-        ProductFeedbackComponent,
-        StarRatingComponent,
-        CommonModule
-      ],
+      imports: [ProductFeedbackComponent, StarRatingComponent, CommonModule],
       providers: [
         { provide: ElementRef, useValue: mockElementRef },
         { provide: AuthService, useValue: authServiceSpy },
@@ -98,7 +99,7 @@ describe('ProductFeedbackComponent', () => {
       }
     ];
     component.feedback = mockFeedbacks[0];
-    authService.getUserId.and.returnValue('user2');
+    authService.getUserId.mockReturnValue('user2');
     expect(component.isFeedbackPending(component.feedback)).toBe(false);
   });
 
@@ -117,7 +118,7 @@ describe('ProductFeedbackComponent', () => {
       }
     ];
     component.feedback = mockFeedbacks[0];
-    authService.getUserId.and.returnValue('user1');
+    authService.getUserId.mockReturnValue('user1');
     expect(component.isFeedbackPending(component.feedback)).toBe(false);
   });
 
@@ -136,7 +137,7 @@ describe('ProductFeedbackComponent', () => {
       }
     ];
     component.feedback = mockFeedbacks[0];
-    authService.getUserId.and.returnValue('user1');
+    authService.getUserId.mockReturnValue('user1');
     expect(component.isFeedbackPending(component.feedback)).toBe(true);
   });
 });

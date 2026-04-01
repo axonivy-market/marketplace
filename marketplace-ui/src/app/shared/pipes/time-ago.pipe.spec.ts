@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { Language } from '../enums/language.enum';
@@ -7,17 +8,20 @@ import { of } from 'rxjs';
 
 describe('TimeAgoPipe', () => {
   let pipe: TimeAgoPipe;
-  let translateServiceSpy: jasmine.SpyObj<TranslateService>;
+  let translateServiceSpy: MockedObject<TranslateService>;
 
   beforeEach(() => {
-    translateServiceSpy = jasmine.createSpyObj('TranslateService', [
-      'getTranslation', 'setDefaultLang', 'instant', 'use'
-    ]);
-    translateServiceSpy.use.and.returnValue(of('en'));
+    translateServiceSpy = {
+      getTranslation: vi.fn().mockName('TranslateService.getTranslation'),
+      setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang'),
+      instant: vi.fn().mockName('TranslateService.instant'),
+      use: vi.fn().mockName('TranslateService.use')
+    };
+    translateServiceSpy.use.mockReturnValue(of('en'));
     TestBed.configureTestingModule({
       providers: [
         TimeAgoPipe,
-        { provide: TranslateService, useValue: translateServiceSpy },
+        { provide: TranslateService, useValue: translateServiceSpy }
       ]
     });
 

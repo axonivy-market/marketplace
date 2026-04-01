@@ -10,7 +10,9 @@ describe('TeamIntroductionComponent', () => {
       imports: [TeamIntroductionComponent, TranslateModule.forRoot()]
     }).compileComponents();
 
-    component = TestBed.createComponent(TeamIntroductionComponent).componentInstance;
+    component = TestBed.createComponent(
+      TeamIntroductionComponent
+    ).componentInstance;
   });
 
   it('should check the size after init', () => {
@@ -30,4 +32,3 @@ describe('TeamIntroductionComponent', () => {
     expect(firstMember.avatarName).toContain('.png');
   });
 });
-

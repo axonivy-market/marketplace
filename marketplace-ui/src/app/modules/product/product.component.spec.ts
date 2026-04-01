@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -31,19 +32,19 @@ describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
-  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let location: Location;
   let router: Router;
 
   beforeAll(() => {
-    mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
-      'observe',
-      'unobserve',
-      'disconnect'
-    ]);
-    mockIntersectionObserver.observe.and.callFake(() => {});
-    mockIntersectionObserver.unobserve.and.callFake(() => {});
-    mockIntersectionObserver.disconnect.and.callFake(() => {});
+    mockIntersectionObserver = {
+      observe: vi.fn().mockName('IntersectionObserver.observe'),
+      unobserve: vi.fn().mockName('IntersectionObserver.unobserve'),
+      disconnect: vi.fn().mockName('IntersectionObserver.disconnect')
+    };
+    mockIntersectionObserver.observe.mockImplementation(() => {});
+    mockIntersectionObserver.unobserve.mockImplementation(() => {});
+    mockIntersectionObserver.disconnect.mockImplementation(() => {});
 
     (window as any).IntersectionObserver = function (
       callback: IntersectionObserverCallback
@@ -58,16 +59,21 @@ describe('ProductComponent', () => {
   });
 
   beforeEach(async () => {
-    routingQueryParamService = jasmine.createSpyObj(
-      'RoutingQueryParamService',
-      [
-        'getNavigationStartEvent',
-        'isDesigner',
-        'isDesignerEnv',
-        'checkSessionStorageForDesignerEnv',
-        'checkSessionStorageForDesignerVersion'
-      ]
-    );
+    routingQueryParamService = {
+      getNavigationStartEvent: vi
+        .fn()
+        .mockName('RoutingQueryParamService.getNavigationStartEvent'),
+      isDesigner: vi.fn().mockName('RoutingQueryParamService.isDesigner'),
+      isDesignerEnv: vi.fn().mockName('RoutingQueryParamService.isDesignerEnv'),
+      checkSessionStorageForDesignerEnv: vi
+        .fn()
+        .mockName('RoutingQueryParamService.checkSessionStorageForDesignerEnv'),
+      checkSessionStorageForDesignerVersion: vi
+        .fn()
+        .mockName(
+          'RoutingQueryParamService.checkSessionStorageForDesignerVersion'
+        )
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -112,7 +118,7 @@ describe('ProductComponent', () => {
 
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
+    ) as MockedObject<RoutingQueryParamService>;
 
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
@@ -149,10 +155,11 @@ describe('ProductComponent', () => {
   });
 
   it('onFilterChange should update queryParams correctly', () => {
-    spyOn(component.router, 'navigate');
+    vi.spyOn(component.router, 'navigate');
     const filterOption: ItemDropdown<TypeOption> = {
       value: TypeOption.CONNECTORS,
-      label: 'Connectors' };
+      label: 'Connectors'
+    };
     component.onFilterChange(filterOption);
 
     expect(component.router.navigate).toHaveBeenCalledWith([], {
@@ -175,8 +182,11 @@ describe('ProductComponent', () => {
   });
 
   it('onFilterChange should handle "All Types" correctly', () => {
-    spyOn(component.router, 'navigate');
-    const filterOption: ItemDropdown<TypeOption> = { value: TypeOption.All_TYPES, label: 'All Types' };
+    vi.spyOn(component.router, 'navigate');
+    const filterOption: ItemDropdown<TypeOption> = {
+      value: TypeOption.All_TYPES,
+      label: 'All Types'
+    };
 
     component.onFilterChange(filterOption);
 
@@ -189,7 +199,7 @@ describe('ProductComponent', () => {
 
   it('onSearchChanged should handle empty search string correctly', fakeAsync(() => {
     const searchString = '';
-    spyOn(component.router, 'navigate');
+    vi.spyOn(component.router, 'navigate');
 
     component.onSearchChanged(searchString);
     tick(500);
@@ -217,8 +227,8 @@ describe('ProductComponent', () => {
   });
 
   it('should call loadProductItems when observerElement is intersecting and has more products', () => {
-    spyOn(component, 'loadProductItems').and.callThrough();
-    spyOn(component, 'hasMore').and.returnValue(true);
+    vi.spyOn(component, 'loadProductItems');
+    vi.spyOn(component, 'hasMore').mockReturnValue(true);
 
     const entries = [{ isIntersecting: true }];
     const callback = mockIntersectionObserver.callback;
@@ -230,8 +240,8 @@ describe('ProductComponent', () => {
   });
 
   it('should not call loadProductItems when observerElement is not intersecting', () => {
-    spyOn(component, 'loadProductItems').and.callThrough();
-    spyOn(component, 'hasMore').and.returnValue(true);
+    vi.spyOn(component, 'loadProductItems');
+    vi.spyOn(component, 'hasMore').mockReturnValue(true);
 
     const entries = [{ isIntersecting: false }];
     const callback = mockIntersectionObserver.callback;
@@ -243,8 +253,8 @@ describe('ProductComponent', () => {
   });
 
   it('should not call loadProductItems when observerElement is still loading', () => {
-    spyOn(component, 'loadProductItems').and.callThrough();
-    spyOn(component, 'hasMore').and.returnValue(true);
+    vi.spyOn(component, 'loadProductItems');
+    vi.spyOn(component, 'hasMore').mockReturnValue(true);
     component.loadingService.showLoading(LoadingComponentId.END_LANDING_PAGE);
 
     const entries = [{ isIntersecting: true }];
@@ -255,8 +265,8 @@ describe('ProductComponent', () => {
   });
 
   it('should not call loadProductItems when there are no more products', () => {
-    spyOn(component, 'loadProductItems').and.callThrough();
-    spyOn(component, 'hasMore').and.returnValue(false);
+    vi.spyOn(component, 'loadProductItems');
+    vi.spyOn(component, 'hasMore').mockReturnValue(false);
 
     const entries = [{ isIntersecting: true }];
     const callback = mockIntersectionObserver.callback;
@@ -272,11 +282,11 @@ describe('ProductComponent', () => {
       [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly'
     });
 
-    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(true);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
-    expect(component.isRESTClient()).toBeTrue();
+    expect(component.isRESTClient()).toBe(true);
   });
 
   it('should not display marketplace introduction in designer', () => {
@@ -293,11 +303,11 @@ describe('ProductComponent', () => {
   });
 
   it('should navigate to product detail page when clicking on a product card', fakeAsync(() => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(false);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
-    expect(component.isRESTClient()).toBeFalse();
+    expect(component.isRESTClient()).toBe(false);
 
     const productName = 'amazon-comprehend';
 
@@ -334,7 +344,7 @@ describe('ProductComponent', () => {
   });
 
   it('should set query params back to criteria', fakeAsync(() => {
-    spyOn(component.router, 'navigate');
+    vi.spyOn(component.router, 'navigate');
 
     component.route.queryParams = of({
       search: 'asana',

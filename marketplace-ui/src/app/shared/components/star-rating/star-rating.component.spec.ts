@@ -41,7 +41,7 @@ describe('StarRatingComponent', () => {
   });
 
   it('should emit rateChange event when rate changes', () => {
-    spyOn(component.rateChange, 'emit');
+    vi.spyOn(component.rateChange, 'emit');
 
     component.onRateChange(4);
 

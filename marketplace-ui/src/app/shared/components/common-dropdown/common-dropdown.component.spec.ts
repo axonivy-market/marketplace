@@ -16,7 +16,7 @@ describe('CommonDropdownComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CommonDropdownComponent, TranslateModule.forRoot()],
-      providers: [TranslateService],
+      providers: [TranslateService]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CommonDropdownComponent);
@@ -33,11 +33,11 @@ describe('CommonDropdownComponent', () => {
     const button = fixture.debugElement.query(By.css('button'));
     button.triggerEventHandler('click', null);
     fixture.detectChanges();
-    expect(component.isDropdownOpen).toBeTrue();
+    expect(component.isDropdownOpen).toBe(true);
 
     button.triggerEventHandler('click', null);
     fixture.detectChanges();
-    expect(component.isDropdownOpen).toBeFalse();
+    expect(component.isDropdownOpen).toBe(false);
   });
 
   it('should close the dropdown when clicking outside', () => {
@@ -48,45 +48,46 @@ describe('CommonDropdownComponent', () => {
     document.dispatchEvent(event);
     fixture.detectChanges();
 
-    expect(component.isDropdownOpen).toBeFalse();
+    expect(component.isDropdownOpen).toBe(false);
   });
-
 
   it('should apply "indicator-arrow__up" class when dropdown is open', () => {
     component.isDropdownOpen = true;
     fixture.detectChanges();
 
     const button = fixture.debugElement.query(By.css('button'));
-    expect(button.classes['indicator-arrow__up']).toBeTrue();
+    expect(button.classes['indicator-arrow__up']).toBe(true);
   });
 
   it('should emit selected item and close the dropdown when an item is clicked', () => {
-    spyOn(component.itemSelected, 'emit');
+    vi.spyOn(component.itemSelected, 'emit');
 
     const items: ItemDropdown<string>[] = [
       { label: 'Item 1', value: 'item1' },
-      { label: 'Item 2', value: 'item2' },
+      { label: 'Item 2', value: 'item2' }
     ];
     component.items = items;
     component.isDropdownOpen = true;
     fixture.detectChanges();
 
-    const dropdownItems = fixture.debugElement.queryAll(By.css('.dropdown-item'));
+    const dropdownItems = fixture.debugElement.queryAll(
+      By.css('.dropdown-item')
+    );
     dropdownItems[0].triggerEventHandler('click', null);
     fixture.detectChanges();
 
     expect(component.itemSelected.emit).toHaveBeenCalledWith(items[0]);
-    expect(component.isDropdownOpen).toBeFalse();
+    expect(component.isDropdownOpen).toBe(false);
   });
 
   it('should call the translate service to get the translated label', () => {
     const translateService = TestBed.inject(TranslateService);
-    spyOn(translateService, 'instant').and.returnValue('Translated Label');
+    vi.spyOn(translateService, 'instant').mockReturnValue('Translated Label');
 
     const item = { label: 'originalLabel', value: 'item1' };
     const result = component.isActiveItem(item, 'Translated Label');
 
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
     expect(translateService.instant).toHaveBeenCalledWith('originalLabel');
   });
 
@@ -96,7 +97,9 @@ describe('CommonDropdownComponent', () => {
     component.isDropdownOpen = true;
     fixture.detectChanges();
 
-    const dropdownMenu = fixture.debugElement.query(By.css('.dropdown-menu')).nativeElement;
+    const dropdownMenu = fixture.debugElement.query(
+      By.css('.dropdown-menu')
+    ).nativeElement;
 
     const maxHeight = getComputedStyle(dropdownMenu).maxHeight;
     const overflow = getComputedStyle(dropdownMenu).overflow;
@@ -111,7 +114,9 @@ describe('CommonDropdownComponent', () => {
     component.isDropdownOpen = true;
     fixture.detectChanges();
 
-    const dropdownMenu = fixture.debugElement.query(By.css('.dropdown-menu')).nativeElement;
+    const dropdownMenu = fixture.debugElement.query(
+      By.css('.dropdown-menu')
+    ).nativeElement;
 
     const maxHeight = getComputedStyle(dropdownMenu).maxHeight;
     const overflow = getComputedStyle(dropdownMenu).overflow;

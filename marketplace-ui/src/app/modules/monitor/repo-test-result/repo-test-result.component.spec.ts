@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RepoTestResultComponent } from './repo-test-result.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10,37 +11,42 @@ import { By } from '@angular/platform-browser';
 describe('RepoTestResultComponent', () => {
   let component: RepoTestResultComponent;
   let fixture: ComponentFixture<RepoTestResultComponent>;
-  let mockTranslateService: jasmine.SpyObj<TranslateService>;
-  let router: jasmine.SpyObj<Router>;
+  let mockTranslateService: MockedObject<TranslateService>;
+  let router: MockedObject<Router>;
   let mockRepository: Repository;
 
   beforeEach(async () => {
-    mockTranslateService = jasmine.createSpyObj('TranslateService', [
-      'instant', 'get'
-    ]);
-    mockTranslateService.instant.and.callFake((key: string) => key);
-    mockTranslateService.get.and.callFake((key: string) => of(key));
+    mockTranslateService = {
+      instant: vi.fn().mockName('TranslateService.instant'),
+      get: vi.fn().mockName('TranslateService.get')
+    };
+    mockTranslateService.instant.mockImplementation((key: string) => key);
+    mockTranslateService.get.mockImplementation((key: string) => of(key));
     mockRepository = {
-    repoName: 'test-repo',
-    htmlUrl: 'https://github.com/user/test-repo',
-    workflowInformation: [
-      {
-        workflowType: 'CI',
-        lastBuilt: new Date('2025-08-01T12:00:00Z'),
-        conclusion: 'success',
-        lastBuiltRunUrl: 'https://github.com/user/test-repo/actions/runs/123'
-      }
-    ],
-    testResults: [
-      {
-        workflow: 'CI',
-        results: { PASSED: 10, FAILED: 2 }
-      }
-    ]
-  } as Repository;
+      repoName: 'test-repo',
+      htmlUrl: 'https://github.com/user/test-repo',
+      workflowInformation: [
+        {
+          workflowType: 'CI',
+          lastBuilt: new Date('2025-08-01T12:00:00Z'),
+          conclusion: 'success',
+          lastBuiltRunUrl: 'https://github.com/user/test-repo/actions/runs/123'
+        }
+      ],
+      testResults: [
+        {
+          workflow: 'CI',
+          results: { PASSED: 10, FAILED: 2 }
+        }
+      ]
+    } as Repository;
 
     await TestBed.configureTestingModule({
-      imports: [RepoTestResultComponent, MatomoTestingModule.forRoot(), TranslateModule.forRoot(),],
+      imports: [
+        RepoTestResultComponent,
+        MatomoTestingModule.forRoot(),
+        TranslateModule.forRoot()
+      ],
       providers: [
         { provide: TranslateService, useValue: mockTranslateService },
         {
@@ -63,13 +69,15 @@ describe('RepoTestResultComponent', () => {
     component.workflowType = 'CI';
     component.mode = 'default';
 
-    router = jasmine.createSpyObj('Router', ['navigate']);
+    router = {
+      navigate: vi.fn().mockName('Router.navigate')
+    };
     component.router = router;
     fixture.detectChanges();
   });
 
   afterEach(() => {
-    mockTranslateService.instant.calls.reset();
+    mockTranslateService.instant.mockClear();
   });
 
   it('should create', () => {
@@ -90,7 +98,7 @@ describe('RepoTestResultComponent', () => {
   });
 
   it('should open new tab on badge click in default mode', () => {
-    spyOn(window, 'open');
+    vi.spyOn(window, 'open');
     component.onBadgeClick(mockRepository.repoName, 'CI', 'default');
     expect(window.open).toHaveBeenCalledWith(
       'https://github.com/user/test-repo/actions/runs/123',
@@ -101,7 +109,11 @@ describe('RepoTestResultComponent', () => {
   it('should navigate to report page on badge click in report mode', () => {
     component.mode = 'report';
     component.onBadgeClick(mockRepository.repoName, 'CI', 'report');
-    expect(router.navigate).toHaveBeenCalledWith(['/monitoring', 'test-repo', 'CI']);
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/monitoring',
+      'test-repo',
+      'CI'
+    ]);
   });
 
   it('should not render badge if workflowInfo is missing', () => {
@@ -112,21 +124,23 @@ describe('RepoTestResultComponent', () => {
   });
 
   it('should handle empty test results gracefully', () => {
-  component.mode = 'report';
+    component.mode = 'report';
 
-  const emptyResults: TestSummary = {
-    FAILED: 0,
-    PASSED: 0,
-    SKIPPED: 0
-  };
+    const emptyResults: TestSummary = {
+      FAILED: 0,
+      PASSED: 0,
+      SKIPPED: 0
+    };
 
-  component.repository.testResults = [{ workflow: 'CI', results: emptyResults }];
-  fixture.detectChanges();
+    component.repository.testResults = [
+      { workflow: 'CI', results: emptyResults }
+    ];
+    fixture.detectChanges();
 
-  const subStatus = fixture.debugElement.query(By.css('.sub-status'));
-  expect(subStatus).toBeTruthy();
-  expect(subStatus.nativeElement.textContent.trim()).toBe('');
-});
+    const subStatus = fixture.debugElement.query(By.css('.sub-status'));
+    expect(subStatus).toBeTruthy();
+    expect(subStatus.nativeElement.textContent.trim()).toBe('');
+  });
 
   it('should correctly compute conclusion key', () => {
     expect(component.getConclusionKey('SUCCESS')).toBe('success');
@@ -175,8 +189,8 @@ describe('RepoTestResultComponent', () => {
     component.repository.testResults = [
       { workflow: 'CI', results: { PASSED: 5, FAILED: 2, SKIPPED: 1 } }
     ];
-    expect(component.hasAnyTestResults()).toBeTrue();
-    expect(component.hasWorkflowTestResults()).toBeTrue();
+    expect(component.hasAnyTestResults()).toBe(true);
+    expect(component.hasWorkflowTestResults()).toBe(true);
   });
 
   it('should report hasAnyTestResults true but hasWorkflowTestResults false for different workflow', () => {
@@ -185,8 +199,8 @@ describe('RepoTestResultComponent', () => {
     component.repository.testResults = [
       { workflow: 'CI', results: { PASSED: 3, FAILED: 0, SKIPPED: 0 } }
     ];
-    expect(component.hasAnyTestResults()).toBeTrue();
-    expect(component.hasWorkflowTestResults()).toBeFalse();
+    expect(component.hasAnyTestResults()).toBe(true);
+    expect(component.hasWorkflowTestResults()).toBe(false);
   });
 
   it('should report both false when results are null/undefined', () => {
@@ -196,7 +210,7 @@ describe('RepoTestResultComponent', () => {
       { workflow: 'CI', results: null as any },
       { workflow: 'CI', results: undefined as any }
     ];
-    expect(component.hasAnyTestResults()).toBeFalse();
-    expect(component.hasWorkflowTestResults()).toBeFalse();
+    expect(component.hasAnyTestResults()).toBe(false);
+    expect(component.hasWorkflowTestResults()).toBe(false);
   });
 });

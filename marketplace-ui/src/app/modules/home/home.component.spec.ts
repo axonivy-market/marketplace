@@ -1,4 +1,8 @@
-import { FAVICON_DEFAULT_TYPE, FAVICON_DEFAULT_URL } from './../../shared/constants/common.constant';
+import type { MockedObject } from 'vitest';
+import {
+  FAVICON_DEFAULT_TYPE,
+  FAVICON_DEFAULT_URL
+} from './../../shared/constants/common.constant';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
@@ -16,10 +20,12 @@ import { FaviconService } from '../../shared/services/favicon.service';
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let faviconServiceSpy: jasmine.SpyObj<FaviconService>;
+  let faviconServiceSpy: MockedObject<FaviconService>;
 
   beforeEach(async () => {
-    faviconServiceSpy = jasmine.createSpyObj('FaviconService', ['setFavicon']);
+    faviconServiceSpy = {
+      setFavicon: vi.fn().mockName('FaviconService.setFavicon')
+    };
     await TestBed.configureTestingModule({
       imports: [
         HomeComponent,
@@ -50,7 +56,8 @@ describe('HomeComponent', () => {
   });
 
   it('should call faviconService.setFavicon on init', () => {
-    expect(faviconServiceSpy.setFavicon).toHaveBeenCalledOnceWith(
+    expect(faviconServiceSpy.setFavicon).toHaveBeenCalledTimes(1);
+    expect(faviconServiceSpy.setFavicon).toHaveBeenCalledWith(
       FAVICON_DEFAULT_URL,
       FAVICON_DEFAULT_TYPE
     );

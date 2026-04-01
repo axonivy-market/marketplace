@@ -8,10 +8,7 @@ describe('SessionStorageRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          WindowRef,
-          { provide: PLATFORM_ID, useValue: 'browser' }
-        ]
+        providers: [WindowRef, { provide: PLATFORM_ID, useValue: 'browser' }]
       });
       service = TestBed.inject(WindowRef);
     });
@@ -26,10 +23,7 @@ describe('SessionStorageRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          WindowRef,
-          { provide: PLATFORM_ID, useValue: 'server' }
-        ]
+        providers: [WindowRef, { provide: PLATFORM_ID, useValue: 'server' }]
       });
       service = TestBed.inject(WindowRef);
     });

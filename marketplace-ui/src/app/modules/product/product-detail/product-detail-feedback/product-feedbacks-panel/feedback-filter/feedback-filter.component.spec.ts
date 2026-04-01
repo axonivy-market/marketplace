@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,23 +13,32 @@ import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-t
 describe('FeedbackFilterComponent', () => {
   let component: FeedbackFilterComponent;
   let fixture: ComponentFixture<FeedbackFilterComponent>;
-  let translateService: jasmine.SpyObj<TranslateService>;
-  let productFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
+  let translateService: MockedObject<TranslateService>;
+  let productFeedbackService: MockedObject<ProductFeedbackService>;
 
   beforeEach(async () => {
-    const productFeedbackServiceSpy = jasmine.createSpyObj('ProductFeedbackService', ['sort']);
+    const productFeedbackServiceSpy = {
+      sort: vi.fn().mockName('ProductFeedbackService.sort')
+    };
 
     await TestBed.configureTestingModule({
-      imports: [FeedbackFilterComponent, FormsModule, TranslateModule.forRoot() ],
+      imports: [
+        FeedbackFilterComponent,
+        FormsModule,
+        TranslateModule.forRoot()
+      ],
       providers: [
         TranslateService,
         { provide: ProductFeedbackService, useValue: productFeedbackServiceSpy }
       ]
-    })
-    .compileComponents();
+    }).compileComponents();
 
-    translateService = TestBed.inject(TranslateService) as jasmine.SpyObj<TranslateService>;
-    productFeedbackService = TestBed.inject(ProductFeedbackService) as jasmine.SpyObj<ProductFeedbackService>;
+    translateService = TestBed.inject(
+      TranslateService
+    ) as MockedObject<TranslateService>;
+    productFeedbackService = TestBed.inject(
+      ProductFeedbackService
+    ) as MockedObject<ProductFeedbackService>;
   });
 
   beforeEach(() => {
@@ -42,18 +52,26 @@ describe('FeedbackFilterComponent', () => {
   });
 
   it('should render sort options from feedbackSortTypes', () => {
-    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    const dropdownComponent = fixture.debugElement.query(
+      By.directive(CommonDropdownComponent)
+    ).componentInstance;
     expect(dropdownComponent.items.length).toBe(FEEDBACK_SORT_TYPES.length);
   });
 
   it('should pass the correct selected item to the dropdown', () => {
-    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
-    expect(dropdownComponent.selectedItem).toBe(component.selectedSortTypeLabel());
+    const dropdownComponent = fixture.debugElement.query(
+      By.directive(CommonDropdownComponent)
+    ).componentInstance;
+    expect(dropdownComponent.selectedItem).toBe(
+      component.selectedSortTypeLabel()
+    );
   });
 
   it('should call onSortChange when an item is selected', () => {
-    spyOn(component, 'onSortChange');
-    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    vi.spyOn(component, 'onSortChange');
+    const dropdownComponent = fixture.debugElement.query(
+      By.directive(CommonDropdownComponent)
+    ).componentInstance;
     const filterOption: ItemDropdown<FeedbackSortType> = {
       value: FeedbackSortType.NEWEST,
       label: 'Connectors' // Or whatever label is appropriate
@@ -64,7 +82,9 @@ describe('FeedbackFilterComponent', () => {
   });
 
   it('should pass the correct items to the dropdown', () => {
-    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    const dropdownComponent = fixture.debugElement.query(
+      By.directive(CommonDropdownComponent)
+    ).componentInstance;
     expect(dropdownComponent.items).toBe(component.feedbackSortTypes);
   });
 
@@ -75,15 +95,17 @@ describe('FeedbackFilterComponent', () => {
       label: 'common.sort.value.highest'
     };
 
-    const emitSpy = spyOn(component.sortChange, 'emit');
+    const emitSpy = vi.spyOn(component.sortChange, 'emit');
 
     component.productFeedbackService.sort = {
-      set: jasmine.createSpy('set')
+      set: vi.fn()
     } as any;
 
     component.onSortChange(mockEvent);
 
-    expect(component.productFeedbackService.sort.set).toHaveBeenCalledWith(testValue);
+    expect(component.productFeedbackService.sort.set).toHaveBeenCalledWith(
+      testValue
+    );
     expect(emitSpy).toHaveBeenCalledWith(testValue);
   });
 });

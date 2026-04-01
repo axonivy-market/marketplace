@@ -32,19 +32,19 @@ describe('HeaderComponent', () => {
   it('should toggle the mobile menu on click', () => {
     const navbarToggler = fixture.debugElement.query(By.css('.bi.bi-list'));
 
-    expect(component.isMobileMenuCollapsed()).toBeTrue();
+    expect(component.isMobileMenuCollapsed()).toBe(true);
 
     // Click the mobile menu toggler
     navbarToggler.triggerEventHandler('click', null);
     fixture.detectChanges();
 
-    expect(component.isMobileMenuCollapsed()).toBeFalse();
+    expect(component.isMobileMenuCollapsed()).toBe(false);
 
     // Click the mobile menu toggler again
     navbarToggler.triggerEventHandler('click', null);
     fixture.detectChanges();
 
-    expect(component.isMobileMenuCollapsed()).toBeTrue();
+    expect(component.isMobileMenuCollapsed()).toBe(true);
   });
 
   // Responsive section
@@ -108,7 +108,7 @@ describe('HeaderComponent', () => {
   });
 
   describe('Router navigation handling', () => {
-    it('should set isAdminRoute to true when navigating to admin route', (done) => {
+    it('should set isAdminRoute to true when navigating to admin route', async () => {
       const navigationEvent = new NavigationEnd(
         1,
         '/internal-dashboard/admin',
@@ -116,33 +116,35 @@ describe('HeaderComponent', () => {
       );
 
       setTimeout(() => {
-        expect(component.isAdminRoute).toBeTrue();
-        done();
+        expect(component.isAdminRoute).toBe(true);
       }, 10);
 
       (router.events as any).next(navigationEvent);
     });
 
-    it('should handle multiple navigation events', (done) => {
+    it('should handle multiple navigation events', async () => {
       const event1 = new NavigationEnd(1, '/portal', '/portal');
-      const event2 = new NavigationEnd(2, '/internal-dashboard', '/internal-dashboard');
+      const event2 = new NavigationEnd(
+        2,
+        '/internal-dashboard',
+        '/internal-dashboard'
+      );
       const event3 = new NavigationEnd(3, '/home', '/home');
 
       (router.events as any).next(event1);
-      
+
       setTimeout(() => {
-        expect(component.isAdminRoute).toBeFalse();
+        expect(component.isAdminRoute).toBe(false);
 
         (router.events as any).next(event2);
-        
+
         setTimeout(() => {
-          expect(component.isAdminRoute).toBeTrue();
+          expect(component.isAdminRoute).toBe(true);
 
           (router.events as any).next(event3);
-          
+
           setTimeout(() => {
-            expect(component.isAdminRoute).toBeFalse();
-            done();
+            expect(component.isAdminRoute).toBe(false);
           }, 10);
         }, 10);
       }, 10);
@@ -150,7 +152,7 @@ describe('HeaderComponent', () => {
   });
 
   it('should emit menuToggle event when onMenuToggleClick is called', () => {
-    spyOn(component.menuToggle, 'emit');
+    vi.spyOn(component.menuToggle, 'emit');
 
     component.onMenuToggleClick();
 

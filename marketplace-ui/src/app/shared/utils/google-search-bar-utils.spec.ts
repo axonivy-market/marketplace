@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { Renderer2 } from '@angular/core';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
@@ -12,48 +13,51 @@ import {
 } from '../constants/common.constant';
 
 describe('GoogleSearchBarUtils', () => {
-  let mockRenderer: jasmine.SpyObj<Renderer2>;
-  let mockWindowRef: jasmine.SpyObj<WindowRef>;
-  let mockDocumentRef: jasmine.SpyObj<DocumentRef>;
-  let mockDocument: jasmine.SpyObj<Document>;
-  let mockWindow: jasmine.SpyObj<Window>;
+  let mockRenderer: MockedObject<Renderer2>;
+  let mockWindowRef: MockedObject<WindowRef>;
+  let mockDocumentRef: MockedObject<DocumentRef>;
+  let mockDocument: MockedObject<Document>;
+  let mockWindow: MockedObject<Window>;
 
   beforeEach(() => {
-    mockRenderer = jasmine.createSpyObj('Renderer2', [
-      'createElement',
-      'appendChild',
-      'addClass'
-    ]);
+    mockRenderer = {
+      createElement: vi.fn().mockName('Renderer2.createElement'),
+      appendChild: vi.fn().mockName('Renderer2.appendChild'),
+      addClass: vi.fn().mockName('Renderer2.addClass')
+    };
 
-    mockWindowRef = jasmine.createSpyObj('WindowRef', ['toString'], {
+    mockWindowRef = {
+      toString: vi.fn().mockName('WindowRef.toString'),
       nativeWindow: undefined
-    });
+    };
 
-    mockDocumentRef = jasmine.createSpyObj('DocumentRef', ['toString'], {
+    mockDocumentRef = {
+      toString: vi.fn().mockName('DocumentRef.toString'),
       nativeDocument: undefined
-    });
+    };
 
-    mockDocument = jasmine.createSpyObj(
-      'Document',
-      ['getElementById', 'querySelectorAll'],
-      {
-        body: jasmine.createSpyObj('HTMLElement', ['appendChild'])
+    mockDocument = {
+      getElementById: vi.fn().mockName('Document.getElementById'),
+      querySelectorAll: vi.fn().mockName('Document.querySelectorAll'),
+      body: {
+        appendChild: vi.fn().mockName('HTMLElement.appendChild')
       }
-    );
+    };
 
-    mockWindow = jasmine.createSpyObj('Window', ['toString'], {
+    mockWindow = {
+      toString: vi.fn().mockName('Window.toString'),
       google: {
         search: {
           cse: {
             element: {
-              render: jasmine.createSpy('render')
+              render: vi.fn()
             }
           }
         }
       }
-    });
+    };
 
-    spyOn(globalThis, 'setTimeout').and.callFake(((fn: Function) => {
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: Function) => {
       fn();
       return 1;
     }) as any);
@@ -82,16 +86,13 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockWindow
       });
 
-      const mockScript = jasmine.createSpyObj(
-        'HTMLScriptElement',
-        ['setAttribute'],
-        {
-          onload: undefined
-        }
-      );
+      const mockScript = {
+        setAttribute: vi.fn().mockName('HTMLScriptElement.setAttribute'),
+        onload: undefined
+      };
 
-      mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(mockScript);
+      mockDocument.getElementById.mockReturnValue(null);
+      mockRenderer.createElement.mockReturnValue(mockScript);
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -122,10 +123,10 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockWindow
       });
 
-      const existingScript = jasmine.createSpyObj('HTMLScriptElement', [
-        'getAttribute'
-      ]);
-      mockDocument.getElementById.and.returnValue(existingScript);
+      const existingScript = {
+        getAttribute: vi.fn().mockName('HTMLScriptElement.getAttribute')
+      };
+      mockDocument.getElementById.mockReturnValue(existingScript);
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -145,10 +146,10 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockWindow
       });
 
-      mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(
-        jasmine.createSpyObj('HTMLScriptElement', ['setAttribute'])
-      );
+      mockDocument.getElementById.mockReturnValue(null);
+      mockRenderer.createElement.mockReturnValue({
+        setAttribute: vi.fn().mockName('HTMLScriptElement.setAttribute')
+      });
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -166,15 +167,17 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockDocument
       });
 
-      const windowWithoutGoogle = jasmine.createSpyObj('Window', ['toString']);
+      const windowWithoutGoogle = {
+        toString: vi.fn().mockName('Window.toString')
+      };
       Object.defineProperty(mockWindowRef, 'nativeWindow', {
         get: () => windowWithoutGoogle
       });
 
-      mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(
-        jasmine.createSpyObj('HTMLScriptElement', ['setAttribute'])
-      );
+      mockDocument.getElementById.mockReturnValue(null);
+      mockRenderer.createElement.mockReturnValue({
+        setAttribute: vi.fn().mockName('HTMLScriptElement.setAttribute')
+      });
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -200,10 +203,10 @@ describe('GoogleSearchBarUtils', () => {
       });
 
       const mockScript = { onload: undefined } as any;
-      mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(mockScript);
+      mockDocument.getElementById.mockReturnValue(null);
+      mockRenderer.createElement.mockReturnValue(mockScript);
 
-      spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -234,10 +237,10 @@ describe('GoogleSearchBarUtils', () => {
         }
       } as any;
 
-      mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(mockScript);
+      mockDocument.getElementById.mockReturnValue(null);
+      mockRenderer.createElement.mockReturnValue(mockScript);
 
-      spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -261,11 +264,15 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockDocument
       });
 
-      const mockSearchBox1 = jasmine.createSpyObj('HTMLElement', ['classList']);
-      const mockSearchBox2 = jasmine.createSpyObj('HTMLElement', ['classList']);
+      const mockSearchBox1 = {
+        classList: vi.fn().mockName('HTMLElement.classList')
+      };
+      const mockSearchBox2 = {
+        classList: vi.fn().mockName('HTMLElement.classList')
+      };
       const mockSearchBoxList = [mockSearchBox1, mockSearchBox2];
 
-      mockDocument.querySelectorAll.and.returnValue(mockSearchBoxList as any);
+      mockDocument.querySelectorAll.mockReturnValue(mockSearchBoxList as any);
 
       GoogleSearchBarUtils.addCustomClassToSearchBar(
         mockRenderer,
@@ -273,7 +280,7 @@ describe('GoogleSearchBarUtils', () => {
       );
 
       expect(window.setTimeout).toHaveBeenCalledWith(
-        jasmine.any(Function),
+        expect.any(Function),
         1000
       );
       expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
@@ -294,7 +301,7 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockDocument
       });
 
-      mockDocument.querySelectorAll.and.returnValue([] as any);
+      mockDocument.querySelectorAll.mockReturnValue([] as any);
 
       GoogleSearchBarUtils.addCustomClassToSearchBar(
         mockRenderer,

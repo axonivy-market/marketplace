@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PLATFORM_ID } from '@angular/core';
@@ -25,33 +26,43 @@ describe('ReleaseLetterEditComponent', () => {
   let component: ReleaseLetterEditComponent;
   let fixture: ComponentFixture<ReleaseLetterEditComponent>;
 
-  let adminDashboardServiceMock: jasmine.SpyObj<AdminDashboardService>;
-  let routerMock: jasmine.SpyObj<Router>;
+  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
+  let routerMock: MockedObject<Router>;
   let activatedRouteMock: any;
-  let pageTitleServiceMock: jasmine.SpyObj<PageTitleService>;
-  let translateServiceMock: jasmine.SpyObj<TranslateService>;
+  let pageTitleServiceMock: MockedObject<PageTitleService>;
+  let translateServiceMock: MockedObject<TranslateService>;
 
   beforeEach(async () => {
     activatedRouteMock = {
       paramMap: of(convertToParamMap({}))
     };
 
-    adminDashboardServiceMock = jasmine.createSpyObj('AdminDashboardService', [
-      'getReleaseLetterById',
-      'getReleaseLetterBySprint',
-      'createReleaseLetter',
-      'updateReleaseLetter'
-    ]);
+    adminDashboardServiceMock = {
+      getReleaseLetterById: vi
+        .fn()
+        .mockName('AdminDashboardService.getReleaseLetterById'),
+      getReleaseLetterBySprint: vi
+        .fn()
+        .mockName('AdminDashboardService.getReleaseLetterBySprint'),
+      createReleaseLetter: vi
+        .fn()
+        .mockName('AdminDashboardService.createReleaseLetter'),
+      updateReleaseLetter: vi
+        .fn()
+        .mockName('AdminDashboardService.updateReleaseLetter')
+    };
 
-    routerMock = jasmine.createSpyObj('Router', ['navigate']);
+    routerMock = {
+      navigate: vi.fn().mockName('Router.navigate')
+    };
 
-    translateServiceMock = jasmine.createSpyObj('TranslateService', [
-      'instant',
-      'get'
-    ]);
+    translateServiceMock = {
+      instant: vi.fn().mockName('TranslateService.instant'),
+      get: vi.fn().mockName('TranslateService.get')
+    };
 
-    translateServiceMock.instant.and.callFake((key: string) => key);
-    translateServiceMock.get.and.callFake((key: string) => of(key));
+    translateServiceMock.instant.mockImplementation((key: string) => key);
+    translateServiceMock.get.mockImplementation((key: string) => of(key));
 
     const onLangChange = new Subject();
     const onTranslationChange = new Subject();
@@ -69,9 +80,11 @@ describe('ReleaseLetterEditComponent', () => {
       value: onDefaultLangChange
     });
 
-    pageTitleServiceMock = jasmine.createSpyObj('PageTitleService', [
-      'setTitleOnLangChange'
-    ]);
+    pageTitleServiceMock = {
+      setTitleOnLangChange: vi
+        .fn()
+        .mockName('PageTitleService.setTitleOnLangChange')
+    };
     // End of mocking TranslateService
 
     await TestBed.configureTestingModule({
@@ -101,14 +114,14 @@ describe('ReleaseLetterEditComponent', () => {
   it('should initialize in create mode when no sprint param', () => {
     fixture.detectChanges();
 
-    expect(component.isCreateMode).toBeTrue();
+    expect(component.isCreateMode).toBe(true);
     expect(pageTitleServiceMock.setTitleOnLangChange).toHaveBeenCalledWith(
       'common.admin.newsManagement.pageTitle'
     );
   });
 
   it('should initialize in edit mode and load release letter', () => {
-    adminDashboardServiceMock.getReleaseLetterById.and.returnValue(
+    adminDashboardServiceMock.getReleaseLetterById.mockReturnValue(
       of(mockResponse)
     );
 
@@ -118,17 +131,17 @@ describe('ReleaseLetterEditComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(component.isCreateMode).toBeFalse();
+    expect(component.isCreateMode).toBe(false);
     expect(component.selectedId).toBe('123');
   });
 
   it('should call createReleaseLetter in create mode', () => {
-    spyOn(component, 'createReleaseLetter');
+    vi.spyOn(component, 'createReleaseLetter');
 
     component.isCreateMode = true;
 
     const event = new Event('submit');
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault');
 
     component.onSubmit(event);
 
@@ -139,12 +152,12 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should call updateReleaseLetter in edit mode', () => {
-    spyOn(component, 'updateReleaseLetter');
+    vi.spyOn(component, 'updateReleaseLetter');
 
     component.isCreateMode = false;
 
     const event = new Event('submit');
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault');
 
     component.onSubmit(event);
 
@@ -154,22 +167,20 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should navigate after successful create', () => {
-    adminDashboardServiceMock.createReleaseLetter.and.returnValue(
-      of(void 0)
-    );
+    adminDashboardServiceMock.createReleaseLetter.mockReturnValue(of(void 0));
 
     component.createReleaseLetter(component.releaseLetter);
 
     expect(routerMock.navigate).toHaveBeenCalledWith([
       '/internal-dashboard/news-management'
     ]);
-    expect(component.isSubmitting()).toBeFalse();
+    expect(component.isSubmitting()).toBe(false);
   });
 
   it('should handle error on create', () => {
-    translateServiceMock.instant.and.returnValue('translated');
+    translateServiceMock.instant.mockReturnValue('translated');
 
-    adminDashboardServiceMock.createReleaseLetter.and.returnValue(
+    adminDashboardServiceMock.createReleaseLetter.mockReturnValue(
       throwError(() => ({
         error: { helpCode: 'SOME_ERROR' }
       }))
@@ -178,11 +189,11 @@ describe('ReleaseLetterEditComponent', () => {
     component.createReleaseLetter(component.releaseLetter);
 
     expect(component.genericErrorMessage).toBe('translated');
-    expect(component.isSubmitting()).toBeFalse();
+    expect(component.isSubmitting()).toBe(false);
   });
 
   it('should navigate after successful update', () => {
-    adminDashboardServiceMock.updateReleaseLetter.and.returnValue(
+    adminDashboardServiceMock.updateReleaseLetter.mockReturnValue(
       of(mockResponse)
     );
 
@@ -194,7 +205,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should set sprint error for blank sprint', () => {
-    translateServiceMock.instant.and.returnValue('blank error');
+    translateServiceMock.instant.mockReturnValue('blank error');
 
     component.handleError(SPRINT_CANNOT_BE_BLANK.toString());
 
@@ -202,7 +213,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should set sprint error for existing sprint', () => {
-    translateServiceMock.instant.and.returnValue('exists error');
+    translateServiceMock.instant.mockReturnValue('exists error');
 
     component.handleError(
       RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString()
@@ -212,7 +223,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should set generic error for unknown code', () => {
-    translateServiceMock.instant.and.returnValue('generic error');
+    translateServiceMock.instant.mockReturnValue('generic error');
 
     component.handleError('UNKNOWN');
 
@@ -237,12 +248,12 @@ describe('ReleaseLetterEditComponent', () => {
   it('should not submit if already submitting', () => {
     component.isSubmitting.set(true);
 
-    spyOn(component, 'createReleaseLetter');
+    vi.spyOn(component, 'createReleaseLetter');
 
     component.isCreateMode = true;
 
     const event = new Event('submit');
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault');
 
     component.onSubmit(event);
 

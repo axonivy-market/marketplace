@@ -18,20 +18,18 @@ describe('LanguageService', () => {
   });
 
   it('should return false when no changes have been made', () => {
-    expect(service.isLastSearchChanged()).toBeFalse();
+    expect(service.isLastSearchChanged()).toBe(false);
   });
 
   it('should return true if lastSearchText changes', () => {
     service.lastSearchText.set('test search');
-    expect(service.isLastSearchChanged()).toBeTrue();
+    expect(service.isLastSearchChanged()).toBe(true);
   });
-
 
   it('should return true if lastSearchType changes', () => {
     service.lastSearchType.set('differentType');
-    expect(service.isLastSearchChanged()).toBeTrue();
+    expect(service.isLastSearchChanged()).toBe(true);
   });
-
 
   it('should return false after resetting values to defaults', () => {
     service.lastSearchText.set('changed');
@@ -42,6 +40,6 @@ describe('LanguageService', () => {
     service.lastSortOption.set(SortOption.STANDARD);
     service.lastSearchType.set(FILTER_TYPES[0].value);
 
-    expect(service.isLastSearchChanged()).toBeFalse();
+    expect(service.isLastSearchChanged()).toBe(false);
   });
 });

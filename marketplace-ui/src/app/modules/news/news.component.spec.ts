@@ -19,7 +19,7 @@ describe('NewsComponent', () => {
 
   beforeEach(async () => {
     mockAdminDashboardService = {
-      getReleaseLetters: jasmine.createSpy().and.returnValue(
+      getReleaseLetters: vi.fn().mockReturnValue(
         of({
           _embedded: { releaseLetterModelList: [] },
           _links: {},
@@ -29,13 +29,11 @@ describe('NewsComponent', () => {
     };
 
     mockPageTitleService = {
-      setTitleOnLangChange: jasmine.createSpy()
+      setTitleOnLangChange: vi.fn()
     };
 
     mockMarkdownService = {
-      parseMarkdown: jasmine
-        .createSpy()
-        .and.callFake((c: string) => `<p>${c}</p>`)
+      parseMarkdown: vi.fn().mockImplementation((c: string) => `<p>${c}</p>`)
     };
 
     await TestBed.configureTestingModule({
@@ -87,7 +85,7 @@ describe('NewsComponent', () => {
     const result = component.toSafeHtmlModel(item);
 
     expect(result.sprint).toBe('S42');
-    expect(result.latest).toBeFalse();
+    expect(result.latest).toBe(false);
     expect(result.createdAt).toBe('2026-02-02');
     expect(mockMarkdownService.parseMarkdown).toHaveBeenCalledWith('markdown');
   });
@@ -100,7 +98,7 @@ describe('NewsComponent', () => {
   });
 
   it('should return translated sprint title', () => {
-    spyOn(component.translateService, 'instant').and.returnValue('Sprint ');
+    vi.spyOn(component.translateService, 'instant').mockReturnValue('Sprint ');
 
     const result = component.getSprintTitle('S100');
 
@@ -114,7 +112,7 @@ describe('NewsComponent', () => {
     component.newsLinks = undefined as any;
     component.newsPages = undefined as any;
 
-    expect(component.hasMoreReleaseLetters()).toBeFalse();
+    expect(component.hasMoreReleaseLetters()).toBe(false);
   });
 
   it('should return true if next page exists', () => {
@@ -123,18 +121,20 @@ describe('NewsComponent', () => {
       next: { href: 'next-page-url' }
     } as any;
 
-    expect(component.hasMoreReleaseLetters()).toBeTrue();
+    expect(component.hasMoreReleaseLetters()).toBe(true);
   });
 
   it('should return false if already at last page', () => {
     component.newsPages = { number: 2, totalPages: 2 } as any;
     component.newsLinks = {} as any;
 
-    expect(component.hasMoreReleaseLetters()).toBeFalse();
+    expect(component.hasMoreReleaseLetters()).toBe(false);
   });
 
   it('should set empty title when no release letters returned', () => {
-    spyOn(component.translateService, 'instant').and.returnValue('No releases');
+    vi.spyOn(component.translateService, 'instant').mockReturnValue(
+      'No releases'
+    );
 
     component.loadReleaseLetters();
 
@@ -165,7 +165,7 @@ describe('NewsComponent', () => {
       }
     };
 
-    mockAdminDashboardService.getReleaseLetters.and.returnValue(of(response));
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(response));
 
     component.loadReleaseLetters();
 
@@ -178,7 +178,7 @@ describe('NewsComponent', () => {
   });
 
   it('should setup intersection observer and call loadReleaseLetters when intersecting', () => {
-    const observeSpy = jasmine.createSpy('observe');
+    const observeSpy = vi.fn();
 
     let savedCallback!: IntersectionObserverCallback;
 
@@ -194,9 +194,9 @@ describe('NewsComponent', () => {
 
     (window as any).IntersectionObserver = MockIntersectionObserver;
 
-    spyOn(component, 'hasMoreReleaseLetters').and.returnValue(true);
-    spyOn(component.loadingService, 'isLoading').and.returnValue(false);
-    spyOn(component, 'loadReleaseLetters');
+    vi.spyOn(component, 'hasMoreReleaseLetters').mockReturnValue(true);
+    vi.spyOn(component.loadingService, 'isLoading').mockReturnValue(false);
+    vi.spyOn(component, 'loadReleaseLetters');
 
     component.observerElement = {
       nativeElement: document.createElement('div')
@@ -217,7 +217,7 @@ describe('NewsComponent', () => {
     component.isBrowser = false;
 
     const originalIO = window.IntersectionObserver;
-    const ioSpy = jasmine.createSpy('IntersectionObserver');
+    const ioSpy = vi.fn();
     (window as any).IntersectionObserver = ioSpy;
 
     component.setupIntersectionObserver();
@@ -234,14 +234,14 @@ describe('NewsComponent', () => {
     (window as any).IntersectionObserver = undefined;
 
     component.setupIntersectionObserver();
-
+    // TODO: vitest-migration: expect().nothing() has been removed because it is redundant in Vitest. Tests without assertions pass by default.
+    // // __PRESERVE_BLANK_LINE__
     expect().nothing();
-
     window.IntersectionObserver = originalIO;
   });
 
   it('should unsubscribe all subscriptions on destroy', () => {
-    const unsubscribeSpy = jasmine.createSpy('unsubscribe');
+    const unsubscribeSpy = vi.fn();
 
     component.subscriptions = [{ unsubscribe: unsubscribeSpy } as any];
 
@@ -251,7 +251,7 @@ describe('NewsComponent', () => {
   });
 
   it('should return early if response is null', () => {
-    mockAdminDashboardService.getReleaseLetters.and.returnValue(of(null));
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(null));
 
     const freshFixture = TestBed.createComponent(NewsComponent);
     const freshComponent = freshFixture.componentInstance;
@@ -266,7 +266,7 @@ describe('NewsComponent', () => {
   it('should handle error from getReleaseLetters', () => {
     const testError = new Error('Test error');
 
-    mockAdminDashboardService.getReleaseLetters.and.returnValue(
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(
       throwError(() => testError)
     );
 

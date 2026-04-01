@@ -14,8 +14,12 @@ describe('SearchBarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SearchBarComponent, TranslateModule.forRoot()],
-      providers: [TranslateService,
-        { provide: ElementRef, useValue: { nativeElement: document.createElement('div') } }
+      providers: [
+        TranslateService,
+        {
+          provide: ElementRef,
+          useValue: { nativeElement: document.createElement('div') }
+        }
       ]
     }).compileComponents();
 
@@ -62,7 +66,7 @@ describe('SearchBarComponent', () => {
     document.dispatchEvent(outsideClickEvent);
 
     // Verify the behavior
-    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+    expect(component.isGoogleSearchBarDisplayed()).toBe(false);
   });
 
   it('should show the google search bar on search icon click', () => {
@@ -76,28 +80,32 @@ describe('SearchBarComponent', () => {
       By.css('.google-search-container')
     );
 
-    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+    expect(component.isGoogleSearchBarDisplayed()).toBe(false);
     expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
+      'none'
+    );
 
     // Click the search icon
     searchIcon.triggerEventHandler('click', null);
     fixture.detectChanges();
 
-    expect(component.isGoogleSearchBarDisplayed()).toBeTrue();
+    expect(component.isGoogleSearchBarDisplayed()).toBe(true);
     expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
+      'block'
+    );
   });
 
   it('should set isGoogleSearchBarDisplayed to false when onHideSearch is called', () => {
     // Ensure the initial state is true
     component.isGoogleSearchBarDisplayed.set(true);
-    expect(component.isGoogleSearchBarDisplayed()).toBeTrue();
-  
+    expect(component.isGoogleSearchBarDisplayed()).toBe(true);
+
     // Call the onHideSearch method
     component.onHideSearch();
-  
+
     // Verify the state is set to false
-    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+    expect(component.isGoogleSearchBarDisplayed()).toBe(false);
   });
 });

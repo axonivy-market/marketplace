@@ -1,3 +1,4 @@
+import type { MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -16,18 +17,14 @@ import { signal } from '@angular/core';
 describe('ProductStarRatingPanelComponent', () => {
   let component: ProductStarRatingPanelComponent;
   let fixture: ComponentFixture<ProductStarRatingPanelComponent>;
-  let productStarRatingServiceMock: jasmine.SpyObj<ProductStarRatingService>;
+  let productStarRatingServiceMock: MockedObject<ProductStarRatingService>;
 
   beforeEach(async () => {
-    const productStarRatingServiceSpy = jasmine.createSpyObj(
-      'ProductStarRatingService',
-      [],
-      { 
-        reviewNumber: signal(0),
-        totalComments: signal(0),
-        starRatings: signal([] as StarRatingCounting[])
-      }
-    );
+    const productStarRatingServiceSpy = {
+      reviewNumber: signal(0),
+      totalComments: signal(0),
+      starRatings: signal([] as StarRatingCounting[])
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -49,7 +46,7 @@ describe('ProductStarRatingPanelComponent', () => {
 
     productStarRatingServiceMock = TestBed.inject(
       ProductStarRatingService
-    ) as jasmine.SpyObj<ProductStarRatingService>;
+    ) as MockedObject<ProductStarRatingService>;
   });
 
   beforeEach(() => {
@@ -63,7 +60,7 @@ describe('ProductStarRatingPanelComponent', () => {
   });
 
   it('should emit openAddFeedbackDialog event when child component triggers the event', () => {
-    spyOn(component.openAddFeedbackDialog, 'emit');
+    vi.spyOn(component.openAddFeedbackDialog, 'emit');
     const starRatingNumberComponent =
       fixture.debugElement.nativeElement.querySelector(
         'app-product-star-rating-number'

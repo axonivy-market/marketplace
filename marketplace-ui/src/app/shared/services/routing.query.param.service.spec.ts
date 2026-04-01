@@ -7,13 +7,15 @@ import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant'
 describe('RoutingQueryParamService', () => {
   let service: RoutingQueryParamService;
   let eventsSubject: Subject<NavigationStart>;
-  let mockStorage: { [key: string]: string };
+  let mockStorage: {
+    [key: string]: string;
+  };
 
   beforeEach(() => {
     eventsSubject = new Subject<NavigationStart>();
-    const routerSpy = jasmine.createSpyObj('Router', [], {
+    const routerSpy = {
       events: eventsSubject.asObservable()
-    });
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -26,13 +28,15 @@ describe('RoutingQueryParamService', () => {
       'ivy-viewer': 'designer-market',
       'ivy-version': '1.0'
     };
-    spyOn(sessionStorage, 'getItem').and.callFake((key: string) => {
+    vi.spyOn(sessionStorage, 'getItem').mockImplementation((key: string) => {
       return mockStorage[key] || null;
     });
 
-    spyOn(sessionStorage, 'setItem').and.callFake((key: string, value: string) => {
-      mockStorage[key] = value;
-    });
+    vi.spyOn(sessionStorage, 'setItem').mockImplementation(
+      (key: string, value: string) => {
+        mockStorage[key] = value;
+      }
+    );
   });
 
   it('should be created', () => {
@@ -73,7 +77,7 @@ describe('RoutingQueryParamService', () => {
       DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName,
       DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     );
-    expect(service.isDesignerViewer()).toBeTrue();
+    expect(service.isDesignerViewer()).toBe(true);
   });
 
   it('should get designer version from session storage if not set', () => {
@@ -81,11 +85,11 @@ describe('RoutingQueryParamService', () => {
   });
 
   it('should set isDesigner to true if session storage matches default designer viewer', () => {
-    expect(service.isDesignerViewer()).toBeTrue();
+    expect(service.isDesignerViewer()).toBe(true);
   });
 
   it('should listen to navigation start events', () => {
     eventsSubject.next(new NavigationStart(1, 'testUrl'));
-    expect(service.isDesignerViewer()).toBeTrue();
+    expect(service.isDesignerViewer()).toBe(true);
   });
 });

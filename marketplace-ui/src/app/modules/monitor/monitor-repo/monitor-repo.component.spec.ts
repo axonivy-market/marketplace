@@ -131,7 +131,7 @@ describe('MonitoringRepoComponent', () => {
     component.criteria.pageable.page = 4;
     component.criteria.pageable.size = 20;
 
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
     component.onSearchChanged(searchString);
 
     // Wait for debounce time
@@ -158,7 +158,7 @@ describe('MonitoringRepoComponent', () => {
     component.sortDirection = ASCENDING;
     component.criteria.workflowType = NAME_COLUMN;
 
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.sortRepositoriesByColumn(NAME_COLUMN);
 
@@ -206,7 +206,7 @@ describe('MonitoringRepoComponent', () => {
   });
 
   it('should show no-repositories message when filtered list is empty', fakeAsync(() => {
-    spyOn(component['githubService'], 'getRepositories').and.returnValue(
+    vi.spyOn(component['githubService'], 'getRepositories').mockReturnValue(
       of({
         _embedded: { githubRepos: [] },
         page: { size: 10, totalElements: 0, totalPages: 0, number: 0 }
@@ -241,7 +241,7 @@ describe('MonitoringRepoComponent', () => {
     const newPage = 3;
     component.pageSize = 15;
     component.criteria.pageable.size = 10; // initial value
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     // Act
     component.onPageChange(newPage);
@@ -258,7 +258,7 @@ describe('MonitoringRepoComponent', () => {
     const newSize = 25;
     component.page = 4;
     component.criteria.pageable.page = 3; // initial value
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     // Act
     component.onPageSizeChanged(newSize);
@@ -275,7 +275,7 @@ describe('MonitoringRepoComponent', () => {
     component.activeTab = 'not-standard';
     component.page = 2;
     component.pageSize = 15;
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.updateCriteriaAndLoad();
 
@@ -289,7 +289,7 @@ describe('MonitoringRepoComponent', () => {
     component.activeTab = 'standard'; // STANDARD_TAB
     component.page = 4;
     component.pageSize = 20;
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.updateCriteriaAndLoad();
 

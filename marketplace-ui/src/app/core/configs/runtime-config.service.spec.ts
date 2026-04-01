@@ -37,24 +37,24 @@ describe('RuntimeConfigService', () => {
   describe('getConfig', () => {
     it('should return configuration from TransferState when available', () => {
       transferState.set(RUNTIME_CONFIG_KEY, mockConfig);
-      
+
       const config = service.getConfig();
-      
+
       expect(config).toEqual(mockConfig);
     });
 
     it('should cache configuration after first call', () => {
       transferState.set(RUNTIME_CONFIG_KEY, mockConfig);
-      
+
       const config1 = service.getConfig();
       const config2 = service.getConfig();
-      
+
       expect(config1).toBe(config2); // Same reference
     });
 
     it('should fallback to environment when TransferState is empty', () => {
       const config = service.getConfig();
-      
+
       expect(config).toBeDefined();
       expect(config.apiUrl).toBeDefined();
       expect(config.githubOAuthAppClientId).toBeDefined();
@@ -64,14 +64,14 @@ describe('RuntimeConfigService', () => {
   describe('setConfig', () => {
     it('should set configuration and store in TransferState', () => {
       service.setConfig(mockConfig);
-      
+
       const storedConfig = transferState.get(RUNTIME_CONFIG_KEY, null);
       expect(storedConfig).toEqual(mockConfig);
     });
 
     it('should update cached configuration', () => {
       service.setConfig(mockConfig);
-      
+
       const config = service.getConfig();
       expect(config).toEqual(mockConfig);
     });
@@ -80,18 +80,20 @@ describe('RuntimeConfigService', () => {
   describe('get', () => {
     it('should return specific configuration value', () => {
       transferState.set(RUNTIME_CONFIG_KEY, mockConfig);
-      
+
       expect(service.get('apiUrl')).toBe(mockConfig.apiUrl);
       expect(service.get('matomoSiteId')).toBe(mockConfig.matomoSiteId);
-      expect(service.get('githubOAuthAppClientId')).toBe(mockConfig.githubOAuthAppClientId);
+      expect(service.get('githubOAuthAppClientId')).toBe(
+        mockConfig.githubOAuthAppClientId
+      );
     });
 
     it('should be type-safe', () => {
       transferState.set(RUNTIME_CONFIG_KEY, mockConfig);
-      
+
       const apiUrl: string = service.get('apiUrl');
       const matomoSiteId: number = service.get('matomoSiteId');
-      
+
       expect(typeof apiUrl).toBe('string');
       expect(typeof matomoSiteId).toBe('number');
     });
@@ -108,10 +110,10 @@ describe('RuntimeConfigService', () => {
           { provide: RUNTIME_CONFIG_KEY, useValue: mockConfig }
         ]
       });
-      
+
       const serverService = TestBed.inject(RuntimeConfigService);
       const serverTransferState = TestBed.inject(TransferState);
-      
+
       // Config should be stored in TransferState
       const storedConfig = serverTransferState.get(RUNTIME_CONFIG_KEY, null);
       expect(storedConfig).toEqual(mockConfig);
@@ -129,24 +131,27 @@ describe('RuntimeConfigService', () => {
           { provide: RUNTIME_CONFIG_KEY, useValue: mockConfig }
         ]
       });
-      
+
       const serverTransferState = TestBed.inject(TransferState);
       const serverService = TestBed.inject(RuntimeConfigService);
-      
+
       // Verify the config is set correctly
       expect(serverService.getConfig()).toEqual(mockConfig);
-      
+
       // Verify it was stored in TransferState
-      const transferredConfig = serverTransferState.get(RUNTIME_CONFIG_KEY, null);
+      const transferredConfig = serverTransferState.get(
+        RUNTIME_CONFIG_KEY,
+        null
+      );
       expect(transferredConfig).toEqual(mockConfig);
     });
 
     it('should read from TransferState on browser platform', () => {
       // Setup TransferState as if it came from SSR
       transferState.set(RUNTIME_CONFIG_KEY, mockConfig);
-      
+
       const config = service.getConfig();
-      
+
       expect(config).toEqual(mockConfig);
     });
   });
