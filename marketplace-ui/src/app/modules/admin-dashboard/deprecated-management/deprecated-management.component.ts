@@ -39,6 +39,7 @@ export class DeprecatedManagementComponent {
     deprecated: false
   };
   selectableProductIds: string[] = [];
+  filteredProductIds: string[] = [];
   deprecatedProductIds: string[] = [];
 
   // Validation state
@@ -73,6 +74,7 @@ export class DeprecatedManagementComponent {
 
   async openExtensionDropdown() {
     this.selectableProductIds = await this.loadAllProductIds(null);
+    this.filterProducts(this.deprecatedItems.productId);
     this.dropdownOpen = true;
   }
 
@@ -100,16 +102,23 @@ export class DeprecatedManagementComponent {
     let isValid = true;
 
     // Validate productId (required)
-    if (!this.deprecatedItems.productId || this.deprecatedItems.productId.trim() === '') {
+    if (
+      !this.deprecatedItems.productId ||
+      this.deprecatedItems.productId.trim() === ''
+    ) {
       this.validationErrors['productId'] = 'Extension ID is required';
       isValid = false;
     }
 
     // Validate successorUrl (optional but must match pattern if provided)
-    if (this.deprecatedItems.successorUrl && this.deprecatedItems.successorUrl.trim() !== '') {
+    if (
+      this.deprecatedItems.successorUrl &&
+      this.deprecatedItems.successorUrl.trim() !== ''
+    ) {
       const urlPattern = /^(http|https):\/\/.*$/;
       if (!urlPattern.test(this.deprecatedItems.successorUrl)) {
-        this.validationErrors['successorUrl'] = 'URL must start with http:// or https://';
+        this.validationErrors['successorUrl'] =
+          'URL must start with http:// or https://';
         isValid = false;
       }
     }
@@ -120,6 +129,19 @@ export class DeprecatedManagementComponent {
   selectExtension(productId: string) {
     this.deprecatedItems.productId = productId;
     this.deprecatedItems.deprecated = true;
+    this.dropdownOpen = false;
+  }
+
+  filterProducts(searchTerm: string) {
+    const normalized = (searchTerm || '').trim().toLowerCase();
+    if (!normalized) {
+      this.filteredProductIds = [...this.selectableProductIds];
+      return;
+    }
+
+    this.filteredProductIds = this.selectableProductIds.filter(productId =>
+      productId.toLowerCase().includes(normalized)
+    );
   }
 
   private async loadAllProductIds(

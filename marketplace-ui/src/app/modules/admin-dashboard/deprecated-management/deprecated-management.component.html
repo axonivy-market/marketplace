@@ -103,6 +103,7 @@
             [(ngModel)]="deprecatedItems.productId"
             placeholder="html-dialog-demo"
             (click)="openExtensionDropdown()"
+            (input)="filterProducts(deprecatedItems.productId)"
             (blur)="dropdownOpen = false"
           />
           @if (validationErrors['productId']) {
@@ -110,9 +111,9 @@
               {{ validationErrors['productId'] }}
             </div>
           }
-          @if (dropdownOpen && selectableProductIds.length) {
+          @if (dropdownOpen && filteredProductIds.length) {
             <ul class="form-control show w-100 dropdown-menu-custom">
-              @for (productId of selectableProductIds; track $index) {
+              @for (productId of filteredProductIds; track $index) {
                 <li (mousedown)="selectExtension(productId)" class="dropdown-item"> {{ productId }} </li>
               }
             </ul>
