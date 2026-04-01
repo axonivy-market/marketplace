@@ -57,6 +57,13 @@ export class DeprecatedManagementComponent {
 
   closeDialog() {
     this.showDeprecatedProductDialog = false;
+    this.deprecatedItems = {
+      productId: '',
+      successorUrl: '',
+      addReadme: false,
+      deprecated: false
+    };
+    this.validationErrors = {};
   }
 
   async openExtensionDropdown() {
