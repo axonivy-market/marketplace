@@ -31,7 +31,7 @@ describe('StarRatingComponent', () => {
   });
 
   it('should display the correct number of stars', () => {
-    component.rate = 3;
+    fixture.componentRef.setInput('rate', 3);
     fixture.detectChanges();
 
     const stars = fixture.debugElement.queryAll(By.css('.star-feedback'));

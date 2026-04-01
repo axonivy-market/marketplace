@@ -122,11 +122,10 @@ describe('ProductFeedbackService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    setTimeout(() => {
-      expect(service.totalPages()).toBe(2);
-      expect(service.totalElements()).toBe(5);
-      expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
-    }, 0);
+    await Promise.resolve();
+    expect(service.totalPages()).toBe(2);
+    expect(service.totalElements()).toBe(5);
+    expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
   });
 
   it('should load more feedbacks', () => {
@@ -206,9 +205,8 @@ describe('ProductFeedbackService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    setTimeout(() => {
-      expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
-    }, 0);
+    await Promise.resolve();
+    expect(service.feedbacks()).toEqual(mockResponse._embedded.feedbacks);
   });
 
   it('should fetch feedbacks with token', () => {
@@ -231,15 +229,18 @@ describe('ProductFeedbackService', () => {
     const token = 'mockToken';
 
     vi.spyOn(sessionStorage, 'getItem').mockReturnValue(token);
-    service.findProductFeedbacks().subscribe(() => {
-      expect(service.allFeedbacks().length).toBe(0);
-      expect(service.pendingFeedbacks().length).toBe(1);
-    });
+
+    // Subscribe first so the HTTP request is created, then flush synchronously.
+    service.findProductFeedbacks().subscribe();
 
     const req = httpMock.expectOne('api/feedback/approval?page=0&size=40');
     expect(req.request.method).toBe('GET');
     expect(req.request.headers.get('Authorization')).toBe(`${BEARER} ${token}`);
     req.flush(mockResponse);
+
+    // tap() runs synchronously on flush, so signals are already updated.
+    expect(service.allFeedbacks().length).toBe(0);
+    expect(service.pendingFeedbacks().length).toBe(1);
   });
 
   it('should update feedback status and reflect in signals', () => {
@@ -295,11 +296,10 @@ describe('ProductFeedbackService', () => {
     );
     req.flush(mockResponse);
 
-    setTimeout(() => {
-      expect(service.feedbacks().length).toBe(0);
-      expect(service.totalPages()).toBe(1);
-      expect(service.totalElements()).toBe(0);
-    }, 0);
+    await Promise.resolve();
+    expect(service.feedbacks().length).toBe(0);
+    expect(service.totalPages()).toBe(1);
+    expect(service.totalElements()).toBe(0);
   });
 
   it('should sort feedbacks by date correctly', () => {

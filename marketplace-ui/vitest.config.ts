@@ -18,6 +18,7 @@ export default defineConfig({
     },
     watch: false,
     testTimeout: 60000,
+    restoreMocks: true,
     include: ['src/**/*.spec.{ts,js}']
   }
 });

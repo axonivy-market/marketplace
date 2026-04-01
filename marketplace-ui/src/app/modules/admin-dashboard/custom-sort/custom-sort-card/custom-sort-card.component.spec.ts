@@ -53,12 +53,12 @@ describe('CustomSortCardComponent', () => {
   });
 
   it('should keep header badge present even when inputs change', () => {
-    component.title = 'Sorted Extensions';
-    component.badge = '';
+    fixture.componentRef.setInput('title', 'Sorted Extensions');
+    fixture.componentRef.setInput('badge', '');
     fixture.detectChanges();
 
-    component.title = 'Available Extensions';
-    component.badge = '99/99';
+    fixture.componentRef.setInput('title', 'Available Extensions');
+    fixture.componentRef.setInput('badge', '99/99');
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css('.badge')).nativeElement;
     expect(badge.textContent.trim()).toBe('99/99');

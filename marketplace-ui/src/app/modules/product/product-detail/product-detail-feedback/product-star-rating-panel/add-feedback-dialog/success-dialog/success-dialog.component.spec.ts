@@ -34,6 +34,8 @@ describe('SuccessDialogComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SuccessDialogComponent);
     component = fixture.componentInstance;
+    // Set mock BEFORE initial detectChanges so ngOnInit reads the correct value
+    mockAuthService.getDisplayName.mockReturnValue('John Doe');
     fixture.detectChanges();
   });
 

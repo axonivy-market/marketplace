@@ -49,13 +49,14 @@ describe('ErrorPageComponentComponent', () => {
   it('should display image with the light mode on small and large viewport', () => {
     setupComponent(undefined);
     component.themeService.isDarkMode.set(false);
-    viewport.set(1920);
+
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
     expect(imgElement.attributes['src']).toBe('/assets/images/misc/robot.png');
 
-    viewport.set(540);
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(
@@ -66,7 +67,8 @@ describe('ErrorPageComponentComponent', () => {
   it('should display image with the dark mode on small and large viewport', () => {
     setupComponent(undefined);
     component.themeService.isDarkMode.set(true);
-    viewport.set(1920);
+
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
@@ -74,7 +76,7 @@ describe('ErrorPageComponentComponent', () => {
       '/assets/images/misc/robot-black.png'
     );
 
-    viewport.set(540);
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(

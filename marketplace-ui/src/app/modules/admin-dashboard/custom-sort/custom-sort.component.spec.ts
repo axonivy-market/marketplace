@@ -3,6 +3,7 @@ import {
   ComponentFixture,
   TestBed,
   fakeAsync,
+  flushMicrotasks,
   tick
 } from '@angular/core/testing';
 import { CustomSortComponent } from './custom-sort.component';
@@ -57,17 +58,17 @@ describe('CustomSortComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load all product IDs on init', fakeAsync(() => {
+  it('should load all product IDs on init', async () => {
     fixture.detectChanges();
-    tick();
-
-    expect(component.sortingExtensions).toEqual(['portal']);
+    await vi.waitFor(() => {
+      expect(component.sortingExtensions).toEqual(['portal']);
+    });
     expect(component.allExtensions).toEqual([
       'coffee-machine-connector',
       'persistence-utils'
     ]);
     expect(component.isLoading).toBe(false);
-  }));
+  });
 
   it('should reset loading flag when loading product IDs fails', async () => {
     productService.fetchAllProductIds.mockReturnValue(

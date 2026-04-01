@@ -24,6 +24,7 @@ describe('StarRatingHighlightDirective', () => {
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     el = fixture.nativeElement.querySelector('div');
+    fixture.detectChanges();
   });
 
   it('should create an instance', () => {
@@ -33,10 +34,12 @@ describe('StarRatingHighlightDirective', () => {
 
   it('should set the width based on percent input', () => {
     component.percent = 75;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('75%');
 
     component.percent = 25;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('25%');
   });
@@ -47,6 +50,7 @@ describe('StarRatingHighlightDirective', () => {
     expect(el.style.width).toBe('50%');
 
     component.percent = 100;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('100%');
   });

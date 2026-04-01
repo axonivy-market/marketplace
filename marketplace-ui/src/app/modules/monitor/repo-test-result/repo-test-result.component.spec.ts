@@ -117,14 +117,14 @@ describe('RepoTestResultComponent', () => {
   });
 
   it('should not render badge if workflowInfo is missing', () => {
-    component.workflowInfo = undefined;
+    fixture.componentRef.setInput('workflowInfo', undefined);
     fixture.detectChanges();
     const badgeImg = fixture.debugElement.query(By.css('.badge-image'));
     expect(badgeImg).toBeNull();
   });
 
   it('should handle empty test results gracefully', () => {
-    component.mode = 'report';
+    fixture.componentRef.setInput('mode', 'report');
 
     const emptyResults: TestSummary = {
       FAILED: 0,

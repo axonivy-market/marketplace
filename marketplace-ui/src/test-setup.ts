@@ -1,5 +1,6 @@
 import 'zone.js';
 import 'zone.js/testing';
+import '@analogjs/vitest-angular/setup-zone';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
@@ -165,4 +166,99 @@ Object.defineProperty(window, 'matchMedia', {
     Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });
     window.dispatchEvent(new Event('resize'));
   }
+};
+
+// ResizeObserver shim — not implemented in jsdom
+class ResizeObserverStub {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+Object.defineProperty(window, 'ResizeObserver', { writable: true, configurable: true, value: ResizeObserverStub });
+
+// IntersectionObserver shim — not implemented in jsdom
+class IntersectionObserverStub {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {}
+}
+Object.defineProperty(window, 'IntersectionObserver', { writable: true, configurable: true, value: IntersectionObserverStub });
+
+// Replace sessionStorage/localStorage with vi.fn()-backed mocks so
+// vi.spyOn() and toHaveBeenCalledWith() work correctly on them.
+function makeStorageMock() {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => { store[key] = String(value); }),
+    removeItem: vi.fn((key: string) => { delete store[key]; }),
+    clear: vi.fn(() => { store = {}; }),
+    key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+    get length() { return Object.keys(store).length; }
+  };
+}
+
+Object.defineProperty(window, 'sessionStorage', { value: makeStorageMock(), writable: true });
+Object.defineProperty(window, 'localStorage', { value: makeStorageMock(), writable: true });
+
+// scrollTo is not implemented in jsdom
+window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+
+// focus is not implemented in jsdom
+window.focus = vi.fn();
+
+// open is not implemented in jsdom  
+window.open = vi.fn() as unknown as typeof window.open;
+
+// ---------------------------------------------------------------------------
+// Always define DataTransfer shim (jsdom doesn't implement it)
+(globalThis as Record<string, unknown>)['DataTransfer'] = class DataTransfer {
+  private _files: File[] = [];
+  items: DataTransferItemList;
+  get files(): FileList {
+    const files = this._files;
+    const fileList = Object.assign(
+      { length: files.length, item: (i: number) => files[i] ?? null, [Symbol.iterator]: function*() { yield* files; } },
+      Object.fromEntries(files.map((f, i) => [i, f]))
+    );
+    return fileList as unknown as FileList;
+  }
+  constructor() {
+    const self = this;
+    this.items = {
+      get length() { return self._files.length; },
+      add(file: File | string, _type?: string) {
+        if (file instanceof File) self._files.push(file);
+      },
+      clear() { self._files = []; },
+      remove(i: number) { self._files.splice(i, 1); },
+      [Symbol.iterator]: function*() { yield* self._files; }
+    } as unknown as DataTransferItemList;
+  }
+  getData(_format: string): string { return ''; }
+  setData(_format: string, _data: string): void {}
+  clearData(): void {}
+  dropEffect: string = 'none';
+  effectAllowed: string = 'all';
+  types: string[] = [];
+};
+// Always define DragEvent shim (jsdom doesn't implement it)
+(globalThis as Record<string, unknown>)['DragEvent'] = class DragEvent extends MouseEvent {
+  dataTransfer: DataTransfer | null;
+  constructor(type: string, init?: DragEventInit) {
+    super(type, init);
+    this.dataTransfer = (init as any)?.dataTransfer ?? null;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Match Karma's behavior: ComponentFixture.detectChanges() defaults to
+// checkNoChanges=false. Karma swallowed NG0100 errors; this makes Vitest
+// behave the same way so pre-existing tests don't suddenly start failing.
+// ---------------------------------------------------------------------------
+import { ComponentFixture } from '@angular/core/testing';
+const _origDetectChanges = ComponentFixture.prototype.detectChanges;
+ComponentFixture.prototype.detectChanges = function(checkNoChanges = false) {
+  return _origDetectChanges.call(this, checkNoChanges);
 };

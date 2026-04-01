@@ -234,9 +234,7 @@ describe('NewsComponent', () => {
     (window as any).IntersectionObserver = undefined;
 
     component.setupIntersectionObserver();
-    // TODO: vitest-migration: expect().nothing() has been removed because it is redundant in Vitest. Tests without assertions pass by default.
-    // // __PRESERVE_BLANK_LINE__
-    expect().nothing();
+    // No assertions needed - test passes if no errors are thrown
     window.IntersectionObserver = originalIO;
   });
 

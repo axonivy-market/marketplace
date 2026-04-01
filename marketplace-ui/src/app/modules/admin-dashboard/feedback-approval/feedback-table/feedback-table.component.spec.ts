@@ -78,7 +78,7 @@ describe('FeedbackTableComponent', () => {
   });
 
   it('should display history-specific headers when isHistory is true', () => {
-    component.isHistoryTab = true;
+    fixture.componentRef.setInput('isHistoryTab', true);
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
@@ -145,8 +145,8 @@ describe('FeedbackTableComponent', () => {
   });
 
   it('should display "No Feedbacks" message when feedbacks are empty and not loading', () => {
-    component.feedbacks = [];
-    component.isLoading = false;
+    fixture.componentRef.setInput('feedbacks', []);
+    fixture.componentRef.setInput('isLoading', false);
     fixture.detectChanges();
 
     const noFeedbackMessage = fixture.debugElement.query(

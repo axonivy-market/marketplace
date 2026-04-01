@@ -17,8 +17,10 @@ describe('FeedbackFilterComponent', () => {
   let productFeedbackService: MockedObject<ProductFeedbackService>;
 
   beforeEach(async () => {
+    const sortSignal = vi.fn().mockReturnValue(undefined);
+    (sortSignal as any).set = vi.fn();
     const productFeedbackServiceSpy = {
-      sort: vi.fn().mockName('ProductFeedbackService.sort')
+      sort: sortSignal
     };
 
     await TestBed.configureTestingModule({

@@ -3,6 +3,42 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MarkdownEditorComponent } from './markdown-editor.component';
 import { PLATFORM_ID, signal, WritableSignal } from '@angular/core';
 
+vi.mock('easymde', () => {
+  class FakeCodeMirrorInner {
+    private changeHandler?: () => void;
+    setOption() {}
+    getCursor() { return { line: 0, ch: 0 }; }
+    setCursor() {}
+    getWrapperElement() {
+      const container = document.createElement('div');
+      container.classList.add('EasyMDEContainer');
+      const toolbar = document.createElement('div');
+      toolbar.classList.add('editor-toolbar');
+      const cm = document.createElement('div');
+      cm.classList.add('CodeMirror');
+      container.appendChild(toolbar);
+      container.appendChild(cm);
+      return { closest: () => container } as any;
+    }
+    on(event: string, cb: () => void) {
+      if (event === 'change') { this.changeHandler = cb; }
+    }
+    triggerChange() { this.changeHandler?.(); }
+  }
+  class FakeEasyMDEInner {
+    codemirror = new FakeCodeMirrorInner();
+    private _value = '';
+    constructor(public config: any) {}
+    value(val?: string): any {
+      if (val !== undefined) { this._value = val; }
+      return this._value;
+    }
+    toTextArea() {}
+    cleanup() {}
+  }
+  return { default: FakeEasyMDEInner };
+});
+
 class FakeCodeMirror {
   private changeHandler?: () => void;
 
@@ -99,7 +135,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     expect(component['mde']).toBeTruthy();
     expect(component.isMDEReady).toBe(true);
@@ -110,7 +146,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     const fakeMde = component['mde'] as any;
 
@@ -125,7 +161,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     const fakeMde = component['mde'] as any;
     const setOptionSpy = vi.spyOn(fakeMde.codemirror, 'setOption');
@@ -146,7 +182,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     const fakeMde = component['mde'] as any;
 
@@ -164,7 +200,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     const fakeMde = component['mde'] as any;
     const cm = fakeMde.codemirror;
@@ -212,7 +248,7 @@ describe('MarkdownEditorComponent', () => {
       default: FakeEasyMDE
     });
 
-    await component.ngAfterViewInit();
+    await component.initializeEditor();
 
     const fakeMde = component['mde'] as any;
     const valueSpy = vi.spyOn(fakeMde, 'value');

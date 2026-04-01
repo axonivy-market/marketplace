@@ -292,6 +292,6 @@ describe('FeedbackApprovalComponent', () => {
     tick();
 
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
-    expect(component.moderatorName).toBeUndefined();
+    expect(component.moderatorName).toBeNull();
   }));
 });

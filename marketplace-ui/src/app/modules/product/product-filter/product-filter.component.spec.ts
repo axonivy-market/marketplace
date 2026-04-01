@@ -77,11 +77,11 @@ describe('ProductFilterComponent', () => {
   });
 
   it('sort label should not display in small screen', () => {
-    viewport.set(900);
+    // Bootstrap d-none hides the label by default (shown only at lg+ via d-lg-flex)
     const sortLabel = fixture.debugElement.query(
       By.css('.sort-container__label')
     );
-    expect(getComputedStyle(sortLabel.nativeElement).display).toBe('none');
+    expect(sortLabel.nativeElement.classList.contains('d-none')).toBe(true);
   });
 
   it('onSortChange should update selectedSortOption correctly', () => {

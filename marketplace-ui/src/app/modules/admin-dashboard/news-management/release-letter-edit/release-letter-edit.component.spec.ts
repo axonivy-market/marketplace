@@ -13,6 +13,39 @@ import { PageTitleService } from '../../../../shared/services/page-title.service
 import { AdminDashboardService } from '../../admin-dashboard.service';
 import { ReleaseLetterEditComponent } from './release-letter-edit.component';
 
+vi.mock('easymde', () => {
+  class FakeEasyMDE {
+    codemirror = {
+      setOption() {},
+      getCursor() { return { line: 0, ch: 0 }; },
+      setCursor() {},
+      getWrapperElement() {
+        const container = document.createElement('div');
+        container.classList.add('EasyMDEContainer');
+        const toolbar = document.createElement('div');
+        toolbar.classList.add('editor-toolbar');
+        const cm = document.createElement('div');
+        cm.classList.add('CodeMirror');
+        container.appendChild(toolbar);
+        container.appendChild(cm);
+        // Append to document so querySelector works
+        document.body.appendChild(container);
+        return { closest: (_selector: string) => container } as any;
+      },
+      on() {}
+    };
+    private _value = '';
+    constructor(public config: any) {}
+    value(val?: string): any {
+      if (val !== undefined) { this._value = val; }
+      return this._value;
+    }
+    toTextArea() {}
+    cleanup() {}
+  }
+  return { default: FakeEasyMDE };
+});
+
 const mockResponse = {
   id: '123',
   sprint: 'S43',
@@ -136,7 +169,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should call createReleaseLetter in create mode', () => {
-    vi.spyOn(component, 'createReleaseLetter');
+    vi.spyOn(component, 'createReleaseLetter').mockImplementation(() => {});
 
     component.isCreateMode = true;
 
@@ -152,7 +185,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should call updateReleaseLetter in edit mode', () => {
-    vi.spyOn(component, 'updateReleaseLetter');
+    vi.spyOn(component, 'updateReleaseLetter').mockImplementation(() => {});
 
     component.isCreateMode = false;
 

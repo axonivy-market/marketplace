@@ -206,7 +206,7 @@ describe('GoogleSearchBarUtils', () => {
       mockDocument.getElementById.mockReturnValue(null);
       mockRenderer.createElement.mockReturnValue(mockScript);
 
-      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar').mockImplementation(() => {});
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -240,7 +240,7 @@ describe('GoogleSearchBarUtils', () => {
       mockDocument.getElementById.mockReturnValue(null);
       mockRenderer.createElement.mockReturnValue(mockScript);
 
-      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+      vi.spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar').mockImplementation(() => {});
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
