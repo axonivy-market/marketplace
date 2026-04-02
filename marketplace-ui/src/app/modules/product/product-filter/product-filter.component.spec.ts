@@ -1,19 +1,16 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductFilterComponent } from './product-filter.component';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
 import {
   FILTER_TYPES,
   SORT_TYPES
 } from '../../../shared/constants/common.constant';
 import { PAGE } from '../../../shared/constants/query.params.constant';
-
-declare const viewport: Viewport;
 
 describe('ProductFilterComponent', () => {
   let component: ProductFilterComponent;
@@ -66,7 +63,6 @@ describe('ProductFilterComponent', () => {
   });
 
   it('filter type should change to selectbox in small screen', () => {
-    viewport.set(540);
     const filterSelect = fixture.debugElement.query(
       By.css('.filter-type--select')
     );

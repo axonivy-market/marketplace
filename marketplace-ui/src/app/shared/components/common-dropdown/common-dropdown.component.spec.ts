@@ -4,11 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonDropdownComponent } from './common-dropdown.component';
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { ItemDropdown } from '../../models/item-dropdown.model';
 import { ElementRef } from '@angular/core';
 
-declare const viewport: Viewport;
 describe('CommonDropdownComponent', () => {
   let component: CommonDropdownComponent<string>;
   let fixture: ComponentFixture<CommonDropdownComponent<string>>;
@@ -22,7 +20,6 @@ describe('CommonDropdownComponent', () => {
 
     fixture = TestBed.createComponent(CommonDropdownComponent);
     component = fixture.componentInstance;
-    elementRef = fixture.debugElement.injector.get(ElementRef);
     fixture.detectChanges();
   });
 

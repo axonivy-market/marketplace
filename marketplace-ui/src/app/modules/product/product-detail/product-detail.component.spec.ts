@@ -11,7 +11,6 @@ import {
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of, Observable } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
@@ -52,7 +51,6 @@ import { afterEach, describe, beforeEach, expect, it } from 'vitest';
 
 
 const products = MOCK_PRODUCTS._embedded.products;
-declare const viewport: Viewport;
 
 describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
@@ -716,7 +714,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display tabs instead of dropdown when viewport width is above 540px', () => {
-    viewport.set(1920);
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1920 });
     const tabGroup = fixture.debugElement.query(By.css('.tab-group'));
     const dropdown = tabGroup.query(
       By.css(
@@ -728,7 +726,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display info tab on click of info icon for smaller screens', () => {
-    viewport.set(540);
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 540 });
 
     let infoTab = fixture.debugElement.query(
       By.css(

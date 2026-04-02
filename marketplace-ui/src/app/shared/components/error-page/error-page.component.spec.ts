@@ -3,11 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ErrorPageComponent } from './error-page.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-declare const viewport: Viewport;
 
 describe('ErrorPageComponentComponent', () => {
   let component: ErrorPageComponent;
@@ -51,13 +49,13 @@ describe('ErrorPageComponentComponent', () => {
     setupComponent(undefined);
     component.themeService.isDarkMode.set(false);
 
-    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
     expect(imgElement.attributes['src']).toBe('/assets/images/misc/robot.png');
 
-    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(
@@ -69,7 +67,7 @@ describe('ErrorPageComponentComponent', () => {
     setupComponent(undefined);
     component.themeService.isDarkMode.set(true);
 
-    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
@@ -77,7 +75,7 @@ describe('ErrorPageComponentComponent', () => {
       '/assets/images/misc/robot-black.png'
     );
 
-    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
     component.onResize();
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(

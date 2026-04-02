@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { SearchBarComponent } from './search-bar.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { ElementRef } from '@angular/core';
-
-declare const viewport: Viewport;
 
 describe('SearchBarComponent', () => {
   let component: SearchBarComponent;
@@ -34,8 +31,6 @@ describe('SearchBarComponent', () => {
   });
 
   it('desktop search should not display in small screen', () => {
-    viewport.set(540);
-
     const desktopSearch = fixture.debugElement.query(
       By.css('.header__search-button')
     );
@@ -44,8 +39,6 @@ describe('SearchBarComponent', () => {
   });
 
   it('desktop search should display in large screen', () => {
-    viewport.set(1920);
-
     const desktopSearch = fixture.debugElement.query(
       By.css('.header__search-button')
     );
@@ -71,7 +64,6 @@ describe('SearchBarComponent', () => {
   });
 
   it('should show the google search bar on search icon click', () => {
-    viewport.set(1920);
     const searchIcon = fixture.debugElement.query(
       By.css('.header__search-button')
     );

@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import {
   IVY_FOOTER_LINKS,
   DOWNLOAD_URL,
@@ -11,7 +10,6 @@ import {
 } from '../../constants/common.constant';
 import { RouterModule } from '@angular/router';
 
-declare const viewport: Viewport;
 
 describe('FooterComponent', () => {
   let component: FooterComponent;
