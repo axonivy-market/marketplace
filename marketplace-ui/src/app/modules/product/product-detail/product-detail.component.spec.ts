@@ -276,16 +276,6 @@ describe('ProductDetailComponent', () => {
     expect(dropdown.value).toBe('description');
   });
 
-  it('should call keepCurrentTabScroll when setActiveTab is called', () => {
-    const spy = spyOn(component, 'keepCurrentTabScroll');
-    (component as any).isDataLoaded = true;
-    (component as any).initialFragmentHandled = true;
-    component['scrollPositions']['specifications'] = 100;
-    const tab = 'specifications';
-    component.setActiveTab(tab);
-    expect(spy).toHaveBeenCalledWith('specifications');
-  });
-
   it('should call setActiveTab and updateDropdownSelection on setActiveTab', () => {
     const event = { value: 'description' };
     spyOn(component, 'setActiveTab');
@@ -1110,19 +1100,8 @@ describe('ProductDetailComponent', () => {
     expect(spy).toHaveBeenCalled();
     const args = (spy as jasmine.Spy).calls.mostRecent().args;
     expect(args[0]).toBe('description');
+    expect(args[2]).toBeFalse();
   });
-
-  it('should restore scroll position for a tab', fakeAsync(() => {
-    component.isBrowser = true;
-    const tabId = 'demo';
-    component['scrollPositions'][tabId] = 1234;
-    const scrollSpy = spyOn(window, 'scrollTo');
-    component.keepCurrentTabScroll(tabId);
-    tick();
-    expect(scrollSpy).toHaveBeenCalled();
-    const arg = (scrollSpy as jasmine.Spy).calls.mostRecent().args[0] as any;
-    expect(arg.top).toBe(1234);
-  }));
 
   describe('loadChangelogs', () => {
     let productService: jasmine.SpyObj<ProductService>;
@@ -1670,24 +1649,6 @@ describe('ProductDetailComponent', () => {
     expect(component.activeTab).toBe('description');
   });
 
-  it('should save scroll position of previous tab on popstate', () => {
-    (component as any).isDataLoaded = true;
-    component.activeTab = 'description';
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
-
-    history.pushState(null, '', '#demo');
-
-    Object.defineProperty(globalThis, 'scrollY', {
-      value: 300,
-      configurable: true,
-      writable: true
-    });
-
-    component.onPopState();
-
-    expect(component['scrollPositions']['description']).toBe(300);
-  });
-
   it('should save activeTab to localStorage when productDetail has id on popstate', () => {
     (component as any).isDataLoaded = true;
     component.activeTab = 'description';
@@ -1716,10 +1677,28 @@ describe('ProductDetailComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(
       [],
       jasmine.objectContaining({
-        fragment: 'description' // DEFAULT_ACTIVE_TAB
+        fragment: 'description'
       })
     );
   });
+
+  it('should set DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of(null);
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = false;
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    const spy = spyOn(component, 'setActiveTab');
+
+    component.navigateToProductDetailsWithTabFragment();
+    tick();
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(component.activeTab).toBe('description');
+    expect((component as any).initialFragmentHandled).toBeTrue();
+  }));
 
   // Test handleSubsequentTabActivation - changelog
   it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', fakeAsync(() => {
@@ -1756,22 +1735,6 @@ describe('ProductDetailComponent', () => {
     );
   }));
 
-  it('should call setActiveTab with DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
-    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
-    activatedRoute.fragment = of(null);
-
-    (component as any).isDataLoaded = true;
-    (component as any).initialFragmentHandled = false;
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
-
-    const spy = spyOn(component, 'setActiveTab').and.callThrough();
-
-    component.navigateToProductDetailsWithTabFragment();
-    tick();
-
-    expect(spy).toHaveBeenCalledWith('description', false);
-  }));
-
   it('should not navigate if currentFragment already equals currentTab', fakeAsync(() => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
@@ -1788,4 +1751,39 @@ describe('ProductDetailComponent', () => {
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
+
+  it('should clear scrollTimeout on ngOnDestroy', () => {
+    (component as any).scrollTimeout = setTimeout(() => { }, 1000);
+    const clearSpy = spyOn(window, 'clearTimeout').and.callThrough();
+    component.ngOnDestroy();
+    expect(clearSpy).toHaveBeenCalled();
+  });
+
+  it('should call setActiveTab with scrollToTab false for description fragment', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of('description');
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+
+    const spy = spyOn(component, 'setActiveTab').and.callThrough();
+
+    component.navigateToProductDetailsWithTabFragment();
+
+    expect(spy).toHaveBeenCalledWith('description', true, false);
+  });
+
+  it('should call setActiveTab with scrollToTab true for non-default fragment', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of('demo');
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+
+    const spy = spyOn(component, 'setActiveTab').and.callThrough();
+
+    component.navigateToProductDetailsWithTabFragment();
+
+    expect(spy).toHaveBeenCalledWith('demo', true, true);
+  });
 });
