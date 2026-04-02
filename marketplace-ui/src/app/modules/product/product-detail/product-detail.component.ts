@@ -176,6 +176,7 @@ export class ProductDetailComponent implements AfterViewInit {
   private scrollTimeout: ReturnType<typeof setTimeout> | null = null;
   private initialFragmentHandled = false;
   private isDataLoaded = false;
+  private readonly SCROLL_DELAY_MS = 50;
 
   @HostListener('window:popstate')
   onPopState() {
@@ -201,7 +202,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.scrollTimeout = setTimeout(() => {
       this.scrollToTabGroup();
       this.scrollTimeout = null;
-    }, 50);
+    }, this.SCROLL_DELAY_MS);
   }
 
   constructor(
