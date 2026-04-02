@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { HeaderComponent } from './header.component';
@@ -73,7 +73,7 @@ describe('HeaderComponent', () => {
   });
 
   describe('Router navigation handling', () => {
-    it('should set isAdminRoute to true when navigating to admin route', fakeAsync(() => {
+    it('should set isAdminRoute to true when navigating to admin route', () => {
       const navigationEvent = new NavigationEnd(
         1,
         '/internal-dashboard/admin',
@@ -81,12 +81,11 @@ describe('HeaderComponent', () => {
       );
 
       (router.events as any).next(navigationEvent);
-      flush();
 
       expect(component.isAdminRoute).toBe(true);
-    }));
+    });
 
-    it('should handle multiple navigation events', fakeAsync(() => {
+    it('should handle multiple navigation events', () => {
       const event1 = new NavigationEnd(1, '/portal', '/portal');
       const event2 = new NavigationEnd(
         2,
@@ -96,17 +95,14 @@ describe('HeaderComponent', () => {
       const event3 = new NavigationEnd(3, '/home', '/home');
 
       (router.events as any).next(event1);
-      flush();
       expect(component.isAdminRoute).toBe(false);
 
       (router.events as any).next(event2);
-      flush();
       expect(component.isAdminRoute).toBe(true);
 
       (router.events as any).next(event3);
-      flush();
       expect(component.isAdminRoute).toBe(false);
-    }));
+    });
   });
 
   it('should emit menuToggle event when onMenuToggleClick is called', () => {

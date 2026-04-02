@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { FeedbackApprovalComponent } from './feedback-approval.component';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
@@ -95,7 +93,7 @@ describe('FeedbackApprovalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should update feedback status and refresh', fakeAsync(() => {
+  it('should update feedback status and refresh', () => {
     const feedback: Feedback = {
       id: '1',
       version: 2,
@@ -120,12 +118,11 @@ describe('FeedbackApprovalComponent', () => {
     component.moderatorName = 'TestUser';
     vi.spyOn(component, 'fetchFeedbacks');
     component.onClickReviewButton(feedback, true);
-    tick();
 
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
     ).toHaveBeenCalledWith(MOCK_APPROVED_FEEDBACK);
-  }));
+  });
 
   it('should update activeTab', () => {
     component.setActiveTab('history');
@@ -137,14 +134,13 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.activeTab).toBe('history');
   });
 
-  it('should switch to history tab when clicked', fakeAsync(() => {
+  it('should switch to history tab when clicked', () => {
     component.isAuthenticated = true;
     fixture.detectChanges();
 
     const historyTab = fixture.debugElement.query(By.css('#history-tab'));
     historyTab.triggerEventHandler('click', null);
     fixture.detectChanges();
-    tick();
 
     expect(component.activeTab).toBe('history');
     expect(historyTab.classes['active']).toBe(true);
@@ -160,7 +156,7 @@ describe('FeedbackApprovalComponent', () => {
     );
     expect(reviewPane.classes['active']).toBeUndefined();
     expect(historyPane.classes['active']).toBe(true);
-  }));
+  });
 
   it('should pass pending feedbacks to review tab’s FeedbackTableComponent', () => {
     component.isAuthenticated = true;
@@ -194,66 +190,61 @@ describe('FeedbackApprovalComponent', () => {
     expect(historyTable.componentInstance.isHistoryTab).toBe(true);
   });
 
-  it('should initialize with stored token', fakeAsync(() => {
+  it('should initialize with stored token', () => {
     const fetchFeedbacksSpy = vi.spyOn(component, 'fetchFeedbacks');
     (sessionStorage.getItem as Mock).mockReturnValue('storedToken');
 
     component.ngOnInit();
-    tick();
 
     expect(component.token).toBe('storedToken');
     expect(component.isAuthenticated).toBe(true);
     expect(fetchFeedbacksSpy).toHaveBeenCalled();
-  }));
+  });
 
-  it('should handle fetchUserInfo success', fakeAsync(() => {
+  it('should handle fetchUserInfo success', () => {
     component.token = 'testToken';
     component.fetchUserInfo().subscribe();
-    tick();
 
     expect(authServiceMock.decodeToken).toHaveBeenCalledWith('testToken');
     expect(authServiceMock.getDisplayNameFromAccessToken).toHaveBeenCalledWith(
       'decodedAccessToken'
     );
-  }));
+  });
 
-  it('should handle non-unauthorized errors in fetchFeedbacks', fakeAsync(() => {
+  it('should handle non-unauthorized errors in fetchFeedbacks', () => {
     const errorResponse = new HttpErrorResponse({ status: 500 });
     productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
       throwError(() => errorResponse)
     );
     (sessionStorage.getItem as Mock).mockReturnValue('testToken');
     component.fetchFeedbacks();
-    tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.FETCH_FAILURE);
     expect(component.isAuthenticated).toBe(false);
-  }));
+  });
 
-  it('should handle unauthorized error in fetchFeedbacks', fakeAsync(() => {
+  it('should handle unauthorized error in fetchFeedbacks', () => {
     const errorResponse = new HttpErrorResponse({ status: 401 });
     productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
       throwError(() => errorResponse)
     );
     (sessionStorage.getItem as Mock).mockReturnValue('testToken');
     component.fetchFeedbacks();
-    tick();
     expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
     expect(component.isAuthenticated).toBe(false);
-  }));
+  });
 
-  it('should return early from fetchFeedbacks if not authenticated', fakeAsync(() => {
+  it('should return early from fetchFeedbacks if not authenticated', () => {
     authServiceMock.getUserInfo.mockReturnValue(of());
     authServiceMock.getDisplayNameFromAccessToken.mockReturnValue(of(''));
     component.isAuthenticated = false;
 
     component.fetchFeedbacks();
-    tick();
 
     expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
     expect(component.isLoading).toBe(false);
-  }));
+  });
 
-  it('should toggle between tabs correctly', fakeAsync(() => {
+  it('should toggle between tabs correctly', () => {
     component.isAuthenticated = true;
     fixture.detectChanges();
 
@@ -261,21 +252,19 @@ describe('FeedbackApprovalComponent', () => {
     const historyTab = fixture.debugElement.query(By.css('#history-tab'));
 
     historyTab.triggerEventHandler('click', null);
-    tick();
     fixture.detectChanges();
     expect(component.activeTab).toBe('history');
     expect(historyTab.classes['active']).toBe(true);
     expect(reviewTab.classes['active']).toBeUndefined();
 
     reviewTab.triggerEventHandler('click', null);
-    tick();
     fixture.detectChanges();
     expect(component.activeTab).toBe('review');
     expect(reviewTab.classes['active']).toBe(true);
     expect(historyTab.classes['active']).toBeUndefined();
-  }));
+  });
 
-  it('should call handleError when fetchUserInfo fails', fakeAsync(() => {
+  it('should call handleError when fetchUserInfo fails', () => {
     const errorResponse = new HttpErrorResponse({
       status: 500,
       statusText: 'Internal Server Error'
@@ -289,9 +278,8 @@ describe('FeedbackApprovalComponent', () => {
 
     component.token = 'test-token';
     component.fetchUserInfo().subscribe();
-    tick();
 
     expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
     expect(component.moderatorName).toBeNull();
-  }));
+  });
 });

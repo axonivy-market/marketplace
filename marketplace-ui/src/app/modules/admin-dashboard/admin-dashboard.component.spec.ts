@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  TestBed,
-  fakeAsync,
-  flushMicrotasks,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import {
@@ -231,23 +228,22 @@ describe('AdminDashboardComponent', () => {
       expect(component.filteredProducts.length).toBe(3);
     });
 
-    it('should trigger syncProducts successfully', fakeAsync(() => {
+    it('should trigger syncProducts successfully', async () => {
       mockAdminService.syncProducts.mockReturnValue(of());
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
       );
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncProducts).toHaveBeenCalled();
       expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
       expect(syncTask.completedAt).toBeDefined();
       expect(component.loadingSyncTaskKey).toBeNull();
-    }));
+    });
 
-    it('should trigger syncLatestReleasesForProducts successfully', fakeAsync(() => {
+    it('should trigger syncLatestReleasesForProducts successfully', async () => {
       mockAdminService.syncLatestReleasesForProducts.mockReturnValue(of());
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
@@ -256,8 +252,7 @@ describe('AdminDashboardComponent', () => {
         t => t.key === 'syncLatestReleasesForProducts'
       )!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
       expectSyncTaskState(
@@ -265,9 +260,9 @@ describe('AdminDashboardComponent', () => {
         'syncLatestReleasesForProducts',
         SyncTaskStatus.RUNNING
       );
-    }));
+    });
 
-    it('should trigger syncGithubMonitor successfully', fakeAsync(() => {
+    it('should trigger syncGithubMonitor successfully', async () => {
       mockAdminService.syncGithubMonitor.mockReturnValue(of());
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
@@ -276,8 +271,7 @@ describe('AdminDashboardComponent', () => {
         t => t.key === 'syncGithubMonitor'
       )!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
       expectSyncTaskState(
@@ -285,9 +279,9 @@ describe('AdminDashboardComponent', () => {
         'syncGithubMonitor',
         SyncTaskStatus.RUNNING
       );
-    }));
+    });
 
-    it('should not reload executions on failure when not authenticated', fakeAsync(() => {
+    it('should not reload executions on failure when not authenticated', async () => {
       mockAdminService.syncProducts.mockReturnValue(
         throwError(() => new Error('Sync failed'))
       );
@@ -295,12 +289,11 @@ describe('AdminDashboardComponent', () => {
       component.isAuthenticated = false;
       mockAdminService.fetchSyncTaskExecutions.mockClear();
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
       expect(mockAdminService.fetchSyncTaskExecutions).not.toHaveBeenCalled();
-    }));
+    });
   });
 
   describe('applySyncTaskExecutions', () => {
@@ -389,7 +382,7 @@ describe('AdminDashboardComponent', () => {
       component.products = mockProducts;
     });
 
-    it('should execute sync when values are valid', fakeAsync(() => {
+    it('should execute sync when values are valid', () => {
       mockAdminService.syncOneProduct.mockReturnValue(of());
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
@@ -402,7 +395,6 @@ describe('AdminDashboardComponent', () => {
       component.overrideMarketItemPath = true;
 
       component.confirmSyncOneProduct();
-      tick();
 
       expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
         TEST_CONSTANTS.VALID_PRODUCT_ID,
@@ -411,9 +403,9 @@ describe('AdminDashboardComponent', () => {
       );
       expect(component.showSyncOneProductDialog).toBe(false);
       expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
-    }));
+    });
 
-    it('should trim market directory before syncing', fakeAsync(() => {
+    it('should trim market directory before syncing', () => {
       mockAdminService.syncOneProduct.mockReturnValue(of());
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
@@ -425,14 +417,13 @@ describe('AdminDashboardComponent', () => {
       );
 
       component.confirmSyncOneProduct();
-      tick();
 
       expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
         'portal',
         'dir1',
         false
       );
-    }));
+    });
 
     it('should mark as failed when product not found', () => {
       component.productSearch = 'non-existent';
@@ -467,7 +458,7 @@ describe('AdminDashboardComponent', () => {
       expect(() => component.confirmSyncOneProduct()).not.toThrow();
     });
 
-    it('should handle sync one product failure', fakeAsync(() => {
+    it('should handle sync one product failure', () => {
       mockAdminService.syncOneProduct.mockReturnValue(
         throwError(() => new Error('Sync failed'))
       );
@@ -479,10 +470,9 @@ describe('AdminDashboardComponent', () => {
       component.isAuthenticated = true;
 
       component.confirmSyncOneProduct();
-      tick();
 
       expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.FAILED);
-    }));
+    });
   });
 
   describe('isValidSyncOneProductValues', () => {
@@ -617,31 +607,31 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  it('should set showSyncTask to false on route activate', fakeAsync(() => {
+  it('should set showSyncTask to false on route activate', async () => {
     component.showSyncTask = true;
 
     component.onRouteActivate();
 
     expect(component.showSyncTask).toBe(true);
 
-    flushMicrotasks();
+    await Promise.resolve();
 
     expect(component.showSyncTask).toBe(false);
     expect(cdr.markForCheck).toHaveBeenCalled();
-  }));
+  });
 
-  it('should set showSyncTask to true on route deactivate', fakeAsync(() => {
+  it('should set showSyncTask to true on route deactivate', async () => {
     component.showSyncTask = false;
 
     component.onRouteDeactivate();
 
     expect(component.showSyncTask).toBe(false);
 
-    flushMicrotasks();
+    await Promise.resolve();
 
     expect(component.showSyncTask).toBe(true);
     expect(cdr.markForCheck).toHaveBeenCalled();
-  }));
+  });
 
   it('should set page title when navigating to /internal-dashboard', () => {
     const events$ = new Subject<any>();

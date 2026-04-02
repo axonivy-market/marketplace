@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
@@ -405,7 +403,7 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should fetch and trigger download with correct parameters', fakeAsync(() => {
+  it('should fetch and trigger download with correct parameters', () => {
     const url = 'https://example.com/file.pdf';
     const fileName = 'artifact.zip';
     const testBlob = new Blob(['test'], { type: 'application/zip' });
@@ -416,7 +414,6 @@ describe('ProductDetailVersionActionComponent', () => {
     component.fetchAndDownloadArtifact(url, fileName);
     const req = httpMock.expectOne(url);
     req.flush(testBlob);
-    tick();
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
     expect(downloadSpy).toHaveBeenCalledTimes(1);
@@ -425,7 +422,7 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.onUpdateInstallationCount).toHaveBeenCalled();
     expect(component.isDownloading()).toBe(false);
     httpMock.verify();
-  }));
+  });
 
   it('should return the correct marketplace service URL', () => {
     environment.apiUrl = 'https://api.example.com';

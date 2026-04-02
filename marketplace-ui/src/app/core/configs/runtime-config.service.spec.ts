@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TransferState, PLATFORM_ID } from '@angular/core';
 import { RuntimeConfigService } from './runtime-config.service';
 import { RUNTIME_CONFIG_KEY, RuntimeConfig } from '../models/runtime-config';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('RuntimeConfigService', () => {
   let service: RuntimeConfigService;
@@ -156,7 +156,4 @@ describe('RuntimeConfigService', () => {
     });
   });
 });
-function beforeEach(arg0: () => void) {
-  throw new Error('Function not implemented.');
-}
 

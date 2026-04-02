@@ -1,4 +1,4 @@
-import { vi, type Mock, type MockedObject } from 'vitest';
+﻿import { vi, type Mock, type MockedObject } from 'vitest';
 import {
   provideHttpClient,
   withInterceptorsFromDi
@@ -6,9 +6,7 @@ import {
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
@@ -747,12 +745,12 @@ describe('ProductDetailComponent', () => {
     expect(infoTab).toBeTruthy();
   });
 
-  it('should call checkMediaSize on ngOnInit', fakeAsync(() => {
+  it('should call checkMediaSize on ngOnInit', async () => {
     vi.spyOn(component, 'checkMediaSize');
     component.ngOnInit();
-    tick();
+    await Promise.resolve();
     expect(component.checkMediaSize).toHaveBeenCalled();
-  }));
+  });
 
   it('should set isMobileMode based on window size', () => {
     vi.spyOn(globalThis, 'matchMedia').mockReturnValue({
@@ -1007,22 +1005,22 @@ describe('ProductDetailComponent', () => {
     expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
-  it('should close the dropdown when clicking outside', fakeAsync(() => {
+  it('should close the dropdown when clicking outside', async () => {
     component.isDropdownOpen.set(true);
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     const outsideElement = document.createElement('div');
     document.body.appendChild(outsideElement);
     outsideElement.click();
 
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     expect(component.isDropdownOpen()).toBe(false);
 
     outsideElement.remove();
-  }));
+  });
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
@@ -1128,17 +1126,19 @@ describe('ProductDetailComponent', () => {
     expect(args?.[0]).toBe('description');
   });
 
-  it('should restore scroll position for a tab', fakeAsync(() => {
+  it('should restore scroll position for a tab', () => {
+    vi.useFakeTimers();
     component.isBrowser = true;
     const tabId = 'demo';
     component['scrollPositions'][tabId] = 1234;
     const scrollSpy = vi.spyOn(globalThis, 'scrollTo');
     component.keepCurrentTabScroll(tabId);
-    tick();
+    vi.runAllTimers();
+    vi.useRealTimers();
     expect(scrollSpy).toHaveBeenCalled();
     const arg = scrollSpy.mock.lastCall![0] as ScrollToOptions;
     expect(arg.top).toBe(1234);
-  }));
+  });
 
   describe('loadChangelogs', () => {
     let productService: MockedObject<ProductService>;
@@ -1746,7 +1746,8 @@ describe('ProductDetailComponent', () => {
   });
 
   // Test handleSubsequentTabActivation - changelog
-  it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', fakeAsync(() => {
+  it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', () => {
+    vi.useFakeTimers();
     (component as any).isDataLoaded = true;
     (component as any).initialFragmentHandled = true;
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
@@ -1754,13 +1755,14 @@ describe('ProductDetailComponent', () => {
     vi.spyOn(component, 'setupIntersectionObserver');
 
     component.setActiveTab('changelog');
-    tick();
+    vi.runAllTimers();
+    vi.useRealTimers();
 
     expect(component.setupIntersectionObserver).toHaveBeenCalled();
-  }));
+  });
 
   // Test navigateToProductDetailsWithTabFragment
-  it('should navigate to currentTab when initialFragmentHandled is true and fragment is null', fakeAsync(() => {
+  it('should navigate to currentTab when initialFragmentHandled is true and fragment is null', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1769,7 +1771,7 @@ describe('ProductDetailComponent', () => {
     component.activeTab = 'demo';
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
     expect(mockRouter.navigate).toHaveBeenCalledWith(
       [],
@@ -1778,9 +1780,9 @@ describe('ProductDetailComponent', () => {
         replaceUrl: true
       })
     );
-  }));
+  });
 
-  it('should call setActiveTab with DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
+  it('should call setActiveTab with DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1791,12 +1793,12 @@ describe('ProductDetailComponent', () => {
     const spy = vi.spyOn(component, 'setActiveTab');
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
     expect(spy).toHaveBeenCalledWith('description', false);
-  }));
+  });
 
-  it('should not navigate if currentFragment already equals currentTab', fakeAsync(() => {
+  it('should not navigate if currentFragment already equals currentTab', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
     activatedRoute.snapshot.fragment = 'demo';
@@ -1808,8 +1810,8 @@ describe('ProductDetailComponent', () => {
     mockRouter.navigate.mockClear();
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
-  }));
+  });
 });

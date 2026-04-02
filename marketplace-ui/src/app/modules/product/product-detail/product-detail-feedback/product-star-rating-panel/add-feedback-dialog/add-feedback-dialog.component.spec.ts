@@ -29,7 +29,7 @@ describe('AddFeedbackDialogComponent', () => {
       feedbacks: signal([])
     };
     const productDetailServiceSpy = {
-      productId: vi.fn().mockName('ProductDetailService.productId'),
+      productId: signal('mockProductId'),
       productNames: signal({ en: 'en', de: 'de' }),
       productLogoUrl: signal('logoUrl')
     };

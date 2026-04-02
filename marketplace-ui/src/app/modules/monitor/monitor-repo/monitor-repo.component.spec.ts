@@ -1,8 +1,6 @@
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { MonitoringRepoComponent } from './monitor-repo.component';
 import { Repository, TestResult } from '../github.service';
@@ -124,7 +122,8 @@ describe('MonitoringRepoComponent', () => {
     expect(component.mode[FOCUSED_TAB]).toBe(DEFAULT_MODE);
   });
 
-  it('should update criteria.search, reset page, update pageable, and call loadRepositories on search', fakeAsync(() => {
+  it('should update criteria.search, reset page, update pageable, and call loadRepositories on search', () => {
+    vi.useFakeTimers();
     const searchString = 'asana';
 
     component.page = 5;
@@ -136,14 +135,15 @@ describe('MonitoringRepoComponent', () => {
     component.onSearchChanged(searchString);
 
     // Wait for debounce time
-    tick(500);
+    vi.advanceTimersByTime(500);
+    vi.useRealTimers();
 
     expect(component.page).toBe(1);
     expect(component.criteria.pageable.page).toBe(0);
     expect(component.criteria.pageable.size).toBe(component.pageSize);
     expect(component.criteria.search).toBe(searchString);
     expect(component.loadRepositories).toHaveBeenCalled();
-  }));
+  });
 
   it('should show all repositories when pageSize = -1', () => {
     component.pageSize = -1;
@@ -184,7 +184,7 @@ describe('MonitoringRepoComponent', () => {
     expect(noMatch).toBeUndefined();
   });
 
-  it('should toggle mode via ngModel binding', fakeAsync(() => {
+  it('should toggle mode via ngModel binding', async () => {
     component.mode[FOCUSED_TAB] = DEFAULT_MODE;
     fixture.detectChanges();
     const reportRadio = fixture.debugElement.query(
@@ -193,9 +193,9 @@ describe('MonitoringRepoComponent', () => {
 
     reportRadio.click();
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     expect(component.mode[FOCUSED_TAB]).toBe(REPORT_MODE);
-  }));
+  });
 
   it('should display repository links correctly in template', () => {
     const repoLinks = fixture.debugElement.queryAll(By.css('#product-name'));
@@ -206,7 +206,8 @@ describe('MonitoringRepoComponent', () => {
     expect(repoLinks[2].nativeElement.textContent.trim()).toBe('repo3');
   });
 
-  it('should show no-repositories message when filtered list is empty', fakeAsync(() => {
+  it('should show no-repositories message when filtered list is empty', () => {
+    vi.useFakeTimers();
     vi.spyOn(component['githubService'], 'getRepositories').mockReturnValue(
       of({
         _embedded: { githubRepos: [] },
@@ -215,7 +216,8 @@ describe('MonitoringRepoComponent', () => {
     );
 
     component.onSearchChanged('asanaaaaa');
-    tick(500); // Wait for debounce
+    vi.advanceTimersByTime(500); // Wait for debounce
+    vi.useRealTimers();
 
     fixture.detectChanges();
 
@@ -226,7 +228,7 @@ describe('MonitoringRepoComponent', () => {
     expect(noRepositoriesMessage.nativeElement.textContent).toContain(
       'common.monitor.dashboard.noRepositories'
     );
-  }));
+  });
 
   it('should update sort icons correctly', () => {
     const header = fixture.debugElement.query(By.css('th h5.table-header'));

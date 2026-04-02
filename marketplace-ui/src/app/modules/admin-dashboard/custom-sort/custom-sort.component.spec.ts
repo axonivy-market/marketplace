@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { CustomSortComponent } from './custom-sort.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -229,35 +227,33 @@ describe('CustomSortComponent', () => {
   });
 
   describe('sortMarketExtensions', () => {
-    beforeEach(fakeAsync(() => {
+    beforeEach(async () => {
       fixture.detectChanges();
-      tick();
-    }));
+      await fixture.whenStable();
+    });
 
-    it('should call service and show success message', fakeAsync(() => {
+    it('should call service and show success message', () => {
       vi.spyOn(translateService, 'instant').mockReturnValue('Success');
       component.sortingExtensions = ['portal', 'coffee-machine-connector'];
 
       component.sortMarketExtensions();
-      tick();
 
       expect(adminDashboardService.sortMarketExtensions).toHaveBeenCalled();
       expect(component.sortSuccessMessage).toBe('Success');
       expect(component.isSaving).toBe(false);
-    }));
+    });
 
-    it('should show error message on failure', fakeAsync(() => {
+    it('should show error message on failure', () => {
       adminDashboardService.sortMarketExtensions.mockReturnValue(
         throwError(() => new Error('error'))
       );
       vi.spyOn(translateService, 'instant').mockReturnValue('Error');
 
       component.sortMarketExtensions();
-      tick();
 
       expect(component.sortErrorMessage).toBe('Error');
       expect(component.isSaving).toBe(false);
-    }));
+    });
   });
 
   describe('drag preview width', () => {

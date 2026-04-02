@@ -1,9 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  fakeAsync,
   TestBed,
-  tick,
   flush
 } from '@angular/core/testing';
 
@@ -44,7 +42,7 @@ describe('ProductComponent', () => {
     mockIntersectionObserver.unobserve.mockImplementation(() => {});
     mockIntersectionObserver.disconnect.mockImplementation(() => {});
 
-    (window as any).IntersectionObserver = function (
+    (globalThis as any).IntersectionObserver = function (
       callback: IntersectionObserverCallback
     ) {
       mockIntersectionObserver.callback = callback;
@@ -53,7 +51,7 @@ describe('ProductComponent', () => {
   });
 
   afterAll(() => {
-    delete (window as any).IntersectionObserver;
+    delete (globalThis as any).IntersectionObserver;
   });
 
   beforeEach(async () => {
@@ -195,12 +193,14 @@ describe('ProductComponent', () => {
     });
   });
 
-  it('onSearchChanged should handle empty search string correctly', fakeAsync(() => {
+  it('onSearchChanged should handle empty search string correctly', () => {
+    vi.useFakeTimers();
     const searchString = '';
     vi.spyOn(component.router, 'navigate');
 
     component.onSearchChanged(searchString);
-    tick(500);
+    vi.advanceTimersByTime(500);
+    vi.useRealTimers();
 
     expect(component.criteria.search).toEqual(searchString);
     expect(component.router.navigate).toHaveBeenCalledWith([], {
@@ -208,16 +208,18 @@ describe('ProductComponent', () => {
       queryParams: { search: null },
       queryParamsHandling: 'merge'
     });
-  }));
+  });
 
-  it('search should return match products name', fakeAsync(() => {
+  it('search should return match products name', () => {
+    vi.useFakeTimers();
     const productName = 'amazon comprehend';
     component.onSearchChanged(productName);
-    tick(500);
+    vi.advanceTimersByTime(500);
+    vi.useRealTimers();
     component.products().forEach(product => {
       expect(product.names['en'].toLowerCase()).toContain(productName);
     });
-  }));
+  });
 
   it('nextPageHref should be empty when page is initialized', () => {
     component.ngAfterViewInit();
@@ -280,7 +282,7 @@ describe('ProductComponent', () => {
       [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly'
     });
 
-    routingQueryParamService.isDesignerEnv.mockReturnValue(true);
+    routingQueryParamService.isDesignerEnv.set(true);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
@@ -301,7 +303,7 @@ describe('ProductComponent', () => {
   });
 
   it('should navigate to product detail page when clicking on a product card', async () => {
-    routingQueryParamService.isDesignerEnv.mockReturnValue(false);
+    routingQueryParamService.isDesignerEnv.set(false);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
@@ -339,7 +341,7 @@ describe('ProductComponent', () => {
     expect(productCard.classList.contains('col-xxl-4')).toBe(true);
   });
 
-  it('should set query params back to criteria', fakeAsync(() => {
+  it('should set query params back to criteria', () => {
     vi.spyOn(component.router, 'navigate');
 
     component.route.queryParams = of({
@@ -355,7 +357,7 @@ describe('ProductComponent', () => {
     expect(newComponent.criteria.search).toEqual('asana');
     expect(newComponent.criteria.type).toEqual(TypeOption.CONNECTORS);
     expect(newComponent.criteria.sort).toEqual(SortOption.ALPHABETICALLY);
-  }));
+  });
 
   it('should return false when responsePage is not set', () => {
     component.responsePage = undefined as any;

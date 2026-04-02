@@ -1,4 +1,4 @@
-import { vi, type MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { DOCUMENT, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -85,7 +85,7 @@ describe('ThemeSelectionComponent', () => {
 
     // Simulate light mode after toggle
     documentRef.documentElement.setAttribute(DATA_THEME, Theme.LIGHT);
-    mockThemeService.isDarkMode.mockReturnValue(false);
+    (mockThemeService.isDarkMode as ReturnType<typeof signal<boolean>>).set(false);
 
     component.onToggleTheme();
 
@@ -101,7 +101,7 @@ describe('ThemeSelectionComponent', () => {
 
     // Simulate dark mode after toggle
     documentRef.documentElement.setAttribute(DATA_THEME, Theme.DARK);
-    mockThemeService.isDarkMode.mockReturnValue(true);
+    (mockThemeService.isDarkMode as ReturnType<typeof signal<boolean>>).set(true);
 
     component.onToggleTheme();
 
