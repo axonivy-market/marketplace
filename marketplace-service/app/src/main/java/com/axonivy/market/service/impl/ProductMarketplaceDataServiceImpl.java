@@ -6,8 +6,10 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.DeprecatedRequest;
+import com.axonivy.market.model.DeprecatedResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHPullRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -198,22 +201,31 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Transactional
   @Override
-  public List<String> updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
-    productRepo.findById(request.getProductId()).ifPresent(product -> {
-          product.setDeprecated(request.getDeprecated());
-          product.setUpdatedAt(new Date());
-          productRepo.save(product);
-          log.info("Successfully set deprecated for product: {}", product.getId());
-        });
-
-    if (StringUtils.isBlank(request.getSuccessorUrl())) {
+  public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
+    if (StringUtils.isNotBlank(request.getSuccessorUrl())) {
       Optional.ofNullable(getProductMarketplaceData(request.getProductId())).ifPresent(data -> {
-            data.setSuccessor(request.getSuccessorUrl());
-            productMarketplaceDataRepo.save(data);
-            log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
-          });
+        data.setSuccessor(request.getSuccessorUrl());
+        productMarketplaceDataRepo.save(data);
+        log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
+      });
     }
-    gitHubService.createReadmeUnsupportedPullRequest("", "axonivy-market/cms-live-editor");
-    return productRepo.findProductIdsByDeprecated(true);
+    GHPullRequest pullRequestUrl = null;
+    Product product = productRepo.findById(request.getProductId()).orElse(null);
+    if (product != null) {
+      product.setDeprecated(request.getDeprecated());
+      product.setUpdatedAt(new Date());
+      pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest("",
+          product.getRepositoryName(), request.getPullRequestAction());
+      productRepo.save(product);
+      log.info("Successfully set deprecated for product: {}", product.getId());
+    }
+    return DeprecatedResponse.builder()
+        .productIds(productRepo.findProductIdsByDeprecated(true))
+        .pullRequestUrl(
+            Optional.ofNullable(pullRequestUrl)
+                .map(GHPullRequest::getHtmlUrl)
+                .map(Object::toString)
+                .orElse(null))
+        .build();
   }
 }

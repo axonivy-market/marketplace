@@ -2,6 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.model.DeprecatedRequest;
+import com.axonivy.market.model.DeprecatedResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +28,5 @@ public interface ProductMarketplaceDataService {
 
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
 
-  List<String> updateSuccessorForProduct(DeprecatedRequest deprecatedRequest) throws IOException;
+  DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest deprecatedRequest) throws IOException;
 }
