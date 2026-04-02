@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,13 +34,6 @@ describe('FeedbackFilterComponent', () => {
         { provide: ProductFeedbackService, useValue: productFeedbackServiceSpy }
       ]
     }).compileComponents();
-
-    translateService = TestBed.inject(
-      TranslateService
-    ) as MockedObject<TranslateService>;
-    productFeedbackService = TestBed.inject(
-      ProductFeedbackService
-    ) as MockedObject<ProductFeedbackService>;
   });
 
   beforeEach(() => {

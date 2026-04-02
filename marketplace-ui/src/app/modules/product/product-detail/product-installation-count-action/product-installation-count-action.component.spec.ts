@@ -1,9 +1,7 @@
-import { vi, type MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -48,7 +46,8 @@ describe('ProductInstallationCountActionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should update installation count when refreshInstallationCount changes', fakeAsync(() => {
+  it('should update installation count when refreshInstallationCount changes', async () => {
+    vi.useFakeTimers();
     const refreshSignal = signal(0);
     const productId = 'portal';
     component.productId = productId;
@@ -59,11 +58,13 @@ describe('ProductInstallationCountActionComponent', () => {
 
     fixture.detectChanges();
     refreshSignal.update(v => v + 1);
-    tick(1000);
+    fixture.detectChanges();
+    await vi.advanceTimersByTimeAsync(1000);
 
     expect(
       productServiceMock.sendRequestToGetInstallationCount
     ).toHaveBeenCalledWith(productId);
     expect(component.currentInstallationCount()).toEqual(42);
-  }));
+    vi.useRealTimers();
+  });
 });

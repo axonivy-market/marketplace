@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { LogViewerComponent } from './logs-viewer.component';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';

@@ -2,9 +2,7 @@ import { defineConfig } from 'vitest/config';
 import angular from '@analogjs/vite-plugin-angular';
 
 export default defineConfig({
-  plugins: [
-    angular({ tsconfig: './tsconfig.spec.json' })
-  ],
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -12,9 +10,7 @@ export default defineConfig({
     setupFiles: ['src/test-setup.ts'],
     coverage: {
       provider: 'v8',
-      reportsDirectory: './coverage',
-      reporter: ['html', 'text-summary', 'lcov'],
-      exclude: ['**/mocks/**', 'node_modules/**', 'dist/**', 'coverage/**']
+      reporter: ['text', 'text-summary', 'html', 'lcov']
     },
     watch: false,
     testTimeout: 60000,
