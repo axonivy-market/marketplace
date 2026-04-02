@@ -2,8 +2,10 @@ import 'zone.js';
 import 'zone.js/testing';
 import '@analogjs/vitest-angular/setup-zone';
 import { getTestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserTestingModule } from '@angular/platform-browser/testing';
-import { platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+import {
+  platformBrowserTesting,
+  BrowserTestingModule
+} from '@angular/platform-browser/testing';
 import { vi, expect } from 'vitest';
 
 type SpyObj<T> = T & { [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<typeof vi.fn> : T[K] };
@@ -12,7 +14,7 @@ type Spy = ReturnType<typeof vi.fn> & { and: Record<string, unknown>; calls: Rec
 // Initialize Angular's test environment once for the whole suite.
 getTestBed().initTestEnvironment(
   BrowserTestingModule,
-  platformBrowserDynamicTesting(),
+  platformBrowserTesting(),
   { teardown: { destroyAfterEach: true } }
 );
 

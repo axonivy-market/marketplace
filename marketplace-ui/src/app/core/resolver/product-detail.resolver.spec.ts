@@ -140,15 +140,6 @@ describe('ProductDetailResolver', () => {
     loadingService = TestBed.inject(
       LoadingService
     ) as MockedObject<LoadingService>;
-    productService = TestBed.inject(
-      ProductService
-    ) as MockedObject<ProductService>;
-    cookieService = TestBed.inject(
-      CookieService
-    ) as MockedObject<CookieService>;
-    routingQueryParamService = TestBed.inject(
-      RoutingQueryParamService
-    ) as MockedObject<RoutingQueryParamService>;
     faviconService = TestBed.inject(
       FaviconService
     ) as MockedObject<FaviconService>;

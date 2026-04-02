@@ -200,7 +200,7 @@ describe('ProductService', () => {
       expect(data).toEqual(MOCK_PRODUCT_DETAIL);
     });
 
-    const req = httpMock.expectOne(request => {
+    httpMock.expectOne(request => {
       expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`);
 
       return true;
