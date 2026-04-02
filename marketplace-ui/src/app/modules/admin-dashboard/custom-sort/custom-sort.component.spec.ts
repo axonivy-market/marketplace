@@ -1,9 +1,8 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   TestBed,
   fakeAsync,
-  flushMicrotasks,
   tick
 } from '@angular/core/testing';
 import { CustomSortComponent } from './custom-sort.component';
@@ -22,13 +21,13 @@ describe('CustomSortComponent', () => {
   beforeEach(async () => {
     productService = {
       fetchAllProductIds: vi.fn().mockName('ProductService.fetchAllProductIds')
-    };
+    } as Partial<MockedObject<ProductService>> as MockedObject<ProductService>;
     adminDashboardService = {
       sortMarketExtensions: vi
         .fn()
         .mockName('AdminDashboardService.sortMarketExtensions'),
       getCustomSort: vi.fn().mockName('AdminDashboardService.getCustomSort')
-    };
+    } as Partial<MockedObject<AdminDashboardService>> as MockedObject<AdminDashboardService>;
 
     productService.fetchAllProductIds.mockReturnValue(
       of(['portal', 'coffee-machine-connector', 'persistence-utils'])

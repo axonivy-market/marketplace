@@ -1,12 +1,11 @@
-import type { Mock, MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { LogStreamService } from './log-stream.service';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import {
   API_INTERNAL_URL,
-  API_PUBLIC_URL,
-  API_URI
+  API_PUBLIC_URL
 } from '../../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 
@@ -23,12 +22,12 @@ describe('LogStreamService', () => {
   beforeEach(() => {
     mockRuntimeConfig = {
       get: vi.fn().mockName('RuntimeConfigService.get')
-    };
+    } as MockedObject<RuntimeConfigService>;
     mockRuntimeConfig.get.mockReturnValue(mockBaseUrl);
 
     mockAdminAuthService = {
       getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
-    };
+    } as MockedObject<AdminAuthService>;
     mockAdminAuthService.getAuthHeaders.mockReturnValue(new HttpHeaders());
 
     fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => {}));
@@ -60,7 +59,8 @@ describe('LogStreamService', () => {
       service.connect();
       expect(fetchSpy).toHaveBeenCalled();
       const args = vi.mocked(fetchSpy).mock.lastCall;
-      const url = args[0] as string;
+      expect(args).toBeDefined();
+      const url = args![0] as string;
       expect(url).toContain('http://public:8080');
       expect(url).toContain('/logs/stream');
       expect(service.isConnected()).toBe(true);
@@ -84,7 +84,8 @@ describe('LogStreamService', () => {
       );
       expect(fetchSpy).toHaveBeenCalled();
       const args = vi.mocked(fetchSpy).mock.lastCall;
-      const url = args[0] as string;
+      expect(args).toBeDefined();
+      const url = args![0] as string;
       expect(url).toContain(mockBaseUrl);
     });
 
@@ -121,7 +122,8 @@ describe('LogStreamService', () => {
 
       expect(fetchSpy).toHaveBeenCalled();
       const args = vi.mocked(fetchSpy).mock.lastCall;
-      const options = args[1];
+      expect(args).toBeDefined();
+      const options = args![1];
       expect(options.headers).toEqual(
         expect.objectContaining({ Authorization: 'Bearer token' })
       );

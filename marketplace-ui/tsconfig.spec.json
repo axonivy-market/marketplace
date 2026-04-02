@@ -5,7 +5,6 @@
     "outDir": "./out-tsc/spec",
     "types": [
       "node",
-      "jasmine",
       "@angular/localize",
       "vitest/globals"
     ]

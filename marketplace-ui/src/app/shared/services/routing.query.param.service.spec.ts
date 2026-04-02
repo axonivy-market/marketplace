@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Router, NavigationStart } from '@angular/router';
 import { RoutingQueryParamService } from './routing.query.param.service';

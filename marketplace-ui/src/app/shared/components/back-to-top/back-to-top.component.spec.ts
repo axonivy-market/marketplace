@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BackToTopComponent } from './back-to-top.component';
 import { By } from '@angular/platform-browser';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 describe('BackToTopComponent', () => {
   let component: BackToTopComponent;
@@ -23,7 +24,7 @@ describe('BackToTopComponent', () => {
   it('should show the button when scroll threshold is reached', () => {
     // Simulate scrolling past the threshold
     window.scrollY = component.backToTopShowThreshold + 1;
-    window.dispatchEvent(new Event('scroll'));
+    globalThis.dispatchEvent(new Event('scroll'));
 
     expect(component.showScrollButton).toBe(true);
   });
@@ -31,17 +32,17 @@ describe('BackToTopComponent', () => {
   it('should hide the button when scrolling above the threshold', () => {
     // Simulate scrolling past the threshold, then scroll back up
     window.scrollY = component.backToTopShowThreshold + 1;
-    window.dispatchEvent(new Event('scroll'));
+    globalThis.dispatchEvent(new Event('scroll'));
     expect(component.showScrollButton).toBe(true);
 
     // Scroll up above the threshold
     window.scrollY = component.backToTopShowThreshold - 1;
-    window.dispatchEvent(new Event('scroll'));
+    globalThis.dispatchEvent(new Event('scroll'));
     expect(component.showScrollButton).toBe(false);
   });
 
   it('should scroll to top when button is clicked and showScrollButton is true', () => {
-    const scrollToSpy = vi.spyOn<Window>(window, 'scrollTo');
+    const scrollToSpy = vi.spyOn<Window, 'scrollTo'>(window, 'scrollTo');
 
     const mockScrollOption = {
       top: 0,
@@ -54,7 +55,9 @@ describe('BackToTopComponent', () => {
   });
 
   it('should not scroll to top when button is clicked and showScrollButton is false', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const scrollToSpy = vi
+      .spyOn<Window, 'scrollTo'>(window, 'scrollTo')
+      .mockImplementation(() => {});
     scrollToSpy.mockClear();
     component.showScrollButton = false;
     component.scrollToTop();

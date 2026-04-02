@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ShowFeedbacksDialogComponent } from './show-feedbacks-dialog.component';
@@ -23,12 +23,12 @@ describe('ShowFeedbacksDialogComponent', () => {
   beforeEach(async () => {
     mockActiveModal = {
       dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
-    };
+    } as any;
     mockAppModalService = {
       openAddFeedbackDialog: vi
         .fn()
         .mockName('AppModalService.openAddFeedbackDialog')
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [
@@ -82,7 +82,7 @@ describe('ShowFeedbacksDialogComponent', () => {
 
   it('should call activeModal.dismiss when the window is resized to less than or equal to 767px', () => {
     // Set up a media query list that matches
-    vi.spyOn(window, 'matchMedia').mockReturnValue({
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({
       matches: true,
       addListener: () => {},
       removeListener: () => {}
@@ -97,7 +97,7 @@ describe('ShowFeedbacksDialogComponent', () => {
 
   it('should not call activeModal.dismiss when the window is resized to more than 767px', () => {
     // Set up a media query list that does not match
-    vi.spyOn(window, 'matchMedia').mockReturnValue({
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({
       matches: false,
       addListener: () => {},
       removeListener: () => {}

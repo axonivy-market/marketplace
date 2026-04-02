@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ReleaseLetterModalComponent } from './release-letter-modal.component';
@@ -29,19 +29,19 @@ describe('ReleaseLetterModalComponent', () => {
   beforeEach(async () => {
     markdownServiceMock = {
       parseMarkdown: vi.fn().mockName('MarkdownService.parseMarkdown')
-    };
+    } as any;
     translateServiceMock = {
       instant: vi.fn().mockName('TranslateService.instant')
-    };
+    } as any;
     activeModalMock = {
       close: vi.fn().mockName('NgbActiveModal.close'),
       dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
-    };
+    } as any;
     adminDashboardServiceMock = {
       getReleaseLetterById: vi
         .fn()
         .mockName('AdminDashboardService.getReleaseLetterById')
-    };
+    } as any;
 
     adminDashboardServiceMock.getReleaseLetterById.mockReturnValue(
       of(mockResponse)

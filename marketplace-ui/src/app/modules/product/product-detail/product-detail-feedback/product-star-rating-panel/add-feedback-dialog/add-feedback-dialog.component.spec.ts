@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -17,7 +17,6 @@ describe('AddFeedbackDialogComponent', () => {
   let fixture: ComponentFixture<AddFeedbackDialogComponent>;
   let authServiceMock: MockedObject<AuthService>;
   let productFeedbackServiceMock: MockedObject<ProductFeedbackService>;
-  let productDetailServiceMock: MockedObject<ProductDetailService>;
   let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
@@ -32,7 +31,6 @@ describe('AddFeedbackDialogComponent', () => {
     const productDetailServiceSpy = {
       productId: vi.fn().mockName('ProductDetailService.productId'),
       productNames: signal({ en: 'en', de: 'de' }),
-      productId: signal('mockProductId'),
       productLogoUrl: signal('logoUrl')
     };
     const activeModalSpy = {
@@ -63,9 +61,6 @@ describe('AddFeedbackDialogComponent', () => {
     productFeedbackServiceMock = TestBed.inject(
       ProductFeedbackService
     ) as MockedObject<ProductFeedbackService>;
-    productDetailServiceMock = TestBed.inject(
-      ProductDetailService
-    ) as MockedObject<ProductDetailService>;
     activeModalMock = TestBed.inject(
       NgbActiveModal
     ) as MockedObject<NgbActiveModal>;

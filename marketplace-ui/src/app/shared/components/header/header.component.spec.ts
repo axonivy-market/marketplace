@@ -2,8 +2,8 @@ import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testi
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { HeaderComponent } from './header.component';
-import { NavigationEnd, Router } from '@angular/router';
-import { provideRouter } from '@angular/router';
+import { NavigationEnd, Router, provideRouter } from '@angular/router';
+import { vi, describe, beforeEach, expect, it } from 'vitest';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;

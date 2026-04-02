@@ -1,4 +1,5 @@
 import type { Mock, MockedObject } from 'vitest';
+import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
@@ -17,7 +18,6 @@ import {
 } from '../../shared/mocks/mock-data';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
-import { CommonUtils } from '../../shared/utils/common.utils';
 import {
   FAVICON_PNG_TYPE,
   OG_DESCRIPTION_KEY,
@@ -26,7 +26,6 @@ import {
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
-import { ProductDetail } from '../../shared/models/product-detail.model';
 import { FaviconService } from '../../shared/services/favicon.service';
 
 const products = MOCK_PRODUCTS._embedded.products;

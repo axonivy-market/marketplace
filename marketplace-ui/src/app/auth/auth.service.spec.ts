@@ -13,6 +13,7 @@ import {
 } from '@angular/common/http';
 import { BEARER, TOKEN_KEY } from '../shared/constants/common.constant';
 import { environment } from '../../environments/environment';
+import { vi } from 'vitest';
 
 describe('AuthService', () => {
   let service: AuthService;

@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { StarRatingHighlightDirective } from './star-rating-highlight.directive';
 import { Component, ElementRef } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 @Component({
     template: `<div starRatingHighlight [percent]="percent"></div>`,
-    standalone: false
+    standalone: true,
+    imports: [StarRatingHighlightDirective]
 })
 class TestComponent {
   percent = 50;
@@ -17,8 +19,7 @@ describe('StarRatingHighlightDirective', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [StarRatingHighlightDirective],
-      declarations: [TestComponent]
+      imports: [TestComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);

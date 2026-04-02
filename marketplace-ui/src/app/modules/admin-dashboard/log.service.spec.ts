@@ -7,6 +7,7 @@ import { LogService } from './log.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LogFileModel } from '../../shared/models/apis/log-file-response.model';
 import { HttpResponse } from '@angular/common/http';
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 describe('LogService', () => {
   let service: LogService;
@@ -112,7 +113,7 @@ describe('LogService', () => {
 
       const anchorSpy = {
         click: vi.fn().mockName('HTMLAnchorElement.click')
-      };
+      } as any;
       vi.spyOn(document, 'createElement').mockReturnValue(anchorSpy);
       vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
       vi.spyOn(URL, 'revokeObjectURL');

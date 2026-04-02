@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';

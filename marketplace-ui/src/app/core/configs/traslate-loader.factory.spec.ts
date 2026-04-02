@@ -17,6 +17,7 @@ import {
 } from '@angular/common/http';
 import { Language } from '../../shared/enums/language.enum';
 import { BROWSER } from '../../shared/constants/common.constant';
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 const TRANSLATE_KEY = 'translations';
 const ASSETS = 'assets';
@@ -64,7 +65,7 @@ describe('TranslateUniversalLoader', () => {
 
   it('should load translations from filesystem on the server', async () => {
     vi.spyOn(isPlatformServer as any, 'call').mockReturnValue(true);
-    vi.spyOn<any>(loader, 'loadTranslationsFromFileSystem').mockReturnValue(
+    vi.spyOn<TranslateUniversalLoader, any>(loader, 'loadTranslationsFromFileSystem').mockReturnValue(
       of({ hi: 'there' })
     );
 

@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RepoTestResultComponent } from './repo-test-result.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -19,7 +19,7 @@ describe('RepoTestResultComponent', () => {
     mockTranslateService = {
       instant: vi.fn().mockName('TranslateService.instant'),
       get: vi.fn().mockName('TranslateService.get')
-    };
+    } as any;
     mockTranslateService.instant.mockImplementation((key: string) => key);
     mockTranslateService.get.mockImplementation((key: string) => of(key));
     mockRepository = {
@@ -71,7 +71,7 @@ describe('RepoTestResultComponent', () => {
 
     router = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
     component.router = router;
     fixture.detectChanges();
   });
@@ -98,9 +98,9 @@ describe('RepoTestResultComponent', () => {
   });
 
   it('should open new tab on badge click in default mode', () => {
-    vi.spyOn(window, 'open');
+    vi.spyOn(globalThis, 'open');
     component.onBadgeClick(mockRepository.repoName, 'CI', 'default');
-    expect(window.open).toHaveBeenCalledWith(
+    expect(globalThis.open).toHaveBeenCalledWith(
       'https://github.com/user/test-repo/actions/runs/123',
       '_blank'
     );

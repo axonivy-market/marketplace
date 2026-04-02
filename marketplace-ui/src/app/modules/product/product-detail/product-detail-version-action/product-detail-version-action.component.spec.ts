@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -409,7 +409,7 @@ describe('ProductDetailVersionActionComponent', () => {
     const url = 'https://example.com/file.pdf';
     const fileName = 'artifact.zip';
     const testBlob = new Blob(['test'], { type: 'application/zip' });
-    const downloadSpy = vi.spyOn<any>(component, 'fetchAndDownloadArtifact');
+    const downloadSpy = vi.spyOn<typeof component, 'fetchAndDownloadArtifact'>(component, 'fetchAndDownloadArtifact');
     vi.spyOn(component, 'onUpdateInstallationCount');
     vi.spyOn(component, 'triggerDownload');
 
@@ -436,7 +436,7 @@ describe('ProductDetailVersionActionComponent', () => {
 
     environment.apiUrl = '/marketplace';
     expect(component.getMarketplaceServiceUrl()).toBe(
-      window.location.origin + '/marketplace'
+      globalThis.location.origin + '/marketplace'
     );
   });
 

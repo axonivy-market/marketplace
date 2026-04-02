@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { Language } from '../enums/language.enum';
@@ -16,7 +16,7 @@ describe('TimeAgoPipe', () => {
       setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang'),
       instant: vi.fn().mockName('TranslateService.instant'),
       use: vi.fn().mockName('TranslateService.use')
-    };
+    } as MockedObject<TranslateService>;
     translateServiceSpy.use.mockReturnValue(of('en'));
     TestBed.configureTestingModule({
       providers: [

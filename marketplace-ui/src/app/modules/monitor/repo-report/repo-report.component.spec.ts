@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 
 import { RepoReportComponent } from './repo-report.component';
 import { GithubService, TestStep } from '../github.service';
@@ -26,10 +26,10 @@ describe('RepoReportComponent', () => {
   beforeEach(async () => {
     githubServiceSpy = {
       getTestReport: vi.fn().mockName('GithubService.getTestReport')
-    };
+    } as any;
     routerSpy = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
     activatedRouteStub = {
       snapshot: {
         paramMap: {
@@ -40,7 +40,7 @@ describe('RepoReportComponent', () => {
           }
         }
       }
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [

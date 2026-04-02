@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   TestBed,
@@ -26,11 +26,11 @@ describe('LogViewerComponent', () => {
       disconnect: vi.fn().mockName('LogStreamService.disconnect'),
       clear: vi.fn().mockName('LogStreamService.clear'),
       logs: mockLogsSignal
-    };
+    } as any;
     logServiceMock = {
       getLogFiles: vi.fn().mockName('LogService.getLogFiles'),
       getLogFileContent: vi.fn().mockName('LogService.getLogFileContent')
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [LogViewerComponent, TranslateModule.forRoot()],
@@ -140,8 +140,8 @@ describe('LogViewerComponent', () => {
 
   describe('Downloads', () => {
     beforeEach(() => {
-      vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:url');
-      vi.spyOn(window.URL, 'revokeObjectURL');
+      vi.spyOn(globalThis.URL, 'createObjectURL').mockReturnValue('blob:url');
+      vi.spyOn(globalThis.URL, 'revokeObjectURL');
       vi.spyOn(document, 'createElement');
     });
 

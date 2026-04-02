@@ -3,6 +3,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LanguageSelectionComponent } from './language-selection.component';
 import { Language } from '../../../enums/language.enum';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 describe('LanguageSelectionComponent', () => {
   let component: LanguageSelectionComponent;

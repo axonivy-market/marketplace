@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TransferState, PLATFORM_ID } from '@angular/core';
 import { RuntimeConfigService } from './runtime-config.service';
 import { RUNTIME_CONFIG_KEY, RuntimeConfig } from '../models/runtime-config';
+import { describe, it, expect } from 'vitest';
 
 describe('RuntimeConfigService', () => {
   let service: RuntimeConfigService;
@@ -111,10 +112,9 @@ describe('RuntimeConfigService', () => {
         ]
       });
 
-      const serverService = TestBed.inject(RuntimeConfigService);
+      TestBed.inject(RuntimeConfigService); // ← triggers the constructor
       const serverTransferState = TestBed.inject(TransferState);
 
-      // Config should be stored in TransferState
       const storedConfig = serverTransferState.get(RUNTIME_CONFIG_KEY, null);
       expect(storedConfig).toEqual(mockConfig);
     });
@@ -156,3 +156,7 @@ describe('RuntimeConfigService', () => {
     });
   });
 });
+function beforeEach(arg0: () => void) {
+  throw new Error('Function not implemented.');
+}
+

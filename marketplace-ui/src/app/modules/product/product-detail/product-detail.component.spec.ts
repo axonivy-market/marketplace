@@ -1,4 +1,4 @@
-import type { Mock, MockedObject } from 'vitest';
+import { vi, type Mock, type MockedObject } from 'vitest';
 import {
   provideHttpClient,
   withInterceptorsFromDi
@@ -50,6 +50,8 @@ import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { signal, ElementRef } from '@angular/core';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { afterEach, describe, beforeEach, expect, it } from 'vitest';
+
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -95,7 +97,7 @@ describe('ProductDetailComponent', () => {
       isLastSearchChanged: vi
         .fn()
         .mockName('HistoryService.isLastSearchChanged')
-    };
+    } as unknown as MockedObject<HistoryService>;
 
     mockProductFeedbackService = {
       getInitFeedbacksObservable: vi
@@ -110,32 +112,31 @@ describe('ProductDetailComponent', () => {
       findProductFeedbackOfUser: vi
         .fn()
         .mockName('ProductFeedbackService.findProductFeedbackOfUser'),
-      totalElements: vi.fn().mockName('ProductFeedbackService.totalElements'),
-      feedbacks: signal([]),
+      feedbacks: signal<Feedback[]>([]),
       totalElements: signal(0)
-    };
+    } as unknown as MockedObject<ProductFeedbackService>;
 
     mockRouter = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as unknown as MockedObject<Router>;
 
     mockAuthService = {
       getToken: vi.fn().mockName('AuthService.getToken'),
       redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
-    };
+    } as unknown as MockedObject<AuthService>;
     mockAppModalService = {
       openAddFeedbackDialog: vi
         .fn()
         .mockName('AppModalService.openAddFeedbackDialog')
-    };
+    } as unknown as MockedObject<AppModalService>;
     mockProductStarRatingService = {
       getRatingObservable: vi
         .fn()
         .mockName('ProductStarRatingService.getRatingObservable'),
-      starRatings: vi.fn().mockName('ProductStarRatingService.starRatings'),
-      totalComments: vi.fn().mockName('ProductStarRatingService.totalComments'),
-      reviewNumber: vi.fn().mockName('ProductStarRatingService.reviewNumber')
-    };
+      starRatings: signal<StarRatingCounting[]>([]),
+      totalComments: signal(0),
+      reviewNumber: signal(0)
+    } as unknown as MockedObject<ProductStarRatingService>;
 
     await TestBed.configureTestingModule({
       imports: [
@@ -226,16 +227,10 @@ describe('ProductDetailComponent', () => {
     vi.spyOn(productService, 'setDefaultVendorImage');
 
     fixture.detectChanges();
-    if ((window.scrollTo as any).calls) {
-      window.scrollTo as Mock;
-    }
   });
 
   afterEach(() => {
-    if ((window.scrollTo as any).calls) {
-      window.scrollTo as Mock;
-    }
-    history.pushState(null, '', window.location.pathname);
+    history.pushState(null, '', globalThis.location.pathname);
   });
 
   it('should create', () => {
@@ -760,7 +755,7 @@ describe('ProductDetailComponent', () => {
   }));
 
   it('should set isMobileMode based on window size', () => {
-    vi.spyOn(window, 'matchMedia').mockReturnValue({
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({
       matches: true,
       media: '',
       addEventListener: () => {},
@@ -788,7 +783,7 @@ describe('ProductDetailComponent', () => {
     component.checkMediaSize();
     expect(component.isMobileMode()).toBe(true);
 
-    (window.matchMedia as Mock).mockReturnValue({
+    (globalThis.matchMedia as Mock).mockReturnValue({
       matches: false,
       media: '',
       addEventListener: () => {},
@@ -980,7 +975,7 @@ describe('ProductDetailComponent', () => {
     );
 
     vi.spyOn(MultilingualismPipe.prototype, 'transform').mockImplementation(
-      content => `${content}`
+      content => JSON.stringify(content)
     );
     vi.spyOn(component, 'renderGithubAlert').mockImplementation(
       (content: string) => `${content}` as SafeHtml
@@ -989,10 +984,10 @@ describe('ProductDetailComponent', () => {
     component.getReadmeContent();
 
     expect(component.loadedReadmeContent['description']).toBe(
-      `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
+      JSON.stringify(MOCK_PRODUCT_DETAIL.productModuleContent.description)
     );
     expect(component.loadedReadmeContent['demo']).toBe(
-      `${MOCK_PRODUCT_DETAIL.productModuleContent.demo}`
+      JSON.stringify(MOCK_PRODUCT_DETAIL.productModuleContent.demo)
     );
 
     expect(component.getProductModuleContentValue).toHaveBeenCalled();
@@ -1026,7 +1021,7 @@ describe('ProductDetailComponent', () => {
 
     expect(component.isDropdownOpen()).toBe(false);
 
-    document.body.removeChild(outsideElement);
+    outsideElement.remove();
   }));
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
@@ -1130,18 +1125,18 @@ describe('ProductDetailComponent', () => {
     component.navigateToProductDetailsWithTabFragment();
     expect(spy).toHaveBeenCalled();
     const args = vi.mocked(spy as Mock).mock.lastCall;
-    expect(args[0]).toBe('description');
+    expect(args?.[0]).toBe('description');
   });
 
   it('should restore scroll position for a tab', fakeAsync(() => {
     component.isBrowser = true;
     const tabId = 'demo';
     component['scrollPositions'][tabId] = 1234;
-    const scrollSpy = vi.spyOn(window, 'scrollTo');
+    const scrollSpy = vi.spyOn(globalThis, 'scrollTo');
     component.keepCurrentTabScroll(tabId);
     tick();
     expect(scrollSpy).toHaveBeenCalled();
-    const arg = vi.mocked(scrollSpy as Mock).mock.lastCall[0] as any;
+    const arg = scrollSpy.mock.lastCall![0] as ScrollToOptions;
     expect(arg.top).toBe(1234);
   }));
 
@@ -1153,7 +1148,7 @@ describe('ProductDetailComponent', () => {
         getProductChangelogs: vi
           .fn()
           .mockName('ProductService.getProductChangelogs')
-      };
+      } as unknown as MockedObject<ProductService>;
     });
 
     it('should load and append new changelogs successfully', () => {
@@ -1355,14 +1350,14 @@ describe('ProductDetailComponent', () => {
     beforeEach(() => {
       mockObserver = {
         observe: vi.fn().mockName('IntersectionObserver.observe')
-      };
+      } as unknown as MockedObject<IntersectionObserver>;
       mockObserverElement = {
         nativeElement: document.createElement('div')
       };
       lastIOCallback = undefined;
 
       // Store original IntersectionObserver and mock it
-      originalIntersectionObserver = (window as any).IntersectionObserver;
+      originalIntersectionObserver = (globalThis as any).IntersectionObserver;
       const ioSpy = vi.fn().mockImplementation(function (
         callback: IntersectionObserverCallback,
         _options?: IntersectionObserverInit
@@ -1371,12 +1366,12 @@ describe('ProductDetailComponent', () => {
         lastIOCallback = callback;
         return mockObserver;
       });
-      (window as any).IntersectionObserver = ioSpy;
+      (globalThis as any).IntersectionObserver = ioSpy;
     });
 
     afterEach(() => {
       // Restore original IntersectionObserver
-      (window as any).IntersectionObserver = originalIntersectionObserver;
+      (globalThis as any).IntersectionObserver = originalIntersectionObserver;
     });
 
     it('should return early if observerElement is not available', () => {
@@ -1388,7 +1383,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if changelogIntersectionObserver already exists', () => {
@@ -1401,7 +1396,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if not in browser environment', () => {
@@ -1413,14 +1408,14 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if IntersectionObserver is not supported', () => {
       // Arrange
       component.observerElement = mockObserverElement;
       component.isBrowser = true;
-      (window as any).IntersectionObserver = undefined;
+      (globalThis as any).IntersectionObserver = undefined;
 
       // Act & Assert - In this case we can't check if it was called since it's undefined
       // The test passes if no error is thrown
@@ -1432,7 +1427,7 @@ describe('ProductDetailComponent', () => {
       component.observerElement = mockObserverElement;
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
-      ((window as any).IntersectionObserver as Mock).mockImplementation(
+      ((globalThis as any).IntersectionObserver as Mock).mockImplementation(
         function () { return mockObserver; }
       );
 
@@ -1440,7 +1435,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).toHaveBeenCalledWith(
+      expect((globalThis as any).IntersectionObserver).toHaveBeenCalledWith(
         expect.any(Function),
         { root: null, rootMargin: '10px', threshold: 0.1 }
       );
@@ -1479,7 +1474,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalled();
@@ -1515,7 +1511,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalled();
@@ -1550,7 +1547,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).not.toHaveBeenCalled();
@@ -1580,7 +1578,8 @@ describe('ProductDetailComponent', () => {
           time: Date.now()
         }
       ];
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
       expect(component.loadChangelogs).not.toHaveBeenCalled();
     });
 
@@ -1623,7 +1622,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalledTimes(2);
@@ -1662,7 +1662,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.criteria.nextPageHref).toBe(expectedHref);

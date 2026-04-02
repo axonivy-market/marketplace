@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import {
   HttpTestingController,
@@ -35,7 +35,7 @@ describe('AdminDashboardService', () => {
   beforeEach(() => {
     adminAuthService = {
       getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
-    };
+    } as MockedObject<AdminAuthService>;
     adminAuthService.getAuthHeaders.mockReturnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({

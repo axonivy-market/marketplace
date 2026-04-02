@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NewsComponent } from './news.component';

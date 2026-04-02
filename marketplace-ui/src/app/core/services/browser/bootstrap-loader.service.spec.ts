@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { BootstrapLoaderService } from './bootstrap-loader.service';

@@ -1,4 +1,5 @@
 import type { MockedObject } from 'vitest';
+import { vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
@@ -67,7 +68,7 @@ describe('AppComponent', () => {
     // Mock WindowRef and DocumentRef
     const windowRefMock = {
       toString: vi.fn().mockName('WindowRef.toString'),
-      nativeWindow: window
+      nativeWindow: globalThis
     };
 
     const documentRefMock = {
@@ -170,7 +171,7 @@ describe('AppComponent', () => {
 
     expect(appElement.classList.contains('header-mobile-container')).toBe(true);
 
-    const headerComputedStyle = window.getComputedStyle(appElement);
+    const headerComputedStyle = globalThis.getComputedStyle(appElement);
     // jsdom cannot compute CSS from stylesheets; verify the class that sets overflow:hidden is present
     expect(appElement.classList.contains('header-mobile-container')).toBe(true);
   });

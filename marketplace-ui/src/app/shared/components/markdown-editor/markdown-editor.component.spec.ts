@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MarkdownEditorComponent } from './markdown-editor.component';
 import { PLATFORM_ID, signal, WritableSignal } from '@angular/core';
+import { vi, describe, beforeEach, expect, it } from 'vitest';
 
 vi.mock('easymde', () => {
   class FakeCodeMirrorInner {
@@ -118,7 +119,7 @@ describe('MarkdownEditorComponent', () => {
   });
 
   function mockDynamicImport() {
-    vi.spyOn<any>(window, 'import').mockImplementation((module: string) => {
+    vi.spyOn<any, any>(globalThis, 'import' as any).mockImplementation((module: string) => {
       if (module === 'easymde') {
         return Promise.resolve({ default: FakeEasyMDE });
       }

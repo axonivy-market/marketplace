@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   FAVICON_DEFAULT_TYPE,
   FAVICON_DEFAULT_URL
@@ -25,7 +25,7 @@ describe('HomeComponent', () => {
   beforeEach(async () => {
     faviconServiceSpy = {
       setFavicon: vi.fn().mockName('FaviconService.setFavicon')
-    };
+    } as any;
     await TestBed.configureTestingModule({
       imports: [
         HomeComponent,

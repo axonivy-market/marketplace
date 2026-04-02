@@ -1,4 +1,4 @@
-import type { Mock, MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -52,7 +52,7 @@ describe('FeedbackApprovalComponent', () => {
       updateFeedbackStatus: vi
         .fn()
         .mockName('ProductFeedbackService.updateFeedbackStatus')
-    };
+    } as any;
     productFeedbackSpy.allFeedbacks = signal([]);
     productFeedbackSpy.pendingFeedbacks = signal([]);
     productFeedbackSpy.findProductFeedbacks.mockReturnValue(of([]));

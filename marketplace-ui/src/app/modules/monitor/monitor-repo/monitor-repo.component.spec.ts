@@ -22,6 +22,7 @@ import {
   REPORT_MODE
 } from '../../../shared/constants/common.constant';
 import { SimpleChange, SimpleChanges } from '@angular/core';
+import { vi, describe, beforeEach, expect, it } from 'vitest';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;

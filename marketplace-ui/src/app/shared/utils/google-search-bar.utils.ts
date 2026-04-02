@@ -42,7 +42,7 @@ export class GoogleSearchBarUtils {
   }
   static addCustomClassToSearchBar(renderer: Renderer2, doc: Document): void {
     setTimeout(() => {
-      const searchBoxList = doc.querySelectorAll(GOOGLE_SEARCH_BAR_CLASS_NAME);
+      const searchBoxList = doc.querySelectorAll<Element>(GOOGLE_SEARCH_BAR_CLASS_NAME);
       searchBoxList.forEach(searchBox =>
         renderer.addClass(searchBox, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME)
       );

@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GithubCallbackComponent } from './github-callback.component';
 import { ActivatedRoute } from '@angular/router';
@@ -14,7 +14,7 @@ describe('GithubCallbackComponent', () => {
   beforeEach(async () => {
     mockAuthService = {
       handleGitHubCallback: vi.fn().mockName('AuthService.handleGitHubCallback')
-    };
+    } as MockedObject<AuthService>;
     activatedRouteStub = {
       queryParams: of({ code: 'testCode', state: 'testState' })
     };

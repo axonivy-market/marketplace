@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   HttpClient,
   HttpContext,
@@ -332,7 +332,7 @@ describe('AuthInterceptor', () => {
     beforeEach(() => {
       mockRouter = {
         navigate: vi.fn().mockName('Router.navigate')
-      };
+      } as MockedObject<Router>;
     });
 
     it('should throw error if status is UNAUTHORIZED', async () => {

@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminTokenComponent } from './admin-token.component';
 import { Router } from '@angular/router';
@@ -26,14 +26,13 @@ describe('AdminTokenComponent', () => {
     authService = {
       setUserInfo: vi.fn().mockName('AdminAuthService.setUserInfo'),
       logout: vi.fn().mockName('AdminAuthService.logout'),
-      loadFromSession: vi.fn().mockName('AdminAuthService.loadFromSession'),
       requestAccessToken: vi
         .fn()
         .mockName('AdminAuthService.requestAccessToken')
-    };
+    } as MockedObject<AdminAuthService>;
     router = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as MockedObject<Router>;
 
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],

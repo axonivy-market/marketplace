@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
@@ -14,10 +14,10 @@ describe('AdminAuthGuard', () => {
   beforeEach(() => {
     adminAuthServiceMock = {
       isAuthenticated: vi.fn().mockName('AdminAuthService.isAuthenticated')
-    };
+    } as any;
     routerMock = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
 
     TestBed.configureTestingModule({
       providers: [

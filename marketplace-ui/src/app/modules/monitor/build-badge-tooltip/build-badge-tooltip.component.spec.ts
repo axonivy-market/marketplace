@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BuildBadgeTooltipComponent } from './build-badge-tooltip.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -19,7 +19,7 @@ describe('BuildBadgeTooltipComponent', () => {
     mockTranslateService = {
       instant: vi.fn().mockName('TranslateService.instant'),
       onLangChange: langChangeSubject.asObservable()
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [BuildBadgeTooltipComponent],

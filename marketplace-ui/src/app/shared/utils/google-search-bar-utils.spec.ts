@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { vi, type MockedObject, describe, beforeEach, it, expect } from 'vitest';
 import { Renderer2 } from '@angular/core';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
@@ -24,17 +24,15 @@ describe('GoogleSearchBarUtils', () => {
       createElement: vi.fn().mockName('Renderer2.createElement'),
       appendChild: vi.fn().mockName('Renderer2.appendChild'),
       addClass: vi.fn().mockName('Renderer2.addClass')
-    };
+    } as unknown as MockedObject<Renderer2>;
 
     mockWindowRef = {
-      toString: vi.fn().mockName('WindowRef.toString'),
       nativeWindow: undefined
-    };
+    } as unknown as MockedObject<WindowRef>;
 
     mockDocumentRef = {
-      toString: vi.fn().mockName('DocumentRef.toString'),
       nativeDocument: undefined
-    };
+    } as unknown as MockedObject<DocumentRef>;
 
     mockDocument = {
       getElementById: vi.fn().mockName('Document.getElementById'),
@@ -42,10 +40,9 @@ describe('GoogleSearchBarUtils', () => {
       body: {
         appendChild: vi.fn().mockName('HTMLElement.appendChild')
       }
-    };
+    } as unknown as MockedObject<Document>;
 
     mockWindow = {
-      toString: vi.fn().mockName('Window.toString'),
       google: {
         search: {
           cse: {
@@ -55,7 +52,7 @@ describe('GoogleSearchBarUtils', () => {
           }
         }
       }
-    };
+    } as unknown as MockedObject<Window>;
 
     vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: Function) => {
       fn();
@@ -88,7 +85,11 @@ describe('GoogleSearchBarUtils', () => {
 
       const mockScript = {
         setAttribute: vi.fn().mockName('HTMLScriptElement.setAttribute'),
-        onload: undefined
+        onload: undefined as (() => void) | undefined,
+        id: '',
+        type: '',
+        async: false,
+        src: ''
       };
 
       mockDocument.getElementById.mockReturnValue(null);
@@ -126,7 +127,7 @@ describe('GoogleSearchBarUtils', () => {
       const existingScript = {
         getAttribute: vi.fn().mockName('HTMLScriptElement.getAttribute')
       };
-      mockDocument.getElementById.mockReturnValue(existingScript);
+      mockDocument.getElementById.mockReturnValue(existingScript as unknown as HTMLElement);
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -167,9 +168,7 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockDocument
       });
 
-      const windowWithoutGoogle = {
-        toString: vi.fn().mockName('Window.toString')
-      };
+      const windowWithoutGoogle = {} as unknown as MockedObject<Window>;
       Object.defineProperty(mockWindowRef, 'nativeWindow', {
         get: () => windowWithoutGoogle
       });
@@ -279,12 +278,12 @@ describe('GoogleSearchBarUtils', () => {
         mockDocument
       );
 
-      expect(window.setTimeout).toHaveBeenCalledWith(
+      expect(globalThis.setTimeout).toHaveBeenCalledWith(
         expect.any(Function),
         1000
       );
       expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
-        '.gsc-control-cse'
+        GOOGLE_SEARCH_BAR_CLASS_NAME
       );
       expect(mockRenderer.addClass).toHaveBeenCalledWith(
         mockSearchBox1,

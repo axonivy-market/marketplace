@@ -1,10 +1,10 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { signal, WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { GitHubUser, UserInfo } from '../../../auth/auth.service';
+import { UserInfo } from '../../../auth/auth.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { GithubUserBadgeComponent } from './github-user-badge.component';
@@ -35,7 +35,7 @@ describe('GithubUserBadgeComponent', () => {
 
     mockRouter = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [GithubUserBadgeComponent, TranslateModule.forRoot()],

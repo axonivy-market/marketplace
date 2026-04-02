@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,14 +19,14 @@ describe('ProductStarRatingNumberComponent', () => {
     mockProductStarRatingService = {
       reviewNumber: vi.fn().mockName('ProductStarRatingService.reviewNumber'),
       totalComments: vi.fn().mockName('ProductStarRatingService.totalComments')
-    };
+    } as any;
     mockProductDetailService = {
       productId: vi.fn().mockName('ProductDetailService.productId')
-    };
+    } as any;
     mockAuthService = {
       getToken: vi.fn().mockName('AuthService.getToken'),
       redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [

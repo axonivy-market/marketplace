@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   TestBed,
@@ -115,29 +115,33 @@ describe('AdminDashboardComponent', () => {
         .fn()
         .mockName('AdminDashboardService.syncGithubMonitor'),
       syncOneProduct: vi.fn().mockName('AdminDashboardService.syncOneProduct')
-    };
+    } as any;
     mockProductService = {
       fetchAllProductsForSync: vi
         .fn()
         .mockName('ProductService.fetchAllProductsForSync')
-    };
+    } as any;
     mockAuthService = {
       clearToken: vi.fn().mockName('AdminAuthService.clearToken')
-    };
+    } as any;
     mockTranslateService = {
       instant: vi.fn().mockName('TranslateService.instant'),
       get: vi.fn().mockName('TranslateService.get'),
       use: vi.fn().mockName('TranslateService.use'),
       addLangs: vi.fn().mockName('TranslateService.addLangs'),
       setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang')
-    };
+    } as any;
     mockTranslateService.get.mockReturnValue(of('translated'));
     mockTranslateService.instant.mockImplementation((key: string) => key);
     mockPageTitleService = {
       setTitleOnLangChange: vi
         .fn()
-        .mockName('PageTitleService.setTitleOnLangChange')
-    };
+        .mockName('PageTitleService.setTitleOnLangChange'),
+      translateService: undefined,
+      titleService: undefined,
+      setTitle: vi.fn().mockName('PageTitleService.setTitle'),
+      ngOnDestroy: vi.fn().mockName('PageTitleService.ngOnDestroy')
+    } as any;
 
     const mockLanguageService = {
       selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')

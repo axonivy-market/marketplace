@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback.component';
 import { ProductStarRatingPanelComponent } from './product-star-rating-panel/product-star-rating-panel.component';
@@ -38,7 +38,7 @@ describe('ProductDetailFeedbackComponent', () => {
       openShowFeedbacksDialog: vi
         .fn()
         .mockName('AppModalService.openShowFeedbacksDialog')
-    };
+    } as any;
     mockProductFeedbackService = {
       fetchFeedbacks: vi.fn().mockName('ProductFeedbackService.fetchFeedbacks'),
       findProductFeedbackOfUser: vi
@@ -53,20 +53,20 @@ describe('ProductDetailFeedbackComponent', () => {
       totalElements: vi.fn().mockName('ProductFeedbackService.totalElements'),
       feedbacks: signal([] as Feedback[]),
       sort: signal('updatedAt,desc')
-    };
+    } as any;
     mockProductStarRatingService = {
       fetchData: vi.fn().mockName('ProductStarRatingService.fetchData'),
       reviewNumber: signal(0),
       totalComments: signal(0),
       starRatings: signal([] as StarRatingCounting[])
-    };
+    } as any;
     mockAuthService = {
       getToken: vi.fn().mockName('AuthService.getToken')
-    };
+    } as any;
     mockActivatedRoute = { queryParams: of({ showPopup: 'true' }) };
     mockRouter = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [ProductDetailFeedbackComponent, TranslateModule.forRoot()],

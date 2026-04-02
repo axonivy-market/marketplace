@@ -1,16 +1,17 @@
 import 'zone.js';
 import 'zone.js/testing';
 import '@analogjs/vitest-angular/setup-zone';
-import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
-} from '@angular/platform-browser-dynamic/testing';
-import { vi } from 'vitest';
+import { getTestBed, ComponentFixture } from '@angular/core/testing';
+import { BrowserTestingModule } from '@angular/platform-browser/testing';
+import { platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+import { vi, expect } from 'vitest';
+
+type SpyObj<T> = T & { [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<typeof vi.fn> : T[K] };
+type Spy = ReturnType<typeof vi.fn> & { and: Record<string, unknown>; calls: Record<string, unknown> };
 
 // Initialize Angular's test environment once for the whole suite.
 getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
+  BrowserTestingModule,
   platformBrowserDynamicTesting(),
   { teardown: { destroyAfterEach: true } }
 );
@@ -36,7 +37,7 @@ expect.extend({
     };
   },
   toHaveBeenCalledOnceWith(received: ReturnType<typeof vi.fn>, ...expected: unknown[]) {
-    const calls = (received as ReturnType<typeof vi.fn>).mock?.calls ?? [];
+    const calls = received.mock?.calls ?? [];
     const pass = calls.length === 1 && JSON.stringify(calls[0]) === JSON.stringify(expected);
     return {
       pass,
@@ -69,7 +70,7 @@ function makeSpyFn(name?: string) {
     any: () => fn.mock.calls.length > 0,
     reset: () => fn.mockClear(),
     all: () => fn.mock.calls.map((args: unknown[]) => ({ args, object: undefined, returnValue: undefined })),
-    mostRecent: () => { const c = fn.mock.calls; return c.length ? { args: c[c.length - 1], object: undefined } : null; },
+    mostRecent: () => { const c = fn.mock.calls; return c.length ? { args: c.at(-1)!, object: undefined } : null; },
     first: () => { const c = fn.mock.calls; return c.length ? { args: c[0], object: undefined } : null; },
     argsFor: (i: number) => fn.mock.calls[i] ?? []
   };
@@ -84,13 +85,13 @@ function createSpyObj<T = object>(
   baseName: string | Record<string, unknown>,
   methods: string[] | Record<string, unknown>,
   accessors?: Record<string, unknown>
-): jasmine.SpyObj<T> {
+): SpyObj<T> {
   const obj: Record<string, unknown> = {};
   const methodNames = Array.isArray(methods) ? methods : Object.keys(methods);
   methodNames.forEach(method => {
     const spy = makeSpyFn(`${typeof baseName === 'string' ? baseName : ''}#${method}`);
     if (!Array.isArray(methods)) {
-      const val = (methods as Record<string, unknown>)[method];
+      const val = methods[method];
       if (val !== undefined) (spy as unknown as { and: { returnValue(v: unknown): void } }).and.returnValue(val);
     }
     obj[method] = spy;
@@ -100,10 +101,10 @@ function createSpyObj<T = object>(
       Object.defineProperty(obj, prop, { get: vi.fn().mockReturnValue(value), configurable: true });
     });
   }
-  return obj as jasmine.SpyObj<T>;
+  return obj as SpyObj<T>;
 }
 
-function spyOn<T extends object, K extends keyof T>(obj: T, method: K): jasmine.Spy {
+function spyOn<T extends object, K extends keyof T>(obj: T, method: K): Spy {
   const original = obj[method];
   const spy = makeSpyFn(String(method));
   if (typeof original === 'function') {
@@ -111,7 +112,7 @@ function spyOn<T extends object, K extends keyof T>(obj: T, method: K): jasmine.
     spy.mockImplementation((...args: unknown[]) => (original as (...a: unknown[]) => unknown).apply(obj, args));
   }
   obj[method] = spy as unknown as T[K];
-  return spy as unknown as jasmine.Spy;
+  return spy as unknown as Spy;
 }
 
 (globalThis as Record<string, unknown>)['jasmine'] = {
@@ -139,7 +140,7 @@ function spyOn<T extends object, K extends keyof T>(obj: T, method: K): jasmine.
 // ---------------------------------------------------------------------------
 // jsdom missing API shims
 // ---------------------------------------------------------------------------
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -156,15 +157,15 @@ Object.defineProperty(window, 'matchMedia', {
 // karma-viewport compatibility shim
 (globalThis as Record<string, unknown>)['viewport'] = {
   set: (width: number, height?: number) => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: width });
+    Object.defineProperty(globalThis, 'innerWidth', { writable: true, configurable: true, value: width });
     if (height !== undefined)
-      Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: height });
-    window.dispatchEvent(new Event('resize'));
+      Object.defineProperty(globalThis, 'innerHeight', { writable: true, configurable: true, value: height });
+    globalThis.dispatchEvent(new Event('resize'));
   },
   reset: () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });
-    window.dispatchEvent(new Event('resize'));
+    Object.defineProperty(globalThis, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    Object.defineProperty(globalThis, 'innerHeight', { writable: true, configurable: true, value: 768 });
+    globalThis.dispatchEvent(new Event('resize'));
   }
 };
 
@@ -174,16 +175,15 @@ class ResizeObserverStub {
   unobserve = vi.fn();
   disconnect = vi.fn();
 }
-Object.defineProperty(window, 'ResizeObserver', { writable: true, configurable: true, value: ResizeObserverStub });
+Object.defineProperty(globalThis, 'ResizeObserver', { writable: true, configurable: true, value: ResizeObserverStub });
 
 // IntersectionObserver shim — not implemented in jsdom
 class IntersectionObserverStub {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
-  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {}
 }
-Object.defineProperty(window, 'IntersectionObserver', { writable: true, configurable: true, value: IntersectionObserverStub });
+Object.defineProperty(globalThis, 'IntersectionObserver', { writable: true, configurable: true, value: IntersectionObserverStub });
 
 // Replace sessionStorage/localStorage with vi.fn()-backed mocks so
 // vi.spyOn() and toHaveBeenCalledWith() work correctly on them.
@@ -199,17 +199,17 @@ function makeStorageMock() {
   };
 }
 
-Object.defineProperty(window, 'sessionStorage', { value: makeStorageMock(), writable: true });
-Object.defineProperty(window, 'localStorage', { value: makeStorageMock(), writable: true });
+Object.defineProperty(globalThis, 'sessionStorage', { value: makeStorageMock(), writable: true });
+Object.defineProperty(globalThis, 'localStorage', { value: makeStorageMock(), writable: true });
 
 // scrollTo is not implemented in jsdom
-window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+globalThis.scrollTo = vi.fn() as unknown as typeof globalThis.scrollTo;
 
 // focus is not implemented in jsdom
 window.focus = vi.fn();
 
 // open is not implemented in jsdom  
-window.open = vi.fn() as unknown as typeof window.open;
+globalThis.open = vi.fn() as unknown as typeof globalThis.open;
 
 // ---------------------------------------------------------------------------
 // Always define DataTransfer shim (jsdom doesn't implement it)
@@ -218,27 +218,28 @@ window.open = vi.fn() as unknown as typeof window.open;
   items: DataTransferItemList;
   get files(): FileList {
     const files = this._files;
-    const fileList = Object.assign(
-      { length: files.length, item: (i: number) => files[i] ?? null, [Symbol.iterator]: function*() { yield* files; } },
-      Object.fromEntries(files.map((f, i) => [i, f]))
-    );
+    const fileList = {
+      length: files.length, item: (i: number) => files[i] ?? null, [Symbol.iterator]: function*() { yield* files; },
+      ...Object.fromEntries(files.map((f, i) => [i, f]))
+    };
     return fileList as unknown as FileList;
   }
   constructor() {
-    const self = this;
+    const getFiles = () => this._files;
+    const setFiles = (f: File[]) => { this._files = f; };
     this.items = {
-      get length() { return self._files.length; },
+      get length() { return getFiles().length; },
       add(file: File | string, _type?: string) {
-        if (file instanceof File) self._files.push(file);
+        if (file instanceof File) getFiles().push(file);
       },
-      clear() { self._files = []; },
-      remove(i: number) { self._files.splice(i, 1); },
-      [Symbol.iterator]: function*() { yield* self._files; }
+      clear() { setFiles([]); },
+      remove(i: number) { getFiles().splice(i, 1); },
+      [Symbol.iterator]: function*() { yield* getFiles(); }
     } as unknown as DataTransferItemList;
   }
   getData(_format: string): string { return ''; }
-  setData(_format: string, _data: string): void {}
-  clearData(): void {}
+  setData(_format: string, _data: string): void { /* noop */ }
+  clearData(): void { /* noop */ }
   dropEffect: string = 'none';
   effectAllowed: string = 'all';
   types: string[] = [];
@@ -257,7 +258,6 @@ window.open = vi.fn() as unknown as typeof window.open;
 // checkNoChanges=false. Karma swallowed NG0100 errors; this makes Vitest
 // behave the same way so pre-existing tests don't suddenly start failing.
 // ---------------------------------------------------------------------------
-import { ComponentFixture } from '@angular/core/testing';
 const _origDetectChanges = ComponentFixture.prototype.detectChanges;
 ComponentFixture.prototype.detectChanges = function(checkNoChanges = false) {
   return _origDetectChanges.call(this, checkNoChanges);

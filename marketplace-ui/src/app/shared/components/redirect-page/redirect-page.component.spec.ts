@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,7 +16,7 @@ import { of } from 'rxjs';
 describe('RedirectPageComponent', () => {
   let component: RedirectPageComponent;
   let fixture: any;
-  let mockProductService: MockedObject<ProductService>;
+  let mockProductService: any;
 
   const mockActivatedRoute = {
     snapshot: {

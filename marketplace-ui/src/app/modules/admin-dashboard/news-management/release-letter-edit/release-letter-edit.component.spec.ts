@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PLATFORM_ID } from '@angular/core';
@@ -83,16 +83,16 @@ describe('ReleaseLetterEditComponent', () => {
       updateReleaseLetter: vi
         .fn()
         .mockName('AdminDashboardService.updateReleaseLetter')
-    };
+    } as any;
 
     routerMock = {
       navigate: vi.fn().mockName('Router.navigate')
-    };
+    } as any;
 
     translateServiceMock = {
       instant: vi.fn().mockName('TranslateService.instant'),
       get: vi.fn().mockName('TranslateService.get')
-    };
+    } as any;
 
     translateServiceMock.instant.mockImplementation((key: string) => key);
     translateServiceMock.get.mockImplementation((key: string) => of(key));
@@ -116,8 +116,12 @@ describe('ReleaseLetterEditComponent', () => {
     pageTitleServiceMock = {
       setTitleOnLangChange: vi
         .fn()
-        .mockName('PageTitleService.setTitleOnLangChange')
-    };
+        .mockName('PageTitleService.setTitleOnLangChange'),
+      translateService: translateServiceMock,
+      titleService: undefined,
+      setTitle: vi.fn().mockName('PageTitleService.setTitle'),
+      ngOnDestroy: vi.fn().mockName('PageTitleService.ngOnDestroy')
+    } as any;
     // End of mocking TranslateService
 
     await TestBed.configureTestingModule({
