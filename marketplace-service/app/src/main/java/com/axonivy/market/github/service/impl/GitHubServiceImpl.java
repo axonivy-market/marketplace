@@ -76,7 +76,10 @@ public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String README_FILE_PATH = "README.md";
-  static final String UNSUPPORTED_NOTICE = "Product is not SUpported anymore";
+  private static final String UNSUPPORTED_NOTICE = """
+      *Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*
+      """;
+  private static final String DEPRECATED_MESSAGE = "Add unsupported notice to README";
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -459,14 +462,17 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHPullRequest createReadmeUnsupportedPullRequest(String accessToken, String repositoryPath) throws IOException {
-    Assert.hasText(accessToken, "Access token must not be blank");
-    Assert.hasText(repositoryPath, "Repository path must not be blank");
+  public GHPullRequest createReadmeUnsupportedPullRequest(String accessToken,
+      String repositoryPath) throws IOException {
+    if (StringUtils.isAnyBlank(accessToken, repositoryPath)) {
+      log.error("Access token and path must not be blank");
+      return null;
+    }
 
-    var gitHub = getGitHub(accessToken);
-    var repository = gitHub.getRepository(repositoryPath);
+    GitHub gitHub = getGitHub(accessToken);
+    GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
-    var readme = repository.getFileContent(README_FILE_PATH, baseBranch);
+    GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
 
     String currentReadmeContent;
     try (InputStream inputStream = readme.read()) {
@@ -475,21 +481,40 @@ public class GitHubServiceImpl implements GitHubService {
 
     String updatedReadmeContent = insertUnsupportedNoticeBelowFirstHeading(currentReadmeContent);
     boolean hasReadmeChanges = !Objects.equals(currentReadmeContent, updatedReadmeContent);
-    String branchName = "chore/readme-unsupported-" + System.currentTimeMillis();
-
-    String baseBranchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
-    repository.createRef("refs/heads/" + branchName, baseBranchSha);
-
     if (hasReadmeChanges) {
-      readme.update(updatedReadmeContent, "docs: add unsupported notice to README", branchName);
+      log.error("No Need to update readme content for deprecation");
+      return null;
     }
+    String branchName = "Feature/update-deprecated-for-readme";
+    String pullRequestBody = "Add sentences to notice that product is deprecated";
+    String branchSha;
+    try {
+      repository.getRef("heads/" + branchName).getObject().getSha();
+      log.info("Branch exists, reusing: {}", branchName);
+      List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
+      GHPullRequest existingPR = existingPRs.stream()
+          .filter(pr -> pr.getHead().getRef().equals(branchName) && pr.getBase().getRef().equals(baseBranch))
+          .findFirst().orElse(null);
+      if (existingPR != null) {
+        log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+        return existingPR;
+      }
+      return generatePullRequest(repository, branchName, baseBranch, pullRequestBody);
+    } catch (GHFileNotFoundException e) {
+      log.info("There is no duplicated branch existing, create new branch");
+      branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
+      repository.createRef("refs/heads/" + branchName, branchSha);
+    }
+    readme.update(updatedReadmeContent, DEPRECATED_MESSAGE, branchName);
+    return generatePullRequest(repository, branchName, baseBranch, pullRequestBody);
+  }
 
-    String pullRequestBody = hasReadmeChanges
-        ? "Adds `Product is not SUpported anymore` right below the first heading in root README.md."
-        : "README.md already contains `Product is not SUpported anymore` below the first heading.";
-
-    return repository.createPullRequest("docs: update README unsupported notice", branchName, baseBranch,
+  private static GHPullRequest generatePullRequest(GHRepository repository, String branchName,
+      String baseBranch, String pullRequestBody) throws IOException {
+    GHPullRequest pr = repository.createPullRequest(DEPRECATED_MESSAGE, branchName, baseBranch,
         pullRequestBody);
+    log.info("Generated pull request '{}'", pr.getHtmlUrl().toString());
+    return pr;
   }
 
   static String insertUnsupportedNoticeBelowFirstHeading(String readmeContent) {
