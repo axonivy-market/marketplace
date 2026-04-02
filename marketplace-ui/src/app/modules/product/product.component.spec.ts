@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -9,6 +9,7 @@ import {
 
 import { provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, Subscription } from 'rxjs';
 import { TypeOption } from '../../shared/enums/type-option.enum';
@@ -60,8 +61,8 @@ describe('ProductComponent', () => {
       getNavigationStartEvent: vi
         .fn()
         .mockName('RoutingQueryParamService.getNavigationStartEvent'),
-      isDesigner: vi.fn().mockName('RoutingQueryParamService.isDesigner'),
-      isDesignerEnv: vi.fn().mockName('RoutingQueryParamService.isDesignerEnv'),
+      isDesigner: signal(false) as unknown as any,
+      isDesignerEnv: signal(false) as unknown as any,
       checkSessionStorageForDesignerEnv: vi
         .fn()
         .mockName('RoutingQueryParamService.checkSessionStorageForDesignerEnv'),
@@ -70,7 +71,7 @@ describe('ProductComponent', () => {
         .mockName(
           'RoutingQueryParamService.checkSessionStorageForDesignerVersion'
         )
-    };
+    } as unknown as MockedObject<RoutingQueryParamService>;
 
     await TestBed.configureTestingModule({
       imports: [

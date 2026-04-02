@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { QuickAccessComponent } from './quick-access.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,7 +14,7 @@ describe('QuickAccessComponent', () => {
       setTitleOnLangChange: vi
         .fn()
         .mockName('PageTitleService.setTitleOnLangChange')
-    };
+    } as unknown as MockedObject<PageTitleService>;
 
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],

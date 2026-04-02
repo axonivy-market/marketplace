@@ -132,7 +132,7 @@ describe('AdminDashboardComponent', () => {
       setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang')
     } as any;
     mockTranslateService.get.mockReturnValue(of('translated'));
-    mockTranslateService.instant.mockImplementation((key: string) => key);
+    mockTranslateService.instant.mockImplementation((key: string | string[]) => key as string);
     mockPageTitleService = {
       setTitleOnLangChange: vi
         .fn()

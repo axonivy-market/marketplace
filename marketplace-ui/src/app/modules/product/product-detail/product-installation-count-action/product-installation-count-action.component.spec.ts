@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   fakeAsync,
@@ -26,7 +26,7 @@ describe('ProductInstallationCountActionComponent', () => {
       sendRequestToGetInstallationCount: vi
         .fn()
         .mockName('ProductService.sendRequestToGetInstallationCount')
-    };
+    } as unknown as MockedObject<ProductService>;
 
     TestBed.configureTestingModule({
       imports: [

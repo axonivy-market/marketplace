@@ -20,8 +20,8 @@ describe('RepoTestResultComponent', () => {
       instant: vi.fn().mockName('TranslateService.instant'),
       get: vi.fn().mockName('TranslateService.get')
     } as any;
-    mockTranslateService.instant.mockImplementation((key: string) => key);
-    mockTranslateService.get.mockImplementation((key: string) => of(key));
+    mockTranslateService.instant.mockImplementation((key: string | string[]) => key as string);
+    mockTranslateService.get.mockImplementation((key: string | string[]) => of(key as string));
     mockRepository = {
       repoName: 'test-repo',
       htmlUrl: 'https://github.com/user/test-repo',

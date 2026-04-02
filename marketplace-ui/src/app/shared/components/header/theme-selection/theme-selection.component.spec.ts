@@ -1,5 +1,5 @@
-import type { MockedObject } from 'vitest';
-import { DOCUMENT } from '@angular/core';
+import { vi, type MockedObject } from 'vitest';
+import { DOCUMENT, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ThemeSelectionComponent } from './theme-selection.component';
@@ -23,8 +23,8 @@ describe('ThemeSelectionComponent', () => {
   beforeEach(async () => {
     mockThemeService = {
       changeTheme: vi.fn().mockName('ThemeService.changeTheme'),
-      isDarkMode: vi.fn().mockName('ThemeService.isDarkMode')
-    };
+      isDarkMode: signal(false)
+    } as unknown as MockedObject<ThemeService>;
 
     await TestBed.configureTestingModule({
       imports: [ThemeSelectionComponent, TranslateModule.forRoot()],

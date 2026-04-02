@@ -205,7 +205,7 @@ describe('LogViewerComponent', () => {
       const mockEvent = {
         stopPropagation: vi.fn().mockName('Event.stopPropagation')
       };
-      component.downloadLogFile(mockFiles[0], mockEvent);
+      component.downloadLogFile(mockFiles[0], mockEvent as unknown as Event);
 
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
       expect(logServiceMock.getLogFileContent).toHaveBeenCalledWith(

@@ -119,7 +119,8 @@ describe('MarkdownEditorComponent', () => {
   });
 
   function mockDynamicImport() {
-    vi.spyOn<any, any>(globalThis, 'import' as any).mockImplementation((module: string) => {
+    vi.spyOn<any, any>(globalThis, 'import' as any).mockImplementation((module: unknown) => {
+      const mod = module as string;
       if (module === 'easymde') {
         return Promise.resolve({ default: FakeEasyMDE });
       }

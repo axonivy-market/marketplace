@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductFeedbackComponent } from './product-feedback.component';
 import { CommonModule } from '@angular/common';
@@ -30,7 +30,7 @@ describe('ProductFeedbackComponent', () => {
     translateServiceSpy = {
       getTranslation: vi.fn().mockName('TranslateService.getTranslation'),
       setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang')
-    };
+    } as unknown as MockedObject<TranslateService>;
     mockElementRef = {
       nativeElement: {
         scrollHeight: 200,
@@ -50,7 +50,7 @@ describe('ProductFeedbackComponent', () => {
       ]
     }).compileComponents();
 
-    authService = authServiceSpy;
+    authService = authServiceSpy as unknown as MockedObject<AuthService>;
 
     fixture = TestBed.createComponent(ProductFeedbackComponent);
     component = fixture.componentInstance;

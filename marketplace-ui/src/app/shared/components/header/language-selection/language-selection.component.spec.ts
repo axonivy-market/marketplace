@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from './language-selection.component';
 import { Language } from '../../../enums/language.enum';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { of } from 'rxjs';
 
 describe('LanguageSelectionComponent', () => {
   let component: LanguageSelectionComponent;
@@ -25,7 +26,7 @@ describe('LanguageSelectionComponent', () => {
   });
 
   it('selectLanguage should call translateService', () => {
-    vi.spyOn(component.translateService, 'use').mockImplementation(() => {});
+    vi.spyOn(component.translateService, 'use').mockImplementation(() => of(undefined) as any);
     component.onSelectLanguage(Language.EN);
     expect(component.translateService.use).toHaveBeenCalled();
   });

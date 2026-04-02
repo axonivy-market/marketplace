@@ -94,8 +94,8 @@ describe('ReleaseLetterEditComponent', () => {
       get: vi.fn().mockName('TranslateService.get')
     } as any;
 
-    translateServiceMock.instant.mockImplementation((key: string) => key);
-    translateServiceMock.get.mockImplementation((key: string) => of(key));
+    translateServiceMock.instant.mockImplementation((key: string | string[]) => key as string);
+    translateServiceMock.get.mockImplementation((key: string | string[]) => of(key as string));
 
     const onLangChange = new Subject();
     const onTranslationChange = new Subject();
