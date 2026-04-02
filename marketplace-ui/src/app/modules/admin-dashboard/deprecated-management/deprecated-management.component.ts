@@ -9,6 +9,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
+import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -35,14 +36,13 @@ export class DeprecatedManagementComponent {
   isClosing = false;
   undeprecateProductId = '';
 
-
-
   dropdownOpen = false;
   deprecatedItems: DeprecatedRequest = {
     productId: '',
     successorUrl: '',
     addReadme: false,
-    deprecated: false
+    deprecated: false,
+    pullRequestAction: PullRequestAction.ADD
   };
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
@@ -89,7 +89,6 @@ export class DeprecatedManagementComponent {
     if (!this.validateForm()) {
       return;
     }
-
     this.deprecatedProductIds = await firstValueFrom(
       this.productService.updateDeprecatedProduct(this.deprecatedItems)
     );
@@ -136,6 +135,7 @@ export class DeprecatedManagementComponent {
     this.deprecatedItems.productId = productId;
     this.deprecatedItems.deprecated = true;
     this.dropdownOpen = false;
+    this.deprecatedItems.pullRequestAction = PullRequestAction.ADD;
   }
 
   async confirmUndeprecate(productId: string): Promise<void> {

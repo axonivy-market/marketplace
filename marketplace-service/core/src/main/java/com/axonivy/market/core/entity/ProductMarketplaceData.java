@@ -30,8 +30,6 @@ public class ProductMarketplaceData extends AbstractGenericEntity<String> {
   private int installationCount;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
-
-  @Pattern(regexp = "^(http|https)://.*$", message = "Invalid URL")
   private String successor;
 
   @Override
