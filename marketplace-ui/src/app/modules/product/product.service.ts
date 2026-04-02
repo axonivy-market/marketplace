@@ -23,6 +23,7 @@ import {
   DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../shared/constants/common.constant';
 import { DeprecatedRequest } from '../../shared/models/deprecated-request';
+import { DeprecatedResponse } from '../../shared/models/deprecated-response';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
@@ -195,8 +196,8 @@ export class ProductService {
 
   updateDeprecatedProduct(
     deprecatedRequest: DeprecatedRequest
-  ): Observable<string[]> {
-    return this.httpClient.post<string[]>(
+  ): Observable<DeprecatedResponse> {
+    return this.httpClient.post<DeprecatedResponse>(
       `api/product-marketplace-data/deprecated`,
       deprecatedRequest
     );

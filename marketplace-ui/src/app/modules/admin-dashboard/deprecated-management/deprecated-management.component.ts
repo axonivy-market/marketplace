@@ -10,6 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
+import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -47,6 +48,10 @@ export class DeprecatedManagementComponent {
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedProductIds: string[] = [];
+  deprecatedResponse: DeprecatedResponse = {
+    productIds: [],
+    pullRequestUrl: ''
+  };
 
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
@@ -89,9 +94,10 @@ export class DeprecatedManagementComponent {
     if (!this.validateForm()) {
       return;
     }
-    this.deprecatedProductIds = await firstValueFrom(
+    this.deprecatedResponse = await firstValueFrom(
       this.productService.updateDeprecatedProduct(this.deprecatedItems)
     );
+    this.deprecatedProductIds = this.deprecatedResponse.productIds;
     this.closeDialog();
     this.deprecatedItems = {
       productId: '',
@@ -157,12 +163,13 @@ export class DeprecatedManagementComponent {
       productId: this.undeprecateProductId,
       successorUrl: '',
       addReadme: false,
-      deprecated: false
+      deprecated: false,
+      pullRequestAction: PullRequestAction.REMOVE
     };
-
-    this.deprecatedProductIds = await firstValueFrom(
+    this.deprecatedResponse = await firstValueFrom(
       this.productService.updateDeprecatedProduct(request)
     );
+    this.deprecatedProductIds = this.deprecatedResponse.productIds;
     this.closeUndeprecateDialog();
   }
 
