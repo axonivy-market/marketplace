@@ -2,6 +2,7 @@ package com.axonivy.market.github.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -64,8 +65,5 @@ public interface GitHubService {
 
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
 
-  GHPullRequest createReadmeUnsupportedPullRequest(String accessToken, String repositoryPath) throws IOException;
-
-  GHPullRequest removeUnsupportedNoticePullRequest(String accessToken, String repositoryPath)
-      throws IOException;
+  GHPullRequest modifyReadmeUnsupportedPullRequest(String accessToken, String repositoryPath , PullRequestAction action) throws IOException;
 }
