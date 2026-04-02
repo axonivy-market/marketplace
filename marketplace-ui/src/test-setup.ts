@@ -12,11 +12,17 @@ type SpyObj<T> = T & { [K in keyof T]: T[K] extends (...args: any[]) => any ? Re
 type Spy = ReturnType<typeof vi.fn> & { and: Record<string, unknown>; calls: Record<string, unknown> };
 
 // Initialize Angular's test environment once for the whole suite.
-getTestBed().initTestEnvironment(
-  BrowserTestingModule,
-  platformBrowserTesting(),
-  { teardown: { destroyAfterEach: true } }
-);
+// Wrapped in try/catch because `ng test` (via @angular/build:unit-test) initializes
+// TestBed internally before this file runs, causing a "already been called" error.
+try {
+  getTestBed().initTestEnvironment(
+    BrowserTestingModule,
+    platformBrowserTesting(),
+    { teardown: { destroyAfterEach: true } }
+  );
+} catch {
+  // Already initialized by the Angular CLI builder — safe to ignore.
+}
 
 // ---------------------------------------------------------------------------
 // Jasmine-specific matchers not in Vitest (toBeTrue, toBeFalse, toHaveBeenCalledOnceWith)

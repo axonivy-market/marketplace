@@ -1,13 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  TestBed,
-  flush
+  TestBed
 } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { signal } from '@angular/core';
+import { signal, WritableSignal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, Subscription } from 'rxjs';
 import { TypeOption } from '../../shared/enums/type-option.enum';
@@ -282,7 +281,7 @@ describe('ProductComponent', () => {
       [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly'
     });
 
-    routingQueryParamService.isDesignerEnv.set(true);
+    (routingQueryParamService.isDesignerEnv as unknown as WritableSignal<boolean>).set(true);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
@@ -303,7 +302,7 @@ describe('ProductComponent', () => {
   });
 
   it('should navigate to product detail page when clicking on a product card', async () => {
-    routingQueryParamService.isDesignerEnv.set(false);
+    (routingQueryParamService.isDesignerEnv as unknown as WritableSignal<boolean>).set(false);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
 
