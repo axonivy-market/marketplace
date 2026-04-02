@@ -35,6 +35,8 @@ export class DeprecatedManagementComponent {
   isClosingUndeprecateDialog = false;
   showDeprecatedProductDialog = false;
   isClosing = false;
+  isDeprecating = false;
+  isCopySuccessVisible = false;
   undeprecateProductId = '';
 
   dropdownOpen = false;
@@ -62,6 +64,8 @@ export class DeprecatedManagementComponent {
 
   trigger() {
     this.showDeprecatedProductDialog = true;
+    this.isCopySuccessVisible = false;
+    this.deprecatedResponse.pullRequestUrl = '';
   }
 
   openDialog(): void {
@@ -73,6 +77,8 @@ export class DeprecatedManagementComponent {
     setTimeout(() => {
       this.showDeprecatedProductDialog = false;
       this.isClosing = false;
+      this.isDeprecating = false;
+      this.isCopySuccessVisible = false;
       this.deprecatedItems = {
         productId: '',
         successorUrl: '',
@@ -90,22 +96,39 @@ export class DeprecatedManagementComponent {
   }
 
   async deprecatedProduct() {
+    if (this.isDeprecating || !!this.deprecatedResponse.pullRequestUrl) {
+      return;
+    }
+
     // Validate inputs
     if (!this.validateForm()) {
       return;
     }
-    this.deprecatedResponse = await firstValueFrom(
-      this.productService.updateDeprecatedProduct(this.deprecatedItems)
-    );
-    this.deprecatedProductIds = this.deprecatedResponse.productIds;
-    this.closeDialog();
-    this.deprecatedItems = {
-      productId: '',
-      successorUrl: '',
-      addReadme: false,
-      deprecated: false
-    };
-    this.validationErrors = {};
+    this.isDeprecating = true;
+    this.isCopySuccessVisible = false;
+    this.dropdownOpen = false;
+
+    try {
+      this.deprecatedResponse = await firstValueFrom(
+        this.productService.updateDeprecatedProduct(this.deprecatedItems)
+      );
+      this.deprecatedProductIds = this.deprecatedResponse.productIds;
+      this.validationErrors = {};
+    } finally {
+      this.isDeprecating = false;
+    }
+  }
+
+  async copyPullRequestUrl(): Promise<void> {
+    if (!this.deprecatedResponse.pullRequestUrl || !navigator?.clipboard) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(this.deprecatedResponse.pullRequestUrl);
+    this.isCopySuccessVisible = true;
+    setTimeout(() => {
+      this.isCopySuccessVisible = false;
+    }, 1500);
   }
 
   validateForm(): boolean {
