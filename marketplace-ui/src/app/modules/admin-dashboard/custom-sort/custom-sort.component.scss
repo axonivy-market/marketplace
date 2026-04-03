@@ -1,7 +1,12 @@
 .hint-icon {
   color: var(--ivy-primary-bg);
   cursor: pointer;
+
+  i {
+    font-size: 2.5rem;
+  }
 }
+
 
 ::ng-deep .help-text a {
   color: var(--ivy-primary-bg);

@@ -50,7 +50,7 @@
           (click)="clear()"
           [title]="'common.admin.logsViewer.actions.clear' | translate"
           [attr.aria-label]="'common.admin.logsViewer.actions.clear' | translate">
-          <i class="ti ti-trash-filled fs-5"></i>
+          <i class="ti ti-trash-filled fs-4"></i>
           <span class="d-none d-sm-inline">
             {{ 'common.admin.logsViewer.actions.clear' | translate }}
           </span>
@@ -65,7 +65,7 @@
             [attr.aria-label]="
               'common.admin.logsViewer.actions.downloadOptions' | translate
             ">
-            <i class="ti ti-download fs-5"></i>
+            <i class="ti ti-download fs-4"></i>
             <span class="d-none d-sm-inline">
               {{ 'common.admin.logsViewer.actions.download' | translate }}
             </span>
@@ -198,7 +198,7 @@
           (click)="clearDateFilter()"
           [title]="'common.admin.logsViewer.actions.clearFilter' | translate"
           [attr.aria-label]="'common.admin.logsViewer.actions.clearFilter' | translate">
-          <i class="ti ti-trash fs-5"></i>
+          <i class="ti ti-trash fs-4"></i>
           <span class="d-none d-sm-inline">
             {{ 'common.admin.logsViewer.actions.clear' | translate }}
           </span>
@@ -219,7 +219,7 @@
                         {{ logFile.fileName }}
                       </h6>
                       <p class="card-text text-muted small mb-0">
-                        <i class="ti ti-file-earmark"></i>
+                        <i class="ti ti-file"></i>
                         {{ formatFileSize(logFile.size) }}
                       </p>
                       @if (logFile.date) {
