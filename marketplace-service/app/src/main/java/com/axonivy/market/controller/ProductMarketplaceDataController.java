@@ -88,6 +88,7 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
+  @Authorized
   @PostMapping("/deprecated")
   @Operation(summary = "Update successor and deprecated for product",
       description = "Partially update successor URL and deprecated flag for a product")

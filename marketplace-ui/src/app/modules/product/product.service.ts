@@ -1,4 +1,4 @@
-import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, of, firstValueFrom, map } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
@@ -19,6 +19,7 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import {
+  BEARER,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../shared/constants/common.constant';
@@ -193,7 +194,7 @@ export class ProductService {
       requestParams = requestParams.set('deprecated', deprecated.toString());
     }
     return this.httpClient
-      .get<DeprecatedProductInfo[] | string[]>(`api/product/deprecated/ids`, {
+      .get<DeprecatedProductInfo[] | string[]>(API_URI.PRODUCT_DEPRECATED_IDS, {
         params: requestParams
       })
       .pipe(map(response => this.normalizeDeprecatedProducts(response)));
@@ -225,14 +226,13 @@ export class ProductService {
       .filter(item => !!item.id);
   }
 
-  updateDeprecatedProduct(
-    deprecatedRequest: DeprecatedRequest
-  ): Observable<DeprecatedResponse> {
+  updateDeprecatedProduct(deprecatedRequest: DeprecatedRequest, token: string | undefined):
+    Observable<DeprecatedResponse> {
+    const headers = new HttpHeaders({
+      'Authorization': `${BEARER} ${token}`
+    });
     return this.httpClient
-      .post<DeprecatedResponse>(
-        `api/product-marketplace-data/deprecated`,
-        deprecatedRequest
-      )
+      .post<DeprecatedResponse>(API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED, deprecatedRequest, {headers})
       .pipe(
         map(response => ({
           ...response,

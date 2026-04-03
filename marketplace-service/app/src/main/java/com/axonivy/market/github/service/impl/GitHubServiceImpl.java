@@ -467,10 +467,11 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHPullRequest modifyReadmeUnsupportedPullRequest(String accessToken,
+  public GHPullRequest modifyReadmeUnsupportedPullRequest(
       String repositoryPath, PullRequestAction action) throws IOException {
+    String accessToken = gitHubProperty.getToken();
     if (StringUtils.isAnyBlank(accessToken, repositoryPath)) {
-      log.error("Access token and path must not be blank");
+      log.error("Access token and repository path must not be blank");
       return null;
     }
 
@@ -479,10 +480,7 @@ public class GitHubServiceImpl implements GitHubService {
     String baseBranch = repository.getDefaultBranch();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
 
-    String currentReadmeContent;
-    try (InputStream inputStream = readme.read()) {
-      currentReadmeContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-    }
+    String currentReadmeContent = getReadmeContent(readme);
 
     String updatedReadmeContent = PullRequestAction.ADD == action ?
         insertUnsupportedNoticeBelowFirstHeading(currentReadmeContent) :
@@ -494,8 +492,7 @@ public class GitHubServiceImpl implements GitHubService {
       log.error("No Need to update readme content for deprecation");
       return null;
     }
-    String pullRequestBody = PullRequestAction.ADD == action ? ADD_UNSUPPORTED_NOTICE_PR_BODY :
-        REMOVE_UNSUPPORTED_NOTICE_PR_BODY;
+    String pullRequestBody = PullRequestAction.ADD == action ? ADD_UNSUPPORTED_NOTICE_PR_BODY : REMOVE_UNSUPPORTED_NOTICE_PR_BODY;
     String pullRequestTitle = PullRequestAction.ADD == action ? DEPRECATED_MESSAGE : REMOVE_UNSUPPORTED_NOTICE_MESSAGE;
 
     try {
@@ -518,6 +515,14 @@ public class GitHubServiceImpl implements GitHubService {
     }
     readme.update(updatedReadmeContent, DEPRECATED_MESSAGE, UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
     return generatePullRequest(repository, baseBranch, pullRequestBody, pullRequestTitle);
+  }
+
+  private static String getReadmeContent(GHContent readme) throws IOException {
+    String currentReadmeContent;
+    try (InputStream inputStream = readme.read()) {
+      currentReadmeContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+    return currentReadmeContent;
   }
 
   private static GHPullRequest generatePullRequest(GHRepository repository,
@@ -575,4 +580,5 @@ public class GitHubServiceImpl implements GitHubService {
     });
     return new ByteArrayInputStream(outputStream.toByteArray());
   }
+  
 }

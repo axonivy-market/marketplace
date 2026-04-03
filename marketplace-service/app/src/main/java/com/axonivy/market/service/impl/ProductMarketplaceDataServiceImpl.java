@@ -217,8 +217,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       product.setUpdatedAt(new Date());
       if (request.isAddReadme() && request.getPullRequestAction() != null) {
         log.info("Start to update deprecated pull request action for product {}", request.getProductId());
-        pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest("",
-            product.getRepositoryName(), request.getPullRequestAction());
+        pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest(product.getRepositoryName(), request.getPullRequestAction());
       }
       productRepo.save(product);
       log.info("Successfully set deprecated for product: {}", product.getId());

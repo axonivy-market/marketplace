@@ -14,6 +14,7 @@ import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
 import { AdminAuthService } from '../admin-auth.service';
+import { UserInfo } from 'node:os';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -70,14 +71,16 @@ export class DeprecatedManagementComponent implements OnInit {
     pullRequestUrl: null
   };
   moderatorName!: string | undefined;
+  token: string | undefined = '';
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
   constructor(private readonly storageRef: SessionStorageRef) {}
 
   async ngOnInit(): Promise<void> {
-    this.moderatorName =
-      this.adminAuthService.loadFromSessionStorage()?.username;
+    const userInfo = this.adminAuthService.loadFromSessionStorage();
+    this.moderatorName = userInfo?.username;
+    this.token = userInfo?.token;
     this.deprecatedRequest.deprecationRequester = this.moderatorName;
     await this.refreshDeprecatedRows();
   }
@@ -126,7 +129,10 @@ export class DeprecatedManagementComponent implements OnInit {
 
     try {
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(this.deprecatedRequest)
+        this.productService.updateDeprecatedProduct(
+          this.deprecatedRequest,
+          this.token
+        )
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
@@ -263,7 +269,7 @@ export class DeprecatedManagementComponent implements OnInit {
       pullRequestAction: PullRequestAction.REMOVE
     };
     this.deprecatedResponse = await firstValueFrom(
-      this.productService.updateDeprecatedProduct(request)
+      this.productService.updateDeprecatedProduct(request, this.token)
     );
     await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
