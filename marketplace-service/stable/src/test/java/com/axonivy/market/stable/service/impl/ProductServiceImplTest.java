@@ -27,7 +27,7 @@ public class ProductServiceImplTest {
   private ProductServiceImpl productService;
 
   @Test
-  void shouldThrowExceptionWhenProductNotFound() {
+  void testShouldThrowExceptionWhenProductNotFound() {
     String id = "p1";
 
     when(coreProductRepository.existsById(id)).thenReturn(false);
@@ -42,7 +42,7 @@ public class ProductServiceImplTest {
   }
 
   @Test
-  void shouldReturnBestMatchVersion() {
+  void testShouldReturnBestMatchVersion() {
     String id = "p1";
     String requestedVersion = "1.0";
     Boolean showDev = false;

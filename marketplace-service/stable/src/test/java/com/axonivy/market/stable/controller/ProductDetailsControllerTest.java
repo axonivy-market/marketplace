@@ -45,7 +45,7 @@ public class ProductDetailsControllerTest {
   }
 
   @Test
-  void shouldPassShowDevVersionTrue() {
+  void testShouldPassShowDevVersionTrue() {
     String id = "product-1";
     String version = "1.0";
 
