@@ -20,8 +20,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceImplTest {
-  @Mock
-  private CoreMetadataRepository coreMetadataRepo;
 
   @Mock
   private CoreProductRepository coreProductRepository;
