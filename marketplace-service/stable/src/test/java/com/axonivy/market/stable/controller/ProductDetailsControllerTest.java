@@ -23,4 +23,41 @@ public class ProductDetailsControllerTest {
 
   @InjectMocks
   private ProductDetailsController productDetailsController;
+
+  @Test
+  void testGetBestMatchVersion() {
+    String id = "product-1";
+    String version = "1.0";
+    Boolean showDev = false;
+
+    when(productService.getBestMatchVersion(id, version, showDev)).thenReturn("2.0");
+
+    ResponseEntity<BestMatchVersion> response =
+        productDetailsController.findBestMatchProductDetailsByVersion(id, version, showDev);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP status 200 OK");
+    assertNotNull(response.getBody(),
+        "Response body should not be null");
+    assertEquals("2.0", response.getBody().getVersion(),
+        "Expected version in response body to match service result");
+    verify(productService).getBestMatchVersion(id, version, showDev);
+  }
+
+  @Test
+  void shouldPassShowDevVersionTrue() {
+    String id = "product-1";
+    String version = "1.0";
+
+    when(productService.getBestMatchVersion(id, version, true)).thenReturn("2.1-dev");
+
+    ResponseEntity<BestMatchVersion> response =
+        productDetailsController.findBestMatchProductDetailsByVersion(id, version, true);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP status 200 OK");
+    assertEquals("2.1-dev", response.getBody().getVersion(),
+        "Expected dev version to be returned");
+    verify(productService).getBestMatchVersion(id, version, true);
+  }
 }
