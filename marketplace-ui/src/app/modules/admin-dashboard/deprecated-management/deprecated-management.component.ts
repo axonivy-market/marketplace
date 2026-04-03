@@ -67,6 +67,8 @@ export class DeprecatedManagementComponent implements OnInit {
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedRows: DeprecatedProductInfo[] = [];
+  filteredDeprecatedRows: DeprecatedProductInfo[] = [];
+  tableSearchTerm = '';
   deprecatedResponse: DeprecatedResponse = {
     productDeprecations: [],
     pullRequestUrl: null
@@ -288,7 +290,8 @@ export class DeprecatedManagementComponent implements OnInit {
       this.isClosingUndeprecateDialog = false;
       this.undeprecateProductId = '';
 
-      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl =
+        this.deprecatedResponse.pullRequestUrl ?? null;
       this.successMode = 'undeprecate';
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
@@ -317,6 +320,19 @@ export class DeprecatedManagementComponent implements OnInit {
     );
   }
 
+  filterTable(searchTerm: string): void {
+    this.tableSearchTerm = searchTerm;
+    const normalized = (searchTerm || '').trim().toLowerCase();
+    if (!normalized) {
+      this.filteredDeprecatedRows = [...this.deprecatedRows];
+      return;
+    }
+
+    this.filteredDeprecatedRows = this.deprecatedRows.filter(row =>
+      row.id.toLowerCase().includes(normalized)
+    );
+  }
+
   private async loadAllProductIds(
     predicated: boolean | null
   ): Promise<DeprecatedProductInfo[]> {
@@ -327,6 +343,7 @@ export class DeprecatedManagementComponent implements OnInit {
 
   private async refreshDeprecatedRows(): Promise<void> {
     this.deprecatedRows = await this.loadAllProductIds(true);
+    this.filterTable(this.tableSearchTerm);
   }
 
   private async applyRowsFromUpdateResponse(
@@ -334,6 +351,7 @@ export class DeprecatedManagementComponent implements OnInit {
   ): Promise<void> {
     if (response?.productDeprecations) {
       this.deprecatedRows = response.productDeprecations;
+      this.filterTable(this.tableSearchTerm);
       return;
     }
     await this.refreshDeprecatedRows();

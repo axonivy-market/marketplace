@@ -28,11 +28,13 @@
 <div class="table-grid d-grid deprecated-container">
   <app-custom-sort-card class="custom-card"
                         [title]="'common.admin.deprecated.availableExtensions' | translate"
-                        [badge]="deprecatedRows.length + ' / ' + deprecatedRows.length">
+                        [badge]="filteredDeprecatedRows.length + ' / ' + deprecatedRows.length">
     <div card-header-right class="search-box d-flex align-items-center">
       <input
         type="search"
         class="search-input"
+        [(ngModel)]="tableSearchTerm"
+        (input)="filterTable(tableSearchTerm)"
         [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async"/>
 
       <button
@@ -53,7 +55,7 @@
     </thead>
 
     <tbody>
-      @if (deprecatedRows.length === 0) {
+      @if (filteredDeprecatedRows.length === 0) {
         <tr class="empty-row text-center">
           <td
             colspan="6"
@@ -64,7 +66,7 @@
         </tr>
       }
 
-      @for (row of deprecatedRows; track row.id; let index = $index) {
+      @for (row of filteredDeprecatedRows; track row.id; let index = $index) {
         <tr>
           <td class="text-primary text-center">{{ index + 1 }}</td>
           <td class="text-primary text-center">{{ row.id }}</td>
