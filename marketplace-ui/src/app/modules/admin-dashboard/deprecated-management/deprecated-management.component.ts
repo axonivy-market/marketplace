@@ -199,7 +199,7 @@ export class DeprecatedManagementComponent implements OnInit {
     const request: DeprecatedRequest = {
       productId: this.undeprecateProductId,
       successorUrl: '',
-      addReadme: false,
+      addReadme: true,
       deprecated: false,
       deprecationRequester: this.moderatorName,
       pullRequestAction: PullRequestAction.REMOVE
