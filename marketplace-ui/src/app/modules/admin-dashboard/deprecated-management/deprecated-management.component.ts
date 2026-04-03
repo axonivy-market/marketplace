@@ -52,6 +52,7 @@ export class DeprecatedManagementComponent implements OnInit {
   // Undeprecate confirm dialog state
   showUndeprecateConfirmDialog = false;
   isClosingUndeprecateDialog = false;
+  isUndeprecating = false;
   undeprecateProductId = '';
 
   dropdownOpen = false;
@@ -251,6 +252,9 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   closeUndeprecateDialog(): void {
+    if (this.isUndeprecating) {
+      return;
+    }
     this.isClosingUndeprecateDialog = true;
     setTimeout(() => {
       this.showUndeprecateConfirmDialog = false;
@@ -260,28 +264,37 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   async executeUndeprecate(): Promise<void> {
-    const request: DeprecatedRequest = {
-      productId: this.undeprecateProductId,
-      successorUrl: '',
-      addReadme: true,
-      deprecated: null,
-      deprecationRequester: this.moderatorName,
-      pullRequestAction: PullRequestAction.REMOVE
-    };
-    this.deprecatedResponse = await firstValueFrom(
-      this.productService.updateDeprecatedProduct(request, this.token)
-    );
-    await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
+    if (this.isUndeprecating) {
+      return;
+    }
+    this.isUndeprecating = true;
 
-    // Close confirm dialog and show success dialog
-    this.showUndeprecateConfirmDialog = false;
-    this.isClosingUndeprecateDialog = false;
-    this.undeprecateProductId = '';
+    try {
+      const request: DeprecatedRequest = {
+        productId: this.undeprecateProductId,
+        successorUrl: '',
+        addReadme: true,
+        deprecated: null,
+        deprecationRequester: this.moderatorName,
+        pullRequestAction: PullRequestAction.REMOVE
+      };
+      this.deprecatedResponse = await firstValueFrom(
+        this.productService.updateDeprecatedProduct(request, this.token)
+      );
+      await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
-    this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
-    this.successMode = 'undeprecate';
-    this.showSuccessDialog = true;
-    this.isCopySuccessVisible = false;
+      // Close confirm dialog and show success dialog
+      this.showUndeprecateConfirmDialog = false;
+      this.isClosingUndeprecateDialog = false;
+      this.undeprecateProductId = '';
+
+      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successMode = 'undeprecate';
+      this.showSuccessDialog = true;
+      this.isCopySuccessVisible = false;
+    } finally {
+      this.isUndeprecating = false;
+    }
   }
 
   getDeprecatedTime(row: DeprecatedProductInfo): string {

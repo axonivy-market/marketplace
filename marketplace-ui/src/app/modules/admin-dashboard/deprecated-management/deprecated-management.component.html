@@ -33,7 +33,7 @@
       <input
         type="search"
         class="search-input"
-        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
+        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async"/>
 
       <button
         type="button" (click)="trigger()"
@@ -68,7 +68,7 @@
         <tr>
           <td class="text-primary text-center">{{ index + 1 }}</td>
           <td class="text-primary text-center">{{ row.id }}</td>
-          <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss'}}</td>
+          <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
           <td class="text-primary text-center">{{ getRequester(row) }}</td>
           <td class="action-column text-primary text-center">
             <i class="bi bi-trash-fill delete-icon"
@@ -208,7 +208,8 @@
 
       <!-- Body -->
       <div class="modal-body success-modal-body">
-        <img ngSrc="/assets/images/misc/confetti-icon.png" width="60" height="60" alt="Confetti Icon" class="success-icon">
+        <img ngSrc="/assets/images/misc/confetti-icon.png" width="60" height="60" alt="Confetti Icon"
+             class="success-icon">
         <h4 class="text-primary success-title">
           {{
             (successMode === 'undeprecate'
@@ -269,7 +270,8 @@
         <h5 class="modal-title">
           {{ 'common.admin.deprecated.confirmUndeprecatedTitle' | translate }}
         </h5>
-        <button type="button" class="btn-close" (click)="closeUndeprecateDialog()"></button>
+        <button type="button" class="btn-close" [disabled]="isUndeprecating"
+                (click)="closeUndeprecateDialog()"></button>
       </div>
 
       <!-- Body -->
@@ -284,10 +286,14 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-cancel btn-secondary me-2" (click)="closeUndeprecateDialog()">
+        <button class="btn btn-cancel btn-secondary me-2" [disabled]="isUndeprecating"
+                (click)="closeUndeprecateDialog()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
-        <button class="btn btn-danger" (click)="executeUndeprecate()">
+        <button class="btn btn-danger" [disabled]="isUndeprecating" (click)="executeUndeprecate()">
+          @if (isUndeprecating) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          }
           {{ 'common.admin.deprecated.undeprecate' | translate }}
         </button>
       </div>
@@ -297,7 +303,7 @@
 
   <!-- Backdrop -->
   <div class="custom-backdrop" [class.backdrop-closing]="isClosingUndeprecateDialog"
-       (click)="closeUndeprecateDialog()"></div>
+       (click)="!isUndeprecating && closeUndeprecateDialog()"></div>
 }
 
 
