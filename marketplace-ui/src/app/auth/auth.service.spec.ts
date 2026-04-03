@@ -13,7 +13,7 @@ import {
 } from '@angular/common/http';
 import { BEARER, TOKEN_KEY } from '../shared/constants/common.constant';
 import { environment } from '../../environments/environment';
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -78,7 +78,7 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne(`${service['BASE_URL']}/auth/github/login`);
     expect(req.request.method).toBe('POST');
-    req.error(new ErrorEvent('Network error'));
+    req.error(new ProgressEvent('Network error'));
   });
 
   it('should set token as cookie and navigate', () => {
@@ -181,7 +181,7 @@ describe('AuthService', () => {
     const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
     expect(req.request.method).toBe('GET');
 
-    req.error(new ErrorEvent('Network error'));
+    req.error(new ProgressEvent('Network error'));
   });
 
   it("getDisplayNameFromAccessToken should return user's name if available", () => {

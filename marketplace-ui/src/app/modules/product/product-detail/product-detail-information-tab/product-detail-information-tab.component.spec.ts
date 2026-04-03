@@ -1,4 +1,4 @@
-import type { Mock, MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
@@ -280,10 +280,10 @@ describe('ProductDetailInformationTabComponent', () => {
       id: TEST_ID,
       newestReleaseVersion: '11.3.0'
     } as ProductDetail;
+    component.productDetail.newestReleaseVersion = '12.0.0-m266';
     const productChanged: SimpleChange = {
       currentValue: component.productDetail,
-      previousValue: (component.productDetail.newestReleaseVersion =
-        '12.0.0-m266'),
+      previousValue: component.productDetail.newestReleaseVersion,
       firstChange: true,
       isFirstChange: () => true
     };

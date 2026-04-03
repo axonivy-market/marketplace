@@ -714,7 +714,11 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display tabs instead of dropdown when viewport width is above 540px', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1920 });
+    Object.defineProperty(globalThis, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1920
+    });
     const tabGroup = fixture.debugElement.query(By.css('.tab-group'));
     const dropdown = tabGroup.query(
       By.css(
@@ -726,7 +730,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display info tab on click of info icon for smaller screens', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 540 });
+    Object.defineProperty(globalThis, 'innerWidth', { writable: true, configurable: true, value: 540 });
 
     let infoTab = fixture.debugElement.query(
       By.css(

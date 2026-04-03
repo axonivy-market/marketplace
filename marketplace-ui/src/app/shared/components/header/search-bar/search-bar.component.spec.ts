@@ -53,7 +53,7 @@ describe('SearchBarComponent', () => {
     const outsideClickEvent = new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
-      view: window
+      view: globalThis as any
     });
 
     // Dispatch a click event to the document

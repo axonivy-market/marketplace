@@ -1,4 +1,4 @@
-import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FeedbackTableComponent } from './feedback-table.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -33,9 +33,6 @@ describe('FeedbackTableComponent', () => {
         TranslateService
       ]
     }).compileComponents();
-    languageService = TestBed.inject(
-      LanguageService
-    ) as MockedObject<LanguageService>;
     fixture = TestBed.createComponent(FeedbackTableComponent);
     component = fixture.componentInstance;
     component.feedbacks = MOCK_FEEDBACKS;

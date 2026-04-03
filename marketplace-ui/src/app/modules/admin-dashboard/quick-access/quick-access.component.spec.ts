@@ -1,4 +1,4 @@
-import { vi, type MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { QuickAccessComponent } from './quick-access.component';
 import { TranslateModule } from '@ngx-translate/core';

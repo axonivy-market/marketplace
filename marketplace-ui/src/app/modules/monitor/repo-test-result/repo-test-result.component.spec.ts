@@ -144,7 +144,7 @@ describe('RepoTestResultComponent', () => {
 
   it('should correctly compute conclusion key', () => {
     expect(component.getConclusionKey('SUCCESS')).toBe('success');
-    expect(component.getConclusionKey(undefined)).toBe('');
+    expect(component.getConclusionKey()).toBe('');
   });
 
   it('should return empty fields for empty state', () => {
