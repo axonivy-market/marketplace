@@ -1,7 +1,6 @@
 package com.axonivy.market.stable.service.impl;
 
 import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.stable.factory.VersionFactory;
