@@ -6,15 +6,12 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { catchError, firstValueFrom, Observable, of, tap } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ADMIN_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
-import { AuthService, UserInfo } from '../../../auth/auth.service';
 import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
 import { AdminAuthService } from '../admin-auth.service';
 
@@ -47,6 +44,8 @@ export class DeprecatedManagementComponent implements OnInit {
   isClosingSuccessDialog = false;
   successPullRequestUrl: string | null = null;
   isCopySuccessVisible = false;
+  successMode: 'deprecate' | 'undeprecate' | null = null;
+  private successDialogCloseTimer?: ReturnType<typeof setTimeout>;
 
   // Undeprecate confirm dialog state
   showUndeprecateConfirmDialog = false;
@@ -130,10 +129,12 @@ export class DeprecatedManagementComponent implements OnInit {
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
-      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl =
+        this.deprecatedResponse.pullRequestUrl ?? null;
       // Close form dialog immediately and show success dialog
       this.showDeprecatedProductDialog = false;
       this.isClosing = false;
+      this.successMode = 'deprecate';
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
     } finally {
@@ -142,33 +143,59 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   closeSuccessDialog(): void {
+    if (this.isClosingSuccessDialog) {
+      return;
+    }
+
+    const shouldResetDeprecateForm = this.successMode === 'deprecate';
+
     this.isClosingSuccessDialog = true;
-    setTimeout(() => {
+
+    if (this.successDialogCloseTimer) {
+      clearTimeout(this.successDialogCloseTimer);
+    }
+
+    this.successDialogCloseTimer = setTimeout(() => {
       this.showSuccessDialog = false;
       this.isClosingSuccessDialog = false;
       this.successPullRequestUrl = null;
       this.isCopySuccessVisible = false;
-      // Reset the form after closing success dialog
-      this.deprecatedRequest = {
-        productId: '',
-        successorUrl: '',
-        addReadme: false,
-        deprecated: false,
-        pullRequestAction: PullRequestAction.ADD,
-        deprecationRequester: this.moderatorName
-      };
+      this.successMode = null;
+
+      if (shouldResetDeprecateForm) {
+        // Reset deprecate form after closing deprecate success dialog
+        this.deprecatedRequest = {
+          productId: '',
+          successorUrl: '',
+          addReadme: false,
+          deprecated: false,
+          pullRequestAction: PullRequestAction.ADD,
+          deprecationRequester: this.moderatorName
+        };
+      }
     }, 250);
   }
 
   async copyPullRequestUrl(): Promise<void> {
-    if (!this.successPullRequestUrl || !navigator?.clipboard) {
+    if (!this.hasPullRequestUrl() || !navigator?.clipboard) {
       return;
     }
-    await navigator.clipboard.writeText(this.successPullRequestUrl);
+
+    const url = this.successPullRequestUrl?.trim();
+    if (!url) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(url);
     this.isCopySuccessVisible = true;
     setTimeout(() => {
       this.isCopySuccessVisible = false;
     }, 1500);
+  }
+
+  hasPullRequestUrl(): boolean {
+    const url = this.successPullRequestUrl?.trim();
+    return !!url && url.toLowerCase() !== 'null';
   }
 
   onClickCheckBoxReadme(): void {
@@ -238,7 +265,16 @@ export class DeprecatedManagementComponent implements OnInit {
       this.productService.updateDeprecatedProduct(request)
     );
     await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
-    this.closeUndeprecateDialog();
+
+    // Close confirm dialog and show success dialog
+    this.showUndeprecateConfirmDialog = false;
+    this.isClosingUndeprecateDialog = false;
+    this.undeprecateProductId = '';
+
+    this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+    this.successMode = 'undeprecate';
+    this.showSuccessDialog = true;
+    this.isCopySuccessVisible = false;
   }
 
   getDeprecatedTime(row: DeprecatedProductInfo): string {

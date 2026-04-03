@@ -463,6 +463,7 @@
         "deprecatedTime": "Deprecated time",
         "requester": "Requester",
         "deprecateSuccess": "Extension has been deprecated successfully!",
+        "undeprecateSuccess": "Extension has been undeprecated successfully!",
         "deprecateSuccessThank": "Thank you for your contribution",
         "pullRequestLabel": "Pull Request URL",
         "copyLabel": "Copy",

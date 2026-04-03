@@ -196,7 +196,12 @@
 
       <!-- Header -->
       <div class="modal-header border-bottom-0 pb-0">
-        <button type="button" class="success-close-btn" aria-label="Close" (click)="closeSuccessDialog()">
+        <button
+          type="button"
+          class="success-close-btn"
+          aria-label="Close"
+          [disabled]="isClosingSuccessDialog"
+          (click)="closeSuccessDialog()">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -205,14 +210,18 @@
       <div class="modal-body success-modal-body">
         <img src="/assets/images/misc/confetti-icon.png" width="60" height="60" alt="Confetti Icon" class="success-icon">
         <h4 class="text-primary success-title">
-          {{ 'common.admin.deprecated.deprecateSuccess' | translate }}
+          {{
+            (successMode === 'undeprecate'
+              ? 'common.admin.deprecated.undeprecateSuccess'
+              : 'common.admin.deprecated.deprecateSuccess') | translate
+          }}
         </h4>
         <h4 class="text-primary success-subtitle">
           {{ 'common.admin.deprecated.deprecateSuccessThank' | translate }}
           <strong>{{ moderatorName }}</strong>
         </h4>
 
-        @if (successPullRequestUrl) {
+        @if (hasPullRequestUrl()) {
           <div class="success-pr-section">
             <label class="form-label success-pr-label">
               {{ 'common.admin.deprecated.pullRequestLabel' | translate }}
@@ -248,7 +257,7 @@
   <div
     class="custom-backdrop success-backdrop"
     [class.backdrop-closing]="isClosingSuccessDialog"
-    (click)="closeSuccessDialog()"></div>
+    (click)="!isClosingSuccessDialog && closeSuccessDialog()"></div>
 }
 
 @if (showUndeprecateConfirmDialog) {
@@ -290,4 +299,6 @@
   <div class="custom-backdrop" [class.backdrop-closing]="isClosingUndeprecateDialog"
        (click)="closeUndeprecateDialog()"></div>
 }
+
+
 

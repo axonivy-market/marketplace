@@ -131,12 +131,13 @@
   cursor: pointer;
   opacity: 0.75;
   color: inherit;
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     opacity: 1;
     background: rgba(127, 127, 127, 0.16);
-    transform: scale(1.04);
   }
 }
 
@@ -164,11 +165,13 @@
 }
 
 .custom-modal.modal-closing {
-  animation: modalFadeOut 0.25s ease;
+  animation: modalFadeOut 0.25s ease forwards;
+  pointer-events: none;
 }
 
 .custom-backdrop.backdrop-closing {
-  animation: backdropFadeOut 0.25s ease;
+  animation: backdropFadeOut 0.25s ease forwards;
+  pointer-events: none;
 }
 
 @keyframes backdropFadeOut {
@@ -253,6 +256,15 @@
 .success-modal .modal-body {
   position: relative;
   z-index: 1;
+}
+
+.success-modal.modal-closing .success-close-btn {
+  opacity: 0.75;
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.success-modal.modal-closing .success-icon {
+  animation: none;
 }
 
 .success-modal-body {
