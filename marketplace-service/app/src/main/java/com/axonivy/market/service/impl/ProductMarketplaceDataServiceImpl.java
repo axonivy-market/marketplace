@@ -223,7 +223,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       log.info("Successfully set deprecated for product: {}", product.getId());
     }
     return DeprecatedResponse.builder()
-        .productIds(productRepo.findProductIdsByDeprecated(true))
+        .productDeprecations(productRepo.findProductIdsByDeprecated(true))
         .pullRequestUrl(
             Optional.ofNullable(pullRequestUrl)
                 .map(GHPullRequest::getHtmlUrl)

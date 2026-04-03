@@ -2,6 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,7 +32,7 @@ public interface ProductService {
 
   List<String> getProductIds();
 
-  List<String> getProductIdsByDeprecated(Boolean deprecated);
+  List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean deprecated);
 
   Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 
