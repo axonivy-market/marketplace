@@ -198,7 +198,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return outputStream;
   }
 
-  @Transactional
+  @Transactional(rollbackOn = Exception.class)
   @Override
   public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
     Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
@@ -225,7 +225,10 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     }
     return DeprecatedResponse.builder()
         .productDeprecations(productRepo.findProductIdsByDeprecated(true))
-        .pullRequestUrl("Market.axonivy.com")
+        .pullRequestUrl(Optional.ofNullable(pullRequestUrl)
+            .map(GHPullRequest::getHtmlUrl)
+            .map(Object::toString)
+            .orElse(null))
         .build();
   }
 }

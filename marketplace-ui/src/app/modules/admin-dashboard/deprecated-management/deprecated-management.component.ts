@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe, NgOptimizedImage } from '@angular/common';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -22,7 +22,8 @@ import { AdminAuthService } from '../admin-auth.service';
     CustomSortCardComponent,
     FormsModule,
     TranslateModule,
-    DatePipe
+    DatePipe,
+    NgOptimizedImage
   ],
   templateUrl: './deprecated-management.component.html',
   styleUrl: './deprecated-management.component.scss'
