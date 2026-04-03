@@ -19,7 +19,6 @@ describe('FooterComponent', () => {
   beforeEach(async () => {
     let testMockDate: Date;
 
-    vi.useRealTimers();
     vi.useFakeTimers();
     testMockDate = new Date('2019-09-15T05:00:00Z');
     vi.setSystemTime(testMockDate);

@@ -66,9 +66,7 @@ describe('BackToTopComponent', () => {
   });
 
   it('should render the button when showScrollButton is true', () => {
-    fixture.componentRef.setInput = (fixture.componentRef.setInput as any);
     component.showScrollButton = true;
-    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
     const scrollToTopButtonElement = fixture.debugElement.query(

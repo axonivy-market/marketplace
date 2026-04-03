@@ -20,7 +20,7 @@ import {
   REPORT_MODE
 } from '../../../shared/constants/common.constant';
 import { SimpleChange, SimpleChanges } from '@angular/core';
-import { vi, describe, beforeEach, expect, it } from 'vitest';
+import { vi, describe, afterEach, beforeEach, expect, it } from 'vitest';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
@@ -113,6 +113,8 @@ describe('MonitoringRepoComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -136,7 +138,6 @@ describe('MonitoringRepoComponent', () => {
 
     // Wait for debounce time
     vi.advanceTimersByTime(500);
-    vi.useRealTimers();
 
     expect(component.page).toBe(1);
     expect(component.criteria.pageable.page).toBe(0);
@@ -217,7 +218,6 @@ describe('MonitoringRepoComponent', () => {
 
     component.onSearchChanged('asanaaaaa');
     vi.advanceTimersByTime(500); // Wait for debounce
-    vi.useRealTimers();
 
     fixture.detectChanges();
 

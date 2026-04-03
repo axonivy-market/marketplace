@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   TestBed
@@ -42,6 +42,8 @@ describe('ProductInstallationCountActionComponent', () => {
     component = fixture.componentInstance;
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -65,6 +67,5 @@ describe('ProductInstallationCountActionComponent', () => {
       productServiceMock.sendRequestToGetInstallationCount
     ).toHaveBeenCalledWith(productId);
     expect(component.currentInstallationCount()).toEqual(42);
-    vi.useRealTimers();
   });
 });

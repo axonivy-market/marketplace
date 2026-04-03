@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
   TestBed
@@ -121,6 +121,8 @@ describe('ProductComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -199,7 +201,6 @@ describe('ProductComponent', () => {
 
     component.onSearchChanged(searchString);
     vi.advanceTimersByTime(500);
-    vi.useRealTimers();
 
     expect(component.criteria.search).toEqual(searchString);
     expect(component.router.navigate).toHaveBeenCalledWith([], {
@@ -214,7 +215,6 @@ describe('ProductComponent', () => {
     const productName = 'amazon comprehend';
     component.onSearchChanged(productName);
     vi.advanceTimersByTime(500);
-    vi.useRealTimers();
     component.products().forEach(product => {
       expect(product.names['en'].toLowerCase()).toContain(productName);
     });

@@ -1,12 +1,12 @@
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { LogService } from './log.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LogFileModel } from '../../shared/models/apis/log-file-response.model';
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 describe('LogService', () => {
@@ -15,8 +15,7 @@ describe('LogService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [LogService]
+      providers: [LogService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(LogService);
     httpMock = TestBed.inject(HttpTestingController);

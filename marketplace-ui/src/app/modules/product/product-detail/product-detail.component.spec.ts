@@ -226,6 +226,7 @@ describe('ProductDetailComponent', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     history.pushState(null, '', globalThis.location.pathname);
   });
 
@@ -1136,7 +1137,6 @@ describe('ProductDetailComponent', () => {
     const scrollSpy = vi.spyOn(globalThis, 'scrollTo');
     component.keepCurrentTabScroll(tabId);
     vi.runAllTimers();
-    vi.useRealTimers();
     expect(scrollSpy).toHaveBeenCalled();
     const arg = scrollSpy.mock.lastCall![0] as ScrollToOptions;
     expect(arg.top).toBe(1234);
@@ -1758,7 +1758,6 @@ describe('ProductDetailComponent', () => {
 
     component.setActiveTab('changelog');
     vi.runAllTimers();
-    vi.useRealTimers();
 
     expect(component.setupIntersectionObserver).toHaveBeenCalled();
   });
