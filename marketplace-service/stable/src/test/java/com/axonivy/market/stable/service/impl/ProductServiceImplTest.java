@@ -1,8 +1,10 @@
 package com.axonivy.market.stable.service.impl;
 
-import com.axonivy.market.core.entity.Metadata;
+import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
+import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.core.utils.CoreVersionUtils;
+import com.axonivy.market.stable.factory.VersionFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,38 +15,70 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceImplTest {
   @Mock
   private CoreMetadataRepository coreMetadataRepo;
 
+  @Mock
+  private CoreProductRepository coreProductRepository;
+
   @InjectMocks
   private ProductServiceImpl productService;
 
   @Test
+  void shouldThrowExceptionWhenProductNotFound() {
+    String id = "p1";
+
+    when(coreProductRepository.existsById(id)).thenReturn(false);
+    assertThrows(
+        NotFoundException.class,
+        () -> productService.getBestMatchVersion(id, "1.0", false),
+        "Expected NotFoundException when product does not exist"
+    );
+
+    verify(coreProductRepository).existsById(id);
+    verifyNoMoreInteractions(coreProductRepository);
+  }
+
+  @Test
   void shouldReturnBestMatchVersion() {
-    String productId = "test-product";
-    String inputVersion = "10.0.0";
+    String id = "p1";
+    String requestedVersion = "1.0";
+    Boolean showDev = false;
 
-    List<Metadata> metadataList = List.of(new Metadata(), new Metadata());
-    List<String> installableVersions = List.of("9.0.0", "10.0.0", "11.0.0");
+    List<String> rawVersions = List.of("1.0", "2.0");
+    List<String> filteredVersions = List.of("2.0", "1.0");
 
-    when(coreMetadataRepo.findByProductId(productId)).thenReturn(metadataList);
+    when(coreProductRepository.existsById(id)).thenReturn(true);
+    when(coreProductRepository.getReleasedVersionsById(id)).thenReturn(rawVersions);
 
-    try (MockedStatic<CoreVersionUtils> mockedStatic = mockStatic(CoreVersionUtils.class)) {
-      mockedStatic.when(() ->
-              CoreVersionUtils.getInstallableVersionsFromMetadataList(metadataList))
-          .thenReturn(installableVersions);
-      mockedStatic.when(() ->
-              CoreVersionUtils.getBestMatchVersion(installableVersions, inputVersion))
-          .thenReturn("10.0.0");
+    try (MockedStatic<CoreVersionUtils> utilsMock = mockStatic(CoreVersionUtils.class);
+         MockedStatic<VersionFactory> factoryMock = mockStatic(VersionFactory.class)) {
 
-      String result = productService.fetchBestMatchVersion(productId, inputVersion);
-      assertEquals("10.0.0", result,
-          "Expected best match version to be '10.0.0' for input version '10.0.0'");
+      utilsMock.when(() ->
+          CoreVersionUtils.getVersionsToDisplay(rawVersions, showDev)
+      ).thenReturn(filteredVersions);
+
+      factoryMock.when(() ->
+          VersionFactory.get(filteredVersions, requestedVersion)
+      ).thenReturn("2.0");
+
+      String result = productService.getBestMatchVersion(id, requestedVersion, showDev);
+
+      assertEquals("2.0", result,
+          "Expected best matched version from VersionFactory");
+
+      utilsMock.verify(() ->
+          CoreVersionUtils.getVersionsToDisplay(rawVersions, showDev)
+      );
+
+      factoryMock.verify(() ->
+          VersionFactory.get(filteredVersions, requestedVersion)
+      );
     }
   }
 }

@@ -18,25 +18,12 @@ import java.util.List;
 @Log4j2
 @Primary
 public class ProductServiceImpl extends CoreProductServiceImpl implements ProductService {
-  private final CoreMetadataRepository coreMetadataRepo;
   private final CoreProductRepository coreProductRepository;
 
   public ProductServiceImpl(CoreProductRepository coreProductRepo, CoreMetadataRepository coreMetadataRepo,
       CoreProductRepository coreProductRepository) {
     super(coreProductRepo);
-    this.coreMetadataRepo = coreMetadataRepo;
     this.coreProductRepository = coreProductRepository;
-  }
-
-  @Override
-  public String fetchBestMatchVersion(String id, String version) {
-    if(!coreProductRepository.existsById(id)) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id);
-    }
-
-    List<String> installableVersions = CoreVersionUtils.getInstallableVersionsFromMetadataList(
-        coreMetadataRepo.findByProductId(id));
-    return CoreVersionUtils.getBestMatchVersion(installableVersions, version);
   }
 
   @Override
