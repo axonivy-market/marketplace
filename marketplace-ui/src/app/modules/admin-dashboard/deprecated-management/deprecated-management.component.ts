@@ -264,7 +264,7 @@ export class DeprecatedManagementComponent implements OnInit {
       productId: this.undeprecateProductId,
       successorUrl: '',
       addReadme: true,
-      deprecated: false,
+      deprecated: null,
       deprecationRequester: this.moderatorName,
       pullRequestAction: PullRequestAction.REMOVE
     };
