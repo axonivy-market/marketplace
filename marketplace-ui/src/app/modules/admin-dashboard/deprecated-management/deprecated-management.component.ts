@@ -37,13 +37,20 @@ export class DeprecatedManagementComponent implements OnInit {
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
 
-  // Undeprecate confirm dialog state
-  showUndeprecateConfirmDialog = false;
-  isClosingUndeprecateDialog = false;
+  // Deprecate form dialog state
   showDeprecatedProductDialog = false;
   isClosing = false;
   isDeprecating = false;
+
+  // Success dialog state
+  showSuccessDialog = false;
+  isClosingSuccessDialog = false;
+  successPullRequestUrl: string | null = null;
   isCopySuccessVisible = false;
+
+  // Undeprecate confirm dialog state
+  showUndeprecateConfirmDialog = false;
+  isClosingUndeprecateDialog = false;
   undeprecateProductId = '';
 
   dropdownOpen = false;
@@ -106,7 +113,7 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   async deprecatedProduct() {
-    if (this.isDeprecating || !!this.deprecatedResponse.pullRequestUrl) {
+    if (this.isDeprecating) {
       return;
     }
 
@@ -115,7 +122,6 @@ export class DeprecatedManagementComponent implements OnInit {
       return;
     }
     this.isDeprecating = true;
-    this.isCopySuccessVisible = false;
     this.dropdownOpen = false;
 
     try {
@@ -124,17 +130,41 @@ export class DeprecatedManagementComponent implements OnInit {
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
+      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      // Close form dialog immediately and show success dialog
+      this.showDeprecatedProductDialog = false;
+      this.isClosing = false;
+      this.showSuccessDialog = true;
+      this.isCopySuccessVisible = false;
     } finally {
       this.isDeprecating = false;
     }
   }
 
+  closeSuccessDialog(): void {
+    this.isClosingSuccessDialog = true;
+    setTimeout(() => {
+      this.showSuccessDialog = false;
+      this.isClosingSuccessDialog = false;
+      this.successPullRequestUrl = null;
+      this.isCopySuccessVisible = false;
+      // Reset the form after closing success dialog
+      this.deprecatedRequest = {
+        productId: '',
+        successorUrl: '',
+        addReadme: false,
+        deprecated: false,
+        pullRequestAction: PullRequestAction.ADD,
+        deprecationRequester: this.moderatorName
+      };
+    }, 250);
+  }
+
   async copyPullRequestUrl(): Promise<void> {
-    if (!this.deprecatedResponse.pullRequestUrl || !navigator?.clipboard) {
+    if (!this.successPullRequestUrl || !navigator?.clipboard) {
       return;
     }
-
-    await navigator.clipboard.writeText(this.deprecatedResponse.pullRequestUrl);
+    await navigator.clipboard.writeText(this.successPullRequestUrl);
     this.isCopySuccessVisible = true;
     setTimeout(() => {
       this.isCopySuccessVisible = false;

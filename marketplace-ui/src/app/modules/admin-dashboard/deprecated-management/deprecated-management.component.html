@@ -94,7 +94,7 @@
         <button
           type="button"
           class="btn-close"
-          [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+          [disabled]="isDeprecating"
           (click)="closeDialog()"></button>
       </div>
 
@@ -107,7 +107,7 @@
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['productId']"
             [(ngModel)]="deprecatedRequest.productId"
-            [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+            [disabled]="isDeprecating"
             placeholder="html-dialog-demo"
             (click)="openExtensionDropdown()"
             (input)="filterProducts(deprecatedRequest.productId)"
@@ -134,7 +134,7 @@
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['successorUrl']"
             [(ngModel)]="deprecatedRequest.successorUrl"
-            [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+            [disabled]="isDeprecating"
             placeholder="https://market.axonivy.com/portal"
           />
           @if (validationErrors['successorUrl']) {
@@ -154,7 +154,7 @@
             type="checkbox"
             class="form-check-input"
             [(ngModel)]="deprecatedRequest.addReadme"
-            [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+            [disabled]="isDeprecating"
             (click)="this.onClickCheckBoxReadme()"
             id="addReadmeCheckbox"
           />
@@ -162,29 +162,6 @@
             {{ 'common.admin.deprecated.updateForReadmeText' | translate }}
           </label>
         </div>
-
-        @if (deprecatedResponse.pullRequestUrl) {
-          <div class="mt-4">
-            <label class="form-label">Pull request URL</label>
-            <div class="pr-url-row">
-              <input
-                type="text"
-                class="form-control"
-                [value]="deprecatedResponse.pullRequestUrl"
-                readonly
-              />
-              <button
-                type="button"
-                class="btn btn-cancel btn-secondary"
-                (click)="copyPullRequestUrl()">
-                Copy
-              </button>
-            </div>
-            @if (isCopySuccessVisible) {
-              <small class="text-success">Copied</small>
-            }
-          </div>
-        }
       </div>
 
       <!-- Footer -->
@@ -193,7 +170,7 @@
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button type="button" class="btn border-0 btn-primary"
-                [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+                [disabled]="isDeprecating"
                 (click)="deprecatedProduct()">
           @if (isDeprecating) {
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
@@ -209,7 +186,69 @@
   <div
     class="custom-backdrop"
     [class.backdrop-closing]="isClosing"
-    (click)="!isDeprecating && !deprecatedResponse.pullRequestUrl && closeDialog()"></div>
+    (click)="!isDeprecating && closeDialog()"></div>
+}
+
+<!-- Success Dialog -->
+@if (showSuccessDialog) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosingSuccessDialog">
+    <div class="modal-content custom-modal success-modal" [class.modal-closing]="isClosingSuccessDialog">
+
+      <!-- Header -->
+      <div class="modal-header border-bottom-0 pb-0">
+        <button type="button" class="success-close-btn" aria-label="Close" (click)="closeSuccessDialog()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body success-modal-body">
+        <img src="/assets/images/misc/confetti-icon.png" width="60" height="60" alt="Confetti Icon" class="success-icon">
+        <h4 class="text-primary success-title">
+          {{ 'common.admin.deprecated.deprecateSuccess' | translate }}
+        </h4>
+        <h4 class="text-primary success-subtitle">
+          {{ 'common.admin.deprecated.deprecateSuccessThank' | translate }}
+          <strong>{{ moderatorName }}</strong>
+        </h4>
+
+        @if (successPullRequestUrl) {
+          <div class="success-pr-section">
+            <label class="form-label success-pr-label">
+              {{ 'common.admin.deprecated.pullRequestLabel' | translate }}
+            </label>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control success-pr-input"
+                [value]="successPullRequestUrl"
+                readonly
+              />
+              <button
+                type="button"
+                class="btn btn-primary copy-btn input-group-text"
+                (click)="copyPullRequestUrl()">
+                @if (isCopySuccessVisible) {
+                  <i class="bi bi-check2 me-1"></i>
+                  {{ 'common.admin.deprecated.copiedLabel' | translate }}
+                } @else {
+                  <i class="bi bi-clipboard me-1"></i>
+                  {{ 'common.admin.deprecated.copyLabel' | translate }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div
+    class="custom-backdrop success-backdrop"
+    [class.backdrop-closing]="isClosingSuccessDialog"
+    (click)="closeSuccessDialog()"></div>
 }
 
 @if (showUndeprecateConfirmDialog) {

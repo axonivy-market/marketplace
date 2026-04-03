@@ -225,11 +225,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     }
     return DeprecatedResponse.builder()
         .productDeprecations(productRepo.findProductIdsByDeprecated(true))
-        .pullRequestUrl(
-            Optional.ofNullable(pullRequestUrl)
-                .map(GHPullRequest::getHtmlUrl)
-                .map(Object::toString)
-                .orElse(null))
+        .pullRequestUrl("Market.axonivy.com")
         .build();
   }
 }

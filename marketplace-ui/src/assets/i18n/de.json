@@ -461,7 +461,12 @@
         "undeprecate": "Undeprecate",
         "extensionId": "Extension ID:",
         "deprecatedTime": "Deprecated time",
-        "requester": "Requester"
+        "requester": "Requester",
+        "deprecateSuccess": "Extension has been deprecated successfully!",
+        "deprecateSuccessThank": "Thank you for your contribution",
+        "pullRequestLabel": "Pull Request URL",
+        "copyLabel": "Copy",
+        "copiedLabel": "Copied!"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
