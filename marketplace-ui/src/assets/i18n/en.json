@@ -462,7 +462,9 @@
         "confirmUndeprecatedContent": "Are you sure to undeprecate this extension?",
         "confirmUndeprecatedTitle": "Undeprecated confirmation",
         "undeprecate": "Undeprecate",
-        "extensionId": "Extension ID:"
+        "extensionId": "Extension ID:",
+        "deprecatedTime": "Deprecated time",
+        "requester": "Requester"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

@@ -12,4 +12,5 @@ public class DeprecatedRequest {
   private Boolean deprecated;
   private boolean addReadme;
   private PullRequestAction pullRequestAction;
+  private String deprecationRequester;
 }

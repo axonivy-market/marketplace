@@ -202,19 +202,21 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Transactional
   @Override
   public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
-    if (StringUtils.isNotBlank(request.getSuccessorUrl())) {
-      Optional.ofNullable(getProductMarketplaceData(request.getProductId())).ifPresent(data -> {
-        data.setSuccessor(request.getSuccessorUrl());
-        productMarketplaceDataRepo.save(data);
-        log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
-      });
-    }
+    Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
+        .ifPresent(data -> {
+          data.setSuccessor(request.getSuccessorUrl());
+          data.setDeprecationRequester(request.getDeprecationRequester());
+          data.setDeprecationDate(new Date());
+          productMarketplaceDataRepo.save(data);
+          log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
+        });
+
     GHPullRequest pullRequestUrl = null;
     Product product = productRepo.findById(request.getProductId()).orElse(null);
     if (product != null) {
       product.setDeprecated(request.getDeprecated());
       product.setUpdatedAt(new Date());
-      if (request.getDeprecated() && request.getPullRequestAction() != null) {
+      if (request.isAddReadme() && request.getPullRequestAction() != null) {
         log.info("Start to update deprecated pull request action for product {}", request.getProductId());
         pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest("",
             product.getRepositoryName(), request.getPullRequestAction());

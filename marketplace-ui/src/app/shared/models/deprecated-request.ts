@@ -6,4 +6,5 @@ export interface DeprecatedRequest {
   deprecated?: boolean;
   addReadme?: boolean;
   pullRequestAction?: PullRequestAction;
+  deprecationRequester?: string;
 }

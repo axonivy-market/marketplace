@@ -30,6 +30,7 @@ export interface GitHubUser {
   name: string | null;
   avatarUrl: string;
   url: string;
+  username?: string;
 }
 
 export interface UserInfo extends GitHubUser {

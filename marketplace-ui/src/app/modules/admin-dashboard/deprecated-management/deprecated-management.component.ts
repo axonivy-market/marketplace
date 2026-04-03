@@ -1,16 +1,22 @@
-import { Component, inject } from '@angular/core';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
+import { AsyncPipe, DatePipe } from '@angular/common';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, Observable, of, tap } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
+import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ADMIN_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { AuthService, UserInfo } from '../../../auth/auth.service';
+import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
+import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -18,16 +24,18 @@ import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
     AsyncPipe,
     CustomSortCardComponent,
     FormsModule,
-    TranslateModule
+    TranslateModule,
+    DatePipe
   ],
   templateUrl: './deprecated-management.component.html',
   styleUrl: './deprecated-management.component.scss'
 })
-export class DeprecatedManagementComponent {
+export class DeprecatedManagementComponent implements OnInit {
   productService = inject(ProductService);
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   themeService = inject(ThemeService);
+  adminAuthService = inject(AdminAuthService);
 
   // Undeprecate confirm dialog state
   showUndeprecateConfirmDialog = false;
@@ -39,36 +47,38 @@ export class DeprecatedManagementComponent {
   undeprecateProductId = '';
 
   dropdownOpen = false;
-  deprecatedItems: DeprecatedRequest = {
+  deprecatedRequest: DeprecatedRequest = {
     productId: '',
     successorUrl: '',
     addReadme: false,
     deprecated: false,
-    pullRequestAction: PullRequestAction.ADD
+    pullRequestAction: PullRequestAction.ADD,
+    deprecationRequester: ''
   };
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
-  deprecatedProductIds: string[] = [];
+  deprecatedRows: DeprecatedProductInfo[] = [];
   deprecatedResponse: DeprecatedResponse = {
-    productIds: [],
-    pullRequestUrl: ''
+    productDeprecations: [],
+    pullRequestUrl: null
   };
-
+  moderatorName!: string | undefined;
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
+  constructor(private readonly storageRef: SessionStorageRef) {}
+
   async ngOnInit(): Promise<void> {
-    this.deprecatedProductIds = await this.loadAllProductIds(true);
+    this.moderatorName =
+      this.adminAuthService.loadFromSessionStorage()?.username;
+    this.deprecatedRequest.deprecationRequester = this.moderatorName;
+    await this.refreshDeprecatedRows();
   }
 
   trigger() {
     this.showDeprecatedProductDialog = true;
     this.isCopySuccessVisible = false;
-    this.deprecatedResponse.pullRequestUrl = '';
-  }
-
-  openDialog(): void {
-    this.deprecatedProductIds = this.deprecatedProductIds.slice(0, 10);
+    this.deprecatedResponse.pullRequestUrl = null;
   }
 
   closeDialog() {
@@ -78,7 +88,7 @@ export class DeprecatedManagementComponent {
       this.isClosing = false;
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
-      this.deprecatedItems = {
+      this.deprecatedRequest = {
         productId: '',
         successorUrl: '',
         addReadme: false,
@@ -89,8 +99,9 @@ export class DeprecatedManagementComponent {
   }
 
   async openExtensionDropdown() {
-    this.selectableProductIds = await this.loadAllProductIds(null);
-    this.filterProducts(this.deprecatedItems.productId);
+    const selectableProducts = await this.loadAllProductIds(null);
+    this.selectableProductIds = selectableProducts.map(product => product.id);
+    this.filterProducts(this.deprecatedRequest.productId);
     this.dropdownOpen = true;
   }
 
@@ -109,9 +120,9 @@ export class DeprecatedManagementComponent {
 
     try {
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(this.deprecatedItems)
+        this.productService.updateDeprecatedProduct(this.deprecatedRequest)
       );
-      this.deprecatedProductIds = this.deprecatedResponse.productIds;
+      await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
     } finally {
       this.isDeprecating = false;
@@ -130,14 +141,18 @@ export class DeprecatedManagementComponent {
     }, 1500);
   }
 
+  onClickCheckBoxReadme(): void {
+    this.deprecatedRequest.addReadme = true;
+  }
+
   validateForm(): boolean {
     this.validationErrors = {};
     let isValid = true;
 
     // Validate productId (required)
     if (
-      !this.deprecatedItems.productId ||
-      this.deprecatedItems.productId.trim() === ''
+      !this.deprecatedRequest.productId ||
+      this.deprecatedRequest.productId.trim() === ''
     ) {
       this.validationErrors['productId'] = 'Extension ID is required';
       isValid = false;
@@ -145,11 +160,11 @@ export class DeprecatedManagementComponent {
 
     // Validate successorUrl (optional but must match pattern if provided)
     if (
-      this.deprecatedItems.successorUrl &&
-      this.deprecatedItems.successorUrl.trim() !== ''
+      this.deprecatedRequest.successorUrl &&
+      this.deprecatedRequest.successorUrl.trim() !== ''
     ) {
       const urlPattern = /^(http|https):\/\/.*$/;
-      if (!urlPattern.test(this.deprecatedItems.successorUrl)) {
+      if (!urlPattern.test(this.deprecatedRequest.successorUrl)) {
         this.validationErrors['successorUrl'] =
           'URL must start with http:// or https://';
         isValid = false;
@@ -160,10 +175,10 @@ export class DeprecatedManagementComponent {
   }
 
   selectExtension(productId: string) {
-    this.deprecatedItems.productId = productId;
-    this.deprecatedItems.deprecated = true;
+    this.deprecatedRequest.productId = productId;
+    this.deprecatedRequest.deprecated = true;
     this.dropdownOpen = false;
-    this.deprecatedItems.pullRequestAction = PullRequestAction.ADD;
+    this.deprecatedRequest.pullRequestAction = PullRequestAction.ADD;
   }
 
   async confirmUndeprecate(productId: string): Promise<void> {
@@ -186,13 +201,22 @@ export class DeprecatedManagementComponent {
       successorUrl: '',
       addReadme: false,
       deprecated: false,
+      deprecationRequester: this.moderatorName,
       pullRequestAction: PullRequestAction.REMOVE
     };
     this.deprecatedResponse = await firstValueFrom(
       this.productService.updateDeprecatedProduct(request)
     );
-    this.deprecatedProductIds = this.deprecatedResponse.productIds;
+    await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
     this.closeUndeprecateDialog();
+  }
+
+  getDeprecatedTime(row: DeprecatedProductInfo): string {
+    return row.deprecationDate?.trim() || '-';
+  }
+
+  getRequester(row: DeprecatedProductInfo): string {
+    return row.deprecationRequester?.trim() || '-';
   }
 
   filterProducts(searchTerm: string) {
@@ -208,10 +232,24 @@ export class DeprecatedManagementComponent {
   }
 
   private async loadAllProductIds(
-    predicated: Boolean | null
-  ): Promise<string[]> {
+    predicated: boolean | null
+  ): Promise<DeprecatedProductInfo[]> {
     return await firstValueFrom(
       this.productService.fetchAllProductIdsByDeprecated(predicated)
     );
+  }
+
+  private async refreshDeprecatedRows(): Promise<void> {
+    this.deprecatedRows = await this.loadAllProductIds(true);
+  }
+
+  private async applyRowsFromUpdateResponse(
+    response: DeprecatedResponse
+  ): Promise<void> {
+    if (response?.productDeprecations) {
+      this.deprecatedRows = response.productDeprecations;
+      return;
+    }
+    await this.refreshDeprecatedRows();
   }
 }

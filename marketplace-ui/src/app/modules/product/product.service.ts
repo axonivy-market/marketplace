@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of, firstValueFrom } from 'rxjs';
+import { catchError, Observable, of, firstValueFrom, map } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import {
@@ -24,6 +24,7 @@ import {
 } from '../../shared/constants/common.constant';
 import { DeprecatedRequest } from '../../shared/models/deprecated-request';
 import { DeprecatedResponse } from '../../shared/models/deprecated-response';
+import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
@@ -184,23 +185,63 @@ export class ProductService {
     return this.httpClient.get<string[]>(`${API_URI.IDS}`);
   }
 
-  fetchAllProductIdsByDeprecated(deprecated: Boolean | null) {
+  fetchAllProductIdsByDeprecated(
+    deprecated: boolean | null
+  ): Observable<DeprecatedProductInfo[]> {
     let requestParams = new HttpParams();
     if (deprecated !== null && deprecated !== undefined) {
       requestParams = requestParams.set('deprecated', deprecated.toString());
     }
-    return this.httpClient.get<string[]>(`api/product/deprecated/ids`, {
-      params: requestParams
-    });
+    return this.httpClient
+      .get<DeprecatedProductInfo[] | string[]>(`api/product/deprecated/ids`, {
+        params: requestParams
+      })
+      .pipe(map(response => this.normalizeDeprecatedProducts(response)));
+  }
+
+  private normalizeDeprecatedProducts(
+    response: DeprecatedProductInfo[] | string[]
+  ): DeprecatedProductInfo[] {
+    if (!Array.isArray(response)) {
+      return [];
+    }
+
+    return response
+      .map(item => {
+        if (typeof item === 'string') {
+          return {
+            id: item,
+            deprecationDate: null,
+            deprecationRequester: null
+          };
+        }
+
+        return {
+          id: item?.id ?? '',
+          deprecationDate: item?.deprecationDate ?? null,
+          deprecationRequester: item?.deprecationRequester ?? null
+        };
+      })
+      .filter(item => !!item.id);
   }
 
   updateDeprecatedProduct(
     deprecatedRequest: DeprecatedRequest
   ): Observable<DeprecatedResponse> {
-    return this.httpClient.post<DeprecatedResponse>(
-      `api/product-marketplace-data/deprecated`,
-      deprecatedRequest
-    );
+    return this.httpClient
+      .post<DeprecatedResponse>(
+        `api/product-marketplace-data/deprecated`,
+        deprecatedRequest
+      )
+      .pipe(
+        map(response => ({
+          ...response,
+          productDeprecations: this.normalizeDeprecatedProducts(
+            response?.productDeprecations ?? response?.productIds ?? []
+          ),
+          pullRequestUrl: response?.pullRequestUrl ?? null
+        }))
+      );
   }
 
   fetchAllProductsForSync(

@@ -28,15 +28,15 @@
 <div class="table-grid d-grid deprecated-container">
   <app-custom-sort-card class="custom-card"
                         [title]="'common.admin.deprecated.availableExtensions' | translate"
-                        [badge]="deprecatedProductIds.length + ' / ' + deprecatedProductIds.length">
+                        [badge]="deprecatedRows.length + ' / ' + deprecatedRows.length">
     <div card-header-right class="search-box d-flex align-items-center">
       <input
         type="search"
         class="search-input"
-        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async"/>
+        [placeholder]="translateService.get('common.admin.deprecated.searchPlaceholder')| async" />
 
       <button
-        type="button" (click)="trigger()" (focus)="openDialog()"
+        type="button" (click)="trigger()"
         [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 btn-primary text-center">
         {{ 'common.admin.deprecated.deprecatedButton' | translate }}
       </button>
@@ -44,17 +44,19 @@
 
     <thead>
     <tr>
-      <th class="text-primary text-start order-column available-order-spacer" aria-hidden="true"></th>
-      <th class="text-primary text-start order-column"> {{ 'common.admin.deprecated.order' | translate }}</th>
-      <th class="text-primary text-start">{{ 'common.admin.extensionId' | translate }}</th>
+      <th class="text-primary text-center "> {{ 'common.admin.deprecated.order' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.extensionId' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.deprecated.deprecatedTime' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.deprecated.requester' | translate }}</th>
+      <th class="text-primary text-center" aria-label="Actions"> Action</th>
     </tr>
     </thead>
 
     <tbody>
-      @if (deprecatedProductIds.length === 0) {
+      @if (deprecatedRows.length === 0) {
         <tr class="empty-row text-center">
           <td
-            colspan="2"
+            colspan="6"
             class="text-primary"
             [lang]="languageService.selectedLanguage()">
             {{ 'common.admin.customSort.noExtensions' | translate }}
@@ -62,18 +64,17 @@
         </tr>
       }
 
-      @for (item of deprecatedProductIds; track item; let index = $index) {
+      @for (row of deprecatedRows; track row.id; let index = $index) {
         <tr>
-          <td class="index available-index-spacer" aria-hidden="true"></td>
-          <td class="extension-text">{{ index + 1 }}</td>
-          <td class="extension-cell">
-            <div class="extension-item">
-              <span class="extension-text">{{ item }}</span>
-              <i class="bi bi-trash-fill delete-icon"
-                 role="button"
-                 (click)="confirmUndeprecate(item)">
-              </i>
-            </div>
+          <td class="text-primary text-center">{{ index + 1 }}</td>
+          <td class="text-primary text-center">{{ row.id }}</td>
+          <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss'}}</td>
+          <td class="text-primary text-center">{{ getRequester(row) }}</td>
+          <td class="action-column text-primary text-center">
+            <i class="bi bi-trash-fill delete-icon"
+               role="button"
+               (click)="confirmUndeprecate(row.id)">
+            </i>
           </td>
         </tr>
       }
@@ -105,11 +106,11 @@
             type="text"
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['productId']"
-            [(ngModel)]="deprecatedItems.productId"
+            [(ngModel)]="deprecatedRequest.productId"
             [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
             placeholder="html-dialog-demo"
             (click)="openExtensionDropdown()"
-            (input)="filterProducts(deprecatedItems.productId)"
+            (input)="filterProducts(deprecatedRequest.productId)"
             (blur)="dropdownOpen = false"
           />
           @if (validationErrors['productId']) {
@@ -132,7 +133,7 @@
             type="text"
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['successorUrl']"
-            [(ngModel)]="deprecatedItems.successorUrl"
+            [(ngModel)]="deprecatedRequest.successorUrl"
             [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
             placeholder="https://market.axonivy.com/portal"
           />
@@ -152,8 +153,9 @@
           <input
             type="checkbox"
             class="form-check-input"
-            [(ngModel)]="deprecatedItems.addReadme"
+            [(ngModel)]="deprecatedRequest.addReadme"
             [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+            (click)="this.onClickCheckBoxReadme()"
             id="addReadmeCheckbox"
           />
           <label class="form-check-label" for="addReadmeCheckbox">
@@ -191,8 +193,8 @@
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button type="button" class="btn border-0 btn-primary"
-          [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
-          (click)="deprecatedProduct()">
+                [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
+                (click)="deprecatedProduct()">
           @if (isDeprecating) {
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
           }
