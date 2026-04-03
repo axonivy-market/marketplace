@@ -75,5 +75,8 @@
     "karma-webpack": "^5.0.1",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "picomatch": "^4.0.4"
   }
 }
