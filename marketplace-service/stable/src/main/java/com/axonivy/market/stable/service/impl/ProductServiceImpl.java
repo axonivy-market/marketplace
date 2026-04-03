@@ -2,14 +2,12 @@ package com.axonivy.market.stable.service.impl;
 
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.core.service.impl.CoreProductServiceImpl;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.stable.factory.VersionFactory;
 import com.axonivy.market.stable.service.ProductService;
-import com.axonivy.market.stable.strategy.impl.SameMajorVersionStrategy;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
