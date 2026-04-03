@@ -13,5 +13,21 @@ public interface CoreProductService {
   @Deprecated
   Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
 
+  /**
+   * <p>
+   * Find all products
+   * </p>
+   *
+   * @param  type
+   *              type {@link String}
+   * @param  keyword
+   *              type {@link String}
+   * @param  language
+   *              type {@link String}
+   * @param  pageable
+   *              type {@link Pageable}
+   * @return {@link Page<Product>}
+   * @author ntqdinh
+   */
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
 }
