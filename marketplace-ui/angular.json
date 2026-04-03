@@ -133,6 +133,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runnerConfig": "vitest.config.ts",
+            "coverage": true,
             "watch": false
           }
         }
