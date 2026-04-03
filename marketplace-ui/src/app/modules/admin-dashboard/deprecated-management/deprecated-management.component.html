@@ -37,8 +37,7 @@
 
       <button
         type="button" (click)="trigger()" (focus)="openDialog()"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark': 'btn-primary text-light'"
-        [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 deprecated-button text-center">
+        [lang]="languageService.selectedLanguage()" class="btn border-0 mb-0 btn-primary text-center">
         {{ 'common.admin.deprecated.deprecatedButton' | translate }}
       </button>
     </div>
@@ -172,7 +171,10 @@
                 [value]="deprecatedResponse.pullRequestUrl"
                 readonly
               />
-              <button type="button" class="btn btn-light" (click)="copyPullRequestUrl()">
+              <button
+                type="button"
+                class="btn btn-cancel btn-secondary"
+                (click)="copyPullRequestUrl()">
                 Copy
               </button>
             </div>
@@ -185,11 +187,10 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-light" (click)="closeDialog()">
+        <button class="btn btn-cancel btn-secondary me-2" (click)="closeDialog()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
-        <button
-          class="btn btn-primary"
+        <button type="button" class="btn border-0 btn-primary"
           [disabled]="isDeprecating || !!deprecatedResponse.pullRequestUrl"
           (click)="deprecatedProduct()">
           @if (isDeprecating) {
@@ -233,7 +234,7 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-light" (click)="closeUndeprecateDialog()">
+        <button class="btn btn-cancel btn-secondary me-2" (click)="closeUndeprecateDialog()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button class="btn btn-danger" (click)="executeUndeprecate()">

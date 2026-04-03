@@ -7,15 +7,6 @@
   margin-top: 9rem;
 }
 
-.deprecated-button {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: #{white};
-  cursor: pointer;
-  background-color: var(--product-feedback-approve-button-color);
-}
-
 /* ===== Wrapper (center modal) ===== */
 .custom-modal-wrapper {
   position: fixed;
@@ -45,7 +36,8 @@
 .custom-modal {
   width: 600px;
   max-width: 90%;
-  background: #fff;
+  background-color: var(--bs-body-bg);
+  color: inherit;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   animation: modalFadeIn 0.25s ease;
@@ -58,7 +50,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 10px;
-  border-bottom: none;
 }
 
 .modal-title {
@@ -75,7 +66,6 @@
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
   padding: 16px 24px 20px;
   border-top: none;
 }
@@ -107,36 +97,13 @@
   cursor: pointer;
 }
 
-/* ===== Buttons ===== */
-.btn {
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: all 0.2s ease;
-}
-
 .btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.btn-primary {
-  background: #007095;
-  border: none;
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(30, 136, 229, 0.3);
-}
-
-.btn-light {
-  background: #f1f3f5;
-  border: none;
-}
-
-.btn-light:hover {
-  background: #e2e6ea;
+.btn-cancel {
+  border: 0.5px solid #ebebeb;
 }
 
 /* ===== Close button ===== */
@@ -219,7 +186,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: #f1f1f1;
+  background-color: rgba(13, 110, 253, 0.12);
 }
 
 .dropdown-menu-custom {
@@ -228,8 +195,9 @@
   max-height: 200px;
   overflow-y: auto;
 
-  background: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  color: inherit;
   border-radius: 4px;
 
   margin-top: 4px;

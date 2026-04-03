@@ -18,8 +18,7 @@ import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
     AsyncPipe,
     CustomSortCardComponent,
     FormsModule,
-    TranslateModule,
-    NgClass
+    TranslateModule
   ],
   templateUrl: './deprecated-management.component.html',
   styleUrl: './deprecated-management.component.scss'
