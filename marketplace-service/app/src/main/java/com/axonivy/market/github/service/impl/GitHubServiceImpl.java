@@ -66,6 +66,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
+import static com.axonivy.market.enums.PullRequestAction.ADD;
+import static com.axonivy.market.enums.PullRequestAction.REMOVE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static com.axonivy.market.enums.AccessLevel.ENABLED;
 import static com.axonivy.market.enums.AccessLevel.DISABLED;
@@ -121,7 +123,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHRepository getRepository(String repositoryPath){
+  public GHRepository getRepository(String repositoryPath) {
     try {
       return getGitHub().getRepository(repositoryPath);
     } catch (GHFileNotFoundException e) {
@@ -467,6 +469,20 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
+  public InputStream downloadArtifactZip(GHArtifact artifact) throws IOException {
+    var outputStream = new ByteArrayOutputStream();
+    artifact.download((InputStream inputStream) -> {
+      try (inputStream; outputStream) {
+        inputStream.transferTo(outputStream);
+      } catch (IOException e) {
+        log.error("Failed to download artifact zip: {}", artifact.getName(), e);
+      }
+      return null;
+    });
+    return new ByteArrayInputStream(outputStream.toByteArray());
+  }
+
+  @Override
   public GHPullRequest modifyReadmeUnsupportedPullRequest(
       String repositoryPath, PullRequestAction action) throws IOException {
     String accessToken = gitHubProperty.getToken();
@@ -474,47 +490,44 @@ public class GitHubServiceImpl implements GitHubService {
       log.error("Access token and repository path must not be blank");
       return null;
     }
-
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
-
     String currentReadmeContent = getReadmeContent(readme);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent);
 
-    String updatedReadmeContent = PullRequestAction.ADD == action ?
-        insertUnsupportedNoticeBelowFirstHeading(currentReadmeContent) :
-        removeUnsupportedNoticeBelowFirstHeading(currentReadmeContent);
-
-    boolean hasReadmeTheSame = Objects.equals(currentReadmeContent, updatedReadmeContent);
-
+    boolean hasReadmeTheSame = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (hasReadmeTheSame) {
-      log.error("No Need to update readme content for deprecation");
+      log.error("No Need to update readme content for deprecation because the content is the same");
       return null;
     }
-    String pullRequestBody = PullRequestAction.ADD == action ? ADD_UNSUPPORTED_NOTICE_PR_BODY : REMOVE_UNSUPPORTED_NOTICE_PR_BODY;
-    String pullRequestTitle = PullRequestAction.ADD == action ? DEPRECATED_MESSAGE : REMOVE_UNSUPPORTED_NOTICE_MESSAGE;
 
     try {
-      repository.getRef("heads/" + UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME).getObject().getSha();
-      log.info("Branch exists, reusing: {}", UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
-      List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
-      GHPullRequest existingPR = existingPRs.stream()
-          .filter(pr -> pr.getHead().getRef().equals(UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME)
-              && pr.getBase().getRef().equals(baseBranch))
-          .findFirst().orElse(null);
-      if (existingPR != null) {
-        log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
-        return existingPR;
-      }
-      return generatePullRequest(repository, baseBranch, pullRequestBody, pullRequestTitle);
+      return getPullRequestFromExistingBranch(repository, baseBranch, pullRequestData);
     } catch (GHFileNotFoundException e) {
       log.info("There is no duplicated branch existing, create new branch");
       String branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
       repository.createRef("refs/heads/" + UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME, branchSha);
     }
-    readme.update(updatedReadmeContent, DEPRECATED_MESSAGE, UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
-    return generatePullRequest(repository, baseBranch, pullRequestBody, pullRequestTitle);
+    readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
+    return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
+  }
+
+  private static GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
+      PullRequestData pullRequestData) throws IOException {
+    repository.getRef("heads/" + UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
+    log.info("Branch exists, reusing: {}", UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
+    List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
+    GHPullRequest existingPR = existingPRs.stream()
+        .filter(pr -> pr.getHead().getRef().equals(UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME)
+            && pr.getBase().getRef().equals(baseBranch))
+        .findFirst().orElse(null);
+    if (existingPR != null) {
+      log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      return existingPR;
+    }
+    return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
   }
 
   private static String getReadmeContent(GHContent readme) throws IOException {
@@ -533,52 +546,52 @@ public class GitHubServiceImpl implements GitHubService {
     return pr;
   }
 
-  static String insertUnsupportedNoticeBelowFirstHeading(String readmeContent) {
+  private static String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
     String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
     String[] lines = readmeContent.split("\\R", -1);
+
     for (int i = 0; i < lines.length; i++) {
       if (!lines[i].trim().startsWith("#")) {
         continue;
       }
-      if (i + 1 < lines.length && UNSUPPORTED_NOTICE.equals(lines[i + 1].trim())) {
-        return readmeContent;
+      boolean hasNoticeBelow = i + 1 < lines.length && UNSUPPORTED_NOTICE.trim().equals(lines[i + 1].trim());
+
+      if (action == ADD) {
+        if (hasNoticeBelow) {
+          return readmeContent;
+        }
+        var updatedLines = new ArrayList<>(List.of(lines));
+        updatedLines.add(i + 1, UNSUPPORTED_NOTICE);
+        return String.join(lineSeparator, updatedLines);
       }
-      var updatedLines = new ArrayList<>(List.of(lines));
-      updatedLines.add(i + 1, UNSUPPORTED_NOTICE);
-      return String.join(lineSeparator, updatedLines);
+
+      if (action == REMOVE) {
+        if (!hasNoticeBelow) {
+          return readmeContent;
+        }
+        var updatedLines = new ArrayList<>(List.of(lines));
+        updatedLines.remove(i + 1);
+        return String.join(lineSeparator, updatedLines);
+      }
     }
     throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
   }
 
-  static String removeUnsupportedNoticeBelowFirstHeading(String readmeContent) {
-    String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
-    String[] lines = readmeContent.split("\\R", -1);
-    for (int i = 0; i < lines.length; i++) {
-      if (!lines[i].trim().startsWith("#")) {
-        continue;
-      }
-      if (i + 1 >= lines.length || !UNSUPPORTED_NOTICE.trim().equals(lines[i + 1].trim())) {
-        return readmeContent;
-      }
-      var updatedLines = new ArrayList<>(List.of(lines));
-      updatedLines.remove(i + 1);
-      return String.join(lineSeparator, updatedLines);
-    }
-    throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
+  private record PullRequestData(String body, String title, String updatedReadmeContent) {
   }
 
-  @Override
-  public InputStream downloadArtifactZip(GHArtifact artifact) throws IOException {
-    var outputStream = new ByteArrayOutputStream();
-    artifact.download((InputStream inputStream) -> {
-      try (inputStream; outputStream) {
-        inputStream.transferTo(outputStream);
-      } catch (IOException e) {
-        log.error("Failed to download artifact zip: {}", artifact.getName(), e);
-      }
-      return null;
-    });
-    return new ByteArrayInputStream(outputStream.toByteArray());
+  private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent) {
+    return switch (action) {
+      case ADD -> new PullRequestData(
+          ADD_UNSUPPORTED_NOTICE_PR_BODY,
+          DEPRECATED_MESSAGE,
+          updateUnsupportedNotice(currentReadmeContent, ADD)
+      );
+      case REMOVE -> new PullRequestData(
+          REMOVE_UNSUPPORTED_NOTICE_PR_BODY,
+          REMOVE_UNSUPPORTED_NOTICE_MESSAGE,
+          updateUnsupportedNotice(currentReadmeContent, REMOVE)
+      );
+    };
   }
-  
 }
