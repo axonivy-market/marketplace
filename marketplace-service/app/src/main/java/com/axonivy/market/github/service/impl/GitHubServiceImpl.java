@@ -3,10 +3,10 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -66,27 +66,17 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
+import static com.axonivy.market.constants.GitHubConstants.*;
+import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.ADD;
 import static com.axonivy.market.enums.PullRequestAction.REMOVE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static com.axonivy.market.enums.AccessLevel.ENABLED;
-import static com.axonivy.market.enums.AccessLevel.DISABLED;
-import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
 
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
-  private static final String README_FILE_PATH = "README.md";
-  private static final String UNSUPPORTED_NOTICE = """
-      *Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*
-      """;
-  private static final String DEPRECATED_MESSAGE = "Add unsupported notice to README";
-  private static final String REMOVE_UNSUPPORTED_NOTICE_MESSAGE = "Remove unsupported notice from README";
-  private static final String UNSUPPORTED_BRANCH_NAME = "Feature/update-deprecated-for-readme";
-  private static final String REMOVE_UNSUPPORTED_NOTICE_PR_BODY = "Remove deprecated notice from README";
-  private static final String ADD_UNSUPPORTED_NOTICE_PR_BODY = "Add sentences to notice that product is deprecated";
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
