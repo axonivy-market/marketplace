@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);

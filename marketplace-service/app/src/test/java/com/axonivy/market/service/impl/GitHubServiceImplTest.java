@@ -48,7 +48,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -1019,7 +1019,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequest existingPr = mock(GHPullRequest.class, RETURNS_DEEP_STUBS);
     when(existingPr.getHead().getRef()).thenReturn(UNSUPPORTED_BRANCH_NAME);
     when(existingPr.getBase().getRef()).thenReturn(BASE_BRANCH);
-    when(existingPr.getHtmlUrl()).thenReturn(new URL("https://example.com/pr/1"));
+    when(existingPr.getHtmlUrl())
+        .thenReturn(URI.create("https://example.com/pr/1").toURL());
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef("heads/" + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
@@ -1124,7 +1125,9 @@ class GitHubServiceImplTest extends BaseSetup {
         () -> gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD),
         "Expected IllegalArgumentException when README has no heading");
 
-    assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage());
+    assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage(),
+        "Exception message should clearly indicate missing markdown heading in README"
+    );
   }
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
@@ -1139,7 +1142,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private GHPullRequest mockPullRequest(String url) throws Exception {
     GHPullRequest pullRequest = mock(GHPullRequest.class);
-    when(pullRequest.getHtmlUrl()).thenReturn(new URL(url));
+    when(pullRequest.getHtmlUrl()).thenReturn(URI.create(url).toURL());
     return pullRequest;
   }
 }

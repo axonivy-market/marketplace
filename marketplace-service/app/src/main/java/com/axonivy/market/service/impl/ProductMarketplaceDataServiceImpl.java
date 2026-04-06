@@ -202,11 +202,11 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
     Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
-        .ifPresent(data -> {
-          data.setSuccessor(request.getSuccessorUrl());
-          data.setDeprecationRequester(request.getDeprecationRequester());
-          data.setDeprecationDate(new Date());
-          productMarketplaceDataRepo.save(data);
+        .ifPresent(productMarketplaceData -> {
+          productMarketplaceData.setSuccessor(request.getSuccessorUrl());
+          productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
+          productMarketplaceData.setDeprecationDate(new Date());
+          productMarketplaceDataRepo.save(productMarketplaceData);
           log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
         });
 
@@ -217,7 +217,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       product.setUpdatedAt(new Date());
       if (request.isAddReadme() && request.getPullRequestAction() != null) {
         log.info("Start to update deprecated pull request action for product {}", request.getProductId());
-        pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest(product.getRepositoryName(), request.getPullRequestAction());
+        pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest(
+            product.getRepositoryName(), request.getPullRequestAction());
       }
       productRepo.save(product);
       log.info("Successfully set deprecated for product: {}", product.getId());

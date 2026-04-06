@@ -94,10 +94,11 @@ public class ProductController {
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 
-  @GetMapping("deprecated/ids")
+  @GetMapping(DEPRECATED_IDS)
   @Operation(summary = "Get product IDs by deprecated status",
       description = "Return product IDs filtered by deprecated flag")
-  public ResponseEntity<List<ProductDeprecationProjection>> getProductIdsByDeprecated(@RequestParam(required = false) Boolean deprecated) {
+  public ResponseEntity<List<ProductDeprecationProjection>> getProductIdsByDeprecated(
+      @RequestParam(required = false) Boolean deprecated) {
     List<ProductDeprecationProjection> productIds = productService.getProductIdsByDeprecated(deprecated);
     return ResponseEntity.ok(productIds);
   }

@@ -10,6 +10,6 @@ import java.util.List;
 @Setter
 @Builder
 public class DeprecatedResponse {
-  List<ProductDeprecationProjection> productDeprecations;
-  String pullRequestUrl;
+  private List<ProductDeprecationProjection> productDeprecations;
+  private String pullRequestUrl;
 }

@@ -68,8 +68,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.ADD;
-import static com.axonivy.market.enums.PullRequestAction.REMOVE;
+import static com.axonivy.market.enums.PullRequestAction.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -77,6 +76,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class GitHubServiceImpl implements GitHubService {
 
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
+  private static final String HEADS_PREFIX = "heads/";
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -497,7 +497,7 @@ public class GitHubServiceImpl implements GitHubService {
       return getPullRequestFromExistingBranch(repository, baseBranch, pullRequestData, readme);
     } catch (GHFileNotFoundException e) {
       log.info("There is no duplicated branch existing, create new branch");
-      String branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
+      String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
       repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
     }
     readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
@@ -506,7 +506,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
       PullRequestData pullRequestData, GHContent readme) throws IOException {
-    repository.getRef("heads/" + UNSUPPORTED_BRANCH_NAME);
+    repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME);
     log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
     List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
     GHPullRequest existingPR = existingPRs.stream()
@@ -519,10 +519,10 @@ public class GitHubServiceImpl implements GitHubService {
     }
     GHCompare compare = repository.getCompare(baseBranch, UNSUPPORTED_BRANCH_NAME);
     List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.behind, GHCompare.Status.behind);
-    if (githubStatus.stream().anyMatch(status -> status.equals(compare.getStatus()))) {
+    if (githubStatus.stream().anyMatch(status -> status == compare.getStatus())) {
       log.info("Branch is already merged. Deleting and recreating...");
-      repository.getRef("heads/" + UNSUPPORTED_BRANCH_NAME).delete();
-      String branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
+      repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME).delete();
+      String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
       repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
       readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
     }

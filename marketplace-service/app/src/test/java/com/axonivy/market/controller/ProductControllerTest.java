@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
@@ -29,6 +30,7 @@ import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,20 +179,20 @@ class ProductControllerTest extends BaseSetup {
         "Expected success message 'Sync successfully!' in response body");
   }
 
-    @Test
-    void testGetAllProductIds() {
-      List<String> productIds = List.of("a-trust", "amazon-comprehend");
-      when(service.getProductIds()).thenReturn(productIds);
+  @Test
+  void testGetAllProductIds() {
+    List<String> productIds = List.of("a-trust", "amazon-comprehend");
+    when(service.getProductIds()).thenReturn(productIds);
 
-      var response = productController.getAllProductIds();
+    var response = productController.getAllProductIds();
 
-      assertEquals(HttpStatus.OK, response.getStatusCode(),
-          "Expected HTTP 200 OK when getProductIdList succeeds");
-      assertTrue(response.hasBody(),
-          "Response body should not be null or empty when getProductIdList succeeds");
-      assertEquals(productIds, response.getBody(), "Expected response body to match product ID list");
-      verify(service, times(1)).getProductIds();
-    }
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP 200 OK when getProductIdList succeeds");
+    assertTrue(response.hasBody(),
+        "Response body should not be null or empty when getProductIdList succeeds");
+    assertEquals(productIds, response.getBody(), "Expected response body to match product ID list");
+    verify(service, times(1)).getProductIds();
+  }
 
   private Product createProductMock() {
     Product mockProduct = new Product();
@@ -256,5 +258,42 @@ class ProductControllerTest extends BaseSetup {
         "Response should still contain a body even when there are no artifacts to sync");
     assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails(),
         "Response message should indicate that there was nothing to sync");
+  }
+
+  @Test
+  void testGetProductIdsByDeprecatedWhenDeprecatedIsNull() {
+    List<ProductDeprecationProjection> projections = List.of(
+        createProductDeprecationProjection("a-trust", new Date()),
+        createProductDeprecationProjection("amazon-comprehend", new Date())
+    );
+    when(service.getProductIdsByDeprecated(null)).thenReturn(projections);
+    var response = productController.getProductIdsByDeprecated(null);
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP 200 OK when deprecated parameter is null");
+    assertTrue(response.hasBody(),
+        "Response body should not be null or empty when deprecated is null");
+    assertEquals(2, Objects.requireNonNull(response.getBody()).size(),
+        "Expected response to contain 2 product deprecation projections");
+    verify(service, times(1)).getProductIdsByDeprecated(null);
+  }
+
+  private ProductDeprecationProjection createProductDeprecationProjection(
+      String id, Date deprecationDate) {
+    return new ProductDeprecationProjection() {
+      @Override
+      public String getId() {
+        return id;
+      }
+
+      @Override
+      public Date getDeprecationDate() {
+        return deprecationDate;
+      }
+
+      @Override
+      public String getDeprecationRequester() {
+        return "admin";
+      }
+    };
   }
 }
