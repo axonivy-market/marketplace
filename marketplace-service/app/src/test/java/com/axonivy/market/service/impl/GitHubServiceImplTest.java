@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -47,6 +48,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -55,6 +57,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest extends BaseSetup {
+
+  private static final String README_PATH = "README.md";
+  private static final String BASE_BRANCH = "master";
+  private static final String UNSUPPORTED_BRANCH = "Feature/update-deprecated-for-readme";
+  private static final String UNSUPPORTED_NOTICE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -958,5 +965,183 @@ class GitHubServiceImplTest extends BaseSetup {
         "Returned InputStream should contain exactly the bytes provided by the artifact download callback.");
 
     verify(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenAccessTokenIsBlank() throws Exception {
+    when(gitHubProperty.getToken()).thenReturn(" ");
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when access token is blank");
+    verify(gitHubService, never()).getGitHub(anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenRepositoryPathIsBlank() throws Exception {
+    when(gitHubProperty.getToken()).thenReturn("token");
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest(" ", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when repository path is blank");
+    verify(gitHubService, never()).getGitHub(anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenAddActionDoesNotChangeReadme() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE + "\nBody");
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when README already contains unsupported notice");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenRemoveActionDoesNotChangeReadme() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null when README has no unsupported notice to remove");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestReturnsExistingPullRequestWhenAlreadyOpen() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHPullRequest existingPr = mock(GHPullRequest.class, RETURNS_DEEP_STUBS);
+    when(existingPr.getHead().getRef()).thenReturn(UNSUPPORTED_BRANCH);
+    when(existingPr.getBase().getRef()).thenReturn(BASE_BRANCH);
+    when(existingPr.getHtmlUrl()).thenReturn(new URL("https://example.com/pr/1"));
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef("heads/" + UNSUPPORTED_BRANCH)).thenReturn(existingBranchRef);
+    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(List.of(existingPr));
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertEquals(existingPr, result, "Expected already open pull request to be returned");
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestCreatesPullRequestFromExistingBranchWhenNoOpenPr() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHCompare compare = mock(GHCompare.class);
+    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/2");
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef("heads/" + UNSUPPORTED_BRANCH)).thenReturn(existingBranchRef);
+    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(Collections.emptyList());
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH)).thenReturn(compare);
+    when(compare.getStatus()).thenReturn(GHCompare.Status.identical);
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createRef(eq("refs/heads/" + UNSUPPORTED_BRANCH), anyString());
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestRecreatesMergedBranchAndUpdatesReadmeBeforeCreatingPr() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHCompare compare = mock(GHCompare.class);
+    GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
+    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/3");
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef("heads/" + UNSUPPORTED_BRANCH)).thenReturn(existingBranchRef);
+    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(Collections.emptyList());
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH)).thenReturn(compare);
+    when(compare.getStatus()).thenReturn(GHCompare.Status.behind);
+    when(repository.getRef("heads/" + BASE_BRANCH)).thenReturn(baseBranchRef);
+    when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
+    verify(existingBranchRef).delete();
+    verify(repository).createRef("refs/heads/" + UNSUPPORTED_BRANCH, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH));
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestCreatesBranchAndPrWhenUnsupportedBranchDoesNotExist() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
+    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/4");
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef("heads/" + UNSUPPORTED_BRANCH)).thenThrow(new GHFileNotFoundException());
+    when(repository.getRef("heads/" + BASE_BRANCH)).thenReturn(baseBranchRef);
+    when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
+    verify(repository).createRef("refs/heads/" + UNSUPPORTED_BRANCH, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH));
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestThrowsWhenActionIsNull() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+
+    assertThrows(NullPointerException.class,
+        () -> gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", null),
+        "Expected NullPointerException when pull request action is null");
+  }
+
+  @Test
+  void testModifyReadmeUnsupportedPullRequestThrowsWhenReadmeHasNoHeading() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "Body without markdown heading");
+
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        () -> gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD),
+        "Expected IllegalArgumentException when README has no heading");
+
+    assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage());
+  }
+
+  private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
+      throws Exception {
+    when(gitHubProperty.getToken()).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getRepository("org/repo")).thenReturn(repository);
+    when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);
+    when(repository.getFileContent(README_PATH, BASE_BRANCH)).thenReturn(readme);
+    when(readme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes()));
+  }
+
+  private GHPullRequest mockPullRequest(String url) throws Exception {
+    GHPullRequest pullRequest = mock(GHPullRequest.class);
+    when(pullRequest.getHtmlUrl()).thenReturn(new URL(url));
+    return pullRequest;
   }
 }
