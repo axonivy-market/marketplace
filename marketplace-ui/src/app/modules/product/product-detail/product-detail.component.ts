@@ -181,7 +181,6 @@ export class ProductDetailComponent implements AfterViewInit {
   onPopState() {
     const fragment = globalThis.location.hash.replace('#', '');
     const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
-    
     if (tabValue !== this.activeTab) {
       this.activeTab = tabValue;
       this.updateDropdownSelection();
@@ -535,18 +534,14 @@ export class ProductDetailComponent implements AfterViewInit {
     if (updateUrl) {
       this.navigateToFragment(tab).then(() => {
         if (scrollToTab) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => this.scrollToTabGroup());
-          });
+          this.scheduleScrollToTabGroup();
         }
       });
       return;
     }
 
     if (scrollToTab) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => this.scrollToTabGroup());
-      });
+      this.scheduleScrollToTabGroup();
     }
   }
 
@@ -779,5 +774,11 @@ export class ProductDetailComponent implements AfterViewInit {
       clearTimeout(this.scrollTimeout);
       this.scrollTimeout = null;
     }
+  }
+
+  private scheduleScrollToTabGroup(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.scrollToTabGroup());
+    });
   }
 }
