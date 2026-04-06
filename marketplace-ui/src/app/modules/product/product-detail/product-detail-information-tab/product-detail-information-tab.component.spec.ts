@@ -317,7 +317,8 @@ describe('ProductDetailInformationTabComponent', () => {
         'https://market.axonivy.com/vertexai-google?version=12.0.1.1#description',
         'https://market.axonivy.com/vertexai-google?version=12.0.1.1#demo',
         'https://market.axonivy.com/vertexai-google',
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#setup'
+        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#setup',
+        'https://market.axonivy.com/vertexai-google/'
       ];
 
       successorUrls.forEach(url => {
