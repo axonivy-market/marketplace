@@ -88,12 +88,18 @@ export class DeprecatedManagementComponent implements OnInit {
 
   constructor() {}
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username;
     this.token = userInfo?.token;
     this.deprecatedRequest.deprecationRequester = this.moderatorName;
-    await this.refreshDeprecatedRows();
+    this.initializeDeprecatedRows();
+  }
+
+  private initializeDeprecatedRows(): void {
+    this.refreshDeprecatedRows().catch(error => {
+      console.error('Failed to load deprecated rows:', error);
+    });
   }
 
   trigger() {
