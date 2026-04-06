@@ -8,13 +8,13 @@ export class ProductTypeIconPipe implements PipeTransform {
   transform(value: string, _args?: []): string {
     switch (value) {
       case 'connector':
-        return 'bi bi-plug';
+        return 'ti ti-plug';
       case 'solution':
-        return 'bi bi-clipboard-check';
+        return 'ti ti-clipboard-check';
       case 'util':
-        return 'bi bi-tools';
+        return 'ti ti-tools';
       default:
-        return 'bi bi-grid';
+        return 'ti ti-grid';
     }
   }
 }

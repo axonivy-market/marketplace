@@ -6,7 +6,6 @@
   <title>Axon Ivy Market</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
 
   <script>
     (function () {
@@ -14,7 +13,7 @@
       const savedTheme = localStorage.getItem(themeKey);
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-      const iconClass = theme === 'dark' ? 'bi-sun' : 'bi-moon';
+      const iconClass = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
       document.documentElement.setAttribute(themeKey, theme);
       document.documentElement.setAttribute('data-theme-icon', iconClass);
     })();
