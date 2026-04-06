@@ -84,7 +84,7 @@ public class GitHubServiceImpl implements GitHubService {
       """;
   private static final String DEPRECATED_MESSAGE = "Add unsupported notice to README";
   private static final String REMOVE_UNSUPPORTED_NOTICE_MESSAGE = "Remove unsupported notice from README";
-  private static final String UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME = "Feature/update-deprecated-for-readme";
+  private static final String UNSUPPORTED_BRANCH_NAME = "Feature/update-deprecated-for-readme";
   private static final String REMOVE_UNSUPPORTED_NOTICE_PR_BODY = "Remove deprecated notice from README";
   private static final String ADD_UNSUPPORTED_NOTICE_PR_BODY = "Add sentences to notice that product is deprecated";
   private final RestTemplate restTemplate;
@@ -504,33 +504,42 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     try {
-      return getPullRequestFromExistingBranch(repository, baseBranch, pullRequestData);
+      return getPullRequestFromExistingBranch(repository, baseBranch, pullRequestData, readme);
     } catch (GHFileNotFoundException e) {
       log.info("There is no duplicated branch existing, create new branch");
       String branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
-      repository.createRef("refs/heads/" + UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME, branchSha);
+      repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
     }
-    readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
+    readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
     return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
   }
 
-  private static GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
-      PullRequestData pullRequestData) throws IOException {
-    repository.getRef("heads/" + UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
-    log.info("Branch exists, reusing: {}", UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME);
+  private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
+      PullRequestData pullRequestData, GHContent readme) throws IOException {
+    repository.getRef("heads/" + UNSUPPORTED_BRANCH_NAME);
+    log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
     List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
     GHPullRequest existingPR = existingPRs.stream()
-        .filter(pr -> pr.getHead().getRef().equals(UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME)
+        .filter(pr -> pr.getHead().getRef().equals(UNSUPPORTED_BRANCH_NAME)
             && pr.getBase().getRef().equals(baseBranch))
         .findFirst().orElse(null);
     if (existingPR != null) {
       log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
       return existingPR;
     }
+    GHCompare compare = repository.getCompare(baseBranch, UNSUPPORTED_BRANCH_NAME);
+    List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.behind, GHCompare.Status.behind);
+    if (githubStatus.stream().anyMatch(status -> status.equals(compare.getStatus()))) {
+      log.info("Branch is already merged. Deleting and recreating...");
+      repository.getRef("heads/" + UNSUPPORTED_BRANCH_NAME).delete();
+      String branchSha = repository.getRef("heads/" + baseBranch).getObject().getSha();
+      repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
+      readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
+    }
     return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
   }
 
-  private static String getReadmeContent(GHContent readme) throws IOException {
+  private String getReadmeContent(GHContent readme) throws IOException {
     String currentReadmeContent;
     try (InputStream inputStream = readme.read()) {
       currentReadmeContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -538,15 +547,15 @@ public class GitHubServiceImpl implements GitHubService {
     return currentReadmeContent;
   }
 
-  private static GHPullRequest generatePullRequest(GHRepository repository,
+  private GHPullRequest generatePullRequest(GHRepository repository,
       String baseBranch, String pullRequestBody, String pullRequestTitle) throws IOException {
     GHPullRequest pr = repository.createPullRequest(pullRequestTitle,
-        UPDATE_UNSUPPORTED_NOTICE_BRANCH_NAME, baseBranch, pullRequestBody);
+        UNSUPPORTED_BRANCH_NAME, baseBranch, pullRequestBody);
     log.info("Generated pull request '{}'", pr.getHtmlUrl().toString());
     return pr;
   }
 
-  private static String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
+  private String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
     String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
     String[] lines = readmeContent.split("\\R", -1);
 
@@ -555,26 +564,22 @@ public class GitHubServiceImpl implements GitHubService {
         continue;
       }
       boolean hasNoticeBelow = i + 1 < lines.length && UNSUPPORTED_NOTICE.trim().equals(lines[i + 1].trim());
-
+      if (shouldSkipTheLine(action, hasNoticeBelow)) {
+        return readmeContent;
+      }
+      List<String> updatedLines = new ArrayList<>(List.of(lines));
       if (action == ADD) {
-        if (hasNoticeBelow) {
-          return readmeContent;
-        }
-        var updatedLines = new ArrayList<>(List.of(lines));
         updatedLines.add(i + 1, UNSUPPORTED_NOTICE);
-        return String.join(lineSeparator, updatedLines);
-      }
-
-      if (action == REMOVE) {
-        if (!hasNoticeBelow) {
-          return readmeContent;
-        }
-        var updatedLines = new ArrayList<>(List.of(lines));
+      } else if (action == REMOVE) {
         updatedLines.remove(i + 1);
-        return String.join(lineSeparator, updatedLines);
       }
+      return String.join(lineSeparator, updatedLines);
     }
     throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
+  }
+
+  private boolean shouldSkipTheLine(PullRequestAction action, boolean hasNoticeBelow) {
+    return (action == ADD && hasNoticeBelow) || (action == REMOVE && !hasNoticeBelow);
   }
 
   private record PullRequestData(String body, String title, String updatedReadmeContent) {
