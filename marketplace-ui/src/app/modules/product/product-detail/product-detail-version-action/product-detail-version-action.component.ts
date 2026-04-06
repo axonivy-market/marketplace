@@ -280,6 +280,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.artifacts.set([]);
     this.selectedArtifactId = '';
     this.selectedArtifact = '';
+    this.selectedArtifactName = '';
+    this.versionMap.clear();
   }
 
   downloadArtifact(): void {
