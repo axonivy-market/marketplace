@@ -39,29 +39,34 @@
   </div>
 </nav> -->
 
-<nav class="navbar navbar-expand-xl">
-  <div class="container-fluid">
-    <a routerLink="/" class="logo navbar-brand">
-      <img
-        class="logo__image"
-        [src]="
-          themeService.isDarkMode()
-            ? '/assets/images/misc/axonivy-logo.svg'
-            : '/assets/images/misc/axonivy-logo-black.svg'
-        "
-        alt="Axon Ivy" />
-    </a>
-    <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-block" />
-    <app-search-bar class="d-none d-xl-block"></app-search-bar>
-    <button class="btn border-0 rounded-3 d-block d-xl-none">
-      <span>
-        <i
-          class="header__menu-button"
-          [ngClass]="isSidebarOpen() ? 'bi bi-x-lg' : ' bi bi-list'"]
-          (click)="openSideBar()"></i>
-      </span>
-    </button>
-    <!-- <div class="d-flex gap-2">
+<div class="header-container">
+  <header class="container">
+    <nav class="navbar navbar-expand-xl">
+      <div class="container-fluid">
+        <a routerLink="/" class="logo navbar-brand">
+          <img
+            class="logo__image"
+            [src]="
+              themeService.isDarkMode()
+                ? '/assets/images/misc/axonivy-logo.svg'
+                : '/assets/images/misc/axonivy-logo-black.svg'
+            "
+            alt="Axon Ivy" />
+        </a>
+        <app-navigation
+          [isAdminPage]="isAdminRoute"
+          class="d-none d-xl-block" />
+        <app-search-bar class="d-none d-xl-block"></app-search-bar>
+        <button class="btn border-0 rounded-3 d-block d-xl-none">
+          <span>
+            <i
+              class="header__menu-button"
+              [ngClass]="isSidebarOpen() ? 'bi bi-x-lg' : ' bi bi-list'"
+              ]
+              (click)="openSideBar()"></i>
+          </span>
+        </button>
+        <!-- <div class="d-flex gap-2">
       <app-github-user-badge class="d-block d-xl-none"></app-github-user-badge>
       <button
         class="btn border-0 navbar-toggler rounded-3"
@@ -87,5 +92,7 @@
         <app-search-bar></app-search-bar>
       </div>
     </div> -->
-  </div>
-</nav>
+      </div>
+    </nav>
+  </header>
+</div>
