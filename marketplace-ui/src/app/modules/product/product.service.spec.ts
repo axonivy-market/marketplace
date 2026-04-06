@@ -17,6 +17,8 @@ import { ProductService } from './product.service';
 import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT, DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { DeprecatedRequest } from '../../shared/models/deprecated-request';
+import { PullRequestAction } from '../../shared/enums/pullrequest-action';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -478,6 +480,142 @@ describe('ProductService', () => {
       expect(result).toEqual([
         { id: 'product-1', marketDirectory: 'dir1' }
       ]);
+    });
+  });
+
+  describe('fetchAllProductIdsByDeprecated', () => {
+    it('should send deprecated=true query param and normalize object payload', async () => {
+      const resultPromise = firstValueFrom(
+        service.fetchAllProductIdsByDeprecated(true)
+      );
+
+      const req = httpMock.expectOne(
+        request => request.url === API_URI.PRODUCT_DEPRECATED_IDS
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('deprecated')).toBe('true');
+
+      req.flush([
+        {
+          id: 'cms-live-editor',
+          deprecationDate: '2026-04-01T10:00:00Z',
+          deprecationRequester: 'john'
+        },
+        {
+          id: '',
+          deprecationDate: null,
+          deprecationRequester: null
+        }
+      ]);
+
+      const result = await resultPromise;
+      expect(result).toEqual([
+        {
+          id: 'cms-live-editor',
+          deprecationDate: '2026-04-01T10:00:00Z',
+          deprecationRequester: 'john'
+        }
+      ]);
+    });
+
+    it('should omit deprecated param when value is null and normalize string payload', async () => {
+      const resultPromise = firstValueFrom(
+        service.fetchAllProductIdsByDeprecated(null)
+      );
+
+      const req = httpMock.expectOne(
+        request => request.url === API_URI.PRODUCT_DEPRECATED_IDS
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.has('deprecated')).toBeFalse();
+
+      req.flush(['rtf-factory']);
+
+      const result = await resultPromise;
+      expect(result).toEqual([
+        {
+          id: 'rtf-factory',
+          deprecationDate: null,
+          deprecationRequester: null
+        }
+      ]);
+    });
+  });
+
+  describe('updateDeprecatedProduct', () => {
+    it('should send POST with bearer header and normalize productDeprecations response', async () => {
+      const requestBody: DeprecatedRequest = {
+        productId: 'cms-live-editor',
+        successorUrl: 'https://market.axonivy.com/vertexai-google',
+        deprecated: true,
+        addReadme: true,
+        pullRequestAction: PullRequestAction.ADD,
+        deprecationRequester: 'moderator'
+      };
+
+      const resultPromise = firstValueFrom(
+        service.updateDeprecatedProduct(requestBody, 'token-123')
+      );
+
+      const req = httpMock.expectOne(
+        request => request.url === API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(requestBody);
+      expect(req.request.headers.get('Authorization')).toBe('Bearer token-123');
+
+      req.flush({
+        productDeprecations: [
+          {
+            id: 'cms-live-editor',
+            deprecationDate: '2026-04-05T09:00:00Z',
+            deprecationRequester: 'moderator'
+          }
+        ],
+        pullRequestUrl: 'https://github.com/org/repo/pull/10'
+      });
+
+      const result = await resultPromise;
+      expect(result.productDeprecations).toEqual([
+        {
+          id: 'cms-live-editor',
+          deprecationDate: '2026-04-05T09:00:00Z',
+          deprecationRequester: 'moderator'
+        }
+      ]);
+      expect(result.pullRequestUrl).toBe('https://github.com/org/repo/pull/10');
+    });
+
+    it('should normalize legacy productIds response and fallback pullRequestUrl to null', async () => {
+      const requestBody: DeprecatedRequest = {
+        productId: 'rtf-factory',
+        deprecated: null,
+        pullRequestAction: PullRequestAction.REMOVE,
+        deprecationRequester: 'moderator'
+      };
+
+      const resultPromise = firstValueFrom(
+        service.updateDeprecatedProduct(requestBody, 'token-456')
+      );
+
+      const req = httpMock.expectOne(
+        request => request.url === API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED
+      );
+      expect(req.request.method).toBe('POST');
+
+      req.flush({
+        productIds: ['rtf-factory']
+      });
+
+      const result = await resultPromise;
+      expect(result.productDeprecations).toEqual([
+        {
+          id: 'rtf-factory',
+          deprecationDate: null,
+          deprecationRequester: null
+        }
+      ]);
+      expect(result.pullRequestUrl).toBeNull();
     });
   });
 });
