@@ -146,13 +146,14 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
-  public int updateProductInstallationCount(String id) {
+  public ProductMarketplaceData updateProductInstallationCount(String id) {
     var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.updateInitialCount(id,
+        int installationCount = productMarketplaceDataRepo.updateInitialCount(id,
           getInstallationCountFromFileOrInitializeRandomly(id));
+      productMarketplaceData.setInstallationCount(installationCount);
     }
-    return productMarketplaceData.getInstallationCount();
+    return productMarketplaceData;
   }
 
   @Override

@@ -132,6 +132,7 @@
             "version": "Version",
             "compatibility": "Kompatibilität",
             "successor": "Nachfolger",
+            "nonSuccessor": "kein Nachfolger",
             "successorToolTip": "Bitte beachten Sie, dass diese Market-Erweiterung als veraltet markiert ist. Wir empfehlen, stattdessen die Nachfolgeversion zu verwenden. Diese Erweiterung wird nicht mehr um neue Funktionen erweitert; es werden lediglich Fehlerbehebungen und Sicherheitsupdates bereitgestellt.",
             "cost": "Kosten",
             "language": "Sprache",

@@ -59,6 +59,8 @@ public class ProductDetailModel extends ProductModel {
   private boolean isMavenDropins;
   @Schema(description = "Is the focused product", example = "true")
   private Boolean isFocusedProduct;
+  @Schema(description = "The success of deprecated product", example = "http://localhost:4200/smart-workflow")
+  private String successor;
 
   @Override
   public int hashCode() {
@@ -121,5 +123,6 @@ public class ProductDetailModel extends ProductModel {
     }
     model.setMavenDropins(product.isMavenDropins());
     model.setIsFocusedProduct(product.getIsFocused());
+    model.setSuccessor(product.getSuccessor());
   }
 }

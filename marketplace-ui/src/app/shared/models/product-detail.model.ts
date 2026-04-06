@@ -21,6 +21,7 @@ export interface ProductDetail {
   industry: string;
   contactUs: boolean;
   deprecated?: boolean;
+  successor?: string;
   installationCount: number;
   productModuleContent: ProductModuleContent;
   mavenDropins: boolean;

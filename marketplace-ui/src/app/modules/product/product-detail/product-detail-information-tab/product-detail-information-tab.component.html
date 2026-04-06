@@ -51,9 +51,19 @@
             data-bs-placement="right"
             title="{{ 'common.product.detail.information.value.successorToolTip' | translate }}"></i>
         </span>
-        <span class="text-primary">
-          {{ productDetail.deprecated }}
-        </span>
+        <div class="text-primary successor-value">
+          @if (hasSuccessor()) {
+            <a class="text-primary successor-link" [href]="getSuccessorUrl()"
+               target="_blank" rel="noopener noreferrer">
+              <i>{{ getSuccessorName() }}</i>
+            </a>
+
+          } @else {
+            {{
+              'common.product.detail.information.value.nonSuccessor' | translate
+            }}
+          }
+        </div>
       </div>
     }
     <hr class="border-top-0" />

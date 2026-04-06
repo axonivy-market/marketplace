@@ -283,6 +283,36 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(component.isVersionUnchangedOrFirstChange(change)).toBeFalse();
   });
 
+  describe('successor helpers', () => {
+    it('should return successor URL and parsed name when successor is a valid http URL', () => {
+      component.productDetail = {
+        successor: 'http://localhost:4200/smart-workflow'
+      } as ProductDetail;
+
+      expect(component.hasSuccessor()).toBeTrue();
+      expect(component.getSuccessorUrl()).toBe('http://localhost:4200/smart-workflow');
+      expect(component.getSuccessorName()).toBe('smart-workflow');
+    });
+
+    it('should return no successor URL and raw successor name for non-url values', () => {
+      component.productDetail = {
+        successor: 'smart-workflow'
+      } as ProductDetail;
+
+      expect(component.hasSuccessor()).toBeTrue();
+      expect(component.getSuccessorUrl()).toBeNull();
+      expect(component.getSuccessorName()).toBe('smart-workflow');
+    });
+
+    it('should return empty values when successor is missing', () => {
+      component.productDetail = {} as ProductDetail;
+
+      expect(component.hasSuccessor()).toBeFalse();
+      expect(component.getSuccessorUrl()).toBeNull();
+      expect(component.getSuccessorName()).toBe('');
+    });
+  });
+
   describe('getShieldsBadgeUrl', () => {
     it('should return empty string if productDetail is undefined', () => {
       component.productDetail = undefined as any;

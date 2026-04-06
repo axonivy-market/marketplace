@@ -180,4 +180,42 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       })
       .then();
   }
+
+  hasSuccessor(): boolean {
+    return !!this.productDetail?.successor?.trim();
+  }
+
+  getSuccessorUrl(): string | null {
+    const successor = this.productDetail?.successor?.trim();
+    if (!successor) {
+      return null;
+    }
+
+    try {
+      const successorUrl = new URL(successor);
+      return ['http:', 'https:'].includes(successorUrl.protocol)
+        ? successorUrl.toString()
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getSuccessorName(): string {
+    const successor = this.productDetail?.successor?.trim();
+    if (!successor) {
+      return '';
+    }
+
+    const successorUrl = this.getSuccessorUrl();
+    if (!successorUrl) {
+      return successor;
+    }
+
+    const pathnameParts = new URL(successorUrl).pathname
+      .split('/')
+      .filter(part => !!part);
+
+    return pathnameParts[pathnameParts.length - 1] || new URL(successorUrl).hostname;
+  }
 }
