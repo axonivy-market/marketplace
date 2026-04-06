@@ -755,7 +755,6 @@ export class ProductDetailComponent implements AfterViewInit {
         if (!this.initialFragmentHandled) {
           this.initialFragmentHandled = true;
           this.activeTab = DEFAULT_ACTIVE_TAB;
-          return;
         }
       })
     );
