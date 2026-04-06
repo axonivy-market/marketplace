@@ -8,7 +8,7 @@
           <p class="mb-0">
             {{ feedback.username ?? 'GitHub User' }}
           </p>
-          <i class="bi bi-github icon-feedback"></i>
+          <i class="ti ti-brand-github icon-feedback"></i>
         </div>
         <p class="feedback-time-text">
           {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() | async}}
