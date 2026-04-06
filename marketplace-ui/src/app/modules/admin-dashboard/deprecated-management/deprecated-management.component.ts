@@ -34,7 +34,6 @@ import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm
   styleUrl: './deprecated-management.component.scss'
 })
 export class DeprecatedManagementComponent implements OnInit {
-
   private readonly DIALOG_CLOSE_DELAY_MS = 250;
   private readonly COPY_SUCCESS_VISIBLE_DURATION_MS = 1500;
 
@@ -97,9 +96,7 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   private initializeDeprecatedRows(): void {
-    this.refreshDeprecatedRows().catch(error => {
-      console.error('Failed to load deprecated rows:', error);
-    });
+    this.refreshDeprecatedRows().then(data => {});
   }
 
   trigger() {
@@ -347,10 +344,10 @@ export class DeprecatedManagementComponent implements OnInit {
     );
   }
 
-  private async loadAllProductIds(
+  private loadAllProductIds(
     predicated: boolean | null
   ): Promise<DeprecatedProductInfo[]> {
-    return await firstValueFrom(
+    return firstValueFrom(
       this.productService.fetchAllProductIdsByDeprecated(predicated)
     );
   }

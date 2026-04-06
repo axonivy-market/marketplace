@@ -13,6 +13,6 @@ export class UndeprecateConfirmDialogComponent {
   @Input() isUndeprecating = false;
   @Input() undeprecateProductId = '';
 
-  @Output() close = new EventEmitter<void>();
+  @Output() closeDialog = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();
 }

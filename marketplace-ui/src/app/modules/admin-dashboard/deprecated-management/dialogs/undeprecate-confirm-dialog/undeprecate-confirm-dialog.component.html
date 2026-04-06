@@ -9,7 +9,7 @@
           type="button"
           class="btn-close"
           [disabled]="isUndeprecating"
-          (click)="close.emit()"></button>
+          (click)="closeDialog.emit()"></button>
       </div>
 
       <div class="modal-body">
@@ -26,7 +26,7 @@
         <button
           class="btn btn-cancel btn-secondary me-2"
           [disabled]="isUndeprecating"
-          (click)="close.emit()">
+          (click)="closeDialog.emit()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button
@@ -45,6 +45,6 @@
   <div
     class="custom-backdrop"
     [class.backdrop-closing]="isClosing"
-    (click)="!isUndeprecating && close.emit()"></div>
+    (click)="!isUndeprecating && closeDialog.emit()"></div>
 }
 

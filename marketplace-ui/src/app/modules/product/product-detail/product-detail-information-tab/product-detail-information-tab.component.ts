@@ -204,8 +204,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     const normalizedPath = successorUrl.pathname.replace(/\/+$/, '');
     const pathnameParts = normalizedPath.split('/').filter(part => !!part);
 
-    return decodeURIComponent(
-      pathnameParts[pathnameParts.length - 1] || successorUrl.hostname);
+    return decodeURIComponent(pathnameParts.at(-1) || successorUrl.hostname);
   }
 
   private parseSuccessorUrl(successor: string | undefined): URL | null {

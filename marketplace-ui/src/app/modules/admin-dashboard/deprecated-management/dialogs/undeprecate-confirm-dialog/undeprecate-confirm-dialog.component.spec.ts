@@ -38,7 +38,7 @@ describe('UndeprecateConfirmDialogComponent', () => {
   });
 
   it('should emit close from header close button and cancel button', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
 
     const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));
     headerCloseButton.triggerEventHandler('click', null);
@@ -46,7 +46,7 @@ describe('UndeprecateConfirmDialogComponent', () => {
     const cancelButton = fixture.debugElement.query(By.css('.btn-cancel'));
     cancelButton.triggerEventHandler('click', null);
 
-    expect(component.close.emit).toHaveBeenCalledTimes(2);
+    expect(component.closeDialog.emit).toHaveBeenCalledTimes(2);
   });
 
   it('should emit confirm when confirm button is clicked', () => {
@@ -59,23 +59,23 @@ describe('UndeprecateConfirmDialogComponent', () => {
   });
 
   it('should emit close from backdrop click when not undeprecating', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).toHaveBeenCalled();
+    expect(component.closeDialog.emit).toHaveBeenCalled();
   });
 
   it('should not emit close from backdrop click when undeprecating', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
     component.isUndeprecating = true;
     fixture.detectChanges();
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).not.toHaveBeenCalled();
+    expect(component.closeDialog.emit).not.toHaveBeenCalled();
   });
 
   it('should disable all action buttons and show spinner when undeprecating', () => {
