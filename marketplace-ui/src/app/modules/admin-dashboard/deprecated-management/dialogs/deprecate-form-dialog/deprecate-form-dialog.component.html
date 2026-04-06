@@ -7,7 +7,7 @@
           type="button"
           class="btn-close"
           [disabled]="isDeprecating"
-          (click)="close.emit()"></button>
+          (click)="closeDialog.emit()"></button>
       </div>
 
       <div class="modal-body">
@@ -74,14 +74,14 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-cancel btn-secondary me-2" (click)="close.emit()">
+        <button class="btn btn-cancel btn-secondary me-2" (click)="closeDialog.emit()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button
           type="button"
           class="btn border-0 btn-primary"
           [disabled]="isDeprecating"
-          (click)="submit.emit()">
+          (click)="submitForm.emit()">
           @if (isDeprecating) {
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
           }
@@ -94,6 +94,6 @@
   <div
     class="custom-backdrop"
     [class.backdrop-closing]="isClosing"
-    (click)="!isDeprecating && close.emit()"></div>
+    (click)="!isDeprecating && closeDialog.emit()"></div>
 }
 

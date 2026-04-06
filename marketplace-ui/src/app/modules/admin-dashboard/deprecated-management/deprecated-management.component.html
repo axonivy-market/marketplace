@@ -92,8 +92,8 @@
   [deprecatedRequest]="deprecatedRequest"
   [validationErrors]="validationErrors"
   [filteredProductIds]="filteredProductIds"
-  (close)="closeDialog()"
-  (submit)="deprecatedProduct()"
+  (closeDialog)="closeDialog()"
+  (submitForm)="deprecatedProduct()"
   (openDropdown)="openExtensionDropdown()"
   (filterProducts)="filterProducts($event)"
   (selectProduct)="selectExtension($event)"
@@ -109,8 +109,8 @@
   [pullRequestUrl]="successPullRequestUrl"
   [isCopySuccessVisible]="isCopySuccessVisible"
   [showPullRequest]="hasPullRequestUrl()"
-  (close)="closeSuccessDialog()"
-  (copy)="copyPullRequestUrl()">
+  (closeDialog)="closeSuccessDialog()"
+  (copyPullRequestUrl)="copyPullRequestUrl()">
 </app-deprecate-success-dialog>
 
 <app-undeprecate-confirm-dialog

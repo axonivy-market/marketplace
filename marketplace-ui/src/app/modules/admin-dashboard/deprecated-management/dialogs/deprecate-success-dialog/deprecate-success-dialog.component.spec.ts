@@ -62,14 +62,14 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should emit copy when copy button is clicked', () => {
-    spyOn(component.copy, 'emit');
+    spyOn(component.copyPullRequestUrl, 'emit');
     component.showPullRequest = true;
     fixture.detectChanges();
 
     const copyButton = fixture.debugElement.query(By.css('.copy-btn'));
     copyButton.triggerEventHandler('click', null);
 
-    expect(component.copy.emit).toHaveBeenCalled();
+    expect(component.copyPullRequestUrl.emit).toHaveBeenCalled();
   });
 
   it('should display copied label when isCopySuccessVisible is true', () => {
@@ -82,7 +82,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should emit close from close button and backdrop click when not closing', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
 
     const closeButton = fixture.debugElement.query(By.css('.success-close-btn'));
     closeButton.triggerEventHandler('click', null);
@@ -90,18 +90,18 @@ describe('DeprecateSuccessDialogComponent', () => {
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).toHaveBeenCalledTimes(2);
+    expect(component.closeDialog.emit).toHaveBeenCalledTimes(2);
   });
 
   it('should not emit close from backdrop click when closing', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
     component.isClosing = true;
     fixture.detectChanges();
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).not.toHaveBeenCalled();
+    expect(component.closeDialog.emit).not.toHaveBeenCalled();
   });
 
   it('should disable close button when closing', () => {

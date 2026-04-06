@@ -67,7 +67,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should emit close from header close button and backdrop click when not deprecating', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
 
     const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));
     headerCloseButton.triggerEventHandler('click', null);
@@ -75,23 +75,23 @@ describe('DeprecateFormDialogComponent', () => {
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).toHaveBeenCalledTimes(2);
+    expect(component.closeDialog.emit).toHaveBeenCalledTimes(2);
   });
 
   it('should not emit close from backdrop click when deprecating', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeDialog, 'emit');
     component.isDeprecating = true;
     fixture.detectChanges();
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
-    expect(component.close.emit).not.toHaveBeenCalled();
+    expect(component.closeDialog.emit).not.toHaveBeenCalled();
   });
 
   it('should emit readmeChecked and submit', () => {
     spyOn(component.readmeChecked, 'emit');
-    spyOn(component.submit, 'emit');
+    spyOn(component.submitForm, 'emit');
 
     const readmeCheckbox = fixture.debugElement.query(By.css('#addReadmeCheckbox'));
     readmeCheckbox.triggerEventHandler('click', null);
@@ -100,7 +100,7 @@ describe('DeprecateFormDialogComponent', () => {
     submitButton.triggerEventHandler('click', null);
 
     expect(component.readmeChecked.emit).toHaveBeenCalled();
-    expect(component.submit.emit).toHaveBeenCalled();
+    expect(component.submitForm.emit).toHaveBeenCalled();
   });
 
   it('should disable actions and show spinner when deprecating', () => {

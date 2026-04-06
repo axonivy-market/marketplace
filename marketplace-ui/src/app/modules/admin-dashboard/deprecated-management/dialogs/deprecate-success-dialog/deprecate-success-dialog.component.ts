@@ -16,6 +16,6 @@ export class DeprecateSuccessDialogComponent {
   @Input() isCopySuccessVisible = false;
   @Input() showPullRequest = false;
 
-  @Output() close = new EventEmitter<void>();
-  @Output() copy = new EventEmitter<void>();
+  @Output() closeDialog = new EventEmitter<void>();
+  @Output() copyPullRequestUrl = new EventEmitter<void>();
 }
