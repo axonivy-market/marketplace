@@ -9,8 +9,14 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.DeprecatedRequest;
+import com.axonivy.market.model.DeprecatedResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import org.kohsuke.github.GHPullRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
@@ -31,13 +37,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +63,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductDesignerInstallationRepository productDesignerInstallationRepo;
   @Mock
   private FileDownloadService fileDownloadService;
+  @Mock
+  private GitHubService gitHubService;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
@@ -239,4 +251,159 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     verify(fileDownloadService).fetchUrlResource(MOCK_DOWNLOAD_URL);
   }
 
+  @Test
+  void testUpdateSuccessorForProductWhenProductNotFound() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNotNull(response, "Response should not be null even when product is not found");
+    assertNull(response.getPullRequestUrl(), "Pull request URL should be null when product is not found");
+    verify(productMarketplaceDataRepo).save(any(ProductMarketplaceData.class));
+    verify(productRepo, never()).save(any(Product.class));
+    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+  }
+
+  @Test
+  void testUpdateSuccessorForProductSavesMarketplaceDataWithCorrectValues() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    request.setDeprecationRequester("admin");
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    ArgumentCaptor<ProductMarketplaceData> captor = ArgumentCaptor.forClass(ProductMarketplaceData.class);
+    verify(productMarketplaceDataRepo).save(captor.capture());
+    ProductMarketplaceData saved = captor.getValue();
+    assertEquals("https://successor.com", saved.getSuccessor(), "Successor URL should be persisted");
+    assertEquals("admin", saved.getDeprecationRequester(), "Deprecation requester should be persisted");
+    assertNotNull(saved.getDeprecationDate(), "Deprecation date should be set automatically");
+  }
+
+  @Test
+  void testUpdateSuccessorForProductWithAddReadmeFalseDoesNotCreatePr() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    Product product = getMockProduct();
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNull(response.getPullRequestUrl(), "Pull request URL should be null when addReadme is false");
+    assertEquals(Boolean.TRUE, product.getDeprecated(), "Product deprecated flag should be set to true");
+    verify(productRepo).save(product);
+    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+  }
+
+  @Test
+  void testUpdateSuccessorForProductWithAddReadmeTrueAndNullActionDoesNotCreatePr() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, null);
+    Product product = getMockProduct();
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNull(response.getPullRequestUrl(), "Pull request URL should be null when pullRequestAction is null");
+    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+  }
+
+  @Test
+  void testUpdateSuccessorForProductWithAddReadmeTrueAndActionAddReturnsPrUrl() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+
+    GHPullRequest mockPr = mock(GHPullRequest.class);
+    when(mockPr.getHtmlUrl()).thenReturn(URI.create("https://github.com/axonivy-market/bpmn-statistic/pull/1").toURL());
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(mockPr);
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNotNull(response.getPullRequestUrl(), "Pull request URL should be present when GitHub service returns a PR");
+    assertEquals("https://github.com/axonivy-market/bpmn-statistic/pull/1", response.getPullRequestUrl(),
+        "Pull request URL should match the mocked GitHub PR HTML URL");
+    verify(gitHubService).modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD);
+  }
+
+  @Test
+  void testUpdateSuccessorForProductWithAddReadmeTrueAndActionRemoveReturnsPrUrl() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest(null, false, true, PullRequestAction.REMOVE);
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+
+    GHPullRequest mockPr = mock(GHPullRequest.class);
+    when(mockPr.getHtmlUrl()).thenReturn(URI.create("https://github.com/axonivy-market/bpmn-statistic/pull/2").toURL());
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE)).thenReturn(mockPr);
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNotNull(response.getPullRequestUrl(), "Pull request URL should be present for REMOVE action");
+    verify(gitHubService).modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE);
+  }
+
+  @Test
+  void testUpdateSuccessorForProductWhenGitHubReturnsNullPrSetsPullRequestUrlToNull() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(null);
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNull(response.getPullRequestUrl(), "Pull request URL should be null when GitHub service returns null");
+  }
+
+  @Test
+  void testUpdateSuccessorForProductReturnsDeprecatedProductList() throws IOException {
+    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+
+    ProductDeprecationProjection projection = mock(ProductDeprecationProjection.class);
+    when(projection.getId()).thenReturn(MOCK_PRODUCT_ID);
+
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of(projection));
+
+    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+
+    assertNotNull(response.getProductDeprecations(), "Product deprecations list should not be null");
+    assertEquals(1, response.getProductDeprecations().size(), "Should return all deprecated products from repository");
+    assertEquals(MOCK_PRODUCT_ID, response.getProductDeprecations().getFirst().getId(),
+        "Returned deprecated product ID should match");
+  }
+
+  private DeprecatedRequest buildDeprecatedRequest(
+      String successorUrl, Boolean deprecated, boolean addReadme, PullRequestAction action) {
+    DeprecatedRequest request = new DeprecatedRequest();
+    request.setProductId(BaseSetup.MOCK_PRODUCT_ID);
+    request.setSuccessorUrl(successorUrl);
+    request.setDeprecated(deprecated);
+    request.setAddReadme(addReadme);
+    request.setPullRequestAction(action);
+    return request;
+  }
 }
