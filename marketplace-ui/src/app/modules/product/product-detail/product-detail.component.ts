@@ -86,7 +86,6 @@ export interface DetailTab {
   label: string;
 }
 
-const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -182,27 +181,11 @@ export class ProductDetailComponent implements AfterViewInit {
   onPopState() {
     const fragment = globalThis.location.hash.replace('#', '');
     const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
-
+    
     if (tabValue !== this.activeTab) {
       this.activeTab = tabValue;
-
-      if (this.productDetail()?.id) {
-        const savedTab = {
-          productId: this.productDetail().id,
-          savedActiveTab: this.activeTab
-        };
-        localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
-      }
-
       this.updateDropdownSelection();
     }
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
-    }
-    this.scrollTimeout = setTimeout(() => {
-      this.scrollToTabGroup();
-      this.scrollTimeout = null;
-    }, this.SCROLL_DELAY_MS);
   }
 
   constructor(
@@ -526,17 +509,16 @@ export class ProductDetailComponent implements AfterViewInit {
     this.initialFragmentHandled = true;
     this.navigateToFragment(tab || DEFAULT_ACTIVE_TAB);
     this.activeTab = tab;
-    this.saveActiveTab();
 
     if (tab === 'changelog') {
-      setTimeout(() => this.setupIntersectionObserver(), 100);
+      setTimeout(() => this.setupIntersectionObserver(), this.SCROLL_DELAY_MS);
     }
 
     if (scrollToTab && tab && tab !== DEFAULT_ACTIVE_TAB) {
       setTimeout(() => {
         const tabGroup = document.querySelector('.tab-group');
         tabGroup?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      }, this.SCROLL_DELAY_MS);
     }
   }
 
@@ -545,38 +527,36 @@ export class ProductDetailComponent implements AfterViewInit {
       this.scrollToTabGroup();
       return;
     }
-
-    if (updateUrl) {
-      this.navigateToFragment(tab);
-    }
     this.activeTab = tab;
-    this.saveActiveTab();
-
     if (tab === 'changelog') {
       setTimeout(() => this.setupIntersectionObserver());
     }
 
+    if (updateUrl) {
+      this.navigateToFragment(tab).then(() => {
+        if (scrollToTab) {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => this.scrollToTabGroup());
+          });
+        }
+      });
+      return;
+    }
+
     if (scrollToTab) {
-      this.scrollToTabGroup();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.scrollToTabGroup());
+      });
     }
   }
 
   private scrollToTabGroup(): void {
-
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const tabGroup = document.querySelector('.tab-group');
-        tabGroup?.scrollIntoView({ behavior: 'instant', block: 'start' });
+        tabGroup?.scrollIntoView({ behavior: 'auto', block: 'start' });
       });
     });
-  }
-
-  private saveActiveTab(): void {
-    const savedTab = {
-      productId: this.productDetail().id,
-      savedActiveTab: this.activeTab
-    };
-    localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
   getSelectedTabLabel(): string {
@@ -771,35 +751,32 @@ export class ProductDetailComponent implements AfterViewInit {
         if (fragment) {
           const shouldUpdateUrl = this.initialFragmentHandled;
           this.setActiveTab(tabValue, shouldUpdateUrl, hasValidFragment);
-        } else if (this.initialFragmentHandled) {
-          const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
-          const currentFragment = this.route.snapshot.fragment;
-          if (currentFragment !== currentTab) {
-            this.navigateToFragment(currentTab);
-          }
-        } else {
+        } else if (!this.initialFragmentHandled) {
           this.initialFragmentHandled = true;
           this.activeTab = DEFAULT_ACTIVE_TAB;
-          this.saveActiveTab();
         }
       })
     );
   }
 
-  private navigateToFragment(fragment: string): void {
-    this.router.navigate([], {
+  private navigateToFragment(fragment: string): Promise<boolean> {
+    return this.router.navigate([], {
       fragment: fragment,
-      queryParamsHandling: 'preserve',
-      replaceUrl: true
+      queryParamsHandling: 'preserve'
     });
   }
 
   ngOnDestroy(): void {
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
-    }
+    this.clearScrollTimeout();
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
+  }
+
+  private clearScrollTimeout(): void {
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+      this.scrollTimeout = null;
+    }
   }
 }

@@ -204,7 +204,7 @@ describe('ProductDetailComponent', () => {
     component = fixture.componentInstance;
     const productService = TestBed.inject(ProductService);
     spyOn(productService, 'setDefaultVendorImage').and.callThrough();
-
+    mockRouter.navigate.and.returnValue(Promise.resolve(true));
     fixture.detectChanges();
     if ((window.scrollTo as any).calls) {
       (window.scrollTo as jasmine.Spy).and.callThrough();
@@ -1649,21 +1649,16 @@ describe('ProductDetailComponent', () => {
     expect(component.activeTab).toBe('description');
   });
 
-  it('should save activeTab to localStorage when productDetail has id on popstate', () => {
+  it('should update activeTab on popstate', () => {
     (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
     component.activeTab = 'description';
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
 
     history.pushState(null, '', '#demo');
 
-    spyOn(localStorage, 'setItem');
-
     component.onPopState();
 
-    expect(localStorage.setItem).toHaveBeenCalledWith(
-      'activeTab',
-      jasmine.stringContaining('demo')
-    );
+    expect(component.activeTab).toBe('demo');
   });
 
   // Test handleFirstTabActivation
@@ -1714,8 +1709,7 @@ describe('ProductDetailComponent', () => {
     expect(component.setupIntersectionObserver).toHaveBeenCalled();
   }));
 
-  // Test navigateToProductDetailsWithTabFragment
-  it('should navigate to currentTab when initialFragmentHandled is true and fragment is null', fakeAsync(() => {
+  it('should NOT navigate when fragment is null and initialFragmentHandled is true', fakeAsync(() => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1726,13 +1720,7 @@ describe('ProductDetailComponent', () => {
     component.navigateToProductDetailsWithTabFragment();
     tick();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(
-      [],
-      jasmine.objectContaining({
-        fragment: 'demo',
-        replaceUrl: true
-      })
-    );
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
 
   it('should not navigate if currentFragment already equals currentTab', fakeAsync(() => {

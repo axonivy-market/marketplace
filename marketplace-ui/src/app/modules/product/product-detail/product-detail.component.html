@@ -181,8 +181,7 @@
                   [class.active]="activeTab === displayedTab.value"
                   [id]="'tab-pane-' + displayedTab.value"
                   role="tabpanel"
-                  [attr.aria-labelledby]="displayedTab.value + '-tab'"
-                  (click)="setActiveTab(displayedTab.value)">
+                  [attr.aria-labelledby]="displayedTab.value + '-tab'">
                   @if (displayedTab.value === 'dependency' && !isEmptyProductContent()) {
                     <app-product-detail-maven-content
                       [productName]="productDetail().names[Language.EN]"
