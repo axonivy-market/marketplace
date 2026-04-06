@@ -11,6 +11,7 @@ import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.core.repository.CoreCustomProductRepository;
 import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,8 +35,10 @@ import org.springframework.data.domain.Sort;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 
@@ -73,6 +76,28 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     }
 
     return new PageImpl<>(resultList, pageable, total);
+  }
+
+  @Override
+  public Product findProductByIdAndRelatedData(String id) {
+    CriteriaQueryContext<Product> context = createCriteriaQueryContext();
+    context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
+    context.query().where(context.builder().equal(context.root().get(ID), id));
+    try {
+      return getEntityManager().createQuery(context.query()).getSingleResult();
+    } catch (NoResultException e) {
+      log.error("Cannot find product: ", e);
+      return null;
+    }
+  }
+
+  @Override
+  public List<String> getReleasedVersionsById(String id) {
+    return Optional.ofNullable(findProductByIdAndRelatedData(id))
+        .map(Product::getReleasedVersions)
+        .orElse(Collections.emptyList());
   }
 
   private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {

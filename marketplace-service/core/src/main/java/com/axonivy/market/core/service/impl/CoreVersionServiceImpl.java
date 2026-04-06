@@ -1,14 +1,11 @@
 package com.axonivy.market.core.service.impl;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
-import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
 import com.axonivy.market.core.repository.CoreProductJsonContentRepository;
 import com.axonivy.market.core.service.CoreVersionService;
-import com.axonivy.market.core.utils.CoreMavenUtils;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +24,7 @@ import java.util.Map;
 
 import static com.axonivy.market.core.constants.CoreMavenConstants.TEST_ARTIFACT_ID;
 import static com.axonivy.market.core.constants.CoreProductJsonConstants.NAME;
+import static com.axonivy.market.core.utils.CoreVersionUtils.getInstallableVersionsFromMetadataList;
 
 @Log4j2
 @Service
@@ -92,15 +90,5 @@ public class CoreVersionServiceImpl implements CoreVersionService {
         artifact -> artifact.getId().getProductVersion().equals(mavenVersion)).distinct().sorted(
         Comparator.comparing((MavenArtifactVersion artifact) -> artifact.getId().getArtifactId()).thenComparing(
             artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACT_ID))).toList();
-  }
-
-  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
-    List<String> installableVersions = new ArrayList<>();
-    if (CollectionUtils.isEmpty(metadataList)) {
-      return installableVersions;
-    }
-    metadataList.stream().filter(metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(
-        metadata.getVersions())).forEach(productMeta -> installableVersions.addAll(productMeta.getVersions()));
-    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
 }
