@@ -751,9 +751,11 @@ export class ProductDetailComponent implements AfterViewInit {
         if (fragment) {
           const shouldUpdateUrl = this.initialFragmentHandled;
           this.setActiveTab(tabValue, shouldUpdateUrl, hasValidFragment);
-        } else if (!this.initialFragmentHandled) {
+        }
+        if (!this.initialFragmentHandled) {
           this.initialFragmentHandled = true;
           this.activeTab = DEFAULT_ACTIVE_TAB;
+          return;
         }
       })
     );
