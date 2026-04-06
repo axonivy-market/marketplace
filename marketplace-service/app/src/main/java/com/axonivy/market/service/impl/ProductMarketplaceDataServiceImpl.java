@@ -202,7 +202,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
     Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
-        .ifPresent(productMarketplaceData -> {
+        .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
           productMarketplaceData.setSuccessor(request.getSuccessorUrl());
           productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
           productMarketplaceData.setDeprecationDate(new Date());

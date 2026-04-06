@@ -966,26 +966,6 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenAccessTokenIsBlank() throws Exception {
-    when(gitHubProperty.getToken()).thenReturn(" ");
-
-    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest("org/repo", PullRequestAction.ADD);
-
-    assertNull(result, "Expected null when access token is blank");
-    verify(gitHubService, never()).getGitHub(anyString());
-  }
-
-  @Test
-  void testModifyReadmeUnsupportedPullRequestReturnsNullWhenRepositoryPathIsBlank() throws Exception {
-    when(gitHubProperty.getToken()).thenReturn("token");
-
-    GHPullRequest result = gitHubService.modifyReadmeUnsupportedPullRequest(" ", PullRequestAction.ADD);
-
-    assertNull(result, "Expected null when repository path is blank");
-    verify(gitHubService, never()).getGitHub(anyString());
-  }
-
-  @Test
   void testModifyReadmeUnsupportedPullRequestReturnsNullWhenAddActionDoesNotChangeReadme() throws Exception {
     GHRepository repository = mock(GHRepository.class);
     GHContent readme = mock(GHContent.class);

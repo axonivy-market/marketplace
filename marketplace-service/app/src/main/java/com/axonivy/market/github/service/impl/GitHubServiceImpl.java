@@ -63,6 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
@@ -74,9 +75,10 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
-
-  public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String HEADS_PREFIX = "heads/";
+  public static final int PAGE_SIZE_OF_WORKFLOW = 10;
+  private static final Pattern LINE_SPLIT_PATTERN = Pattern.compile("\\R");
+
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -476,10 +478,6 @@ public class GitHubServiceImpl implements GitHubService {
   public GHPullRequest modifyReadmeUnsupportedPullRequest(
       String repositoryPath, PullRequestAction action) throws IOException {
     String accessToken = gitHubProperty.getToken();
-    if (StringUtils.isAnyBlank(accessToken, repositoryPath)) {
-      log.error("Access token and repository path must not be blank");
-      return null;
-    }
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
@@ -547,7 +545,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
     String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
-    String[] lines = readmeContent.split("\\R", -1);
+    String[] lines = LINE_SPLIT_PATTERN.split(readmeContent, -1);
 
     for (int i = 0; i < lines.length; i++) {
       if (!lines[i].trim().startsWith("#")) {
