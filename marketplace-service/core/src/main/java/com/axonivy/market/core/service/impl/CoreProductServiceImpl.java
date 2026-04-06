@@ -23,7 +23,6 @@ import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 public class CoreProductServiceImpl implements CoreProductService {
   private final CoreProductRepository coreProductRepo;
 
-
   /**
    * @deprecated This method is deprecated and will be no longer use in future release.
    *             Use {@link #findProducts(String type, String keyword, String language, Pageable pageable)} instead.
