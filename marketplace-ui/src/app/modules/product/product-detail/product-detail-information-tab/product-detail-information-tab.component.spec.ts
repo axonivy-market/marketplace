@@ -311,6 +311,22 @@ describe('ProductDetailInformationTabComponent', () => {
       expect(component.getSuccessorUrl()).toBeNull();
       expect(component.getSuccessorName()).toBe('');
     });
+
+    it('should always extract vertexai-google from successor URLs with query or fragment', () => {
+      const successorUrls = [
+        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#description',
+        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#demo',
+        'https://market.axonivy.com/vertexai-google',
+        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#setup'
+      ];
+
+      successorUrls.forEach(url => {
+        component.productDetail = { successor: url } as ProductDetail;
+
+        expect(component.getSuccessorName()).toBe('vertexai-google');
+        expect(component.getSuccessorUrl()).toBe(url);
+      });
+    });
   });
 
   describe('getShieldsBadgeUrl', () => {

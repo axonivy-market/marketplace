@@ -424,7 +424,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
     when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
-
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0+", result.getCompatibilityRange(),
         "Product compatibility range should match 10.0+");
@@ -496,44 +498,44 @@ class ProductServiceImplTest extends BaseSetup {
         "Product with newest release version and empty artifact should match mock product");
   }
 
-//  @Test
-//  void testFetchProductDetailByIdAndVersion() {
-//    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-//    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-//      mockProductMarketplaceData.getInstallationCount());
-//    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
-//      .thenReturn(mockVersionAndUrlModels());
-//    GithubRepo mockGithubRepo = new GithubRepo();
-//    mockGithubRepo.setName(MOCK_PRODUCT_REPOSITORY_NAME);
-//    mockGithubRepo.setFocused(true);
-//    Product mockProduct = mockResultReturn.getContent().get(0);
-//    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-//    Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//
-//    assertEquals(mockProduct, result,
-//        "Product detail by id and version should match mock product");
-//    assertEquals(mockProductMarketplaceData.getInstallationCount(), result.getInstallationCount(),
-//      "Installation count should be populated for versioned product detail");
-//    assertEquals("10.0+", result.getCompatibilityRange(),
-//      "Compatibility range should be computed for versioned product detail");
-//    verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//    verify(versionService).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
-//  }
+  @Test
+  void testFetchProductDetailByIdAndVersion() {
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+      mockProductMarketplaceData);
+    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
+      .thenReturn(mockVersionAndUrlModels());
+    GithubRepo mockGithubRepo = new GithubRepo();
+    mockGithubRepo.setName(MOCK_PRODUCT_REPOSITORY_NAME);
+    mockGithubRepo.setFocused(true);
+    Product mockProduct = mockResultReturn.getContent().get(0);
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
-//  @Test
-//  void testFetchBestMatchProductDetailByIdAndVersion() {
-//    Product mockProduct = getMockProduct();
-//    Metadata mockMetadata = getMockMetadataWithVersions();
-//    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-//    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
-//    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-//    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-//    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-//        mockProductMarketplaceData.getInstallationCount());
-//    Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//    assertEquals(mockProduct, result,
-//        "Found best match product version should match mock product");
-//  }
+    assertEquals(mockProduct, result,
+        "Product detail by id and version should match mock product");
+    assertEquals(mockProductMarketplaceData.getInstallationCount(), result.getInstallationCount(),
+      "Installation count should be populated for versioned product detail");
+    assertEquals("10.0+", result.getCompatibilityRange(),
+      "Compatibility range should be computed for versioned product detail");
+    verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    verify(versionService).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
+  }
+
+  @Test
+  void testFetchBestMatchProductDetailByIdAndVersion() {
+    Product mockProduct = getMockProduct();
+    Metadata mockMetadata = getMockMetadataWithVersions();
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData);
+    Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    assertEquals(mockProduct, result,
+        "Found best match product version should match mock product");
+  }
 
   private void mockMarketRepoMetaStatus() {
     var mockMarketRepoMeta = new GitHubRepoMeta();

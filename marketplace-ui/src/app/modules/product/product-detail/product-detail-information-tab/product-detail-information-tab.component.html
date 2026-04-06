@@ -53,11 +53,13 @@
         </span>
         <div class="text-primary successor-value">
           @if (hasSuccessor()) {
-            <a class="text-primary successor-link" [href]="getSuccessorUrl()"
-               target="_blank" rel="noopener noreferrer">
-              <i>{{ getSuccessorName() }}</i>
-            </a>
-
+              <a
+                class="text-primary successor-link"
+                [href]="getSuccessorUrl()"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ getSuccessorName() }}
+              </a>
           } @else {
             {{
               'common.product.detail.information.value.nonSuccessor' | translate

@@ -170,9 +170,9 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
     when(productMarketplaceDataRepo.updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt())).thenReturn(10);
 
-    int result = productMarketplaceDataService.updateProductInstallationCount(SAMPLE_PRODUCT_ID);
+    ProductMarketplaceData result = productMarketplaceDataService.updateProductInstallationCount(SAMPLE_PRODUCT_ID);
 
-    assertEquals(10, result,
+    assertEquals(10, result.getInstallationCount(),
         "Installation count should match 10 when not synchronized");
     verify(productMarketplaceDataRepo).updateInitialCount(eq(SAMPLE_PRODUCT_ID), anyInt());
   }
