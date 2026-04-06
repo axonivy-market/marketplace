@@ -130,8 +130,8 @@ export class LogViewerComponent {
       DEBUG: 'ti-bug',
       INFO: 'ti-info-circle',
       WARN: 'ti-exclamation-circle',
-      ERROR: 'ti-x-circle',
-      FATAL: 'ti-stop-circle'
+      ERROR: 'ti-circle-letter-x',
+      FATAL: 'ti-circle-rectangle'
     };
     return icons[level] || 'ti-info-circle';
   }

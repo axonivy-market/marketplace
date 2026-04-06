@@ -36,6 +36,16 @@ td {
   button {
     font-size: 1.4rem;
   }
+
+  td:last-child {
+    vertical-align: middle;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 }
 
 #delete-button {
