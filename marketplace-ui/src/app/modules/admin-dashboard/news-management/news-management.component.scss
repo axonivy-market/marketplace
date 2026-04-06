@@ -36,6 +36,18 @@ td {
   button {
     font-size: 1.4rem;
   }
+
+  td:last-child {
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
+    }
+  }
 }
 
 #delete-button {

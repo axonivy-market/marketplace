@@ -27,7 +27,7 @@ describe('HeaderComponent', () => {
   });
 
   it('should toggle the mobile menu on click', () => {
-    const navbarToggler = fixture.debugElement.query(By.css('.bi.bi-list'));
+    const navbarToggler = fixture.debugElement.query(By.css('.ti.ti-list'));
 
     expect(component.isMobileMenuCollapsed()).toBe(true);
 
