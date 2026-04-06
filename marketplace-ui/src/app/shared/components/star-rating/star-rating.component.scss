@@ -2,7 +2,7 @@
   position: relative;
   display: inline-block;
   color: var(--star-color);
-  font-size: 13px;
+  font-size: 1.3rem;
   margin-right: 3px;
   .filled {
     color: var(--star-filled-color);
@@ -10,12 +10,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    font-size: 1em;
   }
 }
 
 .medium-star {
-  font-size: 26px;
+  font-size: 2.6rem;
   margin-right: 8px;
 }
 
@@ -34,7 +33,7 @@
 
 @media (max-width: 767px) {
   .medium-star {
-    font-size: 20px;
+    font-size: 2rem;
     margin-right: 8px;
   }
 
