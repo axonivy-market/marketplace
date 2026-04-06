@@ -7,6 +7,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
+import static com.axonivy.market.core.constants.CoreMavenConstants.MAIN_VERSION_REGEX;
+
 public class SameMajorVersionStrategy implements VersionMatchStrategy {
   private static final String VERSION_NOT_FOUND_MESSAGE = "Cannot find version: %s";
 
@@ -26,7 +28,7 @@ public class SameMajorVersionStrategy implements VersionMatchStrategy {
   }
 
   private boolean hasSameMajorVersion(String version, String targetMajor) {
-    String[] parts = version.split("\\.");
+    String[] parts = version.split(MAIN_VERSION_REGEX);
     return parts.length > 0 && parts[0].equals(targetMajor);
   }
 

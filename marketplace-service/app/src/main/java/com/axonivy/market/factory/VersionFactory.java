@@ -1,14 +1,13 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.strategy.VersionMatchStrategy;
-import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.strategy.impl.StartsWithVersionStrategy;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
@@ -16,7 +15,6 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +25,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
-import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_PREFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

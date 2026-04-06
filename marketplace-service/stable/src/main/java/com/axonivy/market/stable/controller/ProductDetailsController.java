@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,6 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.stable.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
-@Log4j2
 @RestController
 @RequestMapping(value = PRODUCT_DETAILS, produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
