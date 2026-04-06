@@ -96,7 +96,7 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   private initializeDeprecatedRows(): void {
-    this.refreshDeprecatedRows().then(data => {});
+    this.refreshDeprecatedRows().then((_data) => {});
   }
 
   trigger() {
