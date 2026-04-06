@@ -17,8 +17,17 @@ html {
 }
 
 .ti {
-  font-size: 1.25rem;
   vertical-align: middle;
+}
+
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.icon-spin {
+  display: inline-block;
+  animation: icon-spin 1s linear infinite;
 }
 
 // Target google search bar dropdown

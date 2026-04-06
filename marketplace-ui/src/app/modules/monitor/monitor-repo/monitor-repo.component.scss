@@ -157,3 +157,7 @@ i.ti.ti-external-link::before {
   font-size: 2rem;
   color: var(--ivy-primary-bg);
 }
+
+a:has(i.ti.ti-external-link) {
+  text-decoration: none;
+}

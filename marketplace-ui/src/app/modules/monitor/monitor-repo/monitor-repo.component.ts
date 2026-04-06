@@ -221,9 +221,9 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     }
 
     if (this.sortDirection === ASCENDING) {
-      return 'ti ti-arrow-up';
+      return 'ti-arrow-up';
     } else {
-      return 'ti ti-arrow-down';
+      return 'ti-arrow-down';
     }
   }
 

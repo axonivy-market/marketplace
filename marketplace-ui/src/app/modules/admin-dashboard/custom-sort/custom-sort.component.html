@@ -61,7 +61,7 @@
             <tr class="empty-row text-center">
               @if (isLoading) {
                 <td colspan="2" class="text-primary">
-                  <i class="ti ti-spinner ti-spin me-2"></i>
+                  <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
                   {{ 'common.admin.customSort.loadingLabel' | translate }}
                 </td>
               } @else {
@@ -141,7 +141,7 @@
                   colspan="2"
                   class="text-primary"
                   [lang]="languageService.selectedLanguage()">
-                  <i class="ti ti-spinner ti-spin me-2"></i>
+                  <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
                   {{ 'common.admin.customSort.loadingLabel' | translate }}
                 </td>
               } @else {
@@ -195,7 +195,7 @@
           translateService.get('common.admin.customSort.sortHint') | async
         ">
         @if (isSaving) {
-          <i class="ti ti-spinner ti-spin me-2"></i>
+          <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
           {{ 'common.admin.customSort.sortingLabel' | translate }}
         } @else {
           {{ 'common.admin.customSort.sortLabel' | translate }}
