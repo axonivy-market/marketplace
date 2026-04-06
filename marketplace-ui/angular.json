@@ -27,7 +27,6 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
               "src/assets",
               "src/assets/_market",
               "src/robots.txt",
@@ -40,6 +39,7 @@
               "node_modules/markdown-it-github-alerts/styles/github-colors-dark-media.css",
               "node_modules/markdown-it-github-alerts/styles/github-colors-light.css",
               "node_modules/easymde/dist/easymde.min.css",
+              "node_modules/@tabler/icons-webfont/dist/tabler-icons.css",
               "src/styles.scss"
             ],
             "scripts": [
