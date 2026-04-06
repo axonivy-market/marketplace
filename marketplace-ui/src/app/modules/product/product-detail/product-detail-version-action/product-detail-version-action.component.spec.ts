@@ -204,6 +204,8 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.artifacts().length).toBe(0);
     expect(component.selectedVersion()).toEqual(selectedVersion);
     expect(component.selectedArtifact).toEqual('');
+    expect(component.selectedArtifactName).toEqual('');
+    expect(component.versionMap.size).toBe(0);
   });
 
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {
