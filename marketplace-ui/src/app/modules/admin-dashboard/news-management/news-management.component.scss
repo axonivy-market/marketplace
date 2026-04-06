@@ -38,12 +38,14 @@ td {
   }
 
   td:last-child {
-    vertical-align: middle;
-
     button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      font-size: 2rem;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
     }
   }
 }
