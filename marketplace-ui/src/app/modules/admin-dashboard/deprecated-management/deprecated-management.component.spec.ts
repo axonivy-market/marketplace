@@ -1,22 +1,228 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 
 import { DeprecatedManagementComponent } from './deprecated-management.component';
+import { ProductService } from '../../product/product.service';
+import { LanguageService } from '../../../core/services/language/language.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { AdminAuthService } from '../admin-auth.service';
+import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
+import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
+import { DeprecateFormDialogComponent } from './dialogs/deprecate-form-dialog/deprecate-form-dialog.component';
+import { DeprecateSuccessDialogComponent } from './dialogs/deprecate-success-dialog/deprecate-success-dialog.component';
+import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm-dialog/undeprecate-confirm-dialog.component';
 
 describe('DeprecatedManagementComponent', () => {
   let component: DeprecatedManagementComponent;
   let fixture: ComponentFixture<DeprecatedManagementComponent>;
+  let productService: jasmine.SpyObj<ProductService>;
+  let adminAuthService: jasmine.SpyObj<AdminAuthService>;
+
+  const mockDeprecatedRows = [
+    {
+      id: 'cms-live-editor',
+      deprecationDate: '2025-10-10T08:15:00Z',
+      deprecationRequester: 'alice'
+    },
+    {
+      id: 'rtf-factory',
+      deprecationDate: null,
+      deprecationRequester: null
+    }
+  ];
+
+  const baseUserInfo = {
+    login: 'alice',
+    name: 'Alice',
+    avatarUrl: 'https://avatar.example/alice.png',
+    url: 'https://github.com/alice',
+    username: 'alice',
+    token: 'token-123'
+  };
 
   beforeEach(async () => {
+    const productServiceSpy = jasmine.createSpyObj('ProductService', [
+      'fetchAllProductIdsByDeprecated',
+      'updateDeprecatedProduct'
+    ]);
+    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [], {
+      selectedLanguage: () => 'en'
+    });
+    const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['isDarkMode']);
+    const adminAuthServiceSpy = jasmine.createSpyObj('AdminAuthService', [
+      'loadFromSessionStorage'
+    ]);
+
+    productServiceSpy.fetchAllProductIdsByDeprecated.and.returnValue(
+      of(mockDeprecatedRows)
+    );
+    productServiceSpy.updateDeprecatedProduct.and.returnValue(
+      of({ productDeprecations: mockDeprecatedRows, pullRequestUrl: null })
+    );
+    adminAuthServiceSpy.loadFromSessionStorage.and.returnValue(baseUserInfo as any);
+
     await TestBed.configureTestingModule({
-      imports: [DeprecatedManagementComponent]
+      imports: [DeprecatedManagementComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: ProductService, useValue: productServiceSpy },
+        { provide: LanguageService, useValue: languageServiceSpy },
+        { provide: ThemeService, useValue: themeServiceSpy },
+        { provide: AdminAuthService, useValue: adminAuthServiceSpy }
+      ]
     }).compileComponents();
+
+    productService = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
+    adminAuthService = TestBed.inject(AdminAuthService) as jasmine.SpyObj<AdminAuthService>;
 
     fixture = TestBed.createComponent(DeprecatedManagementComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create and initialize rows from API', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
     expect(component).toBeTruthy();
+    expect(adminAuthService.loadFromSessionStorage).toHaveBeenCalled();
+    expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
+    expect(component.deprecatedItems).toEqual(mockDeprecatedRows);
+    expect(component.filteredDeprecatedRows).toEqual(mockDeprecatedRows);
+  }));
+
+  it('should open deprecate dialog when trigger is called', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    component.trigger();
+
+    expect(component.showDeprecatedProductDialog).toBeTrue();
+    expect(component.deprecatedResponse.pullRequestUrl).toBeNull();
+  }));
+
+  it('should validate form fields', () => {
+    component.deprecatedRequest.productId = '';
+    expect(component.validateForm()).toBeFalse();
+    expect(component.validationErrors.productId).toContain('required');
+
+    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.deprecatedRequest.successorUrl = 'invalid-url';
+    expect(component.validateForm()).toBeFalse();
+    expect(component.validationErrors.successorUrl).toContain('http:// or https://');
+
+    component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
+    expect(component.validateForm()).toBeTrue();
+  });
+
+  it('should filter deprecated table by product id', () => {
+    component.deprecatedItems = mockDeprecatedRows;
+
+    component.filterTable('cms');
+    expect(component.filteredDeprecatedRows.length).toBe(1);
+    expect(component.filteredDeprecatedRows[0].id).toBe('cms-live-editor');
+
+    component.filterTable('');
+    expect(component.filteredDeprecatedRows.length).toBe(2);
+  });
+
+  it('should set extension info when selecting a product', () => {
+    component.dropdownOpen = true;
+
+    component.selectExtension('cms-live-editor');
+
+    expect(component.deprecatedRequest.productId).toBe('cms-live-editor');
+    expect(component.deprecatedRequest.deprecated).toBeTrue();
+    expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
+    expect(component.dropdownOpen).toBeFalse();
+  });
+
+  it('should deprecate product and open success dialog', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    const response: DeprecatedResponse = {
+      productDeprecations: mockDeprecatedRows,
+      pullRequestUrl: 'https://github.com/org/repo/pull/123'
+    };
+    productService.updateDeprecatedProduct.and.returnValue(of(response));
+
+    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
+    component.deprecatedRequest.deprecated = true;
+
+    component.deprecatedProduct();
+    tick();
+
+    expect(productService.updateDeprecatedProduct).toHaveBeenCalled();
+    expect(component.showDeprecatedProductDialog).toBeFalse();
+    expect(component.showSuccessDialog).toBeTrue();
+    expect(component.successMode).toBe('deprecate');
+    expect(component.successPullRequestUrl).toBe('https://github.com/org/repo/pull/123');
+  }));
+
+  it('should fall back to refresh rows when update response has no productDeprecations', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    productService.updateDeprecatedProduct.and.returnValue(
+      of({ productDeprecations: undefined, pullRequestUrl: null })
+    );
+
+    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.deprecatedRequest.deprecated = true;
+
+    component.deprecatedProduct();
+    tick();
+
+    expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
+  }));
+
+  it('should execute undeprecate flow with REMOVE action', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    component.undeprecateProductId = 'cms-live-editor';
+
+    component.executeUndeprecate();
+    tick();
+
+    expect(productService.updateDeprecatedProduct).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        productId: 'cms-live-editor',
+        pullRequestAction: PullRequestAction.REMOVE,
+        deprecated: null
+      }),
+      'token-123'
+    );
+    expect(component.successMode).toBe('undeprecate');
+    expect(component.showSuccessDialog).toBeTrue();
+  }));
+
+  it('should close success dialog and reset deprecate form in deprecate mode', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    component.successMode = 'deprecate';
+    component.showSuccessDialog = true;
+    component.deprecatedRequest.productId = 'cms-live-editor';
+
+    component.closeSuccessDialog();
+    tick(250);
+
+    expect(component.showSuccessDialog).toBeFalse();
+    expect(component.successMode).toBeNull();
+    expect(component.deprecatedRequest.productId).toBe('');
+  }));
+
+  it('should evaluate pull request url correctly', () => {
+    component.successPullRequestUrl = null;
+    expect(component.hasPullRequestUrl()).toBeFalse();
+
+    component.successPullRequestUrl = 'null';
+    expect(component.hasPullRequestUrl()).toBeFalse();
+
+    component.successPullRequestUrl = ' https://github.com/org/repo/pull/99 ';
+    expect(component.hasPullRequestUrl()).toBeTrue();
   });
 });

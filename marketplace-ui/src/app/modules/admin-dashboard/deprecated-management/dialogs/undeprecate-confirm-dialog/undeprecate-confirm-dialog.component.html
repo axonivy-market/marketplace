@@ -1,0 +1,50 @@
+@if (visible) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
+    <div class="modal-content custom-modal confirm-modal" [class.modal-closing]="isClosing">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ 'common.admin.deprecated.confirmUndeprecatedTitle' | translate }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          [disabled]="isUndeprecating"
+          (click)="close.emit()"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="confirm-message">
+          {{ 'common.admin.deprecated.confirmUndeprecatedContent' | translate }}
+        </p>
+        <p class="text-muted">
+          <strong>{{ 'common.admin.deprecated.extensionId' | translate }}</strong>
+          {{ undeprecateProductId }}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          class="btn btn-cancel btn-secondary me-2"
+          [disabled]="isUndeprecating"
+          (click)="close.emit()">
+          {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+        <button
+          class="btn btn-danger"
+          [disabled]="isUndeprecating"
+          (click)="confirm.emit()">
+          @if (isUndeprecating) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          }
+          {{ 'common.admin.deprecated.undeprecate' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="custom-backdrop"
+    [class.backdrop-closing]="isClosing"
+    (click)="!isUndeprecating && close.emit()"></div>
+}
+

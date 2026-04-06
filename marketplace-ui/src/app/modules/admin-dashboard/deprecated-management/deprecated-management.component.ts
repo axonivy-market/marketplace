@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { AsyncPipe, DatePipe, NgOptimizedImage } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -12,9 +12,11 @@ import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
-import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
 import { AdminAuthService } from '../admin-auth.service';
-import { UserInfo } from 'node:os';
+
+import { DeprecateFormDialogComponent } from './dialogs/deprecate-form-dialog/deprecate-form-dialog.component';
+import { DeprecateSuccessDialogComponent } from './dialogs/deprecate-success-dialog/deprecate-success-dialog.component';
+import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm-dialog/undeprecate-confirm-dialog.component';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -24,7 +26,9 @@ import { UserInfo } from 'node:os';
     FormsModule,
     TranslateModule,
     DatePipe,
-    NgOptimizedImage
+    DeprecateFormDialogComponent,
+    DeprecateSuccessDialogComponent,
+    UndeprecateConfirmDialogComponent
   ],
   templateUrl: './deprecated-management.component.html',
   styleUrl: './deprecated-management.component.scss'
@@ -78,7 +82,7 @@ export class DeprecatedManagementComponent implements OnInit {
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
-  constructor(private readonly storageRef: SessionStorageRef) {}
+  constructor() {}
 
   async ngOnInit(): Promise<void> {
     const userInfo = this.adminAuthService.loadFromSessionStorage();

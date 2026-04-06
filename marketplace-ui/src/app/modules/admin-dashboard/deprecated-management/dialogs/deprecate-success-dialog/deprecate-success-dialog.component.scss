@@ -1,0 +1,140 @@
+@use '../dialog-base' as base;
+
+@include base.dialog-base-styles;
+
+.success-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  pointer-events: auto;
+  border: none;
+  background: rgba(127, 127, 127, 0.08);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.75;
+  color: inherit;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(127, 127, 127, 0.16);
+  }
+}
+
+.success-modal {
+  width: 520px;
+  text-align: center;
+  position: relative;
+  border: 1px solid rgba(127, 127, 127, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.18);
+}
+
+.success-modal .modal-header {
+  position: relative;
+  min-height: 48px;
+}
+
+.success-modal .modal-body {
+  position: relative;
+  z-index: 1;
+}
+
+.success-modal.modal-closing .success-close-btn {
+  opacity: 0.75;
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.success-modal.modal-closing .success-icon {
+  animation: none;
+}
+
+.success-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 36px 34px;
+  gap: 0;
+}
+
+.success-icon {
+  margin-bottom: 16px;
+  animation: softPop 0.45s ease;
+}
+
+.success-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.success-subtitle {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 0;
+  opacity: 0.78;
+  line-height: 1.45;
+}
+
+.success-pr-section {
+  width: 100%;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.success-pr-label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.success-pr-input {
+  flex: 1;
+  font-size: 13px;
+  color: inherit;
+  background-color: var(--bs-body-bg);
+  border-right: none;
+}
+
+.copy-btn {
+  white-space: nowrap;
+  font-size: 13px;
+  border: none;
+  min-width: 90px;
+  font-weight: 500;
+}
+
+.success-backdrop {
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(3px);
+}
+
+@keyframes softPop {
+  0% {
+    transform: translateY(6px) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-icon,
+  .success-close-btn,
+  .custom-modal,
+  .custom-modal.modal-closing {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

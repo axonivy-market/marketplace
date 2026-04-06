@@ -1,0 +1,56 @@
+@use '../dialog-base' as base;
+
+@include base.dialog-base-styles;
+
+.form-control {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid #dcdfe4;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-control.is-invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(13, 110, 253, 0.12);
+}
+
+.dropdown-menu-custom {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1060;
+  max-height: 180px;
+  overflow-y: auto;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  color: inherit;
+  border-radius: 8px;
+  margin-top: 4px;
+  padding: 4px 0;
+  list-style: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+

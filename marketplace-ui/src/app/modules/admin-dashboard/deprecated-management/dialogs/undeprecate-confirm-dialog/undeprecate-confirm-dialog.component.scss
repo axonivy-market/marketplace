@@ -1,0 +1,24 @@
+@use '../dialog-base' as base;
+
+@include base.dialog-base-styles;
+
+.confirm-modal {
+  width: 450px;
+}
+
+.confirm-message {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  border: none;
+  color: white;
+}
+
+.btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+}
+

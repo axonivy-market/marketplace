@@ -1,0 +1,66 @@
+@if (visible) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
+    <div class="modal-content custom-modal success-modal" [class.modal-closing]="isClosing">
+      <div class="modal-header border-bottom-0 pb-0">
+        <button
+          type="button"
+          class="success-close-btn"
+          aria-label="Close"
+          [disabled]="isClosing"
+          (click)="close.emit()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body success-modal-body">
+        <img
+          src="/assets/images/misc/confetti-icon.png"
+          width="60"
+          height="60"
+          alt="Confetti Icon"
+          class="success-icon">
+
+        <h4 class="text-primary success-title">
+          {{
+            (successMode === 'undeprecate'
+              ? 'common.admin.deprecated.undeprecateSuccess'
+              : 'common.admin.deprecated.deprecateSuccess') | translate
+          }}
+        </h4>
+
+        @if (showPullRequest) {
+          <div class="success-pr-section">
+            <label class="form-label success-pr-label">
+              {{ 'common.admin.deprecated.pullRequestLabel' | translate }}
+            </label>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control success-pr-input"
+                [value]="pullRequestUrl"
+                readonly
+              />
+              <button
+                type="button"
+                class="btn btn-primary copy-btn input-group-text"
+                (click)="copy.emit()">
+                @if (isCopySuccessVisible) {
+                  <i class="bi bi-check2 me-1"></i>
+                  {{ 'common.admin.deprecated.copiedLabel' | translate }}
+                } @else {
+                  <i class="bi bi-clipboard me-1"></i>
+                  {{ 'common.admin.deprecated.copyLabel' | translate }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="custom-backdrop success-backdrop"
+    [class.backdrop-closing]="isClosing"
+    (click)="!isClosing && close.emit()"></div>
+}

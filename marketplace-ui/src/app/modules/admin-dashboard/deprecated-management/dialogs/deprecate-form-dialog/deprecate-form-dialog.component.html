@@ -1,0 +1,99 @@
+@if (visible) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
+    <div class="modal-content custom-modal" [class.modal-closing]="isClosing">
+      <div class="modal-header">
+        <h5 class="modal-title">Deprecate One Product</h5>
+        <button
+          type="button"
+          class="btn-close"
+          [disabled]="isDeprecating"
+          (click)="close.emit()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-4 position-relative">
+          <label class="form-label">{{ 'common.admin.deprecated.extensionId' | translate }}</label>
+          <input
+            type="text"
+            [class.form-control]="true"
+            [class.is-invalid]="validationErrors['productId']"
+            [(ngModel)]="deprecatedRequest.productId"
+            [disabled]="isDeprecating"
+            placeholder="html-dialog-demo"
+            (click)="openDropdown.emit()"
+            (input)="filterProducts.emit(deprecatedRequest.productId)"
+            (blur)="onBlur()"
+          />
+          @if (validationErrors['productId']) {
+            <div class="invalid-feedback d-block">
+              {{ validationErrors['productId'] }}
+            </div>
+          }
+          @if (dropdownOpen && filteredProductIds.length) {
+            <ul class="form-control show w-100 dropdown-menu-custom">
+              @for (productId of filteredProductIds; track $index) {
+                <li (mousedown)="selectProduct.emit(productId)" class="dropdown-item">{{ productId }}</li>
+              }
+            </ul>
+          }
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'common.admin.deprecated.successor' | translate }}</label>
+          <input
+            type="text"
+            [class.form-control]="true"
+            [class.is-invalid]="validationErrors['successorUrl']"
+            [(ngModel)]="deprecatedRequest.successorUrl"
+            [disabled]="isDeprecating"
+            placeholder="https://market.axonivy.com/portal"
+          />
+          @if (validationErrors['successorUrl']) {
+            <div class="invalid-feedback d-block">
+              {{ validationErrors['successorUrl'] }}
+            </div>
+          }
+          @if (!validationErrors['successorUrl']) {
+            <small class="text-muted">https://market.axonivy.com/portal</small>
+          }
+        </div>
+
+        <div class="form-check mt-3">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="deprecatedRequest.addReadme"
+            [disabled]="isDeprecating"
+            (click)="readmeChecked.emit()"
+            id="addReadmeCheckbox"
+          />
+          <label class="form-check-label" for="addReadmeCheckbox">
+            {{ 'common.admin.deprecated.updateForReadmeText' | translate }}
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-cancel btn-secondary me-2" (click)="close.emit()">
+          {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn border-0 btn-primary"
+          [disabled]="isDeprecating"
+          (click)="submit.emit()">
+          @if (isDeprecating) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          }
+          {{ 'common.admin.deprecated.deprecatedButton' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="custom-backdrop"
+    [class.backdrop-closing]="isClosing"
+    (click)="!isDeprecating && close.emit()"></div>
+}
+

@@ -84,229 +84,40 @@
   </app-custom-sort-card>
 </div>
 
-@if (showDeprecatedProductDialog) {
-  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
-    <div class="modal-content custom-modal" [class.modal-closing]="isClosing">
+<app-deprecate-form-dialog
+  [visible]="showDeprecatedProductDialog"
+  [isClosing]="isClosing"
+  [isDeprecating]="isDeprecating"
+  [dropdownOpen]="dropdownOpen"
+  [deprecatedRequest]="deprecatedRequest"
+  [validationErrors]="validationErrors"
+  [filteredProductIds]="filteredProductIds"
+  (close)="closeDialog()"
+  (submit)="deprecatedProduct()"
+  (openDropdown)="openExtensionDropdown()"
+  (filterProducts)="filterProducts($event)"
+  (selectProduct)="selectExtension($event)"
+  (updateDropdownState)="dropdownOpen = $event"
+  (readmeChecked)="onClickCheckBoxReadme()">
+</app-deprecate-form-dialog>
 
-      <!-- Header -->
-      <div class="modal-header">
-        <h5 class="modal-title">
-          Deprecate One Product
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          [disabled]="isDeprecating"
-          (click)="closeDialog()"></button>
-      </div>
+<app-deprecate-success-dialog
+  [visible]="showSuccessDialog"
+  [isClosing]="isClosingSuccessDialog"
+  [successMode]="successMode"
+  [moderatorName]="moderatorName"
+  [pullRequestUrl]="successPullRequestUrl"
+  [isCopySuccessVisible]="isCopySuccessVisible"
+  [showPullRequest]="hasPullRequestUrl()"
+  (close)="closeSuccessDialog()"
+  (copy)="copyPullRequestUrl()">
+</app-deprecate-success-dialog>
 
-      <!-- Body -->
-      <div class="modal-body">
-        <div class="mb-4 position-relative">
-          <label class="form-label">{{ 'common.admin.deprecated.extensionId' | translate }}</label>
-          <input
-            type="text"
-            [class.form-control]="true"
-            [class.is-invalid]="validationErrors['productId']"
-            [(ngModel)]="deprecatedRequest.productId"
-            [disabled]="isDeprecating"
-            placeholder="html-dialog-demo"
-            (click)="openExtensionDropdown()"
-            (input)="filterProducts(deprecatedRequest.productId)"
-            (blur)="dropdownOpen = false"
-          />
-          @if (validationErrors['productId']) {
-            <div class="invalid-feedback d-block">
-              {{ validationErrors['productId'] }}
-            </div>
-          }
-          @if (dropdownOpen && filteredProductIds.length) {
-            <ul class="form-control show w-100 dropdown-menu-custom">
-              @for (productId of filteredProductIds; track $index) {
-                <li (mousedown)="selectExtension(productId)" class="dropdown-item"> {{ productId }}</li>
-              }
-            </ul>
-          }
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">{{ 'common.admin.deprecated.successor' | translate }}</label>
-          <input
-            type="text"
-            [class.form-control]="true"
-            [class.is-invalid]="validationErrors['successorUrl']"
-            [(ngModel)]="deprecatedRequest.successorUrl"
-            [disabled]="isDeprecating"
-            placeholder="https://market.axonivy.com/portal"
-          />
-          @if (validationErrors['successorUrl']) {
-            <div class="invalid-feedback d-block">
-              {{ validationErrors['successorUrl'] }}
-            </div>
-          }
-          @if (!validationErrors['successorUrl']) {
-            <small class="text-muted">
-              https://market.axonivy.com/portal
-            </small>
-          }
-        </div>
-
-        <div class="form-check mt-3">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            [(ngModel)]="deprecatedRequest.addReadme"
-            [disabled]="isDeprecating"
-            (click)="this.onClickCheckBoxReadme()"
-            id="addReadmeCheckbox"
-          />
-          <label class="form-check-label" for="addReadmeCheckbox">
-            {{ 'common.admin.deprecated.updateForReadmeText' | translate }}
-          </label>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button class="btn btn-cancel btn-secondary me-2" (click)="closeDialog()">
-          {{ 'common.admin.sync.cancelLabel' | translate }}
-        </button>
-        <button type="button" class="btn border-0 btn-primary"
-                [disabled]="isDeprecating"
-                (click)="deprecatedProduct()">
-          @if (isDeprecating) {
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-          }
-          {{ 'common.admin.deprecated.deprecatedButton' | translate }}
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Backdrop -->
-  <div
-    class="custom-backdrop"
-    [class.backdrop-closing]="isClosing"
-    (click)="!isDeprecating && closeDialog()"></div>
-}
-
-<!-- Success Dialog -->
-@if (showSuccessDialog) {
-  <div class="custom-modal-wrapper" [class.modal-closing]="isClosingSuccessDialog">
-    <div class="modal-content custom-modal success-modal" [class.modal-closing]="isClosingSuccessDialog">
-
-      <!-- Header -->
-      <div class="modal-header border-bottom-0 pb-0">
-        <button
-          type="button"
-          class="success-close-btn"
-          aria-label="Close"
-          [disabled]="isClosingSuccessDialog"
-          (click)="closeSuccessDialog()">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <!-- Body -->
-      <div class="modal-body success-modal-body">
-        <img ngSrc="/assets/images/misc/confetti-icon.png" width="60" height="60" alt="Confetti Icon"
-             class="success-icon">
-        <h4 class="text-primary success-title">
-          {{
-            (successMode === 'undeprecate'
-              ? 'common.admin.deprecated.undeprecateSuccess'
-              : 'common.admin.deprecated.deprecateSuccess') | translate
-          }}
-        </h4>
-        <h4 class="text-primary success-subtitle">
-          {{ 'common.admin.deprecated.deprecateSuccessThank' | translate }}
-          <strong>{{ moderatorName }}</strong>
-        </h4>
-
-        @if (hasPullRequestUrl()) {
-          <div class="success-pr-section">
-            <label class="form-label success-pr-label">
-              {{ 'common.admin.deprecated.pullRequestLabel' | translate }}
-            </label>
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control success-pr-input"
-                [value]="successPullRequestUrl"
-                readonly
-              />
-              <button
-                type="button"
-                class="btn btn-primary copy-btn input-group-text"
-                (click)="copyPullRequestUrl()">
-                @if (isCopySuccessVisible) {
-                  <i class="bi bi-check2 me-1"></i>
-                  {{ 'common.admin.deprecated.copiedLabel' | translate }}
-                } @else {
-                  <i class="bi bi-clipboard me-1"></i>
-                  {{ 'common.admin.deprecated.copyLabel' | translate }}
-                }
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Backdrop -->
-  <div
-    class="custom-backdrop success-backdrop"
-    [class.backdrop-closing]="isClosingSuccessDialog"
-    (click)="!isClosingSuccessDialog && closeSuccessDialog()"></div>
-}
-
-@if (showUndeprecateConfirmDialog) {
-  <div class="custom-modal-wrapper" [class.modal-closing]="isClosingUndeprecateDialog">
-    <div class="modal-content custom-modal confirm-modal" [class.modal-closing]="isClosingUndeprecateDialog">
-
-      <!-- Header -->
-      <div class="modal-header">
-        <h5 class="modal-title">
-          {{ 'common.admin.deprecated.confirmUndeprecatedTitle' | translate }}
-        </h5>
-        <button type="button" class="btn-close" [disabled]="isUndeprecating"
-                (click)="closeUndeprecateDialog()"></button>
-      </div>
-
-      <!-- Body -->
-      <div class="modal-body">
-        <p class="confirm-message">
-          {{ 'common.admin.deprecated.confirmUndeprecatedContent' | translate }}
-        </p>
-        <p class="text-muted">
-          <strong> {{ 'common.admin.deprecated.extensionId' | translate }}</strong> {{ undeprecateProductId }}
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button class="btn btn-cancel btn-secondary me-2" [disabled]="isUndeprecating"
-                (click)="closeUndeprecateDialog()">
-          {{ 'common.admin.sync.cancelLabel' | translate }}
-        </button>
-        <button class="btn btn-danger" [disabled]="isUndeprecating" (click)="executeUndeprecate()">
-          @if (isUndeprecating) {
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-          }
-          {{ 'common.admin.deprecated.undeprecate' | translate }}
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Backdrop -->
-  <div class="custom-backdrop" [class.backdrop-closing]="isClosingUndeprecateDialog"
-       (click)="!isUndeprecating && closeUndeprecateDialog()"></div>
-}
-
-
-
+<app-undeprecate-confirm-dialog
+  [visible]="showUndeprecateConfirmDialog"
+  [isClosing]="isClosingUndeprecateDialog"
+  [isUndeprecating]="isUndeprecating"
+  [undeprecateProductId]="undeprecateProductId"
+  (close)="closeUndeprecateDialog()"
+  (confirm)="executeUndeprecate()">
+</app-undeprecate-confirm-dialog>
