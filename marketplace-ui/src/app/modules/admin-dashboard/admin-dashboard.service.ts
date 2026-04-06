@@ -13,9 +13,8 @@ import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-l
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
+import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
-import { DeprecatedRequest } from '../../shared/models/deprecated-request';
 
 export type SyncTaskKey =
   | 'syncProducts'

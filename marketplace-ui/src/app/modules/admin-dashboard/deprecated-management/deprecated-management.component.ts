@@ -34,6 +34,10 @@ import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm
   styleUrl: './deprecated-management.component.scss'
 })
 export class DeprecatedManagementComponent implements OnInit {
+
+  private readonly DIALOG_CLOSE_DELAY_MS = 250;
+  private readonly COPY_SUCCESS_VISIBLE_DURATION_MS = 1500;
+
   productService = inject(ProductService);
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
@@ -112,7 +116,7 @@ export class DeprecatedManagementComponent implements OnInit {
         deprecated: false
       };
       this.validationErrors = {};
-    }, 250);
+    }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
   async openExtensionDropdown() {
@@ -187,7 +191,7 @@ export class DeprecatedManagementComponent implements OnInit {
           deprecationRequester: this.moderatorName
         };
       }
-    }, 250);
+    }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
   async copyPullRequestUrl(): Promise<void> {
@@ -204,7 +208,7 @@ export class DeprecatedManagementComponent implements OnInit {
     this.isCopySuccessVisible = true;
     setTimeout(() => {
       this.isCopySuccessVisible = false;
-    }, 1500);
+    }, this.COPY_SUCCESS_VISIBLE_DURATION_MS);
   }
 
   hasPullRequestUrl(): boolean {
@@ -266,7 +270,7 @@ export class DeprecatedManagementComponent implements OnInit {
       this.showUndeprecateConfirmDialog = false;
       this.isClosingUndeprecateDialog = false;
       this.undeprecateProductId = '';
-    }, 250);
+    }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
   async executeUndeprecate(): Promise<void> {
