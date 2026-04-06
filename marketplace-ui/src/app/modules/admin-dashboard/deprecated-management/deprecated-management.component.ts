@@ -66,7 +66,7 @@ export class DeprecatedManagementComponent implements OnInit {
   };
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
-  deprecatedRows: DeprecatedProductInfo[] = [];
+  deprecatedItems: DeprecatedProductInfo[] = [];
   filteredDeprecatedRows: DeprecatedProductInfo[] = [];
   tableSearchTerm = '';
   deprecatedResponse: DeprecatedResponse = {
@@ -324,11 +324,11 @@ export class DeprecatedManagementComponent implements OnInit {
     this.tableSearchTerm = searchTerm;
     const normalized = (searchTerm || '').trim().toLowerCase();
     if (!normalized) {
-      this.filteredDeprecatedRows = [...this.deprecatedRows];
+      this.filteredDeprecatedRows = [...this.deprecatedItems];
       return;
     }
 
-    this.filteredDeprecatedRows = this.deprecatedRows.filter(row =>
+    this.filteredDeprecatedRows = this.deprecatedItems.filter(row =>
       row.id.toLowerCase().includes(normalized)
     );
   }
@@ -342,7 +342,7 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   private async refreshDeprecatedRows(): Promise<void> {
-    this.deprecatedRows = await this.loadAllProductIds(true);
+    this.deprecatedItems = await this.loadAllProductIds(true);
     this.filterTable(this.tableSearchTerm);
   }
 
@@ -350,7 +350,7 @@ export class DeprecatedManagementComponent implements OnInit {
     response: DeprecatedResponse
   ): Promise<void> {
     if (response?.productDeprecations) {
-      this.deprecatedRows = response.productDeprecations;
+      this.deprecatedItems = response.productDeprecations;
       this.filterTable(this.tableSearchTerm);
       return;
     }
