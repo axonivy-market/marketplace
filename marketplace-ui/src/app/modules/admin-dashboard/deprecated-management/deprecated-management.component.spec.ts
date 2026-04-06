@@ -1,5 +1,10 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  flushMicrotasks,
+  tick
+} from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
@@ -10,15 +15,14 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
-import { DeprecateFormDialogComponent } from './dialogs/deprecate-form-dialog/deprecate-form-dialog.component';
-import { DeprecateSuccessDialogComponent } from './dialogs/deprecate-success-dialog/deprecate-success-dialog.component';
-import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm-dialog/undeprecate-confirm-dialog.component';
 
 describe('DeprecatedManagementComponent', () => {
   let component: DeprecatedManagementComponent;
   let fixture: ComponentFixture<DeprecatedManagementComponent>;
   let productService: jasmine.SpyObj<ProductService>;
   let adminAuthService: jasmine.SpyObj<AdminAuthService>;
+  let originalClipboard: Clipboard | undefined;
+  let writeTextSpy: jasmine.Spy;
 
   const mockDeprecatedRows = [
     {
@@ -78,6 +82,22 @@ describe('DeprecatedManagementComponent', () => {
 
     fixture = TestBed.createComponent(DeprecatedManagementComponent);
     component = fixture.componentInstance;
+
+    originalClipboard = navigator.clipboard;
+    writeTextSpy = jasmine
+      .createSpy('writeText')
+      .and.returnValue(Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextSpy },
+      configurable: true
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true
+    });
   });
 
   it('should create and initialize rows from API', fakeAsync(() => {
@@ -99,6 +119,41 @@ describe('DeprecatedManagementComponent', () => {
 
     expect(component.showDeprecatedProductDialog).toBeTrue();
     expect(component.deprecatedResponse.pullRequestUrl).toBeNull();
+  }));
+
+  it('should close deprecate dialog and reset fields after animation delay', fakeAsync(() => {
+    component.showDeprecatedProductDialog = true;
+    component.isDeprecating = true;
+    component.isCopySuccessVisible = true;
+    component.deprecatedRequest = {
+      productId: 'cms-live-editor',
+      successorUrl: 'https://market.axonivy.com/portal',
+      addReadme: true,
+      deprecated: true,
+      pullRequestAction: PullRequestAction.ADD,
+      deprecationRequester: 'alice'
+    };
+    component.validationErrors = {
+      productId: 'required',
+      successorUrl: 'invalid'
+    };
+
+    component.closeDialog();
+
+    expect(component.isClosing).toBeTrue();
+    tick(250);
+
+    expect(component.showDeprecatedProductDialog).toBeFalse();
+    expect(component.isClosing).toBeFalse();
+    expect(component.isDeprecating).toBeFalse();
+    expect(component.isCopySuccessVisible).toBeFalse();
+    expect(component.deprecatedRequest).toEqual({
+      productId: '',
+      successorUrl: '',
+      addReadme: false,
+      deprecated: false
+    });
+    expect(component.validationErrors).toEqual({});
   }));
 
   it('should validate form fields', () => {
@@ -136,6 +191,44 @@ describe('DeprecatedManagementComponent', () => {
     expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
     expect(component.dropdownOpen).toBeFalse();
   });
+
+  it('should load ids and open dropdown', fakeAsync(() => {
+    const selectableRows = [
+      {
+        id: 'cms-live-editor',
+        deprecationDate: null,
+        deprecationRequester: null
+      },
+      {
+        id: 'vertexai-google',
+        deprecationDate: null,
+        deprecationRequester: null
+      },
+      {
+        id: 'rtf-factory',
+        deprecationDate: null,
+        deprecationRequester: null
+      }
+    ];
+    productService.fetchAllProductIdsByDeprecated.and.returnValue(
+      of(selectableRows)
+    );
+    component.deprecatedRequest.productId = 'vertex';
+
+    component.openExtensionDropdown();
+    flushMicrotasks();
+
+    expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(
+      null
+    );
+    expect(component.selectableProductIds).toEqual([
+      'cms-live-editor',
+      'vertexai-google',
+      'rtf-factory'
+    ]);
+    expect(component.filteredProductIds).toEqual(['vertexai-google']);
+    expect(component.dropdownOpen).toBeTrue();
+  }));
 
   it('should deprecate product and open success dialog', fakeAsync(() => {
     fixture.detectChanges();
@@ -225,4 +318,33 @@ describe('DeprecatedManagementComponent', () => {
     component.successPullRequestUrl = ' https://github.com/org/repo/pull/99 ';
     expect(component.hasPullRequestUrl()).toBeTrue();
   });
+
+  it('should copy pull request url and show copy success message temporarily', fakeAsync(() => {
+    component.successPullRequestUrl = ' https://github.com/org/repo/pull/99 ';
+
+    component.copyPullRequestUrl();
+    flushMicrotasks();
+
+    expect(writeTextSpy).toHaveBeenCalledWith(
+      'https://github.com/org/repo/pull/99'
+    );
+    expect(component.isCopySuccessVisible).toBeTrue();
+
+    tick(1500);
+    expect(component.isCopySuccessVisible).toBeFalse();
+  }));
+
+  it('should not copy when pull request url is empty or invalid', fakeAsync(() => {
+    component.successPullRequestUrl = 'null';
+
+    component.copyPullRequestUrl();
+    flushMicrotasks();
+    expect(writeTextSpy).not.toHaveBeenCalled();
+
+    component.successPullRequestUrl = '   ';
+    component.copyPullRequestUrl();
+    flushMicrotasks();
+    expect(writeTextSpy).not.toHaveBeenCalled();
+    expect(component.isCopySuccessVisible).toBeFalse();
+  }));
 });
