@@ -3,6 +3,10 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
+
+vi.mock('bootstrap', () => ({
+  Tooltip: vi.fn().mockImplementation(() => ({}))
+}));
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
