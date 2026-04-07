@@ -13,6 +13,18 @@ header {
   max-height: fit-content;
 }
 
+::ng-deep .my-offcanvas {
+  top: 7rem !important;
+  height: calc(100% - 7rem) !important;
+  width: 100vw !important;
+}
+
+::ng-deep .my-offcanvas-backdrop {
+  top: 7rem !important;
+  height: calc(100% - 7rem) !important;
+  opacity: 0 !important;
+}
+
 .navbar {
   height: 100%;
 }

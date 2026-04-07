@@ -23,6 +23,7 @@ import {
   NgbDatepicker,
   NgbInputDatepicker,
   NgbOffcanvas,
+  NgbOffcanvasRef,
   OffcanvasDismissReasons
 } from '@ng-bootstrap/ng-bootstrap';
 
@@ -42,14 +43,12 @@ import {
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
 export class HeaderComponent {
-  private offcanvasService = inject(NgbOffcanvas);
-  closeResult: WritableSignal<string> = signal('');
+  offcanvasService = inject(NgbOffcanvas);
+  headerOffcanvasRef: NgbOffcanvasRef | null = null;
 
   selectedNav = '/';
 
   isMobileMenuCollapsed = model<boolean>(true);
-
-  isSidebarOpen = model<boolean>(false);
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -81,33 +80,6 @@ export class HeaderComponent {
       });
   }
 
-  open(content: TemplateRef<any>) {
-    this.offcanvasService
-      .open(content, {
-        ariaLabelledBy: 'offcanvas-basic-title',
-        backdrop: false
-      })
-      .result.then(
-        result => {
-          this.closeResult.set(`Closed with: ${result}`);
-        },
-        reason => {
-          this.closeResult.set(`Dismissed ${this.getDismissReason(reason)}`);
-        }
-      );
-  }
-
-  private getDismissReason(reason: any): string {
-    switch (reason) {
-      case OffcanvasDismissReasons.ESC:
-        return 'by pressing ESC';
-      case OffcanvasDismissReasons.BACKDROP_CLICK:
-        return 'by clicking on the backdrop';
-      default:
-        return `with: ${reason}`;
-    }
-  }
-
   onCollapsedMobileMenu() {
     this.isMobileMenuCollapsed.update(value => !value);
   }
@@ -120,7 +92,36 @@ export class HeaderComponent {
     this.isAdminRoute = url.startsWith('/internal-dashboard');
   }
 
-  openSideBar() {
-    this.isSidebarOpen.update(value => !value);
+  toggleHeaderOffcanvas(content: TemplateRef<any>) {
+    if (this.headerOffcanvasRef) {
+      this.headerOffcanvasRef.close();
+      return;
+    }
+    this.open(content);
   }
+
+  open(content: TemplateRef<any>) {
+    this.headerOffcanvasRef = this.offcanvasService.open(content, {
+      ariaLabelledBy: 'offcanvas-basic-title',
+      backdrop: true,
+      panelClass: 'my-offcanvas',
+      position: 'end',
+      backdropClass: 'my-offcanvas-backdrop'
+    });
+
+    this.headerOffcanvasRef.result.finally(() => {
+      this.headerOffcanvasRef = null;
+    });
+  }
+
+  // private getDismissReason(reason: any): string {
+  //   switch (reason) {
+  //     case OffcanvasDismissReasons.ESC:
+  //       return 'by pressing ESC';
+  //     case OffcanvasDismissReasons.BACKDROP_CLICK:
+  //       return 'by clicking on the backdrop';
+  //     default:
+  //       return `with: ${reason}`;
+  //   }
+  // }
 }

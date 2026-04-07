@@ -57,42 +57,29 @@
           [isAdminPage]="isAdminRoute"
           class="d-none d-xl-block" />
         <app-search-bar class="d-none d-xl-block"></app-search-bar>
-        <button class="btn border-0 rounded-3 d-block d-xl-none">
+        <button class="btn border-0 rounded-3 d-block d-xl-none p-0">
           <span>
             <i
               class="header__menu-button"
-              [ngClass]="isSidebarOpen() ? 'bi bi-x-lg' : ' bi bi-list'"
-              ]
-              (click)="openSideBar()"></i>
+              [ngClass]="headerOffcanvasRef ? 'bi bi-x-lg' : 'bi bi-list'"
+              (click)="toggleHeaderOffcanvas(content)"></i>
           </span>
         </button>
-        <!-- <div class="d-flex gap-2">
-      <app-github-user-badge class="d-block d-xl-none"></app-github-user-badge>
-      <button
-        class="btn border-0 navbar-toggler rounded-3"
-        data-bs-toggle="collapse"
-        aria-expanded="false"
-        aria-label="Toggle navigation">
-        <span>
-          <i
-            class="header__menu-button"
-            [ngClass]="isMobileMenuCollapsed() ? 'bi bi-list' : 'bi bi-x-lg'"
-            (click)="onCollapsedMobileMenu()"></i>
-        </span>
-      </button>
-    </div>
-    <div
-      class="collapse navbar-collapse"
-      [ngClass]="{ show: !isMobileMenuCollapsed() }"
-      id="navbarSupportedContent">
-      <div
-        class="header__navbar-content d-flex flex-column flex-xl-row justify-content-between w-100 min-height-100 align-items-md-start align-items-xl-center">
-        <div class="d-none d-xl-block"></div>
-        <app-navigation [isAdminPage]="isAdminRoute" />
-        <app-search-bar></app-search-bar>
-      </div>
-    </div> -->
       </div>
     </nav>
   </header>
 </div>
+
+<ng-template #content let-offcanvas>
+  <div class="container">
+    <!-- <div class="offcanvas-header p-0">
+      <h4 class="offcanvas-title" id="offcanvas-basic-title">Profile update</h4>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="offcanvas.dismiss('Cross click')"></button>
+    </div> -->
+    <div class="offcanvas-body"></div>
+  </div>
+</ng-template>
