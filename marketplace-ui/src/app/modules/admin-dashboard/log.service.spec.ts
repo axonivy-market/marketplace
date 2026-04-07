@@ -69,7 +69,7 @@ describe('LogService', () => {
     it('should fetch log file content and trigger download', () => {
       const fileName = 'test.log';
       const mockBlob = new Blob(['test content'], { type: 'text/plain' });
-      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload');
+      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload').mockImplementation(() => {});
 
       service.getLogFileContent(fileName);
 
@@ -88,7 +88,7 @@ describe('LogService', () => {
 
     it('should not trigger download if response body is null', () => {
       const fileName = 'test.log';
-      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload');
+      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload').mockImplementation(() => {});
 
       service.getLogFileContent(fileName);
 

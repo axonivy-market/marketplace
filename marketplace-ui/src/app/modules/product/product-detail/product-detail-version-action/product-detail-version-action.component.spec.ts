@@ -412,8 +412,8 @@ describe('ProductDetailVersionActionComponent', () => {
     const fileName = 'artifact.zip';
     const testBlob = new Blob(['test'], { type: 'application/zip' });
     const downloadSpy = vi.spyOn<typeof component, 'fetchAndDownloadArtifact'>(component, 'fetchAndDownloadArtifact');
-    vi.spyOn(component, 'onUpdateInstallationCount');
-    vi.spyOn(component, 'triggerDownload');
+    vi.spyOn(component, 'onUpdateInstallationCount').mockImplementation(() => {});
+    vi.spyOn(component, 'triggerDownload').mockImplementation(() => {});
 
     component.fetchAndDownloadArtifact(url, fileName);
     const req = httpMock.expectOne(url);

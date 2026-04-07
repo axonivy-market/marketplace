@@ -144,23 +144,26 @@ describe('LogViewerComponent', () => {
     });
 
     it('should trigger download for all logs', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['log1', 'log2']);
       component.downloadLogs();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith('log1\nlog2', 'logs.txt', 'text/plain');
     });
 
     it('should trigger download for JSON', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['2026-01-20 00:29:45 INFO msg']);
       fixture.detectChanges();
       component.downloadAsJSON();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith(expect.any(String), 'logs.json', 'application/json');
     });
 
     it('should trigger download for CSV', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['2026-01-20 00:29:45 INFO msg']);
       fixture.detectChanges();
       component.downloadAsCSV();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith(expect.any(String), 'logs.csv', 'text/csv');
     });
   });
 
