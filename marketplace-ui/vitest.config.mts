@@ -13,11 +13,11 @@ export default defineConfig({
     setupFiles: ['src/test-setup.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'text-summary', 'html', 'lcov']
+      reporter: ['text', 'text-summary', 'html', 'lcov'],
+      exclude: ['**/*.html', '**/*.scss']
     },
     watch: false,
     testTimeout: 60000,
-    restoreMocks: true,
-    include: ['src/**/*.spec.{ts,js}']
+    restoreMocks: true
   }
 });
