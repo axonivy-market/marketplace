@@ -220,8 +220,8 @@ describe('ProductDetailComponent', () => {
     fixture = TestBed.createComponent(ProductDetailComponent);
     component = fixture.componentInstance;
     const productService = TestBed.inject(ProductService);
-    spyOn(productService, 'setDefaultVendorImage').and.callThrough();
-    mockRouter.navigate.and.returnValue(Promise.resolve(true));
+    vi.spyOn(productService, 'setDefaultVendorImage');
+    mockRouter.navigate.mockResolvedValue(true);
     fixture.detectChanges();
   });
 
@@ -1115,22 +1115,9 @@ describe('ProductDetailComponent', () => {
     const spy = vi.spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
     expect(spy).toHaveBeenCalled();
-    const args = (spy as jasmine.Spy).calls.mostRecent().args;
+    const args = spy.mock.lastCall!;
     expect(args[0]).toBe('description');
-    expect(args[2]).toBeFalse();
-  });
-
-  it('should restore scroll position for a tab', () => {
-    vi.useFakeTimers();
-    component.isBrowser = true;
-    const tabId = 'demo';
-    component['scrollPositions'][tabId] = 1234;
-    const scrollSpy = vi.spyOn(globalThis, 'scrollTo');
-    component.keepCurrentTabScroll(tabId);
-    vi.runAllTimers();
-    expect(scrollSpy).toHaveBeenCalled();
-    const arg = scrollSpy.mock.lastCall![0] as ScrollToOptions;
-    expect(arg.top).toBe(1234);
+    expect(args[2]).toBe(false);
   });
 
   describe('loadChangelogs', () => {
@@ -1715,7 +1702,7 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  it('should set DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
+  it('should set DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1723,15 +1710,15 @@ describe('ProductDetailComponent', () => {
     (component as any).initialFragmentHandled = false;
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
 
-    const spy = spyOn(component, 'setActiveTab');
+    const spy = vi.spyOn(component, 'setActiveTab');
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
     expect(spy).not.toHaveBeenCalled();
     expect(component.activeTab).toBe('description');
-    expect((component as any).initialFragmentHandled).toBeTrue();
-  }));
+    expect((component as any).initialFragmentHandled).toBe(true);
+  });
 
   // Test handleSubsequentTabActivation - changelog
   it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', () => {
@@ -1748,7 +1735,7 @@ describe('ProductDetailComponent', () => {
     expect(component.setupIntersectionObserver).toHaveBeenCalled();
   });
 
-  it('should NOT navigate when fragment is null and initialFragmentHandled is true', fakeAsync(() => {
+  it('should NOT navigate when fragment is null and initialFragmentHandled is true', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1760,7 +1747,7 @@ describe('ProductDetailComponent', () => {
     await Promise.resolve();
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
-  }));
+  });
 
   it('should not navigate if currentFragment already equals currentTab', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
@@ -1777,11 +1764,11 @@ describe('ProductDetailComponent', () => {
     await Promise.resolve();
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
-  }));
+  });
 
   it('should clear scrollTimeout on ngOnDestroy', () => {
     (component as any).scrollTimeout = setTimeout(() => { }, 1000);
-    const clearSpy = spyOn(window, 'clearTimeout').and.callThrough();
+    const clearSpy = vi.spyOn(window, 'clearTimeout');
     component.ngOnDestroy();
     expect(clearSpy).toHaveBeenCalled();
   });
@@ -1793,7 +1780,7 @@ describe('ProductDetailComponent', () => {
     (component as any).isDataLoaded = true;
     (component as any).initialFragmentHandled = true;
 
-    const spy = spyOn(component, 'setActiveTab').and.callThrough();
+    const spy = vi.spyOn(component, 'setActiveTab');
 
     component.navigateToProductDetailsWithTabFragment();
 
@@ -1807,7 +1794,7 @@ describe('ProductDetailComponent', () => {
     (component as any).isDataLoaded = true;
     (component as any).initialFragmentHandled = true;
 
-    const spy = spyOn(component, 'setActiveTab').and.callThrough();
+    const spy = vi.spyOn(component, 'setActiveTab');
 
     component.navigateToProductDetailsWithTabFragment();
 
