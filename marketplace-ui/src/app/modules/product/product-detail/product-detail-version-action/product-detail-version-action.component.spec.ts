@@ -42,7 +42,14 @@ describe('ProductDetailVersionActionComponent', () => {
     const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
-        queryParams: {}
+        queryParams: {},
+        queryParamMap: {
+          get: (key: string) => {
+            if (key === ROUTER.VERSION) return '1.0';
+            return null;
+          }
+        },
+        fragment: 'description'
       }
     });
 
@@ -60,9 +67,8 @@ describe('ProductDetailVersionActionComponent', () => {
         provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
         { provide: ElementRef, useClass: MockElementRef },
-        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
-        { provide: CommonUtils, useValue: commonUtilsSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteSpy }
+        { provide: ActivatedRoute, useValue: activatedRouteSpy },
+        { provide: CommonUtils, useValue: commonUtilsSpy }
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(ProductDetailVersionActionComponent);
