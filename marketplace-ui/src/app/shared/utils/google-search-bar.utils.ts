@@ -40,12 +40,21 @@ export class GoogleSearchBarUtils {
       win.google.search.cse.element.render(GOOGLE_SEARCH);
     }
   }
+
   static addCustomClassToSearchBar(renderer: Renderer2, doc: Document): void {
     setTimeout(() => {
       const searchBoxList = doc.querySelectorAll(GOOGLE_SEARCH_BAR_CLASS_NAME);
       searchBoxList.forEach(searchBox =>
         renderer.addClass(searchBox, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME)
       );
+
+      const googleSearchInputList = doc.querySelectorAll(".gsc-input");
+      googleSearchInputList.forEach(input =>
+        renderer.addClass(input, 'text-primary')
+      );
+      // searchBoxList.forEach(searchBox =>
+      //   renderer.addClass(searchBox, 'custom-class')
+      // );
     }, 1000);
   }
 }

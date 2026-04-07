@@ -26,6 +26,7 @@ import {
   NgbOffcanvasRef,
   OffcanvasDismissReasons
 } from '@ng-bootstrap/ng-bootstrap';
+import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.component';
 
 @Component({
   selector: 'app-header',
@@ -34,7 +35,8 @@ import {
     FormsModule,
     TranslateModule,
     NavigationComponent,
-    SearchBarComponent,
+    // SearchBarComponent,
+    HeaderToolbarComponent,
     RouterLink,
     GithubUserBadgeComponent,
     NgbInputDatepicker
