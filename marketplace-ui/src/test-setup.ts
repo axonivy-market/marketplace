@@ -53,6 +53,11 @@ class IntersectionObserverStub {
 }
 Object.defineProperty(globalThis, 'IntersectionObserver', { writable: true, configurable: true, value: IntersectionObserverStub });
 
+// scrollIntoView shim — not implemented in jsdom
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn();
+}
+
 // Replace sessionStorage/localStorage with vi.fn()-backed mocks so
 // vi.spyOn() and toHaveBeenCalledWith() work correctly on them.
 function makeStorageMock() {
