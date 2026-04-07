@@ -1,11 +1,9 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavigationComponent } from './navigation.component';
 import { RouterModule } from '@angular/router';
-
-declare const viewport: Viewport;
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -13,7 +11,11 @@ describe('NavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavigationComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
+      imports: [
+        NavigationComponent,
+        TranslateModule.forRoot(),
+        RouterModule.forRoot([])
+      ],
       providers: [TranslateService]
     }).compileComponents();
 
@@ -27,7 +29,7 @@ describe('NavigationComponent', () => {
   });
 
   it('should call checkMediaSize on window resize', () => {
-    spyOn(component, 'checkMediaSize');
+    vi.spyOn(component, 'checkMediaSize');
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
@@ -40,7 +42,9 @@ describe('NavigationComponent', () => {
       By.css('.google-search-container')
     );
     expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
+      'block'
+    );
   });
 
   it('should hide google search bar container in desktop mode', () => {
@@ -51,7 +55,9 @@ describe('NavigationComponent', () => {
       By.css('.google-search-container')
     );
     expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
+      'none'
+    );
   });
 
   it('should return navItems when isAdminPage is false', () => {

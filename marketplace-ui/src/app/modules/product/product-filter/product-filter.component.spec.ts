@@ -1,31 +1,35 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductFilterComponent } from './product-filter.component';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
-import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
+import {
+  FILTER_TYPES,
+  SORT_TYPES
+} from '../../../shared/constants/common.constant';
 import { PAGE } from '../../../shared/constants/query.params.constant';
-
-declare const viewport: Viewport;
 
 describe('ProductFilterComponent', () => {
   let component: ProductFilterComponent;
   let fixture: ComponentFixture<ProductFilterComponent>;
   let activatedRoute: ActivatedRoute;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let routerSpy: MockedObject<Router>;
 
   beforeEach(async () => {
-    const routerSpyObj = jasmine.createSpyObj('Router', ['navigate']);
+    const routerSpyObj = {
+      navigate: vi.fn().mockName('Router.navigate')
+    };
     await TestBed.configureTestingModule({
       imports: [
         ProductFilterComponent,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
-      providers: [TranslateService,
+      providers: [
+        TranslateService,
         {
           provide: ActivatedRoute,
           useValue: {
@@ -38,7 +42,7 @@ describe('ProductFilterComponent', () => {
     fixture = TestBed.createComponent(ProductFilterComponent);
     component = fixture.componentInstance;
     activatedRoute = TestBed.inject(ActivatedRoute);
-    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    routerSpy = TestBed.inject(Router) as MockedObject<Router>;
     component.currentPage = PAGE.HOME;
     fixture.detectChanges();
   });
@@ -53,11 +57,12 @@ describe('ProductFilterComponent', () => {
     )[1].nativeElement as HTMLDivElement;
 
     filterElement.dispatchEvent(new Event('click'));
-    expect(component.selectedTypeLabel).toEqual('common.filter.value.connector');
+    expect(component.selectedTypeLabel).toEqual(
+      'common.filter.value.connector'
+    );
   });
 
   it('filter type should change to selectbox in small screen', () => {
-    viewport.set(540);
     const filterSelect = fixture.debugElement.query(
       By.css('.filter-type--select')
     );
@@ -68,18 +73,17 @@ describe('ProductFilterComponent', () => {
   });
 
   it('sort label should not display in small screen', () => {
-    viewport.set(900);
+    // Bootstrap d-none hides the label by default (shown only at lg+ via d-lg-flex)
     const sortLabel = fixture.debugElement.query(
       By.css('.sort-container__label')
     );
-    expect(getComputedStyle(sortLabel.nativeElement).display).toBe('none');
+    expect(sortLabel.nativeElement.classList.contains('d-none')).toBe(true);
   });
 
   it('onSortChange should update selectedSortOption correctly', () => {
     fixture.detectChanges();
     expect(component.selectedSortLabel).toEqual('common.sort.value.standard');
   });
-
 
   it('search should update searchText correctly', () => {
     const searchText = 'portal';
@@ -93,7 +97,7 @@ describe('ProductFilterComponent', () => {
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[0].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParams: {},
       queryParamsHandling: ''
     });
@@ -111,19 +115,22 @@ describe('ProductFilterComponent', () => {
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[1].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[1].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParams: { type: validType, sort: validSort },
       queryParamsHandling: ''
     });
   });
 
   it('should revert to default type and sort if query params are invalid', () => {
-    activatedRoute.queryParams = of({ type: 'invalidType', sort: 'invalidSort' });
+    activatedRoute.queryParams = of({
+      type: 'invalidType',
+      sort: 'invalidSort'
+    });
 
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[0].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParams: {},
       queryParamsHandling: ''
     });
@@ -138,7 +145,7 @@ describe('ProductFilterComponent', () => {
     fixture.detectChanges();
 
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParams: { sort: validSort },
       queryParamsHandling: ''
     });
@@ -167,20 +174,26 @@ describe('ProductFilterComponent', () => {
     component.selectedTypeLabel = FILTER_TYPES[2].label;
     fixture.detectChanges();
 
-    const filterElements = fixture.debugElement.queryAll(By.css('.filter-type'));
+    const filterElements = fixture.debugElement.queryAll(
+      By.css('.filter-type')
+    );
     // Check type connectors (not selected)
     expect(filterElements[0].nativeElement.classList).toContain('border-dark');
     expect(filterElements[0].nativeElement.classList).toContain('text-dark');
-    expect(filterElements[0].nativeElement.classList).not.toContain('text-light');
+    expect(filterElements[0].nativeElement.classList).not.toContain(
+      'text-light'
+    );
 
     // Check type util (selected)
     expect(filterElements[2].nativeElement.classList).toContain('text-light');
     expect(filterElements[2].nativeElement.classList).toContain('border-0');
-    expect(filterElements[2].nativeElement.classList).not.toContain('text-dark');
+    expect(filterElements[2].nativeElement.classList).not.toContain(
+      'text-dark'
+    );
   });
 
   it('should emit sortChange event with the selected sort option', () => {
-    spyOn(component.sortChange, 'emit');
+    vi.spyOn(component.sortChange, 'emit');
     const selectedSort = SORT_TYPES[1].value;
 
     component.onSortChange(selectedSort);
@@ -198,7 +211,7 @@ describe('ProductFilterComponent', () => {
   it('should call onClearSearch when clear search text button is clicked', () => {
     component.searchText = 'amazon-connector';
     fixture.detectChanges();
-    spyOn(component, 'onClearSearch');
+    vi.spyOn(component, 'onClearSearch');
     const clearSearchTextButton = fixture.debugElement.query(
       By.css('#clear-search-text-button')
     ).nativeElement as HTMLElement;
@@ -235,7 +248,7 @@ describe('ProductFilterComponent', () => {
     });
 
     it('should emit empty string through searchChange event when searchText has content', () => {
-      spyOn(component.searchChange, 'emit');
+      vi.spyOn(component.searchChange, 'emit');
       component.searchText = 'amazon-connector';
 
       component.onClearSearch();
@@ -246,14 +259,14 @@ describe('ProductFilterComponent', () => {
 
     it('should NOT clear searchText or emit event when searchText is already empty', () => {
       component.searchText = '';
-      spyOn(component.searchChange, 'emit');
+      vi.spyOn(component.searchChange, 'emit');
 
       component.onClearSearch();
 
       expect(component.searchText).toBe('');
       expect(component.searchChange.emit).not.toHaveBeenCalled();
     });
-  })
+  });
 
   it('should render filter section when isProductHomepage is true', () => {
     component.currentPage = PAGE.HOME;
