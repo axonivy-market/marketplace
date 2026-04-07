@@ -3,6 +3,9 @@ import angular from '@analogjs/vite-plugin-angular';
 
 export default defineConfig({
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
+  optimizeDeps: {
+    disabled: !!process.env['CI'],
+  },
   test: {
     environment: 'jsdom',
     globals: true,
