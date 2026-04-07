@@ -4,8 +4,8 @@ import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.model.DeprecatedRequest;
-import com.axonivy.market.model.DeprecatedResponse;
+import com.axonivy.market.model.DeprecationRequest;
+import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -91,8 +91,8 @@ public class ProductMarketplaceDataController {
   @PostMapping(DEPRECATED)
   @Operation(summary = "Update successor and deprecated for product",
       description = "Partially update successor URL and deprecated flag for a product")
-  public ResponseEntity<DeprecatedResponse> updateDeprecatedMarketplaceData(
-      @RequestBody DeprecatedRequest request) throws IOException {
+  public ResponseEntity<DeprecationResponse> updateDeprecatedMarketplaceData(
+      @RequestBody DeprecationRequest request) throws IOException {
     var deprecatedResponse = productMarketplaceDataService.updateSuccessorForProduct(request);
     return new ResponseEntity<>(deprecatedResponse, HttpStatus.OK);
   }

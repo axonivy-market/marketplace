@@ -59,7 +59,7 @@ public class ProductDetailModel extends ProductModel {
   private boolean isMavenDropins;
   @Schema(description = "Is the focused product", example = "true")
   private Boolean isFocusedProduct;
-  @Schema(description = "The success of deprecated product", example = "http://localhost:4200/smart-workflow")
+  @Schema(description = "The success of deprecated product", example = "https://market.axonivy.com/portal")
   private String successor;
 
   @Override

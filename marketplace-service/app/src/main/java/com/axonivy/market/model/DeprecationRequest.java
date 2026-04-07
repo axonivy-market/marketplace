@@ -10,10 +10,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeprecatedRequest {
+public class DeprecationRequest {
   private String productId;
   private String successorUrl;
-  private Boolean deprecated;
+  private Boolean isDeprecated;
   private boolean addReadme;
   private PullRequestAction pullRequestAction;
   private String deprecationRequester;

@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class DeprecatedResponse {
+public class DeprecationResponse {
   private List<ProductDeprecationProjection> productDeprecations;
   private String pullRequestUrl;
 }

@@ -7,8 +7,8 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.DeprecatedRequest;
-import com.axonivy.market.model.DeprecatedResponse;
+import com.axonivy.market.model.DeprecationRequest;
+import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -199,37 +199,38 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return outputStream;
   }
 
-  @Transactional(rollbackOn = Exception.class)
+  @Transactional(rollbackOn = IOException.class)
   @Override
-  public DeprecatedResponse updateSuccessorForProduct(DeprecatedRequest request) throws IOException {
+  public DeprecationResponse updateSuccessorForProduct(DeprecationRequest request) throws IOException {
     Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
         .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
           productMarketplaceData.setSuccessor(request.getSuccessorUrl());
           productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
           productMarketplaceData.setDeprecationDate(new Date());
           productMarketplaceDataRepo.save(productMarketplaceData);
-          log.info("Successfully set successor for product marketplace data: {}", request.getProductId());
         });
 
-    GHPullRequest pullRequestUrl = null;
+    String pullRequestUrl = null;
     Product product = productRepo.findById(request.getProductId()).orElse(null);
     if (product != null) {
-      product.setDeprecated(request.getDeprecated());
-      product.setUpdatedAt(new Date());
-      if (request.isAddReadme() && request.getPullRequestAction() != null) {
-        log.info("Start to update deprecated pull request action for product {}", request.getProductId());
-        pullRequestUrl = gitHubService.modifyReadmeUnsupportedPullRequest(
-            product.getRepositoryName(), request.getPullRequestAction());
-      }
+      product.setDeprecated(request.getIsDeprecated());
+      pullRequestUrl = handlePullRequest(product.getRepositoryName(), request);
       productRepo.save(product);
-      log.info("Successfully set deprecated for product: {}", product.getId());
     }
-    return DeprecatedResponse.builder()
+    return DeprecationResponse.builder()
         .productDeprecations(productRepo.findProductIdsByDeprecated(true))
-        .pullRequestUrl(Optional.ofNullable(pullRequestUrl)
-            .map(GHPullRequest::getHtmlUrl)
-            .map(Object::toString)
-            .orElse(null))
+        .pullRequestUrl(pullRequestUrl)
         .build();
+  }
+
+  private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
+    if (!request.isAddReadme() || request.getPullRequestAction() == null) {
+      return null;
+    }
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
+    return Optional.ofNullable(pullRequest)
+        .map(GHPullRequest::getHtmlUrl)
+        .map(Object::toString)
+        .orElse(null);
   }
 }

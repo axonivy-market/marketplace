@@ -75,7 +75,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
-  private static final String HEADS_PREFIX = "heads/";
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final Pattern LINE_SPLIT_PATTERN = Pattern.compile("\\R");
 
@@ -475,7 +474,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHPullRequest modifyReadmeUnsupportedPullRequest(
+  public GHPullRequest updateReadmeForSuccessorNotes(
       String repositoryPath, PullRequestAction action) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
@@ -485,8 +484,8 @@ public class GitHubServiceImpl implements GitHubService {
     String currentReadmeContent = getReadmeContent(readme);
     PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent);
 
-    boolean hasReadmeTheSame = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
-    if (hasReadmeTheSame) {
+    boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
+    if (isSameContent) {
       log.error("No Need to update readme content for deprecation because the content is the same");
       return null;
     }
@@ -496,7 +495,7 @@ public class GitHubServiceImpl implements GitHubService {
     } catch (GHFileNotFoundException e) {
       log.info("There is no duplicated branch existing, create new branch");
       String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
-      repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
+      repository.createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, branchSha);
     }
     readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
     return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
@@ -506,7 +505,8 @@ public class GitHubServiceImpl implements GitHubService {
       PullRequestData pullRequestData, GHContent readme) throws IOException {
     repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME);
     log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
-    List<GHPullRequest> existingPRs = repository.getPullRequests(GHIssueState.OPEN);
+    List<GHPullRequest> existingPRs = repository.queryPullRequests().head(baseBranch)
+        .state(GHIssueState.OPEN).list().toList();
     GHPullRequest existingPR = existingPRs.stream()
         .filter(pr -> pr.getHead().getRef().equals(UNSUPPORTED_BRANCH_NAME)
             && pr.getBase().getRef().equals(baseBranch))
@@ -516,31 +516,25 @@ public class GitHubServiceImpl implements GitHubService {
       return existingPR;
     }
     GHCompare compare = repository.getCompare(baseBranch, UNSUPPORTED_BRANCH_NAME);
-    List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.behind, GHCompare.Status.behind);
+    List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.identical, GHCompare.Status.behind);
     if (githubStatus.stream().anyMatch(status -> status == compare.getStatus())) {
-      log.info("Branch is already merged. Deleting and recreating...");
       repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME).delete();
       String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
-      repository.createRef("refs/heads/" + UNSUPPORTED_BRANCH_NAME, branchSha);
+      repository.createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, branchSha);
       readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
     }
     return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
   }
 
   private String getReadmeContent(GHContent readme) throws IOException {
-    String currentReadmeContent;
     try (InputStream inputStream = readme.read()) {
-      currentReadmeContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+      return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
-    return currentReadmeContent;
   }
 
   private GHPullRequest generatePullRequest(GHRepository repository,
       String baseBranch, String pullRequestBody, String pullRequestTitle) throws IOException {
-    GHPullRequest pr = repository.createPullRequest(pullRequestTitle,
-        UNSUPPORTED_BRANCH_NAME, baseBranch, pullRequestBody);
-    log.info("Generated pull request '{}'", pr.getHtmlUrl().toString());
-    return pr;
+    return repository.createPullRequest(pullRequestTitle, UNSUPPORTED_BRANCH_NAME, baseBranch, pullRequestBody);
   }
 
   private String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {

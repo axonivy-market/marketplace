@@ -11,8 +11,8 @@ import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.DeprecatedRequest;
-import com.axonivy.market.model.DeprecatedResponse;
+import com.axonivy.market.model.DeprecationRequest;
+import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -253,24 +253,24 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateSuccessorForProductWhenProductNotFound() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNotNull(response, "Response should not be null even when product is not found");
     assertNull(response.getPullRequestUrl(), "Pull request URL should be null when product is not found");
     verify(productMarketplaceDataRepo).save(any(ProductMarketplaceData.class));
     verify(productRepo, never()).save(any(Product.class));
-    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
   }
 
   @Test
   void testUpdateSuccessorForProductSavesMarketplaceDataWithCorrectValues() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
     request.setDeprecationRequester("admin");
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
@@ -289,39 +289,39 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateSuccessorForProductWithAddReadmeFalseDoesNotCreatePr() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
     Product product = getMockProduct();
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNull(response.getPullRequestUrl(), "Pull request URL should be null when addReadme is false");
     assertEquals(Boolean.TRUE, product.getDeprecated(), "Product deprecated flag should be set to true");
     verify(productRepo).save(product);
-    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
   }
 
   @Test
   void testUpdateSuccessorForProductWithAddReadmeTrueAndNullActionDoesNotCreatePr() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, null);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, null);
     Product product = getMockProduct();
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNull(response.getPullRequestUrl(), "Pull request URL should be null when pullRequestAction is null");
-    verify(gitHubService, never()).modifyReadmeUnsupportedPullRequest(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
   }
 
   @Test
   void testUpdateSuccessorForProductWithAddReadmeTrueAndActionAddReturnsPrUrl() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
 
@@ -330,20 +330,20 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(mockPr);
+    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(mockPr);
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNotNull(response.getPullRequestUrl(), "Pull request URL should be present when GitHub service returns a PR");
     assertEquals("https://github.com/axonivy-market/bpmn-statistic/pull/1", response.getPullRequestUrl(),
         "Pull request URL should match the mocked GitHub PR HTML URL");
-    verify(gitHubService).modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD);
+    verify(gitHubService).updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD);
   }
 
   @Test
   void testUpdateSuccessorForProductWithAddReadmeTrueAndActionRemoveReturnsPrUrl() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest(null, false, true, PullRequestAction.REMOVE);
+    DeprecationRequest request = buildDeprecatedRequest(null, false, true, PullRequestAction.REMOVE);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
 
@@ -352,34 +352,34 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE)).thenReturn(mockPr);
+    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE)).thenReturn(mockPr);
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNotNull(response.getPullRequestUrl(), "Pull request URL should be present for REMOVE action");
-    verify(gitHubService).modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE);
+    verify(gitHubService).updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE);
   }
 
   @Test
   void testUpdateSuccessorForProductWhenGitHubReturnsNullPrSetsPullRequestUrlToNull() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.modifyReadmeUnsupportedPullRequest(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(null);
+    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(null);
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNull(response.getPullRequestUrl(), "Pull request URL should be null when GitHub service returns null");
   }
 
   @Test
   void testUpdateSuccessorForProductReturnsDeprecatedProductList() throws IOException {
-    DeprecatedRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
+    DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
 
     ProductDeprecationProjection projection = mock(ProductDeprecationProjection.class);
     when(projection.getId()).thenReturn(MOCK_PRODUCT_ID);
@@ -388,7 +388,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
     when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of(projection));
 
-    DeprecatedResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
+    DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
     assertNotNull(response.getProductDeprecations(), "Product deprecations list should not be null");
     assertEquals(1, response.getProductDeprecations().size(), "Should return all deprecated products from repository");
@@ -396,12 +396,12 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         "Returned deprecated product ID should match");
   }
 
-  private DeprecatedRequest buildDeprecatedRequest(
+  private DeprecationRequest buildDeprecatedRequest(
       String successorUrl, Boolean deprecated, boolean addReadme, PullRequestAction action) {
-    DeprecatedRequest request = new DeprecatedRequest();
+    DeprecationRequest request = new DeprecationRequest();
     request.setProductId(BaseSetup.MOCK_PRODUCT_ID);
     request.setSuccessorUrl(successorUrl);
-    request.setDeprecated(deprecated);
+    request.setIsDeprecated(deprecated);
     request.setAddReadme(addReadme);
     request.setPullRequestAction(action);
     return request;

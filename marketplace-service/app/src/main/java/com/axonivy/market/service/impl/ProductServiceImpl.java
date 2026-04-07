@@ -783,7 +783,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean deprecated) {
-    return productRepo.findProductIdsByDeprecated(deprecated);
+  public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated) {
+    return productRepo.findProductIdsByDeprecated(isDeprecated);
   }
 }

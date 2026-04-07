@@ -65,5 +65,5 @@ public interface GitHubService {
 
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
 
-  GHPullRequest modifyReadmeUnsupportedPullRequest(String repositoryPath , PullRequestAction action) throws IOException;
+  GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
 }

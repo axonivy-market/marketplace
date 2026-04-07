@@ -32,7 +32,7 @@ public interface ProductService {
 
   List<String> getProductIds();
 
-  List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean deprecated);
+  List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated);
 
   Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 
