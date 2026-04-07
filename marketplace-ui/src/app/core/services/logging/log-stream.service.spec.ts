@@ -29,7 +29,7 @@ describe('LogStreamService', () => {
     } as MockedObject<AdminAuthService>;
     mockAdminAuthService.getAuthHeaders.mockReturnValue(new HttpHeaders());
 
-    fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => {}));
+    fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => { }));
 
     TestBed.configureTestingModule({
       providers: [
@@ -248,7 +248,7 @@ describe('LogStreamService', () => {
 
     describe('hasLogs', () => {
       it('should return false when no logs', () => {
-        expect(service.hasLogs(TASK_KEY)).toBeFalse();
+        expect(service.hasLogs(TASK_KEY)).toBe(false);
       });
 
       it('should return true when has logs', () => {
@@ -258,7 +258,7 @@ describe('LogStreamService', () => {
           return next;
         });
 
-        expect(service.hasLogs(TASK_KEY)).toBeTrue();
+        expect(service.hasLogs(TASK_KEY)).toBe(true);
       });
 
       it('should return false after resetTask', () => {
@@ -270,7 +270,7 @@ describe('LogStreamService', () => {
 
         service.resetTask(TASK_KEY);
 
-        expect(service.hasLogs(TASK_KEY)).toBeFalse();
+        expect(service.hasLogs(TASK_KEY)).toBe(false);
       });
     });
 
@@ -290,21 +290,22 @@ describe('LogStreamService', () => {
         service.connectTask(TASK_KEY);
 
         expect(fetchSpy).toHaveBeenCalled();
-        const url = fetchSpy.calls.mostRecent().args[0] as string;
+
+        const url = fetchSpy.mock.lastCall?.[0] as string;
         expect(url).toContain(`stream/${TASK_KEY}`);
       });
 
       it('should use public URL in browser', () => {
         service.connectTask(TASK_KEY);
 
-        const url = fetchSpy.calls.mostRecent().args[0] as string;
+        const url = fetchSpy.mock.lastCall?.[0] as string;
         expect(url).toContain('http://public:8080');
       });
 
       it('should set controller for taskKey after connect', () => {
         service.connectTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeTrue();
+        expect(service['controllers'].has(TASK_KEY)).toBe(true);
       });
 
       it('should not reconnect if already connected for same taskKey', () => {
@@ -324,18 +325,18 @@ describe('LogStreamService', () => {
       it('should include Authorization header', () => {
         service.connectTask(TASK_KEY);
 
-        const options = fetchSpy.calls.mostRecent().args[1];
+        const options = fetchSpy.mock.lastCall?.[1];
+
         expect(options.headers).toEqual(
-          jasmine.objectContaining({ Authorization: 'Bearer mock-token' })
+          expect.objectContaining({ Authorization: 'Bearer mock-token' })
         );
       });
 
       it('should handle onmessage and update logs', async () => {
-        spyOn<any>(service, '_fetchEventSource').and.callFake(
-          (url: string, options: any) => {
-            options.onmessage({
-              data: 'log line 1'
-            });
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onmessage({ data: 'log line 1' });
             return Promise.resolve();
           }
         );
@@ -344,51 +345,67 @@ describe('LogStreamService', () => {
 
         await Promise.resolve();
 
-        expect(service.getLogs(TASK_KEY)).toEqual(["log line 1"]);
+        expect(service.getLogs(TASK_KEY)).toEqual(['log line 1']);
       });
 
       it('should ignore empty event data', async () => {
-        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
-          options.onmessage({ data: null });
-          return Promise.resolve();
-        });
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onmessage({ data: null });
+            return Promise.resolve();
+          }
+        );
 
         service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
 
         expect(service.getLogs(TASK_KEY)).toEqual([]);
       });
 
       it('should handle onerror and disconnect task', async () => {
-        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
-          options.onerror(new Error('fail'));
-          return Promise.reject();
-        });
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onerror(new Error('fail'));
+            return Promise.reject(new Error('fail'));
+          }
+        );
 
         service.connectTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+        await Promise.resolve();
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
       });
 
       it('should handle onopen error response', async () => {
-        spyOn<any>(service, '_fetchEventSource').and.callFake((url: string, options: any) => {
-          options.onopen({ ok: false, status: 500 });
-          return Promise.resolve();
-        });
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onopen({ ok: false, status: 500 });
+            return Promise.resolve();
+          }
+        );
 
         service.connectTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+        await Promise.resolve();
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
       });
     });
 
     describe('disconnectTask', () => {
       it('should remove controller after disconnect', () => {
         service.connectTask(TASK_KEY);
-        expect(service['controllers'].has(TASK_KEY)).toBeTrue();
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(true);
 
         service.disconnectTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
       });
 
       it('should not throw when disconnecting non-connected taskKey', () => {
@@ -401,8 +418,8 @@ describe('LogStreamService', () => {
 
         service.disconnectTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
-        expect(service['controllers'].has('syncGithubMonitor')).toBeTrue();
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+        expect(service['controllers'].has('syncGithubMonitor')).toBe(true);
       });
     });
 
@@ -421,9 +438,10 @@ describe('LogStreamService', () => {
 
       it('should disconnect when resetting', () => {
         service.connectTask(TASK_KEY);
+
         service.resetTask(TASK_KEY);
 
-        expect(service['controllers'].has(TASK_KEY)).toBeFalse();
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
       });
 
       it('should not affect other taskKeys', () => {
