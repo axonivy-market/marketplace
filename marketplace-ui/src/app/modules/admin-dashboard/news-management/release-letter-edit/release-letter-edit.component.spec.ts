@@ -116,11 +116,7 @@ describe('ReleaseLetterEditComponent', () => {
     pageTitleServiceMock = {
       setTitleOnLangChange: vi
         .fn()
-        .mockName('PageTitleService.setTitleOnLangChange'),
-      translateService: translateServiceMock,
-      titleService: undefined,
-      setTitle: vi.fn().mockName('PageTitleService.setTitle'),
-      ngOnDestroy: vi.fn().mockName('PageTitleService.ngOnDestroy')
+        .mockName('PageTitleService.setTitleOnLangChange')
     } as any;
     // End of mocking TranslateService
 
