@@ -248,7 +248,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return VERSION.displayPrefix.concat(this.route.snapshot.queryParamMap.get(ROUTER.VERSION) ?? '');
+    const versionFromRoute = this.route.snapshot.queryParamMap.get(ROUTER.VERSION);
+    if (!versionFromRoute) {
+      return null;
+    }
+    return VERSION.displayPrefix.concat(versionFromRoute);
   }
 
   getVersionInDesigner(): void {
