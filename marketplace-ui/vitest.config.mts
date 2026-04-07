@@ -8,7 +8,6 @@ export default defineConfig({
     globals: true,
     reporters: ['default'],
     setupFiles: ['src/test-setup.ts'],
-    exclude: ['**/dist/**', '**/.angular/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html', 'lcov'],

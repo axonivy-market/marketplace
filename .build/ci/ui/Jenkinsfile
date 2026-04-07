@@ -29,8 +29,8 @@ pipeline {
     stage('Build And Test Project') {
       steps {
         sh 'npm i --prefix ./marketplace-ui'
-        sh 'npm run build --prefix ./marketplace-ui'
         sh 'npm run test --prefix ./marketplace-ui'
+        sh 'npm run build --prefix ./marketplace-ui'
       }
     }
 
