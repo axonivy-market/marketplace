@@ -5,6 +5,8 @@ import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.RegexConstants;
+import com.axonivy.market.core.constants.CoreRegexConstants;
+import com.axonivy.market.core.constants.CoreRequestMappingConstants;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -98,7 +100,7 @@ public class ProductDetailsController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(BEST_MATCH_VERSION_BY_ID_AND_VERSION)
+  @GetMapping(CoreRequestMappingConstants.BEST_MATCH_VERSION_BY_ID_AND_VERSION)
   @Operation(summary = "Find best match version.",
       description = "get best match version by id and version")
   public ResponseEntity<String> findBestMatchVersion(
@@ -108,7 +110,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String version,
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
-    var safeVersionPattern = RegexConstants.SAFE_STRING_PATTERN;
+    var safeVersionPattern = CoreRegexConstants.SAFE_STRING_PATTERN;
     if (!safeVersionPattern.matcher(version).matches()) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
