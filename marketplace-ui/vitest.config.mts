@@ -3,9 +3,6 @@ import angular from '@analogjs/vite-plugin-angular';
 
 export default defineConfig({
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
-  optimizeDeps: {
-    entries: ['src/index.html']
-  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -14,7 +11,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html', 'lcov'],
-      exclude: ['**/*.html', '**/*.scss']
+      exclude: ['**/*.html', '**/*.scss', '**/dist/**', '**/.angular/**']
     },
     watch: false,
     testTimeout: 60000,
