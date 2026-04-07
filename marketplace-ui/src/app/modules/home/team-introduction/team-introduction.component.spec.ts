@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { TeamIntroductionComponent } from './team-introduction.component';
@@ -10,7 +11,9 @@ describe('TeamIntroductionComponent', () => {
       imports: [TeamIntroductionComponent, TranslateModule.forRoot()]
     }).compileComponents();
 
-    component = TestBed.createComponent(TeamIntroductionComponent).componentInstance;
+    component = TestBed.createComponent(
+      TeamIntroductionComponent
+    ).componentInstance;
   });
 
   it('should check the size after init', () => {
@@ -30,4 +33,3 @@ describe('TeamIntroductionComponent', () => {
     expect(firstMember.avatarName).toContain('.png');
   });
 });
-

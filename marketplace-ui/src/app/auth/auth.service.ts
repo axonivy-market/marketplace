@@ -28,6 +28,12 @@ export interface TokenResponse {
 export interface GitHubUser {
   login: string;
   name: string | null;
+  avatarUrl: string;
+  url: string;
+}
+
+export interface UserInfo extends GitHubUser {
+  token: string;
 }
 
 @Injectable({
@@ -179,9 +185,11 @@ export class AuthService {
     return this.httpClientWithoutInterceptor.get<GitHubUser>(this.userApiUrl, { headers }).pipe(
       map(response => ({
         login: response.login,
-        name: response.name
+        name: response.name,
+        avatarUrl: response.avatarUrl,
+        url: response.url
       })),
-      catchError(() => of({ login: '', name: null }))
+      catchError(() => of({ login: '', name: null, avatarUrl: '', url: '' }))
     );
   }
 

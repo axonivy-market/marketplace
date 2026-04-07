@@ -65,22 +65,22 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'fa-brands fa-linkedin-in',
+    styleClass: 'ti ti-brand-linkedin-filled',
     title: 'Axon Ivy | LinkedIn',
     url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
   {
-    styleClass: 'fa-brands fa-xing',
+    styleClass: 'ti ti-brand-xing',
     title: 'Axon Ivy | XING',
     url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'fa-brands fa-facebook-f',
+    styleClass: 'ti ti-brand-facebook-filled',
     title: 'Axon Ivy | Facebook',
     url: 'https://www.facebook.com/axonivy'
   },
   {
-    styleClass: 'fa-brands fa-youtube',
+    styleClass: 'ti ti-brand-youtube-filled',
     title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
   }
@@ -363,6 +363,7 @@ export const UTF8 = 'utf8';
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
 export const ADMIN_SESSION_TOKEN = 'admin-session-token';
+export const GITHUB_USER = 'github-user';
 
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
@@ -386,8 +387,8 @@ export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
 
 // Theme Icon
-export const LIGHT_ICON_CLASS = 'bi-moon';
-export const DARK_ICON_CLASS = 'bi-sun';
+export const LIGHT_ICON_CLASS = 'ti ti-moon';
+export const DARK_ICON_CLASS = 'ti ti-sun';
 
 // Local Storage Attribute
 export const DATA_THEME = 'data-bs-theme';

@@ -1,6 +1,13 @@
-import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
-import { AdminDashboardService, SyncTaskExecution } from './admin-dashboard.service';
+import {
+  AdminDashboardService,
+  SyncTaskExecution
+} from './admin-dashboard.service';
 import { ProductService } from '../../modules/product/product.service';
 import { LanguageService } from '../../core/services/language/language.service';
 import { ThemeService } from '../../core/services/theme/theme.service';
@@ -11,7 +18,10 @@ import { of, Subject, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { MarketProduct } from '../../shared/models/product.model';
-import { ERROR_MESSAGES, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import {
+  ERROR_MESSAGES,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
@@ -25,7 +35,11 @@ const TEST_CONSTANTS = {
   FAILED_MESSAGE: 'Failed'
 };
 
-const createSyncProductValues = (component: AdminDashboardComponent, productId: string, marketDir: string) => {
+const createSyncProductValues = (
+  component: AdminDashboardComponent,
+  productId: string,
+  marketDir: string
+) => {
   component.productSearch = productId;
   component.marketDirectory = marketDir;
 };
@@ -55,11 +69,11 @@ describe('AdminDashboardComponent', () => {
   let cdr: ChangeDetectorRef;
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
-  let mockAdminService: jasmine.SpyObj<AdminDashboardService>;
-  let mockProductService: jasmine.SpyObj<ProductService>;
-  let mockAuthService: jasmine.SpyObj<AdminAuthService>;
-  let mockTranslateService: jasmine.SpyObj<TranslateService>;
-  let mockPageTitleService: jasmine.SpyObj<PageTitleService>;
+  let mockAdminService: MockedObject<AdminDashboardService>;
+  let mockProductService: MockedObject<ProductService>;
+  let mockAuthService: MockedObject<AdminAuthService>;
+  let mockTranslateService: MockedObject<TranslateService>;
+  let mockPageTitleService: MockedObject<PageTitleService>;
 
   const mockExecutions: SyncTaskExecution[] = [
     {
@@ -79,31 +93,64 @@ describe('AdminDashboardComponent', () => {
   ];
 
   const mockProducts: MarketProduct[] = [
-    { id: TEST_CONSTANTS.VALID_PRODUCT_ID, marketDirectory: TEST_CONSTANTS.VALID_MARKET_DIR } as MarketProduct,
+    {
+      id: TEST_CONSTANTS.VALID_PRODUCT_ID,
+      marketDirectory: TEST_CONSTANTS.VALID_MARKET_DIR
+    } as MarketProduct,
     { id: 'demos', marketDirectory: 'dir2' } as MarketProduct,
     { id: 'snowflake-connector', marketDirectory: undefined } as MarketProduct
   ];
 
   beforeEach(async () => {
-    mockAdminService = jasmine.createSpyObj('AdminDashboardService', [
-      'fetchSyncTaskExecutions',
-      'syncProducts',
-      'syncLatestReleasesForProducts',
-      'syncGithubMonitor',
-      'syncOneProduct'
-    ]);
-    mockProductService = jasmine.createSpyObj('ProductService', ['fetchAllProductsForSync']);
-    mockAuthService = jasmine.createSpyObj('AdminAuthService', ['clearToken']);
-    mockTranslateService = jasmine.createSpyObj('TranslateService', ['instant', 'get', 'use', 'addLangs', 'setDefaultLang']);
-    mockTranslateService.get.and.returnValue(of('translated'));
-    mockTranslateService.instant.and.callFake((key: string) => key);
-    mockPageTitleService = jasmine.createSpyObj('PageTitleService', ['setTitleOnLangChange']);
+    mockAdminService = {
+      fetchSyncTaskExecutions: vi
+        .fn()
+        .mockName('AdminDashboardService.fetchSyncTaskExecutions'),
+      syncProducts: vi.fn().mockName('AdminDashboardService.syncProducts'),
+      syncLatestReleasesForProducts: vi
+        .fn()
+        .mockName('AdminDashboardService.syncLatestReleasesForProducts'),
+      syncGithubMonitor: vi
+        .fn()
+        .mockName('AdminDashboardService.syncGithubMonitor'),
+      syncOneProduct: vi.fn().mockName('AdminDashboardService.syncOneProduct')
+    } as any;
+    mockProductService = {
+      fetchAllProductsForSync: vi
+        .fn()
+        .mockName('ProductService.fetchAllProductsForSync')
+    } as any;
+    mockAuthService = {
+      clearToken: vi.fn().mockName('AdminAuthService.clearToken')
+    } as any;
+    mockTranslateService = {
+      instant: vi.fn().mockName('TranslateService.instant'),
+      get: vi.fn().mockName('TranslateService.get'),
+      use: vi.fn().mockName('TranslateService.use'),
+      addLangs: vi.fn().mockName('TranslateService.addLangs'),
+      setDefaultLang: vi.fn().mockName('TranslateService.setDefaultLang')
+    } as any;
+    mockTranslateService.get.mockReturnValue(of('translated'));
+    mockTranslateService.instant.mockImplementation((key: string | string[]) => key as string);
+    mockPageTitleService = {
+      setTitleOnLangChange: vi
+        .fn()
+        .mockName('PageTitleService.setTitleOnLangChange'),
+      translateService: undefined,
+      titleService: undefined,
+      setTitle: vi.fn().mockName('PageTitleService.setTitle'),
+      ngOnDestroy: vi.fn().mockName('PageTitleService.ngOnDestroy')
+    } as any;
 
-    const mockLanguageService = jasmine.createSpyObj('LanguageService', ['selectedLanguage']);
-    mockLanguageService.selectedLanguage.and.returnValue('en');
+    const mockLanguageService = {
+      selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')
+    };
+    mockLanguageService.selectedLanguage.mockReturnValue('en');
 
-    const mockThemeService = jasmine.createSpyObj('ThemeService', ['isDarkMode']);
-    mockThemeService.isDarkMode.and.returnValue(false);
+    const mockThemeService = {
+      isDarkMode: vi.fn().mockName('ThemeService.isDarkMode')
+    };
+    mockThemeService.isDarkMode.mockReturnValue(false);
 
     await TestBed.configureTestingModule({
       imports: [AdminDashboardComponent, TranslateModule.forRoot()],
@@ -118,25 +165,31 @@ describe('AdminDashboardComponent', () => {
       ]
     }).compileComponents();
 
-    mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
+    mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+      of(mockExecutions)
+    );
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
 
     router = TestBed.inject(Router);
     cdr = component.cdr;
-    spyOn(cdr, 'markForCheck');
+    vi.spyOn(cdr, 'markForCheck');
   });
 
   describe('ngOnInit', () => {
     it('should load executions on init', () => {
       fixture.detectChanges();
       expect(mockAdminService.fetchSyncTaskExecutions).toHaveBeenCalled();
-      expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledWith('common.admin.sync.pageTitle');
+      expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
+        'common.admin.sync.pageTitle'
+      );
     });
 
     it('should handle auth error on init', () => {
       const errorResponse = new HttpErrorResponse({ status: UNAUTHORIZED });
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(throwError(() => errorResponse));
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        throwError(() => errorResponse)
+      );
 
       fixture.detectChanges();
 
@@ -146,7 +199,9 @@ describe('AdminDashboardComponent', () => {
 
     it('should handle non-auth error on init', () => {
       const errorResponse = new HttpErrorResponse({ status: 500 });
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(throwError(() => errorResponse));
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        throwError(() => errorResponse)
+      );
 
       fixture.detectChanges();
 
@@ -161,8 +216,12 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should open sync one product dialog for syncOneProduct task', async () => {
-      mockProductService.fetchAllProductsForSync.and.returnValue(Promise.resolve(mockProducts));
-      const syncTask = component.syncTasks.find(t => t.key === 'syncOneProduct')!;
+      mockProductService.fetchAllProductsForSync.mockReturnValue(
+        Promise.resolve(mockProducts)
+      );
+      const syncTask = component.syncTasks.find(
+        t => t.key === 'syncOneProduct'
+      )!;
 
       await component.trigger(syncTask);
 
@@ -171,56 +230,72 @@ describe('AdminDashboardComponent', () => {
       expect(component.filteredProducts.length).toBe(3);
     });
 
-    it('should trigger syncProducts successfully', fakeAsync(() => {
-      mockAdminService.syncProducts.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
+    it('should trigger syncProducts successfully', async () => {
+      mockAdminService.syncProducts.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncProducts).toHaveBeenCalled();
       expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
       expect(syncTask.completedAt).toBeDefined();
       expect(component.loadingSyncTaskKey).toBeNull();
-    }));
+    });
 
-    it('should trigger syncLatestReleasesForProducts successfully', fakeAsync(() => {
-      mockAdminService.syncLatestReleasesForProducts.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      const syncTask = component.syncTasks.find(t => t.key === 'syncLatestReleasesForProducts')!;
+    it('should trigger syncLatestReleasesForProducts successfully', async () => {
+      mockAdminService.syncLatestReleasesForProducts.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      const syncTask = component.syncTasks.find(
+        t => t.key === 'syncLatestReleasesForProducts'
+      )!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncLatestReleasesForProducts', SyncTaskStatus.RUNNING);
-    }));
+      expectSyncTaskState(
+        component,
+        'syncLatestReleasesForProducts',
+        SyncTaskStatus.RUNNING
+      );
+    });
 
-    it('should trigger syncGithubMonitor successfully', fakeAsync(() => {
-      mockAdminService.syncGithubMonitor.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      const syncTask = component.syncTasks.find(t => t.key === 'syncGithubMonitor')!;
+    it('should trigger syncGithubMonitor successfully', async () => {
+      mockAdminService.syncGithubMonitor.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      const syncTask = component.syncTasks.find(
+        t => t.key === 'syncGithubMonitor'
+      )!;
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncGithubMonitor', SyncTaskStatus.RUNNING);
-    }));
+      expectSyncTaskState(
+        component,
+        'syncGithubMonitor',
+        SyncTaskStatus.RUNNING
+      );
+    });
 
-    it('should not reload executions on failure when not authenticated', fakeAsync(() => {
-      mockAdminService.syncProducts.and.returnValue(throwError(() => new Error('Sync failed')));
+    it('should not reload executions on failure when not authenticated', async () => {
+      mockAdminService.syncProducts.mockReturnValue(
+        throwError(() => new Error('Sync failed'))
+      );
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
       component.isAuthenticated = false;
-      mockAdminService.fetchSyncTaskExecutions.calls.reset();
+      mockAdminService.fetchSyncTaskExecutions.mockClear();
 
-      component.trigger(syncTask);
-      tick();
+      await component.trigger(syncTask);
 
       expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
       expect(mockAdminService.fetchSyncTaskExecutions).not.toHaveBeenCalled();
-    }));
+    });
   });
 
   describe('applySyncTaskExecutions', () => {
@@ -228,7 +303,12 @@ describe('AdminDashboardComponent', () => {
       fixture.detectChanges();
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
 
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.SUCCESS, TEST_CONSTANTS.SUCCESS_MESSAGE);
+      expectSyncTaskState(
+        component,
+        'syncProducts',
+        SyncTaskStatus.SUCCESS,
+        TEST_CONSTANTS.SUCCESS_MESSAGE
+      );
       expect(syncTask.triggeredAt).toEqual(new Date('2024-01-01T00:00:00Z'));
       expect(syncTask.completedAt).toEqual(new Date('2024-01-01T00:05:00Z'));
     });
@@ -243,7 +323,9 @@ describe('AdminDashboardComponent', () => {
           message: undefined
         }
       ];
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(executionsWithNulls));
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(executionsWithNulls)
+      );
 
       fixture.detectChanges();
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
@@ -264,7 +346,9 @@ describe('AdminDashboardComponent', () => {
           message: 'Success'
         }
       ];
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(executionsWithUnknown));
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(executionsWithUnknown)
+      );
 
       expect(() => fixture.detectChanges()).not.toThrow();
     });
@@ -272,15 +356,21 @@ describe('AdminDashboardComponent', () => {
 
   describe('getStatusClass', () => {
     it('should return correct class for SUCCESS status', () => {
-      expect(component.getStatusClass(SyncTaskStatus.SUCCESS)).toBe('text-success');
+      expect(component.getStatusClass(SyncTaskStatus.SUCCESS)).toBe(
+        'text-success'
+      );
     });
 
     it('should return correct class for FAILED status', () => {
-      expect(component.getStatusClass(SyncTaskStatus.FAILED)).toBe('text-danger');
+      expect(component.getStatusClass(SyncTaskStatus.FAILED)).toBe(
+        'text-danger'
+      );
     });
 
     it('should return correct class for RUNNING status', () => {
-      expect(component.getStatusClass(SyncTaskStatus.RUNNING)).toBe('text-warning');
+      expect(component.getStatusClass(SyncTaskStatus.RUNNING)).toBe(
+        'text-warning'
+      );
     });
 
     it('should return empty string for undefined status', () => {
@@ -294,30 +384,48 @@ describe('AdminDashboardComponent', () => {
       component.products = mockProducts;
     });
 
-    it('should execute sync when values are valid', fakeAsync(() => {
-      mockAdminService.syncOneProduct.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      createSyncProductValues(component, TEST_CONSTANTS.VALID_PRODUCT_ID, TEST_CONSTANTS.VALID_MARKET_DIR);
+    it('should execute sync when values are valid', () => {
+      mockAdminService.syncOneProduct.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      createSyncProductValues(
+        component,
+        TEST_CONSTANTS.VALID_PRODUCT_ID,
+        TEST_CONSTANTS.VALID_MARKET_DIR
+      );
       component.overrideMarketItemPath = true;
 
       component.confirmSyncOneProduct();
-      tick();
 
-      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(TEST_CONSTANTS.VALID_PRODUCT_ID, TEST_CONSTANTS.VALID_MARKET_DIR, true);
+      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
+        TEST_CONSTANTS.VALID_PRODUCT_ID,
+        TEST_CONSTANTS.VALID_MARKET_DIR,
+        true
+      );
       expect(component.showSyncOneProductDialog).toBe(false);
       expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
-    }));
+    });
 
-    it('should trim market directory before syncing', fakeAsync(() => {
-      mockAdminService.syncOneProduct.and.returnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
-      createSyncProductValues(component, TEST_CONSTANTS.VALID_PRODUCT_ID, '  dir1  ');
+    it('should trim market directory before syncing', () => {
+      mockAdminService.syncOneProduct.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      createSyncProductValues(
+        component,
+        TEST_CONSTANTS.VALID_PRODUCT_ID,
+        '  dir1  '
+      );
 
       component.confirmSyncOneProduct();
-      tick();
 
-      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith('portal', 'dir1', false);
-    }));
+      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
+        'portal',
+        'dir1',
+        false
+      );
+    });
 
     it('should mark as failed when product not found', () => {
       component.productSearch = 'non-existent';
@@ -325,7 +433,12 @@ describe('AdminDashboardComponent', () => {
 
       component.confirmSyncOneProduct();
 
-      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.FAILED, 'common.admin.sync.syncOneProductDialog.validationMessage');
+      expectSyncTaskState(
+        component,
+        'syncOneProduct',
+        SyncTaskStatus.FAILED,
+        'common.admin.sync.syncOneProductDialog.validationMessage'
+      );
       expect(mockAdminService.syncOneProduct).not.toHaveBeenCalled();
     });
 
@@ -347,18 +460,21 @@ describe('AdminDashboardComponent', () => {
       expect(() => component.confirmSyncOneProduct()).not.toThrow();
     });
 
-    it('should handle sync one product failure', fakeAsync(() => {
-      mockAdminService.syncOneProduct.and.returnValue(throwError(() => new Error('Sync failed')));
-      mockAdminService.fetchSyncTaskExecutions.and.returnValue(of(mockExecutions));
+    it('should handle sync one product failure', () => {
+      mockAdminService.syncOneProduct.mockReturnValue(
+        throwError(() => new Error('Sync failed'))
+      );
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
       component.productSearch = 'portal';
       component.marketDirectory = 'dir1';
       component.isAuthenticated = true;
 
       component.confirmSyncOneProduct();
-      tick();
 
       expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.FAILED);
-    }));
+    });
   });
 
   describe('isValidSyncOneProductValues', () => {
@@ -367,13 +483,21 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should return true when product exists and market directory is set', () => {
-      createSyncProductValues(component, TEST_CONSTANTS.VALID_PRODUCT_ID, TEST_CONSTANTS.VALID_MARKET_DIR);
+      createSyncProductValues(
+        component,
+        TEST_CONSTANTS.VALID_PRODUCT_ID,
+        TEST_CONSTANTS.VALID_MARKET_DIR
+      );
 
       expect(component.isValidSyncOneProductValues()).toBe(true);
     });
 
     it('should return false when product does not exist', () => {
-      createSyncProductValues(component, TEST_CONSTANTS.INVALID_PRODUCT_ID, TEST_CONSTANTS.VALID_MARKET_DIR);
+      createSyncProductValues(
+        component,
+        TEST_CONSTANTS.INVALID_PRODUCT_ID,
+        TEST_CONSTANTS.VALID_MARKET_DIR
+      );
 
       expect(component.isValidSyncOneProductValues()).toBe(false);
     });
@@ -386,7 +510,11 @@ describe('AdminDashboardComponent', () => {
 
     it('should reset all sync one product values', () => {
       component.showSyncOneProductDialog = true;
-      createSyncProductValues(component, TEST_CONSTANTS.VALID_PRODUCT_ID, TEST_CONSTANTS.VALID_MARKET_DIR);
+      createSyncProductValues(
+        component,
+        TEST_CONSTANTS.VALID_PRODUCT_ID,
+        TEST_CONSTANTS.VALID_MARKET_DIR
+      );
       component.overrideMarketItemPath = true;
 
       component.cancelSyncOneProduct();
@@ -398,10 +526,14 @@ describe('AdminDashboardComponent', () => {
   describe('Product dropdown', () => {
     beforeEach(() => {
       fixture.detectChanges();
-      const manyProducts = Array.from({ length: 20 }, (_, i) => ({
-        id: `product-${i}`,
-        marketDirectory: `dir${i}`
-      } as MarketProduct));
+      const manyProducts = Array.from(
+        { length: 20 },
+        (_, i) =>
+          ({
+            id: `product-${i}`,
+            marketDirectory: `dir${i}`
+          }) as MarketProduct
+      );
       component.products = manyProducts;
     });
 
@@ -419,7 +551,9 @@ describe('AdminDashboardComponent', () => {
 
       expect(component.dropdownOpen).toBe(true);
       expect(component.filteredProducts.length).toBeGreaterThan(0);
-      expect(component.filteredProducts.every(p => p.id.includes('product-1'))).toBe(true);
+      expect(
+        component.filteredProducts.every(p => p.id.includes('product-1'))
+      ).toBe(true);
     });
 
     it('should limit filtered products to 10', () => {
@@ -449,7 +583,10 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should select product and close dropdown', () => {
-      const product = { id: 'product-5', marketDirectory: 'dir5' } as MarketProduct;
+      const product = {
+        id: 'product-5',
+        marketDirectory: 'dir5'
+      } as MarketProduct;
 
       component.selectProduct(product);
 
@@ -459,7 +596,10 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should handle product with null market directory', () => {
-      const product = { id: 'snowflake-connector', marketDirectory: undefined } as MarketProduct;
+      const product = {
+        id: 'snowflake-connector',
+        marketDirectory: undefined
+      } as MarketProduct;
 
       component.selectProduct(product);
 
@@ -469,36 +609,36 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  it('should set showSyncTask to false on route activate', fakeAsync(() => {
+  it('should set showSyncTask to false on route activate', async () => {
     component.showSyncTask = true;
 
     component.onRouteActivate();
 
-    expect(component.showSyncTask).toBeTrue();
+    expect(component.showSyncTask).toBe(true);
 
-    flushMicrotasks();
+    await Promise.resolve();
 
-    expect(component.showSyncTask).toBeFalse();
+    expect(component.showSyncTask).toBe(false);
     expect(cdr.markForCheck).toHaveBeenCalled();
-  }));
+  });
 
-  it('should set showSyncTask to true on route deactivate', fakeAsync(() => {
+  it('should set showSyncTask to true on route deactivate', async () => {
     component.showSyncTask = false;
 
     component.onRouteDeactivate();
 
-    expect(component.showSyncTask).toBeFalse();
+    expect(component.showSyncTask).toBe(false);
 
-    flushMicrotasks();
+    await Promise.resolve();
 
-    expect(component.showSyncTask).toBeTrue();
+    expect(component.showSyncTask).toBe(true);
     expect(cdr.markForCheck).toHaveBeenCalled();
-  }));
+  });
 
   it('should set page title when navigating to /internal-dashboard', () => {
     const events$ = new Subject<any>();
 
-    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+    vi.spyOn(router, 'events', 'get').mockReturnValue(events$.asObservable());
 
     component.ngOnInit();
 
@@ -506,20 +646,19 @@ describe('AdminDashboardComponent', () => {
       new NavigationEnd(1, '/internal-dashboard', '/internal-dashboard')
     );
 
-    expect(mockPageTitleService.setTitleOnLangChange)
-      .toHaveBeenCalledWith('common.admin.sync.pageTitle');
+    expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
+      'common.admin.sync.pageTitle'
+    );
   });
 
   it('should not set page title for other routes', () => {
     const events$ = new Subject<any>();
 
-    spyOnProperty(router, 'events', 'get').and.returnValue(events$.asObservable());
+    vi.spyOn(router, 'events', 'get').mockReturnValue(events$.asObservable());
 
     component.ngOnInit();
 
-    events$.next(
-      new NavigationEnd(1, '/other', '/other')
-    );
+    events$.next(new NavigationEnd(1, '/other', '/other'));
 
     expect(mockPageTitleService.setTitleOnLangChange)
       .toHaveBeenCalledTimes(1);
@@ -722,5 +861,6 @@ describe('AdminDashboardComponent', () => {
       component.toggleExpand(2);
       expect(component.isExpanded(2)).toBe(component.expandedLogs().has(2));
     });
+    expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledTimes(1); // only initial call
   });
 });

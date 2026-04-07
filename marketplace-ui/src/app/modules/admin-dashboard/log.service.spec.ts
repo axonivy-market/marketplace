@@ -1,9 +1,13 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  provideHttpClientTesting,
+  HttpTestingController
+} from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 import { LogService } from './log.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LogFileModel } from '../../shared/models/apis/log-file-response.model';
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 describe('LogService', () => {
   let service: LogService;
@@ -11,8 +15,7 @@ describe('LogService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [LogService]
+      providers: [LogService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(LogService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -33,12 +36,14 @@ describe('LogService', () => {
       ];
       const testDate = '2026-02-26';
 
-      service.getLogFiles(testDate).subscribe((logs) => {
+      service.getLogFiles(testDate).subscribe(logs => {
         expect(logs).toEqual(mockLogs);
       });
 
-      const req = httpMock.expectOne((request) => 
-        request.url === API_URI.LOGS && request.params.get('date') === testDate
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.LOGS &&
+          request.params.get('date') === testDate
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockLogs);
@@ -47,12 +52,13 @@ describe('LogService', () => {
     it('should fetch log files without date param', () => {
       const mockLogs: LogFileModel[] = [];
 
-      service.getLogFiles().subscribe((logs) => {
+      service.getLogFiles().subscribe(logs => {
         expect(logs).toEqual(mockLogs);
       });
 
-      const req = httpMock.expectOne((request) => 
-        request.url === API_URI.LOGS && request.params.get('date') === ''
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.LOGS && request.params.get('date') === ''
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockLogs);
@@ -63,35 +69,39 @@ describe('LogService', () => {
     it('should fetch log file content and trigger download', () => {
       const fileName = 'test.log';
       const mockBlob = new Blob(['test content'], { type: 'text/plain' });
-      const triggerDownloadSpy = spyOn(service, 'triggerDownload');
+      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload').mockImplementation(() => {});
 
       service.getLogFileContent(fileName);
 
-      const req = httpMock.expectOne((request) => 
-        request.url === `${API_URI.LOGS}/download` && request.params.get('fileName') === fileName
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.LOGS}/download` &&
+          request.params.get('fileName') === fileName
       );
       expect(req.request.method).toBe('GET');
       expect(req.request.responseType).toBe('blob');
-      
+
       req.event(new HttpResponse({ body: mockBlob, status: 200 }));
-      
+
       expect(triggerDownloadSpy).toHaveBeenCalledWith(mockBlob, fileName);
     });
 
     it('should not trigger download if response body is null', () => {
-        const fileName = 'test.log';
-        const triggerDownloadSpy = spyOn(service, 'triggerDownload');
-  
-        service.getLogFileContent(fileName);
-  
-        const req = httpMock.expectOne((request) => 
-          request.url === `${API_URI.LOGS}/download` && request.params.get('fileName') === fileName
-        );
-        
-        req.event(new HttpResponse({ body: null, status: 200 }));
-        
-        expect(triggerDownloadSpy).not.toHaveBeenCalled();
-      });
+      const fileName = 'test.log';
+      const triggerDownloadSpy = vi.spyOn(service, 'triggerDownload').mockImplementation(() => {});
+
+      service.getLogFileContent(fileName);
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url === `${API_URI.LOGS}/download` &&
+          request.params.get('fileName') === fileName
+      );
+
+      req.event(new HttpResponse({ body: null, status: 200 }));
+
+      expect(triggerDownloadSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('triggerDownload', () => {
@@ -99,11 +109,13 @@ describe('LogService', () => {
       const mockBlob = new Blob(['test'], { type: 'text/plain' });
       const fileName = 'download.log';
       const mockUrl = 'blob:test-url';
-      
-      const anchorSpy = jasmine.createSpyObj('HTMLAnchorElement', ['click']);
-      spyOn(document, 'createElement').and.returnValue(anchorSpy);
-      spyOn(URL, 'createObjectURL').and.returnValue(mockUrl);
-      spyOn(URL, 'revokeObjectURL');
+
+      const anchorSpy = {
+        click: vi.fn().mockName('HTMLAnchorElement.click')
+      } as any;
+      vi.spyOn(document, 'createElement').mockReturnValue(anchorSpy);
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
+      vi.spyOn(URL, 'revokeObjectURL');
 
       service.triggerDownload(mockBlob, fileName);
 

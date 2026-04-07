@@ -59,7 +59,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   @Override
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {
-    Map<String, Object> result = getProductJsonContentByIdAndVersion(productId, designerVersion);
+    Map<String, Object> result = getProductJsonContentByIdAndVersion(productId, version);
     if (!CollectionUtils.isEmpty(result)) {
       productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     }
@@ -70,7 +70,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   public List<VersionAndUrlModel> getInstallableVersions(String productId,
       Boolean isShowDevVersion, String designerVersion) {
     List<String> releasedVersions =
-        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
+        CoreVersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }

@@ -13,13 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @TestPropertySource("classpath:application-test.properties")
 class AxonIvyClientTest {
 
-    @SpyBean
-    private AxonIvyClient axonIvyClient;
+  @SpyBean
+  private AxonIvyClient axonIvyClient;
 
-    @Test
-    void testGetDocumentVersions() {
-        List<String> versions = axonIvyClient.getDocumentVersions();
-        assertFalse(versions.isEmpty(), "Expected to fetch at least one document");
-    }
-
+  @Test
+  void testGetDocumentVersions() {
+    List<String> versions = axonIvyClient.getDocumentVersions();
+    assertFalse(versions.isEmpty(), "Expected to fetch at least one document");
+  }
 }

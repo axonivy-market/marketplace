@@ -1,4 +1,5 @@
-import { DOCUMENT } from '@angular/core';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import { DOCUMENT, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ThemeSelectionComponent } from './theme-selection.component';
@@ -15,15 +16,15 @@ import {
 
 describe('ThemeSelectionComponent', () => {
   let component: ThemeSelectionComponent;
-  let mockThemeService: jasmine.SpyObj<ThemeService>;
+  let mockThemeService: MockedObject<ThemeService>;
   let fixture: ComponentFixture<ThemeSelectionComponent>;
   let documentRef: Document;
 
   beforeEach(async () => {
-    mockThemeService = jasmine.createSpyObj('ThemeService', [
-      'changeTheme',
-      'isDarkMode'
-    ]);
+    mockThemeService = {
+      changeTheme: vi.fn().mockName('ThemeService.changeTheme'),
+      isDarkMode: signal(false)
+    } as unknown as MockedObject<ThemeService>;
 
     await TestBed.configureTestingModule({
       imports: [ThemeSelectionComponent, TranslateModule.forRoot()],
@@ -84,7 +85,7 @@ describe('ThemeSelectionComponent', () => {
 
     // Simulate light mode after toggle
     documentRef.documentElement.setAttribute(DATA_THEME, Theme.LIGHT);
-    mockThemeService.isDarkMode.and.returnValue(false);
+    (mockThemeService.isDarkMode as ReturnType<typeof signal<boolean>>).set(false);
 
     component.onToggleTheme();
 
@@ -100,7 +101,7 @@ describe('ThemeSelectionComponent', () => {
 
     // Simulate dark mode after toggle
     documentRef.documentElement.setAttribute(DATA_THEME, Theme.DARK);
-    mockThemeService.isDarkMode.and.returnValue(true);
+    (mockThemeService.isDarkMode as ReturnType<typeof signal<boolean>>).set(true);
 
     component.onToggleTheme();
 
