@@ -286,7 +286,7 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testCompleteTaskRemovesSink() {
+  void testCompleteTaskDoesNotRemoveSink() {
     LogStreamRegistry.resetTask(TASK_KEY);
     LogStreamRegistry.pushTask(TASK_KEY, "line");
     LogStreamRegistry.completeTask(TASK_KEY);
@@ -296,7 +296,7 @@ class LogStreamRegistryTest {
         .collectList()
         .block(Duration.ofSeconds(2));
     assertNotNull(collected, "Stream result should not be null");
-    assertTrue(collected.isEmpty(), "New stream should be empty after completeTask");
+    assertFalse(collected.isEmpty(), "Replay data should still exist after completeTask");
   }
 
   @Test
@@ -335,8 +335,10 @@ class LogStreamRegistryTest {
 
     LogStreamRegistry.resetTask(TASK_KEY);
 
-    await().atMost(5, TimeUnit.SECONDS).until(() -> !completed.isEmpty());
-    assertFalse(completed.isEmpty(), "resetTask should complete the existing sink");
+    await().during(500, TimeUnit.MILLISECONDS)
+        .atMost(1, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertTrue(completed.isEmpty()));
+    assertTrue(completed.isEmpty(), "resetTask should NOT complete the sink anymore");
   }
 
   @Test
@@ -384,8 +386,9 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertEquals(1000, collected.size(), "Expected replay buffer to contain exactly 1000 log lines");
-    assertEquals("line 100", collected.getFirst(), "Expected oldest retained log to be 'line 100' after applying buffer limit");
+    assertEquals(500, collected.size(), "Expected replay buffer to contain exactly 500 log lines");
+    assertEquals("line 600", collected.getFirst(), "Expected oldest retained log to be 'line 600' after applying " +
+        "buffer limit");
   }
 
   @Test

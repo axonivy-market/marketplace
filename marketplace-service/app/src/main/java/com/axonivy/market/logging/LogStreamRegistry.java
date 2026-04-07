@@ -6,10 +6,8 @@ import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,7 +16,7 @@ public final class LogStreamRegistry {
   private static Sinks.Many<String> sink = Sinks.many().multicast()
       .onBackpressureBuffer(BACKPRESSURE_BUFFER_SIZE, false);
   private static final Map<String, Sinks.Many<String>> taskSinks = new ConcurrentHashMap<>();
-  private static final int CURRENT_LOG_LINES_LIMIT = 1000;
+  private static final int CURRENT_LOG_LINES_LIMIT = 500;
 
   public static Flux<String> asFlux() {
     return sink.asFlux();
@@ -60,14 +58,14 @@ public final class LogStreamRegistry {
   }
 
   public static void completeTask(String taskKey) {
-    Sinks.Many<String> taskSink = taskSinks.remove(taskKey);
+    Sinks.Many<String> taskSink = taskSinks.get(taskKey);
     if (taskSink != null) {
       taskSink.tryEmitComplete();
     }
   }
 
   public static void resetTask(String taskKey) {
-    completeTask(taskKey);
+    taskSinks.remove(taskKey);
   }
 
   private static Sinks.Many<String> getOrCreateSink(String taskKey) {
