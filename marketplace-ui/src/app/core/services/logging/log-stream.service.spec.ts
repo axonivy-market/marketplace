@@ -369,7 +369,7 @@ describe('LogStreamService', () => {
           async (...args: any[]) => {
             const options = args[1];
             options.onerror(new Error('fail'));
-            return Promise.reject(new Error('fail'));
+            return Promise.resolve();
           }
         );
 
