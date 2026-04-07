@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 
 import { RepoReportComponent } from './repo-report.component';
 import { GithubService, TestStep } from '../github.service';
@@ -18,13 +19,17 @@ const mockTestSteps: TestStep[] = [
 describe('RepoReportComponent', () => {
   let component: RepoReportComponent;
   let fixture: ComponentFixture<RepoReportComponent>;
-  let githubServiceSpy: jasmine.SpyObj<GithubService>;
+  let githubServiceSpy: MockedObject<GithubService>;
   let activatedRouteStub: any;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let routerSpy: MockedObject<Router>;
 
   beforeEach(async () => {
-    githubServiceSpy = jasmine.createSpyObj('GithubService', ['getTestReport']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    githubServiceSpy = {
+      getTestReport: vi.fn().mockName('GithubService.getTestReport')
+    } as any;
+    routerSpy = {
+      navigate: vi.fn().mockName('Router.navigate')
+    } as any;
     activatedRouteStub = {
       snapshot: {
         paramMap: {
@@ -35,10 +40,14 @@ describe('RepoReportComponent', () => {
           }
         }
       }
-    };
+    } as any;
 
     await TestBed.configureTestingModule({
-      imports: [RepoReportComponent, TranslateModule.forRoot(), MatomoTestingModule.forRoot()],
+      imports: [
+        RepoReportComponent,
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot()
+      ],
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
@@ -63,21 +72,23 @@ describe('RepoReportComponent', () => {
   });
 
   it('should handle error from getTestReport', () => {
-    githubServiceSpy.getTestReport.and.returnValue(throwError(() => new Error('API error')));
+    githubServiceSpy.getTestReport.mockReturnValue(
+      throwError(() => new Error('API error'))
+    );
     component.fetchTestReport('repo1', 'CI');
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
     expect(component.errorMessage).toBe('Failed to load test report');
   });
 
   it('should handle non-array response from getTestReport', () => {
-    githubServiceSpy.getTestReport.and.returnValue(of(mockTestSteps[0]));
+    githubServiceSpy.getTestReport.mockReturnValue(of(mockTestSteps[0]));
     component.fetchTestReport('repo1', 'CI');
     expect(component.report.length).toBe(1);
     expect(component.report[0].name).toBe('Step 1');
   });
 
   it('should render test steps when report is available', () => {
-    githubServiceSpy.getTestReport.and.returnValue(of(mockTestSteps as any));
+    githubServiceSpy.getTestReport.mockReturnValue(of(mockTestSteps as any));
     component.ngOnInit();
     fixture.detectChanges();
     const steps = fixture.debugElement.queryAll(By.css('.test-step'));
@@ -88,13 +99,13 @@ describe('RepoReportComponent', () => {
   });
 
   it('should set loading to true while fetching', () => {
-    githubServiceSpy.getTestReport.and.returnValue(of([] as any));
+    githubServiceSpy.getTestReport.mockReturnValue(of([] as any));
     component.fetchTestReport('repo1', 'CI');
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
   });
 
   it('should handle ngOnInit with empty report', () => {
-    githubServiceSpy.getTestReport.and.returnValue(of([] as any));
+    githubServiceSpy.getTestReport.mockReturnValue(of([] as any));
     component.ngOnInit();
     expect(component.report.length).toBe(0);
     expect(component.errorMessage).toBe('');

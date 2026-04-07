@@ -1,8 +1,6 @@
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { MonitoringRepoComponent } from './monitor-repo.component';
 import { Repository, TestResult } from '../github.service';
@@ -22,6 +20,7 @@ import {
   REPORT_MODE
 } from '../../../shared/constants/common.constant';
 import { SimpleChange, SimpleChanges } from '@angular/core';
+import { vi, describe, afterEach, beforeEach, expect, it } from 'vitest';
 
 describe('MonitoringRepoComponent', () => {
   let component: MonitoringRepoComponent;
@@ -114,6 +113,8 @@ describe('MonitoringRepoComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -123,7 +124,8 @@ describe('MonitoringRepoComponent', () => {
     expect(component.mode[FOCUSED_TAB]).toBe(DEFAULT_MODE);
   });
 
-  it('should update criteria.search, reset page, update pageable, and call loadRepositories on search', fakeAsync(() => {
+  it('should update criteria.search, reset page, update pageable, and call loadRepositories on search', () => {
+    vi.useFakeTimers();
     const searchString = 'asana';
 
     component.page = 5;
@@ -131,18 +133,18 @@ describe('MonitoringRepoComponent', () => {
     component.criteria.pageable.page = 4;
     component.criteria.pageable.size = 20;
 
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
     component.onSearchChanged(searchString);
 
     // Wait for debounce time
-    tick(500);
+    vi.advanceTimersByTime(500);
 
     expect(component.page).toBe(1);
     expect(component.criteria.pageable.page).toBe(0);
     expect(component.criteria.pageable.size).toBe(component.pageSize);
     expect(component.criteria.search).toBe(searchString);
     expect(component.loadRepositories).toHaveBeenCalled();
-  }));
+  });
 
   it('should show all repositories when pageSize = -1', () => {
     component.pageSize = -1;
@@ -158,7 +160,7 @@ describe('MonitoringRepoComponent', () => {
     component.sortDirection = ASCENDING;
     component.criteria.workflowType = NAME_COLUMN;
 
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.sortRepositoriesByColumn(NAME_COLUMN);
 
@@ -183,7 +185,7 @@ describe('MonitoringRepoComponent', () => {
     expect(noMatch).toBeUndefined();
   });
 
-  it('should toggle mode via ngModel binding', fakeAsync(() => {
+  it('should toggle mode via ngModel binding', async () => {
     component.mode[FOCUSED_TAB] = DEFAULT_MODE;
     fixture.detectChanges();
     const reportRadio = fixture.debugElement.query(
@@ -192,9 +194,9 @@ describe('MonitoringRepoComponent', () => {
 
     reportRadio.click();
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     expect(component.mode[FOCUSED_TAB]).toBe(REPORT_MODE);
-  }));
+  });
 
   it('should display repository links correctly in template', () => {
     const repoLinks = fixture.debugElement.queryAll(By.css('#product-name'));
@@ -205,8 +207,9 @@ describe('MonitoringRepoComponent', () => {
     expect(repoLinks[2].nativeElement.textContent.trim()).toBe('repo3');
   });
 
-  it('should show no-repositories message when filtered list is empty', fakeAsync(() => {
-    spyOn(component['githubService'], 'getRepositories').and.returnValue(
+  it('should show no-repositories message when filtered list is empty', () => {
+    vi.useFakeTimers();
+    vi.spyOn(component['githubService'], 'getRepositories').mockReturnValue(
       of({
         _embedded: { githubRepos: [] },
         page: { size: 10, totalElements: 0, totalPages: 0, number: 0 }
@@ -214,7 +217,7 @@ describe('MonitoringRepoComponent', () => {
     );
 
     component.onSearchChanged('asanaaaaa');
-    tick(500); // Wait for debounce
+    vi.advanceTimersByTime(500); // Wait for debounce
 
     fixture.detectChanges();
 
@@ -225,7 +228,7 @@ describe('MonitoringRepoComponent', () => {
     expect(noRepositoriesMessage.nativeElement.textContent).toContain(
       'common.monitor.dashboard.noRepositories'
     );
-  }));
+  });
 
   it('should update sort icons correctly', () => {
     const icon = fixture.debugElement.query(By.css('th h5.table-header i.ti'));
@@ -241,7 +244,7 @@ describe('MonitoringRepoComponent', () => {
     const newPage = 3;
     component.pageSize = 15;
     component.criteria.pageable.size = 10; // initial value
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     // Act
     component.onPageChange(newPage);
@@ -258,7 +261,7 @@ describe('MonitoringRepoComponent', () => {
     const newSize = 25;
     component.page = 4;
     component.criteria.pageable.page = 3; // initial value
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     // Act
     component.onPageSizeChanged(newSize);
@@ -275,7 +278,7 @@ describe('MonitoringRepoComponent', () => {
     component.activeTab = 'not-standard';
     component.page = 2;
     component.pageSize = 15;
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.updateCriteriaAndLoad();
 
@@ -289,7 +292,7 @@ describe('MonitoringRepoComponent', () => {
     component.activeTab = 'standard'; // STANDARD_TAB
     component.page = 4;
     component.pageSize = 20;
-    spyOn(component, 'loadRepositories').and.callThrough();
+    vi.spyOn(component, 'loadRepositories');
 
     component.updateCriteriaAndLoad();
 

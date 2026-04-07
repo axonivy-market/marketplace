@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { DocumentRef } from './document-ref.service';
 import { PLATFORM_ID } from '@angular/core';
@@ -8,10 +9,7 @@ describe('DocumentRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          DocumentRef,
-          { provide: PLATFORM_ID, useValue: 'browser' }
-        ]
+        providers: [DocumentRef, { provide: PLATFORM_ID, useValue: 'browser' }]
       });
       service = TestBed.inject(DocumentRef);
     });
@@ -26,10 +24,7 @@ describe('DocumentRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          DocumentRef,
-          { provide: PLATFORM_ID, useValue: 'server' }
-        ]
+        providers: [DocumentRef, { provide: PLATFORM_ID, useValue: 'server' }]
       });
       service = TestBed.inject(DocumentRef);
     });

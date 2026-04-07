@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -19,17 +20,19 @@ const mockResponse = {
 
 describe('AppModalService', () => {
   let service: AppModalService;
-  let modalServiceSpy: jasmine.SpyObj<NgbModal>;
+  let modalServiceSpy: MockedObject<NgbModal>;
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('NgbModal', ['open']);
+    const spy = {
+      open: vi.fn().mockName('NgbModal.open')
+    };
 
     TestBed.configureTestingModule({
       providers: [AppModalService, { provide: NgbModal, useValue: spy }]
     });
 
     service = TestBed.inject(AppModalService);
-    modalServiceSpy = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
+    modalServiceSpy = TestBed.inject(NgbModal) as MockedObject<NgbModal>;
   });
 
   it('should open ShowFeedbacksDialogComponent with correct options', () => {
@@ -46,7 +49,7 @@ describe('AppModalService', () => {
 
   it('should open AddFeedbackDialogComponent with correct options and return result', async () => {
     const mockResult = Promise.resolve('test result');
-    modalServiceSpy.open.and.returnValue({ result: mockResult } as any);
+    modalServiceSpy.open.mockReturnValue({ result: mockResult } as any);
 
     const result = await service.openAddFeedbackDialog();
     expect(modalServiceSpy.open).toHaveBeenCalledWith(
@@ -76,7 +79,7 @@ describe('AppModalService', () => {
       componentInstance: {}
     } as any;
 
-    modalServiceSpy.open.and.returnValue(mockModalRef);
+    modalServiceSpy.open.mockReturnValue(mockModalRef);
 
     service.openReleaseLetterModal(mockId);
 
@@ -102,9 +105,10 @@ describe('AppModalService', () => {
       result: mockResult
     } as any;
 
-    modalServiceSpy.open.and.returnValue(mockModalRef);
+    modalServiceSpy.open.mockReturnValue(mockModalRef);
 
-    const result = await service.openDeleteReleaseLetterConfirmModal(mockResponse);
+    const result =
+      await service.openDeleteReleaseLetterConfirmModal(mockResponse);
 
     expect(modalServiceSpy.open).toHaveBeenCalledWith(
       DeleteReleaseLetterConfirmModalComponent,

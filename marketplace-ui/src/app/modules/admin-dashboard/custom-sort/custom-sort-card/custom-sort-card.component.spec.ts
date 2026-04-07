@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CustomSortCardComponent } from './custom-sort-card.component';
@@ -34,27 +35,31 @@ describe('CustomSortCardComponent', () => {
   it('should show structural elements expected by consumers', () => {
     fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.css('.table-card')))
-      .withContext('card wrapper')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('header')))
-      .withContext('header region')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('.table-scroll')))
-      .withContext('scroll container')
-      .not.toBeNull();
-    expect(fixture.debugElement.query(By.css('table')))
-      .withContext('inner table')
-      .not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('.table-card')),
+      'card wrapper'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('header')),
+      'header region'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('.table-scroll')),
+      'scroll container'
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.css('table')),
+      'inner table'
+    ).not.toBeNull();
   });
 
   it('should keep header badge present even when inputs change', () => {
-    component.title = 'Sorted Extensions';
-    component.badge = '';
+    fixture.componentRef.setInput('title', 'Sorted Extensions');
+    fixture.componentRef.setInput('badge', '');
     fixture.detectChanges();
 
-    component.title = 'Available Extensions';
-    component.badge = '99/99';
+    fixture.componentRef.setInput('title', 'Available Extensions');
+    fixture.componentRef.setInput('badge', '99/99');
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css('.badge')).nativeElement;
     expect(badge.textContent.trim()).toBe('99/99');
