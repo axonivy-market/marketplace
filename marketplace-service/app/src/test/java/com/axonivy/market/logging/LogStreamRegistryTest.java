@@ -424,7 +424,7 @@ class LogStreamRegistryTest {
   }
 
   @Test
-  void testSubscribeAfterCompleteCreatesNewStream() {
+  void testSubscribeAfterCompleteKeepsReplayData() {
     LogStreamRegistry.resetTask(TASK_KEY);
 
     LogStreamRegistry.pushTask(TASK_KEY, "line");
@@ -436,7 +436,7 @@ class LogStreamRegistryTest {
         .block(Duration.ofSeconds(2));
 
     assertNotNull(collected, "No logs");
-    assertTrue(collected.isEmpty(), "Expected collected logs to be empty when no data is pushed");
+    assertEquals(List.of("line"), collected, "Replay data should still be available after completeTask is called");
   }
 
   @Test
