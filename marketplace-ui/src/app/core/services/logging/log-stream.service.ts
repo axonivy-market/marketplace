@@ -20,7 +20,7 @@ import { RequestParam } from '../../../shared/enums/request-param';
 import {
   EventSourceMessage,
   fetchEventSource,
-  FetchEventSourceInit 
+  FetchEventSourceInit
 } from '@microsoft/fetch-event-source';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
@@ -149,15 +149,19 @@ export class LogStreamService {
       onopen: async (response: Response) => {
         if (!response.ok) {
           this.disconnectTask(taskKey);
+          return;
         }
       },
 
       onmessage: (event: EventSourceMessage) => {
         if (!event.data) { return; }
-
         this.taskLogs.update(map => {
           const next = new Map(map);
-          next.set(taskKey, [...(next.get(taskKey) ?? []), event.data]);
+          const arr = next.get(taskKey) ?? [];
+          if (!arr.includes(event.data)) {
+            arr.push(event.data);
+          }
+          next.set(taskKey, arr);
           return next;
         });
       },

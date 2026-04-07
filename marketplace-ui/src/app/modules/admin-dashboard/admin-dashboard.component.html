@@ -89,9 +89,9 @@
                     <h4 class="modal-title">📋 {{ ('common.admin.sync.tasks.' + selectedTask()?.key) | translate }}</h4>
                     <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
                   </div>
-
+                  @let currentLogs = logs();
                   <div class="modal-body p-0">
-                    @if (!logs().length) {
+                    @if (!currentLogs.length) {
                       @if (selectedTask()?.status === 'RUNNING') {
                         <div class="log-waiting">
                           <span class="spinner-border spinner-border-sm me-2"></span>
@@ -102,7 +102,7 @@
                       }
                     } @else {
                       <div class="log-scroll-container">
-                      @for (line of logs(); track $index) {
+                      @for (line of currentLogs; track line) {
                         @let parsed = logViewer.parseLog(line);
                         @let canExpand =
                           parsed.messageContent.length > 300 ||
@@ -144,7 +144,7 @@
 
                   <div class="modal-footer">
                     <span class="log-footer-lines me-auto">
-                      {{ logStream.getLogs(selectedTask()?.key).length }} lines
+                      {{ currentLogs.length }} lines
                     </span>
                     <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
                       Close
