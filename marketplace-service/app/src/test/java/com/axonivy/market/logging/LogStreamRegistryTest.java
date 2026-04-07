@@ -337,7 +337,7 @@ class LogStreamRegistryTest {
 
     await().during(500, TimeUnit.MILLISECONDS)
         .atMost(1, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertTrue(completed.isEmpty()));
+        .untilAsserted(() -> assertTrue(completed.isEmpty(), "Expected no completed tasks but found some"));
     assertTrue(completed.isEmpty(), "resetTask should NOT complete the sink anymore");
   }
 
