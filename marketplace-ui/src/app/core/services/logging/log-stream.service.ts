@@ -149,7 +149,6 @@ export class LogStreamService {
       onopen: async (response: Response) => {
         if (!response.ok) {
           this.disconnectTask(taskKey);
-          return;
         }
       },
 
