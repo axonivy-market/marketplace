@@ -63,6 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -70,13 +71,15 @@ import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.*;
+import static org.apache.commons.lang3.CharUtils.LF;
+import static org.apache.commons.lang3.StringUtils.CR;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
-  private static final Pattern LINE_SPLIT_PATTERN = Pattern.compile("\\R");
+  private static final String CRLF = CR + LF;
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -505,7 +508,7 @@ public class GitHubServiceImpl implements GitHubService {
       PullRequestData pullRequestData, GHContent readme) throws IOException {
     repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME);
     log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
-    List<GHPullRequest> existingPRs = repository.queryPullRequests().head(baseBranch)
+    List<GHPullRequest> existingPRs = repository.queryPullRequests().base(baseBranch)
         .state(GHIssueState.OPEN).list().toList();
     GHPullRequest existingPR = existingPRs.stream()
         .filter(pr -> pr.getHead().getRef().equals(UNSUPPORTED_BRANCH_NAME)
@@ -537,31 +540,49 @@ public class GitHubServiceImpl implements GitHubService {
     return repository.createPullRequest(pullRequestTitle, UNSUPPORTED_BRANCH_NAME, baseBranch, pullRequestBody);
   }
 
+  /**
+   * Applies the requested README unsupported-notice action.
+   * The method is intentionally idempotent: if the target content is already in the desired state,
+   * helper methods return the original text unchanged.
+   */
   private String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
-    String lineSeparator = readmeContent.contains("\r\n") ? "\r\n" : "\n";
-    String[] lines = LINE_SPLIT_PATTERN.split(readmeContent, -1);
+    return switch (action) {
+      case ADD -> addUnsupportedNotice(readmeContent);
+      case REMOVE -> removeUnsupportedNotice(readmeContent);
+    };
+  }
 
-    for (int i = 0; i < lines.length; i++) {
-      if (!lines[i].trim().startsWith("#")) {
-        continue;
-      }
-      boolean hasNoticeBelow = i + 1 < lines.length && UNSUPPORTED_NOTICE.trim().equals(lines[i + 1].trim());
-      if (shouldSkipTheLine(action, hasNoticeBelow)) {
-        return readmeContent;
-      }
-      List<String> updatedLines = new ArrayList<>(List.of(lines));
-      if (action == ADD) {
-        updatedLines.add(i + 1, UNSUPPORTED_NOTICE);
-      } else if (action == REMOVE) {
-        updatedLines.remove(i + 1);
-      }
-      return String.join(lineSeparator, updatedLines);
+  /**
+   * Inserts {@code UNSUPPORTED_NOTICE} right below the first markdown heading.
+   * - Keeps original newline style (CRLF/LF).
+   * - Returns original content when the notice already exists.
+   * - Fails fast when README has no heading line.
+   */
+  private String addUnsupportedNotice(String readmeContent) {
+    if (readmeContent.contains(UNSUPPORTED_NOTICE.trim())) {
+      return readmeContent;
+    }
+    String lineSeparator = readmeContent.contains(CRLF) ? CRLF : StringUtils.LF;
+    Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
+    if (matcher.find()) {
+      String heading = matcher.group();
+      String replacement = heading + lineSeparator + lineSeparator + UNSUPPORTED_NOTICE.trim();
+      return matcher.replaceFirst(Matcher.quoteReplacement(replacement));
     }
     throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
   }
 
-  private boolean shouldSkipTheLine(PullRequestAction action, boolean hasNoticeBelow) {
-    return (action == ADD && hasNoticeBelow) || (action == REMOVE && !hasNoticeBelow);
+  /**
+   * Removes {@code UNSUPPORTED_NOTICE} when present.
+   * Returns original content when the notice does not exist.
+   */
+  private String removeUnsupportedNotice(String readmeContent) {
+    // Check if notice exists, if not skip
+    if (!readmeContent.contains(UNSUPPORTED_NOTICE.trim())) {
+      return readmeContent;
+    }
+    // Simply replace the notice with empty string
+    return readmeContent.replace(UNSUPPORTED_NOTICE, StringUtils.EMPTY);
   }
 
   private record PullRequestData(String body, String title, String updatedReadmeContent) {
