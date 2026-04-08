@@ -21,7 +21,7 @@ describe('DeprecateFormDialogComponent', () => {
       productId: '',
       successorUrl: '',
       addReadme: false,
-      deprecated: false,
+      isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester: 'tester'
     };

@@ -129,7 +129,7 @@ describe('DeprecatedManagementComponent', () => {
       productId: 'cms-live-editor',
       successorUrl: 'https://market.axonivy.com/portal',
       addReadme: true,
-      deprecated: true,
+      isDeprecated: true,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester: 'alice'
     };
@@ -151,7 +151,7 @@ describe('DeprecatedManagementComponent', () => {
       productId: '',
       successorUrl: '',
       addReadme: false,
-      deprecated: false
+      isDeprecated: false
     });
     expect(component.validationErrors).toEqual({});
   }));
@@ -187,7 +187,7 @@ describe('DeprecatedManagementComponent', () => {
     component.selectExtension('cms-live-editor');
 
     expect(component.deprecatedRequest.productId).toBe('cms-live-editor');
-    expect(component.deprecatedRequest.deprecated).toBeTrue();
+    expect(component.deprecatedRequest.isDeprecated).toBeTrue();
     expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
     expect(component.dropdownOpen).toBeFalse();
   });
@@ -242,7 +242,7 @@ describe('DeprecatedManagementComponent', () => {
 
     component.deprecatedRequest.productId = 'cms-live-editor';
     component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
-    component.deprecatedRequest.deprecated = true;
+    component.deprecatedRequest.isDeprecated = true;
 
     component.deprecatedProduct();
     tick();
@@ -263,7 +263,7 @@ describe('DeprecatedManagementComponent', () => {
     );
 
     component.deprecatedRequest.productId = 'cms-live-editor';
-    component.deprecatedRequest.deprecated = true;
+    component.deprecatedRequest.isDeprecated = true;
 
     component.deprecatedProduct();
     tick();

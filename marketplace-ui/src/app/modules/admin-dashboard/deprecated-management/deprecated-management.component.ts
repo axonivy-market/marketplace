@@ -67,7 +67,7 @@ export class DeprecatedManagementComponent implements OnInit {
     productId: '',
     successorUrl: '',
     addReadme: false,
-    deprecated: false,
+    isDeprecated: false,
     pullRequestAction: PullRequestAction.ADD,
     deprecationRequester: ''
   };
@@ -116,7 +116,7 @@ export class DeprecatedManagementComponent implements OnInit {
         productId: '',
         successorUrl: '',
         addReadme: false,
-        deprecated: false
+        isDeprecated: false
       };
       this.validationErrors = {};
     }, this.DIALOG_CLOSE_DELAY_MS);
@@ -189,7 +189,7 @@ export class DeprecatedManagementComponent implements OnInit {
           productId: '',
           successorUrl: '',
           addReadme: false,
-          deprecated: false,
+          isDeprecated: false,
           pullRequestAction: PullRequestAction.ADD,
           deprecationRequester: this.moderatorName
         };
@@ -254,7 +254,7 @@ export class DeprecatedManagementComponent implements OnInit {
 
   selectExtension(productId: string) {
     this.deprecatedRequest.productId = productId;
-    this.deprecatedRequest.deprecated = true;
+    this.deprecatedRequest.isDeprecated = true;
     this.dropdownOpen = false;
     this.deprecatedRequest.pullRequestAction = PullRequestAction.ADD;
   }
@@ -287,7 +287,7 @@ export class DeprecatedManagementComponent implements OnInit {
         productId: this.undeprecateProductId,
         successorUrl: '',
         addReadme: true,
-        deprecated: null,
+        isDeprecated: null,
         deprecationRequester: this.moderatorName,
         pullRequestAction: PullRequestAction.REMOVE
       };

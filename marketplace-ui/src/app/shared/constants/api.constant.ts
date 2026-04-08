@@ -24,8 +24,9 @@ export const API_URI = {
   LOGS: `${API}/logs`,
   RELEASE_LETTERS: `${API}/release-letters`,
   ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`,
-  PRODUCT_DEPRECATED_IDS: `${API}/product/deprecated/ids`,
-  PRODUCT_MARKETPLACE_DATA_DEPRECATED: `${API}/product-marketplace-data/deprecated`
+  PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,
+  PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID: (id: string) =>
+    `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

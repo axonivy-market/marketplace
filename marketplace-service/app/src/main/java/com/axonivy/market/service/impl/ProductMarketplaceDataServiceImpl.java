@@ -10,6 +10,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
@@ -201,8 +202,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Transactional(rollbackOn = IOException.class)
   @Override
-  public DeprecationResponse updateSuccessorForProduct(DeprecationRequest request) throws IOException {
-    Optional.ofNullable(getProductMarketplaceData(request.getProductId()))
+  public DeprecationResponse updateSuccessorForProduct(String productId, DeprecationRequest request)
+      throws IOException {
+    Optional.ofNullable(getProductMarketplaceData(productId))
         .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
           productMarketplaceData.setSuccessor(request.getSuccessorUrl());
           productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
@@ -211,7 +213,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         });
 
     String pullRequestUrl = null;
-    Product product = productRepo.findById(request.getProductId()).orElse(null);
+    Product product = productRepo.findById(productId).orElse(null);
     if (product != null) {
       product.setDeprecated(request.getIsDeprecated());
       pullRequestUrl = handlePullRequest(product.getRepositoryName(), request);
@@ -223,12 +225,16 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         .build();
   }
 
+  @Override
+  public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated) {
+    return productMarketplaceDataRepo.findProductIdsByDeprecated(isDeprecated);
+  }
+
   private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
     if (!request.isAddReadme() || request.getPullRequestAction() == null) {
       return null;
     }
-    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes("axonivy" +
-        "-market/test_repo", request.getPullRequestAction());
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
     return Optional.ofNullable(pullRequest)
         .map(GHPullRequest::getHtmlUrl)
         .map(Object::toString)

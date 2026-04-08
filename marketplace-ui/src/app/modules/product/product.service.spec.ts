@@ -490,7 +490,7 @@ describe('ProductService', () => {
       );
 
       const req = httpMock.expectOne(
-        request => request.url === API_URI.PRODUCT_DEPRECATED_IDS
+        request => request.url === API_URI.PRODUCT_DEPRECATIONS
       );
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('deprecated')).toBe('true');
@@ -524,7 +524,7 @@ describe('ProductService', () => {
       );
 
       const req = httpMock.expectOne(
-        request => request.url === API_URI.PRODUCT_DEPRECATED_IDS
+        request => request.url === API_URI.PRODUCT_DEPRECATIONS
       );
       expect(req.request.method).toBe('GET');
       expect(req.request.params.has('deprecated')).toBeFalse();
@@ -543,11 +543,11 @@ describe('ProductService', () => {
   });
 
   describe('updateDeprecatedProduct', () => {
-    it('should send POST with bearer header and normalize productDeprecations response', async () => {
+    it('should send PUT with bearer header and normalize productDeprecations response', async () => {
       const requestBody: DeprecatedRequest = {
         productId: 'cms-live-editor',
         successorUrl: 'https://market.axonivy.com/vertexai-google',
-        deprecated: true,
+        isDeprecated: true,
         addReadme: true,
         pullRequestAction: PullRequestAction.ADD,
         deprecationRequester: 'moderator'
@@ -558,9 +558,11 @@ describe('ProductService', () => {
       );
 
       const req = httpMock.expectOne(
-        request => request.url === API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED
+        request =>
+          request.url ===
+          API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID('cms-live-editor')
       );
-      expect(req.request.method).toBe('POST');
+      expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(requestBody);
       expect(req.request.headers.get('Authorization')).toBe('Bearer token-123');
 
@@ -589,7 +591,7 @@ describe('ProductService', () => {
     it('should normalize legacy productIds response and fallback pullRequestUrl to null', async () => {
       const requestBody: DeprecatedRequest = {
         productId: 'rtf-factory',
-        deprecated: null,
+        isDeprecated: null,
         pullRequestAction: PullRequestAction.REMOVE,
         deprecationRequester: 'moderator'
       };
@@ -599,9 +601,11 @@ describe('ProductService', () => {
       );
 
       const req = httpMock.expectOne(
-        request => request.url === API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED
+        request =>
+          request.url ===
+          API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID('rtf-factory')
       );
-      expect(req.request.method).toBe('POST');
+      expect(req.request.method).toBe('PUT');
 
       req.flush({
         productIds: ['rtf-factory']

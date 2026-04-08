@@ -97,7 +97,7 @@ public class ProductMarketplaceDataController {
       description = "Partially update successor URL and deprecated flag for a product")
   public ResponseEntity<DeprecationResponse> updateDeprecatedMarketplaceData(
       @RequestBody DeprecationRequest request, @PathVariable String productId) throws IOException {
-    var deprecatedResponse = productMarketplaceDataService.updateSuccessorForProduct(request);
+    var deprecatedResponse = productMarketplaceDataService.updateSuccessorForProduct(productId, request);
     return new ResponseEntity<>(deprecatedResponse, HttpStatus.OK);
   }
 

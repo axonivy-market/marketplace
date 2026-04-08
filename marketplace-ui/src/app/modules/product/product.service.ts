@@ -194,7 +194,7 @@ export class ProductService {
       requestParams = requestParams.set('deprecated', deprecated.toString());
     }
     return this.httpClient
-      .get<DeprecatedProductInfo[] | string[]>(API_URI.PRODUCT_DEPRECATED_IDS, {
+      .get<DeprecatedProductInfo[] | string[]>(API_URI.PRODUCT_DEPRECATIONS, {
         params: requestParams
       })
       .pipe(map(response => this.normalizeDeprecatedProducts(response)));
@@ -228,11 +228,20 @@ export class ProductService {
 
   updateDeprecatedProduct(deprecatedRequest: DeprecatedRequest, token: string | undefined):
     Observable<DeprecatedResponse> {
+    const productId = deprecatedRequest?.productId?.trim();
+    if (!productId) {
+      throw new Error('productId is required to update deprecations');
+    }
+
     const headers = new HttpHeaders({
       'Authorization': `${BEARER} ${token}`
     });
     return this.httpClient
-      .post<DeprecatedResponse>(API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED, deprecatedRequest, {headers})
+      .put<DeprecatedResponse>(
+        API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
+        deprecatedRequest,
+        { headers }
+      )
       .pipe(
         map(response => ({
           ...response,
