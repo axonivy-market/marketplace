@@ -292,7 +292,7 @@ td {
 .log-content {
   flex: 1;
   word-break: break-word;
-  color: #1a1a1a;
+  color: var(--ivy-text-primary-color);
 }
 
 .log-toggle {
@@ -305,7 +305,7 @@ td {
 
 .log-stack {
   padding: 0.4rem 1rem 0.5rem 2.5rem;
-  color: #1a1a1a;
+  color: var(--ivy-text-primary-color);
   white-space: pre-wrap;
   word-break: break-all;
 }

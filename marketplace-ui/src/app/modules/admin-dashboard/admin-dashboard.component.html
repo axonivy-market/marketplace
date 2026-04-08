@@ -95,10 +95,10 @@
                       @if (selectedTask()?.status === 'RUNNING') {
                         <div class="log-waiting">
                           <span class="spinner-border spinner-border-sm me-2"></span>
-                          Waiting for logs...
+                          {{ 'common.admin.sync.viewChangelog.waitingLogText' | translate }}
                         </div>
                       } @else {
-                        <div class="log-empty">No logs available.</div>
+                        <div class="log-empty">{{ 'common.admin.sync.viewChangelog.noLogText' | translate }}</div>
                       }
                     } @else {
                       <div class="log-scroll-container">

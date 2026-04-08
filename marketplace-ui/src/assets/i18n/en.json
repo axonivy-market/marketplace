@@ -333,6 +333,10 @@
           "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
           "overrideMarketItemPath": "Override Current Market Item Path",
           "validationMessage": "Extension ID & marketItemPath required!"
+        },
+        "viewChangelog": {
+          "waitingLogText": "Waiting for logs...",
+          "noLogText": "No logs available."
         }
       },
       "securityMonitor": {
