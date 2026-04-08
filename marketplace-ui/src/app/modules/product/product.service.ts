@@ -226,13 +226,8 @@ export class ProductService {
       .filter(item => !!item.id);
   }
 
-  updateDeprecatedProduct(deprecatedRequest: DeprecatedRequest, token: string | undefined):
+  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecatedRequest, token: string | undefined):
     Observable<DeprecatedResponse> {
-    const productId = deprecatedRequest?.productId?.trim();
-    if (!productId) {
-      throw new Error('productId is required to update deprecations');
-    }
-
     const headers = new HttpHeaders({
       'Authorization': `${BEARER} ${token}`
     });

@@ -61,10 +61,10 @@ export class DeprecatedManagementComponent implements OnInit {
   isClosingUndeprecateDialog = false;
   isUndeprecating = false;
   undeprecateProductId = '';
+  productId=''
 
   dropdownOpen = false;
   deprecatedRequest: DeprecatedRequest = {
-    productId: '',
     successorUrl: '',
     addReadme: false,
     isDeprecated: false,
@@ -112,8 +112,8 @@ export class DeprecatedManagementComponent implements OnInit {
       this.isClosing = false;
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
+      this.productId = '';
       this.deprecatedRequest = {
-        productId: '',
         successorUrl: '',
         addReadme: false,
         isDeprecated: false
@@ -125,7 +125,7 @@ export class DeprecatedManagementComponent implements OnInit {
   async openExtensionDropdown() {
     const selectableProducts = await this.loadAllProductIds(null);
     this.selectableProductIds = selectableProducts.map(product => product.id);
-    this.filterProducts(this.deprecatedRequest.productId);
+    this.filterProducts(this.productId);
     this.dropdownOpen = true;
   }
 
@@ -144,6 +144,7 @@ export class DeprecatedManagementComponent implements OnInit {
     try {
       this.deprecatedResponse = await firstValueFrom(
         this.productService.updateDeprecatedProduct(
+          this.productId,
           this.deprecatedRequest,
           this.token
         )
@@ -185,8 +186,8 @@ export class DeprecatedManagementComponent implements OnInit {
 
       if (shouldResetDeprecateForm) {
         // Reset deprecate form after closing deprecate success dialog
+        this.productId = '';
         this.deprecatedRequest = {
-          productId: '',
           successorUrl: '',
           addReadme: false,
           isDeprecated: false,
@@ -228,10 +229,7 @@ export class DeprecatedManagementComponent implements OnInit {
     let isValid = true;
 
     // Validate productId (required)
-    if (
-      !this.deprecatedRequest.productId ||
-      this.deprecatedRequest.productId.trim() === ''
-    ) {
+    if (!this.productId || this.productId.trim() === '') {
       this.validationErrors['productId'] = 'Extension ID is required';
       isValid = false;
     }
@@ -253,7 +251,7 @@ export class DeprecatedManagementComponent implements OnInit {
   }
 
   selectExtension(productId: string) {
-    this.deprecatedRequest.productId = productId;
+    this.productId = productId;
     this.deprecatedRequest.isDeprecated = true;
     this.dropdownOpen = false;
     this.deprecatedRequest.pullRequestAction = PullRequestAction.ADD;
@@ -284,7 +282,6 @@ export class DeprecatedManagementComponent implements OnInit {
 
     try {
       const request: DeprecatedRequest = {
-        productId: this.undeprecateProductId,
         successorUrl: '',
         addReadme: true,
         isDeprecated: null,
@@ -292,8 +289,8 @@ export class DeprecatedManagementComponent implements OnInit {
         pullRequestAction: PullRequestAction.REMOVE
       };
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(request, this.token)
-      );
+        this.productService.updateDeprecatedProduct(
+          this.undeprecateProductId, request, this.token));
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
       // Close confirm dialog and show success dialog

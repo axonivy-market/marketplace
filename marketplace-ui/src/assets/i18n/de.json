@@ -468,7 +468,8 @@
         "deprecateSuccessThank": "Thank you for your contribution",
         "pullRequestLabel": "Pull Request URL",
         "copyLabel": "Copy",
-        "copiedLabel": "Copied!"
+        "copiedLabel": "Copied!",
+        "deprecateProduct": "Deprecate Product"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

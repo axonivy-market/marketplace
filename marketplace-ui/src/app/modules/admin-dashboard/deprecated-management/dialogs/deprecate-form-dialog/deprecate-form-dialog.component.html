@@ -2,7 +2,7 @@
   <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
     <div class="modal-content custom-modal" [class.modal-closing]="isClosing">
       <div class="modal-header">
-        <h5 class="modal-title">Deprecate One Product</h5>
+        <h5 class="modal-title">{{ 'common.admin.deprecated.deprecateProduct' | translate }}</h5>
         <button
           type="button"
           class="btn-close"
@@ -17,11 +17,11 @@
             type="text"
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['productId']"
-            [(ngModel)]="deprecatedRequest.productId"
+            [(ngModel)]="productId"
             [disabled]="isDeprecating"
             placeholder="html-dialog-demo"
             (click)="openDropdown.emit()"
-            (input)="filterProducts.emit(deprecatedRequest.productId)"
+            (input)="filterProducts.emit(productId)"
             (blur)="onBlur()"
           />
           @if (validationErrors['productId']) {
