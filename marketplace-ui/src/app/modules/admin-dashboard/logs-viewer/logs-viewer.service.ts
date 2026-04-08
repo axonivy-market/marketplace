@@ -74,11 +74,11 @@ export class LogParserService {
 
   private getLogLevelIconClass(level: string): string {
     const icons: { [key: string]: string } = {
-      DEBUG: 'bi-bug',
-      INFO: 'bi-info-circle',
-      WARN: 'bi-exclamation-circle',
-      ERROR: 'bi-x-circle',
-      FATAL: 'bi-stop-circle'
+      DEBUG: 'ti-bug',
+      INFO: 'ti-info-circle',
+      WARN: 'ti-exclamation-circle',
+      ERROR: 'ti-circle-letter-x',
+      FATAL: 'ti-circle-rectangle'
     };
     return icons[level] || 'bi-info-circle';
   }
