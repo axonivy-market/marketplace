@@ -7,8 +7,10 @@ import {
   GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
   GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
   GOOGLE_SEARCH,
+  GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME,
   GOOGLE_SEARCH_BAR_CLASS_NAME,
-  GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME
+  GOOGLE_SEARCH_BAR_INPUT_CLASS_NAME,
+  GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME
 } from '../constants/common.constant';
 
 export class GoogleSearchBarUtils {
@@ -43,18 +45,22 @@ export class GoogleSearchBarUtils {
 
   static addCustomClassToSearchBar(renderer: Renderer2, doc: Document): void {
     setTimeout(() => {
-      const searchBoxList = doc.querySelectorAll(GOOGLE_SEARCH_BAR_CLASS_NAME);
-      searchBoxList.forEach(searchBox =>
-        renderer.addClass(searchBox, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME)
-      );
-
-      const googleSearchInputList = doc.querySelectorAll(".gsc-input");
-      googleSearchInputList.forEach(input =>
-        renderer.addClass(input, 'text-primary')
-      );
-      // searchBoxList.forEach(searchBox =>
-      //   renderer.addClass(searchBox, 'custom-class')
-      // );
+      this.addBackgroundClassToSearchBar(renderer, doc);
+      this.addTextPrimaryClassToSearchInput(renderer, doc);
     }, 1000);
+  }
+
+  private static addBackgroundClassToSearchBar(renderer: Renderer2, doc: Document): void {
+    const searchBoxList = doc.querySelectorAll(GOOGLE_SEARCH_BAR_CLASS_NAME);
+    searchBoxList.forEach(searchBox =>
+      renderer.addClass(searchBox, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME)
+    );
+  }
+
+  private static addTextPrimaryClassToSearchInput(renderer: Renderer2, doc: Document): void {
+    const googleSearchInputList = doc.querySelectorAll(GOOGLE_SEARCH_BAR_INPUT_CLASS_NAME);
+    googleSearchInputList.forEach(input =>
+      renderer.addClass(input, GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME)
+    );
   }
 }

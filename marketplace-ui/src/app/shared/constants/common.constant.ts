@@ -385,6 +385,8 @@ export const GOOGLE = 'google';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
+export const GOOGLE_SEARCH_BAR_INPUT_CLASS_NAME = '.gsc-input';
+export const GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME = 'text-primary';
 
 // Theme Icon
 export const LIGHT_ICON_CLASS = 'bi-moon';
