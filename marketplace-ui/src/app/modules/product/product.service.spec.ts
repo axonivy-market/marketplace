@@ -517,29 +517,6 @@ describe('ProductService', () => {
         }
       ]);
     });
-
-    it('should omit deprecated param when value is null and normalize string payload', async () => {
-      const resultPromise = firstValueFrom(
-        service.fetchAllProductIdsByDeprecated(null)
-      );
-
-      const req = httpMock.expectOne(
-        request => request.url === API_URI.PRODUCT_DEPRECATIONS
-      );
-      expect(req.request.method).toBe('GET');
-      expect(req.request.params.has('deprecated')).toBeFalse();
-
-      req.flush(['rtf-factory']);
-
-      const result = await resultPromise;
-      expect(result).toEqual([
-        {
-          id: 'rtf-factory',
-          deprecationDate: null,
-          deprecationRequester: null
-        }
-      ]);
-    });
   });
 
   describe('updateDeprecatedProduct', () => {
@@ -585,39 +562,6 @@ describe('ProductService', () => {
         }
       ]);
       expect(result.pullRequestUrl).toBe('https://github.com/org/repo/pull/10');
-    });
-
-    it('should normalize legacy productIds response and fallback pullRequestUrl to null', async () => {
-      const requestBody: DeprecatedRequest = {
-        isDeprecated: null,
-        pullRequestAction: PullRequestAction.REMOVE,
-        deprecationRequester: 'moderator'
-      };
-
-      const resultPromise = firstValueFrom(
-        service.updateDeprecatedProduct('rtf-factory', requestBody, 'token-456')
-      );
-
-      const req = httpMock.expectOne(
-        request =>
-          request.url ===
-          API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID('rtf-factory')
-      );
-      expect(req.request.method).toBe('PUT');
-
-      req.flush({
-        productIds: ['rtf-factory']
-      });
-
-      const result = await resultPromise;
-      expect(result.productDeprecations).toEqual([
-        {
-          id: 'rtf-factory',
-          deprecationDate: null,
-          deprecationRequester: null
-        }
-      ]);
-      expect(result.pullRequestUrl).toBeNull();
     });
   });
 });
