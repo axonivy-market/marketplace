@@ -545,7 +545,6 @@ describe('ProductService', () => {
   describe('updateDeprecatedProduct', () => {
     it('should send PUT with bearer header and normalize productDeprecations response', async () => {
       const requestBody: DeprecatedRequest = {
-        productId: 'cms-live-editor',
         successorUrl: 'https://market.axonivy.com/vertexai-google',
         isDeprecated: true,
         addReadme: true,
@@ -554,7 +553,7 @@ describe('ProductService', () => {
       };
 
       const resultPromise = firstValueFrom(
-        service.updateDeprecatedProduct(requestBody, 'token-123')
+        service.updateDeprecatedProduct('cms-live-editor', requestBody, 'token-123')
       );
 
       const req = httpMock.expectOne(
@@ -590,14 +589,13 @@ describe('ProductService', () => {
 
     it('should normalize legacy productIds response and fallback pullRequestUrl to null', async () => {
       const requestBody: DeprecatedRequest = {
-        productId: 'rtf-factory',
         isDeprecated: null,
         pullRequestAction: PullRequestAction.REMOVE,
         deprecationRequester: 'moderator'
       };
 
       const resultPromise = firstValueFrom(
-        service.updateDeprecatedProduct(requestBody, 'token-456')
+        service.updateDeprecatedProduct('rtf-factory', requestBody, 'token-456')
       );
 
       const req = httpMock.expectOne(

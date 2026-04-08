@@ -286,11 +286,11 @@ describe('ProductDetailInformationTabComponent', () => {
   describe('successor helpers', () => {
     it('should return successor URL and parsed name when successor is a valid http URL', () => {
       component.productDetail = {
-        successor: 'http://localhost:4200/smart-workflow'
+        successor: 'https://market.axonivy.com/smart-workflow'
       } as ProductDetail;
 
       expect(component.hasSuccessor()).toBeTrue();
-      expect(component.getSuccessorUrl()).toBe('http://localhost:4200/smart-workflow');
+      expect(component.getSuccessorUrl()).toBe('https://market.axonivy.com/smart-workflow');
       expect(component.getSuccessorName()).toBe('smart-workflow');
     });
 

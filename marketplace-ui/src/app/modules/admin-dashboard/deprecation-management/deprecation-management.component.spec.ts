@@ -126,7 +126,6 @@ describe('DeprecatedManagementComponent', () => {
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
     component.deprecatedRequest = {
-      productId: 'cms-live-editor',
       successorUrl: 'https://market.axonivy.com/portal',
       addReadme: true,
       isDeprecated: true,
@@ -148,7 +147,6 @@ describe('DeprecatedManagementComponent', () => {
     expect(component.isDeprecating).toBeFalse();
     expect(component.isCopySuccessVisible).toBeFalse();
     expect(component.deprecatedRequest).toEqual({
-      productId: '',
       successorUrl: '',
       addReadme: false,
       isDeprecated: false
@@ -157,11 +155,11 @@ describe('DeprecatedManagementComponent', () => {
   }));
 
   it('should validate form fields', () => {
-    component.deprecatedRequest.productId = '';
+    component.productId = '';
     expect(component.validateForm()).toBeFalse();
     expect(component.validationErrors.productId).toContain('required');
 
-    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.productId = 'cms-live-editor';
     component.deprecatedRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBeFalse();
     expect(component.validationErrors.successorUrl).toContain('http:// or https://');
@@ -186,7 +184,7 @@ describe('DeprecatedManagementComponent', () => {
 
     component.selectExtension('cms-live-editor');
 
-    expect(component.deprecatedRequest.productId).toBe('cms-live-editor');
+    expect(component.productId).toBe('cms-live-editor');
     expect(component.deprecatedRequest.isDeprecated).toBeTrue();
     expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
     expect(component.dropdownOpen).toBeFalse();
@@ -213,7 +211,7 @@ describe('DeprecatedManagementComponent', () => {
     productService.fetchAllProductIdsByDeprecated.and.returnValue(
       of(selectableRows)
     );
-    component.deprecatedRequest.productId = 'vertex';
+    component.productId = 'vertex';
 
     component.openExtensionDropdown();
     flushMicrotasks();
@@ -240,7 +238,7 @@ describe('DeprecatedManagementComponent', () => {
     };
     productService.updateDeprecatedProduct.and.returnValue(of(response));
 
-    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.productId = 'cms-live-editor';
     component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
     component.deprecatedRequest.isDeprecated = true;
 
@@ -262,7 +260,7 @@ describe('DeprecatedManagementComponent', () => {
       of({ productDeprecations: undefined, pullRequestUrl: null })
     );
 
-    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.productId = 'cms-live-editor';
     component.deprecatedRequest.isDeprecated = true;
 
     component.deprecatedProduct();
@@ -281,10 +279,10 @@ describe('DeprecatedManagementComponent', () => {
     tick();
 
     expect(productService.updateDeprecatedProduct).toHaveBeenCalledWith(
+      'cms-live-editor',
       jasmine.objectContaining({
-        productId: 'cms-live-editor',
         pullRequestAction: PullRequestAction.REMOVE,
-        deprecated: null
+        isDeprecated: null
       }),
       'token-123'
     );
@@ -298,14 +296,14 @@ describe('DeprecatedManagementComponent', () => {
 
     component.successMode = 'deprecate';
     component.showSuccessDialog = true;
-    component.deprecatedRequest.productId = 'cms-live-editor';
+    component.productId = 'cms-live-editor';
 
     component.closeSuccessDialog();
     tick(250);
 
     expect(component.showSuccessDialog).toBeFalse();
     expect(component.successMode).toBeNull();
-    expect(component.deprecatedRequest.productId).toBe('');
+    expect(component.productId).toBe('');
   }));
 
   it('should evaluate pull request url correctly', () => {

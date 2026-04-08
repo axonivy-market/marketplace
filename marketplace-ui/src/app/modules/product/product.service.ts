@@ -126,23 +126,21 @@ export class ProductService {
       .append('version', version)
       .append('artifact', artifact);
     const url = `${API_URI.PRODUCT_DETAILS}/${id}/artifact`;
-    return this.httpClient
-      .get<string>(url, {
-        params,
-        responseType: 'text' as 'json'
+    return this.httpClient.get<string>(url, {
+      params,
+      responseType: 'text' as 'json'
+    }).pipe(
+      catchError(() => {
+        return of('');
       })
-      .pipe(
-        catchError(() => {
-          return of('');
-        })
-      );
+    );
   }
 
   getProductChangelogs(
     criteria: ChangeLogCriteria
   ): Observable<ProductReleasesApiResponse> {
     let requestParams = new HttpParams();
-    let url = '';
+    let url: string;
     if (criteria.nextPageHref) {
       url = criteria.nextPageHref;
     } else {
@@ -194,14 +192,14 @@ export class ProductService {
       requestParams = requestParams.set('deprecated', deprecated.toString());
     }
     return this.httpClient
-      .get<DeprecatedProductInfo[] | string[]>(API_URI.PRODUCT_DEPRECATIONS, {
+      .get<DeprecatedProductInfo[]>(API_URI.PRODUCT_DEPRECATIONS, {
         params: requestParams
       })
       .pipe(map(response => this.normalizeDeprecatedProducts(response)));
   }
 
   private normalizeDeprecatedProducts(
-    response: DeprecatedProductInfo[] | string[]
+    response: DeprecatedProductInfo[]
   ): DeprecatedProductInfo[] {
     if (!Array.isArray(response)) {
       return [];
@@ -209,14 +207,6 @@ export class ProductService {
 
     return response
       .map(item => {
-        if (typeof item === 'string') {
-          return {
-            id: item,
-            deprecationDate: null,
-            deprecationRequester: null
-          };
-        }
-
         return {
           id: item?.id ?? '',
           deprecationDate: item?.deprecationDate ?? null,
@@ -241,7 +231,7 @@ export class ProductService {
         map(response => ({
           ...response,
           productDeprecations: this.normalizeDeprecatedProducts(
-            response?.productDeprecations ?? response?.productIds ?? []
+            response?.productDeprecations ?? []
           ),
           pullRequestUrl: response?.pullRequestUrl ?? null
         }))
