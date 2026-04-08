@@ -101,7 +101,7 @@
   (readmeChecked)="onClickCheckBoxReadme()">
 </app-deprecate-form-dialog>
 
-<app-deprecate-success-dialog
+<app-deprecation-result-dialog
   [visible]="showSuccessDialog"
   [isClosing]="isClosingSuccessDialog"
   [successMode]="successMode"
@@ -111,13 +111,13 @@
   [showPullRequest]="hasPullRequestUrl()"
   (closeDialog)="closeSuccessDialog()"
   (copyPullRequestUrl)="copyPullRequestUrl()">
-</app-deprecate-success-dialog>
+</app-deprecation-result-dialog>
 
-<app-undeprecate-confirm-dialog
+<app-remove-deprecation-confirm-dialog
   [visible]="showUndeprecateConfirmDialog"
   [isClosing]="isClosingUndeprecateDialog"
   [isUndeprecating]="isUndeprecating"
   [undeprecateProductId]="undeprecateProductId"
   (closeDialog)="closeUndeprecateDialog()"
   (confirm)="executeUndeprecate()">
-</app-undeprecate-confirm-dialog>
+</app-remove-deprecation-confirm-dialog>

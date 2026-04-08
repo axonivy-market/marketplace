@@ -2,12 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
-  selector: 'app-undeprecate-confirm-dialog',
+  selector: 'app-remove-deprecation-confirm-dialog',
   imports: [TranslateModule],
-  templateUrl: './undeprecate-confirm-dialog.component.html',
-  styleUrl: './undeprecate-confirm-dialog.component.scss'
+  templateUrl: './remove-deprecated-confirm-dialog.component.html',
+  styleUrl: './remove-deprecated-confirm-dialog.component.scss'
 })
-export class UndeprecateConfirmDialogComponent {
+export class removeDeprecatedConfirmDialogComponent {
   @Input() visible = false;
   @Input() isClosing = false;
   @Input() isUndeprecating = false;

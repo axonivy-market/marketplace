@@ -2,12 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
-  selector: 'app-deprecate-success-dialog',
+  selector: 'app-deprecation-result-dialog',
   imports: [TranslateModule],
-  templateUrl: './deprecate-success-dialog.component.html',
-  styleUrl: './deprecate-success-dialog.component.scss'
+  templateUrl: './deprecation-result-dialog.component.html',
+  styleUrl: './deprecation-result-dialog.component.scss'
 })
-export class DeprecateSuccessDialogComponent {
+export class DeprecationResultDialogComponent {
   @Input() visible = false;
   @Input() isClosing = false;
   @Input() successMode: 'deprecate' | 'undeprecate' | null = null;

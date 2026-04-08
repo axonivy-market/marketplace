@@ -19,8 +19,8 @@ import { NewsComponent } from './modules/news/news.component';
 import { NewsManagementComponent } from './modules/admin-dashboard/news-management/news-management.component';
 import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-management/release-letter-edit/release-letter-edit.component';
 import {
-  DeprecatedManagementComponent
-} from './modules/admin-dashboard/deprecated-management/deprecated-management.component';
+  DeprecationManagementComponent
+} from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -93,7 +93,7 @@ export const routes: Routes = [
       },
       {
         path: 'deprecated-management',
-        component: DeprecatedManagementComponent
+        component: DeprecationManagementComponent
       },
       {
         path: 'logs',

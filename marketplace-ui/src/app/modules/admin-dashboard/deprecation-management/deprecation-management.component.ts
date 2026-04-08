@@ -14,9 +14,9 @@ import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 
-import { DeprecateFormDialogComponent } from './dialogs/deprecate-form-dialog/deprecate-form-dialog.component';
-import { DeprecateSuccessDialogComponent } from './dialogs/deprecate-success-dialog/deprecate-success-dialog.component';
-import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm-dialog/undeprecate-confirm-dialog.component';
+import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
+import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
+import { removeDeprecatedConfirmDialogComponent } from './dialogs/remove-deprecated-confirm-dialog/remove-deprecated-confirm-dialog.component';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -26,14 +26,14 @@ import { UndeprecateConfirmDialogComponent } from './dialogs/undeprecate-confirm
     FormsModule,
     TranslateModule,
     DatePipe,
-    DeprecateFormDialogComponent,
-    DeprecateSuccessDialogComponent,
-    UndeprecateConfirmDialogComponent
+    DeprecationFormDialogComponent,
+    DeprecationResultDialogComponent,
+    removeDeprecatedConfirmDialogComponent
   ],
-  templateUrl: './deprecated-management.component.html',
-  styleUrl: './deprecated-management.component.scss'
+  templateUrl: './deprecation-management.component.html',
+  styleUrl: './deprecation-management.component.scss'
 })
-export class DeprecatedManagementComponent implements OnInit {
+export class DeprecationManagementComponent implements OnInit {
   private readonly DIALOG_CLOSE_DELAY_MS = 250;
   private readonly COPY_SUCCESS_VISIBLE_DURATION_MS = 1500;
 
@@ -61,7 +61,7 @@ export class DeprecatedManagementComponent implements OnInit {
   isClosingUndeprecateDialog = false;
   isUndeprecating = false;
   undeprecateProductId = '';
-  productId=''
+  productId = '';
 
   dropdownOpen = false;
   deprecatedRequest: DeprecatedRequest = {
@@ -290,7 +290,11 @@ export class DeprecatedManagementComponent implements OnInit {
       };
       this.deprecatedResponse = await firstValueFrom(
         this.productService.updateDeprecatedProduct(
-          this.undeprecateProductId, request, this.token));
+          this.undeprecateProductId,
+          request,
+          this.token
+        )
+      );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
       // Close confirm dialog and show success dialog

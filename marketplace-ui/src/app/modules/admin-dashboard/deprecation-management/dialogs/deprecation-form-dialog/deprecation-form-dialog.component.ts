@@ -7,10 +7,10 @@ import { DeprecatedRequest } from '../../../../../shared/models/deprecated-reque
 @Component({
   selector: 'app-deprecate-form-dialog',
   imports: [FormsModule, TranslateModule],
-  templateUrl: './deprecate-form-dialog.component.html',
-  styleUrl: './deprecate-form-dialog.component.scss'
+  templateUrl: './deprecation-form-dialog.component.html',
+  styleUrl: './deprecation-form-dialog.component.scss'
 })
-export class DeprecateFormDialogComponent {
+export class DeprecationFormDialogComponent {
   @Input() visible = false;
   @Input() isClosing = false;
   @Input() isDeprecating = false;

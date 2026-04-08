@@ -8,7 +8,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
-import { DeprecatedManagementComponent } from './deprecated-management.component';
+import { DeprecationManagementComponent } from './deprecation-management.component';
 import { ProductService } from '../../product/product.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -17,8 +17,8 @@ import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 
 describe('DeprecatedManagementComponent', () => {
-  let component: DeprecatedManagementComponent;
-  let fixture: ComponentFixture<DeprecatedManagementComponent>;
+  let component: DeprecationManagementComponent;
+  let fixture: ComponentFixture<DeprecationManagementComponent>;
   let productService: jasmine.SpyObj<ProductService>;
   let adminAuthService: jasmine.SpyObj<AdminAuthService>;
   let originalClipboard: Clipboard | undefined;
@@ -68,7 +68,7 @@ describe('DeprecatedManagementComponent', () => {
     adminAuthServiceSpy.loadFromSessionStorage.and.returnValue(baseUserInfo as any);
 
     await TestBed.configureTestingModule({
-      imports: [DeprecatedManagementComponent, TranslateModule.forRoot()],
+      imports: [DeprecationManagementComponent, TranslateModule.forRoot()],
       providers: [
         { provide: ProductService, useValue: productServiceSpy },
         { provide: LanguageService, useValue: languageServiceSpy },
@@ -80,7 +80,7 @@ describe('DeprecatedManagementComponent', () => {
     productService = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
     adminAuthService = TestBed.inject(AdminAuthService) as jasmine.SpyObj<AdminAuthService>;
 
-    fixture = TestBed.createComponent(DeprecatedManagementComponent);
+    fixture = TestBed.createComponent(DeprecationManagementComponent);
     component = fixture.componentInstance;
 
     originalClipboard = navigator.clipboard;
