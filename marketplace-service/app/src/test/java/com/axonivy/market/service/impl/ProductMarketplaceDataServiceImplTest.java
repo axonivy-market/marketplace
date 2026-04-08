@@ -257,7 +257,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -275,7 +275,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -294,7 +294,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -311,7 +311,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -331,7 +331,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(mockPr);
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -353,7 +353,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE)).thenReturn(mockPr);
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -370,7 +370,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(null);
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of());
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -386,7 +386,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
-    when(productRepo.findProductIdsByDeprecated(true)).thenReturn(List.of(projection));
+    when(productMarketplaceDataRepo.findProductIdsByDeprecated(true)).thenReturn(List.of(projection));
 
     DeprecationResponse response = productMarketplaceDataService.updateSuccessorForProduct(request);
 
@@ -407,3 +407,5 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     return request;
   }
 }
+
+

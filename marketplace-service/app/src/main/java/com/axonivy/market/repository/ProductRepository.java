@@ -2,10 +2,8 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.repository.CoreProductRepository;
-import com.axonivy.market.model.ProductDeprecationProjection;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,17 +19,4 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
 
   @Query("SELECT p.id FROM Product p ORDER BY p.id")
   List<String> findAllIds();
-
-  @Query(value = """
-      SELECT p.id AS id,
-             pmd.deprecation_date AS deprecationDate,
-             pmd.deprecation_requester AS deprecationRequester
-      FROM product p
-      LEFT JOIN product_marketplace_data pmd ON p.id = pmd.id
-      WHERE (
-          (:deprecated IS NOT NULL AND p.deprecated = :deprecated)
-          OR (:deprecated IS NULL AND p.deprecated IS NULL)
-      )
-      """, nativeQuery = true)
-  List<ProductDeprecationProjection> findProductIdsByDeprecated(@Param("deprecated") Boolean deprecated);
 }

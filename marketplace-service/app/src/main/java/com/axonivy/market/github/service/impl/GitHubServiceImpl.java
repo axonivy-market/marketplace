@@ -23,6 +23,8 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -553,36 +555,54 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
-   * Inserts {@code UNSUPPORTED_NOTICE} right below the first markdown heading.
+   * Inserts the unsupported notice right below the first markdown heading.
    * - Keeps original newline style (CRLF/LF).
    * - Returns original content when the notice already exists.
    * - Fails fast when README has no heading line.
    */
   private String addUnsupportedNotice(String readmeContent) {
-    if (readmeContent.contains(UNSUPPORTED_NOTICE.trim())) {
+    String notice = getUnsupportedNotice();
+    if (readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
     String lineSeparator = readmeContent.contains(CRLF) ? CRLF : StringUtils.LF;
     Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
     if (matcher.find()) {
       String heading = matcher.group();
-      String replacement = heading + lineSeparator + lineSeparator + UNSUPPORTED_NOTICE.trim();
+      String replacement = heading + lineSeparator + lineSeparator + notice.trim();
       return matcher.replaceFirst(Matcher.quoteReplacement(replacement));
     }
     throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
   }
 
   /**
-   * Removes {@code UNSUPPORTED_NOTICE} when present.
+   * Removes the unsupported notice when present.
    * Returns original content when the notice does not exist.
    */
   private String removeUnsupportedNotice(String readmeContent) {
-    // Check if notice exists, if not skip
-    if (!readmeContent.contains(UNSUPPORTED_NOTICE.trim())) {
+    String notice = getUnsupportedNotice();
+    if (!readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
-    // Simply replace the notice with empty string
-    return readmeContent.replace(UNSUPPORTED_NOTICE, StringUtils.EMPTY);
+    return readmeContent.replace(notice, StringUtils.EMPTY);
+  }
+
+  private String getUnsupportedNotice() {
+    try (InputStream inputStream = GitHubServiceImpl.class.getClassLoader()
+        .getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
+      if (inputStream == null) {
+        throw new IllegalStateException("Missing resource: " + GITHUB_TEXTS_RESOURCE_PATH);
+      }
+      JsonNode root = new ObjectMapper().readTree(inputStream);
+      String notice = root.path(UNSUPPORTED_NOTICE_KEY).asText(EMPTY).trim();
+      if (StringUtils.isBlank(notice)) {
+        throw new IllegalStateException("Missing key '" + UNSUPPORTED_NOTICE_KEY + "' in "
+            + GITHUB_TEXTS_RESOURCE_PATH);
+      }
+      return notice;
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to load unsupported notice text", e);
+    }
   }
 
   private record PullRequestData(String body, String title, String updatedReadmeContent) {

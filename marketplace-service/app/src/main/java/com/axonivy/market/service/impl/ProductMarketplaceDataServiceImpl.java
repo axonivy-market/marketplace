@@ -218,7 +218,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productRepo.save(product);
     }
     return DeprecationResponse.builder()
-        .productDeprecations(productRepo.findProductIdsByDeprecated(true))
+        .productDeprecations(productMarketplaceDataRepo.findProductIdsByDeprecated(true))
         .pullRequestUrl(pullRequestUrl)
         .build();
   }

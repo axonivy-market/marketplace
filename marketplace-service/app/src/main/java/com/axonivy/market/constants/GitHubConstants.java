@@ -17,7 +17,8 @@ public class GitHubConstants {
   public static final String ACCESS_TOKEN = "accessToken";
   public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
   public static final String README_FILE_PATH = "README.md";
-  public static final String UNSUPPORTED_NOTICE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
+  public static final String GITHUB_TEXTS_RESOURCE_PATH = "github/githubUnsupportedText.json";
+  public static final String UNSUPPORTED_NOTICE_KEY = "unsupportedNotice";
   public static final String DEPRECATED_MESSAGE = "Add unsupported notice to README";
   public static final String REMOVE_UNSUPPORTED_NOTICE_MESSAGE = "Remove unsupported notice from README";
   public static final String UNSUPPORTED_BRANCH_NAME = "feature/update-deprecated-for-readme";

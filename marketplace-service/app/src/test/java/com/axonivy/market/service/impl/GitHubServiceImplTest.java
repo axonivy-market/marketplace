@@ -60,6 +60,7 @@ import static org.mockito.Mockito.*;
 class GitHubServiceImplTest extends BaseSetup {
 
   private static final String BASE_BRANCH = "master";
+  private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -969,7 +970,7 @@ class GitHubServiceImplTest extends BaseSetup {
   void testUpdateReadmeUnsupportedPullRequestReturnsNullWhenAddActionDoesNotChangeReadme() throws Exception {
     GHRepository repository = mock(GHRepository.class);
     GHContent readme = mock(GHContent.class);
-    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE + "\nBody");
+    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
 
