@@ -34,7 +34,6 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -780,10 +779,5 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Override
   public List<String> getProductIds() {
     return productRepo.findAllIds();
-  }
-
-  @Override
-  public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated) {
-    return productMarketplaceDataRepo.findProductIdsByDeprecated(isDeprecated);
   }
 }

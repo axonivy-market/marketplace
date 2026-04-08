@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeprecationRequest {
-  private String productId;
+//  private String productId;
   private String successorUrl;
   private Boolean isDeprecated;
   private boolean addReadme;

@@ -10,7 +10,6 @@ import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
-import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,14 +93,6 @@ public class ProductController {
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 
-  @GetMapping(DEPRECATED_IDS)
-  @Operation(summary = "Get product IDs by deprecated status",
-      description = "Return product IDs filtered by deprecated flag")
-  public ResponseEntity<List<ProductDeprecationProjection>> getProductIdsByDeprecated(
-      @RequestParam(required = false) Boolean deprecated) {
-    List<ProductDeprecationProjection> productIds = productService.getProductIdsByDeprecated(deprecated);
-    return ResponseEntity.ok(productIds);
-  }
 
   @Authorized
   @PutMapping(SYNC)

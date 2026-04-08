@@ -227,7 +227,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (!request.isAddReadme() || request.getPullRequestAction() == null) {
       return null;
     }
-    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes("axonivy" +
+        "-market/test_repo", request.getPullRequestAction());
     return Optional.ofNullable(pullRequest)
         .map(GHPullRequest::getHtmlUrl)
         .map(Object::toString)

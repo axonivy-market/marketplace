@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -85,10 +87,46 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     assertNotNull(result, "Response should not be null");
   }
 
+  @Test
+  void testGetProductDeprecations() {
+    List<ProductDeprecationProjection> projections = List.of(
+        createProductDeprecationProjection("a-trust", new Date()),
+        createProductDeprecationProjection("amazon-comprehend", new Date())
+    );
+    when(productMarketplaceDataService.getProductIdsByDeprecated(null)).thenReturn(projections);
+
+    var response = productMarketplaceDataController.getProductDeprecations(null);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(response.hasBody(), "Response body should not be null");
+    assertEquals(2, Objects.requireNonNull(response.getBody()).size(),
+        "Expected response to contain 2 deprecation projections");
+  }
+
   private ProductCustomSortRequest createProductCustomSortRequestMock() {
     List<String> productIds = new ArrayList<>();
     productIds.add("a-trust");
     productIds.add("approval-decision-utils");
     return new ProductCustomSortRequest(productIds, "recently");
+  }
+
+  private ProductDeprecationProjection createProductDeprecationProjection(
+      String id, Date deprecationDate) {
+    return new ProductDeprecationProjection() {
+      @Override
+      public String getId() {
+        return id;
+      }
+
+      @Override
+      public Date getDeprecationDate() {
+        return deprecationDate;
+      }
+
+      @Override
+      public String getDeprecationRequester() {
+        return "admin";
+      }
+    };
   }
 }

@@ -9,7 +9,6 @@ import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
@@ -30,7 +29,6 @@ import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -260,40 +258,4 @@ class ProductControllerTest extends BaseSetup {
         "Response message should indicate that there was nothing to sync");
   }
 
-  @Test
-  void testGetProductIdsByDeprecatedWhenDeprecatedIsNull() {
-    List<ProductDeprecationProjection> projections = List.of(
-        createProductDeprecationProjection("a-trust", new Date()),
-        createProductDeprecationProjection("amazon-comprehend", new Date())
-    );
-    when(service.getProductIdsByDeprecated(null)).thenReturn(projections);
-    var response = productController.getProductIdsByDeprecated(null);
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Expected HTTP 200 OK when deprecated parameter is null");
-    assertTrue(response.hasBody(),
-        "Response body should not be null or empty when deprecated is null");
-    assertEquals(2, Objects.requireNonNull(response.getBody()).size(),
-        "Expected response to contain 2 product deprecation projections");
-    verify(service, times(1)).getProductIdsByDeprecated(null);
-  }
-
-  private ProductDeprecationProjection createProductDeprecationProjection(
-      String id, Date deprecationDate) {
-    return new ProductDeprecationProjection() {
-      @Override
-      public String getId() {
-        return id;
-      }
-
-      @Override
-      public Date getDeprecationDate() {
-        return deprecationDate;
-      }
-
-      @Override
-      public String getDeprecationRequester() {
-        return "admin";
-      }
-    };
-  }
 }
