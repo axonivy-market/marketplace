@@ -566,7 +566,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
+    List<String> installableVersions = CoreVersionUtils.getInstallableVersionsFromMetadataList(
         metadataRepo.findByProductId(id));
     String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file
@@ -761,7 +761,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {

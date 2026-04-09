@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { StarRatingHighlightDirective } from './star-rating-highlight.directive';
 import { Component, ElementRef } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 @Component({
     template: `<div starRatingHighlight [percent]="percent"></div>`,
-    standalone: false
+    standalone: true,
+    imports: [StarRatingHighlightDirective]
 })
 class TestComponent {
   percent = 50;
@@ -17,13 +19,13 @@ describe('StarRatingHighlightDirective', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [StarRatingHighlightDirective],
-      declarations: [TestComponent]
+      imports: [TestComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     el = fixture.nativeElement.querySelector('div');
+    fixture.detectChanges();
   });
 
   it('should create an instance', () => {
@@ -33,10 +35,12 @@ describe('StarRatingHighlightDirective', () => {
 
   it('should set the width based on percent input', () => {
     component.percent = 75;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('75%');
 
     component.percent = 25;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('25%');
   });
@@ -47,6 +51,7 @@ describe('StarRatingHighlightDirective', () => {
     expect(el.style.width).toBe('50%');
 
     component.percent = 100;
+    fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(el.style.width).toBe('100%');
   });

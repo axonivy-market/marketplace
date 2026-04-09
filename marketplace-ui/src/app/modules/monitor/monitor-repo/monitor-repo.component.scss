@@ -153,7 +153,11 @@ td.no-workflow {
   color: var(--ivy-primary-bg);
 }
 
-i.fa.fa-external-link::before {
+i.ti.ti-external-link::before {
   font-size: 2rem;
   color: var(--ivy-primary-bg);
+}
+
+a:has(i.ti.ti-external-link) {
+  text-decoration: none;
 }

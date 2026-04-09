@@ -1,9 +1,10 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { signal, WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { GitHubUser, UserInfo } from '../../../auth/auth.service';
+import { UserInfo } from '../../../auth/auth.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { GithubUserBadgeComponent } from './github-user-badge.component';
@@ -12,11 +13,11 @@ describe('GithubUserBadgeComponent', () => {
   let component: GithubUserBadgeComponent;
   let fixture: ComponentFixture<GithubUserBadgeComponent>;
 
-  let mockAdminAuthService: jasmine.SpyObj<AdminAuthService> & {
+  let mockAdminAuthService: MockedObject<AdminAuthService> & {
     userInfo: WritableSignal<UserInfo | null>;
   };
 
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockRouter: MockedObject<Router>;
 
   const mockUser: UserInfo = {
     login: 'mockuser',
@@ -27,15 +28,14 @@ describe('GithubUserBadgeComponent', () => {
   };
 
   beforeEach(async () => {
-    mockAdminAuthService = jasmine.createSpyObj(
-      'AdminAuthService',
-      ['logout'],
-      {
-        userInfo: signal<UserInfo | null>(mockUser)
-      }
-    ) as any;
+    mockAdminAuthService = {
+      logout: vi.fn().mockName('AdminAuthService.logout'),
+      userInfo: signal<UserInfo | null>(mockUser)
+    } as any;
 
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = {
+      navigate: vi.fn().mockName('Router.navigate')
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [GithubUserBadgeComponent, TranslateModule.forRoot()],

@@ -1,18 +1,22 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTER } from '../../constants/router.constant';
 import { RedirectPageComponent } from './redirect-page.component';
 import { MOCK_STATIC_LIB } from '../../mocks/mock-data';
 import { ProductService } from '../../../modules/product/product.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { of } from 'rxjs';
 
 describe('RedirectPageComponent', () => {
   let component: RedirectPageComponent;
   let fixture: any;
-  let mockProductService: jasmine.SpyObj<ProductService>;
+  let mockProductService: any;
 
   const mockActivatedRoute = {
     snapshot: {
@@ -28,7 +32,11 @@ describe('RedirectPageComponent', () => {
   };
 
   beforeEach(() => {
-    mockProductService = jasmine.createSpyObj('ProductService', ['getLatestArtifactDownloadUrl']);
+    mockProductService = {
+      getLatestArtifactDownloadUrl: vi
+        .fn()
+        .mockName('ProductService.getLatestArtifactDownloadUrl')
+    };
 
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), RedirectPageComponent],
@@ -49,7 +57,9 @@ describe('RedirectPageComponent', () => {
   });
 
   it('should redirect to latest Lib version download url', () => {
-    mockProductService.getLatestArtifactDownloadUrl.and.returnValue(of(MOCK_STATIC_LIB.relativeLink));
+    mockProductService.getLatestArtifactDownloadUrl.mockReturnValue(
+      of(MOCK_STATIC_LIB.relativeLink)
+    );
     fixture.detectChanges();
   });
 });

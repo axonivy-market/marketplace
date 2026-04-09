@@ -28,10 +28,10 @@
         [disabled]="isButtonDisabled"
         [style.pointer-events]="isProcessing ? 'none' : ''">
         @if (isProcessing) {
-          <i class="fa fa-spinner fa-spin me-2"></i>
+          <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
           {{ 'common.admin.proceedingBtnLabel' | translate }}
         } @else {
-          <i class="fa-solid fa-right-to-bracket"></i>
+          <i class="ti ti-arrow-right-to-arc"></i>
           {{ 'common.admin.proceedBtnLabel' | translate }}
         }
       </button>

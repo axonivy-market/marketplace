@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -101,8 +102,7 @@ describe('ProductService', () => {
       for (let i = 0; i < products.length; i++) {
         if (
           products[i].platformReview &&
-          products[i + 1] &&
-          products[i + 1].platformReview
+          products[i + 1]?.platformReview
         ) {
           expect(Number(products[i + 1].platformReview)).toBeGreaterThanOrEqual(
             Number(products[i].platformReview)
@@ -208,7 +208,7 @@ describe('ProductService', () => {
       expect(data).toEqual(MOCK_PRODUCT_DETAIL);
     });
 
-    const req = httpMock.expectOne(request => {
+    httpMock.expectOne(request => {
       expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`);
 
       return true;
