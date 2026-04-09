@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @Log4j2
 public class MatomoServiceImpl implements MatomoService {
@@ -26,6 +29,18 @@ public class MatomoServiceImpl implements MatomoService {
     this.matomoTracker = matomoTracker;
   }
 
+  private String getClientIp(HttpServletRequest request) {
+    String xf = request.getHeader("X-Forwarded-For");
+    if (xf != null && !xf.isEmpty()) {
+        return xf.split(",")[0].trim();
+    }
+    String realIp = request.getHeader("X-Real-IP");
+    if (realIp != null && !realIp.isEmpty()) {
+        return realIp;
+    }
+    return request.getRemoteAddr();
+}
+
   @Override
   public void trackEventAsync(HttpServletRequest httpServletRequest) {
     var baseUrl = httpServletRequest.getRequestURL().toString();
@@ -38,10 +53,16 @@ public class MatomoServiceImpl implements MatomoService {
       requestUrl = baseUrl;
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
+    String clientIp = getClientIp(httpServletRequest);
+    Map<String, String> headers = new HashMap<>();
+    headers.put("X-Forwarded-For", clientIp);
+    headers.put("X-Real-IP", clientIp);
+    log.error("found message: " + clientIp);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
         .referrerUrl(referrerUrl)
+        .headers(headers)
         .build();
 
     matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
