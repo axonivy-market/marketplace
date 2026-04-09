@@ -13,10 +13,11 @@
 
     <app-header></app-header>
   }
-  <main>
-    <div>
-      <router-outlet />
-    </div>
+  <hr class="header-separation-line"/>
+  <main class="container">
+    <!-- <div> -->
+      <router-outlet/>
+    <!-- </div> -->
     <app-back-to-top></app-back-to-top>
   </main>
   @if (!routingQueryParamService.isDesignerEnv()) {

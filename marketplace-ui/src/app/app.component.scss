@@ -5,6 +5,13 @@ body {
   font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
+.header-separation-line {
+  opacity: 1;
+  border: none;
+  border-bottom: 1px solid var(--header-border-color);
+  margin: 0;
+}
+
 footer {
   height: 409px;
   padding: 0 0 56px 0;

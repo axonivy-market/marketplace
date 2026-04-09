@@ -36,7 +36,7 @@ describe('SearchBarComponent', () => {
       By.css('.header__search-button')
     );
 
-    expect(desktopSearch).toBeNull;
+    expect(desktopSearch).toBeNull();
   });
 
   it('desktop search should display in large screen', () => {
