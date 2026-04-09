@@ -11,6 +11,7 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
+  AUTHORIZATION_HEADER,
   BEARER
 } from '../../shared/constants/common.constant';
 import { AdminAuthService } from './admin-auth.service';
@@ -200,7 +201,7 @@ describe('AdminAuthService', () => {
       let token = mockUser.token;
       const headers = service.getAuthHeaders();
 
-      expect(headers.get('Authorization')).toBe(`${BEARER} ${token}`);
+      expect(headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
     });
 
     it('should return empty headers when token is null', () => {
@@ -208,7 +209,7 @@ describe('AdminAuthService', () => {
 
       const headers = service.getAuthHeaders();
 
-      expect(headers.get('Authorization')).toBeNull();
+      expect(headers.get(AUTHORIZATION_HEADER)).toBeNull();
       expect(headers.keys().length).toBe(0);
     });
   });

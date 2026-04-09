@@ -7,7 +7,11 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { BEARER, TOKEN_KEY } from '../shared/constants/common.constant';
+import {
+  AUTHORIZATION_HEADER,
+  BEARER,
+  TOKEN_KEY
+} from '../shared/constants/common.constant';
 import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
@@ -149,7 +153,7 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`${BEARER} ${token}`);
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
     expect(req.request.headers.get('Accept')).toBe('application/vnd.github+json');
 
     req.flush(mockUserResponse);

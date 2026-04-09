@@ -19,6 +19,7 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import {
+  AUTHORIZATION_HEADER,
   BEARER,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK
@@ -219,7 +220,7 @@ export class ProductService {
   updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecatedRequest, token: string | undefined):
     Observable<DeprecatedResponse> {
     const headers = new HttpHeaders({
-      'Authorization': `${BEARER} ${token}`
+      [AUTHORIZATION_HEADER]: `${BEARER} ${token}`
     });
     return this.httpClient
       .put<DeprecatedResponse>(

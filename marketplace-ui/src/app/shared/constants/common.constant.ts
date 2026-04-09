@@ -304,6 +304,7 @@ export const ERROR_CODES = [
 ];
 export const TOKEN_KEY = 'token';
 export const BEARER = 'Bearer';
+export const AUTHORIZATION_HEADER = 'Authorization';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';

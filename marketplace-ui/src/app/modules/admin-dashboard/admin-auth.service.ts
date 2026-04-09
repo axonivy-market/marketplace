@@ -7,6 +7,7 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
+  AUTHORIZATION_HEADER,
   BEARER
 } from '../../shared/constants/common.constant';
 
@@ -25,7 +26,7 @@ export class AdminAuthService {
       this.logout();
     }
   }
-  
+
   loadFromSessionStorage(): UserInfo | null {
     const storedUserInfo = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN);
     return storedUserInfo ? JSON.parse(storedUserInfo) : null;
@@ -69,7 +70,7 @@ export class AdminAuthService {
     }
 
     return new HttpHeaders({
-      Authorization: `${BEARER} ${this.token}`
+      [AUTHORIZATION_HEADER]: `${BEARER} ${this.token}`
     });
   }
 }

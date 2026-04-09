@@ -14,7 +14,14 @@ import {
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
-import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT, DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
+import {
+  AUTHORIZATION_HEADER,
+  DEFAULT_CHANGELOG_PAGEABLE,
+  DEFAULT_PAGEABLE,
+  DEFAULT_PAGEABLE_IN_REST_CLIENT,
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK
+} from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 import { DeprecatedRequest } from '../../shared/models/deprecated-request';
@@ -540,7 +547,7 @@ describe('ProductService', () => {
       );
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(requestBody);
-      expect(req.request.headers.get('Authorization')).toBe('Bearer token-123');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer token-123');
 
       req.flush({
         productDeprecations: [

@@ -4,6 +4,7 @@ import { LogStreamService } from './log-stream.service';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { API_INTERNAL_URL, API_PUBLIC_URL, API_URI } from '../../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
+import { AUTHORIZATION_HEADER } from '../../../shared/constants/common.constant';
 
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { HttpHeaders } from '@angular/common/http';
@@ -105,7 +106,7 @@ describe('LogStreamService', () => {
 
     it('should include auth headers in connection', () => {
       const dummyHeaders = new HttpHeaders().set(
-        'Authorization',
+        AUTHORIZATION_HEADER,
         'Bearer token'
       );
       mockAdminAuthService.getAuthHeaders.and.returnValue(dummyHeaders);
@@ -116,7 +117,7 @@ describe('LogStreamService', () => {
       const args = fetchSpy.calls.mostRecent().args;
       const options = args[1];
       expect(options.headers).toEqual(
-        jasmine.objectContaining({ Authorization: 'Bearer token' })
+        jasmine.objectContaining({ [AUTHORIZATION_HEADER]: 'Bearer token' })
       );
     });
   });

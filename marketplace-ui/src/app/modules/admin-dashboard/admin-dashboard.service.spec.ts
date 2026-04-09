@@ -21,6 +21,7 @@ import {
 } from '../../core/interceptors/api.interceptor';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
 
 describe('AdminDashboardService', () => {
   let service: AdminDashboardService;
@@ -28,7 +29,7 @@ describe('AdminDashboardService', () => {
   let adminAuthService: jasmine.SpyObj<AdminAuthService>;
 
   const mockAuthHeaders = new HttpHeaders({
-    Authorization: 'Bearer test-token'
+    [AUTHORIZATION_HEADER]: 'Bearer test-token'
   });
 
   beforeEach(() => {
@@ -111,7 +112,7 @@ describe('AdminDashboardService', () => {
         `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
       );
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(null);
@@ -126,7 +127,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_GITHUB_MONITOR);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.responseType).toBe('text');
@@ -154,7 +155,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_TASK_EXECUTION);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(mockExecutions);
@@ -171,7 +172,7 @@ describe('AdminDashboardService', () => {
         `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
       );
       expect(req.request.method).toBe('POST');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.body).toEqual({
@@ -240,7 +241,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SECURITY_MONITOR);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(mockSecurityInfo);
@@ -357,7 +358,7 @@ describe('AdminDashboardService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
@@ -382,7 +383,7 @@ describe('AdminDashboardService', () => {
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(releaseLetterRequest);
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.context.get(ForwardingError)).toBeTrue();
@@ -421,7 +422,7 @@ describe('AdminDashboardService', () => {
 
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(releaseLetterRequest);
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.context.get(ForwardingError)).toBeTrue();
@@ -450,7 +451,7 @@ describe('AdminDashboardService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
 
@@ -471,7 +472,7 @@ describe('AdminDashboardService', () => {
       const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
 
       expect(req.request.method).toBe('DELETE');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
 

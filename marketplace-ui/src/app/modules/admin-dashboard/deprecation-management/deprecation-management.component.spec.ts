@@ -122,6 +122,7 @@ describe('DeprecatedManagementComponent', () => {
   }));
 
   it('should close deprecate dialog and reset fields after animation delay', fakeAsync(() => {
+    component.moderatorName = 'alice';
     component.showDeprecatedProductDialog = true;
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
@@ -149,7 +150,9 @@ describe('DeprecatedManagementComponent', () => {
     expect(component.deprecatedRequest).toEqual({
       successorUrl: '',
       addReadme: false,
-      isDeprecated: false
+      isDeprecated: false,
+      pullRequestAction: PullRequestAction.ADD,
+      deprecationRequester: 'alice'
     });
     expect(component.validationErrors).toEqual({});
   }));
