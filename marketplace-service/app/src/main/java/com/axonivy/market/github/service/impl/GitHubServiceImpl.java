@@ -73,9 +73,8 @@ import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.*;
-import static org.apache.commons.lang3.CharUtils.LF;
-import static org.apache.commons.lang3.StringUtils.CR;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.*;
+
 
 @Log4j2
 @Service
@@ -565,7 +564,7 @@ public class GitHubServiceImpl implements GitHubService {
     if (readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
-    String lineSeparator = readmeContent.contains(CRLF) ? CRLF : StringUtils.LF;
+    String lineSeparator = readmeContent.contains(CRLF) ? CRLF : LF;
     Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
     if (matcher.find()) {
       String heading = matcher.group();
@@ -588,8 +587,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private String getUnsupportedNotice() {
-    try (InputStream inputStream = GitHubServiceImpl.class.getClassLoader()
-        .getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    try (InputStream inputStream = classLoader.getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
       if (inputStream == null) {
         throw new IllegalStateException("Missing resource: " + GITHUB_TEXTS_RESOURCE_PATH);
       }

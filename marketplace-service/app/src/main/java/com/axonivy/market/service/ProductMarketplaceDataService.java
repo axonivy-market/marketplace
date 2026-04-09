@@ -29,7 +29,8 @@ public interface ProductMarketplaceDataService {
 
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
 
-  DeprecationResponse updateSuccessorForProduct(String productId, DeprecationRequest deprecationRequest) throws IOException;
+  DeprecationResponse updateSuccessorForProduct(String productId, DeprecationRequest deprecationRequest)
+      throws IOException;
 
   List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated);
 }

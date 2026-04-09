@@ -1130,9 +1130,4 @@ class GitHubServiceImplTest extends BaseSetup {
     when(pagedPullRequests.toList()).thenReturn(pullRequests);
   }
 
-  private GHPullRequest mockPullRequest(String url) throws Exception {
-    GHPullRequest pullRequest = mock(GHPullRequest.class);
-    when(pullRequest.getHtmlUrl()).thenReturn(URI.create(url).toURL());
-    return pullRequest;
-  }
 }
