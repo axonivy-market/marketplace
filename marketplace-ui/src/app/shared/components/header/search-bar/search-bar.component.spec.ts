@@ -28,6 +28,7 @@ describe('SearchBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
+
   it('desktop search should not display in small screen', () => {
     viewport.set(540);
 
