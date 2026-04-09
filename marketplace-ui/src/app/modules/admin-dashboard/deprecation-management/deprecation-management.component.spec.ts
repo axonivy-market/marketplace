@@ -273,9 +273,9 @@ describe('DeprecatedManagementComponent', () => {
     fixture.detectChanges();
     tick();
 
-    component.undeprecateProductId = 'cms-live-editor';
+    component.removedProductId = 'cms-live-editor';
 
-    component.executeUndeprecate();
+    component.executeRemoveDeprecation();
     tick();
 
     expect(productService.updateDeprecatedProduct).toHaveBeenCalledWith(

@@ -75,7 +75,7 @@
           <td class="action-column text-primary text-center">
             <i class="bi bi-trash-fill delete-icon"
                role="button"
-               (click)="confirmUndeprecate(row.id)">
+               (click)="confirmRemovedDeprecation(row.id)">
             </i>
           </td>
         </tr>
@@ -115,10 +115,10 @@
 </app-deprecation-result-dialog>
 
 <app-remove-deprecation-confirm-dialog
-  [visible]="showUndeprecateConfirmDialog"
-  [isClosing]="isClosingUndeprecateDialog"
-  [isUndeprecating]="isUndeprecating"
-  [undeprecateProductId]="undeprecateProductId"
-  (closeDialog)="closeUndeprecateDialog()"
-  (confirm)="executeUndeprecate()">
+  [visible]="showRemoveDeprecationConfirmDialog"
+  [isClosing]="isClosingRemoveDeprecationDialog"
+  [isUndeprecating]="isRemoving"
+  [undeprecateProductId]="removedProductId"
+  (closeDialog)="closeRemoveDeprecationDialog()"
+  (confirm)="executeRemoveDeprecation()">
 </app-remove-deprecation-confirm-dialog>

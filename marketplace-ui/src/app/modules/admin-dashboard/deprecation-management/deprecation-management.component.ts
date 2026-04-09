@@ -56,11 +56,10 @@ export class DeprecationManagementComponent implements OnInit {
   successMode: 'deprecate' | 'undeprecate' | null = null;
   private successDialogCloseTimer?: ReturnType<typeof setTimeout>;
 
-  // Undeprecate confirm dialog state
-  showUndeprecateConfirmDialog = false;
-  isClosingUndeprecateDialog = false;
-  isUndeprecating = false;
-  undeprecateProductId = '';
+  showRemoveDeprecationConfirmDialog = false;
+  isClosingRemoveDeprecationDialog = false;
+  isRemoving = false;
+  removedProductId = '';
   productId = '';
 
   dropdownOpen = false;
@@ -260,28 +259,28 @@ export class DeprecationManagementComponent implements OnInit {
     this.deprecatedRequest.pullRequestAction = PullRequestAction.ADD;
   }
 
-  async confirmUndeprecate(productId: string): Promise<void> {
-    this.undeprecateProductId = productId;
-    this.showUndeprecateConfirmDialog = true;
+  async confirmRemovedDeprecation(productId: string): Promise<void> {
+    this.removedProductId = productId;
+    this.showRemoveDeprecationConfirmDialog = true;
   }
 
-  closeUndeprecateDialog(): void {
-    if (this.isUndeprecating) {
+  closeRemoveDeprecationDialog(): void {
+    if (this.isRemoving) {
       return;
     }
-    this.isClosingUndeprecateDialog = true;
+    this.isClosingRemoveDeprecationDialog = true;
     setTimeout(() => {
-      this.showUndeprecateConfirmDialog = false;
-      this.isClosingUndeprecateDialog = false;
-      this.undeprecateProductId = '';
+      this.showRemoveDeprecationConfirmDialog = false;
+      this.isClosingRemoveDeprecationDialog = false;
+      this.removedProductId = '';
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
-  async executeUndeprecate(): Promise<void> {
-    if (this.isUndeprecating) {
+  async executeRemoveDeprecation(): Promise<void> {
+    if (this.isRemoving) {
       return;
     }
-    this.isUndeprecating = true;
+    this.isRemoving = true;
 
     try {
       const request: DeprecatedRequest = {
@@ -293,7 +292,7 @@ export class DeprecationManagementComponent implements OnInit {
       };
       this.deprecatedResponse = await firstValueFrom(
         this.productService.updateDeprecatedProduct(
-          this.undeprecateProductId,
+          this.removedProductId,
           request,
           this.token
         )
@@ -301,9 +300,9 @@ export class DeprecationManagementComponent implements OnInit {
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
       // Close confirm dialog and show success dialog
-      this.showUndeprecateConfirmDialog = false;
-      this.isClosingUndeprecateDialog = false;
-      this.undeprecateProductId = '';
+      this.showRemoveDeprecationConfirmDialog = false;
+      this.isClosingRemoveDeprecationDialog = false;
+      this.removedProductId = '';
 
       this.successPullRequestUrl =
         this.deprecatedResponse.pullRequestUrl ?? null;
@@ -311,7 +310,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
     } finally {
-      this.isUndeprecating = false;
+      this.isRemoving = false;
     }
   }
 
