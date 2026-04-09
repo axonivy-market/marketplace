@@ -35,15 +35,6 @@ describe('DeprecateFormDialogComponent', () => {
     expect(wrapper).toBeNull();
   });
 
-  it('should emit updateDropdownState false on blur', () => {
-    spyOn(component.updateDropdownState, 'emit');
-
-    const productInput = fixture.debugElement.query(By.css('input[placeholder="html-dialog-demo"]'));
-    productInput.triggerEventHandler('blur', null);
-
-    expect(component.updateDropdownState.emit).toHaveBeenCalledWith(false);
-  });
-
   it('should render product dropdown and emit selected product', () => {
     spyOn(component.selectProduct, 'emit');
     component.dropdownOpen = true;

@@ -48,8 +48,10 @@
           <i
             class="bi bi-info-circle hint-icon"
             data-bs-toggle="tooltip"
-            data-bs-placement="right"
-            title="{{ 'common.product.detail.information.value.successorToolTip' | translate }}"></i>
+            data-bs-placement="bottom"
+            data-bs-html="true"
+            data-bs-custom-class="custom-tooltip"
+            [attr.data-bs-title]="'<p class=&quot;text-primary&quot;>' + ('common.product.detail.information.value.successorToolTip' | translate) + '</p>'"></i>
         </span>
         <div class="text-primary successor-value">
           @if (hasSuccessor()) {
