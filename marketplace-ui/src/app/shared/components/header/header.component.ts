@@ -11,7 +11,7 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, ɵEmptyOutletComponent } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -27,6 +27,7 @@ import {
   OffcanvasDismissReasons
 } from '@ng-bootstrap/ng-bootstrap';
 import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.component';
+import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
 @Component({
   selector: 'app-header',
@@ -39,19 +40,15 @@ import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.componen
     HeaderToolbarComponent,
     RouterLink,
     GithubUserBadgeComponent,
-    NgbInputDatepicker
-  ],
+    NgbInputDatepicker,
+    ɵEmptyOutletComponent
+],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
 export class HeaderComponent {
   offcanvasService = inject(NgbOffcanvas);
-  headerOffcanvasRef: NgbOffcanvasRef | null = null;
-
-  selectedNav = '/';
-
-  isMobileMenuCollapsed = model<boolean>(true);
-
+  adminAuthService = inject(AdminAuthService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
@@ -61,7 +58,11 @@ export class HeaderComponent {
   @Input() showMenuToggle = false;
   @Output() menuToggle = new EventEmitter<void>();
 
+  selectedNav = '/';
   isAdminRoute = false;
+  userInfo = this.adminAuthService.userInfo;
+  isMobileMenuCollapsed = model<boolean>(true);
+  headerOffcanvasRef: NgbOffcanvasRef | null = null
 
   constructor() {
     this.translateService.setDefaultLang(

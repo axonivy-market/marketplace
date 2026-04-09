@@ -7,10 +7,10 @@
   </div>
 
   <!-- Navigation -->
-  <ul class="navbar-nav p-0 h-100">
+  <ul class="p-0 h-100">
     @for (item of this.items; track item.label) {
       <li
-        class="nav-item">
+        class="nav-item px-0 px-xl-2">
         @let isHomePage = item.link === '/';
         @let isSyncPage = item.link === '/internal-dashboard';
         @let isInternal = item.link.startsWith('/');
@@ -38,7 +38,7 @@
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"
             [lang]="languageService.selectedLanguage()"
-            class="nav-link py-0 d-flex justify-content-center align-items-center h-100"
+            class="nav-link py-0 d-flex justify-content-xl-center align-items-xl-center h-100"
             [ngClass]="{
               'text-primary': isMobileMode() || routerActive.isActive,
               'text-secondary': !isMobileMode() && !routerActive.isActive,
@@ -53,7 +53,7 @@
         } @else {
           <a
             [lang]="languageService.selectedLanguage()"
-            class="nav-link py-0 d-flex justify-content-center align-items-center h-100"
+            class="nav-link py-0 d-flex justify-content-xl-center align-items-xl-center h-100"
             [ngClass]="isMobileMode() ? 'text-primary' : 'text-secondary'"
             aria-current="page"
             [href]="item.link">

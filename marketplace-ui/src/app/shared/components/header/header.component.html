@@ -40,46 +40,50 @@
 </nav> -->
 
 <div class="header-container container">
-  <nav class="navbar navbar-expand-xl py-0">
-    <div class="container-fluid h-100">
-      <a routerLink="/" class="logo navbar-brand">
-        <img
-          class="logo__image"
-          [src]="
-            themeService.isDarkMode()
-              ? '/assets/images/misc/axonivy-logo.svg'
-              : '/assets/images/misc/axonivy-logo-black.svg'
-          "
-          alt="Axon Ivy" />
-      </a>
-      <!-- <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-flex justify-content-center align-items-center h-100" /> -->
-      <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-block h-100" />
-      <!-- <app-search-bar class="d-none d-xl-block"></app-search-bar> -->
-      <app-header-toolbar class="d-none d-xl-block"></app-header-toolbar>
-      <button class="btn border-0 rounded-3 d-block d-xl-none p-0">
-        <span>
-          <i
-            class="header__menu-button"
-            [ngClass]="headerOffcanvasRef ? 'bi bi-x-lg' : 'bi bi-list'"
-            (click)="toggleHeaderOffcanvas(content)"></i>
-        </span>
-      </button>
+  <!-- <nav class="navbar navbar-expand-xl py-0"> -->
+  <div
+    class="container-fluid px-0 h-100 d-flex justify-content-between align-items-center">
+    <a routerLink="/" class="logo navbar-brand">
+      <img
+        class="logo__image"
+        [src]="
+          themeService.isDarkMode()
+            ? '/assets/images/misc/axonivy-logo.svg'
+            : '/assets/images/misc/axonivy-logo-black.svg'
+        "
+        alt="Axon Ivy" />
+    </a>
+    <!-- <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-flex justify-content-center align-items-center h-100" /> -->
+    <app-navigation
+      [isAdminPage]="isAdminRoute"
+      class="d-none d-xl-block h-100" />
+    <!-- <app-search-bar class="d-none d-xl-block"></app-search-bar> -->
+    <div class="d-none d-xl-flex justify-content-center align-items-center">
+      <!-- <app-header-toolbar class="d-none d-xl-block me-4"></app-header-toolbar> -->
+      <app-header-toolbar class="me-4"></app-header-toolbar>
+      @if (userInfo()) {
+        <app-github-user-badge />
+      }
     </div>
-  </nav>
+    <div class="d-flex d-xl-none">
+      <!-- <button class="btn border-0 rounded-3 d-block d-xl-none p-0"> -->
+      <button class="btn border-0 rounded-3 p-0 me-4">
+        <i
+          class="header__menu-button"
+          [ngClass]="headerOffcanvasRef ? 'bi bi-x-lg' : 'bi bi-list'"
+          (click)="toggleHeaderOffcanvas(content)"></i>
+      </button>
+      @if (userInfo()) {
+        <app-github-user-badge />
+      }
+    </div>
+  </div>
+  <!-- </nav> -->
 </div>
 
 <ng-template #content let-offcanvas>
-  <div class="container">
-    <!-- <div class="offcanvas-header p-0">
-      <h4 class="offcanvas-title" id="offcanvas-basic-title">Profile update</h4>
-      <button
-        type="button"
-        class="btn-close"
-        aria-label="Close"
-        (click)="offcanvas.dismiss('Cross click')"></button>
-    </div> -->
-    <div class="offcanvas-body">
-      <app-navigation [isAdminPage]="isAdminRoute"/>
+    <div class="offcanvas-body px-0 container">
+      <app-navigation [isAdminPage]="isAdminRoute" />
+      <app-header-toolbar></app-header-toolbar>
     </div>
-  </div>
 </ng-template>
