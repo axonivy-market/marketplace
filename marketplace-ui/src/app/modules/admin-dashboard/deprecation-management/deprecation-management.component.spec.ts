@@ -1,9 +1,15 @@
 import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockedObject
+} from 'vitest';
+import {
   ComponentFixture,
-  TestBed,
-  fakeAsync,
-  flushMicrotasks,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -16,13 +22,13 @@ import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
 
-describe('DeprecatedManagementComponent', () => {
+describe('DeprecationManagementComponent', () => {
   let component: DeprecationManagementComponent;
   let fixture: ComponentFixture<DeprecationManagementComponent>;
-  let productService: jasmine.SpyObj<ProductService>;
-  let adminAuthService: jasmine.SpyObj<AdminAuthService>;
+  let productService: MockedObject<ProductService>;
+  let adminAuthService: MockedObject<AdminAuthService>;
   let originalClipboard: Clipboard | undefined;
-  let writeTextSpy: jasmine.Spy;
+  let writeTextSpy: ReturnType<typeof vi.fn>;
 
   const mockDeprecatedRows = [
     {
@@ -47,25 +53,25 @@ describe('DeprecatedManagementComponent', () => {
   };
 
   beforeEach(async () => {
-    const productServiceSpy = jasmine.createSpyObj('ProductService', [
-      'fetchAllProductIdsByDeprecated',
-      'updateDeprecatedProduct'
-    ]);
-    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [], {
-      selectedLanguage: () => 'en'
-    });
-    const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['isDarkMode']);
-    const adminAuthServiceSpy = jasmine.createSpyObj('AdminAuthService', [
-      'loadFromSessionStorage'
-    ]);
+    const productServiceSpy = {
+      fetchAllProductIdsByDeprecated: vi.fn(),
+      updateDeprecatedProduct: vi.fn()
+    };
+    const languageServiceSpy = {
+      selectedLanguage: vi.fn().mockReturnValue('en')
+    };
+    const themeServiceSpy = { isDarkMode: vi.fn() };
+    const adminAuthServiceSpy = {
+      loadFromSessionStorage: vi.fn()
+    };
 
-    productServiceSpy.fetchAllProductIdsByDeprecated.and.returnValue(
+    productServiceSpy.fetchAllProductIdsByDeprecated.mockReturnValue(
       of(mockDeprecatedRows)
     );
-    productServiceSpy.updateDeprecatedProduct.and.returnValue(
+    productServiceSpy.updateDeprecatedProduct.mockReturnValue(
       of({ productDeprecations: mockDeprecatedRows, pullRequestUrl: null })
     );
-    adminAuthServiceSpy.loadFromSessionStorage.and.returnValue(baseUserInfo as any);
+    adminAuthServiceSpy.loadFromSessionStorage.mockReturnValue(baseUserInfo as any);
 
     await TestBed.configureTestingModule({
       imports: [DeprecationManagementComponent, TranslateModule.forRoot()],
@@ -77,16 +83,14 @@ describe('DeprecatedManagementComponent', () => {
       ]
     }).compileComponents();
 
-    productService = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
-    adminAuthService = TestBed.inject(AdminAuthService) as jasmine.SpyObj<AdminAuthService>;
+    productService = TestBed.inject(ProductService) as MockedObject<ProductService>;
+    adminAuthService = TestBed.inject(AdminAuthService) as MockedObject<AdminAuthService>;
 
     fixture = TestBed.createComponent(DeprecationManagementComponent);
     component = fixture.componentInstance;
 
     originalClipboard = navigator.clipboard;
-    writeTextSpy = jasmine
-      .createSpy('writeText')
-      .and.returnValue(Promise.resolve());
+    writeTextSpy = vi.fn().mockReturnValue(Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextSpy },
       configurable: true
@@ -100,28 +104,29 @@ describe('DeprecatedManagementComponent', () => {
     });
   });
 
-  it('should create and initialize rows from API', fakeAsync(() => {
+  it('should create and initialize rows from API', async () => {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     expect(component).toBeTruthy();
     expect(adminAuthService.loadFromSessionStorage).toHaveBeenCalled();
     expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
     expect(component.deprecatedItems).toEqual(mockDeprecatedRows);
     expect(component.filteredDeprecatedRows).toEqual(mockDeprecatedRows);
-  }));
+  });
 
-  it('should open deprecate dialog when trigger is called', fakeAsync(() => {
+  it('should open deprecate dialog when trigger is called', async () => {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     component.trigger();
 
-    expect(component.showDeprecatedProductDialog).toBeTrue();
+    expect(component.showDeprecatedProductDialog).toBe(true);
     expect(component.deprecatedResponse.pullRequestUrl).toBeNull();
-  }));
+  });
 
-  it('should close deprecate dialog and reset fields after animation delay', fakeAsync(() => {
+  it('should close deprecate dialog and reset fields after animation delay', () => {
+    vi.useFakeTimers();
     component.moderatorName = 'alice';
     component.showDeprecatedProductDialog = true;
     component.isDeprecating = true;
@@ -140,13 +145,13 @@ describe('DeprecatedManagementComponent', () => {
 
     component.closeDialog();
 
-    expect(component.isClosing).toBeTrue();
-    tick(250);
+    expect(component.isClosing).toBe(true);
+    vi.advanceTimersByTime(250);
 
-    expect(component.showDeprecatedProductDialog).toBeFalse();
-    expect(component.isClosing).toBeFalse();
-    expect(component.isDeprecating).toBeFalse();
-    expect(component.isCopySuccessVisible).toBeFalse();
+    expect(component.showDeprecatedProductDialog).toBe(false);
+    expect(component.isClosing).toBe(false);
+    expect(component.isDeprecating).toBe(false);
+    expect(component.isCopySuccessVisible).toBe(false);
     expect(component.deprecatedRequest).toEqual({
       successorUrl: '',
       addReadme: false,
@@ -155,20 +160,21 @@ describe('DeprecatedManagementComponent', () => {
       deprecationRequester: 'alice'
     });
     expect(component.validationErrors).toEqual({});
-  }));
+    vi.useRealTimers();
+  });
 
   it('should validate form fields', () => {
     component.productId = '';
-    expect(component.validateForm()).toBeFalse();
+    expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.productId).toContain('required');
 
     component.productId = 'cms-live-editor';
     component.deprecatedRequest.successorUrl = 'invalid-url';
-    expect(component.validateForm()).toBeFalse();
+    expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.successorUrl).toContain('http:// or https://');
 
     component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
-    expect(component.validateForm()).toBeTrue();
+    expect(component.validateForm()).toBe(true);
   });
 
   it('should filter deprecated table by product id', () => {
@@ -188,12 +194,12 @@ describe('DeprecatedManagementComponent', () => {
     component.selectExtension('cms-live-editor');
 
     expect(component.productId).toBe('cms-live-editor');
-    expect(component.deprecatedRequest.isDeprecated).toBeTrue();
+    expect(component.deprecatedRequest.isDeprecated).toBe(true);
     expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
-    expect(component.dropdownOpen).toBeFalse();
+    expect(component.dropdownOpen).toBe(false);
   });
 
-  it('should load ids and open dropdown', fakeAsync(() => {
+  it('should load ids and open dropdown', async () => {
     const selectableRows = [
       {
         id: 'cms-live-editor',
@@ -211,13 +217,12 @@ describe('DeprecatedManagementComponent', () => {
         deprecationRequester: null
       }
     ];
-    productService.fetchAllProductIdsByDeprecated.and.returnValue(
+    productService.fetchAllProductIdsByDeprecated.mockReturnValue(
       of(selectableRows)
     );
     component.productId = 'vertex';
 
-    component.openExtensionDropdown();
-    flushMicrotasks();
+    await component.openExtensionDropdown();
 
     expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(
       null
@@ -228,124 +233,122 @@ describe('DeprecatedManagementComponent', () => {
       'rtf-factory'
     ]);
     expect(component.filteredProductIds).toEqual(['vertexai-google']);
-    expect(component.dropdownOpen).toBeTrue();
-  }));
+    expect(component.dropdownOpen).toBe(true);
+  });
 
-  it('should deprecate product and open success dialog', fakeAsync(() => {
+  it('should deprecate product and open success dialog', async () => {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     const response: DeprecatedResponse = {
       productDeprecations: mockDeprecatedRows,
       pullRequestUrl: 'https://github.com/org/repo/pull/123'
     };
-    productService.updateDeprecatedProduct.and.returnValue(of(response));
+    productService.updateDeprecatedProduct.mockReturnValue(of(response));
 
     component.productId = 'cms-live-editor';
     component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
     component.deprecatedRequest.isDeprecated = true;
 
-    component.deprecatedProduct();
-    tick();
+    await component.deprecatedProduct();
 
     expect(productService.updateDeprecatedProduct).toHaveBeenCalled();
-    expect(component.showDeprecatedProductDialog).toBeFalse();
-    expect(component.showSuccessDialog).toBeTrue();
+    expect(component.showDeprecatedProductDialog).toBe(false);
+    expect(component.showSuccessDialog).toBe(true);
     expect(component.successMode).toBe('deprecate');
     expect(component.successPullRequestUrl).toBe('https://github.com/org/repo/pull/123');
-  }));
+  });
 
-  it('should fall back to refresh rows when update response has no productDeprecations', fakeAsync(() => {
+  it('should fall back to refresh rows when update response has no productDeprecations', async () => {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
-    productService.updateDeprecatedProduct.and.returnValue(
+    productService.updateDeprecatedProduct.mockReturnValue(
       of({ productDeprecations: undefined, pullRequestUrl: null })
     );
 
     component.productId = 'cms-live-editor';
     component.deprecatedRequest.isDeprecated = true;
 
-    component.deprecatedProduct();
-    tick();
+    await component.deprecatedProduct();
 
     expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
-  }));
+  });
 
-  it('should execute undeprecate flow with REMOVE action', fakeAsync(() => {
+  it('should execute undeprecate flow with REMOVE action', async () => {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     component.removedProductId = 'cms-live-editor';
 
-    component.executeRemoveDeprecation();
-    tick();
+    await component.executeRemoveDeprecation();
 
     expect(productService.updateDeprecatedProduct).toHaveBeenCalledWith(
       'cms-live-editor',
-      jasmine.objectContaining({
+      expect.objectContaining({
         pullRequestAction: PullRequestAction.REMOVE,
         isDeprecated: null
       }),
       'token-123'
     );
     expect(component.successMode).toBe('undeprecate');
-    expect(component.showSuccessDialog).toBeTrue();
-  }));
+    expect(component.showSuccessDialog).toBe(true);
+  });
 
-  it('should close success dialog and reset deprecate form in deprecate mode', fakeAsync(() => {
+  it('should close success dialog and reset deprecate form in deprecate mode', async () => {
+    vi.useFakeTimers();
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     component.successMode = 'deprecate';
     component.showSuccessDialog = true;
     component.productId = 'cms-live-editor';
 
     component.closeSuccessDialog();
-    tick(250);
+    vi.advanceTimersByTime(250);
 
-    expect(component.showSuccessDialog).toBeFalse();
+    expect(component.showSuccessDialog).toBe(false);
     expect(component.successMode).toBeNull();
     expect(component.productId).toBe('');
-  }));
+    vi.useRealTimers();
+  });
 
   it('should evaluate pull request url correctly', () => {
     component.successPullRequestUrl = null;
-    expect(component.hasPullRequestUrl()).toBeFalse();
+    expect(component.hasPullRequestUrl()).toBe(false);
 
     component.successPullRequestUrl = 'null';
-    expect(component.hasPullRequestUrl()).toBeFalse();
+    expect(component.hasPullRequestUrl()).toBe(false);
 
     component.successPullRequestUrl = ' https://github.com/org/repo/pull/99 ';
-    expect(component.hasPullRequestUrl()).toBeTrue();
+    expect(component.hasPullRequestUrl()).toBe(true);
   });
 
-  it('should copy pull request url and show copy success message temporarily', fakeAsync(() => {
+  it('should copy pull request url and show copy success message temporarily', async () => {
+    vi.useFakeTimers();
     component.successPullRequestUrl = ' https://github.com/org/repo/pull/99 ';
 
-    component.copyPullRequestUrl();
-    flushMicrotasks();
+    await component.copyPullRequestUrl();
 
     expect(writeTextSpy).toHaveBeenCalledWith(
       'https://github.com/org/repo/pull/99'
     );
-    expect(component.isCopySuccessVisible).toBeTrue();
+    expect(component.isCopySuccessVisible).toBe(true);
 
-    tick(1500);
-    expect(component.isCopySuccessVisible).toBeFalse();
-  }));
+    vi.advanceTimersByTime(1500);
+    expect(component.isCopySuccessVisible).toBe(false);
+    vi.useRealTimers();
+  });
 
-  it('should not copy when pull request url is empty or invalid', fakeAsync(() => {
+  it('should not copy when pull request url is empty or invalid', async () => {
     component.successPullRequestUrl = 'null';
 
-    component.copyPullRequestUrl();
-    flushMicrotasks();
+    await component.copyPullRequestUrl();
     expect(writeTextSpy).not.toHaveBeenCalled();
 
     component.successPullRequestUrl = '   ';
-    component.copyPullRequestUrl();
-    flushMicrotasks();
+    await component.copyPullRequestUrl();
     expect(writeTextSpy).not.toHaveBeenCalled();
-    expect(component.isCopySuccessVisible).toBeFalse();
-  }));
+    expect(component.isCopySuccessVisible).toBe(false);
+  });
 });

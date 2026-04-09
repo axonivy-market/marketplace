@@ -275,17 +275,21 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(result).toBe(false);
   });
 
-  it('should check isProductChanged correct if the same value', () => {
-    component.productDetail = {
+  it('should return true when previous product exists and current product is different', () => {
+    const previousProduct = {
       id: TEST_ID,
       newestReleaseVersion: '11.3.0'
     } as ProductDetail;
-    component.productDetail.newestReleaseVersion = '12.0.0-m266';
+    const currentProduct = {
+      id: TEST_ID,
+      newestReleaseVersion: '12.0.0-m266'
+    } as ProductDetail;
+
     const productChanged: SimpleChange = {
-      currentValue: component.productDetail,
-      previousValue: component.productDetail.newestReleaseVersion,
-      firstChange: true,
-      isFirstChange: () => true
+      currentValue: currentProduct,
+      previousValue: previousProduct,
+      firstChange: false,
+      isFirstChange: () => false
     };
 
     const result = component.isProductChanged(productChanged);
@@ -317,7 +321,7 @@ describe('ProductDetailInformationTabComponent', () => {
         successor: 'https://market.axonivy.com/smart-workflow'
       } as ProductDetail;
 
-      expect(component.hasSuccessor()).toBeTrue();
+      expect(component.hasSuccessor()).toBe(true);
       expect(component.getSuccessorUrl()).toBe('https://market.axonivy.com/smart-workflow');
       expect(component.getSuccessorName()).toBe('smart-workflow');
     });
@@ -327,7 +331,7 @@ describe('ProductDetailInformationTabComponent', () => {
         successor: 'smart-workflow'
       } as ProductDetail;
 
-      expect(component.hasSuccessor()).toBeTrue();
+      expect(component.hasSuccessor()).toBe(true);
       expect(component.getSuccessorUrl()).toBeNull();
       expect(component.getSuccessorName()).toBe('smart-workflow');
     });
@@ -335,7 +339,7 @@ describe('ProductDetailInformationTabComponent', () => {
     it('should return empty values when successor is missing', () => {
       component.productDetail = {} as ProductDetail;
 
-      expect(component.hasSuccessor()).toBeFalse();
+      expect(component.hasSuccessor()).toBe(false);
       expect(component.getSuccessorUrl()).toBeNull();
       expect(component.getSuccessorName()).toBe('');
     });

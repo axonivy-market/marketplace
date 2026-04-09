@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
@@ -36,7 +37,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should render product dropdown and emit selected product', () => {
-    spyOn(component.selectProduct, 'emit');
+    vi.spyOn(component.selectProduct, 'emit');
     component.dropdownOpen = true;
     component.filteredProductIds = ['cms-live-editor', 'rtf-factory'];
     fixture.detectChanges();
@@ -57,7 +58,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should emit close from header close button and backdrop click when not deprecating', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
 
     const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));
     headerCloseButton.triggerEventHandler('click', null);
@@ -69,7 +70,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should not emit close from backdrop click when deprecating', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
     component.isDeprecating = true;
     fixture.detectChanges();
 
@@ -80,8 +81,8 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should emit readmeChecked and submit', () => {
-    spyOn(component.readmeChecked, 'emit');
-    spyOn(component.submitForm, 'emit');
+    vi.spyOn(component.readmeChecked, 'emit');
+    vi.spyOn(component.submitForm, 'emit');
 
     const readmeCheckbox = fixture.debugElement.query(By.css('#addReadmeCheckbox'));
     readmeCheckbox.triggerEventHandler('click', null);
@@ -101,8 +102,8 @@ describe('DeprecateFormDialogComponent', () => {
     const submitButton = fixture.debugElement.query(By.css('.btn-primary'));
     const spinner = fixture.debugElement.query(By.css('.spinner-border'));
 
-    expect(closeButton.properties['disabled']).toBeTrue();
-    expect(submitButton.properties['disabled']).toBeTrue();
+    expect(closeButton.properties['disabled']).toBe(true);
+    expect(submitButton.properties['disabled']).toBe(true);
     expect(spinner).not.toBeNull();
   });
 });

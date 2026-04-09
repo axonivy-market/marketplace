@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
@@ -62,7 +63,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should emit copy when copy button is clicked', () => {
-    spyOn(component.copyPullRequestUrl, 'emit');
+    vi.spyOn(component.copyPullRequestUrl, 'emit');
     component.showPullRequest = true;
     fixture.detectChanges();
 
@@ -82,7 +83,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should emit close from close button and backdrop click when not closing', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
 
     const closeButton = fixture.debugElement.query(By.css('.success-close-btn'));
     closeButton.triggerEventHandler('click', null);
@@ -94,7 +95,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should not emit close from backdrop click when closing', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
     component.isClosing = true;
     fixture.detectChanges();
 
@@ -109,7 +110,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     fixture.detectChanges();
 
     const closeButton = fixture.debugElement.query(By.css('.success-close-btn'));
-    expect(closeButton.properties['disabled']).toBeTrue();
+    expect(closeButton.properties['disabled']).toBe(true);
   });
 });
 

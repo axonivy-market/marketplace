@@ -1,10 +1,11 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { RemoveDeprecatedConfirmDialogComponent } from './remove-deprecated-confirm-dialog.component';
 
-describe('removeDeprecatedConfirmDialogComponent', () => {
+describe('RemoveDeprecatedConfirmDialogComponent', () => {
   let component: RemoveDeprecatedConfirmDialogComponent;
   let fixture: ComponentFixture<RemoveDeprecatedConfirmDialogComponent>;
 
@@ -38,7 +39,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
   });
 
   it('should emit close from header close button and cancel button', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
 
     const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));
     headerCloseButton.triggerEventHandler('click', null);
@@ -50,7 +51,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
   });
 
   it('should emit confirm when confirm button is clicked', () => {
-    spyOn(component.confirm, 'emit');
+    vi.spyOn(component.confirm, 'emit');
 
     const confirmButton = fixture.debugElement.query(By.css('.btn-danger'));
     confirmButton.triggerEventHandler('click', null);
@@ -59,7 +60,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
   });
 
   it('should emit close from backdrop click when not undeprecating', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
@@ -68,7 +69,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
   });
 
   it('should not emit close from backdrop click when undeprecating', () => {
-    spyOn(component.closeDialog, 'emit');
+    vi.spyOn(component.closeDialog, 'emit');
     component.isRemoving = true;
     fixture.detectChanges();
 
@@ -87,9 +88,9 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
     const confirmButton = fixture.debugElement.query(By.css('.btn-danger'));
     const spinner = fixture.debugElement.query(By.css('.spinner-border'));
 
-    expect(headerCloseButton.properties['disabled']).toBeTrue();
-    expect(cancelButton.properties['disabled']).toBeTrue();
-    expect(confirmButton.properties['disabled']).toBeTrue();
+    expect(headerCloseButton.properties['disabled']).toBe(true);
+    expect(cancelButton.properties['disabled']).toBe(true);
+    expect(confirmButton.properties['disabled']).toBe(true);
     expect(spinner).not.toBeNull();
   });
 });
