@@ -80,8 +80,8 @@ export class DeprecationManagementComponent implements OnInit {
     productDeprecations: [],
     pullRequestUrl: null
   };
-  moderatorName!: string | undefined;
-  token: string | undefined = '';
+  moderatorName = '';
+  token = '';
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
@@ -89,8 +89,8 @@ export class DeprecationManagementComponent implements OnInit {
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
-    this.moderatorName = userInfo?.username;
-    this.token = userInfo?.token;
+    this.moderatorName = userInfo?.username?.trim() || '';
+    this.token = userInfo?.token ?? '';
     this.deprecatedRequest.deprecationRequester = this.moderatorName;
     this.initializeDeprecatedRows();
   }
@@ -116,7 +116,9 @@ export class DeprecationManagementComponent implements OnInit {
       this.deprecatedRequest = {
         successorUrl: '',
         addReadme: false,
-        isDeprecated: false
+        isDeprecated: false,
+        pullRequestAction: PullRequestAction.ADD,
+        deprecationRequester: this.moderatorName
       };
       this.validationErrors = {};
     }, this.DIALOG_CLOSE_DELAY_MS);
@@ -140,6 +142,7 @@ export class DeprecationManagementComponent implements OnInit {
     }
     this.isDeprecating = true;
     this.dropdownOpen = false;
+    this.deprecatedRequest.deprecationRequester = this.moderatorName;
 
     try {
       this.deprecatedResponse = await firstValueFrom(
