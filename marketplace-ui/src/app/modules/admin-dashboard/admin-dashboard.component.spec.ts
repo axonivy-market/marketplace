@@ -24,6 +24,8 @@ import {
 } from '../../shared/constants/common.constant';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import { LogStreamService } from '../../core/services/logging/log-stream.service';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -134,8 +136,6 @@ describe('AdminDashboardComponent', () => {
       setTitleOnLangChange: vi
         .fn()
         .mockName('PageTitleService.setTitleOnLangChange'),
-      translateService: undefined,
-      titleService: undefined,
       setTitle: vi.fn().mockName('PageTitleService.setTitle'),
       ngOnDestroy: vi.fn().mockName('PageTitleService.ngOnDestroy')
     } as any;
@@ -658,6 +658,218 @@ describe('AdminDashboardComponent', () => {
 
     events$.next(new NavigationEnd(1, '/other', '/other'));
 
-    expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledTimes(1); // only initial call
+    expect(mockPageTitleService.setTitleOnLangChange)
+      .toHaveBeenCalledTimes(1);
+  });
+
+  describe('openLog', () => {
+    let modalServiceSpy: any;
+    let logStreamSpy: any;
+    let mockModalRef: any;
+
+    beforeEach(() => {
+      mockModalRef = {
+        shown: {
+          subscribe: vi.fn().mockImplementation((cb: () => void) => cb())
+        },
+        dismissed: { subscribe: vi.fn() },
+        close: vi.fn(),
+        dismiss: vi.fn()
+      };
+
+      modalServiceSpy = TestBed.inject(NgbModal) as any;
+      vi.spyOn(modalServiceSpy, 'open').mockReturnValue(mockModalRef);
+
+      logStreamSpy = component.logStream as any;
+      vi.spyOn(logStreamSpy, 'hasLogs').mockReturnValue(false);
+      vi.spyOn(logStreamSpy, 'connectTask');
+
+      fixture.detectChanges();
+    });
+
+    it('should set selectedTask to the given syncTask', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      component.openLog(task);
+      expect(component.selectedTask()).toEqual(task);
+    });
+
+    it('should open modal with size xl when task is RUNNING', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ size: 'xl' })
+      );
+    });
+
+    it('should open modal with size xl when task has logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+      logStreamSpy.hasLogs.mockReturnValue(true);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ size: 'xl' })
+      );
+    });
+
+    it('should open modal with size md when task is not running and has no logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+      logStreamSpy.hasLogs.mockReturnValue(false);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ size: 'md' })
+      );
+    });
+
+    it('should set windowClass has-logs when task is RUNNING', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ windowClass: 'log-modal has-logs' })
+      );
+    });
+
+    it('should set windowClass no-logs when task has no logs and is not running', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ windowClass: 'log-modal no-logs' })
+      );
+    });
+
+    it('should set modalDialogClass has-logs when has logs', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      logStreamSpy.hasLogs.mockReturnValue(true);
+
+      component.openLog(task);
+
+      expect(modalServiceSpy.open).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ modalDialogClass: 'log-modal has-logs' })
+      );
+    });
+
+    it('should call logStream.connectTask when task is RUNNING and modal shown', async () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.RUNNING;
+
+      component.openLog(task);
+
+      await Promise.resolve(); // thay tick()
+
+      expect(logStreamSpy.connectTask).toHaveBeenCalledWith('syncProducts');
+    });
+
+    it('should NOT call logStream.connectTask when task is not RUNNING', async () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      task.status = SyncTaskStatus.SUCCESS;
+
+      component.openLog(task);
+
+      await Promise.resolve();
+
+      expect(logStreamSpy.connectTask).not.toHaveBeenCalled();
+    });
+
+    it('should dispatch resize event after modal shown', async () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
+      vi.useFakeTimers();
+      component.openLog(task);
+      await Promise.resolve();
+      vi.runAllTimers();
+      expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Event));
+      vi.useRealTimers();
+    });
+  });
+
+  describe('toggleExpand', () => {
+    beforeEach(() => fixture.detectChanges());
+
+    it('should add index when not expanded', () => {
+      component.toggleExpand(0);
+      expect(component.expandedLogs().has(0)).toBe(true);
+    });
+
+    it('should remove index when already expanded', () => {
+      component.toggleExpand(1);
+      component.toggleExpand(1);
+      expect(component.expandedLogs().has(1)).toBe(false);
+    });
+
+    it('should toggle multiple indexes independently', () => {
+      component.toggleExpand(0);
+      component.toggleExpand(2);
+
+      expect(component.expandedLogs().has(0)).toBe(true);
+      expect(component.expandedLogs().has(2)).toBe(true);
+      expect(component.expandedLogs().has(1)).toBe(false);
+    });
+
+    it('should not affect other indexes when collapsing one', () => {
+      component.toggleExpand(0);
+      component.toggleExpand(1);
+      component.toggleExpand(0);
+
+      expect(component.expandedLogs().has(0)).toBe(false);
+      expect(component.expandedLogs().has(1)).toBe(true);
+    });
+
+    it('should create new Set reference on each toggle', () => {
+      const before = component.expandedLogs();
+      component.toggleExpand(0);
+      expect(component.expandedLogs()).not.toBe(before);
+    });
+  });
+
+  describe('isExpanded', () => {
+    beforeEach(() => fixture.detectChanges());
+
+    it('should return false when index not expanded', () => {
+      expect(component.isExpanded(0)).toBe(false);
+    });
+
+    it('should return true after toggleExpand', () => {
+      component.toggleExpand(3);
+      expect(component.isExpanded(3)).toBe(true);
+    });
+
+    it('should return false after toggling twice', () => {
+      component.toggleExpand(5);
+      component.toggleExpand(5);
+      expect(component.isExpanded(5)).toBe(false);
+    });
+
+    it('should be consistent with expandedLogs signal', () => {
+      component.toggleExpand(2);
+      expect(component.isExpanded(2)).toBe(component.expandedLogs().has(2));
+    });
+
+    it('should not set page title for other routes', () => {
+      const events$ = new Subject<any>();
+      vi.spyOn(router, 'events', 'get').mockReturnValue(events$.asObservable());
+      component.ngOnInit();
+      mockPageTitleService.setTitleOnLangChange.mockClear();
+      events$.next(new NavigationEnd(1, '/other', '/other'));
+      expect(mockPageTitleService.setTitleOnLangChange).not.toHaveBeenCalled();
+    });
   });
 });
