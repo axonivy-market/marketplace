@@ -2,21 +2,21 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { removeDeprecatedConfirmDialogComponent } from './remove-deprecated-confirm-dialog.component';
+import { RemoveDeprecatedConfirmDialogComponent } from './remove-deprecated-confirm-dialog.component';
 
 describe('removeDeprecatedConfirmDialogComponent', () => {
-  let component: removeDeprecatedConfirmDialogComponent;
-  let fixture: ComponentFixture<removeDeprecatedConfirmDialogComponent>;
+  let component: RemoveDeprecatedConfirmDialogComponent;
+  let fixture: ComponentFixture<RemoveDeprecatedConfirmDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [removeDeprecatedConfirmDialogComponent, TranslateModule.forRoot()]
+      imports: [RemoveDeprecatedConfirmDialogComponent, TranslateModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(removeDeprecatedConfirmDialogComponent);
+    fixture = TestBed.createComponent(RemoveDeprecatedConfirmDialogComponent);
     component = fixture.componentInstance;
     component.visible = true;
-    component.undeprecateProductId = 'cms-live-editor';
+    component.removedProductId = 'cms-live-editor';
     fixture.detectChanges();
   });
 
@@ -69,7 +69,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
 
   it('should not emit close from backdrop click when undeprecating', () => {
     spyOn(component.closeDialog, 'emit');
-    component.isUndeprecating = true;
+    component.isRemoving = true;
     fixture.detectChanges();
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
@@ -79,7 +79,7 @@ describe('removeDeprecatedConfirmDialogComponent', () => {
   });
 
   it('should disable all action buttons and show spinner when undeprecating', () => {
-    component.isUndeprecating = true;
+    component.isRemoving = true;
     fixture.detectChanges();
 
     const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));

@@ -8,7 +8,7 @@
         <button
           type="button"
           class="btn-close"
-          [disabled]="isUndeprecating"
+          [disabled]="isRemoving"
           (click)="closeDialog.emit()"></button>
       </div>
 
@@ -18,22 +18,22 @@
         </p>
         <p class="text-muted">
           <strong>{{ 'common.admin.deprecation.extensionId' | translate }}</strong>
-          {{ undeprecateProductId }}
+          {{ removedProductId }}
         </p>
       </div>
 
       <div class="modal-footer">
         <button
           class="btn btn-cancel btn-secondary me-2"
-          [disabled]="isUndeprecating"
+          [disabled]="isRemoving"
           (click)="closeDialog.emit()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
         <button
           class="btn btn-danger"
-          [disabled]="isUndeprecating"
+          [disabled]="isRemoving"
           (click)="confirm.emit()">
-          @if (isUndeprecating) {
+          @if (isRemoving) {
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
           }
           {{ 'common.admin.deprecation.removeDeprecated' | translate }}
@@ -45,6 +45,6 @@
   <div
     class="custom-backdrop"
     [class.backdrop-closing]="isClosing"
-    (click)="!isUndeprecating && closeDialog.emit()"></div>
+    (click)="!isRemoving && closeDialog.emit()"></div>
 }
 

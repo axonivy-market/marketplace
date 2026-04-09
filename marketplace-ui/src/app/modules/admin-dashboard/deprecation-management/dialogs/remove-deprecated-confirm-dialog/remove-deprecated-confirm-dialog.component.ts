@@ -7,11 +7,11 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './remove-deprecated-confirm-dialog.component.html',
   styleUrl: './remove-deprecated-confirm-dialog.component.scss'
 })
-export class removeDeprecatedConfirmDialogComponent {
+export class RemoveDeprecatedConfirmDialogComponent {
   @Input() visible = false;
   @Input() isClosing = false;
-  @Input() isUndeprecating = false;
-  @Input() undeprecateProductId = '';
+  @Input() isRemoving = false;
+  @Input() removedProductId = '';
 
   @Output() closeDialog = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();

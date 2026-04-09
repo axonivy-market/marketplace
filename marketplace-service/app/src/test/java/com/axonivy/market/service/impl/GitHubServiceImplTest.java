@@ -1005,7 +1005,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
-    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(List.of(existingPr));
+    mockOpenPullRequests(repository, List.of(existingPr));
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
 
@@ -1020,13 +1020,13 @@ class GitHubServiceImplTest extends BaseSetup {
     GHContent readme = mock(GHContent.class);
     GHRef existingBranchRef = mock(GHRef.class);
     GHCompare compare = mock(GHCompare.class);
-    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/2");
+    GHPullRequest createdPr = mock(GHPullRequest.class);
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
-    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(Collections.emptyList());
+    mockOpenPullRequests(repository, Collections.emptyList());
     when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME)).thenReturn(compare);
-    when(compare.getStatus()).thenReturn(GHCompare.Status.identical);
+    when(compare.getStatus()).thenReturn(GHCompare.Status.ahead);
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
@@ -1044,11 +1044,11 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRef existingBranchRef = mock(GHRef.class);
     GHCompare compare = mock(GHCompare.class);
     GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
-    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/3");
+    GHPullRequest createdPr = mock(GHPullRequest.class);
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
-    when(repository.getPullRequests(GHIssueState.OPEN)).thenReturn(Collections.emptyList());
+    mockOpenPullRequests(repository, Collections.emptyList());
     when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME)).thenReturn(compare);
     when(compare.getStatus()).thenReturn(GHCompare.Status.behind);
     when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
@@ -1069,8 +1069,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRepository repository = mock(GHRepository.class);
     GHContent readme = mock(GHContent.class);
     GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
-    GHPullRequest createdPr = mockPullRequest("https://example.com/pr/4");
-
+    GHPullRequest createdPr = mock(GHPullRequest.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenThrow(new GHFileNotFoundException());
     when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
@@ -1119,6 +1118,16 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);
     when(repository.getFileContent(README_FILE_PATH, BASE_BRANCH)).thenReturn(readme);
     when(readme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes()));
+  }
+
+  private void mockOpenPullRequests(GHRepository repository, List<GHPullRequest> pullRequests) throws IOException {
+    GHPullRequestQueryBuilder pullRequestQueryBuilder = mock(GHPullRequestQueryBuilder.class);
+    PagedIterable<GHPullRequest> pagedPullRequests = mock(PagedIterable.class);
+    when(repository.queryPullRequests()).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.base(BASE_BRANCH)).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.state(GHIssueState.OPEN)).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.list()).thenReturn(pagedPullRequests);
+    when(pagedPullRequests.toList()).thenReturn(pullRequests);
   }
 
   private GHPullRequest mockPullRequest(String url) throws Exception {

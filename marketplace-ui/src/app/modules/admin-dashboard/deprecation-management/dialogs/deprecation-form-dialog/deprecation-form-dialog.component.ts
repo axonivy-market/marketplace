@@ -17,7 +17,7 @@ export class DeprecationFormDialogComponent {
   @Input() dropdownOpen = false;
   @Input() filteredProductIds: string[] = [];
   @Input() deprecatedRequest!: DeprecatedRequest;
-  @Input() productId: string = '';
+  @Input() productId = '';
   @Input() validationErrors: { productId?: string; successorUrl?: string } = {};
   @Output() closeDialog = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<void>();

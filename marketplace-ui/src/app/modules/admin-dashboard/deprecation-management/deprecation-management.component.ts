@@ -16,7 +16,7 @@ import { AdminAuthService } from '../admin-auth.service';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
 import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
-import { removeDeprecatedConfirmDialogComponent } from './dialogs/remove-deprecated-confirm-dialog/remove-deprecated-confirm-dialog.component';
+import { RemoveDeprecatedConfirmDialogComponent } from './dialogs/remove-deprecated-confirm-dialog/remove-deprecated-confirm-dialog.component';
 
 @Component({
   selector: 'app-deprecated-management',
@@ -28,7 +28,7 @@ import { removeDeprecatedConfirmDialogComponent } from './dialogs/remove-depreca
     DatePipe,
     DeprecationFormDialogComponent,
     DeprecationResultDialogComponent,
-    removeDeprecatedConfirmDialogComponent
+    RemoveDeprecatedConfirmDialogComponent
   ],
   templateUrl: './deprecation-management.component.html',
   styleUrl: './deprecation-management.component.scss'

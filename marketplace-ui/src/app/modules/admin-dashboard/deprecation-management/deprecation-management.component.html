@@ -117,8 +117,8 @@
 <app-remove-deprecation-confirm-dialog
   [visible]="showRemoveDeprecationConfirmDialog"
   [isClosing]="isClosingRemoveDeprecationDialog"
-  [isUndeprecating]="isRemoving"
-  [undeprecateProductId]="removedProductId"
+  [isRemoving]="isRemoving"
+  [removedProductId]="removedProductId"
   (closeDialog)="closeRemoveDeprecationDialog()"
   (confirm)="executeRemoveDeprecation()">
 </app-remove-deprecation-confirm-dialog>
