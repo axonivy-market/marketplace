@@ -7,6 +7,7 @@ import { LanguageSelectionComponent } from '../language-selection/language-selec
 import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
 import { SEARCH_URL } from '../../../constants/common.constant';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { AdminAuthService } from '../../../../modules/admin-dashboard/admin-auth.service';
 
 @Component({
   selector: 'app-header-toolbar',
@@ -29,7 +30,10 @@ export class HeaderToolbarComponent {
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  adminAuthService = inject(AdminAuthService);
   isGoogleLoaded = false;
+  
+  userInfo = this.adminAuthService.userInfo;
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {

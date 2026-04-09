@@ -1,22 +1,24 @@
-<div class="header__navigation">
+<div class="header__navigation h-100">
   <!-- Mobile Search Input -->
-  <div class="google-search-container text-primary google-search-svg-primary"
-    [ngStyle]="{'display' : isMobileMode() ? 'block' : 'none'}">
+  <div
+    class="google-search-container text-primary google-search-svg-primary"
+    [ngStyle]="{ display: isMobileMode() ? 'block' : 'none' }">
     <div class="gcse-search"></div>
   </div>
 
   <!-- Navigation -->
-  <ul class="navbar-nav">
+  <ul class="navbar-nav p-0 h-100">
     @for (item of this.items; track item.label) {
-      <li class="nav-item">
+      <li
+        class="nav-item">
         @let isHomePage = item.link === '/';
         @let isSyncPage = item.link === '/internal-dashboard';
         @let isInternal = item.link.startsWith('/');
         @if (isInternal) {
-          <span #routerActive="routerLinkActive" routerLinkActive="active"
+          <!-- <span #routerActive="routerLinkActive" routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
             <a 
-            [lang]="languageService.selectedLanguage()" class="nav-link" 
+            [lang]="languageService.selectedLanguage()" class="nav-link py-0" 
             [ngClass]="{
                 'text-primary': isMobileMode() || routerActive.isActive,
                 'text-secondary': !isMobileMode() && !routerActive.isActive,
@@ -24,15 +26,37 @@
             aria-current="page"
             [routerLink]="item.link" >
               {{ item.label | translate }}
-            </a>
-            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div>
-          </span>
+            </a> -->
+          <!-- <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div> -->
+          <!-- </span> -->
+          <!-- <span
+            #routerActive="routerLinkActive"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"> -->
+          <a
+            #routerActive="routerLinkActive"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"
+            [lang]="languageService.selectedLanguage()"
+            class="nav-link py-0 d-flex justify-content-center align-items-center h-100"
+            [ngClass]="{
+              'text-primary': isMobileMode() || routerActive.isActive,
+              'text-secondary': !isMobileMode() && !routerActive.isActive,
+              active: routerActive.isActive
+            }"
+            aria-current="page"
+            [routerLink]="item.link">
+            {{ item.label | translate }}
+          </a>
+          <!-- <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div> -->
+          <!-- </span> -->
         } @else {
-          <a 
-          [lang]="languageService.selectedLanguage()" class="nav-link" 
-          [ngClass]="isMobileMode() ? 'text-primary' : 'text-secondary'"
-          aria-current="page"
-          [href]="item.link" >
+          <a
+            [lang]="languageService.selectedLanguage()"
+            class="nav-link py-0 d-flex justify-content-center align-items-center h-100"
+            [ngClass]="isMobileMode() ? 'text-primary' : 'text-secondary'"
+            aria-current="page"
+            [href]="item.link">
             {{ item.label | translate }}
           </a>
           <!-- External links are never router-active -->

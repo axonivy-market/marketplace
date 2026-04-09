@@ -1,6 +1,9 @@
 .navbar-nav {
-  height: 60px;
   padding-top: 1.28rem;
+}
+
+ul li {
+  height: 100%;
 }
 
 .nav-item {
@@ -16,6 +19,7 @@
 
 .nav-link.active {
   font-weight: 600;
+  border-bottom: 0.2rem solid var(--ivy-active-color);
 }
 
 .active-line {

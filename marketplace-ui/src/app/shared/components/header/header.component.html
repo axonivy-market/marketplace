@@ -40,8 +40,8 @@
 </nav> -->
 
 <div class="header-container container">
-  <nav class="navbar navbar-expand-xl">
-    <div class="container-fluid">
+  <nav class="navbar navbar-expand-xl py-0">
+    <div class="container-fluid h-100">
       <a routerLink="/" class="logo navbar-brand">
         <img
           class="logo__image"
@@ -52,7 +52,8 @@
           "
           alt="Axon Ivy" />
       </a>
-      <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-block" />
+      <!-- <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-flex justify-content-center align-items-center h-100" /> -->
+      <app-navigation [isAdminPage]="isAdminRoute" class="d-none d-xl-block h-100" />
       <!-- <app-search-bar class="d-none d-xl-block"></app-search-bar> -->
       <app-header-toolbar class="d-none d-xl-block"></app-header-toolbar>
       <button class="btn border-0 rounded-3 d-block d-xl-none p-0">
@@ -77,6 +78,8 @@
         aria-label="Close"
         (click)="offcanvas.dismiss('Cross click')"></button>
     </div> -->
-    <div class="offcanvas-body"></div>
+    <div class="offcanvas-body">
+      <app-navigation [isAdminPage]="isAdminRoute"/>
+    </div>
   </div>
 </ng-template>

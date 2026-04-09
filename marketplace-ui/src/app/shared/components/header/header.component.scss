@@ -2,10 +2,6 @@ header {
   height: 100%;
 }
 
-app-header-toolbar {
-  min-width: fit-content;
-}
-
 .header-container {
   height: 7rem;
   min-height: 7rem;
@@ -13,14 +9,14 @@ app-header-toolbar {
 }
 
 ::ng-deep .my-offcanvas {
-  top: 7rem !important;
-  height: calc(100% - 7rem) !important;
+  top: 7.5rem !important;
+  height: calc(100% - 7.5rem) !important;
   width: 100vw !important;
 }
 
 ::ng-deep .my-offcanvas-backdrop {
-  top: 7rem !important;
-  height: calc(100% - 7rem) !important;
+  top: 7.5rem !important;
+  height: calc(100% - 7.5rem) !important;
   opacity: 0 !important;
 }
 
