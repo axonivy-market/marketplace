@@ -1,5 +1,7 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -13,7 +15,11 @@ import org.springframework.stereotype.Service;
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -22,24 +28,15 @@ public class MatomoServiceImpl implements MatomoService {
 
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
+  private static final String HEADER_AUTHORIZATION = "authorization";
+  private static final String HEADER_COOKIE = "cookie";
+  private static final String HEADER_SET_COOKIE = "set-cookie";
 
   private final MatomoTracker matomoTracker;
 
   public MatomoServiceImpl(MatomoTracker matomoTracker) {
     this.matomoTracker = matomoTracker;
   }
-
-  private String getClientIp(HttpServletRequest request) {
-    String xf = request.getHeader("X-Forwarded-For");
-    if (xf != null && !xf.isEmpty()) {
-        return xf.split(",")[0].trim();
-    }
-    String realIp = request.getHeader("X-Real-IP");
-    if (realIp != null && !realIp.isEmpty()) {
-        return realIp;
-    }
-    return request.getRemoteAddr();
-}
 
   @Override
   public void trackEventAsync(HttpServletRequest httpServletRequest) {
@@ -53,11 +50,7 @@ public class MatomoServiceImpl implements MatomoService {
       requestUrl = baseUrl;
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
-    String clientIp = getClientIp(httpServletRequest);
-    Map<String, String> headers = new HashMap<>();
-    headers.put("X-Forwarded-For", clientIp);
-    headers.put("X-Real-IP", clientIp);
-    log.error("found message: " + clientIp);
+    Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
@@ -69,6 +62,28 @@ public class MatomoServiceImpl implements MatomoService {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });
+  }
+
+  private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
+    Map<String, String> headers = new HashMap<>();
+    Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+    if (headerNames != null) {
+      while (headerNames.hasMoreElements()) {
+        String name = headerNames.nextElement();
+        Enumeration<String> values = httpServletRequest.getHeaders(name);
+        if (values != null) {
+          List<String> list = Collections.list(values);
+          String value = String.join(CoreCommonConstants.COMMA, list);
+          if (StringUtils.isNotBlank(value)) {
+            String lower = name.toLowerCase(Locale.ROOT);
+            if (!StringUtils.equalsAny(lower, HEADER_AUTHORIZATION, HEADER_COOKIE, HEADER_SET_COOKIE)) {
+              headers.put(name, value);
+            }
+          }
+        }
+      }
+    }
+    return headers;
   }
 
   private String resolvePageViewName(String requestUrl, String referrerUrl) {
