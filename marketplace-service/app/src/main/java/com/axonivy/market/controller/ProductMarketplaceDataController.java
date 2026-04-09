@@ -39,7 +39,6 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT_ID;
-import static com.axonivy.market.constants.RequestParamConstants.VERSION;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
 @RestController
