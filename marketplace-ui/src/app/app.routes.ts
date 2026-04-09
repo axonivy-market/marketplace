@@ -92,7 +92,7 @@ export const routes: Routes = [
         component: ReleaseLetterEditComponent
       },
       {
-        path: 'deprecated-management',
+        path: 'deprecation-management',
         component: DeprecationManagementComponent
       },
       {

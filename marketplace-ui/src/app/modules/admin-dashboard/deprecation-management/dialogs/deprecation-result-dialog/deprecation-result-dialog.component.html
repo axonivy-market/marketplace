@@ -23,15 +23,15 @@
         <h4 class="text-primary success-title">
           {{
             (successMode === 'undeprecate'
-              ? 'common.admin.deprecated.undeprecateSuccess'
-              : 'common.admin.deprecated.deprecateSuccess') | translate
+              ? 'common.admin.deprecation.undeprecateSuccess'
+              : 'common.admin.deprecation.deprecateSuccess') | translate
           }}
         </h4>
 
         @if (showPullRequest) {
           <div class="success-pr-section">
             <label class="form-label success-pr-label">
-              {{ 'common.admin.deprecated.pullRequestLabel' | translate }}
+              {{ 'common.admin.deprecation.pullRequestLabel' | translate }}
             </label>
             <div class="input-group">
               <input
@@ -46,10 +46,10 @@
                 (click)="copyPullRequestUrl.emit()">
                 @if (isCopySuccessVisible) {
                   <i class="bi bi-check2 me-1"></i>
-                  {{ 'common.admin.deprecated.copiedLabel' | translate }}
+                  {{ 'common.admin.deprecation.copiedLabel' | translate }}
                 } @else {
                   <i class="bi bi-clipboard me-1"></i>
-                  {{ 'common.admin.deprecated.copyLabel' | translate }}
+                  {{ 'common.admin.deprecation.copyLabel' | translate }}
                 }
               </button>
             </div>

@@ -33,7 +33,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     fixture.detectChanges();
 
     const title = fixture.debugElement.query(By.css('.success-title'));
-    expect(title.nativeElement.textContent).toContain('common.admin.deprecated.undeprecateSuccess');
+    expect(title.nativeElement.textContent).toContain('common.admin.deprecation.undeprecateSuccess');
   });
 
   it('should render deprecate success text by default', () => {
@@ -41,7 +41,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     fixture.detectChanges();
 
     const title = fixture.debugElement.query(By.css('.success-title'));
-    expect(title.nativeElement.textContent).toContain('common.admin.deprecated.deprecateSuccess');
+    expect(title.nativeElement.textContent).toContain('common.admin.deprecation.deprecateSuccess');
   });
 
   it('should render pull request section only when showPullRequest is true', () => {
@@ -78,7 +78,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     fixture.detectChanges();
 
     const copyButton = fixture.debugElement.query(By.css('.copy-btn'));
-    expect(copyButton.nativeElement.textContent).toContain('common.admin.deprecated.copiedLabel');
+    expect(copyButton.nativeElement.textContent).toContain('common.admin.deprecation.copiedLabel');
   });
 
   it('should emit close from close button and backdrop click when not closing', () => {

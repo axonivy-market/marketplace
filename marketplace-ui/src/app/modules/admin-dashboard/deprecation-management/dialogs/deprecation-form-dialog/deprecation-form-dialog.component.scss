@@ -2,6 +2,10 @@
 
 @include base.dialog-base-styles;
 
+.btn-primary {
+  font-size: 13px;
+}
+
 .form-control {
   border-radius: 10px;
   padding: 10px 12px;

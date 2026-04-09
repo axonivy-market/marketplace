@@ -44,6 +44,7 @@
       "customSort": "Benutzerdefinierte Sortierung",
       "quickAccess": "Schnellzugriff",
       "newsManagement": "News Management",
+      "deprecationManagement": "Deprecation",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
@@ -446,9 +447,9 @@
         "warning": "Warning",
         "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
       },
-      "deprecated": {
+      "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",
-        "title": "Axon Ivy Market Deprecated",
+        "title": "Axon Ivy Market Deprecation",
         "description": "Manage how deprecated extensions are displayed",
         "helpText": "Configure the deprecated extensions. Administrators can add, update for products",
         "availableExtensions": "Deprecated Extensions",
@@ -469,7 +470,9 @@
         "pullRequestLabel": "Pull Request URL",
         "copyLabel": "Copy",
         "copiedLabel": "Copied!",
-        "deprecateProduct": "Deprecate Product"
+        "deprecateProduct": "Deprecate Product",
+        "productIdInputPlaceholder": "Please select extension id to deprecate",
+        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
