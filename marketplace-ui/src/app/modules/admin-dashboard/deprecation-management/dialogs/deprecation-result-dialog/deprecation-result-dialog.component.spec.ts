@@ -33,7 +33,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     fixture.detectChanges();
 
     const title = fixture.debugElement.query(By.css('.success-title'));
-    expect(title.nativeElement.textContent).toContain('common.admin.deprecation.undeprecateSuccess');
+    expect(title.nativeElement.textContent).toContain('common.admin.deprecation.removeDeprecatedSuccess');
   });
 
   it('should render deprecate success text by default', () => {

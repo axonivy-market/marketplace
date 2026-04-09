@@ -3,7 +3,7 @@
     <div class="modal-content custom-modal confirm-modal" [class.modal-closing]="isClosing">
       <div class="modal-header">
         <h5 class="modal-title">
-          {{ 'common.admin.deprecation.confirmUndeprecatedTitle' | translate }}
+          {{ 'common.admin.deprecation.confirmRemoveDeprecatedTitle' | translate }}
         </h5>
         <button
           type="button"
@@ -14,7 +14,7 @@
 
       <div class="modal-body">
         <p class="confirm-message">
-          {{ 'common.admin.deprecation.confirmUndeprecatedContent' | translate }}
+          {{ 'common.admin.deprecation.confirmRemoveDeprecatedContent' | translate }}
         </p>
         <p class="text-muted">
           <strong>{{ 'common.admin.deprecation.extensionId' | translate }}</strong>
@@ -36,7 +36,7 @@
           @if (isUndeprecating) {
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
           }
-          {{ 'common.admin.deprecation.undeprecate' | translate }}
+          {{ 'common.admin.deprecation.removeDeprecated' | translate }}
         </button>
       </div>
     </div>
