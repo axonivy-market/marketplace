@@ -33,6 +33,7 @@ services:
       - MARKET_DAY_IN_MILLISECONDS=${MARKET_DAY_IN_MILLISECONDS}
       - MARKET_MATOMO_SITE_ID=${MARKET_MATOMO_SITE_ID}
       - MARKET_MATOMO_TRACKER_URL=${MARKET_MATOMO_TRACKER_URL}
+      - MARKET_ALLOWED_HOSTS=${MARKET_ALLOWED_HOSTS}
     volumes:
       - marketbrowser:/browser_share
     restart: always

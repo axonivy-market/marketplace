@@ -8,6 +8,7 @@ import { environment } from './src/environments/environment';
 import { RUNTIME_CONFIG_KEY, ENV_VAR_NAMES, RuntimeConfig } from './src/app/core/models/runtime-config';
 import { API_INTERNAL_URL, API_PUBLIC_URL } from './src/app/shared/constants/api.constant';
 
+const HOST_SEPARATOR = ',';
 /**
  * Load runtime configuration from process.env (SSR)
  * Falls back to environment.ts
@@ -21,7 +22,8 @@ function loadRuntimeConfigFromEnv(): RuntimeConfig {
     dayInMiliseconds: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_DAY_IN_MILLISECONDS] || '', 10) || environment.dayInMiliseconds,
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,
     matomoTrackerUrl: process.env[ENV_VAR_NAMES.MARKET_MATOMO_TRACKER_URL] || environment.matomoTrackerUrl,
-    siblingNodeAppIp: process.env[ENV_VAR_NAMES.MARKET_SIBLING_NODE_APP_IP] || environment.siblingNodeAppIp
+    siblingNodeAppIp: process.env[ENV_VAR_NAMES.MARKET_SIBLING_NODE_APP_IP] || environment.siblingNodeAppIp,
+    allowedHosts: (process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS] || '').split(HOST_SEPARATOR).map(h => h.trim()).filter(Boolean) || environment.allowedHosts
   };
 }
 
@@ -31,7 +33,8 @@ export function app(): express.Express {
   const serverDistFolder = dirname(fileURLToPath(import.meta.url));
   const browserDistFolder = resolve(serverDistFolder, '../browser');
   const indexHtml = join(serverDistFolder, 'index.server.html');
-  const commonEngine = new CommonEngine();
+  const runtimeConfig = loadRuntimeConfigFromEnv();
+  const commonEngine = new CommonEngine({ allowedHosts: runtimeConfig.allowedHosts });
 
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
@@ -49,8 +52,6 @@ export function app(): express.Express {
     const requestHost = headers['x-forwarded-host'] || headers.host;
     const apiPublicUrl = `${requestProtocol}://${requestHost}${environment.apiUrl}`;
     const apiInternalUrl = process.env['MARKET_API_INTERNAL_URL'] || environment.apiInternalUrl;
-    const runtimeConfig = loadRuntimeConfigFromEnv();
-
     commonEngine
       .render({
         bootstrap,

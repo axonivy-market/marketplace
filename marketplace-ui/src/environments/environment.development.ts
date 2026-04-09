@@ -12,5 +12,6 @@ export const environment = {
   dayInMiliseconds: 86400000,
   matomoSiteId: 0,
   matomoTrackerUrl: '//matomo-web',
-  siblingNodeAppIp: ''
+  siblingNodeAppIp: '',
+  allowedHosts: []
 };
