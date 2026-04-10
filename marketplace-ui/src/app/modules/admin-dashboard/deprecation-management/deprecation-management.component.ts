@@ -83,7 +83,6 @@ export class DeprecationManagementComponent implements OnInit {
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
-
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username?.trim() || '';
@@ -122,7 +121,7 @@ export class DeprecationManagementComponent implements OnInit {
   }
 
   async openExtensionDropdown() {
-    const selectableProducts = await this.loadAllProductIds(null);
+    const selectableProducts = await this.loadAllProductIds();
     this.selectableProductIds = selectableProducts.map(product => product.id);
     this.filterProducts(this.productId);
     this.dropdownOpen = true;
@@ -143,16 +142,11 @@ export class DeprecationManagementComponent implements OnInit {
 
     try {
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(
-          this.productId,
-          this.deprecatedRequest,
-          this.token
-        )
+        this.productService.updateDeprecatedProduct(this.productId, this.deprecatedRequest, this.token)
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
-      this.successPullRequestUrl =
-        this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
       // Close form dialog immediately and show success dialog
       this.showDeprecatedProductDialog = false;
       this.isClosing = false;
@@ -237,10 +231,7 @@ export class DeprecationManagementComponent implements OnInit {
     }
 
     // Validate successorUrl (optional but must match pattern if provided)
-    if (
-      this.deprecatedRequest.successorUrl &&
-      this.deprecatedRequest.successorUrl.trim() !== ''
-    ) {
+    if (this.deprecatedRequest.successorUrl && this.deprecatedRequest.successorUrl.trim() !== '') {
       const urlPattern = /^(http|https):\/\/.*$/;
       if (!urlPattern.test(this.deprecatedRequest.successorUrl)) {
         this.validationErrors['successorUrl'] = this.translateService.instant(
@@ -292,11 +283,7 @@ export class DeprecationManagementComponent implements OnInit {
         pullRequestAction: PullRequestAction.REMOVE
       };
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(
-          this.removedProductId,
-          request,
-          this.token
-        )
+        this.productService.updateDeprecatedProduct(this.removedProductId, request, this.token)
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 
@@ -305,8 +292,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.isClosingRemoveDeprecationDialog = false;
       this.removedProductId = '';
 
-      this.successPullRequestUrl =
-        this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
       this.successMode = 'undeprecate';
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
@@ -343,17 +329,11 @@ export class DeprecationManagementComponent implements OnInit {
       return;
     }
 
-    this.filteredDeprecatedRows = this.deprecatedItems.filter(row =>
-      row.id.toLowerCase().includes(normalized)
-    );
+    this.filteredDeprecatedRows = this.deprecatedItems.filter(row => row.id.toLowerCase().includes(normalized));
   }
 
-  private loadAllProductIds(
-    predicated: boolean | null
-  ): Promise<DeprecatedProductInfo[]> {
-    return firstValueFrom(
-      this.productService.fetchAllProductIdsByDeprecated(predicated)
-    );
+  private loadAllProductIds(isDeprecated?: boolean): Promise<DeprecatedProductInfo[]> {
+    return firstValueFrom(this.productService.fetchAllProductIdsByDeprecated(isDeprecated));
   }
 
   private async refreshDeprecatedRows(): Promise<void> {
@@ -361,9 +341,7 @@ export class DeprecationManagementComponent implements OnInit {
     this.filterTable(this.tableSearchTerm);
   }
 
-  private async applyRowsFromUpdateResponse(
-    response: DeprecatedResponse
-  ): Promise<void> {
+  private async applyRowsFromUpdateResponse(response: DeprecatedResponse): Promise<void> {
     if (response?.productDeprecations) {
       this.deprecatedItems = response.productDeprecations;
       this.filterTable(this.tableSearchTerm);

@@ -10,7 +10,6 @@ public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";
   public static final String IDS = "ids";
   public static final String DEPRECATIONS = "deprecations";
-  public static final String DEPRECATED = "/deprecated";
   public static final String DEPRECATION_BY_ID = "{productId}/deprecations";
   public static final String PRODUCT_DETAILS = API + "/product-details";
   public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
