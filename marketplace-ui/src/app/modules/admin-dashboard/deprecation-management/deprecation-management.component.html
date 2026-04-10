@@ -2,15 +2,12 @@
   <h1
     class="text-primary admin-title"
     [lang]="languageService.selectedLanguage()">
-    {{ translateService.get('common.admin.deprecation.title') | async }}
+    {{ 'common.admin.deprecation.title' | translate }}
   </h1>
   <div class="introduction-container">
     <div class="d-sm-block admin-about">
       <h3 class="text-secondary">
-        {{
-          translateService.get('common.admin.deprecation.description')
-            | async
-        }}
+        {{ 'common.admin.deprecation.description' | translate }}
       </h3>
     </div>
     <div
@@ -18,9 +15,7 @@
       <h4
         [lang]="languageService.selectedLanguage()"
         class="text-secondary help-text"
-        [innerHTML]="
-          translateService.get('common.admin.deprecation.helpText') | async
-        "></h4>
+        [innerHTML]="'common.admin.deprecation.helpText' | translate"></h4>
     </div>
   </div>
 </div>
@@ -35,11 +30,12 @@
         class="search-input"
         [(ngModel)]="tableSearchTerm"
         (input)="filterTable(tableSearchTerm)"
-        [placeholder]="translateService.get('common.admin.deprecation.searchPlaceholder')| async"/>
+        [placeholder]="'common.admin.deprecation.searchPlaceholder' | translate"/>
 
       <button
         type="button" (click)="trigger()"
-        [lang]="languageService.selectedLanguage()" class="btn deprecation-button border-0 mb-0 btn-primary text-center">
+        [lang]="languageService.selectedLanguage()"
+        class="btn deprecation-button border-0 mb-0 btn-primary text-center">
         {{ 'common.admin.deprecation.deprecatedButton' | translate }}
       </button>
     </div>
@@ -50,7 +46,7 @@
       <th class="text-primary text-center">{{ 'common.admin.extensionId' | translate }}</th>
       <th class="text-primary text-center">{{ 'common.admin.deprecation.deprecatedTime' | translate }}</th>
       <th class="text-primary text-center">{{ 'common.admin.deprecation.requester' | translate }}</th>
-      <th class="text-primary text-center" aria-label="Actions"> Action</th>
+      <th class="text-primary text-center" aria-label="Actions">{{ 'common.admin.deprecation.action' | translate }}</th>
     </tr>
     </thead>
 

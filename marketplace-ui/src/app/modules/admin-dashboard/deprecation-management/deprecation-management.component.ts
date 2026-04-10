@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,6 @@ import { RemoveDeprecatedConfirmDialogComponent } from './dialogs/remove-depreca
 @Component({
   selector: 'app-deprecated-management',
   imports: [
-    AsyncPipe,
     CustomSortCardComponent,
     FormsModule,
     TranslateModule,
@@ -39,7 +38,6 @@ export class DeprecationManagementComponent implements OnInit {
 
   productService = inject(ProductService);
   languageService = inject(LanguageService);
-  translateService = inject(TranslateService);
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
 
@@ -84,7 +82,6 @@ export class DeprecationManagementComponent implements OnInit {
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
-  constructor() {}
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();

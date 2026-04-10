@@ -464,6 +464,7 @@
         "extensionId": "Extension ID:",
         "deprecatedTime": "Deprecated time",
         "requester": "Requester",
+        "action": "Aktion",
         "deprecateSuccess": "Extension has been deprecated successfully!",
         "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
         "pullRequestLabel": "Pull Request URL",
