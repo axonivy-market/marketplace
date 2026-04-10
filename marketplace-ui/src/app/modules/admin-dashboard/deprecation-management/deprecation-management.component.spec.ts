@@ -119,7 +119,7 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    component.trigger();
+    component.openDeprecationDialog();
 
     expect(component.showDeprecatedProductDialog).toBe(true);
     expect(component.deprecatedResponse.pullRequestUrl).toBeNull();

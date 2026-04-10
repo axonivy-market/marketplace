@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
@@ -40,6 +40,7 @@ export class DeprecationManagementComponent implements OnInit {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
+  translateService = inject(TranslateService);
 
   // Deprecate form dialog state
   showDeprecatedProductDialog = false;
@@ -95,7 +96,7 @@ export class DeprecationManagementComponent implements OnInit {
     this.refreshDeprecatedRows();
   }
 
-  trigger() {
+  openDeprecationDialog() {
     this.showDeprecatedProductDialog = true;
     this.isCopySuccessVisible = false;
     this.deprecatedResponse.pullRequestUrl = null;
@@ -229,7 +230,9 @@ export class DeprecationManagementComponent implements OnInit {
 
     // Validate productId (required)
     if (!this.productId || this.productId.trim() === '') {
-      this.validationErrors['productId'] = 'Extension ID is required';
+      this.validationErrors['productId'] = this.translateService.instant(
+        'common.admin.deprecation.validation.extensionIdRequired'
+      );
       isValid = false;
     }
 
@@ -240,8 +243,9 @@ export class DeprecationManagementComponent implements OnInit {
     ) {
       const urlPattern = /^(http|https):\/\/.*$/;
       if (!urlPattern.test(this.deprecatedRequest.successorUrl)) {
-        this.validationErrors['successorUrl'] =
-          'URL must start with http:// or https://';
+        this.validationErrors['successorUrl'] = this.translateService.instant(
+          'common.admin.deprecation.validation.invalidSuccessorUrl'
+        );
         isValid = false;
       }
     }

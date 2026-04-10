@@ -33,7 +33,7 @@
         [placeholder]="'common.admin.deprecation.searchPlaceholder' | translate"/>
 
       <button
-        type="button" (click)="trigger()"
+        type="button" (click)="openDeprecationDialog()"
         [lang]="languageService.selectedLanguage()"
         class="btn deprecation-button border-0 mb-0 btn-primary text-center">
         {{ 'common.admin.deprecation.deprecatedButton' | translate }}

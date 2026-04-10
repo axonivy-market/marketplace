@@ -465,6 +465,10 @@
         "deprecatedTime": "Deprecated time",
         "requester": "Requester",
         "action": "Aktion",
+        "validation": {
+          "extensionIdRequired": "Erweiterungs-ID ist erforderlich",
+          "invalidSuccessorUrl": "URL muss mit http:// oder https:// beginnen"
+        },
         "deprecateSuccess": "Extension has been deprecated successfully!",
         "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
         "pullRequestLabel": "Pull Request URL",
