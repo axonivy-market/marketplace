@@ -51,6 +51,7 @@ public class MatomoServiceImpl implements MatomoService {
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
     Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
+    log.warn("  Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
@@ -66,13 +67,14 @@ public class MatomoServiceImpl implements MatomoService {
 
   private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
     Map<String, String> headers = new HashMap<>();
+    headers.put("X-Forwarded-For", httpServletRequest.getRemoteAddr());
     Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
     if (headerNames != null) {
       while (headerNames.hasMoreElements()) {
         String name = headerNames.nextElement();
         Enumeration<String> values = httpServletRequest.getHeaders(name);
-        if (values != null) {
-          List<String> list = Collections.list(values);
+        List<String> list = values != null ? Collections.list(values) : Collections.emptyList();
+        if (!list.isEmpty()) {
           String value = String.join(CoreCommonConstants.COMMA, list);
           if (StringUtils.isNotBlank(value)) {
             String lower = name.toLowerCase(Locale.ROOT);
