@@ -79,14 +79,12 @@ export class DeprecationManagementComponent implements OnInit {
     pullRequestUrl: null
   };
   moderatorName = '';
-  token = '';
   // Validation state
   validationErrors: { productId?: string; successorUrl?: string } = {};
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username?.trim() || '';
-    this.token = userInfo?.token ?? '';
     this.deprecatedRequest.deprecationRequester = this.moderatorName;
     this.initializeDeprecatedRows();
   }
@@ -142,7 +140,7 @@ export class DeprecationManagementComponent implements OnInit {
 
     try {
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(this.productId, this.deprecatedRequest, this.token)
+        this.productService.updateDeprecatedProduct(this.productId, this.deprecatedRequest)
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
       this.validationErrors = {};
@@ -283,7 +281,7 @@ export class DeprecationManagementComponent implements OnInit {
         pullRequestAction: PullRequestAction.REMOVE
       };
       this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(this.removedProductId, request, this.token)
+        this.productService.updateDeprecatedProduct(this.removedProductId, request)
       );
       await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
 

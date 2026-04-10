@@ -537,7 +537,7 @@ describe('ProductService', () => {
       };
 
       const resultPromise = firstValueFrom(
-        service.updateDeprecatedProduct('cms-live-editor', requestBody, 'token-123')
+        service.updateDeprecatedProduct('cms-live-editor', requestBody)
       );
 
       const req = httpMock.expectOne(

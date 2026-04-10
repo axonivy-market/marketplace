@@ -1,4 +1,4 @@
-import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, of, firstValueFrom, map } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
@@ -18,20 +18,18 @@ import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
-import {
-  AUTHORIZATION_HEADER,
-  BEARER,
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK
-} from '../../shared/constants/common.constant';
+import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { DeprecatedRequest } from '../../shared/models/deprecated-request';
 import { DeprecatedResponse } from '../../shared/models/deprecated-response';
 import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
+import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  httpClient = inject(HttpClient);
+  private httpClient = inject(HttpClient);
+  private adminAuthService = inject(AdminAuthService);
+
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
     let requestParams = new HttpParams();
@@ -217,23 +215,17 @@ export class ProductService {
       .filter(item => !!item.id);
   }
 
-  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecatedRequest, token: string | undefined):
-    Observable<DeprecatedResponse> {
-    const headers = new HttpHeaders({
-      [AUTHORIZATION_HEADER]: `${BEARER} ${token}`
-    });
+  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecatedRequest): Observable<DeprecatedResponse> {
     return this.httpClient
       .put<DeprecatedResponse>(
         API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
         deprecatedRequest,
-        { headers }
+        { headers: this.adminAuthService.getAuthHeaders() }
       )
       .pipe(
         map(response => ({
           ...response,
-          productDeprecations: this.normalizeDeprecatedProducts(
-            response?.productDeprecations ?? []
-          ),
+          productDeprecations: this.normalizeDeprecatedProducts(response?.productDeprecations ?? []),
           pullRequestUrl: response?.pullRequestUrl ?? null
         }))
       );
