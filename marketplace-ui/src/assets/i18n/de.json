@@ -466,7 +466,6 @@
         "requester": "Requester",
         "deprecateSuccess": "Extension has been deprecated successfully!",
         "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
-        "deprecateSuccessThank": "Thank you for your contribution",
         "pullRequestLabel": "Pull Request URL",
         "copyLabel": "Copy",
         "copiedLabel": "Copied!",

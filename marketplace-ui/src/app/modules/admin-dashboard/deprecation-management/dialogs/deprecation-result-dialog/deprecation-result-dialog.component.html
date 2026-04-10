@@ -1,20 +1,18 @@
 @if (visible) {
   <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
-    <div class="modal-content custom-modal success-modal" [class.modal-closing]="isClosing">
-      <div class="modal-header border-bottom-0 pb-0">
+    <div class="custom-modal success-modal" [class.modal-closing]="isClosing">
+      <div class="modal-header border-bottom-0">
         <button
           type="button"
-          class="success-close-btn"
+          class="btn-close"
           aria-label="Close"
           [disabled]="isClosing"
-          (click)="closeDialog.emit()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+          (click)="closeDialog.emit()"></button>
       </div>
 
       <div class="modal-body success-modal-body">
         <img
-          src="/assets/images/misc/confetti-icon.png"
+          ngSrc="/assets/images/misc/confetti-icon.png"
           width="60"
           height="60"
           alt="Confetti Icon"
@@ -45,10 +43,10 @@
                 class="btn btn-primary copy-btn input-group-text"
                 (click)="copyPullRequestUrl.emit()">
                 @if (isCopySuccessVisible) {
-                  <i class="bi bi-check2 me-1"></i>
+                  <i class="ti ti-check me-1"></i>
                   {{ 'common.admin.deprecation.copiedLabel' | translate }}
                 } @else {
-                  <i class="bi bi-clipboard me-1"></i>
+                  <i class="ti ti-clipboard me-1"></i>
                   {{ 'common.admin.deprecation.copyLabel' | translate }}
                 }
               </button>

@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import {NgOptimizedImage} from "@angular/common";
 
 @Component({
   selector: 'app-deprecation-result-dialog',
-  imports: [TranslateModule],
+  imports: [TranslateModule, NgOptimizedImage],
   templateUrl: './deprecation-result-dialog.component.html',
   styleUrl: './deprecation-result-dialog.component.scss'
 })
