@@ -30,8 +30,6 @@ services:
     environment:
       - MATOMO_DATABASE_HOST=matomo-db
       - PHP_MEMORY_LIMIT=2048M
-    volumes:
-      - matomo-data:/var/www/html
     networks:
       - matomo-network
 
@@ -40,7 +38,6 @@ services:
     container_name: matomo-web
     restart: always
     volumes:
-      - matomo-data:/var/www/html
       - ./matomo.conf:/etc/nginx/conf.d/default.conf:z,ro
       - matomo:/var/www/html:ro
     ports:
