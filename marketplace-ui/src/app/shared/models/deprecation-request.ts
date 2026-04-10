@@ -1,6 +1,6 @@
 import { PullRequestAction } from '../enums/pullrequest-action';
 
-export interface DeprecatedRequest {
+export interface DeprecationRequest {
   successorUrl?: string;
   isDeprecated: Boolean | null;
   addReadme?: boolean;

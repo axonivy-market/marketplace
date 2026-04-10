@@ -18,7 +18,7 @@ describe('DeprecateFormDialogComponent', () => {
     fixture = TestBed.createComponent(DeprecationFormDialogComponent);
     component = fixture.componentInstance;
     component.visible = true;
-    component.deprecatedRequest = {
+    component.deprecationRequest = {
       successorUrl: '',
       addReadme: false,
       isDeprecated: false,

@@ -19,8 +19,8 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
-import { DeprecatedRequest } from '../../shared/models/deprecated-request';
-import { DeprecatedResponse } from '../../shared/models/deprecated-response';
+import { DeprecationRequest } from '../../shared/models/deprecation-request';
+import { DeprecationResponse } from '../../shared/models/deprecation-response';
 import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 
@@ -215,9 +215,9 @@ export class ProductService {
       .filter(item => !!item.id);
   }
 
-  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecatedRequest): Observable<DeprecatedResponse> {
+  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecationRequest): Observable<DeprecationResponse> {
     return this.httpClient
-      .put<DeprecatedResponse>(
+      .put<DeprecationResponse>(
         API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
         deprecatedRequest,
         { headers: this.adminAuthService.getAuthHeaders() }

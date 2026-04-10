@@ -1,7 +1,6 @@
 import { DeprecatedProductInfo } from './deprecated-product-info';
 
-export interface DeprecatedResponse {
-  productIds?: string[];
+export interface DeprecationResponse {
   productDeprecations?: DeprecatedProductInfo[];
   pullRequestUrl: string | null;
 }

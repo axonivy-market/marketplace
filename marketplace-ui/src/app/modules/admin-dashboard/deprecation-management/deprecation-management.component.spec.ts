@@ -20,7 +20,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
-import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
+import { DeprecationResponse } from '../../../shared/models/deprecation-response';
 
 describe('DeprecationManagementComponent', () => {
   let component: DeprecationManagementComponent;
@@ -122,7 +122,7 @@ describe('DeprecationManagementComponent', () => {
     component.openDeprecationDialog();
 
     expect(component.showDeprecatedProductDialog).toBe(true);
-    expect(component.deprecatedResponse.pullRequestUrl).toBeNull();
+    expect(component.deprecationResponse.pullRequestUrl).toBeNull();
   });
 
   it('should close deprecate dialog and reset fields after animation delay', () => {
@@ -131,7 +131,7 @@ describe('DeprecationManagementComponent', () => {
     component.showDeprecatedProductDialog = true;
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
-    component.deprecatedRequest = {
+    component.deprecationRequest = {
       successorUrl: 'https://market.axonivy.com/portal',
       addReadme: true,
       isDeprecated: true,
@@ -152,7 +152,7 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isClosing).toBe(false);
     expect(component.isDeprecating).toBe(false);
     expect(component.isCopySuccessVisible).toBe(false);
-    expect(component.deprecatedRequest).toEqual({
+    expect(component.deprecationRequest).toEqual({
       successorUrl: '',
       addReadme: false,
       isDeprecated: false,
@@ -169,11 +169,11 @@ describe('DeprecationManagementComponent', () => {
     expect(component.validationErrors.productId).toContain('required');
 
     component.productId = 'cms-live-editor';
-    component.deprecatedRequest.successorUrl = 'invalid-url';
+    component.deprecationRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.successorUrl).toContain('http:// or https://');
 
-    component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
+    component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
   });
 
@@ -194,8 +194,8 @@ describe('DeprecationManagementComponent', () => {
     component.selectExtension('cms-live-editor');
 
     expect(component.productId).toBe('cms-live-editor');
-    expect(component.deprecatedRequest.isDeprecated).toBe(true);
-    expect(component.deprecatedRequest.pullRequestAction).toBe(PullRequestAction.ADD);
+    expect(component.deprecationRequest.isDeprecated).toBe(true);
+    expect(component.deprecationRequest.pullRequestAction).toBe(PullRequestAction.ADD);
     expect(component.dropdownOpen).toBe(false);
   });
 
@@ -240,15 +240,15 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const response: DeprecatedResponse = {
+    const response: DeprecationResponse = {
       productDeprecations: mockDeprecatedRows,
       pullRequestUrl: 'https://github.com/org/repo/pull/123'
     };
     productService.updateDeprecatedProduct.mockReturnValue(of(response));
 
     component.productId = 'cms-live-editor';
-    component.deprecatedRequest.successorUrl = 'https://market.axonivy.com/portal';
-    component.deprecatedRequest.isDeprecated = true;
+    component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
+    component.deprecationRequest.isDeprecated = true;
 
     await component.deprecatedProduct();
 
@@ -268,7 +268,7 @@ describe('DeprecationManagementComponent', () => {
     );
 
     component.productId = 'cms-live-editor';
-    component.deprecatedRequest.isDeprecated = true;
+    component.deprecationRequest.isDeprecated = true;
 
     await component.deprecatedProduct();
 

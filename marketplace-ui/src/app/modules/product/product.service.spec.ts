@@ -25,7 +25,7 @@ import {
 } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
-import { DeprecatedRequest } from '../../shared/models/deprecated-request';
+import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../shared/enums/pullrequest-action';
 
 describe('ProductService', () => {
@@ -528,7 +528,7 @@ describe('ProductService', () => {
 
   describe('updateDeprecatedProduct', () => {
     it('should send PUT with bearer header and normalize productDeprecations response', async () => {
-      const requestBody: DeprecatedRequest = {
+      const requestBody: DeprecationRequest = {
         successorUrl: 'https://market.axonivy.com/vertexai-google',
         isDeprecated: true,
         addReadme: true,

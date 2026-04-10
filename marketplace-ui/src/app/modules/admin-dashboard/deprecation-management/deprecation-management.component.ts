@@ -8,9 +8,9 @@ import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
-import { DeprecatedRequest } from '../../../shared/models/deprecated-request';
+import { DeprecationRequest } from '../../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
-import { DeprecatedResponse } from '../../../shared/models/deprecated-response';
+import { DeprecationResponse } from '../../../shared/models/deprecation-response';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 
@@ -62,7 +62,7 @@ export class DeprecationManagementComponent implements OnInit {
   productId = '';
 
   dropdownOpen = false;
-  deprecatedRequest: DeprecatedRequest = {
+  deprecationRequest: DeprecationRequest = {
     successorUrl: '',
     addReadme: false,
     isDeprecated: false,
@@ -74,7 +74,7 @@ export class DeprecationManagementComponent implements OnInit {
   deprecatedItems: DeprecatedProductInfo[] = [];
   filteredDeprecatedRows: DeprecatedProductInfo[] = [];
   tableSearchTerm = '';
-  deprecatedResponse: DeprecatedResponse = {
+  deprecationResponse: DeprecationResponse = {
     productDeprecations: [],
     pullRequestUrl: null
   };
@@ -85,7 +85,7 @@ export class DeprecationManagementComponent implements OnInit {
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username?.trim() || '';
-    this.deprecatedRequest.deprecationRequester = this.moderatorName;
+    this.deprecationRequest.deprecationRequester = this.moderatorName;
     this.initializeDeprecatedRows();
   }
 
@@ -96,7 +96,7 @@ export class DeprecationManagementComponent implements OnInit {
   openDeprecationDialog() {
     this.showDeprecatedProductDialog = true;
     this.isCopySuccessVisible = false;
-    this.deprecatedResponse.pullRequestUrl = null;
+    this.deprecationResponse.pullRequestUrl = null;
   }
 
   closeDialog() {
@@ -107,7 +107,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
       this.productId = '';
-      this.deprecatedRequest = {
+      this.deprecationRequest = {
         successorUrl: '',
         addReadme: false,
         isDeprecated: false,
@@ -136,15 +136,15 @@ export class DeprecationManagementComponent implements OnInit {
     }
     this.isDeprecating = true;
     this.dropdownOpen = false;
-    this.deprecatedRequest.deprecationRequester = this.moderatorName;
+    this.deprecationRequest.deprecationRequester = this.moderatorName;
 
     try {
-      this.deprecatedResponse = await firstValueFrom(
-        this.productService.updateDeprecatedProduct(this.productId, this.deprecatedRequest)
+      this.deprecationResponse = await firstValueFrom(
+        this.productService.updateDeprecatedProduct(this.productId, this.deprecationRequest)
       );
-      await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
+      await this.applyRowsFromUpdateResponse(this.deprecationResponse);
       this.validationErrors = {};
-      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl = this.deprecationResponse.pullRequestUrl ?? null;
       // Close form dialog immediately and show success dialog
       this.showDeprecatedProductDialog = false;
       this.isClosing = false;
@@ -179,7 +179,7 @@ export class DeprecationManagementComponent implements OnInit {
       if (shouldResetDeprecateForm) {
         // Reset deprecate form after closing deprecate success dialog
         this.productId = '';
-        this.deprecatedRequest = {
+        this.deprecationRequest = {
           successorUrl: '',
           addReadme: false,
           isDeprecated: false,
@@ -213,7 +213,7 @@ export class DeprecationManagementComponent implements OnInit {
   }
 
   onClickCheckBoxReadme(): void {
-    this.deprecatedRequest.addReadme = true;
+    this.deprecationRequest.addReadme = true;
   }
 
   validateForm(): boolean {
@@ -229,9 +229,9 @@ export class DeprecationManagementComponent implements OnInit {
     }
 
     // Validate successorUrl (optional but must match pattern if provided)
-    if (this.deprecatedRequest.successorUrl && this.deprecatedRequest.successorUrl.trim() !== '') {
+    if (this.deprecationRequest.successorUrl && this.deprecationRequest.successorUrl.trim() !== '') {
       const urlPattern = /^(http|https):\/\/.*$/;
-      if (!urlPattern.test(this.deprecatedRequest.successorUrl)) {
+      if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
         this.validationErrors['successorUrl'] = this.translateService.instant(
           'common.admin.deprecation.validation.invalidSuccessorUrl'
         );
@@ -244,9 +244,9 @@ export class DeprecationManagementComponent implements OnInit {
 
   selectExtension(productId: string) {
     this.productId = productId;
-    this.deprecatedRequest.isDeprecated = true;
+    this.deprecationRequest.isDeprecated = true;
     this.dropdownOpen = false;
-    this.deprecatedRequest.pullRequestAction = PullRequestAction.ADD;
+    this.deprecationRequest.pullRequestAction = PullRequestAction.ADD;
   }
 
   async confirmRemovedDeprecation(productId: string): Promise<void> {
@@ -273,24 +273,24 @@ export class DeprecationManagementComponent implements OnInit {
     this.isRemoving = true;
 
     try {
-      const request: DeprecatedRequest = {
+      const request: DeprecationRequest = {
         successorUrl: '',
         addReadme: true,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
         pullRequestAction: PullRequestAction.REMOVE
       };
-      this.deprecatedResponse = await firstValueFrom(
+      this.deprecationResponse = await firstValueFrom(
         this.productService.updateDeprecatedProduct(this.removedProductId, request)
       );
-      await this.applyRowsFromUpdateResponse(this.deprecatedResponse);
+      await this.applyRowsFromUpdateResponse(this.deprecationResponse);
 
       // Close confirm dialog and show success dialog
       this.showRemoveDeprecationConfirmDialog = false;
       this.isClosingRemoveDeprecationDialog = false;
       this.removedProductId = '';
 
-      this.successPullRequestUrl = this.deprecatedResponse.pullRequestUrl ?? null;
+      this.successPullRequestUrl = this.deprecationResponse.pullRequestUrl ?? null;
       this.successMode = 'undeprecate';
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
@@ -339,7 +339,7 @@ export class DeprecationManagementComponent implements OnInit {
     this.filterTable(this.tableSearchTerm);
   }
 
-  private async applyRowsFromUpdateResponse(response: DeprecatedResponse): Promise<void> {
+  private async applyRowsFromUpdateResponse(response: DeprecationResponse): Promise<void> {
     if (response?.productDeprecations) {
       this.deprecatedItems = response.productDeprecations;
       this.filterTable(this.tableSearchTerm);

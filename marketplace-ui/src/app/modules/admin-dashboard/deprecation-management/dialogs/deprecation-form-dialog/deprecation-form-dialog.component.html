@@ -44,7 +44,7 @@
             type="text"
             [class.form-control]="true"
             [class.is-invalid]="validationErrors['successorUrl']"
-            [(ngModel)]="deprecatedRequest.successorUrl"
+            [(ngModel)]="deprecationRequest.successorUrl"
             [disabled]="isDeprecating"
             placeholder="{{ 'common.admin.deprecation.successorInputPlaceholder' | translate }}"
           />
@@ -59,7 +59,7 @@
           <input
             type="checkbox"
             class="form-check-input"
-            [(ngModel)]="deprecatedRequest.addReadme"
+            [(ngModel)]="deprecationRequest.addReadme"
             [disabled]="isDeprecating"
             (click)="readmeChecked.emit()"
             id="addReadmeCheckbox"
