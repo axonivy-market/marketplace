@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 import { FormsModule } from '@angular/forms';
@@ -34,6 +34,9 @@ export class HeaderToolbarComponent {
   isGoogleLoaded = false;
   
   userInfo = this.adminAuthService.userInfo;
+
+  @Input() 
+  isInHeaderOffCanvas = false;
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {

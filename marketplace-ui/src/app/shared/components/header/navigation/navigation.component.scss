@@ -9,7 +9,7 @@ ul {
 }
 
 ul li {
-  height: 100%;
+  width: fit-content;
 }
 
 .nav-item {
@@ -41,7 +41,7 @@ ul li {
   border-radius: 10px;
 }
 
-.header-mobile__search input{
+.header-mobile__search input {
   font-size: 1.4rem;
 }
 
@@ -68,5 +68,21 @@ ul li {
     line-height: 140%;
     font-weight: 600;
     font-size: 1.8rem;
+  }
+}
+
+@media screen and (max-width: 1199px) {
+  ul li {
+    padding: 1rem 0 1rem 0;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  ul {
+    height: 100%;
+  }
+
+  ul li {
+    height: 100%;
   }
 }

@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  Renderer2,
   TemplateRef,
   WritableSignal,
   inject,
@@ -11,7 +12,12 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router, RouterLink, ɵEmptyOutletComponent } from '@angular/router';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  ɵEmptyOutletComponent
+} from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -28,6 +34,9 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.component';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
+import { WindowRef } from '../../../core/services/browser/window-ref.service';
+import { DocumentRef } from '../../../core/services/browser/document-ref.service';
+import { GoogleSearchBarUtils } from '../../utils/google-search-bar.utils';
 
 @Component({
   selector: 'app-header',
@@ -42,7 +51,7 @@ import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.se
     GithubUserBadgeComponent,
     NgbInputDatepicker,
     ɵEmptyOutletComponent
-],
+  ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
@@ -52,6 +61,7 @@ export class HeaderComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  google: any;
   private readonly router = inject(Router);
 
   @Input() showNavigation = true;
@@ -62,9 +72,13 @@ export class HeaderComponent {
   isAdminRoute = false;
   userInfo = this.adminAuthService.userInfo;
   isMobileMenuCollapsed = model<boolean>(true);
-  headerOffcanvasRef: NgbOffcanvasRef | null = null
+  headerOffcanvasRef: NgbOffcanvasRef | null = null;
 
-  constructor() {
+  constructor(
+    private readonly renderer: Renderer2,
+    private readonly windowRef: WindowRef,
+    private readonly documentRef: DocumentRef
+  ) {
     this.translateService.setDefaultLang(
       this.languageService.selectedLanguage()
     );
@@ -104,12 +118,33 @@ export class HeaderComponent {
   }
 
   open(content: TemplateRef<any>) {
+    console.log(content);
+    const doc = this.documentRef.nativeDocument;
+
+    if (!doc) {
+      return;
+    }
+
     this.headerOffcanvasRef = this.offcanvasService.open(content, {
       ariaLabelledBy: 'offcanvas-basic-title',
       backdrop: true,
       panelClass: 'my-offcanvas',
       position: 'end',
       backdropClass: 'my-offcanvas-backdrop'
+    });
+
+    this.headerOffcanvasRef.shown.subscribe(() => {
+      GoogleSearchBarUtils.renderOffcanvasGoogleSearchBar(
+        this.renderer,
+        this.windowRef,
+        this.documentRef
+      );
+
+      // 👇 ADD THIS
+      GoogleSearchBarUtils.addCustomClassToSearchBar(
+        this.renderer,
+        doc
+      );
     });
 
     this.headerOffcanvasRef.result.finally(() => {
