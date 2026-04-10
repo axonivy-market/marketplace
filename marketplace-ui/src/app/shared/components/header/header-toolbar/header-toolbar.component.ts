@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 import { FormsModule } from '@angular/forms';
-import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
-import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
-import { SEARCH_URL } from '../../../constants/common.constant';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { AdminAuthService } from '../../../../modules/admin-dashboard/admin-auth.service';
+import { SEARCH_URL } from '../../../constants/common.constant';
+import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
+import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 
 @Component({
   selector: 'app-header-toolbar',
@@ -17,7 +16,6 @@ import { AdminAuthService } from '../../../../modules/admin-dashboard/admin-auth
     ThemeSelectionComponent,
     FormsModule,
     LanguageSelectionComponent,
-    GithubUserBadgeComponent
   ],
   templateUrl: './header-toolbar.component.html',
   styleUrl: './header-toolbar.component.scss'

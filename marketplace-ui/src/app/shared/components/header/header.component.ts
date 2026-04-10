@@ -2,41 +2,28 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   Output,
   Renderer2,
   TemplateRef,
-  WritableSignal,
   inject,
-  model,
-  signal
+  model
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  NavigationEnd,
-  Router,
-  RouterLink,
-  ɵEmptyOutletComponent
-} from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NgbOffcanvas, NgbOffcanvasRef } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { filter } from 'rxjs';
+import { DocumentRef } from '../../../core/services/browser/document-ref.service';
+import { WindowRef } from '../../../core/services/browser/window-ref.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { NavigationComponent } from './navigation/navigation.component';
-import { SearchBarComponent } from './search-bar/search-bar.component';
-import { filter } from 'rxjs';
-import { GithubUserBadgeComponent } from '../github-user-badge/github-user-badge.component';
-import {
-  NgbDatepicker,
-  NgbInputDatepicker,
-  NgbOffcanvas,
-  NgbOffcanvasRef,
-  OffcanvasDismissReasons
-} from '@ng-bootstrap/ng-bootstrap';
-import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.component';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
-import { WindowRef } from '../../../core/services/browser/window-ref.service';
-import { DocumentRef } from '../../../core/services/browser/document-ref.service';
-import { GoogleSearchBarUtils } from '../../utils/google-search-bar.utils';
+import { HeaderOffcanvasService } from '../../services/header-offcanvas.service';
+import { GithubUserBadgeComponent } from '../github-user-badge/github-user-badge.component';
+import { HeaderToolbarComponent } from './header-toolbar/header-toolbar.component';
+import { NavigationComponent } from './navigation/navigation.component';
 
 @Component({
   selector: 'app-header',
@@ -45,12 +32,9 @@ import { GoogleSearchBarUtils } from '../../utils/google-search-bar.utils';
     FormsModule,
     TranslateModule,
     NavigationComponent,
-    // SearchBarComponent,
     HeaderToolbarComponent,
     RouterLink,
-    GithubUserBadgeComponent,
-    NgbInputDatepicker,
-    ɵEmptyOutletComponent
+    GithubUserBadgeComponent
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
@@ -61,7 +45,7 @@ export class HeaderComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
-  google: any;
+  headerOffcanvasService = inject(HeaderOffcanvasService);
   private readonly router = inject(Router);
 
   @Input() showNavigation = true;
@@ -97,6 +81,11 @@ export class HeaderComponent {
       });
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.headerOffcanvasService.handleResize();
+  }
+
   onCollapsedMobileMenu() {
     this.isMobileMenuCollapsed.update(value => !value);
   }
@@ -110,56 +99,10 @@ export class HeaderComponent {
   }
 
   toggleHeaderOffcanvas(content: TemplateRef<any>) {
-    if (this.headerOffcanvasRef) {
-      this.headerOffcanvasRef.close();
-      return;
-    }
-    this.open(content);
+    this.headerOffcanvasService.toggle(content, this.renderer);
   }
 
-  open(content: TemplateRef<any>) {
-    console.log(content);
-    const doc = this.documentRef.nativeDocument;
-
-    if (!doc) {
-      return;
-    }
-
-    this.headerOffcanvasRef = this.offcanvasService.open(content, {
-      ariaLabelledBy: 'offcanvas-basic-title',
-      backdrop: true,
-      panelClass: 'my-offcanvas',
-      position: 'end',
-      backdropClass: 'my-offcanvas-backdrop'
-    });
-
-    this.headerOffcanvasRef.shown.subscribe(() => {
-      GoogleSearchBarUtils.renderOffcanvasGoogleSearchBar(
-        this.renderer,
-        this.windowRef,
-        this.documentRef
-      );
-
-      // 👇 ADD THIS
-      GoogleSearchBarUtils.addCustomClassToSearchBar(
-        this.renderer,
-        doc
-      );
-    });
-
-    this.headerOffcanvasRef.result.finally(() => {
-      this.headerOffcanvasRef = null;
-    });
+  isHeaderOffcanvasOpen(): boolean {
+    return this.headerOffcanvasService.isOpen();
   }
-
-  // private getDismissReason(reason: any): string {
-  //   switch (reason) {
-  //     case OffcanvasDismissReasons.ESC:
-  //       return 'by pressing ESC';
-  //     case OffcanvasDismissReasons.BACKDROP_CLICK:
-  //       return 'by clicking on the backdrop';
-  //     default:
-  //       return `with: ${reason}`;
-  //   }
-  // }
 }

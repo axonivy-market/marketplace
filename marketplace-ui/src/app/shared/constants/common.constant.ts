@@ -382,11 +382,16 @@ export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
 export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE =
   'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
 export const GOOGLE = 'google';
+export const HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID = 'offcanvas-google-search';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
 export const GOOGLE_SEARCH_BAR_INPUT_CLASS_NAME = '.gsc-input';
 export const GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME = 'text-primary';
+
+// Header constants
+export const HEADER_OFFCANVAS = 'header-offcanvas';
+export const HEADER_OFFCANVAS_BACKDROP = 'header-offcanvas-backdrop';
 
 // Theme Icon
 export const LIGHT_ICON_CLASS = 'bi-moon';

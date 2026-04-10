@@ -4,13 +4,13 @@
   max-height: 7rem;
 }
 
-::ng-deep .my-offcanvas {
+::ng-deep .header-offcanvas {
   top: 7.5rem !important;
   height: calc(100% - 7.5rem) !important;
   width: 100vw !important;
 }
 
-::ng-deep .my-offcanvas-backdrop {
+::ng-deep .header-offcanvas-backdrop {
   top: 7.5rem !important;
   height: calc(100% - 7.5rem) !important;
   opacity: 0 !important;
