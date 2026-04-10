@@ -15,8 +15,6 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NgbOffcanvas, NgbOffcanvasRef } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs';
-import { DocumentRef } from '../../../core/services/browser/document-ref.service';
-import { WindowRef } from '../../../core/services/browser/window-ref.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
@@ -58,11 +56,7 @@ export class HeaderComponent {
   isMobileMenuCollapsed = model<boolean>(true);
   headerOffcanvasRef: NgbOffcanvasRef | null = null;
 
-  constructor(
-    private readonly renderer: Renderer2,
-    private readonly windowRef: WindowRef,
-    private readonly documentRef: DocumentRef
-  ) {
+  constructor(private readonly renderer: Renderer2) {
     this.translateService.setDefaultLang(
       this.languageService.selectedLanguage()
     );
@@ -84,10 +78,6 @@ export class HeaderComponent {
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.headerOffcanvasService.handleResize();
-  }
-
-  onCollapsedMobileMenu() {
-    this.isMobileMenuCollapsed.update(value => !value);
   }
 
   onMenuToggleClick(): void {
