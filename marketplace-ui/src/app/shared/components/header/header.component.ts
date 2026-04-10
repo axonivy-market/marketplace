@@ -69,8 +69,8 @@ export class HeaderComponent {
       });
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
+  @HostListener('window:resize', [])
+  onResize() {
     this.headerOffcanvasService.handleResize();
   }
 
