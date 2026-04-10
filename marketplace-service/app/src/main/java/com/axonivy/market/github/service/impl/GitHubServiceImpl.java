@@ -554,7 +554,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
-   * Inserts the unsupported notice right below the first markdown heading.
+   * Inserts the unsupported notice right below the first Markdown heading.
    * - Keeps original newline style (CRLF/LF).
    * - Returns original content when the notice already exists.
    * - Fails fast when README has no heading line.

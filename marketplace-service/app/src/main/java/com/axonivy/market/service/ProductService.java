@@ -31,7 +31,6 @@ public interface ProductService {
 
   List<String> getProductIds();
 
-
   Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 
   String getBestMatchVersion(String productId, String version, Boolean isShowDevVersion);

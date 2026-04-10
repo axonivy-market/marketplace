@@ -890,35 +890,6 @@ class GitHubServiceImplTest extends BaseSetup {
         "Error message should be meaningful");
   }
 
-  void testGetLatestWorkflowRunReturnsCompletedRun() throws IOException {
-    GHRepository repo = mock(GHRepository.class);
-    GHWorkflow workflow = mock(GHWorkflow.class);
-    PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
-    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
-
-    GHWorkflowRun completedRun = mock(GHWorkflowRun.class);
-
-    when(repo.getWorkflow("build.yml")).thenReturn(workflow);
-    when(workflow.listRuns()).thenReturn(pagedRuns);
-    when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
-
-    when(pagedRuns.iterator()).thenReturn(pagedIterator);
-
-    when(pagedIterator.hasNext()).thenReturn(true, false);
-    when(pagedIterator.next()).thenReturn(completedRun);
-
-    when(completedRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
-
-    GHWorkflowRun result =
-        gitHubService.getLatestWorkflowRun(repo, "build.yml");
-
-    assertNotNull(result,
-        "Expected a completed workflow run to be returned, but result was null.");
-
-    assertEquals(completedRun, result,
-        "Expected the method to return the first COMPLETED workflow run from the iterator.");
-  }
-
   @Test
   void testGetLatestWorkflowRunNoCompletedRunsReturnsNull() throws IOException {
     GHRepository repo = mock(GHRepository.class);

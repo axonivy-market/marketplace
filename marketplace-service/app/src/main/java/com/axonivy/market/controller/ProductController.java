@@ -93,7 +93,6 @@ public class ProductController {
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 
-
   @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)

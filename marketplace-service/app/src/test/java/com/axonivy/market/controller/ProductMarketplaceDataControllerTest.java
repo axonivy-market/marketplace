@@ -78,9 +78,9 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL))
         .thenReturn(ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null));
 
-    assertThrows(NotFoundException.class, () -> {
-      productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
-    }, "Expected NotFoundException to be thrown when artifact resource is not found");
+    assertThrows(NotFoundException.class,
+        () -> productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+            MOCK_DOWNLOAD_URL), "Expected NotFoundException to be thrown when artifact resource is not found");
   }
 
   @Test
