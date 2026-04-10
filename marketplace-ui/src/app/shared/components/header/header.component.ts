@@ -46,15 +46,9 @@ export class HeaderComponent {
   headerOffcanvasService = inject(HeaderOffcanvasService);
   private readonly router = inject(Router);
 
-  @Input() showNavigation = true;
-  @Input() showMenuToggle = false;
-  @Output() menuToggle = new EventEmitter<void>();
-
   selectedNav = '/';
   isAdminRoute = false;
   userInfo = this.adminAuthService.userInfo;
-  isMobileMenuCollapsed = model<boolean>(true);
-  headerOffcanvasRef: NgbOffcanvasRef | null = null;
 
   constructor(private readonly renderer: Renderer2) {
     this.translateService.setDefaultLang(
@@ -78,10 +72,6 @@ export class HeaderComponent {
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.headerOffcanvasService.handleResize();
-  }
-
-  onMenuToggleClick(): void {
-    this.menuToggle.emit();
   }
 
   private updateAdminState(url: string): void {
