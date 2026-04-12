@@ -13,7 +13,7 @@ import lombok.Setter;
 public class DeprecationRequest {
   private String successorUrl;
   private Boolean isDeprecated;
-  private boolean addReadme;
+  private Boolean isAddReadme;
   private PullRequestAction pullRequestAction;
   private String deprecationRequester;
 }

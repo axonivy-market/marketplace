@@ -3,7 +3,7 @@ import { PullRequestAction } from '../enums/pullrequest-action';
 export interface DeprecationRequest {
   successorUrl?: string;
   isDeprecated: Boolean | null;
-  addReadme?: boolean;
+  isAddReadme?: boolean;
   pullRequestAction?: PullRequestAction;
   deprecationRequester?: string;
 }

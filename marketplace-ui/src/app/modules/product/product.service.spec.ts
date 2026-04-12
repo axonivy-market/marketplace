@@ -531,7 +531,7 @@ describe('ProductService', () => {
       const requestBody: DeprecationRequest = {
         successorUrl: 'https://market.axonivy.com/vertexai-google',
         isDeprecated: true,
-        addReadme: true,
+        isAddReadme: true,
         pullRequestAction: PullRequestAction.ADD,
         deprecationRequester: 'moderator'
       };

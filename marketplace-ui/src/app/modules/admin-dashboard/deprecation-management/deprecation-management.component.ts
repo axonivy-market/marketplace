@@ -64,7 +64,7 @@ export class DeprecationManagementComponent implements OnInit {
   dropdownOpen = false;
   deprecationRequest: DeprecationRequest = {
     successorUrl: '',
-    addReadme: false,
+    isAddReadme: false,
     isDeprecated: false,
     pullRequestAction: PullRequestAction.ADD,
     deprecationRequester: ''
@@ -109,7 +109,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.productId = '';
       this.deprecationRequest = {
         successorUrl: '',
-        addReadme: false,
+        isAddReadme: false,
         isDeprecated: false,
         pullRequestAction: PullRequestAction.ADD,
         deprecationRequester: this.moderatorName
@@ -181,7 +181,7 @@ export class DeprecationManagementComponent implements OnInit {
         this.productId = '';
         this.deprecationRequest = {
           successorUrl: '',
-          addReadme: false,
+          isAddReadme: false,
           isDeprecated: false,
           pullRequestAction: PullRequestAction.ADD,
           deprecationRequester: this.moderatorName
@@ -213,7 +213,7 @@ export class DeprecationManagementComponent implements OnInit {
   }
 
   onClickCheckBoxReadme(): void {
-    this.deprecationRequest.addReadme = true;
+    this.deprecationRequest.isAddReadme = true;
   }
 
   validateForm(): boolean {
@@ -275,7 +275,7 @@ export class DeprecationManagementComponent implements OnInit {
     try {
       const request: DeprecationRequest = {
         successorUrl: '',
-        addReadme: true,
+        isAddReadme: true,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
         pullRequestAction: PullRequestAction.REMOVE

@@ -133,7 +133,7 @@ describe('DeprecationManagementComponent', () => {
     component.isCopySuccessVisible = true;
     component.deprecationRequest = {
       successorUrl: 'https://market.axonivy.com/portal',
-      addReadme: true,
+      isAddReadme: true,
       isDeprecated: true,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester: 'alice'

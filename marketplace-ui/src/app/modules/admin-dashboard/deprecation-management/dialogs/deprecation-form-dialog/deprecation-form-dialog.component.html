@@ -59,7 +59,7 @@
           <input
             type="checkbox"
             class="form-check-input"
-            [(ngModel)]="deprecationRequest.addReadme"
+            [(ngModel)]="deprecationRequest.isAddReadme"
             [disabled]="isDeprecating"
             (click)="readmeChecked.emit()"
             id="addReadmeCheckbox"

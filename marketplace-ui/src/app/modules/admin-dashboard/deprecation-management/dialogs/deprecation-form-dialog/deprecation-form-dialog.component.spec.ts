@@ -20,7 +20,7 @@ describe('DeprecateFormDialogComponent', () => {
     component.visible = true;
     component.deprecationRequest = {
       successorUrl: '',
-      addReadme: false,
+      isAddReadme: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester: 'tester'

@@ -231,7 +231,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
-    if (!request.isAddReadme() || request.getPullRequestAction() == null) {
+    if (!request.getIsAddReadme() || request.getPullRequestAction() == null) {
       return null;
     }
     GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
