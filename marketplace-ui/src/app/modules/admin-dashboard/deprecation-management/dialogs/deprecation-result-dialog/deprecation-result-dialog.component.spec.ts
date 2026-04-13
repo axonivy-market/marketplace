@@ -85,7 +85,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   it('should emit close from close button and backdrop click when not closing', () => {
     vi.spyOn(component.closeDialog, 'emit');
 
-    const closeButton = fixture.debugElement.query(By.css('.success-close-btn'));
+    const closeButton = fixture.debugElement.query(By.css('.btn-close'));
     closeButton.triggerEventHandler('click', null);
 
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
@@ -109,7 +109,7 @@ describe('DeprecateSuccessDialogComponent', () => {
     component.isClosing = true;
     fixture.detectChanges();
 
-    const closeButton = fixture.debugElement.query(By.css('.success-close-btn'));
+    const closeButton = fixture.debugElement.query(By.css('.btn-close'));
     expect(closeButton.properties['disabled']).toBe(true);
   });
 });

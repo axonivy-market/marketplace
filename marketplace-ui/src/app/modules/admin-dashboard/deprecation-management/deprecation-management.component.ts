@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecationRequest } from '../../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
-import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
+import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';"required"
 import { AdminAuthService } from '../admin-auth.service';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
@@ -91,7 +91,7 @@ export class DeprecationManagementComponent implements OnInit {
   openDeprecationDialog() {
     this.showDeprecatedProductDialog = true;
     this.isCopySuccessVisible = false;
-    this.successPullRequestUrl = '';
+    this.successPullRequestUrl = null;
   }
 
   closeDialog() {

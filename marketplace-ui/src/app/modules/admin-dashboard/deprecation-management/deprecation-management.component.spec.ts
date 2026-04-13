@@ -11,7 +11,7 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { DeprecationManagementComponent } from './deprecation-management.component';
@@ -67,14 +67,13 @@ describe('DeprecationManagementComponent', () => {
     productServiceSpy.fetchAllProductIdsByDeprecated.mockReturnValue(
       of(mockDeprecatedRows)
     );
-    productServiceSpy.updateDeprecatedProduct.mockReturnValue(
-      of({ productDeprecations: mockDeprecatedRows, pullRequestUrl: null })
-    );
+    productServiceSpy.updateDeprecatedProduct.mockReturnValue(of(''));
     adminAuthServiceSpy.loadFromSessionStorage.mockReturnValue(baseUserInfo as any);
 
     await TestBed.configureTestingModule({
       imports: [DeprecationManagementComponent, TranslateModule.forRoot()],
       providers: [
+        TranslateService,
         { provide: ProductService, useValue: productServiceSpy },
         { provide: LanguageService, useValue: languageServiceSpy },
         { provide: ThemeService, useValue: themeServiceSpy },
@@ -153,10 +152,11 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isCopySuccessVisible).toBe(false);
     expect(component.deprecationRequest).toEqual({
       successorUrl: '',
-      addReadme: false,
+      isAddReadme: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
-      deprecationRequester: 'alice'
+      deprecationRequester: 'alice',
+      deprecationDate: null
     });
     expect(component.validationErrors).toEqual({});
     vi.useRealTimers();
@@ -224,7 +224,7 @@ describe('DeprecationManagementComponent', () => {
     await component.openExtensionDropdown();
 
     expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(
-      null
+      undefined
     );
     expect(component.selectableProductIds).toEqual([
       'cms-live-editor',
@@ -254,18 +254,20 @@ describe('DeprecationManagementComponent', () => {
     expect(component.successPullRequestUrl).toBe('https://github.com/org/repo/pull/123');
   });
 
-  it('should fall back to refresh rows when update response has no productDeprecations', async () => {
+  it('should open success dialog even when pull request url is empty', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
     productService.updateDeprecatedProduct.mockReturnValue(of(''));
 
-    component.productId = 'cms-live-editor';
+    component.productId = 'new-product';
     component.deprecationRequest.isDeprecated = true;
 
     await component.deprecatedProduct();
 
-    expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
+    expect(component.showSuccessDialog).toBe(true);
+    expect(component.successPullRequestUrl).toBe('');
+    expect(component.hasPullRequestUrl()).toBe(false);
   });
 
   it('should execute undeprecate flow with REMOVE action', async () => {
@@ -281,8 +283,7 @@ describe('DeprecationManagementComponent', () => {
       expect.objectContaining({
         pullRequestAction: PullRequestAction.REMOVE,
         isDeprecated: null
-      }),
-      'token-123'
+      })
     );
     expect(component.successMode).toBe('undeprecate');
     expect(component.showSuccessDialog).toBe(true);
