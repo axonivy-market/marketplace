@@ -11,7 +11,7 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { DeprecationManagementComponent } from './deprecation-management.component';
@@ -73,7 +73,6 @@ describe('DeprecationManagementComponent', () => {
     await TestBed.configureTestingModule({
       imports: [DeprecationManagementComponent, TranslateModule.forRoot()],
       providers: [
-        TranslateService,
         { provide: ProductService, useValue: productServiceSpy },
         { provide: LanguageService, useValue: languageServiceSpy },
         { provide: ThemeService, useValue: themeServiceSpy },
@@ -165,12 +164,12 @@ describe('DeprecationManagementComponent', () => {
   it('should validate form fields', () => {
     component.productId = '';
     expect(component.validateForm()).toBe(false);
-    expect(component.validationErrors.productId).toContain('required');
+    expect(component.validationErrors.productId).toContain('extensionIdRequired');
 
     component.productId = 'cms-live-editor';
     component.deprecationRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBe(false);
-    expect(component.validationErrors.successorUrl).toContain('http:// or https://');
+    expect(component.validationErrors.successorUrl).toContain('invalidSuccessorUrl');
 
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
