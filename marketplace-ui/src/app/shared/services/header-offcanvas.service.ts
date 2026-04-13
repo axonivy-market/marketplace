@@ -3,16 +3,17 @@ import { NgbOffcanvas, NgbOffcanvasRef } from '@ng-bootstrap/ng-bootstrap';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from '../utils/google-search-bar.utils';
-import { HEADER_OFFCANVAS, HEADER_OFFCANVAS_BACKDROP, HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID } from '../constants/common.constant';
+import { EXTRA_LARGE_BREAKPOINT, HEADER_OFFCANVAS, HEADER_OFFCANVAS_BACKDROP, HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID } from '../constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class HeaderOffcanvasService {
   private offcanvasRef: NgbOffcanvasRef | null = null;
+  private 
 
   constructor(
-    private offcanvas: NgbOffcanvas,
-    private windowRef: WindowRef,
-    private documentRef: DocumentRef
+    private readonly offcanvas: NgbOffcanvas,
+    private readonly windowRef: WindowRef,
+    private readonly documentRef: DocumentRef
   ) {}
 
   open(content: TemplateRef<any>, renderer: Renderer2) {
@@ -46,7 +47,7 @@ export class HeaderOffcanvasService {
   }
 
   toggle(content: TemplateRef<any>, renderer: Renderer2) {
-    if (window.innerWidth >= 1200) {
+    if (window.innerWidth >= EXTRA_LARGE_BREAKPOINT) {
       return;
     }
 
@@ -67,10 +68,8 @@ export class HeaderOffcanvasService {
   }
 
   handleResize() {
-    if (window.innerWidth >= 1200 && this.offcanvasRef) {
+    if (window.innerWidth >= EXTRA_LARGE_BREAKPOINT && this.offcanvasRef) {
       this.close();
     }
   }
-
-  addCustomClassToOffcanvasSearchBar(renderer: Renderer2, document: Document) {}
 }

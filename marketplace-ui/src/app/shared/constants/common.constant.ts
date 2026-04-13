@@ -369,6 +369,9 @@ export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
 
+// Breakpoint constants
+export const EXTRA_LARGE_BREAKPOINT = 1200;
+
 // Open Graph Meta Tags
 export const OG_TITLE_KEY = 'og:title';
 export const OG_DESCRIPTION_KEY = 'og:description';

@@ -1,18 +1,14 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  EventEmitter,
   HostListener,
-  Input,
-  Output,
   Renderer2,
   TemplateRef,
-  inject,
-  model
+  inject
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
-import { NgbOffcanvas, NgbOffcanvasRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 import { LanguageService } from '../../../core/services/language/language.service';
