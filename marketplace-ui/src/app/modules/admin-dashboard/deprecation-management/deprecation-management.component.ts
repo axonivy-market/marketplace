@@ -65,7 +65,8 @@ export class DeprecationManagementComponent implements OnInit {
     isAddReadme: false,
     isDeprecated: false,
     pullRequestAction: PullRequestAction.ADD,
-    deprecationRequester: ''
+    deprecationRequester: '',
+    deprecationDate: new Date()
   };
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
@@ -105,6 +106,7 @@ export class DeprecationManagementComponent implements OnInit {
         successorUrl: '',
         isAddReadme: false,
         isDeprecated: false,
+        deprecationDate: null,
         pullRequestAction: PullRequestAction.ADD,
         deprecationRequester: this.moderatorName
       };
@@ -131,7 +133,7 @@ export class DeprecationManagementComponent implements OnInit {
     this.isDeprecating = true;
     this.dropdownOpen = false;
     this.deprecationRequest.deprecationRequester = this.moderatorName;
-
+    this.deprecationRequest.deprecationDate = new Date();
     try {
       this.successPullRequestUrl = await firstValueFrom(
         this.productService.updateDeprecatedProduct(this.productId, this.deprecationRequest)
@@ -151,7 +153,7 @@ export class DeprecationManagementComponent implements OnInit {
   private buildDeprecatedItem(): DeprecatedProductInfo {
     return {
       id: this.productId,
-      deprecationDate: new Date().toDateString(),
+      deprecationDate: this.deprecationRequest?.deprecationDate?.toISOString(),
       deprecationRequester: this.moderatorName
     };
   }
@@ -278,6 +280,7 @@ export class DeprecationManagementComponent implements OnInit {
         isAddReadme: true,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
+        deprecationDate: new Date(),
         pullRequestAction: PullRequestAction.REMOVE
       };
       this.successPullRequestUrl = await firstValueFrom(

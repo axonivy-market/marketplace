@@ -5,5 +5,6 @@ export interface DeprecationRequest {
   isDeprecated: Boolean | null;
   isAddReadme?: boolean;
   pullRequestAction?: PullRequestAction;
+  deprecationDate?: Date | null;
   deprecationRequester?: string;
 }

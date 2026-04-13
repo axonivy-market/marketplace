@@ -208,7 +208,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
           productMarketplaceData.setSuccessor(request.getSuccessorUrl());
           productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
-          productMarketplaceData.setDeprecationDate(new Date());
+          productMarketplaceData.setDeprecationDate(
+              Optional.ofNullable(request.getDeprecationDate()).orElse(new Date()));
           productMarketplaceDataRepo.save(productMarketplaceData);
         });
 

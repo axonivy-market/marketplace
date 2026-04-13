@@ -1,6 +1,6 @@
 export interface DeprecatedProductInfo {
   id: string;
-  deprecationDate: string | null;
+  deprecationDate?: string | null;
   deprecationRequester: string | null;
 }
 

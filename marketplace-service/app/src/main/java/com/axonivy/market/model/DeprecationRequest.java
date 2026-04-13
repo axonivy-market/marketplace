@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,4 +18,5 @@ public class DeprecationRequest {
   private Boolean isAddReadme;
   private PullRequestAction pullRequestAction;
   private String deprecationRequester;
+  private Date deprecationDate;
 }
