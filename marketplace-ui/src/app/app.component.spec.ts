@@ -17,10 +17,10 @@ import {
 } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
-import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
 import { WindowRef } from './core/services/browser/window-ref.service';
 import { DocumentRef } from './core/services/browser/document-ref.service';
+import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -28,7 +28,6 @@ describe('AppComponent', () => {
   let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let activatedRoute: ActivatedRoute;
   let navigationStartSubject: Subject<NavigationStart>;
-  let appElement: HTMLElement;
   let router: Router;
   let routerEventsSubject: Subject<Event>;
 
@@ -113,9 +112,10 @@ describe('AppComponent', () => {
     routingQueryParamService.getNavigationStartEvent.mockReturnValue(
       navigationStartSubject.asObservable()
     );
-    appElement = fixture.debugElement.query(
-      By.css('.app-container')
-    ).nativeElement;
+
+    vi.spyOn(GoogleSearchBarUtils, 'renderGoogleSearchBar').mockImplementation(
+      () => {}
+    );
 
     activatedRoute = TestBed.inject(ActivatedRoute);
     router = TestBed.inject(Router);
