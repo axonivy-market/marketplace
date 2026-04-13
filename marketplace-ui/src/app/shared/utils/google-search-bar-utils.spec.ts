@@ -12,11 +12,15 @@ import {
   GOOGLE_SEARCH_BAR_CLASS_NAME
 } from '../constants/common.constant';
 
+type TestDocument = Omit<Document, 'querySelectorAll'> & {
+  querySelectorAll<E extends Element = Element>(selectors: string): NodeListOf<E>;
+};
+
 describe('GoogleSearchBarUtils', () => {
   let mockRenderer: MockedObject<Renderer2>;
   let mockWindowRef: MockedObject<WindowRef>;
   let mockDocumentRef: MockedObject<DocumentRef>;
-  let mockDocument: MockedObject<Document>;
+  let mockDocument: MockedObject<TestDocument>;
   let mockWindow: MockedObject<Window>;
 
   beforeEach(() => {
