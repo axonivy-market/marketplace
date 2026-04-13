@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../product/product.service';
 import { DeprecationRequest } from '../../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
-import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';"required"
+import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
@@ -347,7 +347,7 @@ export class DeprecationManagementComponent implements OnInit {
     if (deprecatedProductInfo) {
       if (action === PullRequestAction.ADD) {
         this.deprecatedItems.push(deprecatedProductInfo);
-      } else if (action === PullRequestAction.REMOVE) {
+      } else {
         this.deprecatedItems = this.deprecatedItems.filter(item => item.id !== deprecatedProductInfo.id);
       }
       this.filterTable(this.tableSearchTerm);

@@ -509,12 +509,12 @@ public class GitHubServiceImpl implements GitHubService {
       PullRequestData pullRequestData, GHContent readme) throws IOException {
     repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME);
     log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
-    List<GHPullRequest> existingPRs = repository.queryPullRequests().base(baseBranch)
-        .state(GHIssueState.OPEN).list().toList();
-    GHPullRequest existingPR = existingPRs.stream()
-        .filter(pr -> pr.getHead().getRef().equals(UNSUPPORTED_BRANCH_NAME)
-            && pr.getBase().getRef().equals(baseBranch))
-        .findFirst().orElse(null);
+
+    GHPullRequest existingPR = repository.queryPullRequests()
+        .base(baseBranch).head(UNSUPPORTED_BRANCH_NAME).state(GHIssueState.OPEN)
+        .list().toList()
+        .stream().findFirst().orElse(null);
+
     if (existingPR != null) {
       log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
       return existingPR;

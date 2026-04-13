@@ -8,7 +8,6 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSIO
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.DeprecationRequest;
-import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;

@@ -8,7 +8,6 @@ import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.DeprecationRequest;
-import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -177,7 +176,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (CollectionUtils.isEmpty(mavenArtifactVersions)) {
       return null;
     }
-    String downloadUrl = mavenArtifactVersions.get(0).getDownloadUrl();
+    String downloadUrl = mavenArtifactVersions.getFirst().getDownloadUrl();
     return fileDownloadService.fetchUrlResource(downloadUrl);
   }
 
@@ -229,7 +228,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
-    if (!request.getIsAddReadme() || request.getPullRequestAction() == null) {
+    if (!request.getIsAddReadme() || request.getPullRequestAction() == null || StringUtils.isBlank(repoPath)) {
       return null;
     }
     GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());

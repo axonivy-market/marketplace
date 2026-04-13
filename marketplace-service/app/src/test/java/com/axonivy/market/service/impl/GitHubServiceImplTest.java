@@ -968,9 +968,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRepository repository = mock(GHRepository.class);
     GHContent readme = mock(GHContent.class);
     GHRef existingBranchRef = mock(GHRef.class);
-    GHPullRequest existingPr = mock(GHPullRequest.class, RETURNS_DEEP_STUBS);
-    when(existingPr.getHead().getRef()).thenReturn(UNSUPPORTED_BRANCH_NAME);
-    when(existingPr.getBase().getRef()).thenReturn(BASE_BRANCH);
+    GHPullRequest existingPr = mock(GHPullRequest.class);
     when(existingPr.getHtmlUrl())
         .thenReturn(URI.create("https://example.com/pr/1").toURL());
 
@@ -1095,7 +1093,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequestQueryBuilder pullRequestQueryBuilder = mock(GHPullRequestQueryBuilder.class);
     PagedIterable<GHPullRequest> pagedPullRequests = mock(PagedIterable.class);
     when(repository.queryPullRequests()).thenReturn(pullRequestQueryBuilder);
-    when(pullRequestQueryBuilder.base(BASE_BRANCH)).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.base(anyString())).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.head(anyString())).thenReturn(pullRequestQueryBuilder);
     when(pullRequestQueryBuilder.state(GHIssueState.OPEN)).thenReturn(pullRequestQueryBuilder);
     when(pullRequestQueryBuilder.list()).thenReturn(pagedPullRequests);
     when(pagedPullRequests.toList()).thenReturn(pullRequests);

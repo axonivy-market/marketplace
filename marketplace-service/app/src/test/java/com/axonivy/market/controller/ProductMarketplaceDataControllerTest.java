@@ -5,7 +5,6 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.model.DeprecationRequest;
-import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -56,7 +55,8 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
     var response = productMarketplaceDataController.getCustomSortProducts();
 
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be 200 when fetching custom sort products");
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Status code should be 200 when fetching custom sort products");
 
     assertEquals(mockProductCustomSortRequest, response.getBody(),
         "Response body should match the custom sort products returned by the service");
@@ -117,10 +117,6 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     request.setIsAddReadme(false);
     request.setPullRequestAction(PullRequestAction.ADD);
 
-    DeprecationResponse expectedResponse = DeprecationResponse.builder()
-        .pullRequestUrl("https://github.com/org/repo/pull/123")
-        .productDeprecations(List.of(createProductDeprecationProjection(productId, new Date())))
-        .build();
     when(productMarketplaceDataService.updateSuccessorForProduct(productId, request))
         .thenReturn("https://github.com/org/repo/pull/123");
 
@@ -129,7 +125,8 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
     assertTrue(response.hasBody(), "Response body should not be null");
-    assertEquals("https://github.com/org/repo/pull/123", response.getBody(), "Response body should match service result");
+    assertEquals("https://github.com/org/repo/pull/123", response.getBody(),
+        "Response body should match service result");
     verify(productMarketplaceDataService).updateSuccessorForProduct(productId, request);
   }
 

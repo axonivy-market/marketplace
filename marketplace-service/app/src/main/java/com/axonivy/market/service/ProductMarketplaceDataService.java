@@ -2,7 +2,6 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.model.DeprecationRequest;
-import com.axonivy.market.model.DeprecationResponse;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
 import org.springframework.core.io.Resource;
