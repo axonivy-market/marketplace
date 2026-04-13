@@ -26,8 +26,8 @@ import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private httpClient = inject(HttpClient);
-  private adminAuthService = inject(AdminAuthService);
+  private readonly httpClient = inject(HttpClient);
+  private readonly adminAuthService = inject(AdminAuthService);
 
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
