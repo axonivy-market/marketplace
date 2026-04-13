@@ -8,7 +8,6 @@ import { EXTRA_LARGE_BREAKPOINT, HEADER_OFFCANVAS, HEADER_OFFCANVAS_BACKDROP, HE
 @Injectable({ providedIn: 'root' })
 export class HeaderOffcanvasService {
   private offcanvasRef: NgbOffcanvasRef | null = null;
-  private 
 
   constructor(
     private readonly offcanvas: NgbOffcanvas,
