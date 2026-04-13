@@ -44,7 +44,7 @@ describe('GoogleSearchBarUtils', () => {
       body: {
         appendChild: vi.fn().mockName('HTMLElement.appendChild')
       }
-    } as unknown as MockedObject<Document>;
+    } as unknown as MockedObject<TestDocument>;
 
     mockWindow = {
       google: {
@@ -69,6 +69,14 @@ describe('GoogleSearchBarUtils', () => {
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => undefined
       });
+      Object.defineProperty(mockWindowRef, 'nativeWindow', {
+        get: () => mockWindow
+      });
+
+      vi.spyOn(
+        GoogleSearchBarUtils,
+        'addCustomClassToSearchBar'
+      ).mockImplementation(() => {});
 
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
@@ -77,6 +85,11 @@ describe('GoogleSearchBarUtils', () => {
       );
 
       expect(mockRenderer.createElement).not.toHaveBeenCalled();
+      expect(mockRenderer.appendChild).not.toHaveBeenCalled();
+      expect(mockWindow.google.search.cse.element.render).not.toHaveBeenCalled();
+      expect(
+        GoogleSearchBarUtils.addCustomClassToSearchBar
+      ).not.toHaveBeenCalled();
     });
 
     it('should create and append script element when googleCSEScript does not exist', () => {
