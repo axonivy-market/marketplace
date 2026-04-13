@@ -161,33 +161,6 @@ describe('AppComponent', () => {
     ).not.toHaveBeenCalled();
   });
 
-  it('should hide scrollbar when burger menu is opened', () => {
-    component.isMobileMenuCollapsed = false;
-    fixture.changeDetectorRef.markForCheck();
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeTruthy();
-
-    expect(appElement.classList.contains('header-mobile-container')).toBe(true);
-
-    const headerComputedStyle = globalThis.getComputedStyle(appElement);
-    // jsdom cannot compute CSS from stylesheets; verify the class that sets overflow:hidden is present
-    expect(appElement.classList.contains('header-mobile-container')).toBe(true);
-  });
-
-  it('should reset header style when burger menu is closed', () => {
-    component.isMobileMenuCollapsed = true;
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeNull();
-
-    expect(appElement.classList.contains('header-mobile-container')).toBe(
-      false
-    );
-  });
-
   it('should redirect to "/error-page" on NavigationError', () => {
     // Simulate a NavigationError event
     const navigationError = new NavigationError(

@@ -26,7 +26,7 @@
         [ngClass]="userInfo() && 'me-4'">
         <i
           class="header__menu-button"
-          [ngClass]="isHeaderOffcanvasOpen() ? 'bi bi-x-lg' : 'bi bi-list'"
+          [ngClass]="isHeaderOffcanvasOpen() ? 'ti ti-x' : 'ti ti-list'"
           (click)="toggleHeaderOffcanvas(content)"></i>
       </button>
       @if (userInfo()) {

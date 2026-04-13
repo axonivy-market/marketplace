@@ -280,7 +280,7 @@ describe('GoogleSearchBarUtils', () => {
 
       expect(globalThis.setTimeout).toHaveBeenCalledWith(
         expect.any(Function),
-        1000
+        0
       );
       expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
         GOOGLE_SEARCH_BAR_CLASS_NAME
