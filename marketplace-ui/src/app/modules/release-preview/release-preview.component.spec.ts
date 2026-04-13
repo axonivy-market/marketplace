@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReleasePreviewComponent } from './release-preview.component';
 import { ReleasePreviewService } from './release-preview.service';
@@ -20,17 +21,19 @@ describe('ReleasePreviewComponent', () => {
   let component: ReleasePreviewComponent;
   let fixture: ComponentFixture<ReleasePreviewComponent>;
   let releasePreviewService: ReleasePreviewService;
-  let languageService: jasmine.SpyObj<LanguageService>;
-  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
-  const spy = jasmine.createSpyObj('DomSanitizer', [
-    'bypassSecurityTrustHtml',
-    'sanitize'
-  ]);
+  let languageService: MockedObject<LanguageService>;
+  let sanitizerSpy: MockedObject<DomSanitizer>;
+  const spy = {
+    bypassSecurityTrustHtml: vi
+      .fn()
+      .mockName('DomSanitizer.bypassSecurityTrustHtml'),
+    sanitize: vi.fn().mockName('DomSanitizer.sanitize')
+  };
 
   beforeEach(async () => {
-    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
-      'selectedLanguage'
-    ]);
+    const languageServiceSpy = {
+      selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')
+    };
 
     await TestBed.configureTestingModule({
       imports: [ReleasePreviewComponent, TranslateModule.forRoot()],
@@ -46,8 +49,8 @@ describe('ReleasePreviewComponent', () => {
     }).compileComponents();
     languageService = TestBed.inject(
       LanguageService
-    ) as jasmine.SpyObj<LanguageService>;
-    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
+    ) as MockedObject<LanguageService>;
+    sanitizerSpy = TestBed.inject(DomSanitizer) as MockedObject<DomSanitizer>;
   });
 
   beforeEach(() => {
@@ -74,7 +77,7 @@ describe('ReleasePreviewComponent', () => {
     component.onFileSelected(event);
 
     expect(component.selectedFile).toEqual(mockFile);
-    expect(component.isZipFile).toBeTrue();
+    expect(component.isZipFile).toBe(true);
   });
 
   it('should check non-zip file', () => {
@@ -88,38 +91,46 @@ describe('ReleasePreviewComponent', () => {
     component.onFileSelected(event);
 
     expect(component.selectedFile).toBeNull();
-    expect(component.isZipFile).toBeFalse();
+    expect(component.isZipFile).toBe(false);
   });
 
   it('should replace existing file and reset uploaded state', () => {
     const first = new File(['one'], 'one.zip', { type: 'application/zip' });
     const second = new File(['two'], 'two.zip', { type: 'application/zip' });
 
-    component.onFileSelected({ target: { files: [first] } } as unknown as Event);
+    component.onFileSelected({
+      target: { files: [first] }
+    } as unknown as Event);
     component.isUploaded = true;
 
-    component.onFileSelected({ target: { files: [second] } } as unknown as Event);
+    component.onFileSelected({
+      target: { files: [second] }
+    } as unknown as Event);
     expect(component.selectedFile).toEqual(second);
-    expect(component.isUploaded).toBeFalse();
+    expect(component.isUploaded).toBe(false);
   });
 
   it('should remove file when removeFile called', () => {
-    const mockFile = new File(['content'], 'test.zip', { type: 'application/zip' });
-    component.onFileSelected({ target: { files: [mockFile] } } as unknown as Event);
+    const mockFile = new File(['content'], 'test.zip', {
+      type: 'application/zip'
+    });
+    component.onFileSelected({
+      target: { files: [mockFile] }
+    } as unknown as Event);
     component.removeFile();
 
     expect(component.selectedFile).toBeNull();
-    expect(component.isZipFile).toBeFalse();
+    expect(component.isZipFile).toBe(false);
   });
 
   it('should handle drag over and leave toggling isDragging', () => {
     const dragEventOver = new DragEvent('dragover');
     component.onDragOver(dragEventOver);
-    expect(component.isDragging).toBeTrue();
+    expect(component.isDragging).toBe(true);
 
     const dragEventLeave = new DragEvent('dragleave');
     component.onDragLeave(dragEventLeave);
-    expect(component.isDragging).toBeFalse();
+    expect(component.isDragging).toBe(false);
   });
 
   it('should accept dropped zip file', () => {
@@ -131,7 +142,7 @@ describe('ReleasePreviewComponent', () => {
     component.onDrop(dropEvent);
 
     expect(component.selectedFile).toEqual(mockFile);
-    expect(component.isZipFile).toBeTrue();
+    expect(component.isZipFile).toBe(true);
   });
 
   it('should reject dropped non-zip file', () => {
@@ -143,11 +154,11 @@ describe('ReleasePreviewComponent', () => {
     component.onDrop(dropEvent);
 
     expect(component.selectedFile).toBeNull();
-    expect(component.isZipFile).toBeFalse();
+    expect(component.isZipFile).toBe(false);
   });
 
   it('should handle file upload and call service', () => {
-    spyOn(releasePreviewService, 'extractZipDetails').and.callThrough();
+    vi.spyOn(releasePreviewService, 'extractZipDetails');
 
     const mockFile = new File(['content'], 'test.zip', {
       type: 'application/zip'
@@ -163,7 +174,9 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should filter tabs based on available content', () => {
-    spyOn(component, 'getContent').and.callFake(tab => tab === 'description');
+    vi.spyOn(component, 'getContent').mockImplementation(
+      tab => tab === 'description'
+    );
 
     const displayedTabs = component.getDisplayedTabsSignal();
 
@@ -180,16 +193,16 @@ describe('ReleasePreviewComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
-    expect(component.getContent('description')).toBeTrue();
-    expect(component.getContent('setup')).toBeFalse();
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('description')).toBe(true);
+    expect(component.getContent('setup')).toBe(false);
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should handle successful file upload', () => {
     const mockResponse = MOCK_RELEASE_PREVIEW_DATA;
-    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+    vi.spyOn(releasePreviewService, 'extractZipDetails').mockReturnValue(
       of(mockResponse)
     );
 
@@ -212,10 +225,10 @@ describe('ReleasePreviewComponent', () => {
 
   it('should render and sanitize readme content', () => {
     const markdownService = TestBed.inject(MarkdownService);
-    spyOn(markdownService, 'parseMarkdown').and.callThrough();
-    sanitizerSpy.sanitize.and.callFake((_ctx, html) => html as string);
-    languageService.selectedLanguage.and.returnValue(Language.EN);
-    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+    vi.spyOn(markdownService, 'parseMarkdown');
+    sanitizerSpy.sanitize.mockImplementation((_ctx, html) => html as string);
+    languageService.selectedLanguage.mockReturnValue(Language.EN);
+    vi.spyOn(releasePreviewService, 'extractZipDetails').mockReturnValue(
       of({
         description: {
           en: '<details><summary>More description</summary><strong>This is a test</strong></details>'
@@ -252,7 +265,7 @@ describe('ReleasePreviewComponent', () => {
 
     expect(component.errorMessage).toBeNull();
     expect(component.selectedFile?.name).toBe('valid.zip');
-    expect(component.isZipFile).toBeTrue();
+    expect(component.isZipFile).toBe(true);
   });
 
   it('should set invalidZip error for non-zip file', () => {
@@ -265,7 +278,7 @@ describe('ReleasePreviewComponent', () => {
 
     expect(component.errorMessage).toBe('common.preview.errors.invalidZip');
     expect(component.selectedFile).toBeNull();
-    expect(component.isZipFile).toBeFalse();
+    expect(component.isZipFile).toBe(false);
   });
 
   it('should set tooLarge error for oversize zip file', () => {
@@ -278,7 +291,7 @@ describe('ReleasePreviewComponent', () => {
 
     expect(component.errorMessage).toBe('common.preview.errors.tooLarge');
     expect(component.selectedFile).toBeNull();
-    expect(component.isZipFile).toBeFalse();
+    expect(component.isZipFile).toBe(false);
   });
 
   it('should clear previous error when a new valid zip is selected', () => {
@@ -300,17 +313,17 @@ describe('ReleasePreviewComponent', () => {
 
     expect(component.errorMessage).toBeNull();
     expect(component.selectedFile?.name).toBe('fixed.zip');
-    expect(component.isZipFile).toBeTrue();
+    expect(component.isZipFile).toBe(true);
   });
 
   it('should toggle shouldShowHint', () => {
-    expect(component.shouldShowHint).toBeFalse();
+    expect(component.shouldShowHint).toBe(false);
 
     component.toggleHint();
-    expect(component.shouldShowHint).toBeTrue();
+    expect(component.shouldShowHint).toBe(true);
 
     component.toggleHint();
-    expect(component.shouldShowHint).toBeFalse();
+    expect(component.shouldShowHint).toBe(false);
   });
 
   it('should convert bytes to MB string with 2 decimals', () => {
@@ -321,7 +334,7 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should not call service if no selectedFile', () => {
-    spyOn(releasePreviewService, 'extractZipDetails');
+    vi.spyOn(releasePreviewService, 'extractZipDetails');
 
     component.selectedFile = null;
     component.isZipFile = false;
@@ -331,7 +344,7 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should not call service if selectedFile is not zip', () => {
-    spyOn(releasePreviewService, 'extractZipDetails');
+    vi.spyOn(releasePreviewService, 'extractZipDetails');
 
     component.selectedFile = {} as File;
     component.isZipFile = false;
@@ -341,7 +354,7 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should handle service error and set errorMessage', () => {
-    spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
+    vi.spyOn(releasePreviewService, 'extractZipDetails').mockReturnValue(
       throwError(() => ({
         error: { message: 'upload.failed' }
       }))
@@ -354,7 +367,7 @@ describe('ReleasePreviewComponent', () => {
 
     component.handlePreviewPage();
 
-    expect(component.isUploaded).toBeTrue();
+    expect(component.isUploaded).toBe(true);
     expect(component.errorMessage).toBe('upload.failed');
   });
 
@@ -367,7 +380,9 @@ describe('ReleasePreviewComponent', () => {
 
   it('should return null when readme content is missing', () => {
     component.readmeContent.set({} as ReleasePreviewData);
-    const result = component.getReadmeContentValue({value: 'description'} as ItemDropdown);
+    const result = component.getReadmeContentValue({
+      value: 'description'
+    } as ItemDropdown);
 
     expect(result).toBeNull();
   });

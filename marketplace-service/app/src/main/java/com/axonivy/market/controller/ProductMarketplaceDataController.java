@@ -2,6 +2,9 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
+
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
+
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.model.Message;

@@ -96,7 +96,7 @@
             </a>
             <div class="py-2">
               <span class="text-muted fs-6">
-                <i class="bi bi-info-circle"></i>
+                <i class="ti ti-info-circle"></i>
                 {{ 'common.product.detail.download.appArtifactHint' | translate }}
               </span>
               <div class="form-check fs-md">
@@ -113,7 +113,7 @@
                       type="button"
                       id="downloadButton" [style.pointer-events]="isDownloading() ? 'none' : ''">
                       @if (isDownloading()) {
-                        <i class="fa fa-spinner fa-spin me-2"></i>
+                        <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
                         {{ 'common.product.detail.download.downloadingButtonLabel' | translate }}
                       }
                       @else {

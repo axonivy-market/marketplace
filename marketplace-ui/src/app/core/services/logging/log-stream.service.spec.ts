@@ -1,30 +1,35 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { LogStreamService } from './log-stream.service';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
-import { API_INTERNAL_URL, API_PUBLIC_URL, API_URI } from '../../../shared/constants/api.constant';
+import {
+  API_INTERNAL_URL,
+  API_PUBLIC_URL
+} from '../../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
-
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { HttpHeaders } from '@angular/common/http';
 
 describe('LogStreamService', () => {
   let service: LogStreamService;
-  let mockRuntimeConfig: jasmine.SpyObj<RuntimeConfigService>;
-  let mockAdminAuthService: jasmine.SpyObj<AdminAuthService>;
+  let mockRuntimeConfig: MockedObject<RuntimeConfigService>;
+  let mockAdminAuthService: MockedObject<AdminAuthService>;
   const mockBaseUrl = 'http://localhost:8080';
-  let fetchSpy: jasmine.Spy;
+  let fetchSpy: Mock;
 
   beforeEach(() => {
-    mockRuntimeConfig = jasmine.createSpyObj('RuntimeConfigService', ['get']);
-    mockRuntimeConfig.get.and.returnValue(mockBaseUrl);
+    mockRuntimeConfig = {
+      get: vi.fn().mockName('RuntimeConfigService.get')
+    } as MockedObject<RuntimeConfigService>;
+    mockRuntimeConfig.get.mockReturnValue(mockBaseUrl);
 
-    mockAdminAuthService = jasmine.createSpyObj('AdminAuthService', [
-      'getAuthHeaders'
-    ]);
-    mockAdminAuthService.getAuthHeaders.and.returnValue(new HttpHeaders());
+    mockAdminAuthService = {
+      getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
+    } as MockedObject<AdminAuthService>;
+    mockAdminAuthService.getAuthHeaders.mockReturnValue(new HttpHeaders());
 
-    fetchSpy = spyOn(window, 'fetch').and.returnValue(new Promise(() => {}));
+    fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => { }));
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,8 +57,9 @@ describe('LogStreamService', () => {
     it('should establish connection with public URL in browser', () => {
       service.connect();
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
-      const url = args[0] as string;
+      const args = vi.mocked(fetchSpy).mock.lastCall;
+      expect(args).toBeDefined();
+      const url = args![0] as string;
       expect(url).toContain('http://public:8080');
       expect(url).toContain('/logs/stream');
       expect(service.isConnected()).toBe(true);
@@ -76,8 +82,9 @@ describe('LogStreamService', () => {
         RUNTIME_CONFIG_KEYS.MARKET_API_URL
       );
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
-      const url = args[0] as string;
+      const args = vi.mocked(fetchSpy).mock.lastCall;
+      expect(args).toBeDefined();
+      const url = args![0] as string;
       expect(url).toContain(mockBaseUrl);
     });
 
@@ -94,7 +101,7 @@ describe('LogStreamService', () => {
       const serverService = TestBed.inject(LogStreamService);
       serverService.connect();
       expect(fetchSpy).not.toHaveBeenCalled();
-      expect(serverService.isConnected()).toBeFalse();
+      expect(serverService.isConnected()).toBe(false);
     });
 
     it('should not connect if already connected', () => {
@@ -108,15 +115,16 @@ describe('LogStreamService', () => {
         'Authorization',
         'Bearer token'
       );
-      mockAdminAuthService.getAuthHeaders.and.returnValue(dummyHeaders);
+      mockAdminAuthService.getAuthHeaders.mockReturnValue(dummyHeaders);
 
       service.connect();
 
       expect(fetchSpy).toHaveBeenCalled();
-      const args = fetchSpy.calls.mostRecent().args;
-      const options = args[1];
+      const args = vi.mocked(fetchSpy).mock.lastCall;
+      expect(args).toBeDefined();
+      const options = args![1];
       expect(options.headers).toEqual(
-        jasmine.objectContaining({ Authorization: 'Bearer token' })
+        expect.objectContaining({ Authorization: 'Bearer token' })
       );
     });
   });
@@ -141,6 +149,318 @@ describe('LogStreamService', () => {
       expect(service.isConnected()).toBe(true);
       service.disconnect();
       expect(service.isConnected()).toBe(false);
+    });
+  });
+
+  describe('task-key stream methods', () => {
+    const TASK_KEY = 'syncProducts';
+
+    beforeEach(() => {
+      Object.defineProperty(mockAdminAuthService, 'token', {
+        get: () => 'mock-token',
+        configurable: true
+      });
+    });
+
+    afterEach(() => {
+      service.disconnectTask(TASK_KEY);
+      service.disconnectTask('syncGithubMonitor');
+    });
+
+    describe('getLogs', () => {
+      it('should return empty array when taskKey is undefined', () => {
+        expect(service.getLogs(undefined)).toEqual([]);
+      });
+
+      it('should return empty array when taskKey is empty string', () => {
+        expect(service.getLogs('')).toEqual([]);
+      });
+
+      it('should return empty array when taskKey has no logs', () => {
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should return logs after added', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1', 'line 2']);
+          return next;
+        });
+
+        expect(service.getLogs(TASK_KEY)).toEqual(['line 1', 'line 2']);
+      });
+
+      it('should return empty for unknown taskKey', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        expect(service.getLogs('unknownKey')).toEqual([]);
+      });
+    });
+
+    describe('getLogsSignal', () => {
+      it('should return empty array when taskKey signal returns undefined', () => {
+        const sig = service.getLogsSignal(() => undefined);
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+
+      it('should return empty array when taskKey signal returns empty string', () => {
+        const sig = service.getLogsSignal(() => '');
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+
+      it('should return logs reactively when taskLogs updates', () => {
+        const sig = service.getLogsSignal(() => TASK_KEY);
+
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+
+          service['taskLogs'].update(map => {
+            const next = new Map(map);
+            next.set(TASK_KEY, ['line 1', 'line 2']);
+            return next;
+          });
+
+          expect(sig()).toEqual(['line 1', 'line 2']);
+        });
+      });
+
+      it('should return empty array for different taskKey than stored', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        const sig = service.getLogsSignal(() => 'syncGithubMonitor');
+        TestBed.runInInjectionContext(() => {
+          expect(sig()).toEqual([]);
+        });
+      });
+    });
+
+    describe('hasLogs', () => {
+      it('should return false when no logs', () => {
+        expect(service.hasLogs(TASK_KEY)).toBe(false);
+      });
+
+      it('should return true when has logs', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        expect(service.hasLogs(TASK_KEY)).toBe(true);
+      });
+
+      it('should return false after resetTask', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.hasLogs(TASK_KEY)).toBe(false);
+      });
+    });
+
+    describe('connectTask', () => {
+      it('should not connect when token is missing', () => {
+        Object.defineProperty(mockAdminAuthService, 'token', {
+          get: () => null,
+          configurable: true
+        });
+
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).not.toHaveBeenCalled();
+      });
+
+      it('should call fetch with correct url containing taskKey', () => {
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).toHaveBeenCalled();
+
+        const url = fetchSpy.mock.lastCall?.[0] as string;
+        expect(url).toContain(`stream/${TASK_KEY}`);
+      });
+
+      it('should use public URL in browser', () => {
+        service.connectTask(TASK_KEY);
+
+        const url = fetchSpy.mock.lastCall?.[0] as string;
+        expect(url).toContain('http://public:8080');
+      });
+
+      it('should set controller for taskKey after connect', () => {
+        service.connectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(true);
+      });
+
+      it('should not reconnect if already connected for same taskKey', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask(TASK_KEY);
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should connect different taskKeys independently', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask('syncGithubMonitor');
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('should include Authorization header', () => {
+        service.connectTask(TASK_KEY);
+
+        const options = fetchSpy.mock.lastCall?.[1];
+
+        expect(options.headers).toEqual(
+          expect.objectContaining({ Authorization: 'Bearer mock-token' })
+        );
+      });
+
+      it('should handle onmessage and update logs', async () => {
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onmessage({ data: 'log line 1' });
+            return Promise.resolve();
+          }
+        );
+
+        service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
+
+        expect(service.getLogs(TASK_KEY)).toEqual(['log line 1']);
+      });
+
+      it('should ignore empty event data', async () => {
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onmessage({ data: null });
+            return Promise.resolve();
+          }
+        );
+
+        service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should handle onerror and disconnect task', async () => {
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onerror(new Error('fail'));
+            return Promise.resolve();
+          }
+        );
+
+        service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+      });
+
+      it('should handle onopen error response', async () => {
+        vi.spyOn(service as any, '_fetchEventSource').mockImplementation(
+          async (...args: any[]) => {
+            const options = args[1];
+            options.onopen({ ok: false, status: 500 });
+            return Promise.resolve();
+          }
+        );
+
+        service.connectTask(TASK_KEY);
+
+        await Promise.resolve();
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+      });
+    });
+
+    describe('disconnectTask', () => {
+      it('should remove controller after disconnect', () => {
+        service.connectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(true);
+
+        service.disconnectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+      });
+
+      it('should not throw when disconnecting non-connected taskKey', () => {
+        expect(() => service.disconnectTask('nonExistent')).not.toThrow();
+      });
+
+      it('should only disconnect specified taskKey', () => {
+        service.connectTask(TASK_KEY);
+        service.connectTask('syncGithubMonitor');
+
+        service.disconnectTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+        expect(service['controllers'].has('syncGithubMonitor')).toBe(true);
+      });
+    });
+
+    describe('resetTask', () => {
+      it('should clear logs for taskKey', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1', 'line 2']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+      });
+
+      it('should disconnect when resetting', () => {
+        service.connectTask(TASK_KEY);
+
+        service.resetTask(TASK_KEY);
+
+        expect(service['controllers'].has(TASK_KEY)).toBe(false);
+      });
+
+      it('should not affect other taskKeys', () => {
+        service['taskLogs'].update(map => {
+          const next = new Map(map);
+          next.set(TASK_KEY, ['line 1']);
+          next.set('syncGithubMonitor', ['line 2']);
+          return next;
+        });
+
+        service.resetTask(TASK_KEY);
+
+        expect(service.getLogs(TASK_KEY)).toEqual([]);
+        expect(service.getLogs('syncGithubMonitor')).toEqual(['line 2']);
+      });
+
+      it('should not throw when resetting non-existent taskKey', () => {
+        expect(() => service.resetTask('nonExistent')).not.toThrow();
+      });
     });
   });
 });

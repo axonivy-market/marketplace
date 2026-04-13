@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminTokenComponent } from './admin-token.component';
 import { Router } from '@angular/router';
@@ -18,17 +19,20 @@ const mockUser: UserInfo = {
 describe('AdminTokenComponent', () => {
   let component: AdminTokenComponent;
   let fixture: ComponentFixture<AdminTokenComponent>;
-  let authService: jasmine.SpyObj<AdminAuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let authService: MockedObject<AdminAuthService>;
+  let router: MockedObject<Router>;
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj('AdminAuthService', [
-      'setUserInfo',
-      'logout',
-      'loadFromSession',
-      'requestAccessToken'
-    ]);
-    router = jasmine.createSpyObj('Router', ['navigate']);
+    authService = {
+      setUserInfo: vi.fn().mockName('AdminAuthService.setUserInfo'),
+      logout: vi.fn().mockName('AdminAuthService.logout'),
+      requestAccessToken: vi
+        .fn()
+        .mockName('AdminAuthService.requestAccessToken')
+    } as MockedObject<AdminAuthService>;
+    router = {
+      navigate: vi.fn().mockName('Router.navigate')
+    } as MockedObject<Router>;
 
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
@@ -67,20 +71,22 @@ describe('AdminTokenComponent', () => {
 
   describe('onSubmit', () => {
     it('should call requestAccessToken and navigate on success', () => {
-      authService.requestAccessToken.and.returnValue(of(mockUser));
+      authService.requestAccessToken.mockReturnValue(of(mockUser));
       component.tokenControl.setValue('valid-github-token');
 
       component.onSubmit();
 
       expect(component.isProcessing).toBe(false);
-      expect(authService.requestAccessToken).toHaveBeenCalledWith('valid-github-token');
+      expect(authService.requestAccessToken).toHaveBeenCalledWith(
+        'valid-github-token'
+      );
       expect(authService.setUserInfo).toHaveBeenCalledWith(mockUser);
       expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
       expect(component.errorMessage).toBe('');
     });
 
     it('should set error message when requestAccessToken fails', () => {
-      authService.requestAccessToken.and.returnValue(
+      authService.requestAccessToken.mockReturnValue(
         throwError(() => new Error('Invalid token'))
       );
       component.tokenControl.setValue('invalid-token');
@@ -95,7 +101,7 @@ describe('AdminTokenComponent', () => {
     });
 
     it('should disable control during processing', () => {
-      authService.requestAccessToken.and.returnValue(of(mockUser));
+      authService.requestAccessToken.mockReturnValue(of(mockUser));
       component.tokenControl.setValue('valid-token');
 
       component.onSubmit();
@@ -104,7 +110,9 @@ describe('AdminTokenComponent', () => {
     });
 
     it('should re-enable control after error', () => {
-      authService.requestAccessToken.and.returnValue(throwError(() => new Error('Error')));
+      authService.requestAccessToken.mockReturnValue(
+        throwError(() => new Error('Error'))
+      );
       component.tokenControl.setValue('invalid-token');
 
       component.onSubmit();

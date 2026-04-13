@@ -65,22 +65,22 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'fa-brands fa-linkedin-in',
+    styleClass: 'ti ti-brand-linkedin-filled',
     title: 'Axon Ivy | LinkedIn',
     url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
   {
-    styleClass: 'fa-brands fa-xing',
+    styleClass: 'ti ti-brand-xing',
     title: 'Axon Ivy | XING',
     url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'fa-brands fa-facebook-f',
+    styleClass: 'ti ti-brand-facebook-filled',
     title: 'Axon Ivy | Facebook',
     url: 'https://www.facebook.com/axonivy'
   },
   {
-    styleClass: 'fa-brands fa-youtube',
+    styleClass: 'ti ti-brand-youtube-filled',
     title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
   }
@@ -394,8 +394,8 @@ export const HEADER_OFFCANVAS = 'header-offcanvas';
 export const HEADER_OFFCANVAS_BACKDROP = 'header-offcanvas-backdrop';
 
 // Theme Icon
-export const LIGHT_ICON_CLASS = 'bi-moon';
-export const DARK_ICON_CLASS = 'bi-sun';
+export const LIGHT_ICON_CLASS = 'ti ti-moon';
+export const DARK_ICON_CLASS = 'ti ti-sun';
 
 // Local Storage Attribute
 export const DATA_THEME = 'data-bs-theme';

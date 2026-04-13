@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FeedbackTableComponent } from './feedback-table.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -11,12 +12,12 @@ import { FeedbackStatus } from '../../../../shared/enums/feedback-status.enum';
 describe('FeedbackTableComponent', () => {
   let component: FeedbackTableComponent;
   let fixture: ComponentFixture<FeedbackTableComponent>;
-  let languageService: jasmine.SpyObj<LanguageService>;
+  let languageService: MockedObject<LanguageService>;
 
   beforeEach(async () => {
-    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
-      'selectedLanguage'
-    ]);
+    const languageServiceSpy = {
+      selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')
+    };
     await TestBed.configureTestingModule({
       imports: [
         CommonModule,
@@ -32,9 +33,6 @@ describe('FeedbackTableComponent', () => {
         TranslateService
       ]
     }).compileComponents();
-    languageService = TestBed.inject(
-      LanguageService
-    ) as jasmine.SpyObj<LanguageService>;
     fixture = TestBed.createComponent(FeedbackTableComponent);
     component = fixture.componentInstance;
     component.feedbacks = MOCK_FEEDBACKS;
@@ -43,7 +41,7 @@ describe('FeedbackTableComponent', () => {
 
   it('should emit reviewAction with correct feedback and approval status when called', () => {
     const feedback = MOCK_FEEDBACKS[0];
-    const approveSpy = spyOn(component.reviewAction, 'emit');
+    const approveSpy = vi.spyOn(component.reviewAction, 'emit');
 
     component.handleReviewAction(feedback, true);
 
@@ -55,7 +53,7 @@ describe('FeedbackTableComponent', () => {
 
   it('should emit reviewAction with false approval status when rejected', () => {
     const feedback = MOCK_FEEDBACKS[0];
-    const rejectSpy = spyOn(component.reviewAction, 'emit');
+    const rejectSpy = vi.spyOn(component.reviewAction, 'emit');
 
     component.handleReviewAction(feedback, false);
 
@@ -77,7 +75,7 @@ describe('FeedbackTableComponent', () => {
   });
 
   it('should display history-specific headers when isHistory is true', () => {
-    component.isHistoryTab = true;
+    fixture.componentRef.setInput('isHistoryTab', true);
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
@@ -119,7 +117,7 @@ describe('FeedbackTableComponent', () => {
     component.isHistoryTab = false;
     fixture.detectChanges();
 
-    spyOn(component, 'handleReviewAction');
+    vi.spyOn(component, 'handleReviewAction');
     const approveButton = fixture.debugElement.query(By.css('#approve-button'));
     approveButton.triggerEventHandler('click', null);
 
@@ -133,7 +131,7 @@ describe('FeedbackTableComponent', () => {
     component.isHistoryTab = false;
     fixture.detectChanges();
 
-    spyOn(component, 'handleReviewAction');
+    vi.spyOn(component, 'handleReviewAction');
     const rejectButton = fixture.debugElement.query(By.css('#reject-button'));
     rejectButton.triggerEventHandler('click', null);
 
@@ -144,11 +142,13 @@ describe('FeedbackTableComponent', () => {
   });
 
   it('should display "No Feedbacks" message when feedbacks are empty and not loading', () => {
-    component.feedbacks = [];
-    component.isLoading = false;
+    fixture.componentRef.setInput('feedbacks', []);
+    fixture.componentRef.setInput('isLoading', false);
     fixture.detectChanges();
 
-    const noFeedbackMessage = fixture.debugElement.query(By.css('.no-feedback'));
+    const noFeedbackMessage = fixture.debugElement.query(
+      By.css('.no-feedback')
+    );
 
     expect(noFeedbackMessage).toBeTruthy();
     expect(noFeedbackMessage.nativeElement.textContent.trim()).toContain(
