@@ -20,7 +20,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
-import { DeprecationResponse } from '../../../shared/models/deprecation-response';
 
 describe('DeprecationManagementComponent', () => {
   let component: DeprecationManagementComponent;
@@ -122,7 +121,7 @@ describe('DeprecationManagementComponent', () => {
     component.openDeprecationDialog();
 
     expect(component.showDeprecatedProductDialog).toBe(true);
-    expect(component.deprecationResponse.pullRequestUrl).toBeNull();
+    expect(component.successPullRequestUrl).toBeNull();
   });
 
   it('should close deprecate dialog and reset fields after animation delay', () => {
@@ -240,11 +239,7 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const response: DeprecationResponse = {
-      productDeprecations: mockDeprecatedRows,
-      pullRequestUrl: 'https://github.com/org/repo/pull/123'
-    };
-    productService.updateDeprecatedProduct.mockReturnValue(of(response));
+    productService.updateDeprecatedProduct.mockReturnValue(of('https://github.com/org/repo/pull/123'));
 
     component.productId = 'cms-live-editor';
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
@@ -263,9 +258,7 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    productService.updateDeprecatedProduct.mockReturnValue(
-      of({ productDeprecations: undefined, pullRequestUrl: null })
-    );
+    productService.updateDeprecatedProduct.mockReturnValue(of(''));
 
     component.productId = 'cms-live-editor';
     component.deprecationRequest.isDeprecated = true;
@@ -279,7 +272,7 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    component.removedProductId = 'cms-live-editor';
+    component.productId = 'cms-live-editor';
 
     await component.executeRemoveDeprecation();
 

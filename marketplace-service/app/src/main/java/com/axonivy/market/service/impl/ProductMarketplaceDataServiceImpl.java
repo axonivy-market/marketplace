@@ -202,7 +202,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Transactional(rollbackOn = IOException.class)
   @Override
-  public DeprecationResponse updateSuccessorForProduct(String productId, DeprecationRequest request)
+  public String updateSuccessorForProduct(String productId, DeprecationRequest request)
       throws IOException {
     Optional.ofNullable(getProductMarketplaceData(productId))
         .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
@@ -219,10 +219,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       pullRequestUrl = handlePullRequest(product.getRepositoryName(), request);
       productRepo.save(product);
     }
-    return DeprecationResponse.builder()
-        .productDeprecations(productMarketplaceDataRepo.findProductIdsByDeprecated(true))
-        .pullRequestUrl(pullRequestUrl)
-        .build();
+    return pullRequestUrl;
   }
 
   @Override

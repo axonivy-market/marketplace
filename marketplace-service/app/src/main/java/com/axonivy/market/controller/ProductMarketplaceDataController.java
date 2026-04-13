@@ -97,10 +97,10 @@ public class ProductMarketplaceDataController {
   @PutMapping(DEPRECATION_BY_ID)
   @Operation(summary = "Update successor and deprecated for product",
       description = "Partially update successor URL and deprecated flag for a product")
-  public ResponseEntity<DeprecationResponse> updateDeprecatedMarketplaceData(
+  public ResponseEntity<String> updateDeprecatedMarketplaceData(
       @RequestBody DeprecationRequest request, @PathVariable String productId) throws IOException {
-    var deprecatedResponse = productMarketplaceDataService.updateSuccessorForProduct(productId, request);
-    return new ResponseEntity<>(deprecatedResponse, HttpStatus.OK);
+    String pullRequestUrl = productMarketplaceDataService.updateSuccessorForProduct(productId, request);
+    return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
   }
 
   @GetMapping(DEPRECATIONS)

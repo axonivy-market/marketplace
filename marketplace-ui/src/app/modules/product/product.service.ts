@@ -215,21 +215,16 @@ export class ProductService {
       .filter(item => !!item.id);
   }
 
-  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecationRequest): Observable<DeprecationResponse> {
-    return this.httpClient
-      .put<DeprecationResponse>(
-        API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
-        deprecatedRequest,
-        { headers: this.adminAuthService.getAuthHeaders() }
-      )
-      .pipe(
-        map(response => ({
-          ...response,
-          productDeprecations: this.normalizeDeprecatedProducts(response?.productDeprecations ?? []),
-          pullRequestUrl: response?.pullRequestUrl ?? null
-        }))
-      );
-  }
+  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecationRequest): Observable<string> {
+    return this.httpClient.put(
+      API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
+      deprecatedRequest,
+      {
+        headers: this.adminAuthService.getAuthHeaders(),
+        responseType: 'text'
+      }
+    );
+  };
 
   fetchAllProductsForSync(
     pageSize = PAGE_SIZE,
