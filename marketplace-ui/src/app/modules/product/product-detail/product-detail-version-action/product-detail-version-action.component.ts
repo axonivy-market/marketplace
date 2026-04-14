@@ -248,7 +248,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return VERSION.displayPrefix.concat(this.route.snapshot.queryParams[ROUTER.VERSION]) || null;
+    const versionFromRoute = this.route.snapshot.queryParamMap.get(ROUTER.VERSION);
+    if (!versionFromRoute) {
+      return null;
+    }
+    return VERSION.displayPrefix.concat(versionFromRoute);
   }
 
   getVersionInDesigner(): void {
@@ -280,6 +284,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.artifacts.set([]);
     this.selectedArtifactId = '';
     this.selectedArtifact = '';
+    this.selectedArtifactName = '';
+    this.versionMap.clear();
   }
 
   downloadArtifact(): void {
