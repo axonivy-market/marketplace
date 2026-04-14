@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DeprecationResultDialogComponent } from './deprecation-result-dialog.component';
+import { DeprecationMode } from '../../../../../shared/enums/deprecation-mode.enum';
 
 describe('DeprecateSuccessDialogComponent', () => {
   let component: DeprecationResultDialogComponent;
@@ -30,7 +31,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should render undeprecate success text when successMode is undeprecate', () => {
-    component.successMode = 'undeprecate';
+    component.successMode = DeprecationMode.UNDEPRECATE;
     fixture.detectChanges();
 
     const title = fixture.debugElement.query(By.css('.success-title'));
@@ -38,7 +39,7 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should render deprecate success text by default', () => {
-    component.successMode = 'deprecate';
+    component.successMode = DeprecationMode.DEPRECATE;
     fixture.detectChanges();
 
     const title = fixture.debugElement.query(By.css('.success-title'));

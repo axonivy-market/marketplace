@@ -12,6 +12,7 @@ import { DeprecationRequest } from '../../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
+import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
 import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
@@ -51,7 +52,7 @@ export class DeprecationManagementComponent implements OnInit {
   isClosingSuccessDialog = false;
   successPullRequestUrl: string | null = null;
   isCopySuccessVisible = false;
-  successMode: 'deprecate' | 'undeprecate' | null = null;
+  successMode: DeprecationMode | null = null;
   private successDialogCloseTimer?: ReturnType<typeof setTimeout>;
 
   showRemoveDeprecationConfirmDialog = false;
@@ -145,7 +146,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.validationErrors = {};
       this.showDeprecatedProductDialog = false;
       this.isClosing = false;
-      this.successMode = 'deprecate';
+      this.successMode = DeprecationMode.DEPRECATE;
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
     } finally {
@@ -166,7 +167,7 @@ export class DeprecationManagementComponent implements OnInit {
       return;
     }
 
-    const shouldResetDeprecateForm = this.successMode === 'deprecate';
+    const shouldResetDeprecateForm = this.successMode === DeprecationMode.DEPRECATE;
 
     this.isClosingSuccessDialog = true;
 
@@ -295,7 +296,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.showRemoveDeprecationConfirmDialog = false;
       this.isClosingRemoveDeprecationDialog = false;
       this.productId = '';
-      this.successMode = 'undeprecate';
+      this.successMode = DeprecationMode.UNDEPRECATE;
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
     } finally {

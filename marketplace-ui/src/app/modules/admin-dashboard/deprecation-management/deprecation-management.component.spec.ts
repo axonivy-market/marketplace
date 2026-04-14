@@ -20,6 +20,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
+import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
 
 describe('DeprecationManagementComponent', () => {
   let component: DeprecationManagementComponent;
@@ -249,7 +250,7 @@ describe('DeprecationManagementComponent', () => {
     expect(productService.updateDeprecatedProduct).toHaveBeenCalled();
     expect(component.showDeprecatedProductDialog).toBe(false);
     expect(component.showSuccessDialog).toBe(true);
-    expect(component.successMode).toBe('deprecate');
+    expect(component.successMode).toBe(DeprecationMode.DEPRECATE);
     expect(component.successPullRequestUrl).toBe('https://github.com/org/repo/pull/123');
   });
 
@@ -284,7 +285,7 @@ describe('DeprecationManagementComponent', () => {
         isDeprecated: null
       })
     );
-    expect(component.successMode).toBe('undeprecate');
+    expect(component.successMode).toBe(DeprecationMode.UNDEPRECATE);
     expect(component.showSuccessDialog).toBe(true);
   });
 
@@ -293,7 +294,7 @@ describe('DeprecationManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    component.successMode = 'deprecate';
+    component.successMode = DeprecationMode.DEPRECATE;
     component.showSuccessDialog = true;
     component.productId = 'cms-live-editor';
 
