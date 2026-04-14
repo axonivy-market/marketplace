@@ -59,7 +59,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     if (results.isEmpty()) {
       return null;
     }
-    return results.get(0);
+    return results.getFirst();
   }
 
   @Override
@@ -190,7 +190,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     List<Order> orders = new ArrayList<>();
     if (pageRequest.getSort().isSorted()) {
-      orders = sortByOrders(criteriaContext, pageRequest, language.getValue(), namesJoin);
+      orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
     }
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
@@ -204,18 +204,17 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return query.getResultList();
   }
 
-  private List<Order> sortByOrders(
-      CriteriaQueryContext<Product> criteriaContext,
-      PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
+  private List<Order> sortByOrders(CriteriaQueryContext<Product> criteriaContext,
+      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
         var sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
           case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
-          default -> orders.addAll(sortByStandard(criteriaContext, language, namesJoin));
+          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin));
         }
       });
     }
@@ -273,7 +272,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   }
 
   private void detachExcludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
-    if (isFieldExcluded(searchCriteria, DocumentField.SHORT_DESCRIPTIONS)) {
+    if (isFieldExcluded(searchCriteria)) {
       resultList.forEach(product -> {
         getEntityManager().detach(product);
         product.setShortDescriptions(null);
@@ -281,8 +280,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     }
   }
 
-  private boolean isFieldExcluded(ProductSearchCriteria criteria, DocumentField field) {
+  private boolean isFieldExcluded(ProductSearchCriteria criteria) {
     return criteria.getExcludeFields() != null
-        && criteria.getExcludeFields().contains(field);
+        && criteria.getExcludeFields().contains(DocumentField.SHORT_DESCRIPTIONS);
   }
 }
