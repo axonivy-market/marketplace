@@ -68,7 +68,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    detachExludedField(searchCriteria, resultList);
+    detachExcludedField(searchCriteria, resultList);
 
     long total = resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
@@ -225,8 +225,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return orders;
   }
   private List<Order> sortByStandard(
-      CriteriaQueryContext<Product> criteriaContext, String language
-      , MapJoin<Product, String, String> namesJoin) {
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = coreProductCustomSortRepository.findAll();
     List<Order> orders = new ArrayList<>();
     var order = criteriaContext.builder().desc(
@@ -234,9 +233,9 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
             Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
-      var sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      var sortOptionExtension = SortOption.of(customSorts.getFirst().getRuleForRemainder());
       switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
         case RECENT -> orders.add(sortByRecent(criteriaContext));
         default -> orders.add(sortByPopularity(criteriaContext));
       }
@@ -250,8 +249,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   }
 
   private static Order sortByAlphabet(
-      CriteriaQueryContext<Product> criteriaContext, String language
-      , MapJoin<Product, String, String> namesJoin) {
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
     Expression<String> nameValue = criteriaContext.builder().coalesce(
         namesJoin.value(), criteriaContext.builder().literal(""));
 
@@ -274,7 +272,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return Product.class;
   }
 
-  private void detachExludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
+  private void detachExcludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
     if (isFieldExcluded(searchCriteria, DocumentField.SHORT_DESCRIPTIONS)) {
       resultList.forEach(product -> {
         getEntityManager().detach(product);
