@@ -182,12 +182,10 @@ export class ProductService {
     return this.httpClient.get<string[]>(`${API_URI.IDS}`);
   }
 
-  fetchAllProductIdsByDeprecated(
-    deprecated?: boolean
-  ): Observable<DeprecatedProductInfo[]> {
+  fetchAllProductIdsByDeprecated(isDeprecated: boolean | undefined = undefined): Observable<DeprecatedProductInfo[]> {
     let requestParams = new HttpParams();
-    if (deprecated !== undefined) {
-      requestParams = requestParams.set('deprecated', deprecated.toString());
+    if (isDeprecated !== undefined) {
+      requestParams = requestParams.set('deprecated', isDeprecated.toString());
     }
     return this.httpClient
       .get<DeprecatedProductInfo[]>(API_URI.PRODUCT_DEPRECATIONS, {

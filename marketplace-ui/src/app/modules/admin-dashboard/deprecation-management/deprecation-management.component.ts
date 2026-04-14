@@ -331,7 +331,7 @@ export class DeprecationManagementComponent implements OnInit {
     this.filteredDeprecatedRows = this.deprecatedItems.filter(row => row.id.toLowerCase().includes(normalized));
   }
 
-  private loadAllProductIds(isDeprecated?: boolean): Promise<DeprecatedProductInfo[]> {
+  private loadAllProductIds(isDeprecated: boolean | undefined = undefined): Promise<DeprecatedProductInfo[]> {
     return firstValueFrom(this.productService.fetchAllProductIdsByDeprecated(isDeprecated));
   }
 
