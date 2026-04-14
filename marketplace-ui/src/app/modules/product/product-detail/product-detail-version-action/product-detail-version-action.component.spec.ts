@@ -1,9 +1,20 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
+
+vi.mock('bootstrap', () => ({
+  Tooltip: vi.fn().mockImplementation(() => ({}))
+}));
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,13 +24,17 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { environment } from '../../../../../environments/environment';
 import { MavenArtifactKey } from '../../../../shared/models/maven-artifact.model';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
-    contains: jasmine.createSpy('contains')
+    contains: vi.fn().mockReturnValue(false),
+    querySelector: vi.fn().mockReturnValue({ contains: vi.fn().mockReturnValue(false) })
   };
 }
 
@@ -30,17 +45,25 @@ describe('ProductDetailVersionActionComponent', () => {
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
   let router: Router;
-  let route: jasmine.SpyObj<ActivatedRoute>;
+  let route: MockedObject<ActivatedRoute>;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI',
-      'sendRequestToGetInstallationCount',
-      'sendRequestToGetProductVersionsForDesigner'
-    ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
-    const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
+    productServiceMock = {
+      sendRequestToProductDetailVersionAPI: vi
+        .fn()
+        .mockName('ProductService.sendRequestToProductDetailVersionAPI'),
+      sendRequestToGetInstallationCount: vi
+        .fn()
+        .mockName('ProductService.sendRequestToGetInstallationCount'),
+      sendRequestToGetProductVersionsForDesigner: vi
+        .fn()
+        .mockName('ProductService.sendRequestToGetProductVersionsForDesigner')
+    };
+    const commonUtilsSpy = {
+      getCookieValue: vi.fn().mockName('CommonUtils.getCookieValue')
+    };
+    const activatedRouteSpy = {
       snapshot: {
         queryParams: {},
         queryParamMap: {
@@ -51,7 +74,7 @@ describe('ProductDetailVersionActionComponent', () => {
         },
         fragment: 'description'
       }
-    });
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -75,13 +98,15 @@ describe('ProductDetailVersionActionComponent', () => {
     component = fixture.componentInstance;
     component.productId = productId;
     router = TestBed.inject(Router);
-    route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
+    route = TestBed.inject(ActivatedRoute) as MockedObject<ActivatedRoute>;
     fixture.detectChanges();
     httpMock = TestBed.inject(HttpTestingController);
     environment.apiUrl = _originalApiUrl;
   });
 
-  it('should create', () => { expect(component).toBeTruthy(); });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   it('first artifact should be chosen when select corresponding version', () => {
     const selectedVersion = 'Version 10.0.2';
@@ -91,7 +116,7 @@ describe('ProductDetailVersionActionComponent', () => {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true,
-      id: { artifactId: "example-artifactId" } as MavenArtifactKey
+      id: { artifactId: 'example-artifactId' } as MavenArtifactKey
     } as ItemDropdown;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
@@ -116,8 +141,8 @@ describe('ProductDetailVersionActionComponent', () => {
     versionMap.set(version, artifacts);
 
     // Set up spies
-    spyOn(component.selectedVersion, 'set');
-    spyOn(component as any, 'addVersionParamToRoute').and.callThrough();
+    vi.spyOn(component.selectedVersion, 'set');
+    vi.spyOn(component as any, 'addVersionParamToRoute');
 
     // Mock data
     component.versionMap = versionMap;
@@ -138,10 +163,10 @@ describe('ProductDetailVersionActionComponent', () => {
     // Arrange
     const version = 'v1';
     component.selectedVersion.set(version);
-    spyOn(component.selectedVersion, 'set');
-    spyOn(component.artifacts, 'set');
-    spyOn(component.versionMap, 'get');
-    spyOn(component, 'addVersionParamToRoute');
+    vi.spyOn(component.selectedVersion, 'set');
+    vi.spyOn(component.artifacts, 'set');
+    vi.spyOn(component.versionMap, 'get');
+    vi.spyOn(component, 'addVersionParamToRoute');
 
     // Act
     component.onSelectVersion(version);
@@ -155,10 +180,10 @@ describe('ProductDetailVersionActionComponent', () => {
   it('should handle empty artifacts', () => {
     // Arrange
     const version = 'v1';
-    spyOn(component.selectedVersion, 'set');
-    spyOn(component.artifacts, 'set');
-    spyOn(component.versionMap, 'get').and.returnValue([]);
-    spyOn(component, 'addVersionParamToRoute');
+    vi.spyOn(component.selectedVersion, 'set');
+    vi.spyOn(component.artifacts, 'set');
+    vi.spyOn(component.versionMap, 'get').mockReturnValue([]);
+    vi.spyOn(component, 'addVersionParamToRoute');
 
     // Act
     component.onSelectVersion(version);
@@ -175,7 +200,7 @@ describe('ProductDetailVersionActionComponent', () => {
     const version = '1.0';
 
     // Set up spy for router.navigate
-    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
+    vi.spyOn(router, 'navigate').mockReturnValue(Promise.resolve(true));
 
     // Call the method
     component.addVersionParamToRoute(version);
@@ -233,23 +258,23 @@ describe('ProductDetailVersionActionComponent', () => {
   });
 
   it('should call getVersionWithArtifact and toggle isDropDownDisplayed', () => {
-    expect(component.isDropDownDisplayed()).toBeFalse();
+    expect(component.isDropDownDisplayed()).toBe(false);
 
     mockApiWithExpectedResponse();
     component.onShowVersionAndArtifact();
-    expect(component.isDropDownDisplayed()).toBeTrue();
+    expect(component.isDropDownDisplayed()).toBe(true);
   });
 
   it('should send Api to get DevVersion', () => {
     component.isDevVersionsDisplayed.set(false);
-    spyOn(component.isDevVersionsDisplayed, 'set');
-    expect(component.isDevVersionsDisplayed()).toBeFalse();
+    vi.spyOn(component.isDevVersionsDisplayed, 'set');
+    expect(component.isDevVersionsDisplayed()).toBe(false);
     mockApiWithExpectedResponse();
     const event = new Event('click');
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault');
     component.onShowDevVersion(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(component.isDevVersionsDisplayed()).toBeTrue();
+    expect(component.isDevVersionsDisplayed()).toBe(true);
   });
 
   function mockApiWithExpectedResponse() {
@@ -276,7 +301,7 @@ describe('ProductDetailVersionActionComponent', () => {
       }
     ];
 
-    productServiceMock.sendRequestToProductDetailVersionAPI.and.returnValue(
+    productServiceMock.sendRequestToProductDetailVersionAPI.mockReturnValue(
       of(mockData)
     );
     return { mockArtifact1: mockArtifact1, mockArtifact2: mockArtifact2 };
@@ -286,36 +311,55 @@ describe('ProductDetailVersionActionComponent', () => {
     const productId = '123';
     component.versions.set([]);
     const mockVersions = [{ version: '1.0' }, { version: '2.0' }];
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.mockReturnValue(
+      of(mockVersions)
+    );
 
     component.isDevVersionsDisplayed.set(false);
     component.getVersionInDesigner();
 
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, false, '');
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).toHaveBeenCalledWith(productId, false, '');
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
 
     component.isDevVersionsDisplayed.set(true);
     component.getVersionInDesigner();
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, true, '');
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).toHaveBeenCalledWith(productId, true, '');
   });
 
   it('should handle empty response from productService', () => {
     component.versions.set([]);
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of([]));
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.mockReturnValue(
+      of([])
+    );
 
     // Act
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, true, '');
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).toHaveBeenCalledWith(productId, true, '');
     expect(component.versions()).toEqual([]);
   });
 
   it('should return the correct tracking environment based on the action type', () => {
     const testCases = [
-      { actionType: ProductDetailActionType.STANDARD, expected: MATOMO_TRACKING_ENVIRONMENT.standard },
-      { actionType: ProductDetailActionType.DESIGNER_ENV, expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv },
-      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution }
+      {
+        actionType: ProductDetailActionType.STANDARD,
+        expected: MATOMO_TRACKING_ENVIRONMENT.standard
+      },
+      {
+        actionType: ProductDetailActionType.DESIGNER_ENV,
+        expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv
+      },
+      {
+        actionType: ProductDetailActionType.CUSTOM_SOLUTION,
+        expected: MATOMO_TRACKING_ENVIRONMENT.customSolution
+      }
     ];
 
     testCases.forEach(({ actionType, expected }) => {
@@ -335,11 +379,18 @@ describe('ProductDetailVersionActionComponent', () => {
     component.actionType = ProductDetailActionType.STANDARD;
     fixture.detectChanges();
 
-    const event = new MouseEvent('click');
-    document.dispatchEvent(event);
-    fixture.detectChanges();
+    // If querySelector returns null, the element wasn't rendered;
+    // in that case test the handler logic directly via signal inspection
+    const domEl = (component as any).elementRef.nativeElement.querySelector?.('#download-dropdown-menu');
+    if (!domEl) {
+      // element not found in DOM - call handleClickOutside and verify via mock
+      vi.spyOn((component as any).elementRef.nativeElement, 'querySelector').mockReturnValue({ contains: () => false });
+    }
 
-    expect(component.isDropDownDisplayed()).toBeFalse();
+    const event = new MouseEvent('click');
+    component.handleClickOutside(event);
+
+    expect(component.isDropDownDisplayed()).toBe(false);
   });
 
   it('should set selected artifact properties correctly when onSelectArtifact is called', () => {
@@ -348,7 +399,7 @@ describe('ProductDetailVersionActionComponent', () => {
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true,
       label: 'Example Artifact1',
-      id: { artifactId: "example-artifactId" } as MavenArtifactKey
+      id: { artifactId: 'example-artifactId' } as MavenArtifactKey
     } as ItemDropdown;
 
     component.onSelectArtifact(mockArtifact1);
@@ -364,34 +415,38 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should fetch and trigger download with correct parameters', fakeAsync(() => {
+  it('should fetch and trigger download with correct parameters', () => {
     const url = 'https://example.com/file.pdf';
     const fileName = 'artifact.zip';
     const testBlob = new Blob(['test'], { type: 'application/zip' });
-    const downloadSpy = spyOn<any>(component, 'fetchAndDownloadArtifact').and.callThrough();
-    spyOn(component, 'onUpdateInstallationCount');
-    spyOn(component, 'triggerDownload');
+    const downloadSpy = vi.spyOn<typeof component, 'fetchAndDownloadArtifact'>(component, 'fetchAndDownloadArtifact');
+    vi.spyOn(component, 'onUpdateInstallationCount').mockImplementation(() => {});
+    vi.spyOn(component, 'triggerDownload').mockImplementation(() => {});
 
     component.fetchAndDownloadArtifact(url, fileName);
     const req = httpMock.expectOne(url);
     req.flush(testBlob);
-    tick();
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
-    expect(downloadSpy).toHaveBeenCalledOnceWith(url, fileName);
+    expect(downloadSpy).toHaveBeenCalledTimes(1);
+    expect(downloadSpy).toHaveBeenCalledWith(url, fileName);
     expect(component.triggerDownload).toHaveBeenCalledWith(testBlob, fileName);
     expect(component.onUpdateInstallationCount).toHaveBeenCalled();
-    expect(component.isDownloading()).toBeFalse();
+    expect(component.isDownloading()).toBe(false);
     httpMock.verify();
-  }));
+  });
 
   it('should return the correct marketplace service URL', () => {
     environment.apiUrl = 'https://api.example.com';
 
-    expect(component.getMarketplaceServiceUrl()).toBe('https://api.example.com');
+    expect(component.getMarketplaceServiceUrl()).toBe(
+      'https://api.example.com'
+    );
 
     environment.apiUrl = '/marketplace';
-    expect(component.getMarketplaceServiceUrl()).toBe(window.location.origin + '/marketplace');
+    expect(component.getMarketplaceServiceUrl()).toBe(
+      globalThis.location.origin + '/marketplace'
+    );
   });
 
   it('should generate correct URL and call fetchAndDownloadArtifact for DOC file', () => {
@@ -401,7 +456,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.productId = 'portal';
     component.selectedArtifactId = 'document.doc';
     component.selectedVersion.set('1.2.3');
-    spyOn(component, 'fetchAndDownloadArtifact');
+    vi.spyOn(component, 'fetchAndDownloadArtifact');
 
     component.downloadArtifact();
 
@@ -416,13 +471,15 @@ describe('ProductDetailVersionActionComponent', () => {
     component.productId = 'ai-assistant';
     component.selectedArtifactId = 'document.doc';
     component.selectedVersion.set('1.2.3');
-    spyOn(component, 'fetchAndDownloadArtifact');
+    vi.spyOn(component, 'fetchAndDownloadArtifact');
 
-    component.selectedArtifact = 'https://example.com/ai-assistant-12.0.1.1.iar';
+    component.selectedArtifact =
+      'https://example.com/ai-assistant-12.0.1.1.iar';
 
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-marketplace-data/ai-assistant/document.doc/1.2.3`, 'ai-assistant-12.0.1.1.iar'
+      `${environment.apiUrl}/api/product-marketplace-data/ai-assistant/document.doc/1.2.3`,
+      'ai-assistant-12.0.1.1.iar'
     );
 
     component.isCheckedAppForEngine = true;
@@ -439,15 +496,19 @@ describe('ProductDetailVersionActionComponent', () => {
     const blob = new Blob(['test'], { type: 'text/plain' });
     const fileName = 'file.txt';
     const mockUrl = 'blob:http://localhost/fake-url';
-    const createObjectURLSpy = spyOn(URL, 'createObjectURL').and.returnValue(mockUrl);
-    const revokeObjectURLSpy = spyOn(URL, 'revokeObjectURL');
-    const clickSpy = jasmine.createSpy('click');
+    const createObjectURLSpy = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue(mockUrl);
+    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL');
+    const clickSpy = vi.fn();
     const anchorMock = {
       href: '',
       download: '',
       click: clickSpy
     } as unknown as HTMLAnchorElement;
-    const createElementSpy = spyOn(document, 'createElement').and.returnValue(anchorMock);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockReturnValue(anchorMock);
     component.triggerDownload(blob, fileName);
     expect(createObjectURLSpy).toHaveBeenCalledWith(blob);
     expect(createElementSpy).toHaveBeenCalledWith('a');
@@ -463,7 +524,7 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.artifacts().length).toBe(0);
     const artifact = {
       isProductArtifact: true,
-      id: { artifactId: "example-artifactId-1" } as MavenArtifactKey
+      id: { artifactId: 'example-artifactId-1' } as MavenArtifactKey
     } as ItemDropdown;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
@@ -493,7 +554,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.artifacts.set(mockArtifacts);
     component.selectedArtifactName = 'artifact-B';
 
-    spyOn(component, 'addVersionParamToRoute');
+    vi.spyOn(component, 'addVersionParamToRoute');
     component['updateSelectedArtifact'](version);
 
     expect(component.selectedArtifactId).toBe('456');

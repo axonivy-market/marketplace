@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { LoadingSpinnerComponent } from './loading-spinner.component';
@@ -23,14 +24,14 @@ describe('LoadingSpinnerComponent', () => {
     component.key = LoadingComponentId.LANDING_PAGE;
     component.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     fixture.detectChanges();
-    expect(component.isLoading()).toBeTrue();
+    expect(component.isLoading()).toBe(true);
   });
 
   it('should display when isLoading state is false', () => {
     component.key = LoadingComponentId.LANDING_PAGE;
     component.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
     fixture.detectChanges();
-    expect(component.isLoading()).toBeFalse();
+    expect(component.isLoading()).toBe(false);
   });
 
   it('container class should come from input', () => {

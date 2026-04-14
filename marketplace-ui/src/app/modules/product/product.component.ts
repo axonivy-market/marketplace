@@ -140,10 +140,14 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           })
       );
 
+      let currentPath = this.router.url.split('?')[0];
       this.router.events?.subscribe(event => {
         if (event instanceof NavigationStart) {
-          const win = this.windowRef.nativeWindow;
-          win?.scrollTo(0, 0);
+          const nextPath = event.url.split('?')[0];
+          if (currentPath !== nextPath) {
+            this.windowRef.nativeWindow?.scrollTo(0, 0);
+          }
+          currentPath = nextPath;
         }
       });
     }

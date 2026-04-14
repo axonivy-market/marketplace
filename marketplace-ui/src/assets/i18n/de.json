@@ -316,7 +316,7 @@
         "status": "Status",
         "lastRun": "Zuletzt ausgeführt am",
         "completed": "Abgeschlossen am",
-        "message": "Nachricht",
+        "message": "Änderungsprotokoll anzeigen",
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",
@@ -333,6 +333,10 @@
           "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
           "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben",
           "validationMessage": "Erweiterungs-ID und marketItemPath sind erforderlich!"
+        },
+        "viewChangelog": {
+          "waitingLogText": "Warte auf Protokolle...",
+          "noLogText": "Keine Protokolle verfügbar."
         }
       },
       "securityMonitor": {

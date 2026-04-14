@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { WindowRef } from './window-ref.service';
@@ -8,10 +9,7 @@ describe('SessionStorageRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          WindowRef,
-          { provide: PLATFORM_ID, useValue: 'browser' }
-        ]
+        providers: [WindowRef, { provide: PLATFORM_ID, useValue: 'browser' }]
       });
       service = TestBed.inject(WindowRef);
     });
@@ -26,10 +24,7 @@ describe('SessionStorageRef', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        providers: [
-          WindowRef,
-          { provide: PLATFORM_ID, useValue: 'server' }
-        ]
+        providers: [WindowRef, { provide: PLATFORM_ID, useValue: 'server' }]
       });
       service = TestBed.inject(WindowRef);
     });

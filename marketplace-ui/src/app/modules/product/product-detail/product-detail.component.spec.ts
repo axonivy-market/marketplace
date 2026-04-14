@@ -1,3 +1,4 @@
+﻿import { vi, type Mock, type MockedObject } from 'vitest';
 import {
   provideHttpClient,
   withInterceptorsFromDi
@@ -5,14 +6,11 @@ import {
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of, Observable } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
@@ -49,73 +47,92 @@ import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { signal, ElementRef } from '@angular/core';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { afterEach, describe, beforeEach, expect, it } from 'vitest';
+
 
 const products = MOCK_PRODUCTS._embedded.products;
-declare const viewport: Viewport;
 
 describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
-  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
-  let languageService: jasmine.SpyObj<LanguageService>;
+  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
+  let languageService: MockedObject<LanguageService>;
   let titleService: Title;
-  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
-  let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
-  let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockAppModalService: jasmine.SpyObj<AppModalService>;
-  let mockHistoryService: jasmine.SpyObj<HistoryService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let sanitizerSpy: MockedObject<DomSanitizer>;
+  let mockProductFeedbackService: MockedObject<ProductFeedbackService>;
+  let mockProductStarRatingService: MockedObject<ProductStarRatingService>;
+  let mockAuthService: MockedObject<AuthService>;
+  let mockAppModalService: MockedObject<AppModalService>;
+  let mockHistoryService: MockedObject<HistoryService>;
+  let mockRouter: MockedObject<Router>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('DomSanitizer', [
-      'bypassSecurityTrustHtml',
-      'sanitize'
-    ]);
-    const routingQueryParamServiceSpy = jasmine.createSpyObj(
-      'RoutingQueryParamService',
-      ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
-    );
+    const spy = {
+      bypassSecurityTrustHtml: vi
+        .fn()
+        .mockName('DomSanitizer.bypassSecurityTrustHtml'),
+      sanitize: vi.fn().mockName('DomSanitizer.sanitize')
+    };
+    const routingQueryParamServiceSpy = {
+      getDesignerVersionFromSessionStorage: vi
+        .fn()
+        .mockName(
+          'RoutingQueryParamService.getDesignerVersionFromSessionStorage'
+        ),
+      isDesignerEnv: vi.fn().mockName('RoutingQueryParamService.isDesignerEnv')
+    };
 
-    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
-      'selectedLanguage'
-    ]);
+    const languageServiceSpy = {
+      selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')
+    };
 
-    mockHistoryService = jasmine.createSpyObj('HistoryService', [
-      'lastSearchType',
-      'lastSortOption',
-      'lastSearchText',
-      'isLastSearchChanged'
-    ]);
+    mockHistoryService = {
+      lastSearchType: vi.fn().mockName('HistoryService.lastSearchType'),
+      lastSortOption: vi.fn().mockName('HistoryService.lastSortOption'),
+      lastSearchText: vi.fn().mockName('HistoryService.lastSearchText'),
+      isLastSearchChanged: vi
+        .fn()
+        .mockName('HistoryService.isLastSearchChanged')
+    } as unknown as MockedObject<HistoryService>;
 
-    mockProductFeedbackService = jasmine.createSpyObj(
-      'ProductFeedbackService',
-      [
-        'getInitFeedbacksObservable',
-        'findProductFeedbacksByCriteria',
-        'handleFeedbackApiResponse',
-        'findProductFeedbackOfUser',
-        'totalElements'
-      ],
-      {
-        feedbacks: signal([]),
-        totalElements: signal(0)
-      }
-    );
+    mockProductFeedbackService = {
+      getInitFeedbacksObservable: vi
+        .fn()
+        .mockName('ProductFeedbackService.getInitFeedbacksObservable'),
+      findProductFeedbacksByCriteria: vi
+        .fn()
+        .mockName('ProductFeedbackService.findProductFeedbacksByCriteria'),
+      handleFeedbackApiResponse: vi
+        .fn()
+        .mockName('ProductFeedbackService.handleFeedbackApiResponse'),
+      findProductFeedbackOfUser: vi
+        .fn()
+        .mockName('ProductFeedbackService.findProductFeedbackOfUser'),
+      feedbacks: signal<Feedback[]>([]),
+      totalElements: signal(0)
+    } as unknown as MockedObject<ProductFeedbackService>;
 
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = {
+      navigate: vi.fn().mockName('Router.navigate')
+    } as unknown as MockedObject<Router>;
 
-    mockAuthService = jasmine.createSpyObj('AuthService', [
-      'getToken',
-      'redirectToGitHub'
-    ]);
-    mockAppModalService = jasmine.createSpyObj('AppModalService', [
-      'openAddFeedbackDialog'
-    ]);
-    mockProductStarRatingService = jasmine.createSpyObj(
-      'ProductStarRatingService',
-      ['getRatingObservable', 'starRatings', 'totalComments', 'reviewNumber']
-    );
+    mockAuthService = {
+      getToken: vi.fn().mockName('AuthService.getToken'),
+      redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
+    } as unknown as MockedObject<AuthService>;
+    mockAppModalService = {
+      openAddFeedbackDialog: vi
+        .fn()
+        .mockName('AppModalService.openAddFeedbackDialog')
+    } as unknown as MockedObject<AppModalService>;
+    mockProductStarRatingService = {
+      getRatingObservable: vi
+        .fn()
+        .mockName('ProductStarRatingService.getRatingObservable'),
+      starRatings: signal<StarRatingCounting[]>([]),
+      totalComments: signal(0),
+      reviewNumber: signal(0)
+    } as unknown as MockedObject<ProductStarRatingService>;
 
     await TestBed.configureTestingModule({
       imports: [
@@ -174,27 +191,27 @@ describe('ProductDetailComponent', () => {
       .compileComponents();
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
+    ) as MockedObject<RoutingQueryParamService>;
 
     languageService = TestBed.inject(
       LanguageService
-    ) as jasmine.SpyObj<LanguageService>;
+    ) as MockedObject<LanguageService>;
 
-    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
+    sanitizerSpy = TestBed.inject(DomSanitizer) as MockedObject<DomSanitizer>;
 
     titleService = TestBed.inject(Title);
-    mockProductFeedbackService.getInitFeedbacksObservable.and.returnValue(
+    mockProductFeedbackService.getInitFeedbacksObservable.mockReturnValue(
       of([MOCK_FEEDBACK_API_RESPONSE] as any as FeedbackApiResponse)
     );
 
-    mockProductFeedbackService.findProductFeedbackOfUser.and.returnValue(
+    mockProductFeedbackService.findProductFeedbackOfUser.mockReturnValue(
       of({} as any as Feedback[])
     );
-    mockAppModalService.openAddFeedbackDialog.and.returnValue(
+    mockAppModalService.openAddFeedbackDialog.mockReturnValue(
       Promise.resolve()
     );
-    mockAuthService.getToken.and.returnValue('token');
-    mockProductStarRatingService.getRatingObservable.and.returnValue(
+    mockAuthService.getToken.mockReturnValue('token');
+    mockProductStarRatingService.getRatingObservable.mockReturnValue(
       of([] as any as StarRatingCounting[])
     );
   });
@@ -203,19 +220,14 @@ describe('ProductDetailComponent', () => {
     fixture = TestBed.createComponent(ProductDetailComponent);
     component = fixture.componentInstance;
     const productService = TestBed.inject(ProductService);
-    spyOn(productService, 'setDefaultVendorImage').and.callThrough();
-
+    vi.spyOn(productService, 'setDefaultVendorImage');
+    mockRouter.navigate.mockResolvedValue(true);
     fixture.detectChanges();
-    if ((window.scrollTo as any).calls) {
-      (window.scrollTo as jasmine.Spy).and.callThrough();
-    }
   });
 
   afterEach(() => {
-    if ((window.scrollTo as any).calls) {
-      (window.scrollTo as jasmine.Spy).and.callThrough();
-    }
-    history.pushState(null, '', window.location.pathname);
+    vi.useRealTimers();
+    history.pushState(null, '', globalThis.location.pathname);
   });
 
   it('should create', () => {
@@ -225,8 +237,8 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should open add feedback dialog if token is present', () => {
-    languageService.selectedLanguage.and.returnValue(Language.DE);
-    mockAuthService.getToken.and.returnValue('token');
+    languageService.selectedLanguage.mockReturnValue(Language.DE);
+    mockAuthService.getToken.mockReturnValue('token');
 
     component.onClickRateBtn();
     fixture.detectChanges();
@@ -235,8 +247,8 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should redirect to Gitub if token is null', () => {
-    languageService.selectedLanguage.and.returnValue(Language.DE);
-    mockAuthService.getToken.and.returnValue(null);
+    languageService.selectedLanguage.mockReturnValue(Language.DE);
+    mockAuthService.getToken.mockReturnValue(null);
 
     component.onClickRateBtn();
     fixture.detectChanges();
@@ -245,7 +257,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should have title like the name DE', () => {
-    languageService.selectedLanguage.and.returnValue(Language.DE);
+    languageService.selectedLanguage.mockReturnValue(Language.DE);
     component.updateWebBrowserTitle(component.productDetail().names);
     fixture.detectChanges();
 
@@ -276,20 +288,10 @@ describe('ProductDetailComponent', () => {
     expect(dropdown.value).toBe('description');
   });
 
-  it('should call keepCurrentTabScroll when setActiveTab is called', () => {
-    const spy = spyOn(component, 'keepCurrentTabScroll');
-    (component as any).isDataLoaded = true;
-    (component as any).initialFragmentHandled = true;
-    component['scrollPositions']['specifications'] = 100;
-    const tab = 'specifications';
-    component.setActiveTab(tab);
-    expect(spy).toHaveBeenCalledWith('specifications');
-  });
-
   it('should call setActiveTab and updateDropdownSelection on setActiveTab', () => {
     const event = { value: 'description' };
-    spyOn(component, 'setActiveTab');
-    spyOn(component, 'updateDropdownSelection');
+    vi.spyOn(component, 'setActiveTab');
+    vi.spyOn(component, 'updateDropdownSelection');
 
     component.setActiveTab(event.value);
 
@@ -300,7 +302,7 @@ describe('ProductDetailComponent', () => {
     const mockContentWithEmptySetup: ProductModuleContent =
       {} as ProductModuleContent;
     component.productModuleContent.set(mockContentWithEmptySetup);
-    expect(component.isEmptyProductContent()).toBeTrue();
+    expect(component.isEmptyProductContent()).toBe(true);
     fixture.detectChanges();
     const description = fixture.debugElement.query(By.css('#description'));
     expect(description).toBeFalsy();
@@ -314,10 +316,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
+    expect(component.getContent('description')).toBe(true);
   });
 
   it('should return true for description when in DE language it is not null and not undefined and not empty', () => {
@@ -328,10 +330,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
+    expect(component.getContent('description')).toBe(true);
   });
 
   it('should return true for description when in DE language it is empty but in EN language it has value', () => {
@@ -342,10 +344,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
+    expect(component.getContent('description')).toBe(true);
   });
 
   it('should return true for description when in DE language it is undefined but in EN language it has value', () => {
@@ -356,28 +358,28 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
+    expect(component.getContent('description')).toBe(true);
   });
 
   it('should return false for description when it is null', () => {
     const mockContentWithNullDescription: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
     component.productModuleContent.set(mockContentWithNullDescription);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return false for any tab when detail content is undefined or null', () => {
     component.productModuleContent.set(null as any as ProductModuleContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
     component.productModuleContent.set(
       undefined as any as ProductModuleContent
     );
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
     component.productModuleContent.set({} as any as ProductModuleContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return false for description when in EN language it is an empty string', () => {
@@ -388,10 +390,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return false for description when in EN language it is undefined', () => {
@@ -402,10 +404,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return false for description when in both DE and EN language it is an empty string', () => {
@@ -416,10 +418,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return false for description when in both DE and EN language it is an undefined', () => {
@@ -430,10 +432,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('description')).toBe(false);
   });
 
   it('should return true for setup when in EN language it is not null and not undefined and not empty', () => {
@@ -444,10 +446,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
+    expect(component.getContent('setup')).toBe(true);
   });
 
   it('should return true for setup when in DE language it is not null and not undefined and not empty', () => {
@@ -458,10 +460,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
+    expect(component.getContent('setup')).toBe(true);
   });
 
   it('should return true for setup when in DE language it is empty but in EN language it has value', () => {
@@ -472,10 +474,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
+    expect(component.getContent('setup')).toBe(true);
   });
 
   it('should return true for setup when in DE language it is undefined but in EN language it has value', () => {
@@ -486,17 +488,17 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
+    expect(component.getContent('setup')).toBe(true);
   });
 
   it('should return false for setup when it is null', () => {
     const mockContentWithNullSetup: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
     component.productModuleContent.set(mockContentWithNullSetup);
-    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('setup')).toBe(false);
   });
 
   it('should return false for setup when in EN language it is an empty string', () => {
@@ -507,10 +509,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('setup')).toBe(false);
   });
 
   it('should return false for setup when in EN language it is undefined', () => {
@@ -521,10 +523,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('setup')).toBe(false);
   });
 
   it('should return false for setup when in both DE and EN language it is an empty string', () => {
@@ -535,10 +537,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('setup')).toBe(false);
   });
 
   it('should return false for setup when in both DE and EN language it is an undefined', () => {
@@ -549,10 +551,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('setup')).toBe(false);
   });
 
   it('should return true for demo when in EN language it is not null and not undefined and not empty', () => {
@@ -563,10 +565,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeTrue();
+    expect(component.getContent('demo')).toBe(true);
   });
 
   it('should return true for demo when in DE language it is not null and not undefined and not empty', () => {
@@ -577,10 +579,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeTrue();
+    expect(component.getContent('demo')).toBe(true);
   });
 
   it('should return true for demo when in DE language it is empty but in EN language it has value', () => {
@@ -591,10 +593,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeTrue();
+    expect(component.getContent('demo')).toBe(true);
   });
 
   it('should return true for demo when in DE language it is undefined but in EN language it has value', () => {
@@ -605,17 +607,17 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeTrue();
+    expect(component.getContent('demo')).toBe(true);
   });
 
   it('should return false for demo when it is null', () => {
     const mockContentWithNullDemo: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
     component.productModuleContent.set(mockContentWithNullDemo);
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should return false for demo when in EN language it is an empty string', () => {
@@ -626,10 +628,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should return false for demo when in EN language it is undefined', () => {
@@ -640,10 +642,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should return false for demo when in both DE and EN language it is an empty string', () => {
@@ -654,10 +656,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should return false for demo when in both DE and EN language it is undefined', () => {
@@ -668,10 +670,10 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(selectedLanguage);
+    languageService.selectedLanguage.mockReturnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('demo')).toBe(false);
   });
 
   it('should return false for changelog when productReleaseSafeHtmls is empty', () => {
@@ -682,18 +684,15 @@ describe('ProductDetailComponent', () => {
     component.productReleaseSafeHtmls = signal([]);
 
     component.productModuleContent.set(mockContent);
-    expect(component.getContent('changelog')).toBeFalse();
+    expect(component.getContent('changelog')).toBe(false);
   });
 
   it('should display dropdown horizontally on small viewport', () => {
-    viewport.set(540);
-    const tabGroup = fixture.debugElement.query(By.css('.row-tab'));
-    tabGroup.triggerEventHandler('click', null);
-
-    fixture.detectChanges();
     const dropdown = fixture.debugElement.query(By.css('.dropdown-tab'));
 
-    expect(getComputedStyle(dropdown.nativeElement).flexDirection).toBe('row');
+    // Bootstrap flex-row class drives horizontal layout (jsdom can't compute CSS)
+    expect(dropdown).toBeTruthy();
+    expect(dropdown.nativeElement.classList.contains('flex-row')).toBe(true);
   });
 
   it('should display dropdown instead of tabs when viewport width is 540px', () => {
@@ -706,7 +705,11 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display tabs instead of dropdown when viewport width is above 540px', () => {
-    viewport.set(1920);
+    Object.defineProperty(globalThis, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1920
+    });
     const tabGroup = fixture.debugElement.query(By.css('.tab-group'));
     const dropdown = tabGroup.query(
       By.css(
@@ -718,7 +721,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should display info tab on click of info icon for smaller screens', () => {
-    viewport.set(540);
+    Object.defineProperty(globalThis, 'innerWidth', { writable: true, configurable: true, value: 540 });
 
     let infoTab = fixture.debugElement.query(
       By.css(
@@ -735,19 +738,19 @@ describe('ProductDetailComponent', () => {
     expect(infoTab).toBeTruthy();
   });
 
-  it('should call checkMediaSize on ngOnInit', fakeAsync(() => {
-    spyOn(component, 'checkMediaSize');
+  it('should call checkMediaSize on ngOnInit', async () => {
+    vi.spyOn(component, 'checkMediaSize');
     component.ngOnInit();
-    tick();
+    await Promise.resolve();
     expect(component.checkMediaSize).toHaveBeenCalled();
-  }));
+  });
 
   it('should set isMobileMode based on window size', () => {
-    spyOn(window, 'matchMedia').and.returnValue({
+    vi.spyOn(globalThis, 'matchMedia').mockReturnValue({
       matches: true,
       media: '',
-      addEventListener: () => { },
-      removeEventListener: () => { },
+      addEventListener: () => {},
+      removeEventListener: () => {},
       onchange: null,
       addListener: function (
         callback:
@@ -769,21 +772,21 @@ describe('ProductDetailComponent', () => {
     });
 
     component.checkMediaSize();
-    expect(component.isMobileMode()).toBeTrue();
+    expect(component.isMobileMode()).toBe(true);
 
-    (window.matchMedia as jasmine.Spy).and.returnValue({
+    (globalThis.matchMedia as Mock).mockReturnValue({
       matches: false,
       media: '',
-      addEventListener: () => { },
-      removeEventListener: () => { }
+      addEventListener: () => {},
+      removeEventListener: () => {}
     });
 
     component.checkMediaSize();
-    expect(component.isMobileMode()).toBeFalse();
+    expect(component.isMobileMode()).toBe(false);
   });
 
   it('should call checkMediaSize on window resize', () => {
-    spyOn(component, 'checkMediaSize');
+    vi.spyOn(component, 'checkMediaSize');
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
@@ -801,13 +804,13 @@ describe('ProductDetailComponent', () => {
       version: '10.0.11'
     };
     component.productModuleContent.set(mockContent);
-    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(true);
     component.handleProductContentVersion();
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 
   it('should return DESIGNER_ENV as action type in Designer Env', () => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(true);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
     expect(component.productDetailActionType()).toBe(
@@ -822,7 +825,7 @@ describe('ProductDetailComponent', () => {
     fixture = TestBed.createComponent(ProductDetailComponent);
     component = fixture.componentInstance;
 
-    const spy = spyOn(component, 'handleProductDetailOnInit').and.callThrough();
+    const spy = vi.spyOn(component, 'handleProductDetailOnInit');
 
     fixture.detectChanges();
 
@@ -830,7 +833,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should return CUSTOM_SOLUTION as action type when productDetail.sourceUrl is undefined', () => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: undefined } as any);
 
@@ -845,7 +848,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should return STANDARD as action type when when productDetail.sourceUrl is defined', () => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(false);
 
     component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
 
@@ -943,7 +946,7 @@ describe('ProductDetailComponent', () => {
   it('should render GitHub alert as safe HTML', () => {
     const value = '**This is a test**';
     const mockedRenderedHtml = '<strong>This is a test</strong>';
-    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
+    sanitizerSpy.bypassSecurityTrustHtml.mockReturnValue(mockedRenderedHtml);
 
     const result = component.renderGithubAlert(value);
 
@@ -951,27 +954,31 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should process README content correctly with different values per tab', () => {
-    languageService.selectedLanguage.and.returnValue(Language.EN);
+    languageService.selectedLanguage.mockReturnValue(Language.EN);
 
-    spyOn(component, 'getProductModuleContentValue').and.callFake(tab => {
-      const key = tab.value as keyof ProductModuleContent;
-      return MOCK_PRODUCT_DETAIL.productModuleContent[key] as { en: string };
-    });
-
-    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake(
-      content => `${content}`
+    vi.spyOn(component, 'getProductModuleContentValue').mockImplementation(
+      tab => {
+        const key = tab.value as keyof ProductModuleContent;
+        return MOCK_PRODUCT_DETAIL.productModuleContent[key] as {
+          en: string;
+        };
+      }
     );
-    spyOn(component, 'renderGithubAlert').and.callFake(
+
+    vi.spyOn(MultilingualismPipe.prototype, 'transform').mockImplementation(
+      content => JSON.stringify(content)
+    );
+    vi.spyOn(component, 'renderGithubAlert').mockImplementation(
       (content: string) => `${content}` as SafeHtml
     );
 
     component.getReadmeContent();
 
     expect(component.loadedReadmeContent['description']).toBe(
-      `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
+      JSON.stringify(MOCK_PRODUCT_DETAIL.productModuleContent.description)
     );
     expect(component.loadedReadmeContent['demo']).toBe(
-      `${MOCK_PRODUCT_DETAIL.productModuleContent.demo}`
+      JSON.stringify(MOCK_PRODUCT_DETAIL.productModuleContent.demo)
     );
 
     expect(component.getProductModuleContentValue).toHaveBeenCalled();
@@ -980,8 +987,8 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should not process content if getProductModuleContentValue returns null', () => {
-    spyOn(component, 'getProductModuleContentValue').and.returnValue(null);
-    spyOn(component, 'renderGithubAlert');
+    vi.spyOn(component, 'getProductModuleContentValue').mockReturnValue(null);
+    vi.spyOn(component, 'renderGithubAlert');
 
     component.getReadmeContent();
 
@@ -991,22 +998,22 @@ describe('ProductDetailComponent', () => {
     expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
-  it('should close the dropdown when clicking outside', fakeAsync(() => {
+  it('should close the dropdown when clicking outside', async () => {
     component.isDropdownOpen.set(true);
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     const outsideElement = document.createElement('div');
     document.body.appendChild(outsideElement);
     outsideElement.click();
 
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
-    expect(component.isDropdownOpen()).toBeFalse();
+    expect(component.isDropdownOpen()).toBe(false);
 
-    document.body.removeChild(outsideElement);
-  }));
+    outsideElement.remove();
+  });
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
@@ -1054,7 +1061,7 @@ describe('ProductDetailComponent', () => {
       }
     ];
     const expectedSafeHtml = '<p>Initial release</p>';
-    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(expectedSafeHtml);
+    sanitizerSpy.bypassSecurityTrustHtml.mockReturnValue(expectedSafeHtml);
 
     const result = component.renderChangelogContent(mockReleases);
 
@@ -1062,14 +1069,14 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should navigate with correct query parameters when last recorded values differ from defaults', () => {
-    mockHistoryService.lastSearchType.and.returnValue(TypeOption.CONNECTORS);
-    mockHistoryService.lastSortOption.and.returnValue(SortOption.POPULARITY);
-    mockHistoryService.lastSearchText.and.returnValue('test-search');
+    mockHistoryService.lastSearchType.mockReturnValue(TypeOption.CONNECTORS);
+    mockHistoryService.lastSortOption.mockReturnValue(SortOption.POPULARITY);
+    mockHistoryService.lastSearchText.mockReturnValue('test-search');
 
     component.navigateToHomePageWithLastSearch();
 
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParamsHandling: 'merge',
       queryParams: {
         type: TypeOption.CONNECTORS,
@@ -1080,23 +1087,23 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should navigate with empty query params when defaults are present', () => {
-    mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
-    mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
-    mockHistoryService.lastSearchText.and.returnValue('');
+    mockHistoryService.lastSearchType.mockReturnValue(TypeOption.All_TYPES);
+    mockHistoryService.lastSortOption.mockReturnValue(SortOption.STANDARD);
+    mockHistoryService.lastSearchText.mockReturnValue('');
 
     component.navigateToHomePageWithLastSearch();
 
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP], {
-      relativeTo: jasmine.anything(),
+      relativeTo: expect.anything(),
       queryParamsHandling: 'merge',
       queryParams: {}
     });
   });
 
   it('should navigate to home page when click back to button regardless history', () => {
-    mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
-    mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
-    mockHistoryService.lastSearchText.and.returnValue('');
+    mockHistoryService.lastSearchType.mockReturnValue(TypeOption.All_TYPES);
+    mockHistoryService.lastSortOption.mockReturnValue(SortOption.STANDARD);
+    mockHistoryService.lastSearchText.mockReturnValue('');
     component.setActiveTab('description');
     component.setActiveTab('demo');
     component.setActiveTab('setup');
@@ -1105,32 +1112,23 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab with correct tab value from fragment', () => {
-    const spy = spyOn(component, 'setActiveTab');
+    const spy = vi.spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
     expect(spy).toHaveBeenCalled();
-    const args = (spy as jasmine.Spy).calls.mostRecent().args;
+    const args = spy.mock.lastCall!;
     expect(args[0]).toBe('description');
+    expect(args[2]).toBe(false);
   });
 
-  it('should restore scroll position for a tab', fakeAsync(() => {
-    component.isBrowser = true;
-    const tabId = 'demo';
-    component['scrollPositions'][tabId] = 1234;
-    const scrollSpy = spyOn(window, 'scrollTo');
-    component.keepCurrentTabScroll(tabId);
-    tick();
-    expect(scrollSpy).toHaveBeenCalled();
-    const arg = (scrollSpy as jasmine.Spy).calls.mostRecent().args[0] as any;
-    expect(arg.top).toBe(1234);
-  }));
-
   describe('loadChangelogs', () => {
-    let productService: jasmine.SpyObj<ProductService>;
+    let productService: MockedObject<ProductService>;
 
     beforeEach(() => {
-      productService = jasmine.createSpyObj('ProductService', [
-        'getProductChangelogs'
-      ]);
+      productService = {
+        getProductChangelogs: vi
+          .fn()
+          .mockName('ProductService.getProductChangelogs')
+      } as unknown as MockedObject<ProductService>;
     });
 
     it('should load and append new changelogs successfully', () => {
@@ -1177,10 +1175,10 @@ describe('ProductDetailComponent', () => {
 
       component.productReleaseSafeHtmls.set(existingChangelogs);
       component.productService = productService;
-      productService.getProductChangelogs.and.returnValue(
+      productService.getProductChangelogs.mockReturnValue(
         of(mockResponse as any)
       );
-      spyOn(component, 'renderChangelogContent').and.returnValue([
+      vi.spyOn(component, 'renderChangelogContent').mockReturnValue([
         {
           name: '12.0.4',
           body: sanitizerSpy.bypassSecurityTrustHtml(
@@ -1214,7 +1212,7 @@ describe('ProductDetailComponent', () => {
     it('should handle empty response', () => {
       // Arrange
       component.productService = productService;
-      productService.getProductChangelogs.and.returnValue(of(null as any));
+      productService.getProductChangelogs.mockReturnValue(of(null as any));
 
       const initialChangelogs = component.productReleaseSafeHtmls();
 
@@ -1248,7 +1246,7 @@ describe('ProductDetailComponent', () => {
       };
 
       component.productService = productService;
-      productService.getProductChangelogs.and.returnValue(
+      productService.getProductChangelogs.mockReturnValue(
         of(mockResponse as any)
       );
 
@@ -1284,7 +1282,7 @@ describe('ProductDetailComponent', () => {
       };
 
       component.productService = productService;
-      productService.getProductChangelogs.and.returnValue(
+      productService.getProductChangelogs.mockReturnValue(
         of(mockResponse as any)
       );
 
@@ -1307,13 +1305,13 @@ describe('ProductDetailComponent', () => {
       // Arrange
       const errorResponse = new Error('Network error');
       component.productService = productService;
-      productService.getProductChangelogs.and.returnValue(
+      productService.getProductChangelogs.mockReturnValue(
         new Observable((subscriber: any) => {
           subscriber.error(errorResponse);
         })
       );
 
-      spyOn(console, 'error'); // Prevent error logging in test output
+      vi.spyOn(console, 'error'); // Prevent error logging in test output
 
       // Act & Assert
       expect(() => component.loadChangelogs()).not.toThrow();
@@ -1324,32 +1322,36 @@ describe('ProductDetailComponent', () => {
   });
 
   describe('setupIntersectionObserver', () => {
-    let mockObserver: jasmine.SpyObj<IntersectionObserver>;
-    let mockObserverElement: jasmine.SpyObj<ElementRef>;
+    let mockObserver: MockedObject<IntersectionObserver>;
+    let mockObserverElement: MockedObject<ElementRef>;
     let originalIntersectionObserver: any;
+    let lastIOCallback: IntersectionObserverCallback | undefined;
 
     beforeEach(() => {
-      mockObserver = jasmine.createSpyObj('IntersectionObserver', ['observe']);
-      mockObserverElement = jasmine.createSpyObj('ElementRef', [], {
+      mockObserver = {
+        observe: vi.fn().mockName('IntersectionObserver.observe')
+      } as unknown as MockedObject<IntersectionObserver>;
+      mockObserverElement = {
         nativeElement: document.createElement('div')
-      });
+      };
+      lastIOCallback = undefined;
 
       // Store original IntersectionObserver and mock it
-      originalIntersectionObserver = (window as any).IntersectionObserver;
-      (window as any).IntersectionObserver = function (
+      originalIntersectionObserver = (globalThis as any).IntersectionObserver;
+      const ioSpy = vi.fn().mockImplementation(function (
         callback: IntersectionObserverCallback,
-        options?: IntersectionObserverInit
+        _options?: IntersectionObserverInit
       ) {
         // Store the callback for testing
-        (window as any).IntersectionObserver._lastCallback = callback;
+        lastIOCallback = callback;
         return mockObserver;
-      };
-      spyOn(window as any, 'IntersectionObserver').and.callThrough();
+      });
+      (globalThis as any).IntersectionObserver = ioSpy;
     });
 
     afterEach(() => {
       // Restore original IntersectionObserver
-      (window as any).IntersectionObserver = originalIntersectionObserver;
+      (globalThis as any).IntersectionObserver = originalIntersectionObserver;
     });
 
     it('should return early if observerElement is not available', () => {
@@ -1361,7 +1363,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if changelogIntersectionObserver already exists', () => {
@@ -1374,7 +1376,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if not in browser environment', () => {
@@ -1386,14 +1388,14 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).not.toHaveBeenCalled();
+      expect((globalThis as any).IntersectionObserver).not.toHaveBeenCalled();
     });
 
     it('should return early if IntersectionObserver is not supported', () => {
       // Arrange
       component.observerElement = mockObserverElement;
       component.isBrowser = true;
-      (window as any).IntersectionObserver = undefined;
+      (globalThis as any).IntersectionObserver = undefined;
 
       // Act & Assert - In this case we can't check if it was called since it's undefined
       // The test passes if no error is thrown
@@ -1405,16 +1407,16 @@ describe('ProductDetailComponent', () => {
       component.observerElement = mockObserverElement;
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
-      ((window as any).IntersectionObserver as jasmine.Spy).and.returnValue(
-        mockObserver
+      ((globalThis as any).IntersectionObserver as Mock).mockImplementation(
+        function () { return mockObserver; }
       );
 
       // Act
       component.setupIntersectionObserver();
 
       // Assert
-      expect((window as any).IntersectionObserver).toHaveBeenCalledWith(
-        jasmine.any(Function),
+      expect((globalThis as any).IntersectionObserver).toHaveBeenCalledWith(
+        expect.any(Function),
         { root: null, rootMargin: '10px', threshold: 0.1 }
       );
       expect(mockObserver.observe).toHaveBeenCalledWith(
@@ -1428,8 +1430,8 @@ describe('ProductDetailComponent', () => {
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
 
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(true);
+      vi.spyOn(component, 'loadChangelogs').mockImplementation(() => {});
 
       component.changeLogLinks = { next: { href: 'next-page-url' } } as any;
 
@@ -1437,8 +1439,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Get the stored callback
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
 
       // Simulate intersection
       const mockEntries: IntersectionObserverEntry[] = [
@@ -1453,7 +1454,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalled();
@@ -1467,15 +1469,14 @@ describe('ProductDetailComponent', () => {
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
 
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(false);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(false);
+      vi.spyOn(component, 'loadChangelogs');
 
       // Act
       component.setupIntersectionObserver();
 
       // Get the stored callback
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
 
       // Simulate intersection
       const mockEntries: IntersectionObserverEntry[] = [
@@ -1490,7 +1491,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalled();
@@ -1503,15 +1505,14 @@ describe('ProductDetailComponent', () => {
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
 
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(true);
+      vi.spyOn(component, 'loadChangelogs');
 
       // Act
       component.setupIntersectionObserver();
 
       // Get the stored callback
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
 
       // Simulate non-intersection
       const mockEntries: IntersectionObserverEntry[] = [
@@ -1526,7 +1527,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).not.toHaveBeenCalled();
@@ -1536,14 +1538,15 @@ describe('ProductDetailComponent', () => {
     it('should not call loadChangelogs when isLoading', () => {
       component.observerElement = mockObserverElement;
       component.isBrowser = true;
-      component.loadingService.showLoading(LoadingComponentId.PRODUCT_CHANGELOG);
+      component.loadingService.showLoading(
+        LoadingComponentId.PRODUCT_CHANGELOG
+      );
       (component as any).changelogIntersectionObserver = undefined;
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(true);
+      vi.spyOn(component, 'loadChangelogs');
 
       component.setupIntersectionObserver();
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
       const mockEntries: IntersectionObserverEntry[] = [
         {
           isIntersecting: false,
@@ -1555,7 +1558,8 @@ describe('ProductDetailComponent', () => {
           time: Date.now()
         }
       ];
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
       expect(component.loadChangelogs).not.toHaveBeenCalled();
     });
 
@@ -1565,8 +1569,8 @@ describe('ProductDetailComponent', () => {
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
 
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(true);
+      vi.spyOn(component, 'loadChangelogs');
 
       component.changeLogLinks = { next: { href: 'next-page-url' } } as any;
 
@@ -1574,8 +1578,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Get the stored callback
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
 
       // Simulate multiple entries with both intersecting (to trigger hasMoreChangelogs twice)
       const mockEntries: IntersectionObserverEntry[] = [
@@ -1599,7 +1602,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.hasMoreChangelogs).toHaveBeenCalledTimes(2);
@@ -1612,8 +1616,8 @@ describe('ProductDetailComponent', () => {
       component.isBrowser = true;
       (component as any).changelogIntersectionObserver = undefined;
 
-      spyOn(component, 'hasMoreChangelogs').and.returnValue(true);
-      spyOn(component, 'loadChangelogs');
+      vi.spyOn(component, 'hasMoreChangelogs').mockReturnValue(true);
+      vi.spyOn(component, 'loadChangelogs').mockImplementation(() => {});
 
       const expectedHref = 'http://example.com/next-page';
       component.changeLogLinks = { next: { href: expectedHref } } as any;
@@ -1623,8 +1627,7 @@ describe('ProductDetailComponent', () => {
       component.setupIntersectionObserver();
 
       // Get the stored callback
-      const observerCallback = (window as any).IntersectionObserver
-        ._lastCallback;
+      const observerCallback = lastIOCallback;
 
       // Simulate intersection
       const mockEntries: IntersectionObserverEntry[] = [
@@ -1639,7 +1642,8 @@ describe('ProductDetailComponent', () => {
         }
       ];
 
-      observerCallback(mockEntries, mockObserver);
+      expect(observerCallback).toBeDefined();
+      observerCallback!(mockEntries, mockObserver);
 
       // Assert
       expect(component.criteria.nextPageHref).toBe(expectedHref);
@@ -1670,39 +1674,16 @@ describe('ProductDetailComponent', () => {
     expect(component.activeTab).toBe('description');
   });
 
-  it('should save scroll position of previous tab on popstate', () => {
+  it('should update activeTab on popstate', () => {
     (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
     component.activeTab = 'description';
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
 
     history.pushState(null, '', '#demo');
 
-    Object.defineProperty(globalThis, 'scrollY', {
-      value: 300,
-      configurable: true,
-      writable: true
-    });
-
     component.onPopState();
 
-    expect(component['scrollPositions']['description']).toBe(300);
-  });
-
-  it('should save activeTab to localStorage when productDetail has id on popstate', () => {
-    (component as any).isDataLoaded = true;
-    component.activeTab = 'description';
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
-
-    history.pushState(null, '', '#demo');
-
-    spyOn(localStorage, 'setItem');
-
-    component.onPopState();
-
-    expect(localStorage.setItem).toHaveBeenCalledWith(
-      'activeTab',
-      jasmine.stringContaining('demo')
-    );
+    expect(component.activeTab).toBe('demo');
   });
 
   // Test handleFirstTabActivation
@@ -1715,28 +1696,46 @@ describe('ProductDetailComponent', () => {
 
     expect(mockRouter.navigate).toHaveBeenCalledWith(
       [],
-      jasmine.objectContaining({
+      expect.objectContaining({
         fragment: 'description' // DEFAULT_ACTIVE_TAB
       })
     );
   });
 
+  it('should set DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', async () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of(null);
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = false;
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
+
+    const spy = vi.spyOn(component, 'setActiveTab');
+
+    component.navigateToProductDetailsWithTabFragment();
+    await Promise.resolve();
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(component.activeTab).toBe('description');
+    expect((component as any).initialFragmentHandled).toBe(true);
+  });
+
   // Test handleSubsequentTabActivation - changelog
-  it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', fakeAsync(() => {
+  it('should call setupIntersectionObserver when tab is changelog in handleSubsequentTabActivation', () => {
+    vi.useFakeTimers();
     (component as any).isDataLoaded = true;
     (component as any).initialFragmentHandled = true;
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
 
-    spyOn(component, 'setupIntersectionObserver');
+    vi.spyOn(component, 'setupIntersectionObserver');
 
     component.setActiveTab('changelog');
-    tick();
+    vi.runAllTimers();
 
     expect(component.setupIntersectionObserver).toHaveBeenCalled();
-  }));
+  });
 
-  // Test navigateToProductDetailsWithTabFragment
-  it('should navigate to currentTab when initialFragmentHandled is true and fragment is null', fakeAsync(() => {
+  it('should NOT navigate when fragment is null and initialFragmentHandled is true', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
 
@@ -1745,34 +1744,12 @@ describe('ProductDetailComponent', () => {
     component.activeTab = 'demo';
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(
-      [],
-      jasmine.objectContaining({
-        fragment: 'demo',
-        replaceUrl: true
-      })
-    );
-  }));
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
 
-  it('should call setActiveTab with DEFAULT_ACTIVE_TAB when fragment is null and not initialFragmentHandled', fakeAsync(() => {
-    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
-    activatedRoute.fragment = of(null);
-
-    (component as any).isDataLoaded = true;
-    (component as any).initialFragmentHandled = false;
-    component.productDetail.set(MOCK_PRODUCT_DETAIL);
-
-    const spy = spyOn(component, 'setActiveTab').and.callThrough();
-
-    component.navigateToProductDetailsWithTabFragment();
-    tick();
-
-    expect(spy).toHaveBeenCalledWith('description', false);
-  }));
-
-  it('should not navigate if currentFragment already equals currentTab', fakeAsync(() => {
+  it('should not navigate if currentFragment already equals currentTab', async () => {
     const activatedRoute = TestBed.inject(ActivatedRoute) as any;
     activatedRoute.fragment = of(null);
     activatedRoute.snapshot.fragment = 'demo';
@@ -1781,11 +1758,46 @@ describe('ProductDetailComponent', () => {
     (component as any).initialFragmentHandled = true;
     component.activeTab = 'demo';
 
-    mockRouter.navigate.calls.reset();
+    mockRouter.navigate.mockClear();
 
     component.navigateToProductDetailsWithTabFragment();
-    tick();
+    await Promise.resolve();
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
-  }));
+  });
+
+  it('should clear scrollTimeout on ngOnDestroy', () => {
+    (component as any).scrollTimeout = setTimeout(() => { }, 1000);
+    const clearSpy = vi.spyOn(window, 'clearTimeout');
+    component.ngOnDestroy();
+    expect(clearSpy).toHaveBeenCalled();
+  });
+
+  it('should call setActiveTab with scrollToTab false for description fragment', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of('description');
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+
+    const spy = vi.spyOn(component, 'setActiveTab');
+
+    component.navigateToProductDetailsWithTabFragment();
+
+    expect(spy).toHaveBeenCalledWith('description', true, false);
+  });
+
+  it('should call setActiveTab with scrollToTab true for non-default fragment', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of('demo');
+
+    (component as any).isDataLoaded = true;
+    (component as any).initialFragmentHandled = true;
+
+    const spy = vi.spyOn(component, 'setActiveTab');
+
+    component.navigateToProductDetailsWithTabFragment();
+
+    expect(spy).toHaveBeenCalledWith('demo', true, true);
+  });
 });

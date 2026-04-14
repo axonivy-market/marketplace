@@ -13,14 +13,11 @@ import jakarta.persistence.criteria.JoinType;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Hibernate;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static com.axonivy.market.constants.PostgresDBConstants.*;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_NAMES;
+import static com.axonivy.market.constants.PostgresDBConstants.DOC;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 
 @Log4j2
 public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl implements CustomProductRepository {
@@ -60,13 +57,6 @@ public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl
       log.error("Cannot find product: ", e);
       return null;
     }
-  }
-
-  @Override
-  public List<String> getReleasedVersionsById(String id) {
-    return Optional.ofNullable(findProductByIdAndRelatedData(id))
-        .map(Product::getReleasedVersions)
-        .orElse(Collections.emptyList());
   }
 
   @Override
