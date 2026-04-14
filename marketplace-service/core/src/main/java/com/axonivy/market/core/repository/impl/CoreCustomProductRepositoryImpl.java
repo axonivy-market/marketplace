@@ -186,6 +186,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
     criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+    namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
     List<Order> orders = new ArrayList<>();
     if (pageRequest.getSort().isSorted()) {
@@ -251,11 +252,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   private static Order sortByAlphabet(
       CriteriaQueryContext<Product> criteriaContext, String language
       , MapJoin<Product, String, String> namesJoin) {
-    Expression<Object> nameValue = criteriaContext.builder().coalesce(
-        criteriaContext.builder().selectCase()
-            .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
-            .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
-    );
+    Expression<String> nameValue = criteriaContext.builder().coalesce(
+        namesJoin.value(), criteriaContext.builder().literal(""));
 
     // Return sorting order (ascending)
     return criteriaContext.builder().asc(nameValue);
