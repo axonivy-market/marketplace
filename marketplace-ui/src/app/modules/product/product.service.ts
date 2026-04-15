@@ -194,9 +194,7 @@ export class ProductService {
       .pipe(map(response => this.normalizeDeprecatedProducts(response)));
   }
 
-  private normalizeDeprecatedProducts(
-    response: DeprecatedProductInfo[]
-  ): DeprecatedProductInfo[] {
+  private normalizeDeprecatedProducts(response: DeprecatedProductInfo[]): DeprecatedProductInfo[] {
     if (!Array.isArray(response)) {
       return [];
     }

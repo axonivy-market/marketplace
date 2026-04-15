@@ -25,7 +25,7 @@ public class GitHubConstants {
   public static final String REMOVE_UNSUPPORTED_NOTICE_PR_BODY = "Remove deprecated notice from README";
   public static final String ADD_UNSUPPORTED_NOTICE_PR_BODY = "Add sentences to notice that product is deprecated";
   public static final String HEADS_PREFIX = "heads/";
-  public static final String REFS_HEADS_PREFIX = "refs/heads/";
+  public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

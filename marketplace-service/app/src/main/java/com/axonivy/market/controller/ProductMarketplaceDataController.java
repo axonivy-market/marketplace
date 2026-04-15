@@ -109,7 +109,7 @@ public class ProductMarketplaceDataController {
       @RequestParam(required = false) Boolean deprecated) {
     List<ProductDeprecationProjection> productDeprecations =
         productMarketplaceDataService.getProductIdsByDeprecated(deprecated);
-    return ResponseEntity.ok(productDeprecations);
+    return new ResponseEntity<>(productDeprecations, HttpStatus.OK);
   }
 
 }

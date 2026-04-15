@@ -1,4 +1,9 @@
 {
+  "deprecatedMessage": "Add unsupported notice to README",
+  "removeUnsupportedNoticeMessage": "Remove unsupported notice from README",
+  "unsupportedBranchName": "feature/update-deprecated-for-readme",
+  "removeUnsupportedNoticePrBody": "Remove deprecated notice from README",
+  "addUnsupportedNoticePrBody": "Add sentences to notice that product is deprecated",
   "unsupportedNotice": "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*"
 }
 
