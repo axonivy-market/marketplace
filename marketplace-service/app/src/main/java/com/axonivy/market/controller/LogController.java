@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,6 +87,15 @@ public class LogController {
           log.error("Error in log stream for IP {}: {}", requesterIp, error.getMessage(), error);
           return Flux.empty();
         });
+  }
+
+  @Authorized
+  @GetMapping(value = LOG_STREAM_BY_TASK_KEY, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public Flux<String> streamLogsByTaskKey(@PathVariable String taskKey) {
+    log.info("SSE request received for taskKey: {}", taskKey);
+    return LogStreamRegistry.asFlux(taskKey)
+        .doOnCancel(() -> log.info("Client disconnected from task log stream: {}", taskKey))
+        .doOnComplete(() -> log.info("Task log stream completed: {}", taskKey));
   }
 
   private String resolveRequesterIp(HttpServletRequest request) {
