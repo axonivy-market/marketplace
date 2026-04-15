@@ -371,7 +371,6 @@ export class DeprecationManagementComponent implements OnInit {
         // Fallback for environments where Clipboard API is blocked (non-HTTPS or policy restrictions).
       }
     }
-
     return this.copyUsingExecCommand(value);
   }
 
@@ -379,7 +378,6 @@ export class DeprecationManagementComponent implements OnInit {
     if (typeof document === 'undefined') {
       return false;
     }
-
     const textArea = document.createElement('textarea');
     textArea.value = value;
     textArea.setAttribute('readonly', 'true');
