@@ -6,4 +6,5 @@ public interface ProductDeprecationProjection {
   String getId();
   Date getDeprecationDate();
   String getDeprecationRequester();
+  Boolean getDeprecated();
 }

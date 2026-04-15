@@ -168,6 +168,12 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
       public String getDeprecationRequester() {
         return "admin";
       }
+
+      @Override
+      public Boolean getDeprecated() {
+        return null;
+      }
+
     };
   }
 }
