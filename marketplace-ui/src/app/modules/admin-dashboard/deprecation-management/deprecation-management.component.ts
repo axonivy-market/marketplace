@@ -195,7 +195,7 @@ export class DeprecationManagementComponent implements OnInit {
   }
 
   async copyPullRequestUrl(): Promise<void> {
-    if (!this.hasPullRequestUrl()) {
+    if (!this.hasPullRequestUrl() || !navigator?.clipboard) {
       return;
     }
 
@@ -204,10 +204,7 @@ export class DeprecationManagementComponent implements OnInit {
       return;
     }
 
-    const copied = await this.copyToClipboard(url);
-    if (!copied) {
-      return;
-    }
+    await navigator.clipboard.writeText(url);
 
     this.isCopySuccessVisible = true;
     setTimeout(() => {
@@ -362,38 +359,4 @@ export class DeprecationManagementComponent implements OnInit {
     await this.refreshDeprecatedRows();
   }
 
-  private async copyToClipboard(value: string): Promise<boolean> {
-    if (navigator?.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(value);
-        return true;
-      } catch {
-        // Fallback for environments where Clipboard API is blocked (non-HTTPS or policy restrictions).
-      }
-    }
-    return this.copyUsingExecCommand(value);
-  }
-
-  private copyUsingExecCommand(value: string): boolean {
-    if (typeof document === 'undefined') {
-      return false;
-    }
-    const textArea = document.createElement('textarea');
-    textArea.value = value;
-    textArea.setAttribute('readonly', 'true');
-    textArea.style.position = 'fixed';
-    textArea.style.top = '-1000px';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.select();
-    textArea.setSelectionRange(0, value.length);
-
-    try {
-      return document.execCommand('copy');
-    } catch {
-      return false;
-    } finally {
-      document.body.removeChild(textArea);
-    }
-  }
 }
