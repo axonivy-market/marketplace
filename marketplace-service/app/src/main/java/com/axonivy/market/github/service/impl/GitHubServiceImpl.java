@@ -491,6 +491,7 @@ public class GitHubServiceImpl implements GitHubService {
     boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (isSameContent) {
       log.error("No Need to update readme content for deprecation because the content is the same");
+      removeBranchIfExistsWhenRemoveDeprecation(repository, HEADS_PREFIX + config.unsupportedBranchName, action);
       return null;
     }
 
@@ -529,6 +530,19 @@ public class GitHubServiceImpl implements GitHubService {
       readme.update(pullRequestData.updatedReadmeContent, pullRequestData.body, unsupportedBranchName);
     }
     return generatePullRequest(repository, baseBranch, pullRequestData);
+  }
+
+  private void removeBranchIfExistsWhenRemoveDeprecation(GHRepository repository, String headBranchName,
+      PullRequestAction action) throws IOException {
+    if (action != REMOVE) {
+      return;
+    }
+
+    try {
+      repository.getRef(headBranchName).delete();
+    } catch (GHFileNotFoundException e) {
+      log.info("Branch '{}' does not exist, skipping deletion", headBranchName);
+    }
   }
 
   private String getReadmeContent(GHContent readme) throws IOException {
@@ -610,19 +624,13 @@ public class GitHubServiceImpl implements GitHubService {
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
       GitHubUnsupportedText config) {
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
     return switch (action) {
-      case ADD -> new PullRequestData(
-          config.addUnsupportedNoticePrBody(),
-          config.deprecatedMessage(),
-          updateUnsupportedNotice(currentReadmeContent, ADD, config.unsupportedNotice()),
-          config.unsupportedBranchName()
-      );
-      case REMOVE -> new PullRequestData(
-          config.removeUnsupportedNoticePrBody(),
-          config.removeUnsupportedNoticeMessage(),
-          updateUnsupportedNotice(currentReadmeContent, REMOVE, config.unsupportedNotice()),
-          config.unsupportedBranchName()
-      );
+      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
+          updatedContent, config.unsupportedBranchName());
+      case REMOVE ->
+          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
+              updatedContent, config.unsupportedBranchName());
     };
   }
 

@@ -956,12 +956,53 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRepository repository = mock(GHRepository.class);
     GHContent readme = mock(GHContent.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
 
     assertNull(result, "Expected null when README has no unsupported notice to remove");
     verify(readme, never()).update(anyString(), anyString(), anyString());
     verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testRemoveBranchWhenActionIsRemoveAndBranchExists() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef branchRef = mock(GHRef.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null when README already has no notice and content is unchanged");
+    verify(branchRef).delete();
+  }
+
+  @Test
+  void testRemoveBranchWhenActionIsRemoveAndBranchDoesNotExist() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null and no exception when branch does not exist");
+    verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
+  }
+
+  @Test
+  void testBranchNotDeletedWhenActionIsAddAndContentIsAlreadyUpToDate() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef branchRef = mock(GHRef.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when README already contains the unsupported notice");
+    verify(branchRef, never()).delete();
   }
 
   @Test
