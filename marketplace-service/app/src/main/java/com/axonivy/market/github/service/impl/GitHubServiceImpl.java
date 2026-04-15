@@ -624,19 +624,13 @@ public class GitHubServiceImpl implements GitHubService {
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
       GitHubUnsupportedText config) {
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
     return switch (action) {
-      case ADD -> new PullRequestData(
-          config.addUnsupportedNoticePrBody(),
-          config.deprecatedMessage(),
-          updateUnsupportedNotice(currentReadmeContent, ADD, config.unsupportedNotice()),
-          config.unsupportedBranchName()
-      );
-      case REMOVE -> new PullRequestData(
-          config.removeUnsupportedNoticePrBody(),
-          config.removeUnsupportedNoticeMessage(),
-          updateUnsupportedNotice(currentReadmeContent, REMOVE, config.unsupportedNotice()),
-          config.unsupportedBranchName()
-      );
+      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
+          updatedContent, config.unsupportedBranchName());
+      case REMOVE ->
+          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
+              updatedContent, config.unsupportedBranchName());
     };
   }
 
