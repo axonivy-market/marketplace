@@ -118,9 +118,7 @@ export class DeprecationManagementComponent implements OnInit {
   async openExtensionDropdown() {
     const allProducts = await this.loadAllProductIds();
     const alreadyDeprecatedIds = new Set(this.deprecatedItems.map(item => item.id));
-    this.selectableProductIds = allProducts
-      .map(product => product.id)
-      .filter(id => !alreadyDeprecatedIds.has(id));
+    this.selectableProductIds = allProducts.map(product => product.id).filter(id => !alreadyDeprecatedIds.has(id));
     this.filterProducts(this.productId);
     this.dropdownOpen = true;
   }

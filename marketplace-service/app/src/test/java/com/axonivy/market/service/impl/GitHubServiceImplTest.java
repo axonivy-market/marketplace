@@ -60,6 +60,7 @@ import static org.mockito.Mockito.*;
 class GitHubServiceImplTest extends BaseSetup {
 
   private static final String BASE_BRANCH = "master";
+  private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
   private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
 
   @Mock
@@ -973,7 +974,7 @@ class GitHubServiceImplTest extends BaseSetup {
         .thenReturn(URI.create("https://example.com/pr/1").toURL());
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
-    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, List.of(existingPr));
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
@@ -992,18 +993,18 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequest createdPr = mock(GHPullRequest.class);
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
-    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, Collections.emptyList());
-    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME)).thenReturn(compare);
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(compare);
     when(compare.getStatus()).thenReturn(GHCompare.Status.ahead);
-    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME), eq(BASE_BRANCH), anyString()))
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
 
     assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
     verify(readme, never()).update(anyString(), anyString(), anyString());
-    verify(repository, never()).createRef(eq(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME), anyString());
+    verify(repository, never()).createRef(eq(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE), anyString());
   }
 
   @Test
@@ -1016,21 +1017,21 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequest createdPr = mock(GHPullRequest.class);
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
-    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenReturn(existingBranchRef);
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, Collections.emptyList());
-    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME)).thenReturn(compare);
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(compare);
     when(compare.getStatus()).thenReturn(GHCompare.Status.behind);
     when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
     when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
-    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME), eq(BASE_BRANCH), anyString()))
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
 
     assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
     verify(existingBranchRef).delete();
-    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, "base-sha");
-    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME));
+    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE));
   }
 
   @Test
@@ -1040,17 +1041,17 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
     GHPullRequest createdPr = mock(GHPullRequest.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
-    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME)).thenThrow(new GHFileNotFoundException());
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
     when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
     when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
-    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME), eq(BASE_BRANCH), anyString()))
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
     GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
 
     assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
-    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, "base-sha");
-    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME));
+    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE));
   }
 
   @Test
