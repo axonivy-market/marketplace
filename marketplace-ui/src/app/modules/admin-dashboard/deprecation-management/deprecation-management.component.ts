@@ -205,7 +205,6 @@ export class DeprecationManagementComponent implements OnInit {
     }
 
     await navigator.clipboard.writeText(url);
-
     this.isCopySuccessVisible = true;
     setTimeout(() => {
       this.isCopySuccessVisible = false;
@@ -358,5 +357,4 @@ export class DeprecationManagementComponent implements OnInit {
     }
     await this.refreshDeprecatedRows();
   }
-
 }
