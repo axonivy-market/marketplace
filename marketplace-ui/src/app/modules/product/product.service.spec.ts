@@ -15,9 +15,18 @@ import {
 import { ChangeLogCriteria, Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
-import { DEFAULT_CHANGELOG_PAGEABLE, DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT, DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
+import {
+  AUTHORIZATION_HEADER,
+  DEFAULT_CHANGELOG_PAGEABLE,
+  DEFAULT_PAGEABLE,
+  DEFAULT_PAGEABLE_IN_REST_CLIENT,
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK
+} from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
+import { DeprecationRequest } from '../../shared/models/deprecation-request';
+import { PullRequestAction } from '../../shared/enums/pullrequest-action';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -478,6 +487,71 @@ describe('ProductService', () => {
       expect(result).toEqual([
         { id: 'product-1', marketDirectory: 'dir1' }
       ]);
+    });
+  });
+
+  describe('fetchAllProductIdsByDeprecated', () => {
+    it('should send deprecated=true query param and normalize object payload', async () => {
+      const resultPromise = firstValueFrom(
+        service.fetchAllProductIdsByDeprecated(true)
+      );
+
+      const req = httpMock.expectOne(
+        request => request.url === API_URI.PRODUCT_DEPRECATIONS
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('deprecated')).toBe('true');
+
+      req.flush([
+        {
+          id: 'cms-live-editor',
+          deprecationDate: '2026-04-01T10:00:00Z',
+          deprecationRequester: 'john'
+        },
+        {
+          id: '',
+          deprecationDate: null,
+          deprecationRequester: null
+        }
+      ]);
+
+      const result = await resultPromise;
+      expect(result).toEqual([
+        {
+          id: 'cms-live-editor',
+          deprecationDate: '2026-04-01T10:00:00Z',
+          deprecationRequester: 'john'
+        }
+      ]);
+    });
+  });
+
+  describe('updateDeprecatedProduct', () => {
+    it('should send PUT with bearer header and normalize productDeprecations response', async () => {
+      const requestBody: DeprecationRequest = {
+        successorUrl: 'https://market.axonivy.com/vertexai-google',
+        isDeprecated: true,
+        isAddReadme: true,
+        pullRequestAction: PullRequestAction.ADD,
+        deprecationRequester: 'moderator'
+      };
+
+      const resultPromise = firstValueFrom(
+        service.updateDeprecatedProduct('cms-live-editor', requestBody)
+      );
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url ===
+          API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID('cms-live-editor')
+      );
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(requestBody);
+
+      req.flush('https://github.com/org/repo/pull/10');
+
+      const result = await resultPromise;
+      expect(result).toBe('https://github.com/org/repo/pull/10');
     });
   });
 });

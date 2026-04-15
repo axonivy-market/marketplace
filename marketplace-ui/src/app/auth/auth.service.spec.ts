@@ -11,7 +11,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi
 } from '@angular/common/http';
-import { BEARER, TOKEN_KEY } from '../shared/constants/common.constant';
+import { AUTHORIZATION_HEADER, BEARER, TOKEN_KEY } from '../shared/constants/common.constant';
 import { environment } from '../../environments/environment';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -163,7 +163,7 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`${BEARER} ${token}`);
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
     expect(req.request.headers.get('Accept')).toBe(
       'application/vnd.github+json'
     );

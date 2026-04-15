@@ -424,7 +424,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
     when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
-
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0+", result.getCompatibilityRange(),
         "Product compatibility range should match 10.0+");
@@ -500,7 +502,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testFetchProductDetailByIdAndVersion() {
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-      mockProductMarketplaceData.getInstallationCount());
+      mockProductMarketplaceData);
     when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
       .thenReturn(mockVersionAndUrlModels());
     GithubRepo mockGithubRepo = new GithubRepo();
@@ -529,7 +531,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
     when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-        mockProductMarketplaceData.getInstallationCount());
+        mockProductMarketplaceData);
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result,
         "Found best match product version should match mock product");

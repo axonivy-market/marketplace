@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of, firstValueFrom } from 'rxjs';
+import { catchError, Observable, of, firstValueFrom, map } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import {
@@ -18,15 +18,17 @@ import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
-import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK
-} from '../../shared/constants/common.constant';
+import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
+import { DeprecationRequest } from '../../shared/models/deprecation-request';
+import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
+import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  httpClient = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
+  private readonly adminAuthService = inject(AdminAuthService);
+
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
     let requestParams = new HttpParams();
@@ -126,9 +128,9 @@ export class ProductService {
       params,
       responseType: 'text' as 'json'
     }).pipe(
-       catchError(() => {
+      catchError(() => {
         return of('');
-        })
+      })
     );
   }
 
@@ -136,7 +138,7 @@ export class ProductService {
     criteria: ChangeLogCriteria
   ): Observable<ProductReleasesApiResponse> {
     let requestParams = new HttpParams();
-    let url = '';
+    let url: string;
     if (criteria.nextPageHref) {
       url = criteria.nextPageHref;
     } else {
@@ -179,6 +181,45 @@ export class ProductService {
   fetchAllProductIds(): Observable<string[]> {
     return this.httpClient.get<string[]>(`${API_URI.IDS}`);
   }
+
+  fetchAllProductIdsByDeprecated(isDeprecated: boolean | undefined = undefined): Observable<DeprecatedProductInfo[]> {
+    let requestParams = new HttpParams();
+    if (isDeprecated !== undefined) {
+      requestParams = requestParams.set('deprecated', isDeprecated.toString());
+    }
+    return this.httpClient
+      .get<DeprecatedProductInfo[]>(API_URI.PRODUCT_DEPRECATIONS, {
+        params: requestParams
+      })
+      .pipe(map(response => this.normalizeDeprecatedProducts(response)));
+  }
+
+  private normalizeDeprecatedProducts(response: DeprecatedProductInfo[]): DeprecatedProductInfo[] {
+    if (!Array.isArray(response)) {
+      return [];
+    }
+
+    return response
+      .map(item => {
+        return {
+          id: item?.id ?? '',
+          deprecationDate: item?.deprecationDate ?? null,
+          deprecationRequester: item?.deprecationRequester ?? null
+        };
+      })
+      .filter(item => !!item.id);
+  }
+
+  updateDeprecatedProduct(productId: string, deprecatedRequest: DeprecationRequest): Observable<string> {
+    return this.httpClient.put(
+      API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
+      deprecatedRequest,
+      {
+        headers: this.adminAuthService.getAuthHeaders(),
+        responseType: 'text'
+      }
+    );
+  };
 
   fetchAllProductsForSync(
     pageSize = PAGE_SIZE,
