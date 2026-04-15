@@ -1,11 +1,15 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
@@ -14,7 +18,7 @@ public interface ProductMarketplaceDataService {
 
   int updateInstallationCountForProduct(String id, String designerVersion);
 
-  int updateProductInstallationCount(String id);
+  ProductMarketplaceData updateProductInstallationCount(String id);
 
   ProductMarketplaceData getProductMarketplaceData(String id);
 
@@ -23,4 +27,8 @@ public interface ProductMarketplaceDataService {
   ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version);
 
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
+
+  String updateSuccessorForProduct(String productId, DeprecationRequest deprecationRequest) throws IOException;
+
+  List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated);
 }

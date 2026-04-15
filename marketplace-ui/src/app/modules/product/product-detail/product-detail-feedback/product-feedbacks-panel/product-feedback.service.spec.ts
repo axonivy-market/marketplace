@@ -15,6 +15,7 @@ import {
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import {
+  AUTHORIZATION_HEADER,
   BEARER,
   NOT_FOUND_ERROR_CODE,
   USER_NOT_FOUND_ERROR_CODE
@@ -236,7 +237,7 @@ describe('ProductFeedbackService', () => {
 
     const req = httpMock.expectOne('api/feedback/approval?page=0&size=40');
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe(`${BEARER} ${token}`);
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
     req.flush(mockResponse);
 
     // tap() runs synchronously on flush, so signals are already updated.
