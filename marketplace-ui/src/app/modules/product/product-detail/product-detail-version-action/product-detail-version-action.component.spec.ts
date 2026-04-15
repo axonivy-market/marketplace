@@ -65,7 +65,14 @@ describe('ProductDetailVersionActionComponent', () => {
     };
     const activatedRouteSpy = {
       snapshot: {
-        queryParams: {}
+        queryParams: {},
+        queryParamMap: {
+          get: (key: string) => {
+            if (key === ROUTER.VERSION) return '1.0';
+            return null;
+          }
+        },
+        fragment: 'description'
       }
     };
 
@@ -83,9 +90,8 @@ describe('ProductDetailVersionActionComponent', () => {
         provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
         { provide: ElementRef, useClass: MockElementRef },
-        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
-        { provide: CommonUtils, useValue: commonUtilsSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteSpy }
+        { provide: ActivatedRoute, useValue: activatedRouteSpy },
+        { provide: CommonUtils, useValue: commonUtilsSpy }
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(ProductDetailVersionActionComponent);
@@ -229,6 +235,8 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.artifacts().length).toBe(0);
     expect(component.selectedVersion()).toEqual(selectedVersion);
     expect(component.selectedArtifact).toEqual('');
+    expect(component.selectedArtifactName).toEqual('');
+    expect(component.versionMap.size).toBe(0);
   });
 
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {

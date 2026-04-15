@@ -320,7 +320,7 @@
         "status": "Status",
         "lastRun": "Last run at",
         "completed": "Completed at",
-        "message": "Message",
+        "message": "View changelog",
         "syncLabel": "Synchronize",
         "syncingLabel": "Synchronizing...",
         "cancelLabel": "Cancel",
@@ -337,6 +337,10 @@
           "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",
           "overrideMarketItemPath": "Override Current Market Item Path",
           "validationMessage": "Extension ID & marketItemPath required!"
+        },
+        "viewChangelog": {
+          "waitingLogText": "Waiting for logs...",
+          "noLogText": "No logs available."
         }
       },
       "securityMonitor": {

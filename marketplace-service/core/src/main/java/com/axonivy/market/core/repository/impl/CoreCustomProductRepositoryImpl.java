@@ -59,7 +59,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     if (results.isEmpty()) {
       return null;
     }
-    return results.get(0);
+    return results.getFirst();
   }
 
   @Override
@@ -68,7 +68,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     var pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
-    detachExludedField(searchCriteria, resultList);
+    detachExcludedField(searchCriteria, resultList);
 
     long total = resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
@@ -186,10 +186,11 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
     criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+    namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
     List<Order> orders = new ArrayList<>();
     if (pageRequest.getSort().isSorted()) {
-      orders = sortByOrders(criteriaContext, pageRequest, language.getValue(), namesJoin);
+      orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
     }
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
@@ -203,18 +204,17 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return query.getResultList();
   }
 
-  private List<Order> sortByOrders(
-      CriteriaQueryContext<Product> criteriaContext,
-      PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
+  private List<Order> sortByOrders(CriteriaQueryContext<Product> criteriaContext,
+      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
         var sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
           case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
-          default -> orders.addAll(sortByStandard(criteriaContext, language, namesJoin));
+          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin));
         }
       });
     }
@@ -224,8 +224,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return orders;
   }
   private List<Order> sortByStandard(
-      CriteriaQueryContext<Product> criteriaContext, String language
-      , MapJoin<Product, String, String> namesJoin) {
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = coreProductCustomSortRepository.findAll();
     List<Order> orders = new ArrayList<>();
     var order = criteriaContext.builder().desc(
@@ -233,9 +232,9 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
             Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
-      var sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      var sortOptionExtension = SortOption.of(customSorts.getFirst().getRuleForRemainder());
       switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
         case RECENT -> orders.add(sortByRecent(criteriaContext));
         default -> orders.add(sortByPopularity(criteriaContext));
       }
@@ -249,13 +248,9 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   }
 
   private static Order sortByAlphabet(
-      CriteriaQueryContext<Product> criteriaContext, String language
-      , MapJoin<Product, String, String> namesJoin) {
-    Expression<Object> nameValue = criteriaContext.builder().coalesce(
-        criteriaContext.builder().selectCase()
-            .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
-            .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
-    );
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
+    Expression<String> nameValue = criteriaContext.builder().coalesce(
+        namesJoin.value(), criteriaContext.builder().literal(""));
 
     // Return sorting order (ascending)
     return criteriaContext.builder().asc(nameValue);
@@ -276,8 +271,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return Product.class;
   }
 
-  private void detachExludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
-    if (isFieldExcluded(searchCriteria, DocumentField.SHORT_DESCRIPTIONS)) {
+  private void detachExcludedField(ProductSearchCriteria searchCriteria, List<Product> resultList) {
+    if (isFieldExcluded(searchCriteria)) {
       resultList.forEach(product -> {
         getEntityManager().detach(product);
         product.setShortDescriptions(null);
@@ -285,8 +280,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     }
   }
 
-  private boolean isFieldExcluded(ProductSearchCriteria criteria, DocumentField field) {
+  private boolean isFieldExcluded(ProductSearchCriteria criteria) {
     return criteria.getExcludeFields() != null
-        && criteria.getExcludeFields().contains(field);
+        && criteria.getExcludeFields().contains(DocumentField.SHORT_DESCRIPTIONS);
   }
 }
