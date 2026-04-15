@@ -11,56 +11,64 @@ public interface GithubReposService {
 
   /**
    * <p>
-   * Load and store test reports
+   * Loads test reports from all GitHub repositories and stores them in the database. Queries each product's
+   * GitHub repository for workflow execution results, builds status, and test reports, then persists this
+   * information for monitoring and analytics.
    * </p>
    *
-   * @param
-   *              type {@link }
-   * @return {@link }
+   * @return void - no return value; results are persisted directly to the repository storage
+   * @throws IOException - if GitHub API communication fails
    * @author ttan
    */
   void loadAndStoreTestReports() throws IOException;
 
   /**
    * <p>
-   * Load and store test reports for one product by product id
+   * Loads test reports for a specific product from its GitHub repository and stores them in the database.
+   * Queries the product's GitHub workflows, builds, and test executions, then persists the data for
+   * later retrieval and analysis.
    * </p>
    *
    * @param  productId
-   *              type {@link String}
-   * @return {@link }
+   *              type {@link String} - the unique product identifier to load test reports for
+   * @return void - no return value; results are persisted directly to the repository storage
+   * @throws IOException - if GitHub API communication fails
    * @author ttan
    */
   void loadAndStoreTestReportsForOneProduct(String productId) throws IOException;
 
   /**
    * <p>
-   * Update focused repository by list of repos
+   * Updates the "focused" status of GitHub repositories. Marks specified repositories as focused/featured,
+   * which affects their visibility and priority in the marketplace UI and search results.
    * </p>
    *
    * @param  repos
-   *              type {@link List<String>}
-   * @return {@link }
+   *              type {@link List<String>} - list of repository names to mark as focused
+   * @return void - no return value; updates are persisted directly to the repository storage
    * @author ttan
    */
   void updateFocusedRepo(List<String> repos);
 
   /**
    * <p>
-   * Fetch all repositories by conditions
+   * Retrieves all GitHub repositories with advanced filtering and pagination. Supports filtering by focused
+   * status, repository name/description search, workflow type, and sort direction. Results are paginated and
+   * sorted according to the provided configuration.
    * </p>
    *
    * @param  isFocused
-   *              type {@link Boolean}
+   *              type {@link Boolean} - if true, returns only focused/featured repositories; if false, returns
+   *              non-focused repositories; null includes all repositories
    * @param  searchText
-   *              type {@link String}
+   *              type {@link String} - search keyword to filter by repository name or description; null for no filtering
    * @param  workFlowType
-   *              type {@link String}
+   *              type {@link String} - filter by GitHub workflow type (e.g., "build", "test"); null for all types
    * @param  sortDirection
-   *              type {@link String}
+   *              type {@link String} - sort order direction ("asc" for ascending, "desc" for descending)
    * @param  pageable
-   *              type {@link Pageable}
-   * @return {@link Page<GithubReposModel>}
+   *              type {@link Pageable} - pagination and sorting configuration
+   * @return {@link Page<GithubReposModel>} - paginated list of repositories matching all filter criteria
    * @author tvtphuc
    */
   Page<GithubReposModel> fetchAllRepositories(Boolean isFocused, String searchText, String workFlowType,

@@ -15,18 +15,20 @@ public interface CoreProductService {
 
   /**
    * <p>
-   * Find all products
+   * Retrieves a paginated list of products with multi-criteria filtering. Filters products by type, keyword
+   * search, and language configuration. Returns paginated results sorted according to the provided Pageable
+   * configuration for efficient large dataset handling.
    * </p>
    *
    * @param  type
-   *              type {@link String}
+   *              type {@link String} - product type filter (e.g., "Connector", "Plugin"); can be null for no type filtering
    * @param  keyword
-   *              type {@link String}
+   *              type {@link String} - search keyword to filter products by name or description; can be null for no keyword filtering
    * @param  language
-   *              type {@link String}
+   *              type {@link String} - language code filter for product documentation (e.g., "en", "de"); can be null
    * @param  pageable
-   *              type {@link Pageable}
-   * @return {@link Page<Product>}
+   *              type {@link Pageable} - pagination and sorting configuration (page number, page size, sort order)
+   * @return {@link Page<Product>} - paginated list of products matching all criteria with total count and page information
    * @author ntqdinh
    */
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);

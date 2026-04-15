@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * GitHub constants defining GitHub organization, repositories, OAuth URLs, and JSON field names for API integration.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubConstants {
   public static final String AXONIVY_MARKET_ORGANIZATION_NAME = "axonivy-market";

@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Product JSON constants defining file names and JSON field names used in product.json configuration files and product data parsing.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProductJsonConstants {
   public static final String PRODUCT_JSON_FILE = "product.json";

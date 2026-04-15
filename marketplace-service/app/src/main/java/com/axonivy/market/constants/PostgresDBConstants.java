@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * PostgreSQL database constants defining column/field names and SQL ordering keywords for database queries and entity mapping.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author tvtphuc
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostgresDBConstants {
   public static final String SYNCHRONIZED_INSTALLATION_COUNT = "synchronizedInstallationCount";

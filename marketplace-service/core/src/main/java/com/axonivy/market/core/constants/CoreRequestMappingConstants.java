@@ -3,6 +3,14 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Core request mapping constants defining base API endpoint paths and route prefixes used across the Core module.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreRequestMappingConstants {
   public static final String ROOT = "/";

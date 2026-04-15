@@ -5,6 +5,14 @@ import lombok.NoArgsConstructor;
 
 import java.util.regex.Pattern;
 
+/**
+ * <p>
+ * Regex constants defining safe string patterns and compiled patterns for input validation and file name sanitization.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegexConstants {
 

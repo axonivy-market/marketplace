@@ -5,6 +5,15 @@ import lombok.NoArgsConstructor;
 
 import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 
+/**
+ * <p>
+ * Request mapping constants defining API endpoint paths and route parameters for the App module.
+ * Includes constants for products, feedback, documents, releases, and administrative endpoints.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";

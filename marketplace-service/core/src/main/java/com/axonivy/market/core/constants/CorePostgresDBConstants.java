@@ -3,6 +3,14 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Core PostgreSQL database constants defining column/field names and SQL keywords for database operations in the Core module.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author tvtphuc
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CorePostgresDBConstants {
   public static final String ID = "id";
