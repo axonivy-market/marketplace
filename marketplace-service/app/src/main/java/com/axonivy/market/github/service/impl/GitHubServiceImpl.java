@@ -15,7 +15,6 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.GithubUnsupportedText;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
@@ -484,7 +483,7 @@ public class GitHubServiceImpl implements GitHubService {
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
-    GithubUnsupportedText config = getGithubUnsupportedTextConfig();
+    GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
     String currentReadmeContent = getReadmeContent(readme);
     PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
@@ -594,13 +593,13 @@ public class GitHubServiceImpl implements GitHubService {
    * Loads all GitHub unsupported-notice related texts from the JSON resource file.
    * The returned object provides branch name, PR titles, bodies, and the notice text itself.
    */
-  private GithubUnsupportedText getGithubUnsupportedTextConfig() {
+  private GitHubUnsupportedText getGithubUnsupportedTextConfig() {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream inputStream = classLoader.getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
       if (inputStream == null) {
         throw new IllegalStateException("Missing resource: " + GITHUB_TEXTS_RESOURCE_PATH);
       }
-      return new ObjectMapper().readValue(inputStream, GithubUnsupportedText.class);
+      return new ObjectMapper().readValue(inputStream, GitHubUnsupportedText.class);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to load unsupported notice text configuration", e);
     }
@@ -610,7 +609,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
-      GithubUnsupportedText config) {
+      GitHubUnsupportedText config) {
     return switch (action) {
       case ADD -> new PullRequestData(
           config.addUnsupportedNoticePrBody(),
@@ -626,4 +625,15 @@ public class GitHubServiceImpl implements GitHubService {
       );
     };
   }
+
+  private record GitHubUnsupportedText(
+          String deprecatedMessage,
+          String removeUnsupportedNoticeMessage,
+          String unsupportedBranchName,
+          String removeUnsupportedNoticePrBody,
+          String addUnsupportedNoticePrBody,
+          String unsupportedNotice
+  ) {
+  }
+
 }
