@@ -18,12 +18,6 @@ public class GitHubConstants {
   public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
   public static final String README_FILE_PATH = "README.md";
   public static final String GITHUB_TEXTS_RESOURCE_PATH = "github/githubUnsupportedText.json";
-  public static final String UNSUPPORTED_NOTICE_KEY = "unsupportedNotice";
-  public static final String DEPRECATED_MESSAGE = "Add unsupported notice to README";
-  public static final String REMOVE_UNSUPPORTED_NOTICE_MESSAGE = "Remove unsupported notice from README";
-  public static final String UNSUPPORTED_BRANCH_NAME = "feature/update-deprecated-for-readme";
-  public static final String REMOVE_UNSUPPORTED_NOTICE_PR_BODY = "Remove deprecated notice from README";
-  public static final String ADD_UNSUPPORTED_NOTICE_PR_BODY = "Add sentences to notice that product is deprecated";
   public static final String HEADS_PREFIX = "heads/";
   public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
 

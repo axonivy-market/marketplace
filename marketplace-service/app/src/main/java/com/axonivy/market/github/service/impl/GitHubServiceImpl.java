@@ -15,6 +15,7 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
+import com.axonivy.market.github.model.GithubUnsupportedText;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
@@ -23,7 +24,6 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -484,9 +484,10 @@ public class GitHubServiceImpl implements GitHubService {
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
+    GithubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
     String currentReadmeContent = getReadmeContent(readme);
-    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
 
     boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (isSameContent) {
@@ -499,19 +500,20 @@ public class GitHubServiceImpl implements GitHubService {
     } catch (GHFileNotFoundException e) {
       log.info("There is no duplicated branch existing, create new branch");
       String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
-      repository.createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, branchSha);
+      repository.createRef(REFS_HEADS_PREFIX + config.unsupportedBranchName(), branchSha);
     }
-    readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
-    return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
+    readme.update(pullRequestData.updatedReadmeContent, config.deprecatedMessage(), config.unsupportedBranchName());
+    return generatePullRequest(repository, baseBranch, pullRequestData);
   }
 
   private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
       PullRequestData pullRequestData, GHContent readme) throws IOException {
-    repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME);
-    log.info("Branch exists, reusing: {}", UNSUPPORTED_BRANCH_NAME);
+    String unsupportedBranchName = pullRequestData.unsupportedBranchName;
+    repository.getRef(HEADS_PREFIX + unsupportedBranchName);
+    log.info("Branch exists, reusing: {}", unsupportedBranchName);
 
     GHPullRequest existingPR = repository.queryPullRequests()
-        .base(baseBranch).head(UNSUPPORTED_BRANCH_NAME).state(GHIssueState.OPEN)
+        .base(baseBranch).head(unsupportedBranchName).state(GHIssueState.OPEN)
         .list().toList()
         .stream().findFirst().orElse(null);
 
@@ -519,15 +521,15 @@ public class GitHubServiceImpl implements GitHubService {
       log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
       return existingPR;
     }
-    GHCompare compare = repository.getCompare(baseBranch, UNSUPPORTED_BRANCH_NAME);
+    GHCompare compare = repository.getCompare(baseBranch, unsupportedBranchName);
     List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.identical, GHCompare.Status.behind);
     if (githubStatus.stream().anyMatch(status -> status == compare.getStatus())) {
-      repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME).delete();
+      repository.getRef(HEADS_PREFIX + unsupportedBranchName).delete();
       String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
-      repository.createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME, branchSha);
-      readme.update(pullRequestData.updatedReadmeContent, DEPRECATED_MESSAGE, UNSUPPORTED_BRANCH_NAME);
+      repository.createRef(REFS_HEADS_PREFIX + unsupportedBranchName, branchSha);
+      readme.update(pullRequestData.updatedReadmeContent, pullRequestData.body, unsupportedBranchName);
     }
-    return generatePullRequest(repository, baseBranch, pullRequestData.body, pullRequestData.title);
+    return generatePullRequest(repository, baseBranch, pullRequestData);
   }
 
   private String getReadmeContent(GHContent readme) throws IOException {
@@ -536,9 +538,13 @@ public class GitHubServiceImpl implements GitHubService {
     }
   }
 
-  private GHPullRequest generatePullRequest(GHRepository repository,
-      String baseBranch, String pullRequestBody, String pullRequestTitle) throws IOException {
-    return repository.createPullRequest(pullRequestTitle, UNSUPPORTED_BRANCH_NAME, baseBranch, pullRequestBody);
+  private GHPullRequest generatePullRequest(GHRepository repository, String baseBranch,
+      PullRequestData pullRequestData) throws IOException {
+    return repository.createPullRequest(
+        pullRequestData.title,
+        pullRequestData.unsupportedBranchName,
+        baseBranch,
+        pullRequestData.body);
   }
 
   /**
@@ -546,10 +552,10 @@ public class GitHubServiceImpl implements GitHubService {
    * The method is intentionally idempotent: if the target content is already in the desired state,
    * helper methods return the original text unchanged.
    */
-  private String updateUnsupportedNotice(String readmeContent, PullRequestAction action) {
+  private String updateUnsupportedNotice(String readmeContent, PullRequestAction action, String notice) {
     return switch (action) {
-      case ADD -> addUnsupportedNotice(readmeContent);
-      case REMOVE -> removeUnsupportedNotice(readmeContent);
+      case ADD -> addUnsupportedNotice(readmeContent, notice);
+      case REMOVE -> removeUnsupportedNotice(readmeContent, notice);
     };
   }
 
@@ -559,8 +565,7 @@ public class GitHubServiceImpl implements GitHubService {
    * - Returns original content when the notice already exists.
    * - Fails fast when README has no heading line.
    */
-  private String addUnsupportedNotice(String readmeContent) {
-    String notice = getUnsupportedNotice();
+  private String addUnsupportedNotice(String readmeContent, String notice) {
     if (readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
@@ -578,46 +583,46 @@ public class GitHubServiceImpl implements GitHubService {
    * Removes the unsupported notice when present.
    * Returns original content when the notice does not exist.
    */
-  private String removeUnsupportedNotice(String readmeContent) {
-    String notice = getUnsupportedNotice();
+  private String removeUnsupportedNotice(String readmeContent, String notice) {
     if (!readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
     return readmeContent.replace(notice, StringUtils.EMPTY);
   }
 
-  private String getUnsupportedNotice() {
+  /**
+   * Loads all GitHub unsupported-notice related texts from the JSON resource file.
+   * The returned object provides branch name, PR titles, bodies, and the notice text itself.
+   */
+  private GithubUnsupportedText getGithubUnsupportedTextConfig() {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream inputStream = classLoader.getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
       if (inputStream == null) {
         throw new IllegalStateException("Missing resource: " + GITHUB_TEXTS_RESOURCE_PATH);
       }
-      JsonNode root = new ObjectMapper().readTree(inputStream);
-      String notice = root.path(UNSUPPORTED_NOTICE_KEY).asText(EMPTY).trim();
-      if (StringUtils.isBlank(notice)) {
-        throw new IllegalStateException("Missing key '" + UNSUPPORTED_NOTICE_KEY + "' in "
-            + GITHUB_TEXTS_RESOURCE_PATH);
-      }
-      return notice;
+      return new ObjectMapper().readValue(inputStream, GithubUnsupportedText.class);
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to load unsupported notice text", e);
+      throw new IllegalStateException("Failed to load unsupported notice text configuration", e);
     }
   }
 
-  private record PullRequestData(String body, String title, String updatedReadmeContent) {
+  private record PullRequestData(String body, String title, String updatedReadmeContent, String unsupportedBranchName) {
   }
 
-  private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent) {
+  private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
+      GithubUnsupportedText config) {
     return switch (action) {
       case ADD -> new PullRequestData(
-          ADD_UNSUPPORTED_NOTICE_PR_BODY,
-          DEPRECATED_MESSAGE,
-          updateUnsupportedNotice(currentReadmeContent, ADD)
+          config.addUnsupportedNoticePrBody(),
+          config.deprecatedMessage(),
+          updateUnsupportedNotice(currentReadmeContent, ADD, config.unsupportedNotice()),
+          config.unsupportedBranchName()
       );
       case REMOVE -> new PullRequestData(
-          REMOVE_UNSUPPORTED_NOTICE_PR_BODY,
-          REMOVE_UNSUPPORTED_NOTICE_MESSAGE,
-          updateUnsupportedNotice(currentReadmeContent, REMOVE)
+          config.removeUnsupportedNoticePrBody(),
+          config.removeUnsupportedNoticeMessage(),
+          updateUnsupportedNotice(currentReadmeContent, REMOVE, config.unsupportedNotice()),
+          config.unsupportedBranchName()
       );
     };
   }

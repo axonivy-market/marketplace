@@ -28,10 +28,7 @@ public interface ProductMarketplaceDataRepository
              pmd.deprecation_requester AS deprecationRequester
       FROM product_marketplace_data pmd
       JOIN product p ON p.id = pmd.id
-      WHERE (
-          (:deprecated IS NOT NULL AND p.deprecated = :deprecated)
-          OR (:deprecated IS NULL AND p.deprecated IS NULL)
-      )
+      WHERE p.deprecated IS NOT DISTINCT FROM :deprecated ;
       """, nativeQuery = true)
   List<ProductDeprecationProjection> findProductIdsByDeprecated(@Param("deprecated") Boolean deprecated);
 }
