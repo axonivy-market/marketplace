@@ -21,6 +21,7 @@ public class ReleaseLetterModelAssembler implements RepresentationModelAssembler
     var resource = new ReleaseLetterModel();
     resource.setId(releaseLetter.getId());
     resource.setContent(releaseLetter.getContent());
+    resource.setDraftContent(releaseLetter.getDraftContent());
     resource.setSprint(releaseLetter.getSprint());
     resource.setLatest(releaseLetter.isLatest());
     resource.setCreatedAt(releaseLetter.getCreatedAt());

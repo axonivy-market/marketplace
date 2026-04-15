@@ -83,7 +83,8 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+    if (releaseLetterModelRequest.getSprint() == null
+        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
     }
@@ -114,6 +115,67 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     if (deletedRow == 0) {
       throw new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND, "Not found release letter with id: " + id);
     }
+  }
+
+  @Transactional
+  @Override
+  public ReleaseLetter saveAsDraft(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+    }
+    ReleaseLetter releaseLetter;
+    try {
+      releaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
+      releaseLetter = handleSavedAsDraftForExistedReleaseLetter(releaseLetter, releaseLetterModelRequest);
+    } catch (NotFoundException notFoundException) {
+      releaseLetter = new ReleaseLetter();
+      releaseLetter = handleSavedAsDraftForNewReleaseLetter(releaseLetter, releaseLetterModelRequest);
+    }
+
+//    String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
+//    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+//
+//    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
+//      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+//          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+//    }
+//
+//    foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
+//    foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
+//    foundReleaseLetter.setSprint(unifiedNewSprint);
+//
+//    if (releaseLetterModelRequest.isLatest()) {
+//      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
+//    }
+
+    return releaseLetterRepository.save(releaseLetter);
+  }
+
+  private ReleaseLetter handleSavedAsDraftForExistedReleaseLetter(ReleaseLetter foundReleaseLetter,
+      ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
+    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+
+    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
+      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+    }
+
+    foundReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
+    foundReleaseLetter.setSprint(unifiedNewSprint);
+
+    return foundReleaseLetter;
+  }
+
+  private ReleaseLetter handleSavedAsDraftForNewReleaseLetter(ReleaseLetter newReleaseLetter,
+      ReleaseLetterModelRequest releaseLetterModelRequest) {
+    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+
+    newReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
+    newReleaseLetter.setSprint(unifiedNewSprint);
+
+    return newReleaseLetter;
   }
 
   private boolean isSprintExisted(String requestedSprint) {

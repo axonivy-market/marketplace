@@ -29,5 +29,8 @@ public class ReleaseLetter extends AuditableIdEntity {
   @Column(columnDefinition = TEXT_TYPE)
   private String content;
 
+  @Column(columnDefinition = TEXT_TYPE)
+  private String draftContent;
+
   private boolean isLatest;
 }
