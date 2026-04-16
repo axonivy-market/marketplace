@@ -218,6 +218,7 @@ public class GitHubServiceImpl implements GitHubService {
     GHOrganization organization = gitHub.getOrganization(orgName);
 
     List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+        .filter(repo -> !repo.isArchived())
         .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
             taskScheduler.getScheduledExecutor())).toList();
 
@@ -252,22 +253,21 @@ public class GitHubServiceImpl implements GitHubService {
 
   private ProductSecurityInfo fetchSecurityInfo(GHRepository repo, GHOrganization organization,
       String accessToken) throws IOException {
-    var productSecurityInfo = new ProductSecurityInfo();
-    productSecurityInfo.setRepoName(repo.getName());
-    productSecurityInfo.setVisibility(repo.getVisibility().toString());
-    productSecurityInfo.setArchived(repo.isArchived());
     String defaultBranch = repo.getDefaultBranch();
-    productSecurityInfo.setBranchProtectionEnabled(repo.getBranch(defaultBranch).isProtected());
-    String latestCommitSHA = repo.getBranch(defaultBranch).getSHA1();
+    var branch = repo.getBranch(defaultBranch);
+    String latestCommitSHA = branch.getSHA1();
     GHCommit latestCommit = repo.getCommit(latestCommitSHA);
-    productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
-    productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
-    productSecurityInfo.setDependabot(getDependabotAlerts(repo, organization, accessToken));
-    productSecurityInfo.setSecretScanning(getNumberOfSecretScanningAlerts(repo, organization,
-        accessToken));
-    productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization,
-        accessToken));
-    return productSecurityInfo;
+
+    return ProductSecurityInfo.builder()
+        .repoName(repo.getName())
+        .visibility(repo.getVisibility().toString())
+        .branchProtectionEnabled(branch.isProtected())
+        .latestCommitSHA(latestCommitSHA)
+        .lastCommitDate(latestCommit.getCommitDate())
+        .dependabot(getDependabotAlerts(repo, organization, accessToken))
+        .secretScanning(getNumberOfSecretScanningAlerts(repo, organization, accessToken))
+        .codeScanning(getCodeScanningAlerts(repo, organization, accessToken))
+        .build();
   }
 
   private static Map<String, Integer> countAlertsBySeverity(List<Map<String, Object>> alerts,

@@ -15,7 +15,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class ProductSecurityInfo {
   private String repoName;
-  private boolean isArchived;
   private String visibility;
   private boolean branchProtectionEnabled;
   private Date lastCommitDate;
