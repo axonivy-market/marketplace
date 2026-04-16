@@ -2,6 +2,7 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.ReleaseLetter;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,9 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
 
   boolean existsBySprint(String releaseVersion);
 
-  Page<ReleaseLetter> findByLatest(boolean isLatest, Pageable pageable);
+  boolean existsById(@NonNull String id);
+
+  Page<ReleaseLetter> findByIsLatest(boolean isLatest, Pageable pageable);
 
   void deleteBySprint(String sprint);
 

@@ -52,26 +52,30 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public Page<ReleaseLetter> findLatestReleaseLetter(Pageable pageable) {
-    return releaseLetterRepository.findByLatest(true, pageable);
+    return releaseLetterRepository.findByIsLatest(true, pageable);
   }
 
   @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (releaseLetterModelRequest.getSprint() == null
-        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-    }
+//    if (releaseLetterModelRequest.getSprint() == null
+//        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+//      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+//          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+//    }
+    validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
     String unifiedSprint = unifySprint(releaseLetterModelRequest.getSprint());
     if (isSprintExisted(unifiedSprint)) {
       throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
-    var releaseLetter = ReleaseLetter.builder().content(
-        transformContent(releaseLetterModelRequest.getContent())).sprint(unifiedSprint).isLatest(
-        releaseLetterModelRequest.isLatest()).build();
+    var releaseLetter = ReleaseLetter.builder()
+        .content(transformContent(releaseLetterModelRequest.getContent()))
+        .draftContent(transformContent(releaseLetterModelRequest.getDraftContent()))
+        .sprint(unifiedSprint)
+        .isLatest(releaseLetterModelRequest.isLatest())
+        .build();
 
     if (releaseLetterModelRequest.isLatest()) {
       releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedSprint);
@@ -83,12 +87,14 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (releaseLetterModelRequest.getSprint() == null
-        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-    }
-    var foundReleaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
+//    if (releaseLetterModelRequest.getSprint() == null
+//        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+//      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+//          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+//    }
+    validateReleaseLetterModelRequest(releaseLetterModelRequest);
+
+    var foundReleaseLetter = findReleaseLetterById(id);
     String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
     String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
 
@@ -99,6 +105,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
     foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
+    foundReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
 
     if (releaseLetterModelRequest.isLatest()) {
@@ -120,13 +127,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Transactional
   @Override
   public ReleaseLetter saveAsDraft(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-    }
+    validateReleaseLetterModelRequest(releaseLetterModelRequest);
+
     ReleaseLetter releaseLetter;
     try {
-      releaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
+      releaseLetter = findReleaseLetterById(id);
       releaseLetter = handleSavedAsDraftForExistedReleaseLetter(releaseLetter, releaseLetterModelRequest);
     } catch (NotFoundException notFoundException) {
       releaseLetter = new ReleaseLetter();
@@ -150,6 +155,14 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 //    }
 
     return releaseLetterRepository.save(releaseLetter);
+  }
+
+  private void validateReleaseLetterModelRequest(ReleaseLetterModelRequest releaseLetterModelRequest) {
+    if (releaseLetterModelRequest.getSprint() == null
+        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
+          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
+    }
   }
 
   private ReleaseLetter handleSavedAsDraftForExistedReleaseLetter(ReleaseLetter foundReleaseLetter,
