@@ -3,10 +3,11 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -19,8 +20,10 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.util.ProductContentUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +52,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,20 +64,23 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static com.axonivy.market.enums.AccessLevel.ENABLED;
-import static com.axonivy.market.enums.AccessLevel.DISABLED;
-import static com.axonivy.market.enums.AccessLevel.NO_PERMISSION;
+import static com.axonivy.market.constants.GitHubConstants.*;
+import static com.axonivy.market.enums.AccessLevel.*;
+import static com.axonivy.market.enums.PullRequestAction.*;
+import static org.apache.commons.lang3.StringUtils.*;
+
 
 @Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
-
-
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
+  private static final String CRLF = CR + LF;
+
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -110,7 +117,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHRepository getRepository(String repositoryPath){
+  public GHRepository getRepository(String repositoryPath) {
     try {
       return getGitHub().getRepository(repositoryPath);
     } catch (GHFileNotFoundException e) {
@@ -179,12 +186,21 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void validateUserInOrganizationAndTeam(String accessToken, String organization,
+  public UserInfo validateUserInOrganizationAndTeam(String accessToken, String organization,
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        return;
+        GHMyself myself = gitHub.getMyself();
+        var userInfo = new UserInfo();
+        userInfo.setGitHubId(String.valueOf(myself.getId()));
+        userInfo.setName(myself.getName());
+        userInfo.setUsername(myself.getLogin());
+        userInfo.setAvatarUrl(myself.getAvatarUrl());
+        userInfo.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        userInfo.setUrl(String.valueOf(myself.getHtmlUrl()));
+
+        return userInfo;
       }
     } catch (IOException e) {
       log.error(e);
@@ -459,4 +475,173 @@ public class GitHubServiceImpl implements GitHubService {
     });
     return new ByteArrayInputStream(outputStream.toByteArray());
   }
+
+  @Override
+  public GHPullRequest updateReadmeForSuccessorNotes(
+      String repositoryPath, PullRequestAction action) throws IOException {
+    String accessToken = gitHubProperty.getToken();
+    GitHub gitHub = getGitHub(accessToken);
+    GHRepository repository = gitHub.getRepository(repositoryPath);
+    String baseBranch = repository.getDefaultBranch();
+    GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
+    GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
+    String currentReadmeContent = getReadmeContent(readme);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
+
+    boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
+    if (isSameContent) {
+      log.error("No Need to update readme content for deprecation because the content is the same");
+      removeBranchIfExistsWhenRemoveDeprecation(repository, HEADS_PREFIX + config.unsupportedBranchName, action);
+      return null;
+    }
+
+    try {
+      return getPullRequestFromExistingBranch(repository, baseBranch, pullRequestData, readme);
+    } catch (GHFileNotFoundException e) {
+      log.info("There is no duplicated branch existing, create new branch");
+      String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
+      repository.createRef(REFS_HEADS_PREFIX + config.unsupportedBranchName(), branchSha);
+    }
+    readme.update(pullRequestData.updatedReadmeContent, config.deprecatedMessage(), config.unsupportedBranchName());
+    return generatePullRequest(repository, baseBranch, pullRequestData);
+  }
+
+  private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
+      PullRequestData pullRequestData, GHContent readme) throws IOException {
+    String unsupportedBranchName = pullRequestData.unsupportedBranchName;
+    repository.getRef(HEADS_PREFIX + unsupportedBranchName);
+    log.info("Branch exists, reusing: {}", unsupportedBranchName);
+
+    GHPullRequest existingPR = repository.queryPullRequests()
+        .base(baseBranch).head(unsupportedBranchName).state(GHIssueState.OPEN)
+        .list().toList()
+        .stream().findFirst().orElse(null);
+
+    if (existingPR != null) {
+      log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      return existingPR;
+    }
+    GHCompare compare = repository.getCompare(baseBranch, unsupportedBranchName);
+    List<GHCompare.Status> githubStatus = List.of(GHCompare.Status.identical, GHCompare.Status.behind);
+    if (githubStatus.stream().anyMatch(status -> status == compare.getStatus())) {
+      repository.getRef(HEADS_PREFIX + unsupportedBranchName).delete();
+      String branchSha = repository.getRef(HEADS_PREFIX + baseBranch).getObject().getSha();
+      repository.createRef(REFS_HEADS_PREFIX + unsupportedBranchName, branchSha);
+      readme.update(pullRequestData.updatedReadmeContent, pullRequestData.body, unsupportedBranchName);
+    }
+    return generatePullRequest(repository, baseBranch, pullRequestData);
+  }
+
+  private void removeBranchIfExistsWhenRemoveDeprecation(GHRepository repository, String headBranchName,
+      PullRequestAction action) throws IOException {
+    if (action != REMOVE) {
+      return;
+    }
+
+    try {
+      repository.getRef(headBranchName).delete();
+    } catch (GHFileNotFoundException e) {
+      log.info("Branch '{}' does not exist, skipping deletion", headBranchName);
+    }
+  }
+
+  private String getReadmeContent(GHContent readme) throws IOException {
+    try (InputStream inputStream = readme.read()) {
+      return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+  }
+
+  private GHPullRequest generatePullRequest(GHRepository repository, String baseBranch,
+      PullRequestData pullRequestData) throws IOException {
+    return repository.createPullRequest(
+        pullRequestData.title,
+        pullRequestData.unsupportedBranchName,
+        baseBranch,
+        pullRequestData.body);
+  }
+
+  /**
+   * Applies the requested README unsupported-notice action.
+   * The method is intentionally idempotent: if the target content is already in the desired state,
+   * helper methods return the original text unchanged.
+   */
+  private String updateUnsupportedNotice(String readmeContent, PullRequestAction action, String notice) {
+    return switch (action) {
+      case ADD -> addUnsupportedNotice(readmeContent, notice);
+      case REMOVE -> removeUnsupportedNotice(readmeContent, notice);
+    };
+  }
+
+  /**
+   * Inserts the unsupported notice right below the first Markdown heading.
+   * - Keeps original newline style (CRLF/LF).
+   * - Returns original content when the notice already exists.
+   * - Fails fast when README has no heading line.
+   */
+  private String addUnsupportedNotice(String readmeContent, String notice) {
+    if (readmeContent.contains(notice.trim())) {
+      return readmeContent;
+    }
+    String lineSeparator = readmeContent.contains(CRLF) ? CRLF : LF;
+    Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
+    if (matcher.find()) {
+      String heading = matcher.group();
+      String replacement = heading + lineSeparator + lineSeparator + notice.trim();
+      return matcher.replaceFirst(Matcher.quoteReplacement(replacement));
+    }
+    throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
+  }
+
+  /**
+   * Removes the unsupported notice when present.
+   * Returns original content when the notice does not exist.
+   */
+  private String removeUnsupportedNotice(String readmeContent, String notice) {
+    if (!readmeContent.contains(notice.trim())) {
+      return readmeContent;
+    }
+    return readmeContent.replace(notice, StringUtils.EMPTY);
+  }
+
+  /**
+   * Loads all GitHub unsupported-notice related texts from the JSON resource file.
+   * The returned object provides branch name, PR titles, bodies, and the notice text itself.
+   */
+  private GitHubUnsupportedText getGithubUnsupportedTextConfig() {
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    try (InputStream inputStream = classLoader.getResourceAsStream(GITHUB_TEXTS_RESOURCE_PATH)) {
+      if (inputStream == null) {
+        throw new IllegalStateException("Missing resource: " + GITHUB_TEXTS_RESOURCE_PATH);
+      }
+      return new ObjectMapper().readValue(inputStream, GitHubUnsupportedText.class);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to load unsupported notice text configuration", e);
+    }
+  }
+
+  private record PullRequestData(String body, String title, String updatedReadmeContent, String unsupportedBranchName) {
+  }
+
+  private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
+      GitHubUnsupportedText config) {
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
+    return switch (action) {
+      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
+          updatedContent, config.unsupportedBranchName());
+      case REMOVE ->
+          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
+              updatedContent, config.unsupportedBranchName());
+    };
+  }
+
+  private record GitHubUnsupportedText(
+          String deprecatedMessage,
+          String removeUnsupportedNoticeMessage,
+          String unsupportedBranchName,
+          String removeUnsupportedNoticePrBody,
+          String addUnsupportedNoticePrBody,
+          String unsupportedNotice
+  ) {
+  }
+
 }

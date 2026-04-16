@@ -2,6 +2,7 @@ package com.axonivy.market.github.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -9,6 +10,7 @@ import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UserInfo;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -17,6 +19,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GHPullRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,7 +48,7 @@ public interface GitHubService {
 
   GithubUser getAndUpdateUser(String accessToken);
 
-  void validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
+  UserInfo validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException;
 
@@ -61,4 +64,6 @@ public interface GitHubService {
   GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException;
 
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
+
+  GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
 }

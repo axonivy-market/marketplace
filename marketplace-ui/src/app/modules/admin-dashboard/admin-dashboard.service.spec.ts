@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import {
   HttpTestingController,
@@ -21,21 +22,22 @@ import {
 } from '../../core/interceptors/api.interceptor';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
 
 describe('AdminDashboardService', () => {
   let service: AdminDashboardService;
   let httpMock: HttpTestingController;
-  let adminAuthService: jasmine.SpyObj<AdminAuthService>;
+  let adminAuthService: MockedObject<AdminAuthService>;
 
   const mockAuthHeaders = new HttpHeaders({
-    Authorization: 'Bearer test-token'
+    [AUTHORIZATION_HEADER]: 'Bearer test-token'
   });
 
   beforeEach(() => {
-    adminAuthService = jasmine.createSpyObj('AdminAuthService', [
-      'getAuthHeaders'
-    ]);
-    adminAuthService.getAuthHeaders.and.returnValue(mockAuthHeaders);
+    adminAuthService = {
+      getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
+    } as MockedObject<AdminAuthService>;
+    adminAuthService.getAuthHeaders.mockReturnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({
       providers: [
@@ -111,7 +113,7 @@ describe('AdminDashboardService', () => {
         `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
       );
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(null);
@@ -126,7 +128,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_GITHUB_MONITOR);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.responseType).toBe('text');
@@ -154,7 +156,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SYNC_TASK_EXECUTION);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(mockExecutions);
@@ -171,7 +173,7 @@ describe('AdminDashboardService', () => {
         `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
       );
       expect(req.request.method).toBe('POST');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       expect(req.request.body).toEqual({
@@ -212,7 +214,9 @@ describe('AdminDashboardService', () => {
         expect(config).toEqual(mockConfig);
       });
 
-      const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`);
+      const req = httpMock.expectOne(
+        `${API_URI.PRODUCT_MARKETPLACE_DATA}/custom-sort`
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockConfig);
     });
@@ -240,7 +244,7 @@ describe('AdminDashboardService', () => {
 
       const req = httpMock.expectOne(API_URI.SECURITY_MONITOR);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
       req.flush(mockSecurityInfo);
@@ -293,7 +297,7 @@ describe('AdminDashboardService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush(mockResponse);
     });
@@ -308,7 +312,7 @@ describe('AdminDashboardService', () => {
         req => req.url === API_URI.RELEASE_LETTERS
       );
 
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
       expect(req.request.context.get(LoadingComponent)).toBe(customPageId);
 
       req.flush({} as ReleaseLetterListApiResponse);
@@ -325,7 +329,7 @@ describe('AdminDashboardService', () => {
         req => req.url === API_URI.RELEASE_LETTERS
       );
 
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush('Error', { status: 500, statusText: 'Server Error' });
     });
@@ -357,10 +361,10 @@ describe('AdminDashboardService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush(mockResponse);
     });
@@ -382,10 +386,10 @@ describe('AdminDashboardService', () => {
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(releaseLetterRequest);
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
-      expect(req.request.context.get(ForwardingError)).toBeTrue();
+      expect(req.request.context.get(ForwardingError)).toBe(true);
 
       req.flush(null);
     });
@@ -421,10 +425,10 @@ describe('AdminDashboardService', () => {
 
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(releaseLetterRequest);
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
-      expect(req.request.context.get(ForwardingError)).toBeTrue();
+      expect(req.request.context.get(ForwardingError)).toBe(true);
 
       req.flush(mockResponse);
     });
@@ -450,11 +454,11 @@ describe('AdminDashboardService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
 
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBeTrue();
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush(mockResponse);
     });
@@ -471,7 +475,7 @@ describe('AdminDashboardService', () => {
       const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
 
       expect(req.request.method).toBe('DELETE');
-      expect(req.request.headers.get('Authorization')).toBe(
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
 

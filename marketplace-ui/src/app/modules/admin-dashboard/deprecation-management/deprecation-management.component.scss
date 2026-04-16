@@ -1,0 +1,29 @@
+.custom-card {
+  width: 100%;
+}
+
+.deprecated-container {
+  margin-top: 9rem;
+  width: 100%;
+}
+
+.delete-icon {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 12px;
+  transition: all 0.2s ease;
+}
+
+.delete-icon:hover {
+  transform: scale(1.2);
+  color: #b02a37;
+}
+
+.deprecation-button {
+  padding: 0.55rem 0.75rem;
+}
+
+.deprecation-table tr {
+  cursor: default;
+}

@@ -34,24 +34,28 @@
       <thead>
         <tr>
           <th class="text-primary connector-column" (click)="sortRepositoriesByColumn(COLUMN_NAME)">
-            <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_NAME)">
+            <h5 class="table-header">
+              <i class="ti" [ngClass]="getSortIcon(COLUMN_NAME)"></i>
               {{ 'common.monitor.dashboard.connector' | translate }}
             </h5>
           </th>
           <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_CI)">
-            <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_CI)">
+            <h5 class="table-header">
+              <i class="ti" [ngClass]="getSortIcon(COLUMN_CI)"></i>
               {{ 'common.monitor.dashboard.ciLabel' | translate }}
               <app-build-badge-tooltip buildType="CI" />
             </h5>
           </th>
           <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
-            <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_DEV)">
+            <h5 class="table-header">
+              <i class="ti" [ngClass]="getSortIcon(COLUMN_DEV)"></i>
               {{ 'common.monitor.dashboard.devLabel' | translate }}
               <app-build-badge-tooltip buildType="DEV" />
             </h5>
           </th>
           <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
-            <h5 class="table-header" [ngClass]="getSortIcon(COLUMN_E2E)">
+            <h5 class="table-header">
+              <i class="ti" [ngClass]="getSortIcon(COLUMN_E2E)"></i>
               {{ 'common.monitor.dashboard.e2eLabel' | translate }}
               <app-build-badge-tooltip buildType="E2E" />
             </h5>
@@ -86,7 +90,7 @@
           }
           <td class="align-middle">
             <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
-              <i class="fa fa-external-link" aria-hidden="true"></i>
+              <i class="ti ti-external-link" aria-hidden="true"></i>
             </a>
           </td>
         </tr>

@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content.component';
@@ -36,12 +37,12 @@ describe('ProductDetailMavenContentComponent', () => {
   });
 
   it('should update displayed groupId and artifactId when productModuleContent changes', () => {
-    component.productModuleContent = {
+    fixture.componentRef.setInput('productModuleContent', {
       ...component.productModuleContent,
       groupId: 'com.axonivy.connector.new.jira',
       artifactId: 'new-jira-connector'
-    };
-    component.selectedVersion = '11.0.0';
+    });
+    fixture.componentRef.setInput('selectedVersion', '11.0.0');
 
     fixture.detectChanges();
     const codeElement: HTMLElement = fixture.debugElement.query(By.css('code')).nativeElement;

@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,33 +15,28 @@ import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.e
 describe('AddFeedbackDialogComponent', () => {
   let component: AddFeedbackDialogComponent;
   let fixture: ComponentFixture<AddFeedbackDialogComponent>;
-  let authServiceMock: jasmine.SpyObj<AuthService>;
-  let productFeedbackServiceMock: jasmine.SpyObj<ProductFeedbackService>;
-  let productDetailServiceMock: jasmine.SpyObj<ProductDetailService>;
-  let activeModalMock: jasmine.SpyObj<NgbActiveModal>;
+  let authServiceMock: MockedObject<AuthService>;
+  let productFeedbackServiceMock: MockedObject<ProductFeedbackService>;
+  let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [
-      'getDisplayName'
-    ]);
-    const productFeedbackServiceSpy = jasmine.createSpyObj(
-      'ProductFeedbackService',
-      ['submitFeedback'],
-      { userFeedback: signal({}), feedbacks: signal([]) }
-    );
-    const productDetailServiceSpy = jasmine.createSpyObj(
-      'ProductDetailService',
-      ['productId'],
-      {
-        productNames: signal({ en: 'en', de: 'de' }),
-        productId: signal('mockProductId'),
-        productLogoUrl: signal('logoUrl')
-      }
-    );
-    const activeModalSpy = jasmine.createSpyObj('NgbActiveModal', [
-      'close',
-      'dismiss'
-    ]);
+    const authServiceSpy = {
+      getDisplayName: vi.fn().mockName('AuthService.getDisplayName')
+    };
+    const productFeedbackServiceSpy = {
+      submitFeedback: vi.fn().mockName('ProductFeedbackService.submitFeedback'),
+      userFeedback: signal({}),
+      feedbacks: signal([])
+    };
+    const productDetailServiceSpy = {
+      productId: signal('mockProductId'),
+      productNames: signal({ en: 'en', de: 'de' }),
+      productLogoUrl: signal('logoUrl')
+    };
+    const activeModalSpy = {
+      close: vi.fn().mockName('NgbActiveModal.close'),
+      dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -61,18 +57,13 @@ describe('AddFeedbackDialogComponent', () => {
 
     fixture = TestBed.createComponent(AddFeedbackDialogComponent);
     component = fixture.componentInstance;
-    authServiceMock = TestBed.inject(
-      AuthService
-    ) as jasmine.SpyObj<AuthService>;
+    authServiceMock = TestBed.inject(AuthService) as MockedObject<AuthService>;
     productFeedbackServiceMock = TestBed.inject(
       ProductFeedbackService
-    ) as jasmine.SpyObj<ProductFeedbackService>;
-    productDetailServiceMock = TestBed.inject(
-      ProductDetailService
-    ) as jasmine.SpyObj<ProductDetailService>;
+    ) as MockedObject<ProductFeedbackService>;
     activeModalMock = TestBed.inject(
       NgbActiveModal
-    ) as jasmine.SpyObj<NgbActiveModal>;
+    ) as MockedObject<NgbActiveModal>;
   });
 
   beforeEach(() => {
@@ -87,7 +78,7 @@ describe('AddFeedbackDialogComponent', () => {
 
   it('should initialize displayName with AuthService data on ngOnInit', () => {
     const mockDisplayName = 'John Doe';
-    authServiceMock.getDisplayName.and.returnValue(mockDisplayName);
+    authServiceMock.getDisplayName.mockReturnValue(mockDisplayName);
 
     component.ngOnInit();
 
@@ -104,7 +95,7 @@ describe('AddFeedbackDialogComponent', () => {
       moderatorName: 'admin',
       reviewDate: mockDate,
       version: 0,
-      productNames: { "de" : "A-Trust", "en" : "A-Trust" }
+      productNames: { de: 'A-Trust', en: 'A-Trust' }
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);
@@ -128,11 +119,13 @@ describe('AddFeedbackDialogComponent', () => {
 
     component.feedback = mockFeedback;
 
-    productFeedbackServiceMock.submitFeedback.and.returnValue(of(mockFeedback));
+    productFeedbackServiceMock.submitFeedback.mockReturnValue(of(mockFeedback));
 
     component.onSubmitFeedback();
 
-    expect(productFeedbackServiceMock.submitFeedback).toHaveBeenCalledWith(mockFeedback);
+    expect(productFeedbackServiceMock.submitFeedback).toHaveBeenCalledWith(
+      mockFeedback
+    );
     expect(activeModalMock.close).toHaveBeenCalled();
   });
 });

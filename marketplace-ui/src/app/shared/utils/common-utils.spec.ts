@@ -1,10 +1,10 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { CookieService } from 'ngx-cookie-service';
 import { ItemDropdown } from '../models/item-dropdown.model';
 import { CommonUtils } from './common.utils';
 
 describe('CommonUtils', () => {
-
   describe('getLabel', () => {
     it('should return the label for the matching value', () => {
       // Arrange
@@ -46,11 +46,15 @@ describe('CommonUtils', () => {
 
     it('should return the default value if the cookie does not exist', () => {
       // Arrange
-      spyOn(cookieService, 'get').and.returnValue('');
+      vi.spyOn(cookieService, 'get').mockReturnValue('');
       const defaultValue = 'defaultString';
 
       // Act
-      const result = CommonUtils.getCookieValue(cookieService, 'nonexistentCookie', defaultValue);
+      const result = CommonUtils.getCookieValue(
+        cookieService,
+        'nonexistentCookie',
+        defaultValue
+      );
 
       // Assert
       expect(result).toBe(defaultValue);
@@ -58,23 +62,31 @@ describe('CommonUtils', () => {
 
     it('should return a boolean value when default value is boolean', () => {
       // Arrange
-      spyOn(cookieService, 'get').and.returnValue('true');
+      vi.spyOn(cookieService, 'get').mockReturnValue('true');
       const defaultValue = false;
 
       // Act
-      const result = CommonUtils.getCookieValue(cookieService, 'booleanCookie', defaultValue);
+      const result = CommonUtils.getCookieValue(
+        cookieService,
+        'booleanCookie',
+        defaultValue
+      );
 
       // Assert
-      expect(result).toBeTrue();
+      expect(result).toBe(true);
     });
 
     it('should return a number value when default value is number', () => {
       // Arrange
-      spyOn(cookieService, 'get').and.returnValue('123.45');
+      vi.spyOn(cookieService, 'get').mockReturnValue('123.45');
       const defaultValue = 0;
 
       // Act
-      const result = CommonUtils.getCookieValue(cookieService, 'numberCookie', defaultValue);
+      const result = CommonUtils.getCookieValue(
+        cookieService,
+        'numberCookie',
+        defaultValue
+      );
 
       // Assert
       expect(result).toBe(123.45);
@@ -82,16 +94,18 @@ describe('CommonUtils', () => {
 
     it('should return a string value when default value is string', () => {
       // Arrange
-      spyOn(cookieService, 'get').and.returnValue('cookieValue');
+      vi.spyOn(cookieService, 'get').mockReturnValue('cookieValue');
       const defaultValue = 'defaultString';
 
       // Act
-      const result = CommonUtils.getCookieValue(cookieService, 'stringCookie', defaultValue);
+      const result = CommonUtils.getCookieValue(
+        cookieService,
+        'stringCookie',
+        defaultValue
+      );
 
       // Assert
       expect(result).toBe('cookieValue');
     });
-
   });
-
 });

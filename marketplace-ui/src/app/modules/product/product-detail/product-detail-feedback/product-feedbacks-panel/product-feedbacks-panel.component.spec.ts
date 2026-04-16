@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductFeedbacksPanelComponent } from './product-feedbacks-panel.component';
 import { FeedbackFilterComponent } from './feedback-filter/feedback-filter.component';
@@ -7,7 +8,10 @@ import { ThemeService } from '../../../../../core/services/theme/theme.service';
 import { ProductFeedbackService } from './product-feedback.service';
 import { ProductDetailService } from '../../product-detail.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ProductFeedbacksPanelComponent', () => {
@@ -18,7 +22,12 @@ describe('ProductFeedbacksPanelComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ ProductFeedbacksPanelComponent, FeedbackFilterComponent, CommonModule, TranslateModule.forRoot() ],
+      imports: [
+        ProductFeedbacksPanelComponent,
+        FeedbackFilterComponent,
+        CommonModule,
+        TranslateModule.forRoot()
+      ],
       providers: [
         ProductFeedbackService,
         ProductDetailService,
@@ -27,7 +36,7 @@ describe('ProductFeedbacksPanelComponent', () => {
         ThemeService,
         TranslateService
       ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductFeedbacksPanelComponent);
@@ -35,11 +44,8 @@ describe('ProductFeedbacksPanelComponent', () => {
     productFeedbackService = TestBed.inject(ProductFeedbackService);
 
     component.isRenderInModalDialog = false;
-    fixture.componentRef.setInput(
-      'isMobileMode',
-      false
-    );
-    spyOn(productFeedbackService, 'changeSort').and.callThrough();
+    fixture.componentRef.setInput('isMobileMode', false);
+    vi.spyOn(productFeedbackService, 'changeSort');
     fixture.detectChanges();
   });
 
@@ -61,12 +67,14 @@ describe('ProductFeedbacksPanelComponent', () => {
         scrollHeight: 400
       }
     } as any;
-  
-    spyOn(productFeedbackService, 'areAllFeedbacksLoaded').and.returnValue(false);
-    spyOn(productFeedbackService, 'loadMoreFeedbacks').and.callThrough();
-  
+
+    vi.spyOn(productFeedbackService, 'areAllFeedbacksLoaded').mockReturnValue(
+      false
+    );
+    vi.spyOn(productFeedbackService, 'loadMoreFeedbacks');
+
     component.onScrollCheckAllFeedbacksLoaded(mockEvent);
-  
+
     expect(productFeedbackService.loadMoreFeedbacks).toHaveBeenCalled();
   });
 });

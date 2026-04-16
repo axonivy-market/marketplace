@@ -44,6 +44,7 @@
       "customSort": "Benutzerdefinierte Sortierung",
       "quickAccess": "Schnellzugriff",
       "newsManagement": "News Management",
+      "deprecationManagement": "Deprecation",
       "test": "Test",
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
@@ -53,7 +54,7 @@
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
       "contribute": "Hier findest du Erweiterungen für die Anbindung von  Standard-Softwarelösungen führender Anbieter wie Microsoft, Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder -signierung.",
-      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\"> implementiere deine eigene Erweiterung!</a>"
+      "link": "Werde Teil der Community und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"GitHub - How to contribute\"> implementiere deine eigene Erweiterung!</a>"
     },
     "filter": {
       "label": "Filter",
@@ -131,6 +132,9 @@
             "implementedBy": "Implementiert von",
             "version": "Version",
             "compatibility": "Kompatibilität",
+            "successor": "Nachfolger",
+            "nonSuccessor": "kein Nachfolger",
+            "successorToolTip": "Bitte beachten Sie, dass diese Market-Erweiterung als veraltet markiert ist. Wir empfehlen, stattdessen die Nachfolgeversion zu verwenden. Diese Erweiterung wird nicht mehr um neue Funktionen erweitert; es werden lediglich Fehlerbehebungen und Sicherheitsupdates bereitgestellt.",
             "cost": "Kosten",
             "language": "Sprache",
             "tag": "Tags",
@@ -176,7 +180,7 @@
       "currentProductTitle": "In Prüfung",
       "commentLabel": "Du kannst gerne einen Kommentar hinterlassen",
       "submitBtnLabel": "Review einreichen",
-      "loggedGithubAsLabel": "Eingeloggt bei Github als",
+      "loggedGithubAsLabel": "Eingeloggt bei GitHub als",
       "reviewLabel": "Review",
       "detailedReviews": "Ausführliche Reviews",
       "showMoreBtnLabel": "Mehr anzeigen",
@@ -239,13 +243,13 @@
     "monitor": {
       "dashboard": {
         "title": "Axon Ivy Marktplatz – Monitoring",
-        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"Github - Axon Ivy Market\">auf GitHub verfügbar</a>.",
+        "subtitle": "Diese Seite fasst die Monitoring-Ergebnisse der Axon Ivy Market Extensions zusammen – einschließlich Build-Pipelines (CI/DEV), End-to-End-Tests und Unit-Test-Resultaten. Der Quellcode ist Open Source und <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market\" aria-label=\"GitHub - Axon Ivy Market\">auf GitHub verfügbar</a>.",
         "noRepositories": "Keine Repositories gefunden.",
         "connector": "Konnektor",
         "ciLabel": "CI-Build",
         "devLabel": "DEV-Build",
         "e2eLabel": "E2E-Build",
-        "github": "Github",
+        "github": "GitHub",
         "passed": "Bestanden",
         "failed": "Fehlgeschlagen",
         "ciLastBuilt": "Letzter CI Built",
@@ -316,7 +320,7 @@
         "status": "Status",
         "lastRun": "Zuletzt ausgeführt am",
         "completed": "Abgeschlossen am",
-        "message": "Nachricht",
+        "message": "Änderungsprotokoll anzeigen",
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",
@@ -333,6 +337,10 @@
           "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",
           "overrideMarketItemPath": "Aktuellen Marktplatz-Elementpfad überschreiben",
           "validationMessage": "Erweiterungs-ID und marketItemPath sind erforderlich!"
+        },
+        "viewChangelog": {
+          "waitingLogText": "Warte auf Protokolle...",
+          "noLogText": "Keine Protokolle verfügbar."
         }
       },
       "securityMonitor": {
@@ -443,6 +451,37 @@
         "warning": "Warning",
         "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
       },
+      "deprecation": {
+        "pageTitle": "Axon Ivy Market Deprecated Products",
+        "title": "Axon Ivy Market Deprecation",
+        "description": "Manage how deprecated extensions are displayed",
+        "helpText": "Configure the deprecated extensions. Administrators can add, update for products",
+        "availableExtensions": "Deprecated Extensions",
+        "searchPlaceholder": "Search an extension",
+        "order": "Order",
+        "deprecatedButton": "Deprecate",
+        "updateForReadmeText": "Create Pull Request to update Readme",
+        "successor": "Successor:",
+        "confirmRemoveDeprecatedContent": "Are you sure to remove deprecation for this extension?",
+        "confirmRemoveDeprecatedTitle": "Remove deprecation confirmation",
+        "removeDeprecated": "Remove deprecated",
+        "extensionId": "Extension ID:",
+        "deprecatedTime": "Deprecated time",
+        "requester": "Requester",
+        "action": "Aktion",
+        "validation": {
+          "extensionIdRequired": "Erweiterungs-ID ist erforderlich",
+          "invalidSuccessorUrl": "URL muss mit http:// oder https:// beginnen"
+        },
+        "deprecateSuccess": "Extension has been deprecated successfully!",
+        "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
+        "pullRequestLabel": "Pull Request URL",
+        "copyLabel": "Copy",
+        "copiedLabel": "Copied!",
+        "deprecateProduct": "Deprecate Product",
+        "productIdInputPlaceholder": "Please select extension id to deprecate",
+        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
+      },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
         "editPageTitle": "Edit release letter",
@@ -460,6 +499,10 @@
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
         "genericErrorMessage": "An error occurred while processing your request. Please try again."
+      },
+      "gitHubUserBadge": {
+        "gitHubAccount": "GitHub account",
+        "logout": "Logout"
       }
     }
   }

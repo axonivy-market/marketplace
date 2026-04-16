@@ -6,6 +6,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Router } from '@angular/router';
 import { AdminAuthService } from '../admin-auth.service';
 import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
+import { UserInfo } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-token',
@@ -40,9 +41,9 @@ export class AdminTokenComponent implements OnInit {
     this.tokenControl.disable();
     
     this.authService.requestAccessToken(this.filledToken).subscribe({
-      next: jwtObject => {
+      next: (userInfo: UserInfo) => {
         this.errorMessage = '';
-        this.authService.setToken(jwtObject.token);
+        this.authService.setUserInfo(userInfo);
         this.isProcessing = false;
         this.tokenControl.enable();
         this.router.navigate(['/internal-dashboard']);
@@ -56,5 +57,4 @@ export class AdminTokenComponent implements OnInit {
       }
     });
   }
-
 }

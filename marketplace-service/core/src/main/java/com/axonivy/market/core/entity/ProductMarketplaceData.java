@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
+import java.util.Date;
 
 import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_MARKETPLACE_DATA;
 
@@ -29,6 +30,9 @@ public class ProductMarketplaceData extends AbstractGenericEntity<String> {
   private int installationCount;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
+  private String successor;
+  private Date deprecationDate;
+  private String deprecationRequester;
 
   @Override
   public String getId() {

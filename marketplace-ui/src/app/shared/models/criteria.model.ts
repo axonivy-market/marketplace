@@ -20,7 +20,7 @@ export interface ChangeLogCriteria {
 }
 
 export interface MonitoringCriteria {
-  search: string | '';
+  search: string;
   isFocused: string | null;
   sortDirection: string | null;
   workflowType: string | null;

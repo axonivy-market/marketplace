@@ -33,7 +33,7 @@
     [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
     [routerLink]="['/internal-dashboard/news-management/create']">
     <span>
-      <i class="fa-regular fa-square-plus me-2"></i>
+      <i class="ti ti-square-plus me-2"></i>
       {{ 'common.admin.newsManagement.create' | translate }}
     </span>
   </button>
@@ -64,7 +64,7 @@
           </td>
           @if (releaseLetter.latest) {
             <td class="text-center">
-              <i class="fa-solid fa-square-check"></i>
+              <i class="ti ti-square-check"></i>
             </td>
           } @else {
             <td></td>
@@ -83,7 +83,7 @@
               placement="top"
               [ngbTooltip]="'common.admin.newsManagement.view' | translate"
               tooltipClass="custom-tooltip-class">
-              <i class="fa-solid fa-eye"></i>
+              <i class="ti ti-eye"></i>
             </button>
             <button
               type="button"
@@ -102,7 +102,7 @@
               placement="top"
               [ngbTooltip]="'common.admin.newsManagement.edit' | translate"
               tooltipClass="custom-tooltip-class">
-              <i class="fa-solid fa-pen-to-square"></i>
+              <i class="ti ti-pencil"></i>
             </button>
             <button
               id="delete-button"
@@ -118,7 +118,7 @@
               placement="top"
               [ngbTooltip]="'common.admin.newsManagement.delete' | translate"
               tooltipClass="custom-tooltip-class">
-              <i class="fa-solid fa-trash"></i>
+              <i class="ti ti-trash"></i>
             </button>
           </td>
         </tr>
