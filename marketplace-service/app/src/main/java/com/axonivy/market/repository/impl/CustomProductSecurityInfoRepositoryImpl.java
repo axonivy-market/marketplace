@@ -1,7 +1,8 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
-import com.axonivy.market.enums.SecurityMonitorSortOption;
+import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.repository.CustomProductSecurityInfoRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -17,31 +18,22 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
   public CustomProductSecurityInfoRepositoryImpl(EntityManager entityManager) {this.entityManager = entityManager;}
 
   @Override
-  public Page<ProductSecurityInfo> searchProductSecurityAndSorting(String searchText,
-      SecurityMonitorSortOption sortOption, Pageable pageable) {
+  public Page<ProductSecurityInfo> searchProductSecurityAndSorting(ProductSecurityCriteria criteria,
+      Pageable pageable) {
+    String orderBy = getOrderBy(criteria.getSortOption(), criteria.getSortDirection());
 
-    String dir = "DESC";
-
-    String orderBy = switch (sortOption) {
-      case DEPENDABOT_ALERTS ->buildJsonSort("psi.dependabot_alerts", dir);
-      case CODE_SCANNING_ALERTS ->buildJsonSort("psi.code_scanning_alerts", dir);
-      case SECRET_SCANNING_ALERTS ->"psi.secret_scanning_alerts " + dir;
-      case REPO_NAME -> "psi.repo_name " + dir;
-    };
-
-    String sql = """
-        SELECT *
-        FROM product_security_info psi
-        ORDER BY """ + orderBy;
+    String sql = "SELECT * FROM product_security_info psi ORDER BY " + orderBy;
 
 
-    List<ProductSecurityInfo> content = entityManager
+    List<?> resultList = entityManager
         .createNativeQuery(sql, ProductSecurityInfo.class)
         .setFirstResult((int) pageable.getOffset())
         .setMaxResults(pageable.getPageSize())
         .getResultList();
+    List<ProductSecurityInfo> content = resultList.stream()
+        .map(ProductSecurityInfo.class::cast)
+        .toList();
 
-    // 🔹 Count query
     String countSql = "SELECT COUNT(*) FROM product_security_info";
 
     long total = ((Number) entityManager
@@ -51,12 +43,18 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
     return new PageImpl<>(content, pageable, total);
   }
 
+  private String getOrderBy(ProductSecuritySortOption sortOption, String direction) {
+    return switch (sortOption) {
+      case DEPENDABOT_ALERTS -> buildJsonSort("psi.dependabot_alerts", direction);
+      case CODE_SCANNING_ALERTS -> buildJsonSort("psi.code_scanning_alerts", direction);
+      case SECRET_SCANNING_ALERTS -> "psi.number_of_secret_scanning_alerts " + direction;
+      case REPO_NAME -> "psi.repo_name " + direction;
+    };
+  }
+
   private String buildJsonSort(String column, String dir) {
     return SEVERITIES.stream()
-        .map(sev -> String.format(
-            "CAST(COALESCE(%s::jsonb ->> '%s', '0') AS INT) %s",
-            column, sev, dir
-        ))
+        .map(sev -> String.format(" CAST(COALESCE(CAST(%s AS jsonb) ->> '%s', '0') AS integer) %s", column, sev, dir))
         .reduce((a, b) -> a + ", " + b)
         .orElse("");
   }

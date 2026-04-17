@@ -1,6 +1,7 @@
 package com.axonivy.market.github.service;
 
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -9,7 +10,6 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
-import com.axonivy.market.enums.SecurityMonitorSortOption;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import org.kohsuke.github.GHArtifact;
@@ -53,7 +53,7 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException;
 
-  Page<ProductSecurityInfo> searchSecurityDetails(Pageable pageable) throws IOException;
+  Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable) throws IOException;
 
   void syncSecurityDetailsForProduct() throws IOException;
 

@@ -6,9 +6,10 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.PullRequestAction;
-import com.axonivy.market.enums.SecurityMonitorSortOption;
+import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -34,9 +35,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -233,11 +232,9 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<ProductSecurityInfo> searchSecurityDetails(Pageable pageable) throws IOException {
-    Page<ProductSecurityInfo> asad = productSecurityInfoRepository.searchProductSecurityAndSorting("",
-        SecurityMonitorSortOption.of(
-            "dependabotAlerts"), pageable);
-    return asad;
+  public Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria,
+      Pageable pageable) {
+    return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
   }
 
   @Override
