@@ -58,11 +58,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest) {
-//    if (releaseLetterModelRequest.getSprint() == null
-//        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-//      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-//          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-//    }
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
     String unifiedSprint = unifySprint(releaseLetterModelRequest.getSprint());
@@ -87,11 +82,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   @Transactional
   public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
-//    if (releaseLetterModelRequest.getSprint() == null
-//        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
-//      throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
-//          ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
-//    }
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
     var foundReleaseLetter = findReleaseLetterById(id);
@@ -137,22 +127,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
       releaseLetter = new ReleaseLetter();
       releaseLetter = handleSavedAsDraftForNewReleaseLetter(releaseLetter, releaseLetterModelRequest);
     }
-
-//    String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
-//    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
-//
-//    if (!unifiedSelectedSprint.equals(unifiedNewSprint) && isSprintExisted(unifiedNewSprint)) {
-//      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
-//          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
-//    }
-//
-//    foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
-//    foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
-//    foundReleaseLetter.setSprint(unifiedNewSprint);
-//
-//    if (releaseLetterModelRequest.isLatest()) {
-//      releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
-//    }
 
     return releaseLetterRepository.save(releaseLetter);
   }
