@@ -38,6 +38,38 @@
         </span>
       </div>
     }
+    @if (productDetail.deprecated) {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{ 'common.product.detail.information.value.successor' | translate }}
+          <i
+            class="ti ti-info-circle hint-icon"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-html="true"
+            data-bs-custom-class="custom-tooltip"
+            [attr.data-bs-title]="'<p class=&quot;text-primary&quot;>' + ('common.product.detail.information.value.successorToolTip' | translate) + '</p>'"></i>
+        </span>
+        <div class="text-primary successor-value">
+          @if (hasSuccessor()) {
+              <a
+                class="text-primary successor-link"
+                [href]="getSuccessorUrl()"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ getSuccessorName() }}
+              </a>
+          } @else {
+            {{
+              'common.product.detail.information.value.nonSuccessor' | translate
+            }}
+          }
+        </div>
+      </div>
+    }
     <hr class="border-top-0" />
     <div class="d-flex flex-row justify-content-between p-0">
       <span [lang]="languageService.selectedLanguage()" class="text-secondary">

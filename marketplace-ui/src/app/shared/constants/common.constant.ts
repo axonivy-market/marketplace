@@ -60,6 +60,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.newsManagement',
     link: '/internal-dashboard/news-management'
+  },
+  {
+    label: 'common.nav.deprecationManagement',
+    link: '/internal-dashboard/deprecation-management'
   }
 ];
 
@@ -300,6 +304,7 @@ export const ERROR_CODES = [
 ];
 export const TOKEN_KEY = 'token';
 export const BEARER = 'Bearer';
+export const AUTHORIZATION_HEADER = 'Authorization';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';

@@ -1,0 +1,64 @@
+@if (visible) {
+  <div class="custom-modal-wrapper" [class.modal-closing]="isClosing">
+    <div class="custom-modal success-modal" [class.modal-closing]="isClosing">
+      <div class="modal-header border-bottom-0">
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          [disabled]="isClosing"
+          (click)="closeDialog.emit()"></button>
+      </div>
+
+      <div class="modal-body success-modal-body">
+        <img
+          ngSrc="/assets/images/misc/confetti-icon.png"
+          width="60"
+          height="60"
+          alt="Confetti Icon"
+          class="success-icon">
+
+        <h4 class="text-primary success-title">
+          {{
+            (successMode === DeprecationMode.UNDEPRECATE
+              ? 'common.admin.deprecation.removeDeprecatedSuccess'
+              : 'common.admin.deprecation.deprecateSuccess') | translate
+          }}
+        </h4>
+
+        @if (showPullRequest) {
+          <div class="success-pr-section">
+            <label class="form-label success-pr-label">
+              {{ 'common.admin.deprecation.pullRequestLabel' | translate }}
+            </label>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control success-pr-input"
+                [value]="pullRequestUrl"
+                readonly
+              />
+              <button
+                type="button"
+                class="btn btn-primary copy-btn input-group-text"
+                (click)="copyPullRequestUrl.emit()">
+                @if (isCopySuccessVisible) {
+                  <i class="ti ti-check me-1"></i>
+                  {{ 'common.admin.deprecation.copiedLabel' | translate }}
+                } @else {
+                  <i class="ti ti-clipboard me-1"></i>
+                  {{ 'common.admin.deprecation.copyLabel' | translate }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="custom-backdrop success-backdrop"
+    [class.backdrop-closing]="isClosing"
+    (click)="!isClosing && closeDialog.emit()"></div>
+}

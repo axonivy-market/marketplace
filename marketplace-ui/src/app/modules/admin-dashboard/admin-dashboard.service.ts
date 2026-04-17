@@ -13,7 +13,7 @@ import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-l
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from './../../shared/models/criteria.model';
+import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
 
 export type SyncTaskKey =
@@ -149,7 +149,7 @@ export class AdminDashboardService {
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }
     }
-    
+
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
@@ -225,4 +225,5 @@ export class AdminDashboardService {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
+
 }
