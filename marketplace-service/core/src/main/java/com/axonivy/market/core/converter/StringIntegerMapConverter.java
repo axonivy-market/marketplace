@@ -35,7 +35,8 @@ public class StringIntegerMapConverter implements AttributeConverter<Map<String,
       return Collections.emptyMap();
     }
     try {
-      return objectMapper.readValue(dbData, new TypeReference<Map<String, Integer>>() {});
+      return objectMapper.readValue(dbData, new TypeReference<>() {
+      });
     } catch (JsonProcessingException e) {
       LOGGER.error("Error converting JSON to map", e);
       return Collections.emptyMap();

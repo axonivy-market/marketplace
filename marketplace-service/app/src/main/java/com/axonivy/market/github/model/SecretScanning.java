@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Embeddable
 public class SecretScanning {
-  private Integer numberOfAlerts;
+  private Integer numberOfSecretScanningAlerts;
   @Enumerated(EnumType.STRING)
   private AccessLevel status;
 }

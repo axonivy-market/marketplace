@@ -42,14 +42,14 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private Dependabot dependabot;
 
   @Embedded
-  private SecretScanning secretScanning;
-
-  @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts")),
       @AttributeOverride(name = "status", column = @Column(name = "code_scanning_status"))
   })
   private CodeScanning codeScanning;
+
+  @Embedded
+  private SecretScanning secretScanning;
 
   @Override
   public String getId() {

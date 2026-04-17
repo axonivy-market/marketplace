@@ -8,6 +8,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.SecurityMonitorSortOption;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -33,7 +34,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -230,6 +233,14 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
+  public Page<ProductSecurityInfo> searchSecurityDetails(Pageable pageable) throws IOException {
+    Page<ProductSecurityInfo> asad = productSecurityInfoRepository.searchProductSecurityAndSorting("",
+        SecurityMonitorSortOption.of(
+            "dependabotAlerts"), pageable);
+    return asad;
+  }
+
+  @Override
   public void syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -335,7 +346,7 @@ public class GitHubServiceImpl implements GitHubService {
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
-          secretScanning.setNumberOfAlerts(alerts.size());
+          secretScanning.setNumberOfSecretScanningAlerts(alerts.size());
           return secretScanning;
         },
         SecretScanning::new
