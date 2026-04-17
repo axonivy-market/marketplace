@@ -226,4 +226,9 @@ export class AdminDashboardService {
     });
   }
 
+  saveAsDraft(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft/${id}`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
+  }
 }

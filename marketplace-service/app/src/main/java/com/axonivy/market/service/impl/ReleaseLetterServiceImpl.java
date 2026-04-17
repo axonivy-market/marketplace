@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Log4j2
@@ -116,17 +117,23 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Transactional
   @Override
-  public ReleaseLetter saveAsDraft(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
+  public ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
     ReleaseLetter releaseLetter;
-    try {
-      releaseLetter = findReleaseLetterById(id);
-      releaseLetter = handleSavedAsDraftForExistedReleaseLetter(releaseLetter, releaseLetterModelRequest);
-    } catch (NotFoundException notFoundException) {
-      releaseLetter = new ReleaseLetter();
-      releaseLetter = handleSavedAsDraftForNewReleaseLetter(releaseLetter, releaseLetterModelRequest);
+
+    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getId())) {
+      releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
+    } else {
+      releaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
+      releaseLetter = handleSavedAsDraftForExistedReleaseLetter(releaseLetter, releaseLetterModelRequest));
     }
+
+//    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
+//
+//    ReleaseLetter releaseLetter = optional
+//        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
+//        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
 
     return releaseLetterRepository.save(releaseLetter);
   }

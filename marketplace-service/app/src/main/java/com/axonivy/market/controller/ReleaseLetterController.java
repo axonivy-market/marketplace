@@ -118,6 +118,18 @@ public class ReleaseLetterController {
   }
 
   @Authorized
+  @PutMapping(SAVE_AS_DRAFT)
+  @Operation(hidden = true)
+  public ResponseEntity<ReleaseLetterModel> saveAsDraft(
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
+    var updatedReleaseLetter = releaseLetterService.saveAsDraft(releaseLetterModelRequest);
+    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
+    releaseLetterResource.add(
+        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
+    return ResponseEntity.ok(releaseLetterResource);
+  }
+
+  @Authorized
   @DeleteMapping(BY_ID)
   @Operation(hidden = true)
   public void deleteReleaseLetter(

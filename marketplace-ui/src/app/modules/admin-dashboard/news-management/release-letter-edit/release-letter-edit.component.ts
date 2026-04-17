@@ -141,6 +141,28 @@ export class ReleaseLetterEditComponent implements OnInit {
       });
   }
 
+  saveAsDraft() {
+    this.releaseLetter.draftContent = this.releaseLetter.content;
+    this.adminDashboardService
+      .saveAsDraft(this.releaseLetter.id, this.prepareDraftReleaseLetter())
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: _res => {
+          this.router.navigate([this.newsManangementUrl]);
+        },
+        error: err => {
+          this.handleError(err.error.helpCode);
+        }
+      });
+  }
+
+  prepareDraftReleaseLetter(): ReleaseLetter {
+    return {
+      ...this.releaseLetter,
+      draftContent: this.releaseLetter.content
+    };
+  }
+
   handleError(errorHelpCode: string) {
     switch (errorHelpCode) {
       case SPRINT_CANNOT_BE_BLANK.toString():
