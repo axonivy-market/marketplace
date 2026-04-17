@@ -1,0 +1,63 @@
+package com.axonivy.market.entity;
+
+import com.axonivy.market.core.entity.AbstractAuditableEntity;
+import com.axonivy.market.github.model.CodeScanning;
+import com.axonivy.market.github.model.Dependabot;
+import com.axonivy.market.github.model.SecretScanning;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Date;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "product_security_info")
+public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
+  @Id
+  private String repoName;
+  private boolean isArchived;
+  private String visibility;
+  private boolean branchProtectionEnabled;
+  private Date lastCommitDate;
+  private String latestCommitSHA;
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts")),
+      @AttributeOverride(name = "status", column = @Column(name = "dependabot_status"))
+  })
+  private Dependabot dependabot;
+
+  @Embedded
+  private SecretScanning secretScanning;
+
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts")),
+      @AttributeOverride(name = "status", column = @Column(name = "code_scanning_status"))
+  })
+  private CodeScanning codeScanning;
+
+  @Override
+  public String getId() {
+    return repoName;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.repoName = id;
+  }
+}

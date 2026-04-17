@@ -4,7 +4,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.GithubReposService;

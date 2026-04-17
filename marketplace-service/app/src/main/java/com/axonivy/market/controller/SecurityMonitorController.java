@@ -3,7 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,4 +36,14 @@ public class SecurityMonitorController {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     return ResponseEntity.ok(securityInfoList);
   }
+
+  @Authorized
+  @PostMapping
+  @Operation(hidden = true)
+  public ResponseEntity<Void> syncGitHubMarketplaceSecurity() throws IOException {
+    gitHubService.syncSecurityDetailsForProduct();
+    return ResponseEntity.ok().build();
+  }
+
+
 }

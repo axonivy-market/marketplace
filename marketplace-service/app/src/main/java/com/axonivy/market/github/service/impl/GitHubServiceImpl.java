@@ -15,13 +15,14 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.ProductContentUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -85,13 +86,15 @@ public class GitHubServiceImpl implements GitHubService {
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
+  private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
+      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler, ProductSecurityInfoRepository productSecurityInfoRepository) {
     this.restTemplate = restTemplate;
     this.githubUserRepository = githubUserRepository;
     this.gitHubProperty = gitHubProperty;
     this.taskScheduler = taskScheduler;
+    this.productSecurityInfoRepository  = productSecurityInfoRepository;
   }
 
   @Override
@@ -226,6 +229,20 @@ public class GitHubServiceImpl implements GitHubService {
             Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
   }
 
+  @Override
+  public void syncSecurityDetailsForProduct() throws IOException {
+    var gitHub = getGitHub(gitHubProperty.getToken());
+    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+        .map(repo -> CompletableFuture.supplyAsync(
+            () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken()),
+            taskScheduler.getScheduledExecutor())).toList();
+    List<ProductSecurityInfo> productSecurityInfos = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
+            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
+    productSecurityInfoRepository.saveAll(productSecurityInfos);
+  }
+
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
     if (gitHub == null) {
       return false;
@@ -245,7 +262,7 @@ public class GitHubServiceImpl implements GitHubService {
     try {
       return fetchSecurityInfo(repo, organization, accessToken);
     } catch (IOException e) {
-      log.error("Error fetching security info for repo: " + repo.getName(), e);
+      log.error("Error fetching security info for repo: {}", repo.getName(), e);
       return new ProductSecurityInfo();
     }
   }

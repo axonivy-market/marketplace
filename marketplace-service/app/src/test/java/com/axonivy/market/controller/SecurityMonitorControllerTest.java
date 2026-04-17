@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 
 import org.junit.jupiter.api.Test;

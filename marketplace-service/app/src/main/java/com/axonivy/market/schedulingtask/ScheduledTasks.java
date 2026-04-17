@@ -5,7 +5,7 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
