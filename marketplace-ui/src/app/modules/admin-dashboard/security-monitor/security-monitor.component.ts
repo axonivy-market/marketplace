@@ -1,10 +1,4 @@
-import {
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  PLATFORM_ID
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -36,13 +30,7 @@ const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
   selector: 'app-security-monitor',
-  imports: [
-    CommonModule,
-    FormsModule,
-    LoadingSpinnerComponent,
-    TranslateModule,
-    NgbPaginationModule
-  ],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule, NgbPaginationModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss']
 })
@@ -103,19 +91,9 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
         });
       this.subscriptions.push(searchSubscription);
 
-      this.pageTitleService.setTitleOnLangChange(
-        'common.admin.securityMonitor.pageTitle'
-      );
+      this.pageTitleService.setTitleOnLangChange('common.admin.securityMonitor.pageTitle');
       this.loadSecurityDetails();
     }
-  }
-
-  onSubmit(): void {
-    if (this.isLoading) {
-      return;
-    }
-    this.resetToFirstPage();
-    this.loadSecurityDetails();
   }
 
   onSearchChanged(searchString: string): void {
@@ -212,11 +190,7 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(
-    repoName: string,
-    page: keyof typeof REPO_PAGE_PATHS,
-    lastCommitSHA?: string
-  ): void {
+  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
@@ -237,10 +211,7 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     }
 
     for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
-      if (
-        index < TIME_UNITS.length - 1 &&
-        diffInSeconds < TIME_UNITS[index + 1].SECONDS
-      ) {
+      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
         const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
