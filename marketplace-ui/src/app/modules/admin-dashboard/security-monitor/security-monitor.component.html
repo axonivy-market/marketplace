@@ -32,7 +32,6 @@
       <i class="ti ti-search search-icon"></i>
     </div>
     <input
-      #searchInput
       type="text"
       autocomplete="on"
       class="form-control input__search bg-secondary border-0 rounded-start-0 ps-0 search-input"
@@ -229,7 +228,7 @@
       <ngb-pagination [collectionSize]="totalElements" [(page)]="page" [pageSize]="pageSize"
                       (pageChange)="onPageChange($event)">
       </ngb-pagination>
-      <select class="number-select pagination-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
+      <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
         <option [ngValue]="10">{{ 'common.monitor.pagination.tenItems' | translate }}</option>
         <option [ngValue]="20">{{ 'common.monitor.pagination.twentyItems' | translate }}</option>
         <option [ngValue]="ALL_ITEMS_PAGE_SIZE">{{ 'common.monitor.pagination.all' | translate }}</option>

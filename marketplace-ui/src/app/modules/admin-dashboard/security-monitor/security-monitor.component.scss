@@ -280,11 +280,7 @@
 }
 
 // Pagination styles
-.pagination-container {
-  margin-top: 1rem;
-}
-
-.pagination-select {
+.pagination {
   width: 16rem !important;
   cursor: pointer;
 }
@@ -293,7 +289,7 @@
   color: var(--ivy-primary-bg);
 }
 
-.number-select {
+::ng-deep select.form-select.pagination {
   height: 37px;
   line-height: 16.8px;
   font-weight: 400;
@@ -301,6 +297,8 @@
   text-align: left;
   border-radius: 10px;
   padding: 1px 1px 1px 10px;
-  gap: 10px;
   opacity: 80%;
+  color: var(--ivy-text-primary-color);
 }
+
+

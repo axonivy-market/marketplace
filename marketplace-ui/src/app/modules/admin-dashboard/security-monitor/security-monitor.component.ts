@@ -26,11 +26,13 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { finalize, Subscription } from 'rxjs';
+import { debounceTime, finalize, Subject, Subscription } from 'rxjs';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { SecurityMonitorSortOption } from '../../../shared/enums/security-monitor-sort.enum';
 import { SecurityMonitorCriteria } from '../../../shared/models/criteria.model';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+
+const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
   selector: 'app-security-monitor',
@@ -78,6 +80,7 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
 
   // Search
   searchText = '';
+  searchTextChanged = new Subject<string>();
 
   // Criteria
   criteria: SecurityMonitorCriteria = {
@@ -91,6 +94,15 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      const searchSubscription = this.searchTextChanged
+        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+        .subscribe(searchString => {
+          this.criteria.searchText = searchString;
+          this.resetToFirstPage();
+          this.loadSecurityDetails();
+        });
+      this.subscriptions.push(searchSubscription);
+
       this.pageTitleService.setTitleOnLangChange(
         'common.admin.securityMonitor.pageTitle'
       );
@@ -108,16 +120,12 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
 
   onSearchChanged(searchString: string): void {
     this.searchText = searchString;
-    this.criteria.searchText = searchString;
-    this.resetToFirstPage();
-    this.loadSecurityDetails();
+    this.searchTextChanged.next(searchString);
   }
 
   onClearSearch(): void {
     this.searchText = '';
-    this.criteria.searchText = '';
-    this.resetToFirstPage();
-    this.loadSecurityDetails();
+    this.searchTextChanged.next('');
   }
 
   onPageChange(newPage: number): void {
