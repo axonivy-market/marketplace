@@ -113,6 +113,13 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     this.loadSecurityDetails();
   }
 
+  onClearSearch(): void {
+    this.searchText = '';
+    this.criteria.searchText = '';
+    this.resetToFirstPage();
+    this.loadSecurityDetails();
+  }
+
   onPageChange(newPage: number): void {
     this.page = newPage;
     this.criteria.pageable.page = newPage - 1;

@@ -2,7 +2,7 @@
   <!-- Search Bar -->
   <div class="feature-bar d-flex align-items-center justify-content-between">
     <app-product-filter class="flex-grow-1 h-100" (searchChange)="onSearchChanged($event)"
-    [currentPage]="PAGE.MONITOR"></app-product-filter>
+                        [currentPage]="PAGE.MONITOR"></app-product-filter>
 
     <!-- Mode Toggle -->
     <div class="mode-button bg-secondary d-flex ms-2 h-100 justify-content-center align-items-center">
@@ -11,93 +11,95 @@
         <div class="slider" [class.report-active]="mode[tabKey] === 'report'"></div>
 
         <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'default-mode-' + tabKey"
-          autocomplete="off" [(ngModel)]="mode[tabKey]" value="default" />
+               autocomplete="off" [(ngModel)]="mode[tabKey]" value="default"/>
         <label class="btn border-0 justify-content-between align-items-center align-content-center"
-          [for]="'default-mode-' + tabKey">
+               [for]="'default-mode-' + tabKey">
           {{ 'common.monitor.dashboard.toggle.default' | translate }}
         </label>
 
         <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'report-mode-' + tabKey"
-          autocomplete="off" [(ngModel)]="mode[tabKey]" value="report" />
+               autocomplete="off" [(ngModel)]="mode[tabKey]" value="report"/>
         <label class="btn border-0 justify-content-between align-items-center align-content-center"
-          [for]="'report-mode-' + tabKey">
+               [for]="'report-mode-' + tabKey">
           {{ 'common.monitor.dashboard.toggle.report' | translate }}
         </label>
       </div>
     </div>
   </div>
-  <div  class="position-relative">
+  <div class="position-relative">
     <app-loading-spinner
       containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded"
-      [key]="LoadingComponentId.MONITORING_DASHBOARD" />
+      [key]="LoadingComponentId.MONITORING_DASHBOARD"/>
     <table class="table">
       <thead>
-        <tr>
-          <th class="text-primary connector-column" (click)="sortRepositoriesByColumn(COLUMN_NAME)">
-            <h5 class="table-header">
-              <i class="ti" [ngClass]="getSortIcon(COLUMN_NAME)"></i>
-              {{ 'common.monitor.dashboard.connector' | translate }}
-            </h5>
-          </th>
-          <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_CI)">
-            <h5 class="table-header">
-              <i class="ti" [ngClass]="getSortIcon(COLUMN_CI)"></i>
-              {{ 'common.monitor.dashboard.ciLabel' | translate }}
-              <app-build-badge-tooltip buildType="CI" />
-            </h5>
-          </th>
-          <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
-            <h5 class="table-header">
-              <i class="ti" [ngClass]="getSortIcon(COLUMN_DEV)"></i>
-              {{ 'common.monitor.dashboard.devLabel' | translate }}
-              <app-build-badge-tooltip buildType="DEV" />
-            </h5>
-          </th>
-          <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
-            <h5 class="table-header">
-              <i class="ti" [ngClass]="getSortIcon(COLUMN_E2E)"></i>
-              {{ 'common.monitor.dashboard.e2eLabel' | translate }}
-              <app-build-badge-tooltip buildType="E2E" />
-            </h5>
-          </th>
-          <th class="text-primary">
-            <h5 class="table-header">
-              {{ 'common.monitor.dashboard.github' | translate }}
-            </h5>
-          </th>
-        </tr>
+      <tr>
+        <th class="text-primary connector-column" (click)="sortRepositoriesByColumn(COLUMN_NAME)">
+          <h5 class="table-header">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_NAME)"></i>
+            {{ 'common.monitor.dashboard.connector' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_CI)">
+          <h5 class="table-header">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_CI)"></i>
+            {{ 'common.monitor.dashboard.ciLabel' | translate }}
+            <app-build-badge-tooltip buildType="CI"/>
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
+          <h5 class="table-header">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_DEV)"></i>
+            {{ 'common.monitor.dashboard.devLabel' | translate }}
+            <app-build-badge-tooltip buildType="DEV"/>
+          </h5>
+        </th>
+        <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
+          <h5 class="table-header">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_E2E)"></i>
+            {{ 'common.monitor.dashboard.e2eLabel' | translate }}
+            <app-build-badge-tooltip buildType="E2E"/>
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.monitor.dashboard.github' | translate }}
+          </h5>
+        </th>
+      </tr>
       </thead>
       @if (displayedRepositories.length > 0) {
-      <tbody>
-        @for (repo of displayedRepositories; track repo.productId) {
-        <tr>
-          <td class="align-middle">
-            <p class="name">
-              @if (repo.productId) {
-              <a id="product-name" [href]="getMarketUrl(repo.productId)" target="_blank" rel="noopener noreferrer">
-                {{ repo.repoName }}
-              </a>
-              } @else {
-              <span class="no-link">{{ repo.repoName }}</span>
+        <tbody>
+          @for (repo of displayedRepositories; track repo.productId) {
+            <tr>
+              <td class="align-middle">
+                <p class="name">
+                  @if (repo.productId) {
+                    <a id="product-name" [href]="getMarketUrl(repo.productId)" target="_blank"
+                       rel="noopener noreferrer">
+                      {{ repo.repoName }}
+                    </a>
+                  } @else {
+                    <span class="no-link">{{ repo.repoName }}</span>
+                  }
+                </p>
+              </td>
+              @for (workflowType of workflowKeys; track workflowType) {
+                <td [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
+                  <app-repo-test-result [workflowType]="workflowType"
+                                        [workflowInfo]="findWorkflowMatch(repo, workflowType)"
+                                        [repository]="repo" [mode]="mode[tabKey]"></app-repo-test-result>
+                </td>
               }
-            </p>
-          </td>
-          @for (workflowType of workflowKeys; track workflowType) {
-          <td [ngClass]="{'no-workflow': repo.workflowInformation.length == 0}">
-            <app-repo-test-result [workflowType]="workflowType" [workflowInfo]="findWorkflowMatch(repo, workflowType)"
-              [repository]="repo" [mode]="mode[tabKey]"></app-repo-test-result>
-          </td>
+              <td class="align-middle">
+                <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
+                  <i class="ti ti-external-link" aria-hidden="true"></i>
+                </a>
+              </td>
+            </tr>
           }
-          <td class="align-middle">
-            <a [href]="repo.htmlUrl" target="_blank" rel="noopener noreferrer">
-              <i class="ti ti-external-link" aria-hidden="true"></i>
-            </a>
-          </td>
-        </tr>
-        }
-      </tbody>
+        </tbody>
       } @else if (displayedRepositories.length == 0) {
-      <tbody>
+        <tbody>
         <tr>
           <td colspan="12" class="border-0">
             <p class="text-primary m-0 text-center no-repositories" [lang]="languageService.selectedLanguage()">
@@ -105,26 +107,26 @@
             </p>
           </td>
         </tr>
-      </tbody>
+        </tbody>
       }
     </table>
   </div>
   <!-- Pagination -->
   @if (totalElements > 0) {
-  <div class="d-flex justify-content-between py-2">
-    <ngb-pagination [collectionSize]="totalElements" [(page)]="this.page" [pageSize]="this.pageSize"
-      (pageChange)="onPageChange($event)"></ngb-pagination>
-    <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
-      <option [ngValue]="10">
-        {{ 'common.monitor.pagination.tenItems' | translate }}
-      </option>
-      <option [ngValue]="20">
-        {{ 'common.monitor.pagination.twentyItems' | translate }}
-      </option>
-      <option [ngValue]="ALL_ITEMS_PAGE_SIZE">
-        {{ 'common.monitor.pagination.all' | translate }}
-      </option>
-    </select>
-  </div>
+    <div class="d-flex justify-content-between py-2">
+      <ngb-pagination [collectionSize]="totalElements" [(page)]="this.page" [pageSize]="this.pageSize"
+                      (pageChange)="onPageChange($event)"/>
+      <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
+        <option [ngValue]="10">
+          {{ 'common.monitor.pagination.tenItems' | translate }}
+        </option>
+        <option [ngValue]="20">
+          {{ 'common.monitor.pagination.twentyItems' | translate }}
+        </option>
+        <option [ngValue]="ALL_ITEMS_PAGE_SIZE">
+          {{ 'common.monitor.pagination.all' | translate }}
+        </option>
+      </select>
+    </div>
   }
 </div>
