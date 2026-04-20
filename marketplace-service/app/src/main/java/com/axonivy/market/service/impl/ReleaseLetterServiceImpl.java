@@ -120,15 +120,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   public ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
-    ReleaseLetter releaseLetter;
-
-    if (ObjectUtils.isEmpty(releaseLetterModelRequest.getId())) {
-      releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
-    } else {
-      releaseLetter = findReleaseLetterById(releaseLetterModelRequest.getId());
-      releaseLetter = handleSavedAsDraftForExistedReleaseLetter(releaseLetter, releaseLetterModelRequest));
-    }
-
+    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
 //    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
 //
 //    ReleaseLetter releaseLetter = optional
@@ -136,6 +128,17 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 //        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
 
     return releaseLetterRepository.save(releaseLetter);
+  }
+
+  @Transactional
+  @Override
+  public ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
+    validateReleaseLetterModelRequest(releaseLetterModelRequest);
+
+    ReleaseLetter foundReleaseLetter = findReleaseLetterById(id);
+    handleSavedAsDraftForExistedReleaseLetter(foundReleaseLetter, releaseLetterModelRequest);
+
+    return releaseLetterRepository.save(foundReleaseLetter);
   }
 
   private void validateReleaseLetterModelRequest(ReleaseLetterModelRequest releaseLetterModelRequest) {
@@ -146,7 +149,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     }
   }
 
-  private ReleaseLetter handleSavedAsDraftForExistedReleaseLetter(ReleaseLetter foundReleaseLetter,
+  private void handleSavedAsDraftForExistedReleaseLetter(ReleaseLetter foundReleaseLetter,
       ReleaseLetterModelRequest releaseLetterModelRequest) {
     String unifiedSelectedSprint = unifySprint(foundReleaseLetter.getSprint());
     String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
@@ -158,8 +161,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     foundReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
-
-    return foundReleaseLetter;
   }
 
   private ReleaseLetter handleSavedAsDraftForNewReleaseLetter(ReleaseLetter newReleaseLetter,

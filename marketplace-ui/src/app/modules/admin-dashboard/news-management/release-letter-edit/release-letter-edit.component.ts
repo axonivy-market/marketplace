@@ -1,12 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  Component,
-  Inject,
-  inject,
-  OnInit,
-  PLATFORM_ID,
-  signal
-} from '@angular/core';
+import { Component, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,13 +17,7 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 
 @Component({
   selector: 'app-release-letter-edit',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule,
-    MarkdownEditorComponent
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent],
   templateUrl: './release-letter-edit.component.html',
   styleUrl: './release-letter-edit.component.scss'
 })
@@ -66,9 +53,7 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   ngOnInit() {
     if (this.isBrowser) {
-      this.pageTitleService.setTitleOnLangChange(
-        'common.admin.newsManagement.pageTitle'
-      );
+      this.pageTitleService.setTitleOnLangChange('common.admin.newsManagement.pageTitle');
     }
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
@@ -83,14 +68,12 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   getReleaseLetterById(id: string): void {
-    this.adminDashboardService
-      .getReleaseLetterById(id)
-      .subscribe(response => {
-        this.releaseLetter.id = response.id;
-        this.releaseLetter.content = response.content;
-        this.releaseLetter.sprint = response.sprint;
-        this.releaseLetter.latest = response.latest;
-      });
+    this.adminDashboardService.getReleaseLetterById(id).subscribe(response => {
+      this.releaseLetter.id = response.id;
+      this.releaseLetter.content = response.content;
+      this.releaseLetter.sprint = response.sprint;
+      this.releaseLetter.latest = response.latest;
+    });
   }
 
   onSubmit(event: Event) {
@@ -112,16 +95,13 @@ export class ReleaseLetterEditComponent implements OnInit {
   createReleaseLetter(releaseLetter: ReleaseLetter) {
     this.adminDashboardService
       .createReleaseLetter(releaseLetter)
-      .pipe(
-        finalize(() => {
-          this.isSubmitting.set(false);
-        })
-      )
+      .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {
           this.router.navigate([this.newsManangementUrl]);
         },
         error: err => {
+          console.log(err);
           this.handleError(err.error.helpCode);
         }
       });
@@ -143,17 +123,36 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   saveAsDraft() {
     this.releaseLetter.draftContent = this.releaseLetter.content;
-    this.adminDashboardService
-      .saveAsDraft(this.releaseLetter.id, this.prepareDraftReleaseLetter())
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: _res => {
-          this.router.navigate([this.newsManangementUrl]);
-        },
-        error: err => {
-          this.handleError(err.error.helpCode);
-        }
-      });
+    if (this.isCreateMode) {
+      this.adminDashboardService
+        .saveAsDraft(this.prepareDraftReleaseLetter())
+        .pipe(finalize(() => this.isSubmitting.set(false)))
+        .subscribe({
+          next: _res => {
+            this.router.navigate([this.newsManangementUrl]);
+          },
+          error: err => {
+            console.log(err);
+
+            this.handleError(err.error.helpCode);
+          }
+        });
+    } 
+    else {
+      this.adminDashboardService
+        .saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter())
+        .pipe(finalize(() => this.isSubmitting.set(false)))
+        .subscribe({
+          next: _res => {
+            this.router.navigate([this.newsManangementUrl]);
+          },
+          error: err => {
+            console.log(err);
+
+            this.handleError(err.error.helpCode);
+          }
+        });
+    }
   }
 
   prepareDraftReleaseLetter(): ReleaseLetter {
@@ -178,9 +177,7 @@ export class ReleaseLetterEditComponent implements OnInit {
         return;
 
       default:
-        this.genericErrorMessage = this.translateService.instant(
-          'common.admin.releaseLetterEdit.genericErrorMessage'
-        );
+        this.genericErrorMessage = this.translateService.instant('common.admin.releaseLetterEdit.genericErrorMessage');
         return;
     }
   }

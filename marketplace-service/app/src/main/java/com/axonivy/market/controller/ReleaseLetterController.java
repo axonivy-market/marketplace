@@ -130,6 +130,20 @@ public class ReleaseLetterController {
   }
 
   @Authorized
+  @PutMapping(SAVE_AS_DRAFT_BY_ID)
+  @Operation(hidden = true)
+  public ResponseEntity<ReleaseLetterModel> saveAsDraftById(
+      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
+          in = ParameterIn.PATH) String id,
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
+    var updatedReleaseLetter = releaseLetterService.saveAsDraftById(id, releaseLetterModelRequest);
+    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
+    releaseLetterResource.add(
+        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
+    return ResponseEntity.ok(releaseLetterResource);
+  }
+
+  @Authorized
   @DeleteMapping(BY_ID)
   @Operation(hidden = true)
   public void deleteReleaseLetter(

@@ -18,5 +18,7 @@ public interface ReleaseLetterService {
 
   ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
 
+  ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
+
   void deleteReleaseLetterById(String id);
 }
