@@ -24,154 +24,184 @@
     </div>
   </div>
 </div>
-<div class="header">
-  <h3>
-    <a
-      class="reload-link"
-      (click)="!isLoading && onSubmit()"
-      [class.disabled]="isLoading"
-      [attr.aria-disabled]="isLoading">
-      {{ 'common.admin.securityMonitor.reloadData' | translate }}
-    </a>
-  </h3>
+<div class="header d-flex align-items-center justify-content-end">
+  <a
+    class="reload-link"
+    (click)="!isLoading && onSubmit()"
+    [class.disabled]="isLoading"
+    [attr.aria-disabled]="isLoading">
+    <i class="ti ti-refresh"></i>
+    {{ 'common.admin.securityMonitor.reloadData' | translate }}
+  </a>
 </div>
 
-<div class="repo-grid position-relative">
-  @for (repo of repos; track $index) {
-    <div class="repo-card">
-      <div class="repo-header">
-        <h3 (click)="navigateToRepoPage(repo.repoName, 'security')">
-          {{ repo.repoName }}
-        </h3>
-        <span class="visibility text-capitalize">{{ repo.visibility }}</span>
-        @if (repo.archived) {
-          <span class="archived">
-            {{ 'common.admin.securityMonitor.archived' | translate }}
-          </span>
-        }
-      </div>
-      <div class="repo-info">
-        <p>
-          <i class="icon ti ti-robot"></i>
-          <span>
-            <a (click)="navigateToRepoPage(repo.repoName, 'dependabot')">
-              {{ 'common.admin.securityMonitor.dependabot' | translate }}
-            </a>
-            :
-          </span>
-          @if (repo.dependabot.status == 'DISABLED') {
-            <span class="badge none">
-              {{ 'common.admin.securityMonitor.disabled' | translate }}
-            </span>
-          } @else if (repo.dependabot.status == 'NO_PERMISSION') {
-            <span class="badge no-permission">
-              {{ 'common.admin.securityMonitor.noPermission' | translate }}
-            </span>
-          } @else if (hasAlerts(repo.dependabot.alerts)) {
-            @for (alert of alertKeys(repo.dependabot.alerts); track $index) {
-              <span [ngClass]="['badge', alert]">
-                {{ repo.dependabot.alerts[alert] }} {{ alert }}
-              </span>
-            }
-          } @else {
-            <span class="badge active">
-              {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
-            </span>
-          }
-        </p>
-        <p>
-          <i class="icon ti ti-device-laptop"></i>
-          <span>
-            <a (click)="navigateToRepoPage(repo.repoName, 'codeScanning')">
-              {{ 'common.admin.securityMonitor.codeScanning' | translate }}
-            </a>
-            :
-          </span>
-          @if (repo.codeScanning.status == 'DISABLED') {
-            <span class="badge none">
-              {{ 'common.admin.securityMonitor.disabled' | translate }}
-            </span>
-          } @else if (repo.codeScanning.status == 'NO_PERMISSION') {
-            <span class="badge no-permission">
-              {{ 'common.admin.securityMonitor.noPermission' | translate }}
-            </span>
-          } @else if (hasAlerts(repo.codeScanning.alerts)) {
-            @for (alert of alertKeys(repo.codeScanning.alerts); track $index) {
-              <span [ngClass]="['badge', alert]">
-                {{ repo.codeScanning.alerts[alert] }} {{ alert }}
-              </span>
-            }
-          } @else {
-            <span class="badge active">
-              {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
-            </span>
-          }
-        </p>
-        <p>
-          <i class="icon ti ti-key"></i>
-          <span>
-            <a (click)="navigateToRepoPage(repo.repoName, 'secretScanning')">
-              {{ 'common.admin.securityMonitor.secretScanning' | translate }}
-            </a>
-            :
-          </span>
-          @if (repo.secretScanning.status == 'DISABLED') {
-            <span class="badge none">
-              {{ 'common.admin.securityMonitor.disabled' | translate }}
-            </span>
-          } @else if (repo.secretScanning.status == 'NO_PERMISSION') {
-            <span class="badge no-permission">
-              {{ 'common.admin.securityMonitor.noPermission' | translate }}
-            </span>
-          } @else if (repo.secretScanning.numberOfAlerts) {
-            <span class="badge critical">
-              {{ repo.secretScanning.numberOfAlerts }} alerts
-            </span>
-          } @else {
-            <span class="badge active">
-              {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
-            </span>
-          }
-        </p>
-        <p>
-          <i class="icon ti ti-wall"></i>
-          <span>
-            <a (click)="navigateToRepoPage(repo.repoName, 'branches')">
-              {{ 'common.admin.securityMonitor.branchProtection' | translate }}
-            </a>
-            :
-          </span>
-          @if (repo.branchProtectionEnabled) {
-            <span class="badge active">
-              {{ 'common.admin.securityMonitor.enabled' | translate }}
-            </span>
-          } @else {
-            <span class="badge none">
-              {{ 'common.admin.securityMonitor.disabled' | translate }}
-            </span>
-          }
-        </p>
-        <p>
-          <i class="icon ti ti-stopwatch"></i>
-          <span>
-            <a
-              (click)="
-                navigateToRepoPage(
-                  repo.repoName,
-                  'lastCommit',
-                  repo.lastCommitSHA
-                )
-              ">
-              {{ 'common.admin.securityMonitor.lastCommit' | translate }}
-            </a>
-            :
-          </span>
-          {{ formatCommitDate(repo.lastCommitDate) }}
-        </p>
-      </div>
-    </div>
-  }
+<div class="security-monitor-wrapper position-relative">
   <app-loading-spinner
-    containerClasses="d-flex justify-content-center position-absolute align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded"
     [key]="LoadingComponentId.SECURITY_MONITOR" />
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary connector-column">
+          <h5 class="table-header">
+            {{ 'common.admin.securityMonitor.repoName' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary security-column">
+          <h5 class="table-header">
+            <i class="ti ti-robot"></i>
+            {{ 'common.admin.securityMonitor.dependabot' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary security-column">
+          <h5 class="table-header">
+            <i class="ti ti-device-laptop"></i>
+            {{ 'common.admin.securityMonitor.codeScanning' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary security-column">
+          <h5 class="table-header">
+            <i class="ti ti-key"></i>
+            {{ 'common.admin.securityMonitor.secretScanning' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary protection-column">
+          <h5 class="table-header">
+            <i class="ti ti-wall"></i>
+            {{ 'common.admin.securityMonitor.branchProtection' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary commit-column">
+          <h5 class="table-header">
+            <i class="ti ti-stopwatch"></i>
+            {{ 'common.admin.securityMonitor.lastCommit' | translate }}
+          </h5>
+        </th>
+      </tr>
+    </thead>
+    @if (repos.length > 0) {
+      <tbody>
+        @for (repo of repos; track $index) {
+          <tr>
+            <!-- Repo Name -->
+            <td class="align-middle">
+              <div class="repo-name-cell">
+                <a class="name" (click)="navigateToRepoPage(repo.repoName, 'security')">
+                  {{ repo.repoName }}
+                </a>
+                <span class="visibility text-capitalize">{{ repo.visibility }}</span>
+                @if (repo.archived) {
+                  <span class="archived">
+                    {{ 'common.admin.securityMonitor.archived' | translate }}
+                  </span>
+                }
+              </div>
+            </td>
+            <!-- Dependabot -->
+            <td class="align-middle">
+              <a class="cell-link" (click)="navigateToRepoPage(repo.repoName, 'dependabot')">
+                @if (repo.dependabot.status == 'DISABLED') {
+                  <span class="badge none">
+                    {{ 'common.admin.securityMonitor.disabled' | translate }}
+                  </span>
+                } @else if (repo.dependabot.status == 'NO_PERMISSION') {
+                  <span class="badge no-permission">
+                    {{ 'common.admin.securityMonitor.noPermission' | translate }}
+                  </span>
+                } @else if (hasAlerts(repo.dependabot.alerts)) {
+                  @for (alert of alertKeys(repo.dependabot.alerts); track $index) {
+                    <span [ngClass]="['badge', alert]">
+                      {{ repo.dependabot.alerts[alert] }} {{ alert }}
+                    </span>
+                  }
+                } @else {
+                  <span class="badge active">
+                    {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
+                  </span>
+                }
+              </a>
+            </td>
+            <!-- Code Scanning -->
+            <td class="align-middle">
+              <a class="cell-link" (click)="navigateToRepoPage(repo.repoName, 'codeScanning')">
+                @if (repo.codeScanning.status == 'DISABLED') {
+                  <span class="badge none">
+                    {{ 'common.admin.securityMonitor.disabled' | translate }}
+                  </span>
+                } @else if (repo.codeScanning.status == 'NO_PERMISSION') {
+                  <span class="badge no-permission">
+                    {{ 'common.admin.securityMonitor.noPermission' | translate }}
+                  </span>
+                } @else if (hasAlerts(repo.codeScanning.alerts)) {
+                  @for (alert of alertKeys(repo.codeScanning.alerts); track $index) {
+                    <span [ngClass]="['badge', alert]">
+                      {{ repo.codeScanning.alerts[alert] }} {{ alert }}
+                    </span>
+                  }
+                } @else {
+                  <span class="badge active">
+                    {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
+                  </span>
+                }
+              </a>
+            </td>
+            <!-- Secret Scanning -->
+            <td class="align-middle">
+              <a class="cell-link" (click)="navigateToRepoPage(repo.repoName, 'secretScanning')">
+                @if (repo.secretScanning.status == 'DISABLED') {
+                  <span class="badge none">
+                    {{ 'common.admin.securityMonitor.disabled' | translate }}
+                  </span>
+                } @else if (repo.secretScanning.status == 'NO_PERMISSION') {
+                  <span class="badge no-permission">
+                    {{ 'common.admin.securityMonitor.noPermission' | translate }}
+                  </span>
+                } @else if (repo.secretScanning.numberOfAlerts) {
+                  <span class="badge critical">
+                    {{ repo.secretScanning.numberOfAlerts }} alerts
+                  </span>
+                } @else {
+                  <span class="badge active">
+                    {{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}
+                  </span>
+                }
+              </a>
+            </td>
+            <!-- Branch Protection -->
+            <td class="align-middle">
+              <a class="cell-link" (click)="navigateToRepoPage(repo.repoName, 'branches')">
+                @if (repo.branchProtectionEnabled) {
+                  <span class="badge active">
+                    {{ 'common.admin.securityMonitor.enabled' | translate }}
+                  </span>
+                } @else {
+                  <span class="badge none">
+                    {{ 'common.admin.securityMonitor.disabled' | translate }}
+                  </span>
+                }
+              </a>
+            </td>
+            <!-- Last Commit -->
+            <td class="align-middle">
+              <a
+                class="cell-link commit-date"
+                (click)="navigateToRepoPage(repo.repoName, 'lastCommit', repo.lastCommitSHA)">
+                {{ formatCommitDate(repo.lastCommitDate) }}
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    } @else {
+      <tbody>
+        <tr>
+          <td colspan="6" class="border-0">
+            <p class="text-primary m-0 text-center no-repositories" [lang]="languageService.selectedLanguage()">
+              {{ 'common.admin.securityMonitor.noRepositories' | translate }}
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    }
+  </table>
 </div>
