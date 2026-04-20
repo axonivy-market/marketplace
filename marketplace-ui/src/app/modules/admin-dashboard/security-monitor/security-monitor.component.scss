@@ -292,3 +292,15 @@
 ::ng-deep .pagination a {
   color: var(--ivy-primary-bg);
 }
+
+.number-select {
+  height: 37px;
+  line-height: 16.8px;
+  font-weight: 400;
+  font-size: 14px;
+  text-align: left;
+  border-radius: 10px;
+  padding: 1px 1px 1px 10px;
+  gap: 10px;
+  opacity: 80%;
+}

@@ -222,18 +222,20 @@
       </tbody>
     }
   </table>
+
+  <!-- Pagination -->
+  @if (totalElements > 0) {
+    <div class="d-flex justify-content-between py-2">
+      <ngb-pagination [collectionSize]="totalElements" [(page)]="page" [pageSize]="pageSize"
+                      (pageChange)="onPageChange($event)">
+      </ngb-pagination>
+      <select class="number-select pagination-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
+        <option [ngValue]="10">{{ 'common.monitor.pagination.tenItems' | translate }}</option>
+        <option [ngValue]="20">{{ 'common.monitor.pagination.twentyItems' | translate }}</option>
+        <option [ngValue]="ALL_ITEMS_PAGE_SIZE">{{ 'common.monitor.pagination.all' | translate }}</option>
+      </select>
+    </div>
+  }
 </div>
 
-<!-- Pagination -->
-@if (totalElements > 0) {
-  <div class="d-flex justify-content-between py-2">
-    <ngb-pagination [collectionSize]="totalElements" [(page)]="page" [pageSize]="pageSize"
-                    (pageChange)="onPageChange($event)">
-    </ngb-pagination>
-    <select class="form-select pagination-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
-      <option [ngValue]="10">{{ 'common.monitor.pagination.tenItems' | translate }}</option>
-      <option [ngValue]="20">{{ 'common.monitor.pagination.twentyItems' | translate }}</option>
-      <option [ngValue]="ALL_ITEMS_PAGE_SIZE">{{ 'common.monitor.pagination.all' | translate }}</option>
-    </select>
-  </div>
-}
+
