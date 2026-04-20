@@ -84,14 +84,16 @@
             {{ 'common.admin.securityMonitor.secretScanning' | translate }}
           </h5>
         </th>
-        <th class="text-primary protection-column">
-          <h5 class="table-header">
+        <th class="text-primary protection-column" (click)="sortByColumn(COLUMN_BRANCH_PROTECTION)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_BRANCH_PROTECTION)"></i>
             <i class="ti ti-wall"></i>
             {{ 'common.admin.securityMonitor.branchProtection' | translate }}
           </h5>
         </th>
-        <th class="text-primary commit-column">
-          <h5 class="table-header">
+        <th class="text-primary commit-column" (click)="sortByColumn(COLUMN_COMMIT_DATE)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_COMMIT_DATE)"></i>
             <i class="ti ti-stopwatch"></i>
             {{ 'common.admin.securityMonitor.lastCommit' | translate }}
           </h5>

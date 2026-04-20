@@ -13,7 +13,6 @@ import {
   GITHUB_MARKET_ORG_URL,
   REPO_PAGE_PATHS,
   ERROR_MESSAGES,
-  SECURITY_MONITOR_SESSION_DATA,
   TIME_UNITS,
   UNAUTHORIZED,
   ASCENDING,
@@ -54,6 +53,8 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
   readonly COLUMN_DEPENDABOT = SecurityMonitorSortOption.DEPENDABOT_ALERTS;
   readonly COLUMN_CODE_SCANNING = SecurityMonitorSortOption.CODE_SCANNING_ALERTS;
   readonly COLUMN_SECRET_SCANNING = SecurityMonitorSortOption.SECRET_SCANNING_ALERTS;
+  readonly COLUMN_BRANCH_PROTECTION = SecurityMonitorSortOption.BRANCH_PROTECTION;
+  readonly COLUMN_COMMIT_DATE = SecurityMonitorSortOption.COMMIT_DATE;
 
   themeService = inject(ThemeService);
   adminDashboardService = inject(AdminDashboardService);

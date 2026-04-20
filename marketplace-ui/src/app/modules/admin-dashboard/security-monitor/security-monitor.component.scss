@@ -153,6 +153,7 @@
 .protection-column {
   width: 14%;
   text-align: center;
+  cursor: pointer;
 
   h5 {
     justify-content: center;
@@ -162,12 +163,13 @@
 .commit-column {
   width: 12%;
   text-align: center;
+  cursor: pointer;
 
   h5 {
     justify-content: center;
   }
 }
-  
+
 @media (max-width: 1200px) {
   .table th,
   .table td {
