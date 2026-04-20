@@ -24,7 +24,22 @@
     </div>
   </div>
 </div>
-<div class="header d-flex align-items-center justify-content-end">
+
+<div class="feature-bar d-flex align-items-center justify-content-between">
+  <!-- Search Bar -->
+  <div class="search-container">
+    <input
+      type="text"
+      class="form-control search-input"
+      [placeholder]="'common.search.placeholder' | translate"
+      [(ngModel)]="searchText"
+      (keyup.enter)="onSearchChanged(searchText)" />
+    <button class="btn search-btn" (click)="onSearchChanged(searchText)">
+      <i class="ti ti-search"></i>
+    </button>
+  </div>
+
+  <!-- Reload Button -->
   <a
     class="reload-link"
     (click)="!isLoading && onSubmit()"
@@ -42,25 +57,29 @@
   <table class="table">
     <thead>
       <tr>
-        <th class="text-primary connector-column">
-          <h5 class="table-header">
+        <th class="text-primary connector-column" (click)="sortByColumn(COLUMN_REPO_NAME)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_REPO_NAME)"></i>
             {{ 'common.admin.securityMonitor.repoName' | translate }}
           </h5>
         </th>
-        <th class="text-primary security-column">
-          <h5 class="table-header">
+        <th class="text-primary security-column" (click)="sortByColumn(COLUMN_DEPENDABOT)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_DEPENDABOT)"></i>
             <i class="ti ti-robot"></i>
             {{ 'common.admin.securityMonitor.dependabot' | translate }}
           </h5>
         </th>
-        <th class="text-primary security-column">
-          <h5 class="table-header">
+        <th class="text-primary security-column" (click)="sortByColumn(COLUMN_CODE_SCANNING)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_CODE_SCANNING)"></i>
             <i class="ti ti-device-laptop"></i>
             {{ 'common.admin.securityMonitor.codeScanning' | translate }}
           </h5>
         </th>
-        <th class="text-primary security-column">
-          <h5 class="table-header">
+        <th class="text-primary security-column" (click)="sortByColumn(COLUMN_SECRET_SCANNING)">
+          <h5 class="table-header sortable">
+            <i class="ti" [ngClass]="getSortIcon(COLUMN_SECRET_SCANNING)"></i>
             <i class="ti ti-key"></i>
             {{ 'common.admin.securityMonitor.secretScanning' | translate }}
           </h5>
@@ -205,3 +224,29 @@
     }
   </table>
 </div>
+
+<!-- Pagination -->
+@if (totalElements > 0) {
+  <div class="d-flex justify-content-between py-2 pagination-container">
+    <ngb-pagination
+      [collectionSize]="totalElements"
+      [(page)]="page"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)">
+    </ngb-pagination>
+    <select
+      class="form-select pagination-select"
+      [ngModel]="pageSize"
+      (ngModelChange)="onPageSizeChanged($event)">
+      <option [ngValue]="10">
+        {{ 'common.monitor.pagination.tenItems' | translate }}
+      </option>
+      <option [ngValue]="20">
+        {{ 'common.monitor.pagination.twentyItems' | translate }}
+      </option>
+      <option [ngValue]="ALL_ITEMS_PAGE_SIZE">
+        {{ 'common.monitor.pagination.all' | translate }}
+      </option>
+    </select>
+  </div>
+}

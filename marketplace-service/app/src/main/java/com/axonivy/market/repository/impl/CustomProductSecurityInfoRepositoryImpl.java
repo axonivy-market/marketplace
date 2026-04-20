@@ -56,9 +56,11 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
   private String getOrderBy(ProductSecuritySortOption sortOption, String direction) {
     String safeDirection = normalizeDirection(direction);
     String primaryOrder = switch (sortOption) {
-      case DEPENDABOT_ALERTS -> buildJsonSort("psi.dependabot_alerts", safeDirection);
       case CODE_SCANNING_ALERTS -> buildJsonSort("psi.code_scanning_alerts", safeDirection);
+      case DEPENDABOT_ALERTS -> buildJsonSort("psi.dependabot_alerts", safeDirection);
       case SECRET_SCANNING_ALERTS -> "psi.number_of_secret_scanning_alerts " + safeDirection;
+      case BRANCH_PROTECTION -> "psi.branch_protection_enabled " + safeDirection;
+      case COMMIT_DATE -> "psi.latest_commit_date " + safeDirection;
       default -> "psi.repo_name " + safeDirection;
     };
 

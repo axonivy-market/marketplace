@@ -1,10 +1,9 @@
 import {
   Component,
-  Inject,
   inject,
+  OnDestroy,
   OnInit,
-  PLATFORM_ID,
-  ViewEncapsulation
+  PLATFORM_ID
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -16,7 +15,11 @@ import {
   ERROR_MESSAGES,
   SECURITY_MONITOR_SESSION_DATA,
   TIME_UNITS,
-  UNAUTHORIZED
+  UNAUTHORIZED,
+  ASCENDING,
+  DESCENDING,
+  ALL_ITEMS_PAGE_SIZE,
+  DEFAULT_MONITORING_PAGEABLE
 } from '../../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -24,39 +27,73 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { SecurityMonitorSortOption } from '../../../shared/enums/security-monitor-sort.enum';
+import { SecurityMonitorCriteria } from '../../../shared/models/criteria.model';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-security-monitor',
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingSpinnerComponent,
+    TranslateModule,
+    NgbPaginationModule
+  ],
   templateUrl: './security-monitor.component.html',
-  styleUrls: ['./security-monitor.component.scss'],
-  encapsulation: ViewEncapsulation.Emulated
+  styleUrls: ['./security-monitor.component.scss']
 })
-export class SecurityMonitorComponent implements OnInit {
+export class SecurityMonitorComponent implements OnInit, OnDestroy {
+  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
+  protected readonly LoadingComponentId = LoadingComponentId;
+
+  // Column constants for sorting
+  readonly COLUMN_REPO_NAME = SecurityMonitorSortOption.REPO_NAME;
+  readonly COLUMN_DEPENDABOT = SecurityMonitorSortOption.DEPENDABOT_ALERTS;
+  readonly COLUMN_CODE_SCANNING = SecurityMonitorSortOption.CODE_SCANNING_ALERTS;
+  readonly COLUMN_SECRET_SCANNING = SecurityMonitorSortOption.SECRET_SCANNING_ALERTS;
+
   themeService = inject(ThemeService);
   adminDashboardService = inject(AdminDashboardService);
   pageTitleService = inject(PageTitleService);
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
-  protected LoadingComponentId = LoadingComponentId;
+  platformId = inject(PLATFORM_ID);
 
   repos: ProductSecurityInfo[] = [];
   errorMessage = '';
-  isBrowser: boolean;
   isLoading = false;
 
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  // Pagination
+  page = 1;
+  pageSize = 10;
+  totalElements = 0;
+
+  // Sorting
+  sortColumn: SecurityMonitorSortOption = SecurityMonitorSortOption.REPO_NAME;
+  sortDirection = ASCENDING;
+
+  // Search
+  searchText = '';
+
+  // Criteria
+  criteria: SecurityMonitorCriteria = {
+    searchText: '',
+    sortOption: SecurityMonitorSortOption.REPO_NAME,
+    sortDirection: ASCENDING,
+    pageable: { ...DEFAULT_MONITORING_PAGEABLE }
+  };
+
+  private subscriptions: Subscription[] = [];
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      this.loadSessionData();
+    if (isPlatformBrowser(this.platformId)) {
       this.pageTitleService.setTitleOnLangChange(
         'common.admin.securityMonitor.pageTitle'
       );
+      this.loadSecurityDetails();
     }
   }
 
@@ -64,45 +101,78 @@ export class SecurityMonitorComponent implements OnInit {
     if (this.isLoading) {
       return;
     }
-    this.fetchSecurityDetails();
+    this.resetToFirstPage();
+    this.loadSecurityDetails();
   }
 
-  private loadSessionData(): void {
-    try {
-      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_DATA);
-      if (sessionData) {
-        this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
-      } else {
-        this.fetchSecurityDetails();
-      }
-    } catch {
-      this.clearSessionData();
+  onSearchChanged(searchString: string): void {
+    this.searchText = searchString;
+    this.criteria.searchText = searchString;
+    this.resetToFirstPage();
+    this.loadSecurityDetails();
+  }
+
+  onPageChange(newPage: number): void {
+    this.page = newPage;
+    this.criteria.pageable.page = newPage - 1;
+    this.loadSecurityDetails();
+  }
+
+  onPageSizeChanged(newSize: number): void {
+    this.pageSize = newSize;
+    this.criteria.pageable.size = newSize;
+    this.resetToFirstPage();
+    this.loadSecurityDetails();
+  }
+
+  sortByColumn(column: SecurityMonitorSortOption): void {
+    if (this.sortColumn === column) {
+      this.toggleSortDirection();
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = ASCENDING;
     }
+    this.criteria.sortOption = this.sortColumn;
+    this.criteria.sortDirection = this.sortDirection.toUpperCase();
+    this.resetToFirstPage();
+    this.loadSecurityDetails();
   }
 
-  private clearSessionData(): void {
-    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_DATA);
+  getSortIcon(column: SecurityMonitorSortOption): string {
+    if (this.sortColumn !== column) {
+      return '';
+    }
+    return this.sortDirection === ASCENDING ? 'ti-arrow-up' : 'ti-arrow-down';
   }
 
-  private fetchSecurityDetails(): void {
+  private toggleSortDirection(): void {
+    this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
+  }
+
+  private resetToFirstPage(): void {
+    this.page = 1;
+    this.criteria.pageable.page = 0;
+  }
+
+  private loadSecurityDetails(): void {
     this.isLoading = true;
 
-    this.adminDashboardService
-      .getSecurityDetails()
+    const subscription = this.adminDashboardService
+      .searchSecurityDetails(this.criteria)
       .pipe(
         finalize(() => {
           this.isLoading = false;
         })
       )
       .subscribe({
-        next: data => this.handleSuccess(data),
+        next: response => {
+          this.repos = response?._embedded?.productSecurityInfoList || [];
+          this.totalElements = response?.page?.totalElements ?? 0;
+        },
         error: err => this.handleError(err)
       });
-  }
 
-  private handleSuccess(data: ProductSecurityInfo[]): void {
-    this.repos = data;
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_DATA, JSON.stringify(data));
+    this.subscriptions.push(subscription);
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -173,6 +243,12 @@ export class SecurityMonitorComponent implements OnInit {
       return `${years} year ago`;
     } else {
       return `${years} years ago`;
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.unsubscribe();
     }
   }
 }

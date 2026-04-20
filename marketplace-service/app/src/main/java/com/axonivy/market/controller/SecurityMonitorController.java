@@ -6,12 +6,14 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GithubReposModel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,10 +51,13 @@ public class SecurityMonitorController {
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/sorting")
-  public ResponseEntity<Page<ProductSecurityInfo>> getGitHubMarketplaceSecurity(
+  @PostMapping("/sorting")
+  public ResponseEntity<PagedModel<ProductSecurityInfo>> getGitHubMarketplaceSecurity(
       @RequestBody ProductSecurityCriteria criteria, Pageable pageable) throws IOException {
-    Page<ProductSecurityInfo> result = gitHubService.searchSecurityDetails(criteria, pageable);
-    return ResponseEntity.ok(result);
+    Page<ProductSecurityInfo> results = gitHubService.searchSecurityDetails(criteria, pageable);
+    var pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
+        results.getTotalElements(), results.getTotalPages());
+    PagedModel<ProductSecurityInfo> pagedModel = PagedModel.of(results.getContent(), pageMetadata);
+    return ResponseEntity.ok(pagedModel);
   }
 }

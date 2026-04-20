@@ -11,9 +11,10 @@ import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { SecurityMonitorApiResponse } from '../../shared/models/apis/security-monitor-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
+import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
 
 export type SyncTaskKey =
@@ -128,6 +129,33 @@ export class AdminDashboardService {
         LoadingComponentId.SECURITY_MONITOR
       )
     });
+  }
+
+  searchSecurityDetails(
+    criteria: SecurityMonitorCriteria
+  ): Observable<SecurityMonitorApiResponse> {
+    const params = new HttpParams()
+      .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`);
+
+    const body = {
+      searchText: criteria.searchText,
+      sortOption: criteria.sortOption,
+      sortDirection: criteria.sortDirection
+    };
+
+    return this.http.post<SecurityMonitorApiResponse>(
+      `${API_URI.SECURITY_MONITOR}/sorting`,
+      body,
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.SECURITY_MONITOR
+        )
+      }
+    );
   }
 
   getReleaseLetters(
