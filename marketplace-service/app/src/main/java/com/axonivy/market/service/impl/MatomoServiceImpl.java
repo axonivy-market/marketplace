@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
 import org.matomo.java.tracking.MatomoTracker;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import static com.axonivy.market.constants.CommonConstants.*;
@@ -28,9 +30,6 @@ public class MatomoServiceImpl implements MatomoService {
 
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
-  private static final String HEADER_AUTHORIZATION = "authorization";
-  private static final String HEADER_COOKIE = "cookie";
-  private static final String HEADER_SET_COOKIE = "set-cookie";
 
   private final MatomoTracker matomoTracker;
 
@@ -51,7 +50,7 @@ public class MatomoServiceImpl implements MatomoService {
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
     Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
-    log.warn("  Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
+    log.warn("Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
@@ -67,7 +66,7 @@ public class MatomoServiceImpl implements MatomoService {
 
   private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
     Map<String, String> headers = new HashMap<>();
-    headers.put("X-Forwarded-For", httpServletRequest.getRemoteAddr());
+    headers.put(HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
     Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
     if (headerNames != null) {
       while (headerNames.hasMoreElements()) {
@@ -77,8 +76,8 @@ public class MatomoServiceImpl implements MatomoService {
         if (!list.isEmpty()) {
           String value = String.join(CoreCommonConstants.COMMA, list);
           if (StringUtils.isNotBlank(value)) {
-            String lower = name.toLowerCase(Locale.ROOT);
-            if (!StringUtils.equalsAny(lower, HEADER_AUTHORIZATION, HEADER_COOKIE, HEADER_SET_COOKIE)) {
+            if (StringUtils.equalsAnyIgnoreCase(name, HttpHeaders.AUTHORIZATION, HttpHeaders.COOKIE,
+                HttpHeaders.SET_COOKIE) && StringUtils.isNotBlank(value)) {
               headers.put(name, value);
             }
           }

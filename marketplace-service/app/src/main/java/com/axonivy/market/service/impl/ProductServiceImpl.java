@@ -342,7 +342,6 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
-      break;
     }
     return syncedProductIds;
   }

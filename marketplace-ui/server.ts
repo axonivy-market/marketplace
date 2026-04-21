@@ -23,7 +23,11 @@ function loadRuntimeConfigFromEnv(): RuntimeConfig {
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,
     matomoTrackerUrl: process.env[ENV_VAR_NAMES.MARKET_MATOMO_TRACKER_URL] || environment.matomoTrackerUrl,
     siblingNodeAppIp: process.env[ENV_VAR_NAMES.MARKET_SIBLING_NODE_APP_IP] || environment.siblingNodeAppIp,
-    allowedHosts: (process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS] || '').split(HOST_SEPARATOR).map(h => h.trim()).filter(Boolean) || environment.allowedHosts
+    allowedHosts:
+      (process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS] || '')
+        .split(HOST_SEPARATOR)
+        .map(host => host.trim())
+        .filter(Boolean) || environment.allowedHosts
   };
 }
 
