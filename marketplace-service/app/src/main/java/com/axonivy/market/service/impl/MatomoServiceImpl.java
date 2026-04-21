@@ -65,6 +65,8 @@ public class MatomoServiceImpl implements MatomoService {
   private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
     Map<String, String> headers = new HashMap<>();
     headers.put(HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
+                  log.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ matomo header {} with value {}", HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
+
     Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
     if (headerNames != null) {
       while (headerNames.hasMoreElements()) {
@@ -76,6 +78,7 @@ public class MatomoServiceImpl implements MatomoService {
           if (StringUtils.isNotBlank(value)) {
             if (StringUtils.equalsAnyIgnoreCase(name, HttpHeaders.AUTHORIZATION, HttpHeaders.COOKIE,
                 HttpHeaders.SET_COOKIE) && StringUtils.isNotBlank(value)) {
+              log.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ matomo header {} with value {}", name, value);
               headers.put(name, value);
             }
           }
