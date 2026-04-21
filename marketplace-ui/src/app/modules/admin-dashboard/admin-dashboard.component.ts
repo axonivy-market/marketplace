@@ -160,7 +160,7 @@ export class AdminDashboardComponent implements OnInit {
     this.syncTaskTriggers[syncTask.key]()
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
+        next: (execution: unknown) => this.handleSyncTaskSuccess(syncTask, execution as SyncTaskExecution),
         error: () => this.handleSyncTaskFailure(syncTask)
       });
   }
@@ -169,59 +169,72 @@ export class AdminDashboardComponent implements OnInit {
     this.loadingSyncTaskKey = syncTask.key;
     Object.assign(syncTask, {
       status: SyncTaskStatus.RUNNING,
-      triggeredAt: null,
+      // Use previous completedAt as the triggeredAt for the new run.
+      // If there's no previous completedAt, keep it undefined to
+      // match the shape produced by `applySyncTaskExecutions`.
+      triggeredAt: syncTask.completedAt ?? undefined,
       completedAt: null,
       message: null
     });
   }
 
-  private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
-    Object.assign(syncTask, {
-      status: SyncTaskStatus.SUCCESS,
-      triggeredAt: syncTask.completedAt,
-      completedAt: new Date(),
-      message: 'Success'
-    });
+  private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {
+    // If backend returned an execution for this task, apply it immediately
+    if (execution) {
+      const task = this.syncTasks.find(t => t.key === syncTask.key);
+      if (task) {
+        task.status = execution.status ?? task.status;
+        task.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : task.triggeredAt;
+        task.completedAt = execution.completedAt ? new Date(execution.completedAt) : task.completedAt;
+        console.log('Execution message', task.triggeredAt, task.completedAt);
+        task.message = execution.message ?? task.message;
+      }
+    }
 
+    // Refresh authoritative data from backend
     this.reloadExecutions();
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
-    Object.assign(syncTask, {
-      status: SyncTaskStatus.FAILED,
-      triggeredAt: syncTask.completedAt,
-      completedAt: new Date(),
-      message: 'Failed'
-    });
-
-    if (this.isAuthenticated) {
-      this.reloadExecutions();
-    }
+    this.reloadExecutions();
   }
 
   private reloadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => this.applySyncTaskExecutions(executions),
+      next: executions => {
+        // Apply executions once. preserve existing `triggeredAt` if backend
+        // does not provide one (prevents losing the value set when the
+        // task was started). Log API response for debugging.
+        console.log('API executions', executions);
+        this.applySyncTaskExecutions(executions);
+        console.log('After apply', this.syncTasks);
+      },
+
       error: err => this.handleAuthError(err)
     });
   }
 
   private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
-    executions.forEach(execution => {
-      const syncTask = this.syncTasks.find(t => t.key === execution.key);
-      if (!syncTask) {
-        return;
-      }
-
-      syncTask.status = execution.status;
-      syncTask.triggeredAt = execution.triggeredAt
-        ? new Date(execution.triggeredAt)
-        : undefined;
-      syncTask.completedAt = execution.completedAt
-        ? new Date(execution.completedAt)
-        : undefined;
-      syncTask.message = execution.message ?? undefined;
-    });
+    this.syncTasks = this.syncTasks.map(task => {
+  const execution = executions.find(e => e.key === task.key);
+  if (!execution) return task;
+  // Prefer server-provided timestamps. If the server returned no
+  // `triggeredAt`, keep the existing task.triggeredAt (this covers
+  // the case where the UI set `triggeredAt` when the run started but
+  // the server response omits it due to timing). For `completedAt`,
+  // prefer the server value if present; otherwise leave as-is.
+  return {
+    ...task,
+    status: execution.status,
+    triggeredAt: execution.triggeredAt
+      ? new Date(execution.triggeredAt)
+      : task.triggeredAt,
+    completedAt: execution.completedAt
+      ? new Date(execution.completedAt)
+      : task.completedAt,
+    message: execution.message ?? task.message ?? undefined,
+  };
+});
   }
 
   getStatusClass(status?: SyncTaskStatus): string {
@@ -274,7 +287,7 @@ export class AdminDashboardComponent implements OnInit {
       )
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
+        next: (execution: unknown) => this.handleSyncTaskSuccess(syncTask, execution as SyncTaskExecution),
         error: () => this.handleSyncTaskFailure(syncTask)
       });
   }
