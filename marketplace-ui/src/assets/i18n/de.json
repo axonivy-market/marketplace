@@ -328,7 +328,8 @@
           "syncProducts": "Alle Produkte synchronisieren",
           "syncOneProduct": "Ein Produkt synchronisieren",
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
-          "syncGithubMonitor": "GitHub-Monitor synchronisieren"
+          "syncGithubMonitor": "GitHub-Monitor synchronisieren",
+          "syncGithubSecurityMonitor": "GitHub-Secret-Monitor synchronisieren"
         },
         "syncOneProductDialog": {
           "title": "Ein Produkt synchronisieren",

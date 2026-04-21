@@ -224,7 +224,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECRET_MONITOR)
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);

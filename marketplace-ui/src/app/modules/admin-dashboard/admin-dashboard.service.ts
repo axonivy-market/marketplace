@@ -21,7 +21,8 @@ export type SyncTaskKey =
   | 'syncProducts'
   | 'syncOneProduct'
   | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor';
+  | 'syncGithubMonitor'
+  | 'syncGithubSecurityMonitor';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -85,6 +86,17 @@ export class AdminDashboardService {
   syncGithubMonitor(): Observable<string> {
     return this.http.put(
       `${API_URI.SYNC_GITHUB_MONITOR}`,
+      {},
+      {
+        responseType: 'text' as const,
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
+  syncGithubSecurityMonitor(): Observable<string> {
+    return this.http.post(
+      `${API_URI.SYNC_SECURITY_MONITOR}`,
       {},
       {
         responseType: 'text' as const,
