@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.HttpHeaderConstants;
-import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -10,16 +9,12 @@ import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
 import org.matomo.java.tracking.MatomoTracker;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
