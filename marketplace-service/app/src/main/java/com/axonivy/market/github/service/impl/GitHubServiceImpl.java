@@ -22,6 +22,7 @@ import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
@@ -224,38 +225,24 @@ public class GitHubServiceImpl implements GitHubService {
     return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
   }
 
-//  @Override
-//  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
-//  public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
-//    var gitHub = getGitHub(gitHubProperty.getToken());
-//    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-//    List<GHRepository> repositories = organization.listRepositories().toList();
-//
-//    List<ProductSecurityInfo> productSecurityInfos = new ArrayList<>();
-//    for (GHRepository repo : repositories) {
-//      log.warn("fetching security info for repo: {}", repo.getName());
-//      ProductSecurityInfo productSecurityInfo = fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
-//      productSecurityInfos.add(productSecurityInfo);
-//    }
-//    return productSecurityInfoRepository.saveAll(productSecurityInfos);
-//  }
-
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+
     List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
         .map(repo -> CompletableFuture.supplyAsync(
-            MdcContextUtils.wrapMdcContext(() -> {
-              log.warn("fetching security info for repo: {}", repo.getName());
-              return fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
-            }),
+            MdcContextUtils.wrapMdcContext(() -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken())),
             taskScheduler.getScheduledExecutor())).toList();
+
     List<ProductSecurityInfo> productSecurityInfos = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
-    return productSecurityInfoRepository.saveAll(productSecurityInfos);
+        .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
+        .join();
+
+    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
+    log.warn("Synced security details for {} repositories", syncedSecurityRepos.size());
+    return syncedSecurityRepos;
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
@@ -275,6 +262,7 @@ public class GitHubServiceImpl implements GitHubService {
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,
       String accessToken) {
     try {
+      log.warn("fetching security info for repo: {}", repo.getName());
       return fetchSecurityInfo(repo, organization, accessToken);
     } catch (IOException e) {
       log.error("Error fetching security info for repo: {}", repo.getName(), e);
@@ -295,10 +283,8 @@ public class GitHubServiceImpl implements GitHubService {
     productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
     productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
     productSecurityInfo.setDependabot(getDependabotAlerts(repo, organization, accessToken));
-    productSecurityInfo.setSecretScanning(getNumberOfSecretScanningAlerts(repo, organization,
-        accessToken));
-    productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization,
-        accessToken));
+    productSecurityInfo.setSecretScanning(getNumberOfSecretScanningAlerts(repo, organization, accessToken));
+    productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization, accessToken));
     return productSecurityInfo;
   }
 
