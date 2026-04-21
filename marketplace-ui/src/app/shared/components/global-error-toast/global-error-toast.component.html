@@ -1,0 +1,14 @@
+@if (isVisible && currentError) {
+  <div
+    class="alert alert-danger d-flex align-items-center gap-3 position-sticky top-0 z-3 mb-3 rounded shadow-sm"
+    role="alert">
+    <div class="flex-grow-1 small lh-base">
+      {{ currentError.messageKey | translate }}
+    </div>
+    <button
+      type="button"
+      class="btn-close flex-shrink-0"
+      aria-label="Close"
+      (click)="dismiss()"></button>
+  </div>
+}

@@ -10,12 +10,12 @@ import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { catchError, EMPTY, finalize, Observable, of, tap, throwError } from 'rxjs';
-import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH, FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL, API_URI } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
+import { HttpErrorBusService } from '../services/http-error-bus.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -31,10 +31,10 @@ export const ForwardingError = new HttpContextToken<boolean>(() => false);
 export const LoadingComponent = new HttpContextToken<string>(() => '');
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
   const transferState = inject(TransferState);
+  const errorBus = inject(HttpErrorBusService);
   const key = makeStateKey<unknown>(`${req.method} ${req.urlWithParams}`);
 
   if (req.url.includes('i18n')) {
@@ -88,7 +88,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(cloneReq).pipe(
-    catchError(error => handleHttpError(router, error)),
+    catchError(error => handleHttpError(errorBus, error, req.url)),
     tap(event => {
       if (
         event instanceof HttpResponse &&
@@ -122,18 +122,24 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
 }
 
 export function handleHttpError(
-  router: Router,
-  error: HttpErrorResponse
+  errorBus: HttpErrorBusService,
+  error: HttpErrorResponse,
+  url: string
 ): Observable<never> {
+  // Keep auth errors for caller to handle (e.g., auth service, guards)
   if (error.status === UNAUTHORIZED || error.status === FORBIDDEN) {
     return throwError(() => error);
   }
 
-  if (ERROR_CODES.includes(error.status)) {
-    router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
-  } else {
-    router.navigate([ERROR_PAGE_PATH]);
-  }
+  // Publish non-auth errors to global error bus so they show as a banner
+  const messageKey = errorBus.getErrorMessageKey(error.status);
+  errorBus.publishError({
+    status: error.status,
+    messageKey,
+    url,
+    timestamp: Date.now()
+  });
+
   return EMPTY;
 }
 

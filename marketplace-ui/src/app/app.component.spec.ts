@@ -4,6 +4,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { GlobalErrorToastComponent } from './shared/components/global-error-toast/global-error-toast.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import {
@@ -82,6 +83,7 @@ describe('AppComponent', () => {
         RouterOutlet,
         HeaderComponent,
         FooterComponent,
+        GlobalErrorToastComponent,
         TranslateModule.forRoot(),
         RouterModule.forRoot([])
       ],

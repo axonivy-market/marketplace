@@ -1,8 +1,8 @@
 import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve, Router, UrlTree } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { map, Observable, take, tap } from 'rxjs';
+import { map, Observable, take, tap, catchError, of } from 'rxjs';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -18,7 +18,8 @@ import {
   OG_IMAGE_PNG_TYPE,
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY,
-  SHOW_DEV_VERSION
+  SHOW_DEV_VERSION,
+  NOT_FOUND_ERROR_CODE
 } from '../../shared/constants/common.constant';
 import { ROUTER } from '../../shared/constants/router.constant';
 import {
@@ -27,9 +28,10 @@ import {
 } from '../../shared/constants/api.constant';
 import { isPlatformServer } from '@angular/common';
 import { FaviconService } from '../../shared/services/favicon.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
-export class ProductDetailResolver implements Resolve<ProductDetail> {
+export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
   constructor(
     private readonly productDetailService: ProductDetailService,
     private readonly meta: Meta,
@@ -40,12 +42,13 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly cookieService: CookieService,
     private readonly routingQueryParamService: RoutingQueryParamService,
     private readonly faviconService: FaviconService,
+    private readonly router: Router,
     @Inject(PLATFORM_ID) private readonly platformId: Object,
     @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string,
     @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string
   ) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
+  resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail | UrlTree> {
     const productId = route.params[ROUTER.ID];
     const version = route.queryParamMap.get('version');
     this.productDetailService.productId.set(productId);
@@ -59,6 +62,14 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
         if (productDetail && productDetail.names) {
           this.updateProductMetadata(productDetail);
         }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // SSR-safe: return UrlTree for 404, Angular SSR converts to HTTP 302 redirect
+        if (error.status === NOT_FOUND_ERROR_CODE) {
+          return of(this.router.parseUrl('error-page/404'));
+        }
+        // For non-404 errors, rethrow so interceptor/error-bus handles it
+        throw error;
       })
     );
   }

@@ -19,7 +19,6 @@ import { ProductComponent } from '../../modules/product/product.component';
 import {
   DESIGNER_SESSION_STORAGE_VARIABLE,
   ERROR_CODES,
-  ERROR_PAGE_PATH,
   UNAUTHORIZED
 } from '../../shared/constants/common.constant';
 import {
@@ -33,6 +32,7 @@ import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { LoadingService } from '../services/loading/loading.service';
+import { HttpErrorBusService } from '../services/http-error-bus.service';
 
 describe('AuthInterceptor', () => {
   let mockRouter: MockedObject<Router>;
@@ -230,9 +230,9 @@ describe('AuthInterceptor', () => {
     expect(transferState.get(key, null)).toEqual(body);
   });
 
-  it('should call handleHttpError and navigate on server error', () => {
-    const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate');
+  it('should publish global error and not navigate on server error', () => {
+    const errorBus = TestBed.inject(HttpErrorBusService);
+    const publishSpy = vi.spyOn(errorBus, 'publishError');
 
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -245,7 +245,12 @@ describe('AuthInterceptor', () => {
 
     req.flush({}, { status: 500, statusText: 'Server Error' });
 
-    expect(router.navigate).toHaveBeenCalled();
+    expect(publishSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 500,
+        url: 'product'
+      })
+    );
   });
 
   it('should remove GET cache when key exists', () => {
@@ -329,41 +334,57 @@ describe('AuthInterceptor', () => {
   });
 
   describe('handleHttpError', () => {
+    let errorBusService: MockedObject<HttpErrorBusService>;
+
     beforeEach(() => {
-      mockRouter = {
-        navigate: vi.fn().mockName('Router.navigate')
-      } as MockedObject<Router>;
+      errorBusService = {
+        publishError: vi.fn().mockName('HttpErrorBusService.publishError'),
+        getErrorMessageKey: vi.fn().mockName('HttpErrorBusService.getErrorMessageKey')
+      } as unknown as MockedObject<HttpErrorBusService>;
     });
 
     it('should throw error if status is UNAUTHORIZED', async () => {
       const error = new HttpErrorResponse({ status: UNAUTHORIZED });
 
-      handleHttpError(mockRouter, error).subscribe({
+      handleHttpError(errorBusService, error, '/test-url').subscribe({
         error: (err: HttpErrorResponse) => {
           expect(err).toBe(error);
-          expect(mockRouter.navigate).not.toHaveBeenCalled();
+          expect(errorBusService.publishError).not.toHaveBeenCalled();
         }
       });
     });
 
-    it('should navigate to specific error page if status is in ERROR_CODES', () => {
-      const error = new HttpErrorResponse({ status: ERROR_CODES[0] });
+    it('should publish error to error bus for non-auth errors', () => {
+      const error = new HttpErrorResponse({ status: 500 });
+      const messageKey = 'common.error.description.500';
+      (errorBusService.getErrorMessageKey as any).mockReturnValue(messageKey);
 
-      const result = handleHttpError(mockRouter, error);
+      const result = handleHttpError(errorBusService, error, '/test-url');
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        `${ERROR_PAGE_PATH}/${error.status}`
-      ]);
+      expect(errorBusService.getErrorMessageKey).toHaveBeenCalledWith(500);
+      expect(errorBusService.publishError).toHaveBeenCalledWith({
+        status: 500,
+        messageKey,
+        url: '/test-url',
+        timestamp: expect.any(Number)
+      });
       expect(result).toBe(EMPTY);
     });
 
-    it('should navigate to generic error page if status not in ERROR_CODES', () => {
-      const error = new HttpErrorResponse({ status: 418 });
+    it('should publish error for 404 status', () => {
+      const error = new HttpErrorResponse({ status: 404 });
+      const messageKey = 'common.error.description.404';
+      (errorBusService.getErrorMessageKey as any).mockReturnValue(messageKey);
 
-      const result = handleHttpError(mockRouter, error);
+      handleHttpError(errorBusService, error, '/product/not-found');
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
-      expect(result).toBe(EMPTY);
+      expect(errorBusService.publishError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 404,
+          messageKey,
+          url: '/product/not-found'
+        })
+      );
     });
   });
 });
