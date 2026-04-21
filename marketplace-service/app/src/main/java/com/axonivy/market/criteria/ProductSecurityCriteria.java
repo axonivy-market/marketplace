@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ProductSecurityCriteria {
-  String searchText;
-  ProductSecuritySortOption sortOption;
-  String sortDirection;
+  private String searchText;
+  private ProductSecuritySortOption sortOption;
+  private String sortDirection;
 }

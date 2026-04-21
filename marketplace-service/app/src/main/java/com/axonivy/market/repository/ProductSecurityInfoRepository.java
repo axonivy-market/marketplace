@@ -1,11 +1,11 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.ProductSecurityInfo;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductSecurityInfoRepository extends JpaRepository<ProductSecurityInfo, String> , CustomProductSecurityInfoRepository {
+public interface ProductSecurityInfoRepository extends JpaRepository<ProductSecurityInfo, String>,
+    CustomProductSecurityInfoRepository {
+
 }

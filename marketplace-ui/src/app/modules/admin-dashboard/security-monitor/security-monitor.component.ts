@@ -78,7 +78,7 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     pageable: { ...DEFAULT_MONITORING_PAGEABLE }
   };
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {

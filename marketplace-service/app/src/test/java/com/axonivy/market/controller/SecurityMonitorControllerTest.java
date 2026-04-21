@@ -43,10 +43,10 @@ class SecurityMonitorControllerTest {
 
     ResponseEntity<List<ProductSecurityInfo>> response = controller.syncGitHubMarketplaceSecurity();
 
-    assertNotNull(response);
-    assertNotNull(response.getBody());
-    assertEquals(1, response.getBody().size());
-    assertEquals("portal", response.getBody().getFirst().getRepoName());
+    assertNotNull(response, "Response should not be null");
+    assertNotNull(response.getBody(), "Response body should not be null");
+    assertEquals(1, response.getBody().size(), "Response body should contain exactly 1 item");
+    assertEquals("portal", response.getBody().getFirst().getRepoName(), "First repo name should be 'portal'");
     verify(gitHubService).syncSecurityDetailsForProduct();
   }
 
@@ -69,22 +69,23 @@ class SecurityMonitorControllerTest {
     ResponseEntity<PagedModel<ProductSecurityInfo>> response =
         controller.getGitHubMarketplaceSecurity(search, sort, sortDirection, pageable);
 
-    assertNotNull(response);
-    assertNotNull(response.getBody());
-    assertEquals(2, response.getBody().getContent().size());
-    assertNotNull(response.getBody().getMetadata());
-    assertEquals(2, response.getBody().getMetadata().getSize());
-    assertEquals(1, response.getBody().getMetadata().getNumber());
-    assertEquals(9, response.getBody().getMetadata().getTotalElements());
-    assertEquals(5, response.getBody().getMetadata().getTotalPages());
+    assertNotNull(response, "Response should not be null");
+    assertNotNull(response.getBody(), "Response body should not be null");
+    assertEquals(2, response.getBody().getContent().size(), "Response body content should contain 2 items");
+    assertNotNull(response.getBody().getMetadata(), "Response metadata should not be null");
+    assertEquals(2, response.getBody().getMetadata().getSize(), "Metadata size should be 2");
+    assertEquals(1, response.getBody().getMetadata().getNumber(), "Metadata page number should be 1");
+    assertEquals(9, response.getBody().getMetadata().getTotalElements(), "Metadata total elements should be 9");
+    assertEquals(5, response.getBody().getMetadata().getTotalPages(), "Metadata total pages should be 5");
 
     ArgumentCaptor<ProductSecurityCriteria> criteriaCaptor = ArgumentCaptor.forClass(ProductSecurityCriteria.class);
     verify(gitHubService).searchSecurityDetails(criteriaCaptor.capture(), org.mockito.ArgumentMatchers.eq(pageable));
 
     ProductSecurityCriteria captured = criteriaCaptor.getValue();
-    assertNotNull(captured);
-    assertEquals(search, captured.getSearchText());
-    assertEquals(ProductSecuritySortOption.DEPENDABOT_ALERTS, captured.getSortOption());
-    assertEquals(sortDirection, captured.getSortDirection());
+    assertNotNull(captured, "Captured criteria should not be null");
+    assertEquals(search, captured.getSearchText(), "Captured search text should match input search");
+    assertEquals(ProductSecuritySortOption.DEPENDABOT_ALERTS, captured.getSortOption(),
+        "Sort option should be DEPENDABOT_ALERTS");
+    assertEquals(sortDirection, captured.getSortDirection(), "Sort direction should match input direction");
   }
 }

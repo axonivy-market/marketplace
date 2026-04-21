@@ -51,7 +51,8 @@ public interface GitHubService {
 
   UserInfo validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
 
-  Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable) throws IOException;
+  Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable)
+      throws IOException;
 
   List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException;
 

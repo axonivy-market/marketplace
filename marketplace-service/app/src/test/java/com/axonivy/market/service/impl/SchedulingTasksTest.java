@@ -1,9 +1,7 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
@@ -41,9 +39,6 @@ class SchedulingTasksTest {
   @MockBean
   NotificationService notificationService;
 
-  @MockBean
-  GitHubProperty gitHubProperty;
-
   @Test
   void testShouldNotTriggerAfterApplicationStarted() {
     Awaitility.await().atMost(Durations.TEN_SECONDS)
@@ -72,7 +67,6 @@ class SchedulingTasksTest {
 
   @Test
   void testShouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
-    when(gitHubProperty.getToken()).thenReturn("token");
     doThrow(new IOException("failure")).when(gitHubService).syncSecurityDetailsForProduct();
     assertDoesNotThrow(() -> tasks.sendNotificationForSecurityMonitor(),
         "syncDataForSecurityMonitor should swallow IOException and not propagate it");
@@ -80,28 +74,22 @@ class SchedulingTasksTest {
     verify(notificationService, never()).notify(any());
   }
 
-//  @Test
-//  void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
-//    String token = "dummy-token";
-//    when(gitHubProperty.getToken()).thenReturn(token);
-//
-//    ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
-//    when(gitHubService.getSecurityDetailsForAllProducts(
-//        token,
-//        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME
-//    )).thenReturn(List.of(securityInfo));
-//
-//    DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
-//
-//    try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
-//             Mockito.mockStatic(DisabledSecurityEventFactory.class)) {
-//
-//      mockedFactory
-//          .when(() -> DisabledSecurityEventFactory.from(securityInfo))
-//          .thenReturn(List.of(event));
-//
-//      tasks.sendNotificationForSecurityMonitor();
-//      verify(notificationService).notify(List.of(event));
-//    }
-//  }
+  @Test
+  void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
+    ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
+    when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of(securityInfo));
+
+    DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
+
+    try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
+             Mockito.mockStatic(DisabledSecurityEventFactory.class)) {
+
+      mockedFactory
+          .when(() -> DisabledSecurityEventFactory.from(securityInfo))
+          .thenReturn(List.of(event));
+
+      tasks.sendNotificationForSecurityMonitor();
+      verify(notificationService).notify(List.of(event));
+    }
+  }
 }

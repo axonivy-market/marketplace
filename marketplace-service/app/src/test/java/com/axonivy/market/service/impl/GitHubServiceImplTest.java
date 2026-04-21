@@ -1116,7 +1116,7 @@ class GitHubServiceImplTest extends BaseSetup {
   // ======================== syncSecurityDetailsForProduct ========================
 
   @Test
-  void testSyncSecurityDetailsForProduct_shouldReturnSavedList() throws IOException {
+  void testSyncSecurityDetailsForProductShouldReturnSavedList() throws IOException {
     // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     GHRepository mockRepo = mock(GHRepository.class);
@@ -1146,7 +1146,7 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncSecurityDetailsForProduct_shouldHandleMultipleRepos() throws IOException {
+  void testSyncSecurityDetailsForProductShouldHandleMultipleRepos() throws IOException {
     // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     GHRepository repoA = mock(GHRepository.class);
@@ -1181,7 +1181,7 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncSecurityDetailsForProduct_whenEmptyOrg_shouldReturnEmptyList() throws IOException {
+  void testSyncSecurityDetailsForProductWhenEmptyOrgShouldReturnEmptyList() throws IOException {
     // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
@@ -1201,7 +1201,7 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testFetchSecurityInfoSafe_whenSuccess_shouldReturnInfo() throws IOException {
+  void testFetchSecurityInfoSafeWhenSuccessShouldReturnInfo() throws IOException {
     // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     GHRepository mockRepo = mock(GHRepository.class);

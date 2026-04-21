@@ -94,7 +94,8 @@ public class GitHubServiceImpl implements GitHubService {
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler, ProductSecurityInfoRepository productSecurityInfoRepository) {
+      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler,
+      ProductSecurityInfoRepository productSecurityInfoRepository) {
     this.restTemplate = restTemplate;
     this.githubUserRepository = githubUserRepository;
     this.gitHubProperty = gitHubProperty;

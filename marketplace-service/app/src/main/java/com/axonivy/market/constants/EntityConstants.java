@@ -17,4 +17,5 @@ public class EntityConstants {
   public static final String WORKFLOW_INFORMATION = "workflow_information";
   public static final String SYNC_TASK_EXECUTION = "sync_task";
   public static final String RELEASE_LETTER = "release_letter";
+  public static final String PRODUCT_SECURITY_INFO = "product_security_info";
 }

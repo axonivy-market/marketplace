@@ -19,13 +19,15 @@ import lombok.Setter;
 
 import java.util.Date;
 
+import static com.axonivy.market.constants.EntityConstants.PRODUCT_SECURITY_INFO;
+
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product_security_info")
+@Table(name = PRODUCT_SECURITY_INFO)
 public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   @Id
   private String repoName;

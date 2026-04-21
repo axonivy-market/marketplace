@@ -1,16 +1,12 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GithubReposModel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -19,7 +15,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,8 +48,8 @@ public class SecurityMonitorController {
       @RequestParam(value = SORT, required = false, defaultValue = "repoName") String sort,
       @RequestParam(value = SORT_DIRECTION, required = false, defaultValue = ASCENDING) String sortDirection,
       @ParameterObject Pageable pageable) throws IOException {
-    ProductSecurityCriteria ProductSecurityCriteria = buildCriteria(searchText, sort, sortDirection);
-    Page<ProductSecurityInfo> results = gitHubService.searchSecurityDetails(ProductSecurityCriteria, pageable);
+    ProductSecurityCriteria securityCriteria = buildCriteria(searchText, sort, sortDirection);
+    Page<ProductSecurityInfo> results = gitHubService.searchSecurityDetails(securityCriteria, pageable);
     var pageMetadata = new PagedModel.PageMetadata(results.getSize(), results.getNumber(),
         results.getTotalElements(), results.getTotalPages());
     PagedModel<ProductSecurityInfo> pagedModel = PagedModel.of(results.getContent(), pageMetadata);
