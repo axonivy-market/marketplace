@@ -52,7 +52,6 @@ public class MatomoServiceImpl implements MatomoService {
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
-        .visitorIp(httpServletRequest.getRemoteAddr())
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
@@ -66,26 +65,7 @@ public class MatomoServiceImpl implements MatomoService {
   private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
     Map<String, String> headers = new HashMap<>();
     headers.put(HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
-                  log.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ matomo header {} with value {}", HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
-
-    Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-    if (headerNames != null) {
-      while (headerNames.hasMoreElements()) {
-        String name = headerNames.nextElement();
-        Enumeration<String> values = httpServletRequest.getHeaders(name);
-        List<String> list = values != null ? Collections.list(values) : Collections.emptyList();
-        if (!list.isEmpty()) {
-          String value = String.join(CoreCommonConstants.COMMA, list);
-          if (StringUtils.isNotBlank(value)) {
-            if (StringUtils.equalsAnyIgnoreCase(name, HttpHeaders.AUTHORIZATION, HttpHeaders.COOKIE,
-                HttpHeaders.SET_COOKIE) && StringUtils.isNotBlank(value)) {
-              log.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ matomo header {} with value {}", name, value);
-              headers.put(name, value);
-            }
-          }
-        }
-      }
-    }
+    headers.put(HttpHeaderConstants.X_REAL_IP, httpServletRequest.getRemoteAddr());
     return headers;
   }
 
