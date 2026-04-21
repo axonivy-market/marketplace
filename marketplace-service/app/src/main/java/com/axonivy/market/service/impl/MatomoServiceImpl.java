@@ -52,7 +52,7 @@ public class MatomoServiceImpl implements MatomoService {
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
-        .ipAddress(httpServletRequest.getRemoteAddr())
+        .visitorIp(httpServletRequest.getRemoteAddr())
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
