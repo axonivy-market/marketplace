@@ -1,0 +1,120 @@
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{ 'common.admin.deprecation.title' | translate }}
+  </h1>
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{ 'common.admin.deprecation.description' | translate }}
+      </h3>
+    </div>
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        [lang]="languageService.selectedLanguage()"
+        class="text-secondary help-text"
+        [innerHTML]="'common.admin.deprecation.helpText' | translate"></h4>
+    </div>
+  </div>
+</div>
+
+<div class="table-grid d-grid deprecated-container">
+  <app-custom-sort-card class="custom-card"
+                        [title]="'common.admin.deprecation.availableExtensions' | translate"
+                        [badge]="filteredDeprecatedRows.length + ' / ' + deprecatedItems.length">
+    <div card-header-right class="search-box d-flex align-items-center">
+      <input
+        type="search"
+        class="search-input"
+        [(ngModel)]="tableSearchTerm"
+        (input)="filterTable(tableSearchTerm)"
+        [placeholder]="'common.admin.deprecation.searchPlaceholder' | translate"/>
+
+      <button
+        type="button" (click)="openDeprecationDialog()"
+        [lang]="languageService.selectedLanguage()"
+        class="btn deprecation-button border-0 mb-0 btn-primary text-center">
+        {{ 'common.admin.deprecation.deprecatedButton' | translate }}
+      </button>
+    </div>
+
+    <thead>
+    <tr>
+      <th class="text-primary text-center "> {{ 'common.admin.deprecation.order' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.extensionId' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.deprecation.deprecatedTime' | translate }}</th>
+      <th class="text-primary text-center">{{ 'common.admin.deprecation.requester' | translate }}</th>
+      <th class="text-primary text-center" aria-label="Actions">{{ 'common.admin.deprecation.action' | translate }}</th>
+    </tr>
+    </thead>
+
+    <tbody class="deprecation-table">
+      @if (filteredDeprecatedRows.length === 0) {
+        <tr class="empty-row text-center">
+          <td
+            colspan="6"
+            class="text-primary"
+            [lang]="languageService.selectedLanguage()">
+            {{ 'common.admin.customSort.noExtensions' | translate }}
+          </td>
+        </tr>
+      }
+
+      @for (row of filteredDeprecatedRows; track row.id; let index = $index) {
+        <tr>
+          <td class="text-primary text-center">{{ index + 1 }}</td>
+          <td class="text-primary text-center">{{ row.id }}</td>
+          <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td class="text-primary text-center">{{ getRequester(row) }}</td>
+          <td class="action-column text-primary text-center">
+            <i class="ti ti-trash-filled delete-icon"
+               role="button"
+               (click)="confirmRemovedDeprecation(row.id)">
+            </i>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </app-custom-sort-card>
+</div>
+
+<app-deprecate-form-dialog
+  [visible]="showDeprecatedProductDialog"
+  [isClosing]="isClosing"
+  [isDeprecating]="isDeprecating"
+  [dropdownOpen]="dropdownOpen"
+  [productId]="productId"
+  [deprecationRequest]="deprecationRequest"
+  [validationErrors]="validationErrors"
+  [filteredProductIds]="filteredProductIds"
+  (closeDialog)="closeDialog()"
+  (submitForm)="deprecatedProduct()"
+  (openDropdown)="openExtensionDropdown()"
+  (filterProducts)="filterProducts($event)"
+  (selectProduct)="selectExtension($event)"
+  (updateDropdownState)="dropdownOpen = $event"
+  (readmeChecked)="onClickCheckBoxReadme()">
+</app-deprecate-form-dialog>
+
+<app-deprecation-result-dialog
+  [visible]="showSuccessDialog"
+  [isClosing]="isClosingSuccessDialog"
+  [successMode]="successMode"
+  [moderatorName]="moderatorName"
+  [pullRequestUrl]="successPullRequestUrl"
+  [isCopySuccessVisible]="isCopySuccessVisible"
+  [showPullRequest]="hasPullRequestUrl()"
+  (closeDialog)="closeSuccessDialog()"
+  (copyPullRequestUrl)="copyPullRequestUrl()">
+</app-deprecation-result-dialog>
+
+<app-remove-deprecation-confirm-dialog
+  [visible]="showRemoveDeprecationConfirmDialog"
+  [isClosing]="isClosingRemoveDeprecationDialog"
+  [isRemoving]="isRemoving"
+  [removedProductId]="productId"
+  (closeDialog)="closeRemoveDeprecationDialog()"
+  (confirm)="executeRemoveDeprecation()">
+</app-remove-deprecation-confirm-dialog>

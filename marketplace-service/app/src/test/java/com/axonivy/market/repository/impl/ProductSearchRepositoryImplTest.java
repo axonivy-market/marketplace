@@ -89,12 +89,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
-    var caseExpression = mock(CriteriaBuilder.Case.class);
-    when(cb.selectCase()).thenReturn(caseExpression);
-
-    when(caseExpression.when(any(), any())).thenReturn(caseExpression);
-    when(caseExpression.otherwise(any())).thenReturn(nameValue); // Should return a valid expression
-
     // For counting
     when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.from(Product.class)).thenReturn(countRoot);

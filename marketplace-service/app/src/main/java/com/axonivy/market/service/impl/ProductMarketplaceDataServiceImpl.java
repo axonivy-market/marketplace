@@ -1,11 +1,15 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductCustomSort;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
@@ -16,10 +20,12 @@ import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHPullRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +39,11 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Log4j2
@@ -50,6 +58,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductRepository productRepo;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
+  private final GitHubService gitHubService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
@@ -137,13 +146,14 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
-  public int updateProductInstallationCount(String id) {
+  public ProductMarketplaceData updateProductInstallationCount(String id) {
     var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.updateInitialCount(id,
+        int installationCount = productMarketplaceDataRepo.updateInitialCount(id,
           getInstallationCountFromFileOrInitializeRandomly(id));
+      productMarketplaceData.setInstallationCount(installationCount);
     }
-    return productMarketplaceData.getInstallationCount();
+    return productMarketplaceData;
   }
 
   @Override
@@ -166,7 +176,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (CollectionUtils.isEmpty(mavenArtifactVersions)) {
       return null;
     }
-    String downloadUrl = mavenArtifactVersions.get(0).getDownloadUrl();
+    String downloadUrl = mavenArtifactVersions.getFirst().getDownloadUrl();
     return fileDownloadService.fetchUrlResource(downloadUrl);
   }
 
@@ -187,5 +197,44 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
     }
     return outputStream;
+  }
+
+  @Transactional(rollbackOn = IOException.class)
+  @Override
+  public String updateSuccessorForProduct(String productId, DeprecationRequest request)
+      throws IOException {
+    Optional.ofNullable(getProductMarketplaceData(productId))
+        .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
+          productMarketplaceData.setSuccessor(request.getSuccessorUrl());
+          productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
+          productMarketplaceData.setDeprecationDate(
+              Optional.ofNullable(request.getDeprecationDate()).orElse(new Date()));
+          productMarketplaceDataRepo.save(productMarketplaceData);
+        });
+
+    String pullRequestUrl = null;
+    Product product = productRepo.findById(productId).orElse(null);
+    if (product != null) {
+      product.setDeprecated(request.getIsDeprecated());
+      pullRequestUrl = handlePullRequest(product.getRepositoryName(), request);
+      productRepo.save(product);
+    }
+    return pullRequestUrl;
+  }
+
+  @Override
+  public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated) {
+    return productMarketplaceDataRepo.findProductIdsByDeprecated(isDeprecated);
+  }
+
+  private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
+    if (!request.getIsAddReadme() || request.getPullRequestAction() == null || StringUtils.isBlank(repoPath)) {
+      return null;
+    }
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
+    return Optional.ofNullable(pullRequest)
+        .map(GHPullRequest::getHtmlUrl)
+        .map(Object::toString)
+        .orElse(null);
   }
 }

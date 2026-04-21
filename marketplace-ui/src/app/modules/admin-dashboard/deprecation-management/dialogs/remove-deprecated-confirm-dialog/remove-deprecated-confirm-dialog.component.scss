@@ -1,0 +1,17 @@
+@use '../../../../../../assets/scss/dialog-base' as base;
+
+@include base.dialog-base-styles;
+
+.confirm-modal {
+  width: 450px;
+}
+
+.confirm-message {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.btn-danger {
+  font-size: 13px;
+}
+
