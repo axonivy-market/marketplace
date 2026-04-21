@@ -169,7 +169,7 @@ export class AdminDashboardComponent implements OnInit {
     this.loadingSyncTaskKey = syncTask.key;
     Object.assign(syncTask, {
       status: SyncTaskStatus.RUNNING,
-      triggeredAt: new Date(),
+      triggeredAt: null,
       completedAt: null,
       message: null
     });
@@ -178,6 +178,7 @@ export class AdminDashboardComponent implements OnInit {
   private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
     Object.assign(syncTask, {
       status: SyncTaskStatus.SUCCESS,
+      triggeredAt: syncTask.completedAt,
       completedAt: new Date(),
       message: 'Success'
     });
@@ -188,6 +189,7 @@ export class AdminDashboardComponent implements OnInit {
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
+      triggeredAt: syncTask.completedAt,
       completedAt: new Date(),
       message: 'Failed'
     });
