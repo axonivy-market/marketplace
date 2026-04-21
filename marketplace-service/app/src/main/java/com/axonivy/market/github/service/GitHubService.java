@@ -51,11 +51,9 @@ public interface GitHubService {
 
   UserInfo validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
 
-  List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) throws IOException;
-
   Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable) throws IOException;
 
-  void syncSecurityDetailsForProduct() throws IOException;
+  List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException;
 
   Page<GitHubReleaseModel> getGitHubReleaseModels(List<GHRelease> ghReleases,
       Pageable pageable, String productId, String productRepoName, String productSourceUrl) throws IOException;

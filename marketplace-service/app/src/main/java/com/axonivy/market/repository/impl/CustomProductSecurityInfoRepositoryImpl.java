@@ -5,6 +5,7 @@ import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.repository.CustomProductSecurityInfoRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,36 +21,30 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
   @Override
   public Page<ProductSecurityInfo> searchProductSecurityAndSorting(ProductSecurityCriteria criteria,
       Pageable pageable) {
-
     String orderBy = getOrderBy(criteria.getSortOption(), criteria.getSortDirection());
     String whereClause = buildWhereClause(criteria.getSearchText());
-
     String sql = "SELECT * FROM product_security_info psi" + whereClause + " ORDER BY " + orderBy;
 
-    var query = entityManager.createNativeQuery(sql, ProductSecurityInfo.class);
-
+    Query query = entityManager.createNativeQuery(sql, ProductSecurityInfo.class);
     // Bind parameter if search text exists
     if (criteria.getSearchText() != null && !criteria.getSearchText().trim().isEmpty()) {
       query.setParameter(1, "%" + criteria.getSearchText().trim() + "%");
     }
-
     List<?> resultList = query
         .setFirstResult((int) pageable.getOffset())
         .setMaxResults(pageable.getPageSize())
         .getResultList();
+
     List<ProductSecurityInfo> content = resultList.stream()
         .map(ProductSecurityInfo.class::cast)
         .toList();
 
     String countSql = "SELECT COUNT(*) FROM product_security_info psi" + whereClause;
-    var countQuery = entityManager.createNativeQuery(countSql);
-
+    Query countQuery = entityManager.createNativeQuery(countSql);
     if (criteria.getSearchText() != null && !criteria.getSearchText().trim().isEmpty()) {
       countQuery.setParameter(1, "%" + criteria.getSearchText().trim() + "%");
     }
-
     long total = ((Number) countQuery.getSingleResult()).longValue();
-
     return new PageImpl<>(content, pageable, total);
   }
 

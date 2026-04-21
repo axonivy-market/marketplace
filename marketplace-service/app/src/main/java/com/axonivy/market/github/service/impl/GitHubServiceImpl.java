@@ -1,5 +1,6 @@
 package com.axonivy.market.github.service.impl;
 
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
@@ -9,7 +10,7 @@ import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.PullRequestAction;
-import com.axonivy.market.enums.ProductSecuritySortOption;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -217,38 +218,31 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
-      String orgName) throws IOException {
-    var gitHub = getGitHub(accessToken);
-    GHOrganization organization = gitHub.getOrganization(orgName);
-
-    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
-        .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
-            taskScheduler.getScheduledExecutor())).toList();
-
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
-  }
-
-  @Override
   public Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria,
       Pageable pageable) {
     return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
   }
 
   @Override
-  public void syncSecurityDetailsForProduct() throws IOException {
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECRET_MONITOR)
+  public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories()
+        .toList()
+        .stream()
         .map(repo -> CompletableFuture.supplyAsync(
             () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken()),
-            taskScheduler.getScheduledExecutor())).toList();
+            taskScheduler.getScheduledExecutor()))
+        .toList();
+
     List<ProductSecurityInfo> productSecurityInfos = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
-    productSecurityInfoRepository.saveAll(productSecurityInfos);
+        .thenApply(v -> futures.stream()
+            .map(CompletableFuture::join)
+            .sorted(Comparator.comparing(ProductSecurityInfo::getRepoName))
+            .toList())
+        .join();
+    return productSecurityInfoRepository.saveAll(productSecurityInfos);
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {

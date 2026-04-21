@@ -31,24 +31,15 @@ import static com.axonivy.market.constants.RequestMappingConstants.SECURITY_MONI
 @Tag(name = "Security Monitor Controllers", description = "API collection to get Github Marketplace security's detail.")
 @AllArgsConstructor
 public class SecurityMonitorController {
-  private final GitHubService gitHubService;
 
-  @Authorized
-  @GetMapping
-  @Operation(hidden = true)
-  public ResponseEntity<Object> getGitHubMarketplaceSecurity(HttpServletRequest request) throws IOException {
-    String token = (String) request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
-    List<ProductSecurityInfo> securityInfoList = gitHubService.getSecurityDetailsForAllProducts(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    return ResponseEntity.ok(securityInfoList);
-  }
+  private final GitHubService gitHubService;
 
   @Authorized
   @PostMapping
   @Operation(hidden = true)
-  public ResponseEntity<Void> syncGitHubMarketplaceSecurity() throws IOException {
-    gitHubService.syncSecurityDetailsForProduct();
-    return ResponseEntity.ok().build();
+  public ResponseEntity<List<ProductSecurityInfo>> syncGitHubMarketplaceSecurity() throws IOException {
+    List<ProductSecurityInfo> securityInfoList = gitHubService.syncSecurityDetailsForProduct();
+    return ResponseEntity.ok(securityInfoList);
   }
 
   @PostMapping("/sorting")

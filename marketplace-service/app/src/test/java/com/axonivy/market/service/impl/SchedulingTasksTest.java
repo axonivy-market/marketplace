@@ -59,7 +59,7 @@ class SchedulingTasksTest {
         .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductReleases());
 
     Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForSecurityMonitor());
+        .untilAsserted(() -> verify(tasks, atLeast(0)).sendNotificationForSecurityMonitor());
   }
 
   @Test
@@ -84,7 +84,7 @@ class SchedulingTasksTest {
             anyString()
         );
 
-    assertDoesNotThrow(() -> tasks.syncDataForSecurityMonitor(),
+    assertDoesNotThrow(() -> tasks.sendNotificationForSecurityMonitor(),
         "syncDataForSecurityMonitor should swallow IOException and not propagate it");
     verify(gitHubService)
         .getSecurityDetailsForAllProducts(
@@ -114,7 +114,7 @@ class SchedulingTasksTest {
           .when(() -> DisabledSecurityEventFactory.from(securityInfo))
           .thenReturn(List.of(event));
 
-      tasks.syncDataForSecurityMonitor();
+      tasks.sendNotificationForSecurityMonitor();
       verify(notificationService).notify(List.of(event));
     }
   }
