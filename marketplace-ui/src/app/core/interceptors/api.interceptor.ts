@@ -17,10 +17,10 @@ export const IVY = 'marketplace-website';
 export const LoadingComponent = new HttpContextToken<string>(() => '');
 
 /**
- * CACHING_ENABLED: This option is for enabling caching for GET request.
- * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(CACHING_ENABLED, false) })
+ * CachingEnabled: This option is for enabling caching for GET request.
+ * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(CachingEnabled, false) })
  */
-export const CACHING_ENABLED = new HttpContextToken<boolean>(() => true);
+export const CachingEnabled = new HttpContextToken<boolean>(() => true);
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
@@ -65,7 +65,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     tap(event => {
       if (req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
-        && req.context.get(CACHING_ENABLED) !== false) {
+        && req.context.get(CachingEnabled) !== false) {
         transferState.set(key, event.body);
       }
     }),

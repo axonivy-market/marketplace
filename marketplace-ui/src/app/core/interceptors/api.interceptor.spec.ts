@@ -1,22 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
-import {
-  HttpClient,
-  HttpContext,
-  HttpHeaders,
-  provideHttpClient,
-  withInterceptors
-} from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting
-} from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { ProductComponent } from '../../modules/product/product.component';
 import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../../shared/constants/common.constant';
-import { apiInterceptor, CACHING_ENABLED } from './api.interceptor';
+import { apiInterceptor, CachingEnabled } from './api.interceptor';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
@@ -24,8 +15,6 @@ import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { LoadingService } from '../services/loading/loading.service';
 
 describe('AuthInterceptor', () => {
-  let mockRouter: MockedObject<Router>;
-  let productComponent: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
@@ -55,7 +44,6 @@ describe('AuthInterceptor', () => {
     httpTestingController = TestBed.inject(HttpTestingController);
 
     fixture = TestBed.createComponent(ProductComponent);
-    productComponent = fixture.componentInstance;
     fixture.detectChanges();
   });
 
@@ -175,11 +163,11 @@ describe('AuthInterceptor', () => {
       httpMock.verify();
     });
 
-    it('should NOT cache GET response when CACHING_ENABLED is false', () => {
+    it('should NOT cache GET response when CachingEnabled is false', () => {
       const transferState = TestBed.inject(TransferState);
       const url = 'product';
       const body = { id: 1 };
-      const context = new HttpContext().set(CACHING_ENABLED, false);
+      const context = new HttpContext().set(CachingEnabled, false);
 
       http.get(url, { context }).subscribe();
 

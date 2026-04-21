@@ -204,7 +204,6 @@ describe('AdminDashboardComponent', () => {
       fixture.detectChanges();
 
       expect(component.errorMessage).toBe(ERROR_MESSAGES.FETCH_FAILURE);
-      expect(mockAuthService.clearToken).toHaveBeenCalled();
     });
   });
 

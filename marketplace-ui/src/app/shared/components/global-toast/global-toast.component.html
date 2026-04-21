@@ -3,7 +3,7 @@
   <ngb-toast [autohide]="true" [delay]="autoHideDuration" (hidden)="dismiss()"
     class="text-bg-danger border-0 shadow"
     [header]="'common.error.oops' | translate">
-    <div class="small mt-1">
+    <div class="my-2">
       {{ currentError.messageKey | translate }}
     </div>
   </ngb-toast>

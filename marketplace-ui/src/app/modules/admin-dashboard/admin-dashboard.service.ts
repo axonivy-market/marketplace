@@ -1,10 +1,7 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
-import {
-  CACHING_ENABLED,
-  LoadingComponent
-} from '../../core/interceptors/api.interceptor';
+import { CachingEnabled, LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
@@ -154,7 +151,7 @@ export class AdminDashboardService {
 
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
-        context: new HttpContext().set(LoadingComponent, pageId).set(CACHING_ENABLED, false),
+        context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
         params
       })
       .pipe(
@@ -174,7 +171,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
-        context: new HttpContext().set(CACHING_ENABLED, false),
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
@@ -212,7 +209,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
-        context: new HttpContext().set(CACHING_ENABLED, false),
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }

@@ -19,7 +19,8 @@ import {
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY,
   SHOW_DEV_VERSION,
-  NOT_FOUND_ERROR_CODE
+  NOT_FOUND_ERROR_CODE,
+  ERROR_PAGE_PATH
 } from '../../shared/constants/common.constant';
 import { ROUTER } from '../../shared/constants/router.constant';
 import { API_INTERNAL_URL, API_PUBLIC_URL } from '../../shared/constants/api.constant';
@@ -60,11 +61,13 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
         }
       }),
       catchError((error: HttpErrorResponse) => {
+        // If product not found, navigate to 404 page if CRS, otherwise return a UrlTree for ErrorPage
         if (error.status === NOT_FOUND_ERROR_CODE) {
+          const errorPageUrl = `/${ERROR_PAGE_PATH}/${NOT_FOUND_ERROR_CODE}`;
           if (isPlatformServer(PLATFORM_ID)) {
-            return of(this.router.parseUrl('/error-page/404'));
+            return of(this.router.parseUrl(errorPageUrl));
           }
-          this.router.navigate(['/error-page/404']);
+          this.router.navigate([errorPageUrl]);
           return EMPTY;
         }
         return EMPTY;

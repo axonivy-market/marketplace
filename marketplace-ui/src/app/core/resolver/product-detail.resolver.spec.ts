@@ -12,10 +12,7 @@ import { ProductService } from '../../modules/product/product.service';
 import { CookieService } from 'ngx-cookie-service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import {
-  MOCK_PRODUCT_DETAIL,
-  MOCK_PRODUCTS
-} from '../../shared/mocks/mock-data';
+import { MOCK_PRODUCT_DETAIL, MOCK_PRODUCTS } from '../../shared/mocks/mock-data';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import {
@@ -39,9 +36,6 @@ describe('ProductDetailResolver', () => {
   let titleService: MockedObject<Title>;
   let languageService: MockedObject<LanguageService>;
   let loadingService: MockedObject<LoadingService>;
-  let productService: MockedObject<ProductService>;
-  let cookieService: MockedObject<CookieService>;
-  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let faviconService: MockedObject<FaviconService>;
   let router: MockedObject<Router>;
   let activatedRoute: ActivatedRoute;

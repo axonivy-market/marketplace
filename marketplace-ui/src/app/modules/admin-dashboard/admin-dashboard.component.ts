@@ -137,6 +137,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private handleAuthError(err: HttpErrorResponse): void {
     this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
+    // Only remove token if unauthorized, other errors could be transient and token may still be valid
     if (err.status === UNAUTHORIZED) {
       this.authService.clearToken();
       this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
