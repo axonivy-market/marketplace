@@ -24,7 +24,7 @@ public class MdcContextUtils {
   public static <T> Supplier<T> wrapMdcContext(Supplier<T> supplier) {
     // Copy MDC từ thread hiện tại
     Map<String, String> mdcContext = MDC.getCopyOfContextMap();
-    
+
     return () -> {
       // Restore MDC ở thread mới
       if (mdcContext != null) {

@@ -22,6 +22,8 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 import static com.axonivy.market.constants.GitHubConstants.*;
@@ -83,6 +86,12 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Mock
   private GithubUserRepository githubUserRepository;
+
+  @Mock
+  private ProductSecurityInfoRepository productSecurityInfoRepository;
+
+  @Mock
+  private ThreadPoolTaskScheduler taskScheduler;
 
   @Spy
   @InjectMocks
@@ -598,24 +607,7 @@ class GitHubServiceImplTest extends BaseSetup {
         "Expected Dependabot alerts status to be DISABLED when the API returns 403 Forbidden"
     );
   }
-
-  @Test
-  void testGetSecurityDetailsForAllProducts() throws Exception {
-    String accessToken = "mockAccessToken";
-    String orgName = "mockOrganization";
-    GHOrganization ghOrganization = mock(GHOrganization.class);
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
-    when(gitHub.getOrganization(orgName)).thenReturn(ghOrganization);
-    PagedIterable<GHRepository> mockPagedIterable = mock(PagedIterable.class);
-    when(ghOrganization.listRepositories()).thenReturn(mockPagedIterable);
-    List<ProductSecurityInfo> result = gitHubService.getSecurityDetailsForAllProducts(accessToken, orgName);
-    assertEquals(
-        0,
-        result.size(),
-        "Expected no security details when the organization has no repositories"
-    );
-  }
-
+  
   @Test
   void testGetGitHubReleaseModelsWithMEmptyReleases() throws IOException {
     Product mockProduct = mock(Product.class);
@@ -1119,6 +1111,125 @@ class GitHubServiceImplTest extends BaseSetup {
     assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage(),
         "Exception message should clearly indicate missing markdown heading in README"
     );
+  }
+
+  // ======================== syncSecurityDetailsForProduct ========================
+
+  @Test
+  void testSyncSecurityDetailsForProduct_shouldReturnSavedList() throws IOException {
+    // Arrange
+    GHOrganization mockOrg = mock(GHOrganization.class);
+    GHRepository mockRepo = mock(GHRepository.class);
+    PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
+    ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("test-repo");
+
+    when(gitHubProperty.getToken()).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(mockOrg.listRepositories()).thenReturn(pagedRepos);
+    when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
+    ScheduledExecutorService inlineExecutor = mock(ScheduledExecutorService.class);
+    when(taskScheduler.getScheduledExecutor()).thenReturn(inlineExecutor);
+    doAnswer(inv -> { ((Runnable) inv.getArgument(0)).run(); return null; }).when(inlineExecutor).execute(any());
+
+    doReturn(mockInfo).when(gitHubService).fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
+    when(productSecurityInfoRepository.saveAll(anyList())).thenReturn(List.of(mockInfo));
+
+    // Act
+    List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    assertEquals("test-repo", result.get(0).getRepoName());
+    verify(productSecurityInfoRepository).saveAll(anyList());
+  }
+
+  @Test
+  void testSyncSecurityDetailsForProduct_shouldHandleMultipleRepos() throws IOException {
+    // Arrange
+    GHOrganization mockOrg = mock(GHOrganization.class);
+    GHRepository repoA = mock(GHRepository.class);
+    GHRepository repoB = mock(GHRepository.class);
+    GHRepository repoC = mock(GHRepository.class);
+    PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
+
+    ProductSecurityInfo infoA = buildMockProductSecurityInfo("repo-a");
+    ProductSecurityInfo infoB = buildMockProductSecurityInfo("repo-b");
+    ProductSecurityInfo infoC = buildMockProductSecurityInfo("repo-c");
+
+    when(gitHubProperty.getToken()).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(mockOrg.listRepositories()).thenReturn(pagedRepos);
+    when(pagedRepos.toList()).thenReturn(List.of(repoA, repoB, repoC));
+    ScheduledExecutorService inlineExecutor2 = mock(ScheduledExecutorService.class);
+    when(taskScheduler.getScheduledExecutor()).thenReturn(inlineExecutor2);
+    doAnswer(inv -> { ((Runnable) inv.getArgument(0)).run(); return null; }).when(inlineExecutor2).execute(any());
+
+    doReturn(infoA).when(gitHubService).fetchSecurityInfoSafe(repoA, mockOrg, "token");
+    doReturn(infoB).when(gitHubService).fetchSecurityInfoSafe(repoB, mockOrg, "token");
+    doReturn(infoC).when(gitHubService).fetchSecurityInfoSafe(repoC, mockOrg, "token");
+    when(productSecurityInfoRepository.saveAll(anyList())).thenReturn(List.of(infoA, infoB, infoC));
+
+    // Act
+    List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
+
+    // Assert
+    assertEquals(3, result.size());
+    verify(productSecurityInfoRepository).saveAll(anyList());
+  }
+
+  @Test
+  void testSyncSecurityDetailsForProduct_whenEmptyOrg_shouldReturnEmptyList() throws IOException {
+    // Arrange
+    GHOrganization mockOrg = mock(GHOrganization.class);
+    PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
+
+    when(gitHubProperty.getToken()).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(mockOrg.listRepositories()).thenReturn(pagedRepos);
+    when(pagedRepos.toList()).thenReturn(Collections.emptyList());
+    // Act
+    List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
+
+    // Assert
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+    verify(productSecurityInfoRepository).saveAll(Collections.emptyList());
+  }
+
+  @Test
+  void testFetchSecurityInfoSafe_whenSuccess_shouldReturnInfo() throws IOException {
+    // Arrange
+    GHOrganization mockOrg = mock(GHOrganization.class);
+    GHRepository mockRepo = mock(GHRepository.class);
+    ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("repo-x");
+
+    doReturn(mockInfo).when(gitHubService).fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
+
+    // Act
+    ProductSecurityInfo result = gitHubService.fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
+
+    // Assert
+    assertNotNull(result);
+    assertEquals("repo-x", result.getRepoName());
+  }
+
+  private ProductSecurityInfo buildMockProductSecurityInfo(String repoName) {
+    ProductSecurityInfo info = new ProductSecurityInfo();
+    info.setRepoName(repoName);
+    Dependabot dependabot = new Dependabot();
+    dependabot.setStatus(AccessLevel.ENABLED);
+    info.setDependabot(dependabot);
+    SecretScanning secretScanning = new SecretScanning();
+    secretScanning.setNumberOfSecretScanningAlerts(0);
+    info.setSecretScanning(secretScanning);
+    CodeScanning codeScanning = new CodeScanning();
+    codeScanning.setStatus(AccessLevel.ENABLED);
+    info.setCodeScanning(codeScanning);
+    return info;
   }
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)

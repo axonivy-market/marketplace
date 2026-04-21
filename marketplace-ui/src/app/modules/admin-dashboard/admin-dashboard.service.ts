@@ -143,29 +143,23 @@ export class AdminDashboardService {
     });
   }
 
-  searchSecurityDetails(
-    criteria: SecurityMonitorCriteria
-  ): Observable<SecurityMonitorApiResponse> {
-    const params = new HttpParams()
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
+    Observable<SecurityMonitorApiResponse> {
+    let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
-      .set(RequestParam.SIZE, `${criteria.pageable.size}`);
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SORT, criteria.sortOption)
+      .set(RequestParam.SORT_DIRECTION, criteria.sortDirection);
 
-    const body = {
-      searchText: criteria.searchText,
-      sortOption: criteria.sortOption,
-      sortDirection: criteria.sortDirection
-    };
+    if (criteria.searchText) {
+      params = params.set(RequestParam.SEARCH, criteria.searchText);
+    }
 
-    return this.http.post<SecurityMonitorApiResponse>(
-      `${API_URI.SECURITY_MONITOR}/sorting`,
-      body,
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
       {
         params,
         headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(
-          LoadingComponent,
-          LoadingComponentId.SECURITY_MONITOR
-        )
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
       }
     );
   }

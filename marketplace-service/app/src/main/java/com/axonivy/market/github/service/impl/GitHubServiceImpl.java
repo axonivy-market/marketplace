@@ -241,7 +241,7 @@ public class GitHubServiceImpl implements GitHubService {
         .join();
 
     List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
-    log.warn("Synced security details for {} repositories", syncedSecurityRepos.size());
+    log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
     return syncedSecurityRepos;
   }
 
