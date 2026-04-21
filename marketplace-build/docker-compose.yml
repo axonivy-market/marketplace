@@ -16,6 +16,8 @@ services:
     depends_on:
       - ui
       - app
+    networks:
+      - market-network
 
   ui:
     container_name: marketplace-ui
@@ -40,6 +42,8 @@ services:
     command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
     ports:
       - "4000:4000"
+    networks:
+      - market-network
 
   app:
     container_name: marketplace-app
@@ -86,6 +90,9 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+    networks:
+      - market-network
+
   stable:
     container_name: marketplace-stable
     restart: always
@@ -103,6 +110,8 @@ services:
         - BUILD_VERSION=${STABLE_BUILD_VERSION}
     ports:
       - "8085:8080"
+    networks:
+      - market-network
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -115,6 +124,12 @@ services:
       - 4040:4040
     depends_on:
       - nginx
+    networks:
+      - market-network
+
+networks:
+  market-network:
+    external: true
 
 volumes:
   marketcache:
