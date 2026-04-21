@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.service.MatomoService;
@@ -21,7 +20,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 @Service
