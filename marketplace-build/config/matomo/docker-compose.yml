@@ -2,7 +2,7 @@ name: matomo-prod
 
 services:
   matomo-db:
-    image: mariadb:lts
+    image: mysql:lts
     container_name: matomo-db
     restart: always
     volumes:

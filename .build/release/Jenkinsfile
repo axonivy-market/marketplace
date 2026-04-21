@@ -59,6 +59,7 @@ pipeline {
     MAIL_PORT = credentials('MAIL_PORT')
     FROM_MAIL = credentials('FROM_MAIL')
     TO_MAIL = credentials('TO_MAIL')
+    NGROK_AUTHTOKEN = credentials('NGROK_AUTHTOKEN')
   }
 
   parameters {
@@ -157,7 +158,11 @@ pipeline {
           sed -i "s|^FROM_MAIL=.*\$|FROM_MAIL=${env.FROM_MAIL}|" \$ENV_FILE
           sed -i "s|^TO_MAIL=.*\$|TO_MAIL=${env.TO_MAIL}|" \$ENV_FILE
           sed -i "s|^MARKET_ALLOWED_HOSTS=.*\$|MARKET_ALLOWED_HOSTS=${env.MARKET_ALLOWED_HOSTS}|" \$ENV_FILE
-
+          sed -i "s|^MARKET_API_INTERNAL_URL=.*\$|MARKET_API_INTERNAL_URL=${env.MARKET_API_INTERNAL_URL}|" \$ENV_FILE
+          sed -i "s|^MARKET_SERVER_MATOMO_TRACKER_URL=.*\$|MARKET_SERVER_MATOMO_TRACKER_URL=${env.MARKET_SERVER_MATOMO_TRACKER_URL}|" \$ENV_FILE
+          sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
+          sed -i "s|^MARKET_MATOMO_TRACKER_URL=.*\$|  MARKET_MATOMO_TRACKER_URL=${env.MARKET_MATOMO_TRACKER_URL}|" \$ENV_FILE
+          sed -i "s|^NGROK_AUTHTOKEN=.*\$|NGROK_AUTHTOKEN=${env.NGROK_AUTHTOKEN}|" \$ENV_FILE
         """
       }
     }

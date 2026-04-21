@@ -103,6 +103,19 @@ services:
         - BUILD_VERSION=${STABLE_BUILD_VERSION}
     ports:
       - "8085:8080"
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: always
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command: http nginx:80
+    ports:
+      - 4040:4040
+    depends_on:
+      - nginx
+
 volumes:
   marketcache:
   marketbrowser:
