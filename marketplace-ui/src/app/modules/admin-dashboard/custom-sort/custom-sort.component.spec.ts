@@ -8,29 +8,32 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product/product.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { of, throwError } from 'rxjs';
+import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { CommonUtils } from '../../../shared/utils/common.utils';
 
 describe('CustomSortComponent', () => {
   let component: CustomSortComponent;
   let fixture: ComponentFixture<CustomSortComponent>;
-  let productService: MockedObject<ProductService>;
-  let adminDashboardService: MockedObject<AdminDashboardService>;
+  let productService: any;
+  let adminDashboardService: any;
   let translateService: TranslateService;
 
   beforeEach(async () => {
     productService = {
-      fetchAllProductIds: vi.fn().mockName('ProductService.fetchAllProductIds')
-    } as Partial<MockedObject<ProductService>> as MockedObject<ProductService>;
+      fetchAllProductIds: vi.fn()
+    };
+
     adminDashboardService = {
-      sortMarketExtensions: vi
-        .fn()
-        .mockName('AdminDashboardService.sortMarketExtensions'),
-      getCustomSort: vi.fn().mockName('AdminDashboardService.getCustomSort')
-    } as Partial<MockedObject<AdminDashboardService>> as MockedObject<AdminDashboardService>;
+      sortMarketExtensions: vi.fn(),
+      getCustomSort: vi.fn()
+    };
 
     productService.fetchAllProductIds.mockReturnValue(
       of(['portal', 'coffee-machine-connector', 'persistence-utils'])
     );
+
     adminDashboardService.sortMarketExtensions.mockReturnValue(of(undefined));
+
     adminDashboardService.getCustomSort.mockReturnValue(
       of({
         orderedListOfProducts: ['portal'],
@@ -57,20 +60,53 @@ describe('CustomSortComponent', () => {
 
   it('should load all product IDs on init', async () => {
     fixture.detectChanges();
+
     await vi.waitFor(() => {
       expect(component.sortingExtensions).toEqual(['portal']);
     });
+
     expect(component.allExtensions).toEqual([
       'coffee-machine-connector',
       'persistence-utils'
     ]);
+
+    expect(component.remainderRuleValue).toBe(SortOption.ALPHABETICALLY);
+    expect(component.remainderRuleLabel).toBe(
+      CommonUtils.getLabel(
+        SortOption.ALPHABETICALLY,
+        component.ruleDropdown()
+      )
+    );
+
     expect(component.isLoading).toBe(false);
+  });
+
+  it('should fallback to default sort rule when API returns invalid value', async () => {
+    adminDashboardService.getCustomSort.mockReturnValue(
+      of({
+        orderedListOfProducts: ['portal'],
+        ruleForRemainder: 'invalid-value'
+      })
+    );
+
+    fixture.detectChanges();
+
+    await vi.waitFor(() => {
+      expect(component.remainderRuleValue).toBe(
+        component.ruleDropdown()[0].value
+      );
+    });
+
+    expect(component.remainderRuleLabel).toBe(
+      component.ruleDropdown()[0].label
+    );
   });
 
   it('should reset loading flag when loading product IDs fails', async () => {
     productService.fetchAllProductIds.mockReturnValue(
       throwError(() => new Error('error'))
     );
+
     adminDashboardService.getCustomSort.mockReturnValue(
       of({ orderedListOfProducts: [], ruleForRemainder: 'alphabetically' })
     );
@@ -80,6 +116,19 @@ describe('CustomSortComponent', () => {
     expect(component.allExtensions).toEqual([]);
     expect(component.sortingExtensions).toEqual([]);
     expect(component.isLoading).toBe(false);
+  });
+
+  describe('onSelectSortRule', () => {
+    it('should update remainder rule value and label', () => {
+      const sort = SortOption.ALPHABETICALLY;
+
+      component.onSelectSortRule(sort);
+
+      expect(component.remainderRuleValue).toBe(sort);
+      expect(component.remainderRuleLabel).toBe(
+        CommonUtils.getLabel(sort, component.ruleDropdown())
+      );
+    });
   });
 
   describe('filteredAvailableExtensions', () => {
@@ -175,6 +224,7 @@ describe('CustomSortComponent', () => {
         'coffee-machine-connector',
         'persistence-utils'
       ];
+
       const container = {
         id: 'sorted-extensions',
         data: component.sortingExtensions
@@ -203,6 +253,7 @@ describe('CustomSortComponent', () => {
         'coffee-machine-connector',
         'persistence-utils'
       ];
+
       const container = {
         id: 'available-extensions',
         data: component.allExtensions
@@ -238,7 +289,11 @@ describe('CustomSortComponent', () => {
 
       component.sortMarketExtensions();
 
-      expect(adminDashboardService.sortMarketExtensions).toHaveBeenCalled();
+      expect(adminDashboardService.sortMarketExtensions).toHaveBeenCalledWith(
+        component.sortingExtensions,
+        component.remainderRuleValue
+      );
+
       expect(component.sortSuccessMessage).toBe('Success');
       expect(component.isSaving).toBe(false);
     });
@@ -247,6 +302,7 @@ describe('CustomSortComponent', () => {
       adminDashboardService.sortMarketExtensions.mockReturnValue(
         throwError(() => new Error('error'))
       );
+
       vi.spyOn(translateService, 'instant').mockReturnValue('Error');
 
       component.sortMarketExtensions();
