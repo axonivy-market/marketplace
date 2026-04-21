@@ -26,6 +26,7 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -223,25 +224,37 @@ public class GitHubServiceImpl implements GitHubService {
     return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
   }
 
+//  @Override
+//  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
+//  public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
+//    var gitHub = getGitHub(gitHubProperty.getToken());
+//    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+//    List<GHRepository> repositories = organization.listRepositories().toList();
+//
+//    List<ProductSecurityInfo> productSecurityInfos = new ArrayList<>();
+//    for (GHRepository repo : repositories) {
+//      log.warn("fetching security info for repo: {}", repo.getName());
+//      ProductSecurityInfo productSecurityInfo = fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+//      productSecurityInfos.add(productSecurityInfo);
+//    }
+//    return productSecurityInfoRepository.saveAll(productSecurityInfos);
+//  }
+
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories()
-        .toList()
-        .stream()
+    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
         .map(repo -> CompletableFuture.supplyAsync(
-            () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken()),
-            taskScheduler.getScheduledExecutor()))
-        .toList();
-
+            MdcContextUtils.wrapMdcContext(() -> {
+              log.warn("fetching security info for repo: {}", repo.getName());
+              return fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+            }),
+            taskScheduler.getScheduledExecutor())).toList();
     List<ProductSecurityInfo> productSecurityInfos = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream()
-            .map(CompletableFuture::join)
-            .sorted(Comparator.comparing(ProductSecurityInfo::getRepoName))
-            .toList())
-        .join();
+        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
+            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
     return productSecurityInfoRepository.saveAll(productSecurityInfos);
   }
 
