@@ -78,16 +78,10 @@ class SchedulingTasksTest {
   void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
     ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
     when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of(securityInfo));
-
     DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
-
     try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
              Mockito.mockStatic(DisabledSecurityEventFactory.class)) {
-
-      mockedFactory
-          .when(() -> DisabledSecurityEventFactory.from(securityInfo))
-          .thenReturn(List.of(event));
-
+      mockedFactory.when(() -> DisabledSecurityEventFactory.from(securityInfo)).thenReturn(List.of(event));
       tasks.sendNotificationForSecurityMonitor();
       verify(notificationService).notify(List.of(event));
     }
