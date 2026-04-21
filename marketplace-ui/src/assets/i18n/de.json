@@ -378,12 +378,7 @@
         "sortingLabel": "Sortierung...",
         "sortSuccessMessage": "Sortierung erfolgreich gespeichert.",
         "sortErrorMessage": "Speichern der Sortierung fehlgeschlagen. Bitte versuche es erneut.",
-        "loadingLabel": "Erweiterungen werden geladen...",
-        "sortRule": {
-          "alphabetically": "alphabetically",
-          "recent": "recent",
-          "popularity": "popularity"
-        }
+        "loadingLabel": "Erweiterungen werden geladen..."
       },
       "quickAccess": {
         "pageTitle": "Schnellzugriff",

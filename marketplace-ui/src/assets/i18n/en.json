@@ -378,12 +378,7 @@
         "sortingLabel": "Sorting...",
         "sortSuccessMessage": "Sorting saved successfully.",
         "sortErrorMessage": "Saving the sorting failed. Please try again.",
-        "loadingLabel": "Loading extensions...",
-        "sortRule": {
-          "alphabetically": "alphabetically",
-          "recent": "recent",
-          "popularity": "popularity"
-        }
+        "loadingLabel": "Loading extensions..."
       },
       "quickAccess": {
         "pageTitle": "Quick Access",
