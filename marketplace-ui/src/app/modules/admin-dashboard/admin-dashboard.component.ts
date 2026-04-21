@@ -136,12 +136,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleAuthError(err: HttpErrorResponse): void {
-    this.errorMessage =
-      err.status === UNAUTHORIZED
-        ? ERROR_MESSAGES.INVALID_TOKEN
-        : ERROR_MESSAGES.FETCH_FAILURE;
-
-    this.authService.clearToken();
+    this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
+    if (err.status === UNAUTHORIZED) {
+      this.authService.clearToken();
+      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+    }
   }
 
   // Synchronize

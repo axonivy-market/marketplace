@@ -1,0 +1,11 @@
+@if (isVisible && currentError) {
+<div class="toast-container position-fixed top-0 end-0 p-3 global-toast-container">
+  <ngb-toast [autohide]="true" [delay]="autoHideDuration" (hidden)="dismiss()"
+    class="text-bg-danger border-0 shadow"
+    [header]="'common.error.oops' | translate">
+    <div class="small mt-1">
+      {{ currentError.messageKey | translate }}
+    </div>
+  </ngb-toast>
+</div>
+}

@@ -14,7 +14,7 @@ import {
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
+import { LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -141,10 +141,7 @@ export class ProductFeedbackService {
       `${BEARER} ${this.authService.getToken()}`
     );
     return this.http
-      .post<Feedback>(FEEDBACK_API_URL, feedback, {
-        headers,
-        context: new HttpContext().set(ForwardingError, true)
-      })
+      .post<Feedback>(FEEDBACK_API_URL, feedback, { headers })
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
@@ -232,10 +229,7 @@ export class ProductFeedbackService {
       .set('userId', this.authService.getUserId() ?? '');
     const requestURL = FEEDBACK_API_URL;
     return this.http
-      .get<Feedback[]>(requestURL, {
-        params,
-        context: new HttpContext().set(ForwardingError, true)
-      })
+      .get<Feedback[]>(requestURL, { params })
       .pipe(
         tap(feedbacks => {
           const prioritizedUserFeedback =

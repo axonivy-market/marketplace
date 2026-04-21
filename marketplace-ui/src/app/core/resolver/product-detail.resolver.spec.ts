@@ -216,7 +216,7 @@ describe('ProductDetailResolver', () => {
       expect(emissionCount).toBe(1);
     });
 
-    it('should return UrlTree for error-page/404 when product service returns 404', () => {
+    it('should return UrlTree wrapped in Observable for 404 error', () => {
       const error404 = new HttpErrorResponse({ status: NOT_FOUND_ERROR_CODE });
       const mockUrlTree = {} as UrlTree;
       (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => error404));
@@ -224,22 +224,24 @@ describe('ProductDetailResolver', () => {
 
       resolver.resolve(routeSnapshot).subscribe(result => {
         expect(result).toBe(mockUrlTree);
-        expect(router.parseUrl).toHaveBeenCalledWith('error-page/404');
+        expect(router.parseUrl).toHaveBeenCalledWith('/error-page/404');
       });
     });
 
-    it('should rethrow non-404 errors from the resolver', () => {
+    it('should complete empty for non-404 errors so navigation cancels without NavigationError', () => {
       const error500 = new HttpErrorResponse({ status: 500 });
       (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => error500));
 
+      let completed = false;
       let thrownError: unknown;
       resolver.resolve(routeSnapshot).subscribe({
-        error: err => {
-          thrownError = err;
-        }
+        complete: () => { completed = true; },
+        error: err => { thrownError = err; }
       });
 
-      expect(thrownError).toBe(error500);
+      // EMPTY from resolver → NavigationCancel (not NavigationError), no redirect
+      expect(completed).toBe(true);
+      expect(thrownError).toBeUndefined();
       expect(router.parseUrl).not.toHaveBeenCalled();
     });
   });

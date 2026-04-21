@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 
 export interface HttpErrorEvent {
   status: number;
@@ -12,12 +11,12 @@ export interface HttpErrorEvent {
 @Injectable({
   providedIn: 'root'
 })
-export class HttpErrorBusService {
+export class HttpToastService {
   private errorSubject = new Subject<HttpErrorEvent>();
   private clearSubject = new Subject<void>();
   private lastErrorTime = 0;
   private lastErrorKey = '';
-  private dedupeWindow = 1500; // milliseconds
+  private dedupeWindow = 1500;
 
   get error$(): Observable<HttpErrorEvent> {
     return this.errorSubject.asObservable();
@@ -29,12 +28,9 @@ export class HttpErrorBusService {
 
   publishError(error: HttpErrorEvent): void {
     const now = Date.now();
-    const isDuplicate =
-      error.messageKey === this.lastErrorKey &&
-      now - this.lastErrorTime < this.dedupeWindow;
-
+    const isDuplicate = error.messageKey === this.lastErrorKey && now - this.lastErrorTime < this.dedupeWindow;
     if (isDuplicate) {
-      return; // suppress duplicate within window
+      return;
     }
 
     this.lastErrorKey = error.messageKey;
@@ -48,7 +44,6 @@ export class HttpErrorBusService {
 
   /**
    * Map HTTP status code to i18n message key.
-   * Caller can use the key to translate with ngx-translate.
    */
   getErrorMessageKey(status: number): string {
     switch (status) {
