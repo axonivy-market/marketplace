@@ -59,7 +59,6 @@ pipeline {
     MAIL_PORT = credentials('MAIL_PORT')
     FROM_MAIL = credentials('FROM_MAIL')
     TO_MAIL = credentials('TO_MAIL')
-    NGROK_AUTHTOKEN = credentials('NGROK_AUTHTOKEN')
     NGINX_CONFIG_PATH = credentials('NGINX_CONFIG_PATH')
   }
 
@@ -163,7 +162,6 @@ pipeline {
           sed -i "s|^MARKET_SERVER_MATOMO_TRACKER_URL=.*\$|MARKET_SERVER_MATOMO_TRACKER_URL=${env.MARKET_SERVER_MATOMO_TRACKER_URL}|" \$ENV_FILE
           sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
           sed -i "s|^MARKET_MATOMO_TRACKER_URL=.*\$|  MARKET_MATOMO_TRACKER_URL=${env.MARKET_MATOMO_TRACKER_URL}|" \$ENV_FILE
-          sed -i "s|^NGROK_AUTHTOKEN=.*\$|NGROK_AUTHTOKEN=${env.NGROK_AUTHTOKEN}|" \$ENV_FILE
           sed -f "s|^NGINX_CONFIG_PATH=.*\$|NGINX_CONFIG_PATH=${env.NGINX_CONFIG_PATH}|" \$ENV_FILE
         """
       }

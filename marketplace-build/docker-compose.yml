@@ -113,20 +113,6 @@ services:
     networks:
       - market-network
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: ngrok
-    restart: always
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    command: http nginx:80
-    ports:
-      - 4040:4040
-    depends_on:
-      - nginx
-    networks:
-      - market-network
-
 networks:
   market-network:
     external: true
