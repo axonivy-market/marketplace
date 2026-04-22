@@ -16,6 +16,8 @@ services:
     depends_on:
       - ui
       - app
+    networks:
+      - market-network
 
   ui:
     container_name: marketplace-ui
@@ -33,12 +35,15 @@ services:
       - MARKET_DAY_IN_MILLISECONDS=${MARKET_DAY_IN_MILLISECONDS}
       - MARKET_MATOMO_SITE_ID=${MARKET_MATOMO_SITE_ID}
       - MARKET_MATOMO_TRACKER_URL=${MARKET_MATOMO_TRACKER_URL}
+      - MARKET_ALLOWED_HOSTS=${MARKET_ALLOWED_HOSTS}
     volumes:
       - marketbrowser:/browser_share
     restart: always
     command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
     ports:
       - "4000:4000"
+    networks:
+      - market-network
 
   app:
     container_name: marketplace-app
@@ -85,6 +90,8 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+    networks:
+      - market-network
 
   stable:
     container_name: marketplace-stable
@@ -103,7 +110,14 @@ services:
         - BUILD_VERSION=${STABLE_BUILD_VERSION}
     ports:
       - "8085:8080"
+    networks:
+      - market-network
+
+networks:
+  market-network:
+    external: true
 
 volumes:
   marketcache:
   marketbrowser:
+  postgres-data:
