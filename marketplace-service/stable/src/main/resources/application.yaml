@@ -29,7 +29,13 @@ market:
     title: "Marketplace stable"
     description: "The stable public api"
     version: '${BUILD_VERSION}'
-
+  cors:
+    allowed:
+      origin:
+        patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
+        maxAge: '3600'
+      mappings: '${MARKET_CORS_ALLOWED_MAPPINGS}'
+      methods: '${MARKET_CORS_ALLOWED_METHODS}'
 springdoc:
   api-docs:
     path: /api-docs
