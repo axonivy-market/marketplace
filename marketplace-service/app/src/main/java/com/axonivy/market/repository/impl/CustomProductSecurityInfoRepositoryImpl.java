@@ -14,8 +14,9 @@ import java.util.List;
 
 public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSecurityInfoRepository {
 
-  private final EntityManager entityManager;
   private static final List<String> SEVERITIES = List.of("critical", "high", "medium", "low");
+
+  private final EntityManager entityManager;
 
   public CustomProductSecurityInfoRepositoryImpl(EntityManager entityManager) {this.entityManager = entityManager;}
 
