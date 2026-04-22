@@ -14,19 +14,21 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
 describe('CustomSortComponent', () => {
   let component: CustomSortComponent;
   let fixture: ComponentFixture<CustomSortComponent>;
-  let productService: any;
-  let adminDashboardService: any;
+  let productService: MockedObject<ProductService>;
+  let adminDashboardService: MockedObject<AdminDashboardService>;
   let translateService: TranslateService;
 
   beforeEach(async () => {
     productService = {
-      fetchAllProductIds: vi.fn()
-    };
+      fetchAllProductIds: vi.fn().mockName('ProductService.fetchAllProductIds')
+    } as Partial<MockedObject<ProductService>> as MockedObject<ProductService>;
 
     adminDashboardService = {
-      sortMarketExtensions: vi.fn(),
-      getCustomSort: vi.fn()
-    };
+      sortMarketExtensions: vi
+        .fn()
+        .mockName('AdminDashboardService.sortMarketExtensions'),
+      getCustomSort: vi.fn().mockName('AdminDashboardService.getCustomSort')
+    } as Partial<MockedObject<AdminDashboardService>> as MockedObject<AdminDashboardService>;
 
     productService.fetchAllProductIds.mockReturnValue(
       of(['portal', 'coffee-machine-connector', 'persistence-utils'])
