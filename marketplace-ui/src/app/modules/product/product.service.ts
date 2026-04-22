@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of, firstValueFrom, map } from 'rxjs';
+import { catchError, Observable, of, firstValueFrom, map, reduce, EMPTY, expand } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import {
@@ -221,54 +221,64 @@ export class ProductService {
     );
   };
 
-  fetchAllProductsForSync(
-    pageSize = PAGE_SIZE,
-    language: Language = Language.EN
-  ): Promise<MarketProduct[]> {
-    return this.fetchAllProducts(pageSize, language);
-  }
+fetchAllProductsForSync(
+  pageSize = PAGE_SIZE,
+  language: Language = Language.EN
+): Observable<MarketProduct[]> {
+  return this.fetchAllProducts(pageSize, language);
+}
 
-  private async fetchAllProducts(
-    pageSize: number,
-    language: Language
-  ): Promise<MarketProduct[]> {
-    const results: MarketProduct[] = [];
-    let page = 0;
-
-    while (true) {
-      const response = await firstValueFrom(
-        this.findProductsByCriteria({
-          search: '',
-          sort: SortOption.STANDARD,
-          type: TypeOption.All_TYPES,
-          isRESTClientEditor: false,
-          pageable: {
-            page,
-            size: pageSize
-          },
-          language
-        })
-      );
-
-      const products = response?._embedded?.products ?? [];
-
-      for (const product of products) {
-        if (product?.id) {
-          results.push({
-            id: product.id,
-            marketDirectory: product.marketDirectory
-          });
-        }
-      }
-
+  private fetchAllProducts(
+  pageSize: number,
+  language: Language
+): Observable<MarketProduct[]> {
+  return this.findProductsPage(0, pageSize, language).pipe(
+    expand(response => {
       const pageInfo = response?.page;
-      if (!pageInfo || pageInfo.number >= pageInfo.totalPages - 1) {
-        break;
-      }
 
-      page = pageInfo.number + 1;
-    }
+      const hasNext =
+        pageInfo && pageInfo.number < pageInfo.totalPages - 1;
 
-    return results;
-  }
+      return hasNext
+        ? this.findProductsPage(
+            pageInfo.number + 1,
+            pageSize,
+            language
+          )
+        : EMPTY;
+    }),
+
+    // extract products from each page
+   map(response =>
+  (response._embedded?.products ?? []).map((p: any) => ({
+    id: p.id,
+    marketDirectory: p.marketDirectory
+  }))
+),
+
+    // accumulate all pages into one array
+    reduce(
+      (all, pageProducts) => [...all, ...pageProducts],
+      [] as MarketProduct[]
+    )
+  );
+}
+
+private findProductsPage(
+  page: number,
+  size: number,
+  language: Language
+): Observable<any> {
+  return this.findProductsByCriteria({
+    search: '',
+    sort: SortOption.STANDARD,
+    type: TypeOption.All_TYPES,
+    isRESTClientEditor: false,
+    pageable: {
+      page,
+      size
+    },
+    language
+  });
+}
 }

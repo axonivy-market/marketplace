@@ -41,8 +41,8 @@ class SyncTaskExecutionServiceImplTest {
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
     assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
-    assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
-    assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
+    assertNotNull(result.getLastRunDate(), "LastRunDate should not be null after start");
+    assertNull(result.getCompletedDate(), "CompletedDate should be null after start");
   }
 
   @Test
@@ -57,8 +57,8 @@ class SyncTaskExecutionServiceImplTest {
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
     assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
-    assertNotNull(result.getTriggeredAt(), "TriggeredAt should not be null after start");
-    assertNull(result.getCompletedAt(), "CompletedAt should be null after start");
+    assertNotNull(result.getLastRunDate(), "LastRunDate should not be null after start");
+    assertNull(result.getCompletedDate(), "CompletedDate should be null after start");
   }
 
   @Test
@@ -79,7 +79,7 @@ class SyncTaskExecutionServiceImplTest {
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusSuccess(execution, MESSAGE);
     assertEquals(SyncTaskStatus.SUCCESS, execution.getStatus(), "Status should be SUCCESS after markStatusSuccess");
-    assertNotNull(execution.getCompletedAt(), "CompletedAt should not be null after markStatusSuccess");
+    assertNotNull(execution.getCompletedDate(), "CompletedDate should not be null after markStatusSuccess");
     assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
   }
 
@@ -89,7 +89,7 @@ class SyncTaskExecutionServiceImplTest {
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusFailure(execution, MESSAGE);
     assertEquals(SyncTaskStatus.FAILED, execution.getStatus(), "Status should be FAILED after markStatusFailure");
-    assertNotNull(execution.getCompletedAt(), "CompletedAt should not be null after markStatusFailure");
+    assertNotNull(execution.getCompletedDate(), "CompletedDate should not be null after markStatusFailure");
     assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
   }
 

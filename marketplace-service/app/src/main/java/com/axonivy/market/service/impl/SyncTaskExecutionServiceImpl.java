@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -40,20 +39,13 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
       throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
     }
     execution.setStatus(SyncTaskStatus.STARTED);
-    // Preserve previous completedAt as triggeredAt for the new run
-    // so we know when the last run finished. Then clear completedAt
-    // to indicate the new run is in progress.
-    execution.setTriggeredAt(execution.getCompletedAt());
-    execution.setCompletedAt(null);
     execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-    System.out.println("execution start " + execution.getTriggeredAt());
     return syncTaskExecutionRepo.save(execution);
   }
 
   @Transactional
   @Override
   public void markStatusRunning(SyncTaskExecution execution, String message) {
-//    execution.setTriggeredAt(execution.getCompletedAt());
     updateSyncTask(execution, SyncTaskStatus.RUNNING, message);
   }
 
@@ -97,21 +89,18 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
-    Objects.requireNonNull(execution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
-    execution.setStatus(status);
-    // Only set triggeredAt from completedAt when it's not already set.
-    // This avoids overwriting a triggeredAt that was populated in start().
+    Objects.requireNonNull(execution);
+
     if (status == SyncTaskStatus.RUNNING) {
-      if (execution.getTriggeredAt() == null) {
-        execution.setTriggeredAt(execution.getCompletedAt());
-      }
+      execution.setLastRunDate(execution.getCompletedDate());
+      execution.setCompletedDate(null);
     }
 
-    if(status != SyncTaskStatus.RUNNING){
-      execution.setCompletedAt(LocalDateTime.now());
+    if (status == SyncTaskStatus.SUCCESS || status == SyncTaskStatus.FAILED) {
+      execution.setCompletedDate(LocalDateTime.now());
     }
+    execution.setStatus(status);
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
-    System.out.println("execution " + execution.getTriggeredAt());
     syncTaskExecutionRepo.save(execution);
   }
 }

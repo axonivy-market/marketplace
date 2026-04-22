@@ -18,16 +18,16 @@ import java.time.LocalDateTime;
 public class SyncTaskExecutionModel {
   private String key;
   private SyncTaskStatus status;
-  private LocalDateTime triggeredAt;
-  private LocalDateTime completedAt;
+  private LocalDateTime lastRunDate;
+  private LocalDateTime completedDate;
   private String message;
 
   public static SyncTaskExecutionModel from(SyncTaskExecution execution) {
     return SyncTaskExecutionModel.builder()
         .key(execution.getType().getKey())
         .status(execution.getStatus())
-        .triggeredAt(execution.getTriggeredAt())
-        .completedAt(execution.getCompletedAt())
+        .lastRunDate(execution.getLastRunDate())
+        .completedDate(execution.getCompletedDate())
         .message(execution.getMessage())
         .build();
   }

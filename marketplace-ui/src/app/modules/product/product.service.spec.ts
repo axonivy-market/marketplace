@@ -461,7 +461,7 @@ describe('ProductService', () => {
       expect(result).toEqual(['product-1']);
     });
 
-    it('should use custom page size and language', async () => {
+    it('should use custom page size and language', () => {
       const mockResponse = {
         _embedded: {
           products: [
@@ -474,8 +474,6 @@ describe('ProductService', () => {
         }
       };
 
-      const promise = service.fetchAllProductsForSync(100, Language.DE);
-
       const req = httpMock.expectOne(request =>
         request.url === API_URI.PRODUCT &&
         request.params.get('size') === '100' &&
@@ -483,7 +481,7 @@ describe('ProductService', () => {
       );
       req.flush(mockResponse);
 
-      const result = await promise;
+      const result = service.fetchAllProductsForSync(100, Language.DE);
       expect(result).toEqual([
         { id: 'product-1', marketDirectory: 'dir1' }
       ]);

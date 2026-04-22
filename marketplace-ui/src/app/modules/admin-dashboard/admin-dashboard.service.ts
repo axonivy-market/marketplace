@@ -25,8 +25,8 @@ export type SyncTaskKey =
 export interface SyncTaskExecution {
   key: SyncTaskKey;
   status?: SyncTaskStatus;
-  triggeredAt?: string;
-  completedAt?: string;
+  lastRunDate?: string;
+  completedDate?: string;
   message?: string;
 }
 

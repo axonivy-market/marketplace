@@ -127,6 +127,7 @@ export class AdminDashboardComponent implements OnInit {
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
+        console.log('Fetched sync task executions', executions);
         this.applySyncTaskExecutions(executions);
       },
       error: err => {
@@ -146,6 +147,7 @@ export class AdminDashboardComponent implements OnInit {
 
   // Synchronize
   trigger(syncTask: SyncTaskRow): void {
+    console.log('Triggering sync task', syncTask.key);
     if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
       this.openSyncOneProductDialog();
       return;
@@ -166,36 +168,28 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {
-  const now = new Date();
-
   this.loadingSyncTaskKey = syncTask.key;
 
   Object.assign(syncTask, {
     status: SyncTaskStatus.RUNNING,
-    triggeredAt: syncTask.completedAt ?? null, // last run
-    completedAt: null,
+    lastRunDate: syncTask.completedDate ?? null,
+    completedDate: null,
     message: null
   });
+  console.log('Set sync task running', syncTask.lastRunDate, syncTask.completedDate);
 }
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {
-    // If backend returned an execution for this task, apply it immediately
-    const now = new Date();
-
-  // ✅ Immediate UI update (important)
   syncTask.status = execution?.status ?? SyncTaskStatus.SUCCESS;
-  syncTask.completedAt = now;
+  syncTask.completedDate = new Date();
   syncTask.message = execution?.message ?? syncTask.message;
 
-  // Prefer backend timestamps if available
-  if (execution?.triggeredAt) {
-    syncTask.triggeredAt = new Date(execution.triggeredAt);
+  if (execution?.lastRunDate) {
+    syncTask.lastRunDate = new Date(execution.lastRunDate);
   }
-  if (execution?.completedAt) {
-    syncTask.completedAt = new Date(execution.completedAt);
+  if (execution?.completedDate) {
+    syncTask.completedDate = new Date(execution.completedDate);
   }
-
-  // 🔄 Background refresh (do not block UI)
   this.reloadExecutions();
   }
 
@@ -206,12 +200,7 @@ export class AdminDashboardComponent implements OnInit {
   private reloadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
       next: executions => {
-        // Apply executions once. preserve existing `triggeredAt` if backend
-        // does not provide one (prevents losing the value set when the
-        // task was started). Log API response for debugging.
-        console.log('API executions', executions);
         this.applySyncTaskExecutions(executions);
-        console.log('After apply', this.syncTasks);
       },
 
       error: err => this.handleAuthError(err)
@@ -219,27 +208,40 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
-    this.syncTasks = this.syncTasks.map(task => {
+  this.syncTasks = this.syncTasks.map(task => {
     const execution = executions.find(e => e.key === task.key);
     if (!execution) return task;
+
+    const serverLastRunDate = execution.lastRunDate
+      ? new Date(execution.lastRunDate)
+      : null;
+
+    const serverCompletedDate = execution.completedDate
+      ? new Date(execution.completedDate)
+      : null;
 
     return {
       ...task,
       status: execution.status ?? task.status,
 
-      // ✅ Only override if backend provides value
-      triggeredAt: execution.triggeredAt
-        ? new Date(execution.triggeredAt)
-        : task.triggeredAt,
+      lastRunDate:
+        serverLastRunDate &&
+        (!task.lastRunDate ||
+          serverLastRunDate > task.lastRunDate)
+          ? serverLastRunDate
+          : task.lastRunDate,
 
-      completedAt: execution.completedAt
-        ? new Date(execution.completedAt)
-        : task.completedAt,
+      completedDate:
+        serverCompletedDate &&
+        (!task.completedDate ||
+          serverCompletedDate > task.completedDate)
+          ? serverCompletedDate
+          : task.completedDate,
 
       message: execution.message ?? task.message
     };
   });
-  }
+}
 
   getStatusClass(status?: SyncTaskStatus): string {
     switch (status) {
@@ -255,15 +257,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private openSyncOneProductDialog(): Observable<void> {
-  return this.productService.fetchAllProductsForSync().pipe(
-    tap(products => {
+  private openSyncOneProductDialog(): void {
+  this.productService.fetchAllProductsForSync()
+    .subscribe(products => {
       this.products = products;
       this.filteredProducts = products.slice(0, 10);
       this.showSyncOneProductDialog = true;
-    }),
-    map(() => void 0)
-  );
+    });
 }
 
   confirmSyncOneProduct(): void {
@@ -308,7 +308,7 @@ export class AdminDashboardComponent implements OnInit {
 
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
-      completedAt: new Date(),
+      completedDate: new Date(),
       message: this.translateService.instant(
         'common.admin.sync.syncOneProductDialog.validationMessage'
       )
