@@ -1,9 +1,7 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
-import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.utils.CoreVersionUtils;
@@ -13,7 +11,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +63,7 @@ public class VersionUtils {
     String[] segments = MAIN_VERSION_PATTERN.split(version);
 
     if (segments.length >= THREE) {
-      segments[TWO] = segments[TWO].split(DASH_SEPARATOR)[0];
+      segments[TWO] = segments[TWO].split(HYPHEN)[0];
       return segments[0] + DOT_SEPARATOR + segments[ONE] + DOT_SEPARATOR + segments[TWO];
     }
     return version;
@@ -81,7 +78,7 @@ public class VersionUtils {
   }
 
   public static String getNumbersOnly(String version) {
-    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(DASH_SEPARATOR)[0];
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(HYPHEN)[0];
   }
 
   public static boolean isMajorVersion(String version) {

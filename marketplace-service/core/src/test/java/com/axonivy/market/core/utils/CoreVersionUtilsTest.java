@@ -25,6 +25,8 @@ class CoreVersionUtilsTest {
     assertEquals(2, result.size());
     assertEquals("10.0.1", result.get(0));
     assertEquals("10.0.0", result.get(1));
+    result = CoreVersionUtils.extractAllVersions(List.of(createArtifact("12.0.0-a1")), false);
+    assertEquals(1, result.size(), "should return all version if there is no record of official release version");
   }
 
   @Test
@@ -57,15 +59,14 @@ class CoreVersionUtilsTest {
     versionFromArtifact.add("10.0.5");
     versionFromArtifact.add("10.0.4");
     versionFromArtifact.add("10.0.3-SNAPSHOT");
+    versionFromArtifact.add("10.0.2-m123");
+    versionFromArtifact.add("10.0.1-a1");
 
     Assertions.assertEquals(versionFromArtifact,
         CoreVersionUtils.getVersionsToDisplay(versionFromArtifact, true),
         "Displayed versions should include snapshots when 'show dev versions' is selected");
-
-    versionFromArtifact.remove(versionFromArtifact.size() - 1);
-
-    Assertions.assertEquals(versionFromArtifact,
-        CoreVersionUtils.getVersionsToDisplay(versionFromArtifact, false),
+    Assertions.assertEquals(3,
+        CoreVersionUtils.getVersionsToDisplay(versionFromArtifact, false).size(),
         "Displayed versions should exclude snapshots when snapshot filter is enabled");
   }
 

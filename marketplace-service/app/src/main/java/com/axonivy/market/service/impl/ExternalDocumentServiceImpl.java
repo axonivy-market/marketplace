@@ -529,7 +529,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     if (version.startsWith(developmentVersion) || version.endsWith(developmentVersion)) {
-      return version.replace(developmentVersion, EMPTY).replace(CoreCommonConstants.DASH_SEPARATOR, EMPTY);
+      return version.replace(developmentVersion, EMPTY).replace(CoreCommonConstants.HYPHEN, EMPTY);
     }
 
     return version;
