@@ -1,14 +1,13 @@
 @if (!routingQueryParamService.isDesignerEnv()) {
-  <app-header></app-header>
+  <app-header />
   <hr class="header-separation-line" />
 }
-<!-- <hr class="header-separation-line" /> -->
 <main class="container">
   <router-outlet />
-  <app-back-to-top></app-back-to-top>
+  <app-back-to-top />
 </main>
 @if (!routingQueryParamService.isDesignerEnv()) {
   <footer>
-    <app-footer></app-footer>
+    <app-footer />
   </footer>
 }
