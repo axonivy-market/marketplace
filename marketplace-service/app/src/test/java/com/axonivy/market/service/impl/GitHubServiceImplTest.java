@@ -886,7 +886,7 @@ class GitHubServiceImplTest extends BaseSetup {
         "IOException should be translated into NotFoundException");
 
     assertEquals(
-        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.HYPHEN + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
   }

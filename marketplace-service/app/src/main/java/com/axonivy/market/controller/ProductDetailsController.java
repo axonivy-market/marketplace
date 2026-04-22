@@ -4,7 +4,6 @@ import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.RegexConstants;
 import com.axonivy.market.core.constants.CoreRegexConstants;
 import com.axonivy.market.core.constants.CoreRequestMappingConstants;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
