@@ -31,6 +31,7 @@ import { isPlatformServer } from '@angular/common';
 @Injectable({ providedIn: 'root' })
 export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
   constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly productDetailService: ProductDetailService,
     private readonly meta: Meta,
     private readonly titleService: Title,
@@ -41,8 +42,8 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
     private readonly routingQueryParamService: RoutingQueryParamService,
     private readonly faviconService: FaviconService,
     private readonly router: Router,
-    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string,
-    @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string
+    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string | null,
+    @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string | null
   ) {}
 
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail | UrlTree> {
@@ -64,7 +65,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
         // If product not found, navigate to 404 page if CRS, otherwise return a UrlTree for ErrorPage
         if (error.status === NOT_FOUND_ERROR_CODE) {
           const errorPageUrl = `/${ERROR_PAGE_PATH}/${NOT_FOUND_ERROR_CODE}`;
-          if (isPlatformServer(PLATFORM_ID)) {
+          if (isPlatformServer(this.platformId)) {
             return of(this.router.parseUrl(errorPageUrl));
           }
           this.router.navigate([errorPageUrl]);
@@ -87,7 +88,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
     );
     const originalLogoUrl = productDetail.logoUrl;
     let productLogoUrl = '';
-    if (isPlatformServer(PLATFORM_ID) && this.apiPublicUrl) {
+    if (isPlatformServer(this.platformId) && this.apiPublicUrl && this.apiInternalUrl) {
       productLogoUrl =
         this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
     } else {

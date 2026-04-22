@@ -1,6 +1,7 @@
 ﻿import type { Mock, MockedObject } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -88,7 +89,8 @@ describe('ProductDetailResolver', () => {
       setFavicon: vi.fn().mockName('FaviconService.setFavicon')
     };
     const routerSpy = {
-      parseUrl: vi.fn().mockName('Router.parseUrl')
+      parseUrl: vi.fn().mockName('Router.parseUrl'),
+      navigate: vi.fn().mockName('Router.navigate')
     };
 
     TestBed.configureTestingModule({
@@ -112,6 +114,10 @@ describe('ProductDetailResolver', () => {
         {
           provide: Router,
           useValue: routerSpy
+        },
+        {
+          provide: PLATFORM_ID,
+          useValue: 'server'
         },
         {
           provide: ActivatedRoute,
