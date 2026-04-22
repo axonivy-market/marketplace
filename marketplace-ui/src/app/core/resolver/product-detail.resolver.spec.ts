@@ -1,3 +1,5 @@
+﻿import type { Mock, MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
@@ -16,7 +18,6 @@ import {
 } from '../../shared/mocks/mock-data';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
-import { CommonUtils } from '../../shared/utils/common.utils';
 import {
   FAVICON_PNG_TYPE,
   OG_DESCRIPTION_KEY,
@@ -25,58 +26,70 @@ import {
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
-import { ProductDetail } from '../../shared/models/product-detail.model';
 import { FaviconService } from '../../shared/services/favicon.service';
 
 const products = MOCK_PRODUCTS._embedded.products;
 
 describe('ProductDetailResolver', () => {
   let resolver: ProductDetailResolver;
-  let productDetailService: jasmine.SpyObj<ProductDetailService>;
-  let meta: jasmine.SpyObj<Meta>;
-  let titleService: jasmine.SpyObj<Title>;
-  let languageService: jasmine.SpyObj<LanguageService>;
-  let loadingService: jasmine.SpyObj<LoadingService>;
-  let productService: jasmine.SpyObj<ProductService>;
-  let cookieService: jasmine.SpyObj<CookieService>;
-  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
-  let faviconService: jasmine.SpyObj<FaviconService>;
+  let productDetailService: MockedObject<ProductDetailService>;
+  let meta: MockedObject<Meta>;
+  let titleService: MockedObject<Title>;
+  let languageService: MockedObject<LanguageService>;
+  let loadingService: MockedObject<LoadingService>;
+  let productService: MockedObject<ProductService>;
+  let cookieService: MockedObject<CookieService>;
+  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
+  let faviconService: MockedObject<FaviconService>;
   let activatedRoute: ActivatedRoute;
   let routeSnapshot: ActivatedRouteSnapshot;
 
   beforeEach(() => {
-    const productDetailServiceSpy = jasmine.createSpyObj(
-      'ProductDetailService',
-      [],
-      {
-        productId: { set: jasmine.createSpy('set') }
-      }
-    );
-    const metaSpy = jasmine.createSpyObj('Meta', ['updateTag']);
-    const titleServiceSpy = jasmine.createSpyObj('Title', ['setTitle']);
-    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
-      'selectedLanguage'
-    ]);
-    const loadingServiceSpy = jasmine.createSpyObj('LoadingService', [
-      'showLoading'
-    ]);
-    const productServiceSpy = jasmine.createSpyObj('ProductService', [
-      'getProductDetails',
-      'getBestMatchProductDetailsWithVersion',
-      'setDefaultVendorImage'
-    ]);
-    const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get']);
-    const routingQueryParamServiceSpy = jasmine.createSpyObj(
-      'RoutingQueryParamService',
-      [
-        'getDesignerVersionFromSessionStorage',
-        'checkSessionStorageForDesignerVersion',
-        'checkSessionStorageForDesignerEnv'
-      ]
-    );
-    const faviconServiceSpy = jasmine.createSpyObj('FaviconService', [
-      'setFavicon'
-    ]);
+    const productDetailServiceSpy = {
+      productId: { set: vi.fn() }
+    };
+    const metaSpy = {
+      updateTag: vi.fn().mockName('Meta.updateTag')
+    };
+    const titleServiceSpy = {
+      setTitle: vi.fn().mockName('Title.setTitle')
+    };
+    const languageServiceSpy = {
+      selectedLanguage: vi.fn().mockName('LanguageService.selectedLanguage')
+    };
+    const loadingServiceSpy = {
+      showLoading: vi.fn().mockName('LoadingService.showLoading')
+    };
+    const productServiceSpy = {
+      getProductDetails: vi.fn().mockName('ProductService.getProductDetails'),
+      getBestMatchProductDetailsWithVersion: vi
+        .fn()
+        .mockName('ProductService.getBestMatchProductDetailsWithVersion'),
+      setDefaultVendorImage: vi
+        .fn()
+        .mockName('ProductService.setDefaultVendorImage')
+    };
+    const cookieServiceSpy = {
+      get: vi.fn().mockName('CookieService.get')
+    };
+    const routingQueryParamServiceSpy = {
+      getDesignerVersionFromSessionStorage: vi
+        .fn()
+        .mockName(
+          'RoutingQueryParamService.getDesignerVersionFromSessionStorage'
+        ),
+      checkSessionStorageForDesignerVersion: vi
+        .fn()
+        .mockName(
+          'RoutingQueryParamService.checkSessionStorageForDesignerVersion'
+        ),
+      checkSessionStorageForDesignerEnv: vi
+        .fn()
+        .mockName('RoutingQueryParamService.checkSessionStorageForDesignerEnv')
+    };
+    const faviconServiceSpy = {
+      setFavicon: vi.fn().mockName('FaviconService.setFavicon')
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -103,7 +116,7 @@ describe('ProductDetailResolver', () => {
               params: { id: products[0].id },
               data: { productDetail: MOCK_PRODUCT_DETAIL },
               queryParamMap: {
-                get: jasmine.createSpy('get').and.returnValue(null)
+                get: vi.fn().mockReturnValue(null)
               }
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
@@ -118,35 +131,26 @@ describe('ProductDetailResolver', () => {
     routeSnapshot = activatedRoute.snapshot;
     productDetailService = TestBed.inject(
       ProductDetailService
-    ) as jasmine.SpyObj<ProductDetailService>;
-    meta = TestBed.inject(Meta) as jasmine.SpyObj<Meta>;
-    titleService = TestBed.inject(Title) as jasmine.SpyObj<Title>;
+    ) as MockedObject<ProductDetailService>;
+    meta = TestBed.inject(Meta) as MockedObject<Meta>;
+    titleService = TestBed.inject(Title) as MockedObject<Title>;
     languageService = TestBed.inject(
       LanguageService
-    ) as jasmine.SpyObj<LanguageService>;
+    ) as MockedObject<LanguageService>;
     loadingService = TestBed.inject(
       LoadingService
-    ) as jasmine.SpyObj<LoadingService>;
-    productService = TestBed.inject(
-      ProductService
-    ) as jasmine.SpyObj<ProductService>;
-    cookieService = TestBed.inject(
-      CookieService
-    ) as jasmine.SpyObj<CookieService>;
-    routingQueryParamService = TestBed.inject(
-      RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
+    ) as MockedObject<LoadingService>;
     faviconService = TestBed.inject(
       FaviconService
-    ) as jasmine.SpyObj<FaviconService>;
+    ) as MockedObject<FaviconService>;
   });
 
   describe('resolve', () => {
     beforeEach(() => {
-      spyOn(resolver, 'getProductDetailObservable').and.returnValue(
+      vi.spyOn(resolver, 'getProductDetailObservable').mockReturnValue(
         of(MOCK_PRODUCT_DETAIL)
       );
-      spyOn(resolver, 'updateProductMetadata');
+      vi.spyOn(resolver, 'updateProductMetadata');
     });
 
     it('should set product ID in service', () => {
@@ -182,16 +186,15 @@ describe('ProductDetailResolver', () => {
       );
     });
 
-    it('should return product detail', done => {
+    it('should return product detail', async () => {
       resolver.resolve(routeSnapshot).subscribe(result => {
         expect(result).toBe(MOCK_PRODUCT_DETAIL);
-        done();
       });
     });
 
     it('should only take first emission', () => {
       let emissionCount = 0;
-      (resolver.getProductDetailObservable as jasmine.Spy).and.returnValue(
+      (resolver.getProductDetailObservable as Mock).mockReturnValue(
         of(MOCK_PRODUCT_DETAIL, { ...MOCK_PRODUCT_DETAIL, id: products[0].id })
       );
 
@@ -205,11 +208,11 @@ describe('ProductDetailResolver', () => {
 
   describe('updateProductMetadata', () => {
     beforeEach(() => {
-      spyOn(resolver, 'updateOGTag');
+      vi.spyOn(resolver, 'updateOGTag');
     });
 
     it('should set title and update OG tags when product name exists', () => {
-      languageService.selectedLanguage.and.returnValue(Language.DE);
+      languageService.selectedLanguage.mockReturnValue(Language.DE);
       const productName =
         MOCK_PRODUCT_DETAIL.names[languageService.selectedLanguage()];
 
@@ -223,7 +226,7 @@ describe('ProductDetailResolver', () => {
     });
 
     it('should update OG description', () => {
-      languageService.selectedLanguage.and.returnValue(Language.DE);
+      languageService.selectedLanguage.mockReturnValue(Language.DE);
 
       resolver.updateProductMetadata(MOCK_PRODUCT_DETAIL);
 
@@ -260,7 +263,7 @@ describe('ProductDetailResolver', () => {
 
   describe('updateOGTag', () => {
     it('should call meta.updateTag with correct parameters', () => {
-      languageService.selectedLanguage.and.returnValue(Language.DE);
+      languageService.selectedLanguage.mockReturnValue(Language.DE);
       resolver.updateOGTag(
         OG_TITLE_KEY,
         MOCK_PRODUCT_DETAIL.names[languageService.selectedLanguage()]

@@ -86,7 +86,6 @@ export interface DetailTab {
   label: string;
 }
 
-const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -173,36 +172,18 @@ export class ProductDetailComponent implements AfterViewInit {
   @ViewChild('changelogObserver', { static: false })
   observerElement!: ElementRef;
   private readonly changelogIntersectionObserver?: IntersectionObserver;
-
-  private scrollPositions: { [tabId: string]: number } = {};
+  private scrollTimeout: ReturnType<typeof setTimeout> | null = null;
   private initialFragmentHandled = false;
   private isDataLoaded = false;
+  private readonly SCROLL_DELAY_MS = 50;
 
   @HostListener('window:popstate')
   onPopState() {
     const fragment = globalThis.location.hash.replace('#', '');
     const tabValue = RouteUtils.getTabFragment(fragment) || DEFAULT_ACTIVE_TAB;
-
     if (tabValue !== this.activeTab) {
-      if (this.activeTab) {
-        this.scrollPositions[this.activeTab] = globalThis.scrollY;
-      }
-
       this.activeTab = tabValue;
-
-      if (this.productDetail()?.id) {
-        const savedTab = {
-          productId: this.productDetail().id,
-          savedActiveTab: this.activeTab
-        };
-        localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
-      }
-
       this.updateDropdownSelection();
-      setTimeout(() => {
-        const savedScroll = this.scrollPositions[tabValue] ?? 0;
-        globalThis.scrollTo({ top: savedScroll, behavior: 'instant' });
-      }, 0);
     }
   }
 
@@ -219,6 +200,9 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
   ngOnInit(): void {
+    if (this.isBrowser) {
+      history.scrollRestoration = 'manual';
+    }
     const productId: string = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     this.handleProductDetailOnInit(productId);
@@ -507,63 +491,67 @@ export class ProductDetailComponent implements AfterViewInit {
       });
   }
 
-  setActiveTab(tab: string, updateUrl = true): void {
+  setActiveTab(tab: string, updateUrl = true, scrollToTab = true): void {
     if (!this.isDataLoaded) {
       return;
     }
 
     if (!this.initialFragmentHandled) {
-      this.handleFirstTabActivation(tab);
+      this.handleFirstTabActivation(tab, scrollToTab);
       return;
     }
 
-    this.handleSubsequentTabActivation(tab, updateUrl);
+    this.handleSubsequentTabActivation(tab, updateUrl, scrollToTab);
   }
 
-  private handleFirstTabActivation(tab: string): void {
+  private handleFirstTabActivation(tab: string, scrollToTab: boolean): void {
     this.initialFragmentHandled = true;
     this.navigateToFragment(tab || DEFAULT_ACTIVE_TAB);
     this.activeTab = tab;
-    this.scrollToTop();
-    this.saveActiveTab();
 
     if (tab === 'changelog') {
-      setTimeout(() => this.setupIntersectionObserver(), 100);
+      setTimeout(() => this.setupIntersectionObserver(), this.SCROLL_DELAY_MS);
+    }
+
+    if (scrollToTab && tab && tab !== DEFAULT_ACTIVE_TAB) {
+      setTimeout(() => {
+        const tabGroup = document.querySelector('.tab-group');
+        tabGroup?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, this.SCROLL_DELAY_MS);
     }
   }
 
-  private handleSubsequentTabActivation(tab: string, updateUrl: boolean): void {
-    const currentFragment = this.route.snapshot.fragment;
-
-    if (updateUrl && currentFragment !== tab) {
-      this.navigateToFragment(tab);
+  private handleSubsequentTabActivation(tab: string, updateUrl: boolean, scrollToTab: boolean): void {
+    if (this.activeTab === tab && scrollToTab && tab !== DEFAULT_ACTIVE_TAB) {
+      this.scrollToTabGroup();
+      return;
     }
-
-    if (this.activeTab && this.activeTab !== tab) {
-      this.scrollPositions[this.activeTab] = globalThis.scrollY;
-    }
-
     this.activeTab = tab;
-
-    if (tab in this.scrollPositions) {
-      this.keepCurrentTabScroll(tab);
-    } else {
-      this.scrollToTop();
-    }
-
-    this.saveActiveTab();
-
     if (tab === 'changelog') {
       setTimeout(() => this.setupIntersectionObserver());
     }
+
+    if (updateUrl) {
+      this.navigateToFragment(tab).then(() => {
+        if (scrollToTab) {
+          this.scheduleScrollToTabGroup();
+        }
+      });
+      return;
+    }
+
+    if (scrollToTab) {
+      this.scheduleScrollToTabGroup();
+    }
   }
 
-  private saveActiveTab(): void {
-    const savedTab = {
-      productId: this.productDetail().id,
-      savedActiveTab: this.activeTab
-    };
-    localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
+  private scrollToTabGroup(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const tabGroup = document.querySelector('.tab-group');
+        tabGroup?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    });
   }
 
   getSelectedTabLabel(): string {
@@ -576,13 +564,6 @@ export class ProductDetailComponent implements AfterViewInit {
     ) as HTMLSelectElement;
     if (dropdown) {
       dropdown.value = this.activeTab;
-    }
-  }
-
-  keepCurrentTabScroll(tabId: string) {
-    const pos = this.scrollPositions[tabId] ?? 0;
-    if (pos > 0) {
-      setTimeout(() => globalThis.scrollTo({ top: pos, behavior: 'instant' }), 0);
     }
   }
 
@@ -759,34 +740,45 @@ export class ProductDetailComponent implements AfterViewInit {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
         const tabValue = RouteUtils.getTabFragment(fragment);
-
+        const hasValidFragment = !!fragment
+          && PRODUCT_DETAIL_TABS.some(tab => tab.value === fragment)
+          && fragment !== DEFAULT_ACTIVE_TAB;
         if (fragment) {
           const shouldUpdateUrl = this.initialFragmentHandled;
-          this.setActiveTab(tabValue, shouldUpdateUrl);
-        } else if (this.initialFragmentHandled) {
-          const currentTab = this.activeTab || DEFAULT_ACTIVE_TAB;
-          const currentFragment = this.route.snapshot.fragment;
-          if (currentFragment !== currentTab) {
-            this.navigateToFragment(currentTab);
-          }
-        } else {
-          this.setActiveTab(DEFAULT_ACTIVE_TAB, false);
+          this.setActiveTab(tabValue, shouldUpdateUrl, hasValidFragment);
+        }
+        if (!this.initialFragmentHandled) {
+          this.initialFragmentHandled = true;
+          this.activeTab = DEFAULT_ACTIVE_TAB;
         }
       })
     );
   }
 
-  private navigateToFragment(fragment: string): void {
-    this.router.navigate([], {
+  private navigateToFragment(fragment: string): Promise<boolean> {
+    return this.router.navigate([], {
       fragment: fragment,
-      queryParamsHandling: 'preserve',
-      replaceUrl: true
+      queryParamsHandling: 'preserve'
     });
   }
 
   ngOnDestroy(): void {
+    this.clearScrollTimeout();
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
+    });
+  }
+
+  private clearScrollTimeout(): void {
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+      this.scrollTimeout = null;
+    }
+  }
+
+  private scheduleScrollToTabGroup(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.scrollToTabGroup());
     });
   }
 }

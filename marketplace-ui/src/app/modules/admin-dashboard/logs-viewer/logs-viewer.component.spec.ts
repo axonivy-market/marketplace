@@ -1,8 +1,7 @@
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
+  TestBed
 } from '@angular/core/testing';
 import { LogViewerComponent } from './logs-viewer.component';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';
@@ -15,22 +14,21 @@ import { TranslateModule } from '@ngx-translate/core';
 describe('LogViewerComponent', () => {
   let component: LogViewerComponent;
   let fixture: ComponentFixture<LogViewerComponent>;
-  let logStreamServiceMock: jasmine.SpyObj<LogStreamService>;
-  let logServiceMock: jasmine.SpyObj<LogService>;
+  let logStreamServiceMock: MockedObject<LogStreamService>;
+  let logServiceMock: MockedObject<LogService>;
   let mockLogsSignal = signal<string[]>([]);
 
   beforeEach(async () => {
-    logStreamServiceMock = jasmine.createSpyObj(
-      'LogStreamService',
-      ['connect', 'disconnect', 'clear'],
-      {
-        logs: mockLogsSignal
-      }
-    );
-    logServiceMock = jasmine.createSpyObj('LogService', [
-      'getLogFiles',
-      'getLogFileContent'
-    ]);
+    logStreamServiceMock = {
+      connect: vi.fn().mockName('LogStreamService.connect'),
+      disconnect: vi.fn().mockName('LogStreamService.disconnect'),
+      clear: vi.fn().mockName('LogStreamService.clear'),
+      logs: mockLogsSignal
+    } as any;
+    logServiceMock = {
+      getLogFiles: vi.fn().mockName('LogService.getLogFiles'),
+      getLogFileContent: vi.fn().mockName('LogService.getLogFileContent')
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [LogViewerComponent, TranslateModule.forRoot()],
@@ -52,8 +50,8 @@ describe('LogViewerComponent', () => {
   describe('Initial State', () => {
     it('should have default signal values', () => {
       expect(component.activeTab()).toBe('runtime-log');
-      expect(component.autoScroll()).toBeTrue();
-      expect(component.isConnected()).toBeFalse();
+      expect(component.autoScroll()).toBe(true);
+      expect(component.isConnected()).toBe(false);
       expect(component.parsedLogs()).toEqual([]);
     });
   });
@@ -68,7 +66,7 @@ describe('LogViewerComponent', () => {
       expect(parsed.timestamp).toBe('2026-01-20 00:29:45');
       expect(parsed.level).toBe('INFO');
       expect(parsed.message).toBe('logger - Application started');
-      expect(parsed.isLong).toBeFalse();
+      expect(parsed.isLong).toBe(false);
     });
 
     it('should identify long logs', () => {
@@ -78,7 +76,7 @@ describe('LogViewerComponent', () => {
       fixture.detectChanges();
 
       const parsed = component.parsedLogs()[0];
-      expect(parsed.isLong).toBeTrue();
+      expect(parsed.isLong).toBe(true);
     });
 
     it('should fallback for non-standard log format', () => {
@@ -96,22 +94,22 @@ describe('LogViewerComponent', () => {
     it('should call connect and update state on start()', () => {
       component.start();
       expect(logStreamServiceMock.connect).toHaveBeenCalled();
-      expect(component.isConnected()).toBeTrue();
+      expect(component.isConnected()).toBe(true);
     });
 
     it('should call disconnect and update state on stop()', () => {
       component.isConnected.set(true);
       component.stop();
       expect(logStreamServiceMock.disconnect).toHaveBeenCalled();
-      expect(component.isConnected()).toBeFalse();
+      expect(component.isConnected()).toBe(false);
     });
 
     it('should toggle connection', () => {
       component.isConnected.set(false);
       component.toggleConnection();
-      expect(component.isConnected()).toBeTrue();
+      expect(component.isConnected()).toBe(true);
       component.toggleConnection();
-      expect(component.isConnected()).toBeFalse();
+      expect(component.isConnected()).toBe(false);
     });
   });
 
@@ -122,47 +120,50 @@ describe('LogViewerComponent', () => {
     });
 
     it('should toggle auto-scroll', () => {
-      expect(component.autoScroll()).toBeTrue();
+      expect(component.autoScroll()).toBe(true);
       component.toggleAutoScroll();
-      expect(component.autoScroll()).toBeFalse();
+      expect(component.autoScroll()).toBe(false);
     });
   });
 
   describe('Log Item Expansion', () => {
     it('should toggle expand state for an index', () => {
-      expect(component.isExpanded(1)).toBeFalse();
+      expect(component.isExpanded(1)).toBe(false);
       component.toggleExpand(1);
-      expect(component.isExpanded(1)).toBeTrue();
+      expect(component.isExpanded(1)).toBe(true);
       component.toggleExpand(1);
-      expect(component.isExpanded(1)).toBeFalse();
+      expect(component.isExpanded(1)).toBe(false);
     });
   });
 
   describe('Downloads', () => {
     beforeEach(() => {
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:url');
-      spyOn(window.URL, 'revokeObjectURL');
-      spyOn(document, 'createElement').and.callThrough();
+      vi.spyOn(globalThis.URL, 'createObjectURL').mockReturnValue('blob:url');
+      vi.spyOn(globalThis.URL, 'revokeObjectURL');
+      vi.spyOn(document, 'createElement');
     });
 
     it('should trigger download for all logs', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['log1', 'log2']);
       component.downloadLogs();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith('log1\nlog2', 'logs.txt', 'text/plain');
     });
 
     it('should trigger download for JSON', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['2026-01-20 00:29:45 INFO msg']);
       fixture.detectChanges();
       component.downloadAsJSON();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith(expect.any(String), 'logs.json', 'application/json');
     });
 
     it('should trigger download for CSV', () => {
+      vi.spyOn(component as any, 'downloadFile').mockImplementation(() => {});
       mockLogsSignal.set(['2026-01-20 00:29:45 INFO msg']);
       fixture.detectChanges();
       component.downloadAsCSV();
-      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect((component as any).downloadFile).toHaveBeenCalledWith(expect.any(String), 'logs.csv', 'text/csv');
     });
   });
 
@@ -172,7 +173,7 @@ describe('LogViewerComponent', () => {
     ];
 
     it('should load log files on tab change', () => {
-      logServiceMock.getLogFiles.and.returnValue(of(mockFiles));
+      logServiceMock.getLogFiles.mockReturnValue(of(mockFiles));
       component.activeTab.set('logs-file');
       fixture.detectChanges();
 
@@ -181,7 +182,7 @@ describe('LogViewerComponent', () => {
     });
 
     it('should filter logs by date', () => {
-      logServiceMock.getLogFiles.and.returnValue(of(mockFiles));
+      logServiceMock.getLogFiles.mockReturnValue(of(mockFiles));
       const event = { target: { value: '2026-02-12' } } as unknown as Event;
       component.filterLogsByDate(event);
 
@@ -190,22 +191,22 @@ describe('LogViewerComponent', () => {
     });
 
     it('should clear date filter', () => {
-      logServiceMock.getLogFiles.and.returnValue(of(mockFiles));
+      logServiceMock.getLogFiles.mockReturnValue(of(mockFiles));
       component.selectedDate.set('2026-02-12');
       component.clearDateFilter();
 
       const today = new Date();
-      const expectedDate = `${today.getFullYear()}-${String(
-        today.getMonth() + 1
-      ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const expectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       expect(component.selectedDate()).toBe(expectedDate);
       expect(logServiceMock.getLogFiles).toHaveBeenCalledWith(expectedDate);
     });
 
     it('should trigger log file download', () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-      component.downloadLogFile(mockFiles[0], mockEvent);
+      const mockEvent = {
+        stopPropagation: vi.fn().mockName('Event.stopPropagation')
+      };
+      component.downloadLogFile(mockFiles[0], mockEvent as unknown as Event);
 
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
       expect(logServiceMock.getLogFileContent).toHaveBeenCalledWith(
@@ -214,7 +215,7 @@ describe('LogViewerComponent', () => {
     });
 
     it('should handle error when loading files', () => {
-      logServiceMock.getLogFiles.and.returnValue(
+      logServiceMock.getLogFiles.mockReturnValue(
         throwError(() => new Error('Error'))
       );
       component.activeTab.set('logs-file');

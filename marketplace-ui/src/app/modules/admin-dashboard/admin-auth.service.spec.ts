@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -11,6 +12,7 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { API_URI } from '../../shared/constants/api.constant';
 import {
   ADMIN_SESSION_TOKEN,
+  AUTHORIZATION_HEADER,
   BEARER
 } from '../../shared/constants/common.constant';
 import { AdminAuthService } from './admin-auth.service';
@@ -27,17 +29,17 @@ describe('AdminAuthService', () => {
   let service: AdminAuthService;
   let httpTestingController: HttpTestingController;
   let sessionStorageMock: {
-    getItem: jasmine.Spy;
-    setItem: jasmine.Spy;
-    removeItem: jasmine.Spy;
+    getItem: Mock;
+    setItem: Mock;
+    removeItem: Mock;
   };
   let sessionStorageRef: SessionStorageRef;
 
   beforeEach(() => {
     sessionStorageMock = {
-      getItem: jasmine.createSpy('getItem'),
-      setItem: jasmine.createSpy('setItem'),
-      removeItem: jasmine.createSpy('removeItem')
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn()
     };
 
     sessionStorageRef = {
@@ -68,7 +70,7 @@ describe('AdminAuthService', () => {
 
   describe('AdminAuthService', () => {
     it('should set userInfo from sessionStorage in constructor when user exists', () => {
-      sessionStorageMock.getItem.and.callFake((key: string) => {
+      sessionStorageMock.getItem.mockImplementation((key: string) => {
         if (key === ADMIN_SESSION_TOKEN) {
           return JSON.stringify(mockUser);
         }
@@ -118,7 +120,7 @@ describe('AdminAuthService', () => {
   describe('requestAccessToken', () => {
     it('should clear token and call POST with correct payload and context', () => {
       const testToken = 'github-oauth-token';
-      const clearTokenSpy = spyOn(service, 'clearToken').and.callThrough();
+      const clearTokenSpy = vi.spyOn(service, 'clearToken');
 
       service.requestAccessToken(testToken).subscribe(response => {
         expect(response).toEqual(mockUser);
@@ -132,7 +134,7 @@ describe('AdminAuthService', () => {
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ token: testToken });
-      expect(req.request.context.get(ForwardingError)).toBeTrue();
+      expect(req.request.context.get(ForwardingError)).toBe(true);
 
       req.flush(mockUser);
     });
@@ -140,7 +142,7 @@ describe('AdminAuthService', () => {
 
   describe('token', () => {
     it('should return token from sessionStorage', () => {
-      sessionStorageMock.getItem.and.returnValue(JSON.stringify(mockUser));
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
 
       const token = service.token;
 
@@ -151,7 +153,7 @@ describe('AdminAuthService', () => {
     });
 
     it('should return null when no token exists', () => {
-      sessionStorageMock.getItem.and.returnValue(null);
+      sessionStorageMock.getItem.mockReturnValue(null);
 
       const token = service.token;
 
@@ -180,12 +182,11 @@ describe('AdminAuthService', () => {
   });
 
   describe('isAuthenticated', () => {
-    it('should return true when token exists', done => {
-      sessionStorageMock.getItem.and.returnValue(JSON.stringify(mockUser));
+    it('should return true when token exists', async () => {
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
 
       service.isAuthenticated().subscribe(result => {
         expect(result).toBe(true);
-        done();
       });
 
       const req = httpTestingController.expectOne(request =>
@@ -196,19 +197,19 @@ describe('AdminAuthService', () => {
     });
 
     it('should return headers with Authorization when token exists', () => {
-      sessionStorageMock.getItem.and.returnValue(JSON.stringify(mockUser));
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
       let token = mockUser.token;
       const headers = service.getAuthHeaders();
 
-      expect(headers.get('Authorization')).toBe(`${BEARER} ${token}`);
+      expect(headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
     });
 
     it('should return empty headers when token is null', () => {
-      sessionStorageMock.getItem.and.returnValue(null);
+      sessionStorageMock.getItem.mockReturnValue(null);
 
       const headers = service.getAuthHeaders();
 
-      expect(headers.get('Authorization')).toBeNull();
+      expect(headers.get(AUTHORIZATION_HEADER)).toBeNull();
       expect(headers.keys().length).toBe(0);
     });
   });

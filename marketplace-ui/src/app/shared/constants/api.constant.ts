@@ -23,7 +23,10 @@ export const API_URI = {
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   LOGS: `${API}/logs`,
   RELEASE_LETTERS: `${API}/release-letters`,
-  ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`
+  ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`,
+  PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,
+  PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID: (id: string) =>
+    `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

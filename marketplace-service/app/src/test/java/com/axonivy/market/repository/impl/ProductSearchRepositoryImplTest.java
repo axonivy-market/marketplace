@@ -22,9 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.PostgresDBConstants.*;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.CUSTOM_ORDER;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_MARKETPLACE_DATA;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -90,12 +88,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(criteriaQuery.groupBy(productRoot, keyValue, nameValue)).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
-
-    var caseExpression = mock(CriteriaBuilder.Case.class);
-    when(cb.selectCase()).thenReturn(caseExpression);
-
-    when(caseExpression.when(any(), any())).thenReturn(caseExpression);
-    when(caseExpression.otherwise(any())).thenReturn(nameValue); // Should return a valid expression
 
     // For counting
     when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
