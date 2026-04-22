@@ -16,7 +16,7 @@ import {
   Router,
   RouterModule
 } from '@angular/router';
-import { EMPTY, filter, finalize, Observable } from 'rxjs';
+import { EMPTY, filter, finalize, map, Observable, tap } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
@@ -145,9 +145,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize
-  async trigger(syncTask: SyncTaskRow): Promise<void> {
+  trigger(syncTask: SyncTaskRow): void {
     if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
-      await this.openSyncOneProductDialog();
+      this.openSyncOneProductDialog();
       return;
     }
 
@@ -166,33 +166,37 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {
-    this.loadingSyncTaskKey = syncTask.key;
-    Object.assign(syncTask, {
-      status: SyncTaskStatus.RUNNING,
-      // Use previous completedAt as the triggeredAt for the new run.
-      // If there's no previous completedAt, keep it undefined to
-      // match the shape produced by `applySyncTaskExecutions`.
-      triggeredAt: syncTask.completedAt ?? undefined,
-      completedAt: null,
-      message: null
-    });
-  }
+  const now = new Date();
+
+  this.loadingSyncTaskKey = syncTask.key;
+
+  Object.assign(syncTask, {
+    status: SyncTaskStatus.RUNNING,
+    triggeredAt: syncTask.completedAt ?? null, // last run
+    completedAt: null,
+    message: null
+  });
+}
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {
     // If backend returned an execution for this task, apply it immediately
-    if (execution) {
-      const task = this.syncTasks.find(t => t.key === syncTask.key);
-      if (task) {
-        task.status = execution.status ?? task.status;
-        task.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : task.triggeredAt;
-        task.completedAt = execution.completedAt ? new Date(execution.completedAt) : task.completedAt;
-        console.log('Execution message', task.triggeredAt, task.completedAt);
-        task.message = execution.message ?? task.message;
-      }
-    }
+    const now = new Date();
 
-    // Refresh authoritative data from backend
-    this.reloadExecutions();
+  // ✅ Immediate UI update (important)
+  syncTask.status = execution?.status ?? SyncTaskStatus.SUCCESS;
+  syncTask.completedAt = now;
+  syncTask.message = execution?.message ?? syncTask.message;
+
+  // Prefer backend timestamps if available
+  if (execution?.triggeredAt) {
+    syncTask.triggeredAt = new Date(execution.triggeredAt);
+  }
+  if (execution?.completedAt) {
+    syncTask.completedAt = new Date(execution.completedAt);
+  }
+
+  // 🔄 Background refresh (do not block UI)
+  this.reloadExecutions();
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
@@ -216,25 +220,25 @@ export class AdminDashboardComponent implements OnInit {
 
   private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
     this.syncTasks = this.syncTasks.map(task => {
-  const execution = executions.find(e => e.key === task.key);
-  if (!execution) return task;
-  // Prefer server-provided timestamps. If the server returned no
-  // `triggeredAt`, keep the existing task.triggeredAt (this covers
-  // the case where the UI set `triggeredAt` when the run started but
-  // the server response omits it due to timing). For `completedAt`,
-  // prefer the server value if present; otherwise leave as-is.
-  return {
-    ...task,
-    status: execution.status,
-    triggeredAt: execution.triggeredAt
-      ? new Date(execution.triggeredAt)
-      : task.triggeredAt,
-    completedAt: execution.completedAt
-      ? new Date(execution.completedAt)
-      : task.completedAt,
-    message: execution.message ?? task.message ?? undefined,
-  };
-});
+    const execution = executions.find(e => e.key === task.key);
+    if (!execution) return task;
+
+    return {
+      ...task,
+      status: execution.status ?? task.status,
+
+      // ✅ Only override if backend provides value
+      triggeredAt: execution.triggeredAt
+        ? new Date(execution.triggeredAt)
+        : task.triggeredAt,
+
+      completedAt: execution.completedAt
+        ? new Date(execution.completedAt)
+        : task.completedAt,
+
+      message: execution.message ?? task.message
+    };
+  });
   }
 
   getStatusClass(status?: SyncTaskStatus): string {
@@ -251,11 +255,16 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private async openSyncOneProductDialog(): Promise<void> {
-    this.products = await this.productService.fetchAllProductsForSync();
-    this.filteredProducts = this.products.slice(0, 10);
-    this.showSyncOneProductDialog = true;
-  }
+  private openSyncOneProductDialog(): Observable<void> {
+  return this.productService.fetchAllProductsForSync().pipe(
+    tap(products => {
+      this.products = products;
+      this.filteredProducts = products.slice(0, 10);
+      this.showSyncOneProductDialog = true;
+    }),
+    map(() => void 0)
+  );
+}
 
   confirmSyncOneProduct(): void {
     const syncTask = this.syncTasks.find(t => t.key === SYNC_ONE_PRODUCT_KEY);
