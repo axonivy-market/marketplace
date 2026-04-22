@@ -484,7 +484,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
     List<String> versionChanges =
         mavenVersions.stream().filter(
-            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+            version -> !currentVersions.contains(version) || (!CoreVersionUtils.isReleasedVersion(
                 version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 

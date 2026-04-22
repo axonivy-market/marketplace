@@ -28,14 +28,17 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.*;
 @NoArgsConstructor
 public class CoreVersionUtils {
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
-  private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
+  private static final Pattern DEV_RELEASE_PATTERN = Pattern.compile(HYPHEN);
 
   public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
       boolean isShowDevVersion) {
     Set<String> versions = existingMavenArtifactVersion.stream().map(MavenArtifactVersion::getId).map(
         MavenArtifactKey::getProductVersion).collect(Collectors.toSet());
-
-    return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
+    var displayVersions = getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
+    if (!isShowDevVersion && CollectionUtils.isEmpty(displayVersions)) {
+      displayVersions = getVersionsToDisplay(new ArrayList<>(versions), true);
+    }
+    return displayVersions;
   }
 
   public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
@@ -46,15 +49,15 @@ public class CoreVersionUtils {
   }
 
   public static boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
+    return !(isDevVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
   }
 
   public static boolean isSnapshotVersion(String version) {
     return version.endsWith(SNAPSHOT_RELEASE_POSTFIX);
   }
 
-  public static boolean isSprintVersion(String version) {
-    return version.contains(SPRINT_RELEASE_POSTFIX);
+  public static boolean isDevVersion(String version) {
+    return version.contains(HYPHEN);
   }
 
   public static boolean isValidFormatReleasedVersion(String version) {
@@ -71,7 +74,7 @@ public class CoreVersionUtils {
     } else if (isSnapshotVersion(version)) {
       bugfixVersion = getBugfixVersion(version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
     } else {
-      bugfixVersion = getBugfixVersion(SPRINT_RELEASE_PATTERN.split(version)[0]);
+      bugfixVersion = getBugfixVersion(DEV_RELEASE_PATTERN.split(version)[0]);
     }
     return versions.stream().noneMatch(
         currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
@@ -81,12 +84,12 @@ public class CoreVersionUtils {
   public static String getBugfixVersion(String version) {
     if (isSnapshotVersion(version)) {
       version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
-    } else if (isSprintVersion(version)) {
-      version = SPRINT_RELEASE_PATTERN.split(version)[0];
+    } else if (isDevVersion(version)) {
+      version = DEV_RELEASE_PATTERN.split(version)[0];
     }
     String[] segments = MAIN_VERSION_PATTERN.split(version);
     if (segments.length >= THREE) {
-      segments[TWO] = segments[TWO].split(CoreCommonConstants.DASH_SEPARATOR)[0];
+      segments[TWO] = segments[TWO].split(CoreCommonConstants.HYPHEN)[0];
       return segments[0] + CoreCommonConstants.DOT_SEPARATOR + segments[ONE] + CoreCommonConstants.DOT_SEPARATOR + segments[TWO];
     }
     return version;
