@@ -14,7 +14,7 @@ import java.util.List;
 
 public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSecurityInfoRepository {
   private final EntityManager entityManager;
-  private static final List<String> SEVERITIES = List.of("critical", "high", "medium", "low");
+  private static final List<String> severities = List.of("critical", "high", "medium", "low");
 
   public CustomProductSecurityInfoRepositoryImpl(EntityManager entityManager) {this.entityManager = entityManager;}
 
@@ -68,7 +68,7 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
   }
 
   private String buildJsonSort(String column, String dir) {
-    return SEVERITIES.stream()
+    return severities.stream()
         .map(sev -> String.format(" CAST(COALESCE(CAST(%s AS jsonb) ->> '%s', '0') AS integer) %s", column, sev, dir))
         .reduce((a, b) -> a + ", " + b)
         .orElse("");

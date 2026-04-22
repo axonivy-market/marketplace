@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.Date;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_SECURITY_INFO;
@@ -29,6 +30,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_SECURITY_INFO
 @Entity
 @Table(name = PRODUCT_SECURITY_INFO)
 public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
+  @Serial
+  private static final long serialVersionUID = 1;
+
   @Id
   private String repoName;
   private boolean isArchived;
@@ -36,6 +40,7 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private boolean branchProtectionEnabled;
   private Date lastCommitDate;
   private String latestCommitSHA;
+
   @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts")),

@@ -1139,9 +1139,9 @@ class GitHubServiceImplTest extends BaseSetup {
     List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
 
     // Assert
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals("test-repo", result.get(0).getRepoName());
+    assertNotNull(result, "Expected non-null result list when one repository is processed");
+    assertEquals(1, result.size(), "Expected exactly one ProductSecurityInfo in the result list");
+    assertEquals("test-repo", result.get(0).getRepoName(), "Expected saved repo name to match mocked value");
     verify(productSecurityInfoRepository).saveAll(anyList());
   }
 
@@ -1176,7 +1176,7 @@ class GitHubServiceImplTest extends BaseSetup {
     List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
 
     // Assert
-    assertEquals(3, result.size());
+    assertEquals(3, result.size(), "Expected all three repositories to be processed and returned");
     verify(productSecurityInfoRepository).saveAll(anyList());
   }
 
@@ -1195,13 +1195,13 @@ class GitHubServiceImplTest extends BaseSetup {
     List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
 
     // Assert
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertNotNull(result, "Expected non-null result list even when organization has no repositories");
+    assertTrue(result.isEmpty(), "Expected empty result list when no repositories are available");
     verify(productSecurityInfoRepository).saveAll(Collections.emptyList());
   }
 
   @Test
-  void testFetchSecurityInfoSafeWhenSuccessShouldReturnInfo() throws IOException {
+  void testFetchSecurityInfoSafeWhenSuccessShouldReturnInfo() {
     // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     GHRepository mockRepo = mock(GHRepository.class);
@@ -1213,8 +1213,8 @@ class GitHubServiceImplTest extends BaseSetup {
     ProductSecurityInfo result = gitHubService.fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
 
     // Assert
-    assertNotNull(result);
-    assertEquals("repo-x", result.getRepoName());
+    assertNotNull(result, "Expected non-null ProductSecurityInfo when fetch succeeds");
+    assertEquals("repo-x", result.getRepoName(), "Expected repo name to match mocked security info");
   }
 
   private ProductSecurityInfo buildMockProductSecurityInfo(String repoName) {

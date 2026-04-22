@@ -6,55 +6,33 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * Utility để propagate MDC (Mapped Diagnostic Context) qua async threads.
- * Giải pháp cho vấn đề MDC mất mát khi chạy CompletableFuture.supplyAsync().
+ * Utility for propagating MDC (Mapped Diagnostic Context) across async threads.
+ * This solves the MDC context loss issue when using CompletableFuture.supplyAsync().
  */
-public class MdcContextUtils {
-
-  private MdcContextUtils() {
-  }
+public final class MdcContextUtils {
 
   /**
-   * Wrap Supplier để preserve MDC context qua async thread boundaries.
-   * 
-   * @param supplier hàm sẽ chạy trên thread pool
-   * @param <T> kiểu return value
-   * @return wrapped supplier với MDC context
+   * Wraps a Supplier to preserve MDC context across async thread boundaries.
+   *
+   * @param supplier function that runs on the thread pool
+   * @param <T>  return type
+   * @return wrapped supplier with MDC context
    */
   public static <T> Supplier<T> wrapMdcContext(Supplier<T> supplier) {
-    // Copy MDC từ thread hiện tại
+    // Copy MDC from the current thread
     Map<String, String> mdcContext = MDC.getCopyOfContextMap();
 
     return () -> {
-      // Restore MDC ở thread mới
+      // Restore MDC in the worker thread
       if (mdcContext != null) {
         MDC.setContextMap(mdcContext);
       }
       try {
         return supplier.get();
       } finally {
-        // Clean up MDC ở thread pool để tránh memory leak
-        MDC.clear();
-      }
-    };
-  }
-
-  /**
-   * Wrap Runnable để preserve MDC context qua async thread boundaries.
-   */
-  public static Runnable wrapMdcContext(Runnable runnable) {
-    Map<String, String> mdcContext = MDC.getCopyOfContextMap();
-    
-    return () -> {
-      if (mdcContext != null) {
-        MDC.setContextMap(mdcContext);
-      }
-      try {
-        runnable.run();
-      } finally {
+        // Clear MDC in pooled threads to avoid context leakage
         MDC.clear();
       }
     };
   }
 }
-
