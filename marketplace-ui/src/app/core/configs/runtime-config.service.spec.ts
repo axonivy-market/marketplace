@@ -16,7 +16,8 @@ describe('RuntimeConfigService', () => {
     dayInMiliseconds: 86400000,
     matomoSiteId: 999,
     matomoTrackerUrl: '//test.tracker.com',
-    siblingNodeAppIp: '/test-ip'
+    siblingNodeAppIp: '/test-ip',
+    allowedHosts: []
   };
 
   beforeEach(() => {

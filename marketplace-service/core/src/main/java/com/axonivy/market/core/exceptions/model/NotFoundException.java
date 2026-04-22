@@ -26,7 +26,7 @@ public class NotFoundException extends RuntimeException {
 
   public NotFoundException(ErrorCode errorCode, String additionalMessage) {
     this.code = errorCode.getCode();
-    this.message = errorCode.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + additionalMessage;
+    this.message = errorCode.getHelpText() + CoreCommonConstants.HYPHEN + additionalMessage;
   }
 
 }
