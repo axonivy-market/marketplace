@@ -55,6 +55,9 @@ class SchedulingTasksTest {
 
     Awaitility.await().atMost(Durations.TEN_SECONDS)
         .untilAsserted(() -> verify(tasks, atLeast(0)).sendNotificationForSecurityMonitor());
+
+    Awaitility.await().atMost(Durations.TEN_SECONDS)
+        .untilAsserted(() -> verify(tasks, atLeast(0)).syncSecurityMonitor());
   }
 
   @Test
@@ -72,6 +75,22 @@ class SchedulingTasksTest {
         "syncDataForSecurityMonitor should swallow IOException and not propagate it");
     verify(gitHubService).syncSecurityDetailsForProduct();
     verify(notificationService, never()).notify(any());
+  }
+
+  @Test
+  void testSyncSecurityMonitorShouldCallSyncSecurityDetailsForProduct() throws Exception {
+    when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of());
+    assertDoesNotThrow(() -> tasks.syncSecurityMonitor(),
+        "syncSecurityMonitor should not propagate any exception");
+    verify(gitHubService).syncSecurityDetailsForProduct();
+  }
+
+  @Test
+  void testSyncSecurityMonitorShouldSwallowIOException() throws Exception {
+    doThrow(new IOException("GitHub API unavailable")).when(gitHubService).syncSecurityDetailsForProduct();
+    assertDoesNotThrow(() -> tasks.syncSecurityMonitor(),
+        "syncSecurityMonitor should swallow IOException and not propagate it");
+    verify(gitHubService).syncSecurityDetailsForProduct();
   }
 
   @Test

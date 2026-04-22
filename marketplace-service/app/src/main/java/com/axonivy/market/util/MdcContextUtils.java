@@ -11,11 +11,13 @@ import java.util.function.Supplier;
  */
 public final class MdcContextUtils {
 
+  private MdcContextUtils() {}
+
   /**
    * Wraps a Supplier to preserve MDC context across async thread boundaries.
    *
    * @param supplier function that runs on the thread pool
-   * @param <T>  return type
+   * @param <T>      return type
    * @return wrapped supplier with MDC context
    */
   public static <T> Supplier<T> wrapMdcContext(Supplier<T> supplier) {

@@ -7,6 +7,7 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
@@ -1113,7 +1114,78 @@ class GitHubServiceImplTest extends BaseSetup {
     );
   }
 
-  // ======================== syncSecurityDetailsForProduct ========================
+  @Test
+  void testSearchSecurityDetailsDelegatesToRepository() {
+    // Arrange
+    ProductSecurityCriteria criteria = ProductSecurityCriteria.builder()
+        .searchText("portal")
+        .sortDirection("DESC")
+        .build();
+    Pageable pageable = mock(Pageable.class);
+
+    ProductSecurityInfo infoA = buildMockProductSecurityInfo("portal-connector");
+    ProductSecurityInfo infoB = buildMockProductSecurityInfo("portal-engine");
+    Page<ProductSecurityInfo> expectedPage = new org.springframework.data.domain.PageImpl<>(
+        List.of(infoA, infoB));
+
+    when(productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable))
+        .thenReturn(expectedPage);
+
+    // Act
+    Page<ProductSecurityInfo> result = gitHubService.searchSecurityDetails(criteria, pageable);
+
+    // Assert
+    assertNotNull(result, "Expected non-null page result from searchSecurityDetails");
+    assertEquals(2, result.getContent().size(),
+        "Expected two repositories matching search criteria");
+    assertEquals("portal-connector", result.getContent().get(0).getRepoName(),
+        "Expected first result to be 'portal-connector'");
+    assertEquals("portal-engine", result.getContent().get(1).getRepoName(),
+        "Expected second result to be 'portal-engine'");
+    verify(productSecurityInfoRepository).searchProductSecurityAndSorting(criteria, pageable);
+  }
+
+  @Test
+  void testSearchSecurityDetailsWithEmptyCriteriaReturnsAllResults() {
+    // Arrange
+    ProductSecurityCriteria criteria = ProductSecurityCriteria.builder().build();
+    Pageable pageable = mock(Pageable.class);
+
+    Page<ProductSecurityInfo> expectedPage = new org.springframework.data.domain.PageImpl<>(
+        List.of(buildMockProductSecurityInfo("repo-a"), buildMockProductSecurityInfo("repo-b")));
+
+    when(productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable))
+        .thenReturn(expectedPage);
+
+    // Act
+    Page<ProductSecurityInfo> result = gitHubService.searchSecurityDetails(criteria, pageable);
+
+    // Assert
+    assertNotNull(result, "Expected non-null page result when criteria has no filters");
+    assertEquals(2, result.getTotalElements(),
+        "Expected two repositories returned when no search filter is applied");
+    verify(productSecurityInfoRepository).searchProductSecurityAndSorting(criteria, pageable);
+  }
+
+  @Test
+  void testSearchSecurityDetailsWithNoMatchReturnsEmptyPage() {
+    // Arrange
+    ProductSecurityCriteria criteria = ProductSecurityCriteria.builder()
+        .searchText("nonexistent-repo")
+        .build();
+    Pageable pageable = mock(Pageable.class);
+
+    when(productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable))
+        .thenReturn(org.springframework.data.domain.Page.empty());
+
+    // Act
+    Page<ProductSecurityInfo> result = gitHubService.searchSecurityDetails(criteria, pageable);
+
+    // Assert
+    assertNotNull(result, "Expected non-null page result even when no repos match");
+    assertTrue(result.isEmpty(), "Expected empty page when no repositories match the search text");
+    verify(productSecurityInfoRepository).searchProductSecurityAndSorting(criteria, pageable);
+  }
 
   @Test
   void testSyncSecurityDetailsForProductShouldReturnSavedList() throws IOException {
