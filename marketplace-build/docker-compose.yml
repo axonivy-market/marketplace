@@ -121,6 +121,3 @@ volumes:
   marketcache:
   marketbrowser:
   postgres-data:
-networks:
-  market-network:
-    external: true
