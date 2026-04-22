@@ -32,41 +32,18 @@ public class VersionUtils {
   private static final String VERSION_REGEX = "^\\d+(\\.\\d+){0,5}(-[\\p{L}\\p{N}.]+)?$";
   private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
-  private static final Pattern SPRINT_RELEASE_PATTERN = Pattern.compile(SPRINT_RELEASE_POSTFIX);
 
   public static boolean isSnapshotVersion(String version) {
     return version.endsWith(SNAPSHOT_RELEASE_POSTFIX);
   }
 
-  public static boolean isSprintVersion(String version) {
-    return version.contains(SPRINT_RELEASE_POSTFIX);
-  }
 
   public static boolean isValidFormatReleasedVersion(String version) {
     return StringUtils.isNumeric(MAIN_VERSION_PATTERN.split(version)[0]);
   }
 
-  public static boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
-  }
-
   public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
-    return isReleasedVersion(version) && version.startsWith(designerVersion);
-  }
-
-  public static String getBugfixVersion(String version) {
-    if (isSnapshotVersion(version)) {
-      version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
-    } else if (isSprintVersion(version)) {
-      version = SPRINT_RELEASE_PATTERN.split(version)[0];
-    }
-    String[] segments = MAIN_VERSION_PATTERN.split(version);
-
-    if (segments.length >= THREE) {
-      segments[TWO] = segments[TWO].split(HYPHEN)[0];
-      return segments[0] + DOT_SEPARATOR + segments[ONE] + DOT_SEPARATOR + segments[TWO];
-    }
-    return version;
+    return CoreVersionUtils.isReleasedVersion(version) && version.startsWith(designerVersion);
   }
 
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
@@ -83,12 +60,12 @@ public class VersionUtils {
 
   public static boolean isMajorVersion(String version) {
     return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == ONE &&
-        isReleasedVersion(version);
+        CoreVersionUtils.isReleasedVersion(version);
   }
 
   public static boolean isMinorVersion(String version) {
     return MAIN_VERSION_PATTERN.split(getNumbersOnly(version)).length == TWO &&
-        isReleasedVersion(version);
+        CoreVersionUtils.isReleasedVersion(version);
   }
 
   public static String getPrefixOfVersion(String version) {
