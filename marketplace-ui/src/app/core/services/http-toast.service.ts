@@ -1,5 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
+import {
+  BAD_GATEWAY,
+  BAD_REQUEST_ERROR_CODE,
+  FORBIDDEN,
+  GATEWAY_TIMEOUT,
+  INTERNAL_SERVER_ERROR_CODE,
+  NOT_FOUND_ERROR_CODE,
+  REQUEST_TIMEOUT,
+  SERVICE_UNAVAILABLE,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
 
 export interface HttpErrorEvent {
   status: number;
@@ -12,17 +23,17 @@ export interface HttpErrorEvent {
   providedIn: 'root'
 })
 export class HttpToastService {
-  private errorSubject = new Subject<HttpErrorEvent>();
-  private clearSubject = new Subject<void>();
+  private readonly errorSubject = new Subject<HttpErrorEvent>();
+  private readonly clearSubject = new Subject<void>();
+  private readonly dedupeWindow = 1500;
   private lastErrorTime = 0;
   private lastErrorKey = '';
-  private dedupeWindow = 1500;
 
-  get error$(): Observable<HttpErrorEvent> {
+  getError(): Observable<HttpErrorEvent> {
     return this.errorSubject.asObservable();
   }
 
-  get clear$(): Observable<void> {
+  getClear(): Observable<void> {
     return this.clearSubject.asObservable();
   }
 
@@ -47,25 +58,23 @@ export class HttpToastService {
    */
   getErrorMessageKey(status: number): string {
     switch (status) {
-      case 0:
-        return 'common.error.description.networkError';
-      case 400:
+      case BAD_REQUEST_ERROR_CODE:
         return 'common.error.description.badRequest';
-      case 401:
+      case UNAUTHORIZED:
         return 'common.error.description.unauthorized';
-      case 403:
+      case FORBIDDEN:
         return 'common.error.description.forbidden';
-      case 404:
+      case NOT_FOUND_ERROR_CODE:
         return 'common.error.description.404';
-      case 408:
+      case REQUEST_TIMEOUT:
         return 'common.error.description.timeout';
-      case 500:
+      case INTERNAL_SERVER_ERROR_CODE:
         return 'common.error.description.500';
-      case 502:
+      case BAD_GATEWAY:
         return 'common.error.description.badGateway';
-      case 503:
+      case SERVICE_UNAVAILABLE:
         return 'common.error.description.serviceUnavailable';
-      case 504:
+      case GATEWAY_TIMEOUT:
         return 'common.error.description.gatewayTimeout';
       default:
         return 'common.error.description.default';

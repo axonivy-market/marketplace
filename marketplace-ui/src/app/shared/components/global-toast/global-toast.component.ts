@@ -14,8 +14,8 @@ import { HttpToastService, HttpErrorEvent } from '../../../core/services/http-to
 })
 export class GlobalToastComponent implements OnInit, OnDestroy {
   toastService = inject(HttpToastService);
-  private platformId = inject(PLATFORM_ID);
-  private destroy$ = new Subject<void>();
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroy$ = new Subject<void>();
 
   currentError: HttpErrorEvent | null = null;
   isVisible = false;
@@ -26,14 +26,14 @@ export class GlobalToastComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.toastService.error$
+    this.toastService.getError()
       .pipe(takeUntil(this.destroy$))
       .subscribe(error => {
         this.currentError = error;
         this.isVisible = true;
       });
 
-    this.toastService.clear$
+    this.toastService.getClear()
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.dismiss();
