@@ -53,11 +53,13 @@ pipeline {
     MARKET_API_INTERNAL_URL = credentials('MARKET_API_INTERNAL_URL')
     MARKET_MATOMO_SITE_ID = credentials('MARKET_MATOMO_SITE_ID')
     MARKET_MATOMO_TRACKER_URL = credentials('MARKET_MATOMO_TRACKER_URL')
+    MARKET_ALLOWED_HOSTS = credentials('MARKET_ALLOWED_HOSTS')
     MARKET_SERVER_MATOMO_TRACKER_URL = credentials('MARKET_SERVER_MATOMO_TRACKER_URL')    
     MAIL_HOST_URL = credentials('MAIL_HOST_URL')
     MAIL_PORT = credentials('MAIL_PORT')
     FROM_MAIL = credentials('FROM_MAIL')
     TO_MAIL = credentials('TO_MAIL')
+    NGINX_CONFIG_PATH = credentials('NGINX_CONFIG_PATH')
   }
 
   parameters {
@@ -155,7 +157,12 @@ pipeline {
           sed -i "s|^MAIL_PORT=.*\$|MAIL_PORT=${env.MAIL_PORT}|" \$ENV_FILE
           sed -i "s|^FROM_MAIL=.*\$|FROM_MAIL=${env.FROM_MAIL}|" \$ENV_FILE
           sed -i "s|^TO_MAIL=.*\$|TO_MAIL=${env.TO_MAIL}|" \$ENV_FILE
-
+          sed -i "s|^MARKET_ALLOWED_HOSTS=.*\$|MARKET_ALLOWED_HOSTS=${env.MARKET_ALLOWED_HOSTS}|" \$ENV_FILE
+          sed -i "s|^MARKET_API_INTERNAL_URL=.*\$|MARKET_API_INTERNAL_URL=${env.MARKET_API_INTERNAL_URL}|" \$ENV_FILE
+          sed -i "s|^MARKET_SERVER_MATOMO_TRACKER_URL=.*\$|MARKET_SERVER_MATOMO_TRACKER_URL=${env.MARKET_SERVER_MATOMO_TRACKER_URL}|" \$ENV_FILE
+          sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
+          sed -i "s|^MARKET_MATOMO_TRACKER_URL=.*\$|  MARKET_MATOMO_TRACKER_URL=${env.MARKET_MATOMO_TRACKER_URL}|" \$ENV_FILE
+          sed -f "s|^NGINX_CONFIG_PATH=.*\$|NGINX_CONFIG_PATH=${env.NGINX_CONFIG_PATH}|" \$ENV_FILE
         """
       }
     }
