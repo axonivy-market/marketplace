@@ -5,7 +5,6 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.SecretScanning;
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -42,17 +41,13 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private String latestCommitSHA;
 
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts")),
-      @AttributeOverride(name = "status", column = @Column(name = "dependabot_status"))
-  })
+  @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts"))
+  @AttributeOverride(name = "status", column = @Column(name = "dependabot_status"))
   private Dependabot dependabot;
 
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts")),
-      @AttributeOverride(name = "status", column = @Column(name = "code_scanning_status"))
-  })
+  @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts"))
+  @AttributeOverride(name = "status", column = @Column(name = "code_scanning_status"))
   private CodeScanning codeScanning;
 
   @Embedded
