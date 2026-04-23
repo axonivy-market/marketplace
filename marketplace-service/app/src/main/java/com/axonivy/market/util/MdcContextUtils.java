@@ -1,9 +1,6 @@
 package com.axonivy.market.util;
 
-import org.slf4j.MDC;
-
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * Utility for propagating MDC (Mapped Diagnostic Context) across async threads.
@@ -14,26 +11,23 @@ public final class MdcContextUtils {
   private MdcContextUtils() {}
 
   /**
-   * Wraps a Supplier to preserve MDC context across async thread boundaries.
+   * Wraps a Function to preserve MDC context across async thread boundaries.
    *
-   * @param supplier function that runs on the thread pool
-   * @param <T>      return type
-   * @return wrapped supplier with MDC context
+   * @param function function that runs on the thread pool
+   * @param <T>      input type
+   * @param <R>      return type
+   * @return wrapped function with MDC context
    */
-  public static <T> Supplier<T> wrapMdcContext(Supplier<T> supplier) {
-    // Copy MDC from the current thread
-    Map<String, String> mdcContext = MDC.getCopyOfContextMap();
-
-    return () -> {
-      // Restore MDC in the worker thread
+  public static <T, R> Function<T, R> wrapMdcContext(Function<T, R> function) {
+    java.util.Map<String, String> mdcContext = org.slf4j.MDC.getCopyOfContextMap();
+    return (T t) -> {
       if (mdcContext != null) {
-        MDC.setContextMap(mdcContext);
+        org.slf4j.MDC.setContextMap(mdcContext);
       }
       try {
-        return supplier.get();
+        return function.apply(t);
       } finally {
-        // Clear MDC in pooled threads to avoid context leakage
-        MDC.clear();
+        org.slf4j.MDC.clear();
       }
     };
   }

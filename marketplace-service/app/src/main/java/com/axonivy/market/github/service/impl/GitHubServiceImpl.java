@@ -221,10 +221,13 @@ public class GitHubServiceImpl implements GitHubService {
     var gitHub = getGitHub(gitHubProperty.getToken());
     GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
+    Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
+        repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+
     List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList(),
-        repo -> MdcContextUtils.wrapMdcContext(
-            () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken())).get(), MAX_CONCURRENCY);
+        MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
+        MAX_CONCURRENCY);
 
     List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
     log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
