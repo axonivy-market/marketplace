@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
@@ -12,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
@@ -32,7 +32,19 @@ public class ProductDependency extends AuditableIdEntity {
   private String version;
   private String downloadUrl;
 
-  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @ManyToMany(fetch = FetchType.LAZY)
   private Set<ProductDependency> dependencies;
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof ProductDependency dependency)) return false;
+    return Objects.equals(productId, dependency.productId) && Objects.equals(artifactId,
+        dependency.artifactId) && Objects.equals(version, dependency.version);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(productId, artifactId, version);
+  }
 }

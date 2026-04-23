@@ -53,7 +53,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try {
       return restTemplate.getForObject(url, byte[].class);
     } catch (RestClientException e) {
-      log.warn("#downloadFile Failed to fetch resource from URL: {}", url, e.getMessage());
+      addWarningLogWhenFailingToFetchResource(url, e);
       return new byte[0];
     }
   }
@@ -63,7 +63,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try {
       return restTemplate.getForObject(url, String.class);
     } catch (RestClientException e) {
-      log.warn("Failed to fetch resource from URL: {}", url, e.getMessage());
+      addWarningLogWhenFailingToFetchResource(url, e);
       return EMPTY;
     }
   }
@@ -73,9 +73,13 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       try {
         return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
       } catch (RestClientException e) {
-        log.warn("Failed to fetch resource from URL: {}", url, e.getMessage());
+        addWarningLogWhenFailingToFetchResource(url, e);
     }
     return null;
+  }
+
+  private void addWarningLogWhenFailingToFetchResource(String url, RestClientException e) {
+    log.warn("Failed to fetch resource from URL: {}, {}", url, e.getMessage());
   }
 
   @Override
