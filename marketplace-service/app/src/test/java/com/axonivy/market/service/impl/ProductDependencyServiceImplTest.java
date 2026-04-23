@@ -392,7 +392,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         .thenReturn(mockProductDependency);
 
     assertDoesNotThrow(() ->
-        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID));
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID),
+        "Must not throw when deleting dependency of product");
 
     InOrder inOrder = inOrder(productDependencyRepository);
     inOrder.verify(productDependencyRepository).save(mockProductDependency);
@@ -412,7 +413,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         .thenReturn(List.of(mockProductDependency));
 
     assertDoesNotThrow(() ->
-        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID));
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID),
+        "Must not throw when dependency id is null");
 
     verify(productDependencyRepository, never()).save(any());
     verify(productDependencyRepository, never()).deleteFromJoinTableByDependencyId(any());

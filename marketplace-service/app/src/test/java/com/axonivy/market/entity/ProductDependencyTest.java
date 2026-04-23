@@ -48,7 +48,7 @@ class ProductDependencyTest {
   @Test
   void testEqualsNonProductDependencyObjectShouldReturnFalse() {
     var dependency = build("portal", "portal-components", "10.0.0");
-    assertNotEquals(dependency, "test", "Comparing with a String object should return false");
+    assertNotEquals("test", dependency, "Comparing with a String object should return false");
   }
 
   @Test
