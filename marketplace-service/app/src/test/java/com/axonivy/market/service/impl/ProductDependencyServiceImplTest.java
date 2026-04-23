@@ -247,7 +247,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
     when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
         .thenReturn(List.of(mockProductDependency));
-    
+    when(productDependencyRepository.save(mockProductDependency)).thenReturn(mockProductDependency);
+
     doThrow(new RuntimeException("Delete failed")).when(productDependencyRepository).delete(any());
 
     assertDoesNotThrow(() -> {
