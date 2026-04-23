@@ -12,6 +12,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.MetadataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -236,14 +237,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testDeleteProductDependenciesWithException() {
-    var mockProductDependency = ProductDependency.builder()
-        .productId(MOCK_PRODUCT_ID)
-        .version(MOCK_VERSION)
-        .artifactId(MOCK_ARTIFACT_ID)
-        .downloadUrl(MOCK_DOWNLOAD_URL)
-        .build();
+    var mockProductDependency = prepareMockProductDependency();
     mockProductDependency.setId("test-id");
-    mockProductDependency.setDependencies(new HashSet<>());
 
     when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
         .thenReturn(List.of(mockProductDependency));
@@ -261,14 +256,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testSafeThresholdExceeded() throws Exception {
-    var mockProductDependency = ProductDependency.builder()
-        .productId(MOCK_PRODUCT_ID)
-        .version(MOCK_VERSION)
-        .artifactId(MOCK_ARTIFACT_ID)
-        .downloadUrl(MOCK_DOWNLOAD_URL)
-        .dependencies(new HashSet<>())
-        .build();
-
+    var mockProductDependency = prepareMockProductDependency();
     var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
 
     byte[] pomWithDependency = Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath());
@@ -384,14 +372,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testDeleteProductDependenciesWithEmptyDependencySet() {
-    var mockProductDependency = ProductDependency.builder()
-        .productId(MOCK_PRODUCT_ID)
-        .version(MOCK_VERSION)
-        .artifactId(MOCK_ARTIFACT_ID)
-        .downloadUrl(MOCK_DOWNLOAD_URL)
-        .build();
-    mockProductDependency.setDependencies(new HashSet<>());
-
+    var mockProductDependency = prepareMockProductDependency();
     when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
         .thenReturn(List.of(mockProductDependency));
 
@@ -400,4 +381,160 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     verify(productDependencyRepository, never()).delete(any(ProductDependency.class));
   }
 
+  @Test
+  void testDeleteProductDependencies_shouldCallSaveAndDeleteFromJoinTable() {
+    var mockProductDependency = prepareMockProductDependency();
+    mockProductDependency.setId("testId");
+
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(List.of(mockProductDependency));
+    when(productDependencyRepository.save(mockProductDependency))
+        .thenReturn(mockProductDependency);
+
+    assertDoesNotThrow(() ->
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID));
+
+    InOrder inOrder = inOrder(productDependencyRepository);
+    inOrder.verify(productDependencyRepository).save(mockProductDependency);
+    inOrder.verify(productDependencyRepository).deleteFromJoinTableByDependencyId("testId");
+    inOrder.verify(productDependencyRepository).delete(mockProductDependency);
+  }
+
+  @Test
+  void testDeleteProductDependencies_withNullId_shouldNotCallDeleteOperations() {
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .build();
+
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID))
+        .thenReturn(List.of(mockProductDependency));
+
+    assertDoesNotThrow(() ->
+        productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID));
+
+    verify(productDependencyRepository, never()).save(any());
+    verify(productDependencyRepository, never()).deleteFromJoinTableByDependencyId(any());
+    verify(productDependencyRepository, never()).delete(any());
+  }
+
+  @Test
+  void testCollectDependencies_whenDependencyArtifactNotFound_shouldSkipWithoutThrowing()
+      throws Exception {
+    var mockProductDependency = prepareMockProductDependency();
+    var mavenArtifactVersionMock =
+        mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    // POM has one IAR dependency
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
+        .thenReturn(Files.readAllBytes(
+            new File("src/test/resources/zip/test-pom.xml").toPath()));
+
+    when(metadataService.getMetadataByVersion(any(), eq(MOCK_VERSION)))
+        .thenReturn(Metadata.builder()
+            .productId(MOCK_PRODUCT_ID)
+            .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
+            .groupId(MOCK_GROUP_ID)
+            .versions(Set.of(MOCK_VERSION))
+            .build());
+
+    // No artifact found for the dependency → findDependencyArtifact returns null
+    when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of());
+
+    assertDoesNotThrow(() ->
+            productDependencyService.computeIARDependencies(
+                mavenArtifactVersionMock, mockProductDependency),
+        "Must not throw when dependency artifact cannot be found");
+
+    verify(productDependencyRepository, never()).saveAll(anyList());
+  }
+
+  @Test
+  void testCollectDependencies_whenDependencyArtifactHasBlankDownloadUrl_shouldSkipWithoutThrowing()
+      throws Exception {
+    var mockProductDependency = prepareMockProductDependency();
+    var mavenArtifactVersionMock =
+        mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
+        .thenReturn(Files.readAllBytes(
+            new File("src/test/resources/zip/test-pom.xml").toPath()));
+
+    when(metadataService.getMetadataByVersion(any(), eq(MOCK_VERSION)))
+        .thenReturn(Metadata.builder()
+            .productId(MOCK_PRODUCT_ID)
+            .artifactId(MOCK_DEPENDENCY_ARTIFACT_ID)
+            .groupId(MOCK_GROUP_ID)
+            .versions(Set.of(MOCK_VERSION))
+            .build());
+
+    // Artifact exists but has a blank downloadUrl
+    var artifactWithBlankUrl =
+        mockMavenArtifactVersion(MOCK_VERSION, MOCK_DEPENDENCY_ARTIFACT_ID, "");
+    when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(
+        MOCK_PRODUCT_ID, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_VERSION))
+        .thenReturn(List.of(artifactWithBlankUrl));
+
+    assertDoesNotThrow(() ->
+            productDependencyService.computeIARDependencies(
+                mavenArtifactVersionMock, mockProductDependency),
+        "Must not throw when dependency artifact has a blank download URL");
+
+    verify(productDependencyRepository, never()).saveAll(anyList());
+  }
+
+  @Test
+  void testExtractMavenPOMDependencies_whenFailingDownloadFile_shouldReturnEmptyList() {
+    var mockProductDependency = prepareMockProductDependency();
+    var mavenArtifactVersionMock =
+        mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL)).thenReturn(null);
+
+    assertDoesNotThrow(() ->
+            productDependencyService.computeIARDependencies(
+                mavenArtifactVersionMock, mockProductDependency),
+        "Must not throw when downloadFile returns null");
+
+    verify(productDependencyRepository, never()).saveAll(anyList());
+    verify(productDependencyRepository, never()).save(any());
+
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL)).thenReturn(new byte[0]);
+
+    assertDoesNotThrow(() ->
+            productDependencyService.computeIARDependencies(
+                mavenArtifactVersionMock, mockProductDependency),
+        "Must not throw when downloadFile returns empty byte array");
+
+    verify(productDependencyRepository, never()).saveAll(anyList());
+    verify(productDependencyRepository, never()).save(any());
+  }
+
+  @Test
+  void testGetPomDownloadUrl_shouldReplaceBaseUrlAndExtension() throws Exception {
+    var mockProductDependency = prepareMockProductDependency();
+    var mavenArtifactVersionMock =
+        mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+
+    // Return empty bytes so computation exits early after the URL is resolved
+    when(fileDownloadService.downloadFile(any())).thenReturn(new byte[0]);
+
+    productDependencyService.computeIARDependencies(mavenArtifactVersionMock, mockProductDependency);
+
+    // The service must have called downloadFile with the mirror POM URL (not the original IAR URL)
+    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_POM_URL);
+  }
+
+  private ProductDependency prepareMockProductDependency() {
+    return  ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .dependencies(new HashSet<>())
+        .build();
+  }
 }
