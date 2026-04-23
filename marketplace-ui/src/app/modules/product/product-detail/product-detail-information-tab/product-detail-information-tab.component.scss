@@ -32,3 +32,22 @@
   width: 115px;
   text-align: right;
 }
+
+.hint-icon {
+  color: var(--ivy-primary-bg);
+  cursor: pointer;
+}
+
+.successor-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  text-align: right;
+  height: auto !important;
+}
+
+.successor-link {
+  overflow-wrap: anywhere;
+}
+

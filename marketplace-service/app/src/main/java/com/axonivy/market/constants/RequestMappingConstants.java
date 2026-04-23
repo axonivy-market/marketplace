@@ -9,6 +9,8 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";
   public static final String IDS = "ids";
+  public static final String DEPRECATIONS = "deprecations";
+  public static final String DEPRECATION_BY_ID = "{productId}/deprecations";
   public static final String PRODUCT_DETAILS = API + "/product-details";
   public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
   public static final String FEEDBACK = API + "/feedback";
@@ -20,7 +22,6 @@ public class RequestMappingConstants {
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
-  public static final String BY_SPRINT = "/sprint/{sprint}";
   public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";

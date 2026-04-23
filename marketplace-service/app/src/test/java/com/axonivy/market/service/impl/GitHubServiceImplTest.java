@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -47,14 +48,20 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static com.axonivy.market.constants.GitHubConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest extends BaseSetup {
+
+  private static final String BASE_BRANCH = "master";
+  private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
+  private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -879,38 +886,9 @@ class GitHubServiceImplTest extends BaseSetup {
         "IOException should be translated into NotFoundException");
 
     assertEquals(
-        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.DASH_SEPARATOR + "Failed to fetch " +
+        ErrorCode.GITHUB_USER_NOT_FOUND.getHelpText() + CoreCommonConstants.HYPHEN + "Failed to fetch " +
             "user details from GitHub", ex.getMessage(),
         "Error message should be meaningful");
-  }
-
-  void testGetLatestWorkflowRunReturnsCompletedRun() throws IOException {
-    GHRepository repo = mock(GHRepository.class);
-    GHWorkflow workflow = mock(GHWorkflow.class);
-    PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
-    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
-
-    GHWorkflowRun completedRun = mock(GHWorkflowRun.class);
-
-    when(repo.getWorkflow("build.yml")).thenReturn(workflow);
-    when(workflow.listRuns()).thenReturn(pagedRuns);
-    when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
-
-    when(pagedRuns.iterator()).thenReturn(pagedIterator);
-
-    when(pagedIterator.hasNext()).thenReturn(true, false);
-    when(pagedIterator.next()).thenReturn(completedRun);
-
-    when(completedRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
-
-    GHWorkflowRun result =
-        gitHubService.getLatestWorkflowRun(repo, "build.yml");
-
-    assertNotNull(result,
-        "Expected a completed workflow run to be returned, but result was null.");
-
-    assertEquals(completedRun, result,
-        "Expected the method to return the first COMPLETED workflow run from the iterator.");
   }
 
   @Test
@@ -959,4 +937,209 @@ class GitHubServiceImplTest extends BaseSetup {
 
     verify(artifact).download(ArgumentMatchers.any(InputStreamFunction.class));
   }
+
+  @Test
+  void testUpdateReadmeUnsupportedPullRequestReturnsNullWhenAddActionDoesNotChangeReadme() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when README already contains unsupported notice");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testUpdateReadmeUnsupportedPullRequestReturnsNullWhenRemoveActionDoesNotChangeReadme() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null when README has no unsupported notice to remove");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testRemoveBranchWhenActionIsRemoveAndBranchExists() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef branchRef = mock(GHRef.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null when README already has no notice and content is unchanged");
+    verify(branchRef).delete();
+  }
+
+  @Test
+  void testRemoveBranchWhenActionIsRemoveAndBranchDoesNotExist() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+
+    assertNull(result, "Expected null and no exception when branch does not exist");
+    verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
+  }
+
+  @Test
+  void testBranchNotDeletedWhenActionIsAddAndContentIsAlreadyUpToDate() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef branchRef = mock(GHRef.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertNull(result, "Expected null when README already contains the unsupported notice");
+    verify(branchRef, never()).delete();
+  }
+
+  @Test
+  void testUpdateReadmeForSuccessorNotesWhenAlreadyOpen() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHPullRequest existingPr = mock(GHPullRequest.class);
+    when(existingPr.getHtmlUrl())
+        .thenReturn(URI.create("https://example.com/pr/1").toURL());
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
+    mockOpenPullRequests(repository, List.of(existingPr));
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertEquals(existingPr, result, "Expected already open pull request to be returned");
+    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void testUpdateReadmeForSuccessorNotesFromExistingBranchWhenNoOpenPr() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHCompare compare = mock(GHCompare.class);
+    GHPullRequest createdPr = mock(GHPullRequest.class);
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
+    mockOpenPullRequests(repository, Collections.emptyList());
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(compare);
+    when(compare.getStatus()).thenReturn(GHCompare.Status.ahead);
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
+    verify(readme, never()).update(anyString(), anyString(), anyString());
+    verify(repository, never()).createRef(eq(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE), anyString());
+  }
+
+  @Test
+  void testUpdateReadmeUnsupportedPullRequestRecreatesMergedBranchAndUpdatesReadmeBeforeCreatingPr() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef existingBranchRef = mock(GHRef.class);
+    GHCompare compare = mock(GHCompare.class);
+    GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
+    GHPullRequest createdPr = mock(GHPullRequest.class);
+
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
+    mockOpenPullRequests(repository, Collections.emptyList());
+    when(repository.getCompare(BASE_BRANCH, UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(compare);
+    when(compare.getStatus()).thenReturn(GHCompare.Status.behind);
+    when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
+    when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
+    verify(existingBranchRef).delete();
+    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE));
+  }
+
+  @Test
+  void testUpdateReadmeUnsupportedPullRequestCreatesBranchAndPrWhenUnsupportedBranchDoesNotExist() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    GHRef baseBranchRef = mock(GHRef.class, RETURNS_DEEP_STUBS);
+    GHPullRequest createdPr = mock(GHPullRequest.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
+    when(repository.getRef(HEADS_PREFIX + BASE_BRANCH)).thenReturn(baseBranchRef);
+    when(baseBranchRef.getObject().getSha()).thenReturn("base-sha");
+    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
+        .thenReturn(createdPr);
+
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+
+    assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
+    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
+    verify(readme).update(anyString(), anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE));
+  }
+
+  @Test
+  void testUpdateReadmeForSuccessorNotesThrowsWhenActionIsNull() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
+
+    assertThrows(NullPointerException.class,
+        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", null),
+        "Expected NullPointerException when pull request action is null");
+  }
+
+  @Test
+  void testUpdateReadmeUnsupportedPullRequestThrowsWhenReadmeHasNoHeading() throws Exception {
+    GHRepository repository = mock(GHRepository.class);
+    GHContent readme = mock(GHContent.class);
+    setupBaseRepositoryMocks(repository, readme, "Body without markdown heading");
+
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD),
+        "Expected IllegalArgumentException when README has no heading");
+
+    assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage(),
+        "Exception message should clearly indicate missing markdown heading in README"
+    );
+  }
+
+  private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
+      throws Exception {
+    when(gitHubProperty.getToken()).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getRepository("org/repo")).thenReturn(repository);
+    when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);
+    when(repository.getFileContent(README_FILE_PATH, BASE_BRANCH)).thenReturn(readme);
+    when(readme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes()));
+  }
+
+  private void mockOpenPullRequests(GHRepository repository, List<GHPullRequest> pullRequests) throws IOException {
+    GHPullRequestQueryBuilder pullRequestQueryBuilder = mock(GHPullRequestQueryBuilder.class);
+    PagedIterable<GHPullRequest> pagedPullRequests = mock(PagedIterable.class);
+    when(repository.queryPullRequests()).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.base(anyString())).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.head(anyString())).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.state(GHIssueState.OPEN)).thenReturn(pullRequestQueryBuilder);
+    when(pullRequestQueryBuilder.list()).thenReturn(pagedPullRequests);
+    when(pagedPullRequests.toList()).thenReturn(pullRequests);
+  }
+
 }

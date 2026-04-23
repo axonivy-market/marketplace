@@ -101,6 +101,8 @@ public class Product extends AbstractAuditableEntity<String> {
   private String compatibilityRange;
   @Transient
   private Boolean isFocused;
+  @Transient
+  private String successor;
 
   @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)

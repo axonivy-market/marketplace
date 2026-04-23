@@ -26,7 +26,6 @@ import java.util.List;
 import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
 import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

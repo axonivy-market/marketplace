@@ -70,10 +70,6 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -424,7 +420,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
     when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
-
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0+", result.getCompatibilityRange(),
         "Product compatibility range should match 10.0+");
@@ -476,9 +474,12 @@ class ProductServiceImplTest extends BaseSetup {
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       when(CoreVersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result,
           "Product with newest release version should match mock product");
+
+      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, false);
+      assertEquals(mockProduct, result,
+          "Product with newest release version should return snapshot detail of there is no official released");
     }
   }
 
@@ -500,7 +501,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testFetchProductDetailByIdAndVersion() {
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-      mockProductMarketplaceData.getInstallationCount());
+      mockProductMarketplaceData);
     when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
       .thenReturn(mockVersionAndUrlModels());
     GithubRepo mockGithubRepo = new GithubRepo();
@@ -529,7 +530,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
     when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
-        mockProductMarketplaceData.getInstallationCount());
+        mockProductMarketplaceData);
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result,
         "Found best match product version should match mock product");

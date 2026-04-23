@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -12,6 +13,9 @@ import org.springframework.stereotype.Service;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Log4j2
@@ -38,16 +42,26 @@ public class MatomoServiceImpl implements MatomoService {
       requestUrl = baseUrl;
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
+    Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
+    log.warn("Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
         .referrerUrl(referrerUrl)
+        .headers(headers)
         .build();
 
     matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });
+  }
+
+  private Map<String, String> cloneRequestHeaders(HttpServletRequest httpServletRequest) {
+    Map<String, String> headers = new HashMap<>();
+    headers.put(HttpHeaderConstants.X_FORWARDED_FOR, httpServletRequest.getRemoteAddr());
+    headers.put(HttpHeaderConstants.X_REAL_IP, httpServletRequest.getRemoteAddr());
+    return headers;
   }
 
   private String resolvePageViewName(String requestUrl, String referrerUrl) {

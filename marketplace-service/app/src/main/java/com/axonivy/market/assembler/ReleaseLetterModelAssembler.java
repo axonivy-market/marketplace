@@ -1,14 +1,9 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.controller.ReleaseLetterController;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModel;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.stereotype.Component;
 
