@@ -27,8 +27,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-export function handleHttpError(toastService: HttpToastService, error: HttpErrorResponse, url: string,
-  isBrowser = true): Observable<never> {
+export function handleHttpError(toastService: HttpToastService, error: HttpErrorResponse,
+  url: string, isBrowser: boolean): Observable<never> {
   // Keep auth errors for caller to handle (e.g., auth service, guards)
   if (error.status === UNAUTHORIZED || error.status === FORBIDDEN) {
     return throwError(() => error);
