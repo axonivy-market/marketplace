@@ -370,3 +370,12 @@ hr {
   border-radius: 10px;
   opacity: 0px;
 }
+
+::ng-deep .tab-group .tab-content .tab-pane .readme-content {
+  h3 {
+    margin-bottom: 1.5rem;
+  }
+  p {
+     margin-bottom: 5rem;
+  }
+}
