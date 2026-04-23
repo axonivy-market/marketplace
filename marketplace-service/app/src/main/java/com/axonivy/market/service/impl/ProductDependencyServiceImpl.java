@@ -197,11 +197,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       var dependencyMetadata = metadataService.getMetadataByVersion(dependencyModel, dependencyVersion);
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
-      // Find dependency in ProductDependency table, create a new one if not exist
-      ProductDependency dependency = Optional
-          .ofNullable(findProductDependencyByIds(dependencyProductId, dependencyArtifactId, dependencyVersion))
-          .orElse(ProductDependency.builder().productId(dependencyProductId).artifactId(dependencyArtifactId)
-              .version(dependencyVersion).build());
+
       // Find dependency artifact from MavenArtifactVersion
       MavenArtifactVersion dependencyArtifact = findDependencyArtifact(dependencyProductId, dependencyArtifactId,
           dependencyVersion);
@@ -216,6 +212,11 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         return;
       }
 
+      // Find dependency in ProductDependency table, create a new one if not exist
+      ProductDependency dependency = Optional
+          .ofNullable(findProductDependencyByIds(dependencyProductId, dependencyArtifactId, dependencyVersion))
+          .orElse(ProductDependency.builder().productId(dependencyProductId).artifactId(dependencyArtifactId)
+              .version(dependencyVersion).build());
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
 
       // Save the dependency to database if it's new (doesn't have an ID yet)

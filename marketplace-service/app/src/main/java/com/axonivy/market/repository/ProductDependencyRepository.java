@@ -22,6 +22,7 @@ public interface ProductDependencyRepository extends JpaRepository<ProductDepend
 
   @Modifying
   @Transactional
-  @Query(value = "DELETE FROM product_dependency_dependencies WHERE dependencies_id = :dependencyId", nativeQuery = true)
+  @Query(value = "DELETE FROM product_dependency_dependencies WHERE dependencies_id = :dependencyId",
+      nativeQuery = true)
   void deleteFromJoinTableByDependencyId(@Param("dependencyId") String dependencyId);
 }
