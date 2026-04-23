@@ -2,7 +2,7 @@ import { type MockedObject, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { errorInterceptor, handleHttpError } from './error.interceptor';
-import { HttpToastService } from '../services/http-toast.service';
+import { HttpToastService } from '../services/browser/http-toast.service';
 import { FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
 
 describe('errorInterceptor', () => {

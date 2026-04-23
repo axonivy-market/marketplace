@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, takeUntil } from 'rxjs';
-import { HttpToastService, HttpErrorEvent } from '../../../core/services/http-toast.service';
+import { HttpToastService, HttpErrorEvent } from '../../../core/services/browser/http-toast.service';
 
 @Component({
   selector: 'app-global-toast',

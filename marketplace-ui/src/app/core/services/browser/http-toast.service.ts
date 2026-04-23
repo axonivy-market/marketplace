@@ -10,7 +10,7 @@ import {
   REQUEST_TIMEOUT,
   SERVICE_UNAVAILABLE,
   UNAUTHORIZED
-} from '../../shared/constants/common.constant';
+} from '../../../shared/constants/common.constant';
 
 export interface HttpErrorEvent {
   status: number;

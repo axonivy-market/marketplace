@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { LoadingService } from '../services/loading/loading.service';
-import { HttpToastService, HttpErrorEvent } from '../services/http-toast.service';
+import { HttpToastService, HttpErrorEvent } from '../services/browser/http-toast.service';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { catchError, finalize, Observable, throwError } from 'rxjs';
@@ -40,7 +40,7 @@ export function handleHttpError(toastService: HttpToastService, error: HttpError
       status: error.status,
       messageKey: error?.error?.messageDetails || messageKey,
       timestamp: Date.now(),
-      url: url
+      url
     };
     toastService.publishError(httpErrorEvent);
   }
