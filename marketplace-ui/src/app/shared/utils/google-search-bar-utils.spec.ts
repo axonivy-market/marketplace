@@ -4,8 +4,8 @@ import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from './google-search-bar.utils';
 import {
-  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE,
-  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
+  GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE,
+  GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE,
   GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
   GOOGLE_SEARCH,
   GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME,
@@ -128,9 +128,9 @@ describe('GoogleSearchBarUtils', () => {
       );
 
       expect(mockScript.id).toBe(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID);
-      expect(mockScript.type).toBe(GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE);
+      expect(mockScript.type).toBe(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE);
       expect(mockScript.async).toBe(true);
-      expect(mockScript.src).toBe(GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE);
+      expect(mockScript.src).toBe(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE);
     });
 
     it('should not create script element when googleCSEScript already exists', () => {
@@ -297,7 +297,7 @@ describe('GoogleSearchBarUtils', () => {
 
       expect(globalThis.setTimeout).toHaveBeenCalledWith(
         expect.any(Function),
-        0
+        500
       );
       expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
         GOOGLE_SEARCH_BAR_CLASS_NAME

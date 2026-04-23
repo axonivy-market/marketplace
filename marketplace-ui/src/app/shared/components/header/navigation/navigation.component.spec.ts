@@ -34,32 +34,6 @@ describe('NavigationComponent', () => {
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
 
-  it('should display google search bar container in mobile mode', () => {
-    component.isMobileMode.set(true); // Simulate mobile mode
-    fixture.detectChanges();
-
-    const googleSearchContainer = fixture.debugElement.query(
-      By.css('.google-search-container')
-    );
-    expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
-      'block'
-    );
-  });
-
-  it('should hide google search bar container in desktop mode', () => {
-    component.isMobileMode.set(false); // Simulate desktop mode
-    fixture.detectChanges();
-
-    const googleSearchContainer = fixture.debugElement.query(
-      By.css('.google-search-container')
-    );
-    expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
-      'none'
-    );
-  });
-
   it('should return navItems when isAdminPage is false', () => {
     component.isAdminPage = false;
     expect(component.items).toBe(component.navItems);

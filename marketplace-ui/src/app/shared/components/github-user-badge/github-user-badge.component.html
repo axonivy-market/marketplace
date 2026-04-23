@@ -1,7 +1,5 @@
 @if (userInfo()) {
-  <div
-    ngbDropdown
-    class="d-inline-block">
+  <div ngbDropdown class="d-inline-block" placement="bottom-end">
     <img
       type="button"
       ngbDropdownToggle
@@ -11,8 +9,7 @@
     <div
       ngbDropdownMenu
       aria-labelledby="user-info-dropdown"
-      class="user-info-dropdown mt-2"
-      placement="bottom-end">
+      class="user-info-dropdown mt-2">
       <button ngbDropdownItem>
         <a class="text-primary" [href]="this.userInfo()!.url" target="_blank">
           {{

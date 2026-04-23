@@ -83,14 +83,14 @@
   }
 }
 
-@media all and (max-width: 1199px) {
+@media all and (max-width: 991px) {
   ul {
     padding: 2rem 0 2rem 0;
     border-top: 1px solid var(--header-border-color);
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 992px) {
   .header-toolbar-container {
     width: 15rem;
     max-width: 15rem;

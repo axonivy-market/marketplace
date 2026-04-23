@@ -3,8 +3,8 @@ import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import {
   GOOGLE,
-  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE,
-  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
+  GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE,
+  GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE,
   GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
   GOOGLE_SEARCH,
   GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME,
@@ -30,9 +30,9 @@ export class GoogleSearchBarUtils {
       const script = renderer.createElement('script');
       Object.assign(script, {
         id: GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
-        type: GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
+        type: GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE,
         async: true,
-        src: GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE,
+        src: GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE,
         onload: () => this.addCustomClassToSearchBar(renderer, doc)
       });
       renderer.appendChild(doc.body, script);
@@ -53,7 +53,7 @@ export class GoogleSearchBarUtils {
     setTimeout(() => {
       this.addBackgroundClassToSearchBar(renderer, doc);
       this.addTextPrimaryClassToSearchInput(renderer, doc);
-    }, 0);
+    }, 500);
   }
 
   private static addBackgroundClassToSearchBar(

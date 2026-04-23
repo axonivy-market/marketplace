@@ -370,7 +370,7 @@ export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
 
 // Breakpoint constants
-export const EXTRA_LARGE_BREAKPOINT = 1200;
+export const LARGE_BREAKPOINT = 992;
 
 // Open Graph Meta Tags
 export const OG_TITLE_KEY = 'og:title';
@@ -381,8 +381,8 @@ export const OG_IMAGE_PNG_TYPE = 'image/png';
 
 // Google constants
 export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID = 'googleCSEScript';
-export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
-export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE =
+export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
+export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE =
   'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
 export const GOOGLE = 'google';
 export const HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID = 'offcanvas-google-search';

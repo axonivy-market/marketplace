@@ -3,7 +3,7 @@ import { NgbOffcanvas, NgbOffcanvasRef } from '@ng-bootstrap/ng-bootstrap';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from '../utils/google-search-bar.utils';
-import { EXTRA_LARGE_BREAKPOINT, HEADER_OFFCANVAS, HEADER_OFFCANVAS_BACKDROP, HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID } from '../constants/common.constant';
+import { HEADER_OFFCANVAS, HEADER_OFFCANVAS_BACKDROP, HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID, LARGE_BREAKPOINT } from '../constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class HeaderOffcanvasService {
@@ -46,7 +46,7 @@ export class HeaderOffcanvasService {
   }
 
   toggle(content: TemplateRef<any>, renderer: Renderer2) {
-    if (window.innerWidth >= EXTRA_LARGE_BREAKPOINT) {
+    if (window.innerWidth >= LARGE_BREAKPOINT) {
       return;
     }
 
@@ -67,7 +67,7 @@ export class HeaderOffcanvasService {
   }
 
   handleResize() {
-    if (window.innerWidth >= EXTRA_LARGE_BREAKPOINT && this.offcanvasRef) {
+    if (window.innerWidth >= LARGE_BREAKPOINT && this.offcanvasRef) {
       this.close();
     }
   }

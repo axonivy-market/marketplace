@@ -13,10 +13,10 @@ import {
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import {
-  EXTRA_LARGE_BREAKPOINT,
   HEADER_OFFCANVAS,
   HEADER_OFFCANVAS_BACKDROP,
-  HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID
+  HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID,
+  LARGE_BREAKPOINT
 } from '../constants/common.constant';
 import { GoogleSearchBarUtils } from '../utils/google-search-bar.utils';
 import { HeaderOffcanvasService } from './header-offcanvas.service';
@@ -165,9 +165,9 @@ describe('HeaderOffcanvasService', () => {
   });
 
   describe('toggle()', () => {
-    it('should do nothing when window width is >= EXTRA_LARGE_BREAKPOINT', () => {
+    it('should do nothing when window width is >= LARGE_BREAKPOINT', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT
+        LARGE_BREAKPOINT
       );
 
       service.toggle(content, renderer);
@@ -175,9 +175,9 @@ describe('HeaderOffcanvasService', () => {
       expect(offcanvasSpy.open).not.toHaveBeenCalled();
     });
 
-    it('should open when offcanvas is not open and width < EXTRA_LARGE_BREAKPOINT', () => {
+    it('should open when offcanvas is not open and width < LARGE_BREAKPOINT', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT - 1
+        LARGE_BREAKPOINT - 1
       );
       const { ref } = buildOffcanvasRef();
       offcanvasSpy.open.mockReturnValue(ref);
@@ -187,9 +187,9 @@ describe('HeaderOffcanvasService', () => {
       expect(offcanvasSpy.open).toHaveBeenCalled();
     });
 
-    it('should close when offcanvas is open and width < EXTRA_LARGE_BREAKPOINT', () => {
+    it('should close when offcanvas is open and width < LARGE_BREAKPOINT', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT - 1
+        LARGE_BREAKPOINT - 1
       );
       const { ref } = buildOffcanvasRef();
       offcanvasSpy.open.mockReturnValue(ref);
@@ -202,9 +202,9 @@ describe('HeaderOffcanvasService', () => {
   });
 
   describe('handleResize()', () => {
-    it('should close the offcanvas when width >= EXTRA_LARGE_BREAKPOINT and offcanvas is open', () => {
+    it('should close the offcanvas when width >= LARGE_BREAKPOINT and offcanvas is open', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT
+        LARGE_BREAKPOINT
       );
       const { ref } = buildOffcanvasRef();
       offcanvasSpy.open.mockReturnValue(ref);
@@ -216,9 +216,9 @@ describe('HeaderOffcanvasService', () => {
       expect(service.isOpen()).toBe(false);
     });
 
-    it('should do nothing when width < EXTRA_LARGE_BREAKPOINT', () => {
+    it('should do nothing when width < LARGE_BREAKPOINT', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT - 1
+        LARGE_BREAKPOINT - 1
       );
       const { ref } = buildOffcanvasRef();
       offcanvasSpy.open.mockReturnValue(ref);
@@ -231,7 +231,7 @@ describe('HeaderOffcanvasService', () => {
 
     it('should do nothing when offcanvas is not open', () => {
       vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-        EXTRA_LARGE_BREAKPOINT
+        LARGE_BREAKPOINT
       );
 
       expect(() => service.handleResize()).not.toThrow();
