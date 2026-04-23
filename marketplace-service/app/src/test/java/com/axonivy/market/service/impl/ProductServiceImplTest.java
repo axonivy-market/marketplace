@@ -474,9 +474,12 @@ class ProductServiceImplTest extends BaseSetup {
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       when(CoreVersionUtils.getVersionsToDisplay(any(), any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result,
           "Product with newest release version should match mock product");
+
+      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, false);
+      assertEquals(mockProduct, result,
+          "Product with newest release version should return snapshot detail of there is no official released");
     }
   }
 
