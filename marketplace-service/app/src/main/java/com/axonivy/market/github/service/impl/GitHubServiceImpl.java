@@ -358,10 +358,10 @@ public class GitHubServiceImpl implements GitHubService {
       }
       setStatus(instance, ENABLED);
     } catch (HttpClientErrorException.Forbidden e) {
-      log.error("Access forbidden: ", e);
+      log.error("Forbidden URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, DISABLED);
     } catch (HttpClientErrorException.NotFound e) {
-      log.error("Alerts not found: ", e);
+      log.error("Not Found URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, NO_PERMISSION);
     }
     return instance;

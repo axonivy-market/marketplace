@@ -51,6 +51,7 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private CodeScanning codeScanning;
 
   @Embedded
+  @AttributeOverride(name = "status", column = @Column(name = "secret_scanning_status"))
   private SecretScanning secretScanning;
 
   @Override
