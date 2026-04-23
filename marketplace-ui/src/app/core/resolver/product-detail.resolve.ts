@@ -71,6 +71,16 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
           this.router.navigate([errorPageUrl]);
           return EMPTY;
         }
+
+        // Browser network failures like net::ERR_CONNECTION_REFUSED surface as status=0.
+        if (error.status === 0) {
+          const networkErrorPageUrl = `/${ERROR_PAGE_PATH}`;
+          if (isPlatformServer(this.platformId)) {
+            return of(this.router.parseUrl(networkErrorPageUrl));
+          }
+          this.router.navigate([networkErrorPageUrl]);
+          return EMPTY;
+        }
         return EMPTY;
       })
     );

@@ -30,7 +30,7 @@ describe('errorInterceptor', () => {
     it('should rethrow error without publishing if status is UNAUTHORIZED', () => {
       const error = new HttpErrorResponse({ status: UNAUTHORIZED });
 
-      handleHttpError(errorBusService, error, '/test-url').subscribe({
+      handleHttpError(errorBusService, error, '/test-url', true).subscribe({
         error: (err: HttpErrorResponse) => {
           expect(err).toBe(error);
           expect(errorBusService.publishError).not.toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe('errorInterceptor', () => {
     it('should rethrow error without publishing if status is FORBIDDEN', () => {
       const error = new HttpErrorResponse({ status: FORBIDDEN });
 
-      handleHttpError(errorBusService, error, '/test-url').subscribe({
+      handleHttpError(errorBusService, error, '/test-url', true).subscribe({
         error: (err: HttpErrorResponse) => {
           expect(err).toBe(error);
           expect(errorBusService.publishError).not.toHaveBeenCalled();
@@ -80,6 +80,23 @@ describe('errorInterceptor', () => {
 
       expect(errorBusService.publishError).toHaveBeenCalledWith(
         expect.objectContaining({ status: 404, url: '/product/not-found' })
+      );
+    });
+
+    it('should publish default message key for status 0 network errors', () => {
+      const error = new HttpErrorResponse({ status: 0 });
+
+      handleHttpError(errorBusService, error, '/api/unreachable', true).subscribe({
+        error: () => {}
+      });
+
+      expect(errorBusService.getErrorMessageKey).not.toHaveBeenCalled();
+      expect(errorBusService.publishError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 0,
+          url: '/api/unreachable',
+          messageKey: 'common.error.description.default'
+        })
       );
     });
 

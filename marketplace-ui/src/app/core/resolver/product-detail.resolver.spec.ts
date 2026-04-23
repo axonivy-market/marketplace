@@ -228,6 +228,49 @@ describe('ProductDetailResolver', () => {
       });
     });
 
+    it('should return UrlTree wrapped in Observable for status 0 network errors on server', () => {
+      const networkError = new HttpErrorResponse({ status: 0 });
+      const mockUrlTree = {} as UrlTree;
+      (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => networkError));
+      router.parseUrl.mockReturnValue(mockUrlTree);
+
+      resolver.resolve(routeSnapshot).subscribe(result => {
+        expect(result).toBe(mockUrlTree);
+        expect(router.parseUrl).toHaveBeenCalledWith('/error-page');
+      });
+    });
+
+    it('should navigate to generic error page for status 0 network errors on browser', () => {
+      const browserResolver = new ProductDetailResolver(
+        'browser' as unknown as object,
+        productDetailService,
+        meta,
+        titleService,
+        languageService,
+        loadingService,
+        TestBed.inject(ProductService) as MockedObject<ProductService>,
+        TestBed.inject(CookieService) as MockedObject<CookieService>,
+        TestBed.inject(RoutingQueryParamService) as MockedObject<RoutingQueryParamService>,
+        faviconService,
+        router,
+        null,
+        null
+      );
+      const networkError = new HttpErrorResponse({ status: 0 });
+      vi.spyOn(browserResolver, 'getProductDetailObservable').mockReturnValue(throwError(() => networkError));
+
+      let completed = false;
+      let thrownError: unknown;
+      browserResolver.resolve(routeSnapshot).subscribe({
+        complete: () => { completed = true; },
+        error: err => { thrownError = err; }
+      });
+
+      expect(router.navigate).toHaveBeenCalledWith(['/error-page']);
+      expect(completed).toBe(true);
+      expect(thrownError).toBeUndefined();
+    });
+
     it('should complete empty for non-404 errors so navigation cancels without NavigationError', () => {
       const error500 = new HttpErrorResponse({ status: 500 });
       (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => error500));

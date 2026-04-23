@@ -28,18 +28,21 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 export function handleHttpError(toastService: HttpToastService, error: HttpErrorResponse,
-  url: string, isBrowser: boolean): Observable<never> {
+  url: string, isBrowser = true): Observable<never> {
   // Keep auth errors for caller to handle (e.g., auth service, guards)
   if (error.status === UNAUTHORIZED || error.status === FORBIDDEN) {
     return throwError(() => error);
   }
 
   if (isBrowser) {
-    const messageKey = toastService.getErrorMessageKey(error.status);
+    let messageKey = 'common.error.description.default';
+    if (error.status !== 0) {
+      messageKey = error.error?.messageDetails || toastService.getErrorMessageKey(error.status);
+    }
     const httpErrorEvent: HttpErrorEvent = {
       status: error.status,
-      messageKey: error?.error?.messageDetails || messageKey,
       timestamp: Date.now(),
+      messageKey,
       url
     };
     toastService.publishError(httpErrorEvent);
