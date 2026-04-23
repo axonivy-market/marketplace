@@ -11,14 +11,14 @@
         <div class="slider" [class.report-active]="mode[tabKey] === 'report'"></div>
 
         <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'default-mode-' + tabKey"
-               autocomplete="off" [(ngModel)]="mode[tabKey]" value="default"/>
+               autocomplete="off" [(ngModel)]="mode[tabKey]" value="default" />
         <label class="btn border-0 justify-content-between align-items-center align-content-center"
                [for]="'default-mode-' + tabKey">
           {{ 'common.monitor.dashboard.toggle.default' | translate }}
         </label>
 
         <input type="radio" class="btn-check" [name]="'mode-' + tabKey" [id]="'report-mode-' + tabKey"
-               autocomplete="off" [(ngModel)]="mode[tabKey]" value="report"/>
+               autocomplete="off" [(ngModel)]="mode[tabKey]" value="report" />
         <label class="btn border-0 justify-content-between align-items-center align-content-center"
                [for]="'report-mode-' + tabKey">
           {{ 'common.monitor.dashboard.toggle.report' | translate }}
@@ -29,7 +29,7 @@
   <div class="position-relative">
     <app-loading-spinner
       containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded"
-      [key]="LoadingComponentId.MONITORING_DASHBOARD"/>
+      [key]="LoadingComponentId.MONITORING_DASHBOARD" />
     <table class="table">
       <thead>
       <tr>
@@ -43,21 +43,21 @@
           <h5 class="table-header">
             <i class="ti" [ngClass]="getSortIcon(COLUMN_CI)"></i>
             {{ 'common.monitor.dashboard.ciLabel' | translate }}
-            <app-build-badge-tooltip buildType="CI"/>
+            <app-build-badge-tooltip buildType="CI" />
           </h5>
         </th>
         <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_DEV)">
           <h5 class="table-header">
             <i class="ti" [ngClass]="getSortIcon(COLUMN_DEV)"></i>
             {{ 'common.monitor.dashboard.devLabel' | translate }}
-            <app-build-badge-tooltip buildType="DEV"/>
+            <app-build-badge-tooltip buildType="DEV" />
           </h5>
         </th>
         <th class="text-primary workflow-column" (click)="sortRepositoriesByColumn(COLUMN_E2E)">
           <h5 class="table-header">
             <i class="ti" [ngClass]="getSortIcon(COLUMN_E2E)"></i>
             {{ 'common.monitor.dashboard.e2eLabel' | translate }}
-            <app-build-badge-tooltip buildType="E2E"/>
+            <app-build-badge-tooltip buildType="E2E" />
           </h5>
         </th>
         <th class="text-primary">
@@ -115,7 +115,7 @@
   @if (totalElements > 0) {
     <div class="d-flex justify-content-between py-2">
       <ngb-pagination [collectionSize]="totalElements" [(page)]="this.page" [pageSize]="this.pageSize"
-                      (pageChange)="onPageChange($event)"/>
+                      (pageChange)="onPageChange($event)" />
       <select class="form-select pagination" [ngModel]="pageSize" (ngModelChange)="onPageSizeChanged($event)">
         <option [ngValue]="10">
           {{ 'common.monitor.pagination.tenItems' | translate }}

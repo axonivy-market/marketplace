@@ -94,12 +94,11 @@ export class AdminDashboardService {
     );
   }
 
-  syncGithubSecurityMonitor(): Observable<string> {
-    return this.http.post(
+  syncGithubSecurityMonitor(): Observable<ProductSecurityInfo[]> {
+    return this.http.post<ProductSecurityInfo[]>(
       `${API_URI.SYNC_SECURITY_MONITOR}`,
       {},
       {
-        responseType: 'text' as const,
         headers: this.adminAuth.getAuthHeaders()
       }
     );

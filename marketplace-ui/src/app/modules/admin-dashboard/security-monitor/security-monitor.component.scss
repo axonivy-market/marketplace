@@ -117,34 +117,27 @@
   cursor: pointer;
 }
 
-.security-column {
-  width: 16%;
-  cursor: pointer;
+.security-column,
+.protection-column,
+.commit-column {
   text-align: center;
+  cursor: pointer;
 
   h5 {
     justify-content: center;
   }
+}
+
+.security-column {
+  width: 16%;
 }
 
 .protection-column {
   width: 14%;
-  text-align: center;
-  cursor: pointer;
-
-  h5 {
-    justify-content: center;
-  }
 }
 
 .commit-column {
   width: 12%;
-  text-align: center;
-  cursor: pointer;
-
-  h5 {
-    justify-content: center;
-  }
 }
 
 @media (max-width: 1200px) {
@@ -192,20 +185,14 @@
   }
 
   .visibility {
-    font-size: 1rem;
-    padding: 2px 8px;
-    border-radius: 20px;
+    @extend .repo-badge;
     border: 1px solid gray;
-    line-height: 1.2;
     color: var(--ivy-text-secondary-color);
   }
 
   .archived {
-    font-size: 1rem;
-    padding: 2px 8px;
-    border-radius: 20px;
+    @extend .repo-badge;
     border: 1px solid orange;
-    line-height: 1.2;
     color: orange;
   }
 }
@@ -301,4 +288,9 @@
   color: var(--ivy-text-primary-color);
 }
 
-
+.repo-badge {
+  font-size: 1rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  line-height: 1.2;
+}

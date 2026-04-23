@@ -329,7 +329,7 @@
           "syncOneProduct": "Synchronize one product",
           "syncLatestReleasesForProducts": "Synchronize product release notes",
           "syncGithubMonitor": "Synchronize GitHub monitor",
-          "syncGithubSecurityMonitor": "Synchronize GitHub secret monitor"
+          "syncGithubSecurityMonitor": "Synchronize GitHub Security monitor"
         },
         "syncOneProductDialog": {
           "title": "Synchronize One Product",
