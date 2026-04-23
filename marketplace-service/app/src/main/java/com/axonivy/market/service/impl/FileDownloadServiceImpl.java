@@ -79,7 +79,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private void addWarningLogWhenFailingToFetchResource(String url, RestClientException e) {
-    log.warn("Failed to fetch resource from URL: {}, {}", url, e.getMessage());
+    log.warn("Failed to fetch resource from URL: {}, {}", url, e);
   }
 
   @Override

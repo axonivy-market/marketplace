@@ -203,13 +203,13 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
           dependencyVersion);
       if (dependencyArtifact == null) {
         log.warn("Cannot found the dependency artifact of {} - version {}", dependencyArtifactId, version);
-        return;
+        continue;
       }
 
       // Skip adding dependency when download Url of dependency artifact is empty
       if (StringUtils.isBlank(dependencyArtifact.getDownloadUrl())) {
         log.warn("Invalid download URL for {} - version {}", dependencyArtifactId, version);
-        return;
+        continue;
       }
 
       // Find dependency in ProductDependency table, create a new one if not exist
@@ -261,7 +261,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       throws IOException, XmlPullParserException, NullPointerException, HttpClientErrorException {
       String pomUrl = getPomDownloadUrl(downloadUrl);
       byte[] fileContent = fileDownloadService.downloadFile(pomUrl);
-      if (fileContent.length == 0) {
+      if (fileContent == null || fileContent.length == 0) {
         return new ArrayList<>();
       }
 
