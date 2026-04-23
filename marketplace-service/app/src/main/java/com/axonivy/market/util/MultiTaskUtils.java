@@ -14,24 +14,29 @@ import java.util.function.Function;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MultiTaskUtils {
+
   public static <T, R> List<R> parallelProcessWithLimit(Collection<T> items, Function<T, R> task, int maxConcurrency) {
     Semaphore semaphore = new Semaphore(maxConcurrency);
     try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-      List<CompletableFuture<R>> futures = items.stream().map(item -> CompletableFuture.supplyAsync(() -> {
-            try {
-              semaphore.acquire();
-              return task.apply(item);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              return null;
-            } finally {
-              semaphore.release();
-            }
-          }, executor)).toList();
+      List<CompletableFuture<R>> futures = items.stream()
+          .map(item -> CompletableFuture.supplyAsync(() -> processWithSemaphore(item, task, semaphore), executor))
+          .toList();
 
       return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
           .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
           .join();
+    }
+  }
+
+  private static <T, R> R processWithSemaphore(T item, Function<T, R> task, Semaphore semaphore) {
+    try {
+      semaphore.acquire();
+      return task.apply(item);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return null;
+    } finally {
+      semaphore.release();
     }
   }
 }

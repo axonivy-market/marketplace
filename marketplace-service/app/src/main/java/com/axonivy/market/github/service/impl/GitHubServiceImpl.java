@@ -60,16 +60,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -89,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
+  private static final int MAX_CONCURRENCY = 50;
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -227,7 +224,7 @@ public class GitHubServiceImpl implements GitHubService {
     List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList(),
         repo -> MdcContextUtils.wrapMdcContext(
-            () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken())).get(), 50);
+            () -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken())).get(), MAX_CONCURRENCY);
 
     List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
     log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
