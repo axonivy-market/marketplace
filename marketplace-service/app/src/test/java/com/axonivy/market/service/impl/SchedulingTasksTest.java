@@ -4,6 +4,7 @@ import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
@@ -35,6 +36,9 @@ class SchedulingTasksTest {
 
   @MockBean
   GithubReposService gitHubReposService;
+
+  @MockBean
+  ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @MockBean
   NotificationService notificationService;
@@ -69,15 +73,6 @@ class SchedulingTasksTest {
   }
 
   @Test
-  void testShouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
-    doThrow(new IOException("failure")).when(gitHubService).syncSecurityDetailsForProduct();
-    assertDoesNotThrow(() -> tasks.sendNotificationForSecurityMonitor(),
-        "syncDataForSecurityMonitor should swallow IOException and not propagate it");
-    verify(gitHubService).syncSecurityDetailsForProduct();
-    verify(notificationService, never()).notify(any());
-  }
-
-  @Test
   void testSyncSecurityMonitorShouldCallSyncSecurityDetailsForProduct() throws Exception {
     when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of());
     assertDoesNotThrow(() -> tasks.syncSecurityMonitor(),
@@ -98,6 +93,8 @@ class SchedulingTasksTest {
     ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
     when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of(securityInfo));
     DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
+    // Mock repository to return the same ProductSecurityInfo as in the service
+    when(productSecurityInfoRepository.findAll()).thenReturn(List.of(securityInfo));
     try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
              Mockito.mockStatic(DisabledSecurityEventFactory.class)) {
       mockedFactory.when(() -> DisabledSecurityEventFactory.from(securityInfo)).thenReturn(List.of(event));

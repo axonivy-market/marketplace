@@ -56,8 +56,7 @@ class CustomProductSecurityInfoRepositoryImplTest {
 
     Query dataQuery = mockQueryExecution(List.of(info));
     Query countQuery = mockCountQuery(1L);
-    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
-    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
+    mockCreateNativeQuery(dataQuery, countQuery);
 
     // Act
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(criteria, pageable);
@@ -83,8 +82,7 @@ class CustomProductSecurityInfoRepositoryImplTest {
 
     Query dataQuery = mockQueryExecution(List.of());
     Query countQuery = mockCountQuery(0L);
-    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
-    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
+    mockCreateNativeQuery(dataQuery, countQuery);
 
     // Act
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(criteria, pageable);
@@ -110,8 +108,7 @@ class CustomProductSecurityInfoRepositoryImplTest {
 
     Query dataQuery = mockQueryExecution(List.of(info));
     Query countQuery = mockCountQuery(1L);
-    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
-    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
+    mockCreateNativeQuery(dataQuery, countQuery);
 
     // Act
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(criteria, pageable);
@@ -135,8 +132,7 @@ class CustomProductSecurityInfoRepositoryImplTest {
 
     Query dataQuery = mockQueryExecution(List.of());
     Query countQuery = mockCountQuery(0L);
-    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
-    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
+    mockCreateNativeQuery(dataQuery, countQuery);
 
     // Act
     repository.searchProductSecurityAndSorting(criteria, pageable);
@@ -157,8 +153,7 @@ class CustomProductSecurityInfoRepositoryImplTest {
 
     Query dataQuery = mockQueryExecution(List.of());
     Query countQuery = mockCountQuery(30L);
-    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
-    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
+    mockCreateNativeQuery(dataQuery, countQuery);
 
     // Act
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(criteria, pageable);
@@ -260,6 +255,11 @@ class CustomProductSecurityInfoRepositoryImplTest {
     Query query = mock(Query.class);
     when(query.getSingleResult()).thenReturn(count);
     return query;
+  }
+
+  private void mockCreateNativeQuery(Query dataQuery, Query countQuery) {
+    when(entityManager.createNativeQuery(anyString(), eq(ProductSecurityInfo.class))).thenReturn(dataQuery);
+    when(entityManager.createNativeQuery(anyString())).thenReturn(countQuery);
   }
 }
 

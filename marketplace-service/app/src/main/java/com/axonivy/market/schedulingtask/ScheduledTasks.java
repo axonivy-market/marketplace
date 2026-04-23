@@ -7,6 +7,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
@@ -43,6 +44,7 @@ public class ScheduledTasks {
   private final GithubReposService githubReposService;
   private final GitHubService gitHubService;
   private final NotificationService notificationService;
+  private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -123,9 +125,7 @@ public class ScheduledTasks {
   }
 
   private void sendNotificationForDisabledSecurityChecks() throws IOException {
-    List<ProductSecurityInfo> securityInfos = gitHubService.syncSecurityDetailsForProduct();
-
-    List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()
+    List<DisabledSecurityEvent> disabledEvents = productSecurityInfoRepository.findAll().stream()
         .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
         .toList();
 

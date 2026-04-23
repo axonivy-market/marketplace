@@ -1200,9 +1200,6 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
-    ScheduledExecutorService inlineExecutor = mock(ScheduledExecutorService.class);
-    when(taskScheduler.getScheduledExecutor()).thenReturn(inlineExecutor);
-    doAnswer(inv -> { ((Runnable) inv.getArgument(0)).run(); return null; }).when(inlineExecutor).execute(any());
 
     doReturn(mockInfo).when(gitHubService).fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
     when(productSecurityInfoRepository.saveAll(anyList())).thenReturn(List.of(mockInfo));
@@ -1225,7 +1222,6 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRepository repoB = mock(GHRepository.class);
     GHRepository repoC = mock(GHRepository.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
-
     ProductSecurityInfo infoA = buildMockProductSecurityInfo("repo-a");
     ProductSecurityInfo infoB = buildMockProductSecurityInfo("repo-b");
     ProductSecurityInfo infoC = buildMockProductSecurityInfo("repo-c");
@@ -1235,13 +1231,11 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(repoA, repoB, repoC));
-    ScheduledExecutorService inlineExecutor2 = mock(ScheduledExecutorService.class);
-    when(taskScheduler.getScheduledExecutor()).thenReturn(inlineExecutor2);
-    doAnswer(inv -> { ((Runnable) inv.getArgument(0)).run(); return null; }).when(inlineExecutor2).execute(any());
 
     doReturn(infoA).when(gitHubService).fetchSecurityInfoSafe(repoA, mockOrg, "token");
     doReturn(infoB).when(gitHubService).fetchSecurityInfoSafe(repoB, mockOrg, "token");
     doReturn(infoC).when(gitHubService).fetchSecurityInfoSafe(repoC, mockOrg, "token");
+
     when(productSecurityInfoRepository.saveAll(anyList())).thenReturn(List.of(infoA, infoB, infoC));
 
     // Act
