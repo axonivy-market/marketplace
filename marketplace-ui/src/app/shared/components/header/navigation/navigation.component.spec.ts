@@ -1,6 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavigationComponent } from './navigation.component';
 import { RouterModule } from '@angular/router';
@@ -26,12 +25,6 @@ describe('NavigationComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should call checkMediaSize on window resize', () => {
-    vi.spyOn(component, 'checkMediaSize');
-    component.onResize();
-    expect(component.checkMediaSize).toHaveBeenCalled();
   });
 
   it('should return navItems when isAdminPage is false', () => {

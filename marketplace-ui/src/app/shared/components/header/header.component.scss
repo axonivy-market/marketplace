@@ -16,10 +16,6 @@
   opacity: 0 !important;
 }
 
-.navbar {
-  height: 100%;
-}
-
 .navbar-brand {
   padding-top: 0.8rem;
 }
@@ -50,12 +46,6 @@
 
   .navbar-brand {
     padding: 14.42px 0;
-  }
-}
-
-@media all and (max-width: 1200px) {
-  .header__navbar-content {
-    height: 90vh;
   }
 }
 

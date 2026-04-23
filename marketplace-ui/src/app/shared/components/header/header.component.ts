@@ -34,7 +34,6 @@ import { NavigationComponent } from './navigation/navigation.component';
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
 export class HeaderComponent {
-  offcanvasService = inject(NgbOffcanvas);
   adminAuthService = inject(AdminAuthService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
