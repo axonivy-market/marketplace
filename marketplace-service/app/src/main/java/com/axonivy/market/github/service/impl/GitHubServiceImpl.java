@@ -30,6 +30,8 @@ import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
@@ -92,16 +95,6 @@ public class GitHubServiceImpl implements GitHubService {
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
-
-  public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler,
-      ProductSecurityInfoRepository productSecurityInfoRepository) {
-    this.restTemplate = restTemplate;
-    this.githubUserRepository = githubUserRepository;
-    this.gitHubProperty = gitHubProperty;
-    this.taskScheduler = taskScheduler;
-    this.productSecurityInfoRepository  = productSecurityInfoRepository;
-  }
 
   @Override
   public GitHub getGitHub() throws IOException {
@@ -263,7 +256,7 @@ public class GitHubServiceImpl implements GitHubService {
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,
       String accessToken) {
     try {
-      log.warn("fetching security info for repo: {}", repo.getName());
+      log.info("fetching security info for repo: {}", repo.getName());
       return fetchSecurityInfo(repo, organization, accessToken);
     } catch (IOException e) {
       log.error("Error fetching security info for repo: {}", repo.getName(), e);
