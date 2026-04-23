@@ -173,9 +173,9 @@
                   <span class="badge no-permission">
                     {{ 'common.admin.securityMonitor.noPermission' | translate }}
                   </span>
-                } @else if (repo.secretScanning.numberOfAlerts) {
+                } @else if (repo.secretScanning.numberOfSecretScanningAlerts) {
                   <span class="badge critical">
-                    {{ repo.secretScanning.numberOfAlerts }} alerts
+                    {{ repo.secretScanning.numberOfSecretScanningAlerts }} alerts
                   </span>
                 } @else {
                   <span class="badge active">
