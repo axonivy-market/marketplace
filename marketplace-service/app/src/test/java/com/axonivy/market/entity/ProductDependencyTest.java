@@ -17,7 +17,7 @@ class ProductDependencyTest {
   }
 
   @Test
-  void testEquals_sameFields_shouldBeEqual() {
+  void testEqualsSameFieldsShouldBeEqual() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal-components", "10.0.0");
     assertEquals(dependencyA, dependencyB,
@@ -25,41 +25,41 @@ class ProductDependencyTest {
   }
 
   @Test
-  void testEquals_differentVersion_shouldNotBeEqual() {
+  void testEqualsDifferentVersionShouldNotBeEqual() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal-components", "11.0.0");
     assertNotEquals(dependencyA, dependencyB, "Different version must result in not-equal");
   }
 
   @Test
-  void testEquals_differentArtifactId_shouldNotBeEqual() {
+  void testEqualsDifferentArtifactIdShouldNotBeEqual() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal", "10.0.0");
     assertNotEquals(dependencyA, dependencyB, "Different artifactId must result in not-equal");
   }
 
   @Test
-  void testEquals_differentProductId_shouldNotBeEqual() {
+  void testEqualsDifferentProductIdShouldNotBeEqual() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("other-product", "portal-components", "10.0.0");
     assertNotEquals(dependencyA, dependencyB, "Different productId must result in not-equal");
   }
 
   @Test
-  void testEquals_nonProductDependencyObject_shouldReturnFalse() {
+  void testEqualsNonProductDependencyObjectShouldReturnFalse() {
     var dependency = build("portal", "portal-components", "10.0.0");
     assertNotEquals(dependency, "test", "Comparing with a String object should return false");
   }
 
   @Test
-  void testHashCode_equalObjects_shouldHaveSameHashCode() {
+  void testHashCodeEqualObjectsShouldHaveSameHashCode() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal-components", "10.0.0");
     assertEquals(dependencyA.hashCode(), dependencyB.hashCode(), "Equal objects must have the same hash code");
   }
 
   @Test
-  void testHashCode_differentObjects_shouldUsuallyHaveDifferentHashCode() {
+  void testHashCodeDifferentObjectsShouldUsuallyHaveDifferentHashCode() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal-components", "11.0.0");
     assertNotEquals(dependencyA.hashCode(), dependencyB.hashCode(),
@@ -67,7 +67,7 @@ class ProductDependencyTest {
   }
 
   @Test
-  void testEqualsAndHashCode_usableInSet() {
+  void testEqualsAndHashCodeUsableInSet() {
     var dependencyA = build("portal", "portal-components", "10.0.0");
     var dependencyB = build("portal", "portal-components", "10.0.0");
     var set = new HashSet<ProductDependency>();

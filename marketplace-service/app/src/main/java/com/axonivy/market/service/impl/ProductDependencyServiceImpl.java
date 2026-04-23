@@ -201,14 +201,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       // Find dependency artifact from MavenArtifactVersion
       MavenArtifactVersion dependencyArtifact = findDependencyArtifact(dependencyProductId, dependencyArtifactId,
           dependencyVersion);
-      if (dependencyArtifact == null) {
-        log.warn("Cannot found the dependency artifact of {} - version {}", dependencyArtifactId, version);
-        continue;
-      }
-
-      // Skip adding dependency when download Url of dependency artifact is empty
-      if (StringUtils.isBlank(dependencyArtifact.getDownloadUrl())) {
-        log.warn("Invalid download URL for {} - version {}", dependencyArtifactId, version);
+      if (dependencyArtifact == null || StringUtils.isBlank(dependencyArtifact.getDownloadUrl())) {
+        log.warn("Invalid download URL or cannot found the dependency artifact of {} - version {}",
+            dependencyArtifactId, version);
         continue;
       }
 

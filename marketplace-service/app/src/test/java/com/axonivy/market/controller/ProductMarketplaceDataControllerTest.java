@@ -84,7 +84,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testGetArtifactResourceStreamWhenServiceReturnsNull_shouldThrowNotFoundException() {
+  void testGetArtifactResourceStreamWhenServiceReturnsNullShouldThrowNotFoundException() {
     when(productMarketplaceDataService.getProductArtifactStream(
         MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION))
         .thenReturn(null);

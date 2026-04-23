@@ -382,7 +382,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDeleteProductDependencies_shouldCallSaveAndDeleteFromJoinTable() {
+  void testDeleteProductDependenciesShouldCallSaveAndDeleteFromJoinTable() {
     var mockProductDependency = prepareMockProductDependency();
     mockProductDependency.setId("testId");
 
@@ -401,7 +401,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDeleteProductDependencies_withNullId_shouldNotCallDeleteOperations() {
+  void testDeleteProductDependenciesWithNullIdShouldNotCallDeleteOperations() {
     var mockProductDependency = ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
         .version(MOCK_VERSION)
@@ -420,7 +420,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testCollectDependencies_whenDependencyArtifactNotFound_shouldSkipWithoutThrowing()
+  void testCollectDependenciesWhenDependencyArtifactNotFoundShouldSkipWithoutThrowing()
       throws Exception {
     var mockProductDependency = prepareMockProductDependency();
     var mavenArtifactVersionMock =
@@ -453,7 +453,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testCollectDependencies_whenDependencyArtifactHasBlankDownloadUrl_shouldSkipWithoutThrowing()
+  void testCollectDependenciesWhenDependencyArtifactHasBlankDownloadUrlShouldSkipWithoutThrowing()
       throws Exception {
     var mockProductDependency = prepareMockProductDependency();
     var mavenArtifactVersionMock =
@@ -487,7 +487,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testExtractMavenPOMDependencies_whenFailingDownloadFile_shouldReturnEmptyList() {
+  void testExtractMavenPOMDependenciesWhenFailingDownloadFileShouldReturnEmptyList() {
     var mockProductDependency = prepareMockProductDependency();
     var mavenArtifactVersionMock =
         mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
@@ -514,7 +514,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetPomDownloadUrl_shouldReplaceBaseUrlAndExtension() throws Exception {
+  void testGetPomDownloadUrlShouldReplaceBaseUrlAndExtension() throws Exception {
     var mockProductDependency = prepareMockProductDependency();
     var mavenArtifactVersionMock =
         mockMavenArtifactVersion(MOCK_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
