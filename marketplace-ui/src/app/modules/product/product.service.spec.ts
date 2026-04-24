@@ -27,6 +27,7 @@ import { API_URI } from '../../shared/constants/api.constant';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../shared/enums/pullrequest-action';
+import { MarketProduct } from '../../shared/models/product.model';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -474,14 +475,21 @@ describe('ProductService', () => {
         }
       };
 
-      const req = httpMock.expectOne(request =>
-        request.url === API_URI.PRODUCT &&
-        request.params.get('size') === '100' &&
-        request.params.get('language') === Language.DE
+      let result: MarketProduct[] | undefined;
+
+      service.fetchAllProductsForSync(100, Language.DE).subscribe(res => {
+        result = res;
+      });
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.PRODUCT &&
+          request.params.get('size') === '100' &&
+          request.params.get('language') === Language.DE
       );
+
       req.flush(mockResponse);
 
-      const result = service.fetchAllProductsForSync(100, Language.DE);
       expect(result).toEqual([
         { id: 'product-1', marketDirectory: 'dir1' }
       ]);

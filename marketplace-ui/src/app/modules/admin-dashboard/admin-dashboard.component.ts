@@ -125,10 +125,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => {
-        console.log('Fetched sync task executions', executions);
-        this.applySyncTaskExecutions(executions);
-      },
+      next: executions => this.applySyncTaskExecutions(executions),
       error: err => {
         this.handleAuthError(err);
       }
@@ -146,7 +143,6 @@ export class AdminDashboardComponent implements OnInit {
 
   // Synchronize
   trigger(syncTask: SyncTaskRow): void {
-    console.log('Triggering sync task', syncTask.key);
     if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
       this.openSyncOneProductDialog();
       return;
@@ -175,7 +171,6 @@ export class AdminDashboardComponent implements OnInit {
     completedDate: null,
     message: null
   });
-  console.log('Set sync task running', syncTask.lastRunDate, syncTask.completedDate);
 }
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {

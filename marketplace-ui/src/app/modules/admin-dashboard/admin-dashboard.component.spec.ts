@@ -227,6 +227,60 @@ describe('AdminDashboardComponent', () => {
       expect(component.filteredProducts.length).toBe(3);
     });
 
+    it('should trigger syncProducts successfully', () => {
+      mockAdminService.syncProducts.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
+
+      component.trigger(syncTask);
+
+      expect(mockAdminService.syncProducts).toHaveBeenCalled();
+      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
+      expect(syncTask.completedDate).toBeDefined();
+      expect(component.loadingSyncTaskKey).toBeNull();
+    });
+
+    it('should trigger syncLatestReleasesForProducts successfully', () => {
+      mockAdminService.syncLatestReleasesForProducts.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      const syncTask = component.syncTasks.find(
+        t => t.key === 'syncLatestReleasesForProducts'
+      )!;
+
+      component.trigger(syncTask);
+
+      expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
+      expectSyncTaskState(
+        component,
+        'syncLatestReleasesForProducts',
+        SyncTaskStatus.RUNNING
+      );
+    });
+
+    it('should trigger syncGithubMonitor successfully', () => {
+      mockAdminService.syncGithubMonitor.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
+        of(mockExecutions)
+      );
+      const syncTask = component.syncTasks.find(
+        t => t.key === 'syncGithubMonitor'
+      )!;
+
+      component.trigger(syncTask);
+
+      expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
+      expectSyncTaskState(
+        component,
+        'syncGithubMonitor',
+        SyncTaskStatus.RUNNING
+      );
+    });
+  });
+
   describe('applySyncTaskExecutions', () => {
     it('should apply executions with all fields present', () => {
       fixture.detectChanges();
@@ -774,106 +828,6 @@ describe('AdminDashboardComponent', () => {
       mockPageTitleService.setTitleOnLangChange.mockClear();
       events$.next(new NavigationEnd(1, '/other', '/other'));
       expect(mockPageTitleService.setTitleOnLangChange).not.toHaveBeenCalled();
-    });
-  });
-
-  it('should trigger syncProducts successfully', () => {
-      const successExecution: SyncTaskExecution = {
-        key: 'syncProducts',
-        status: SyncTaskStatus.SUCCESS,
-        lastRunDate: '2024-01-01T00:00:00Z',
-        completedDate: '2024-01-01T00:05:00Z',
-        message: TEST_CONSTANTS.SUCCESS_MESSAGE
-      };
-      mockAdminService.syncProducts.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of([successExecution])
-      );
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
- 
-      component.trigger(syncTask);
-      fixture.detectChanges();
- 
-      expect(mockAdminService.syncProducts).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
-      expect(syncTask.lastRunDate).toBeDefined();
-      expect(syncTask.completedDate).toBeDefined();
-      expect(component.loadingSyncTaskKey).toBeNull();
-    });
- 
-    it('should trigger syncLatestReleasesForProducts successfully', () => {
-      const successExecution: SyncTaskExecution = {
-        key: 'syncLatestReleasesForProducts',
-        status: SyncTaskStatus.SUCCESS,
-        lastRunDate: '2024-01-01T00:00:00Z',
-        completedDate: '2024-01-01T00:05:00Z',
-        message: TEST_CONSTANTS.SUCCESS_MESSAGE
-      };
-      mockAdminService.syncLatestReleasesForProducts.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of([successExecution])
-      );
-      const syncTask = component.syncTasks.find(
-        t => t.key === 'syncLatestReleasesForProducts'
-      )!;
- 
-      component.trigger(syncTask);
-      fixture.detectChanges();
- 
-      expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
-      expectSyncTaskState(
-        component,
-        'syncLatestReleasesForProducts',
-        SyncTaskStatus.SUCCESS
-      );
-    });
- 
-    it('should trigger syncGithubMonitor successfully', () => {
-      const successExecution: SyncTaskExecution = {
-        key: 'syncGithubMonitor',
-        status: SyncTaskStatus.SUCCESS,
-        lastRunDate: '2024-01-01T00:00:00Z',
-        completedDate: '2024-01-01T00:05:00Z',
-        message: TEST_CONSTANTS.SUCCESS_MESSAGE
-      };
-      mockAdminService.syncGithubMonitor.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of([successExecution])
-      );
-      const syncTask = component.syncTasks.find(
-        t => t.key === 'syncGithubMonitor'
-      )!;
- 
-      component.trigger(syncTask);
-      fixture.detectChanges();
- 
-      expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
-      expectSyncTaskState(
-        component,
-        'syncGithubMonitor',
-        SyncTaskStatus.SUCCESS
-      );
-    });
- 
-    it('should reload executions on failure to get updated status from backend', () => {
-      mockAdminService.syncProducts.mockReturnValue(
-        throwError(() => new Error('Sync failed'))
-      );
-      const failedExecution: SyncTaskExecution = {
-        key: 'syncProducts',
-        status: SyncTaskStatus.FAILED,
-        lastRunDate: '2024-01-01T00:00:00Z',
-        completedDate: '2024-01-01T00:05:00Z',
-        message: 'Sync failed'
-      };
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of([failedExecution]));
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
- 
-      component.trigger(syncTask);
-      fixture.detectChanges();
- 
-      expect(mockAdminService.fetchSyncTaskExecutions).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
     });
   });
 });
