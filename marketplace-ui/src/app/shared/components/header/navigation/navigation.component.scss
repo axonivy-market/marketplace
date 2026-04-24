@@ -25,14 +25,6 @@ ul li {
   border-bottom: 0.2rem solid var(--ivy-active-color);
 }
 
-.active-line {
-  position: relative;
-  height: 2px;
-  top: 3rem;
-  width: inherit;
-  background-color: var(--ivy-active-color);
-}
-
 .header-mobile__search {
   height: 43px;
   border-radius: 10px;
