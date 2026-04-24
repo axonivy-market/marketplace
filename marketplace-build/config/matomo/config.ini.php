@@ -30,9 +30,12 @@ proxy_client_headers[] = HTTP_X_FORWARDED_FOR
 proxy_client_headers[] = HTTP_CF_CONNECTING_IP
 proxy_client_headers[] = HTTP_CLIENT_IP
 proxy_host_headers[] = HTTP_X_FORWARDED_HOST
+proxy_ips[] = "172.19.*.*"
 
 salt = "xxxx"
 trusted_hosts[] = "market.axonivy.com"
+trusted_hosts[] = "10.193.8.78:8500"
+trusted_hosts[] = "busybody-chevy-account.ngrok-free.dev"
 session_save_handler = "dbtable"
 
 [PluginsInstalled]

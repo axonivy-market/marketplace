@@ -484,7 +484,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
     List<String> versionChanges =
         mavenVersions.stream().filter(
-            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+            version -> !currentVersions.contains(version) || (!CoreVersionUtils.isReleasedVersion(
                 version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 
@@ -610,7 +610,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
+      var releasedVersions = productRepo.getReleasedVersionsById(id);
+      versions = CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion);
+      versions = CollectionUtils.isEmpty(versions) && !isShowDevVersion ?
+          CoreVersionUtils.getVersionsToDisplay(releasedVersions, true) : versions;
       version = CollectionUtils.firstElement(versions);
     }
 
