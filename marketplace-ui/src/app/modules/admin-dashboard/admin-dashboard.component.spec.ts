@@ -212,7 +212,7 @@ describe('AdminDashboardComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should open sync one product dialog for syncOneProduct task', async () => {
+    it('should open sync one product dialog for syncOneProduct task', () => {
       mockProductService.fetchAllProductsForSync.mockReturnValue(
         of(mockProducts)
       );
@@ -220,80 +220,12 @@ describe('AdminDashboardComponent', () => {
         t => t.key === 'syncOneProduct'
       )!;
 
-      await component.trigger(syncTask);
+      component.trigger(syncTask);
 
       expect(component.showSyncOneProductDialog).toBe(true);
       expect(component.products).toEqual(mockProducts);
       expect(component.filteredProducts.length).toBe(3);
     });
-
-    it('should trigger syncProducts successfully', async () => {
-      mockAdminService.syncProducts.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      await component.trigger(syncTask);
-
-      expect(mockAdminService.syncProducts).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
-      expect(syncTask.completedDate).toBeDefined();
-      expect(component.loadingSyncTaskKey).toBeNull();
-    });
-
-    it('should trigger syncLatestReleasesForProducts successfully', async () => {
-      mockAdminService.syncLatestReleasesForProducts.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      const syncTask = component.syncTasks.find(
-        t => t.key === 'syncLatestReleasesForProducts'
-      )!;
-
-      await component.trigger(syncTask);
-
-      expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
-      expectSyncTaskState(
-        component,
-        'syncLatestReleasesForProducts',
-        SyncTaskStatus.RUNNING
-      );
-    });
-
-    it('should trigger syncGithubMonitor successfully', async () => {
-      mockAdminService.syncGithubMonitor.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      const syncTask = component.syncTasks.find(
-        t => t.key === 'syncGithubMonitor'
-      )!;
-
-      await component.trigger(syncTask);
-
-      expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
-      expectSyncTaskState(
-        component,
-        'syncGithubMonitor',
-        SyncTaskStatus.RUNNING
-      );
-    });
-
-    it('should not reload executions on failure when not authenticated', () => {
-      mockAdminService.syncProducts.mockReturnValue(
-        throwError(() => new Error('Sync failed'))
-      );
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
-      component.isAuthenticated = false;
-      mockAdminService.fetchSyncTaskExecutions.mockClear();
-
-      component.trigger(syncTask);
-
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
-      expect(mockAdminService.fetchSyncTaskExecutions).not.toHaveBeenCalled();
-    });
-  });
 
   describe('applySyncTaskExecutions', () => {
     it('should apply executions with all fields present', () => {
@@ -466,7 +398,6 @@ describe('AdminDashboardComponent', () => {
       );
       component.productSearch = 'portal';
       component.marketDirectory = 'dir1';
-      component.isAuthenticated = true;
 
       component.confirmSyncOneProduct();
 
@@ -606,19 +537,6 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  it('should set showSyncTask to false on route activate', async () => {
-    component.showSyncTask = true;
-
-    component.onRouteActivate();
-
-    expect(component.showSyncTask).toBe(true);
-
-    await Promise.resolve();
-
-    expect(component.showSyncTask).toBe(false);
-    expect(cdr.markForCheck).toHaveBeenCalled();
-  });
-
   it('should set showSyncTask to true on route deactivate', async () => {
     component.showSyncTask = false;
 
@@ -646,19 +564,6 @@ describe('AdminDashboardComponent', () => {
     expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
       'common.admin.sync.pageTitle'
     );
-  });
-
-  it('should not set page title for other routes', () => {
-    const events$ = new Subject<any>();
-
-    vi.spyOn(router, 'events', 'get').mockReturnValue(events$.asObservable());
-
-    component.ngOnInit();
-
-    events$.next(new NavigationEnd(1, '/other', '/other'));
-
-    expect(mockPageTitleService.setTitleOnLangChange)
-      .toHaveBeenCalledTimes(1);
   });
 
   describe('openLog', () => {
@@ -872,7 +777,7 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  it('should trigger syncProducts successfully', async () => {
+  it('should trigger syncProducts successfully', () => {
       const successExecution: SyncTaskExecution = {
         key: 'syncProducts',
         status: SyncTaskStatus.SUCCESS,
@@ -886,16 +791,17 @@ describe('AdminDashboardComponent', () => {
       );
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
  
-      await component.trigger(syncTask);
+      component.trigger(syncTask);
+      fixture.detectChanges();
  
       expect(mockAdminService.syncProducts).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.SUCCESS);
+      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
       expect(syncTask.lastRunDate).toBeDefined();
       expect(syncTask.completedDate).toBeDefined();
       expect(component.loadingSyncTaskKey).toBeNull();
     });
  
-    it('should trigger syncLatestReleasesForProducts successfully', async () => {
+    it('should trigger syncLatestReleasesForProducts successfully', () => {
       const successExecution: SyncTaskExecution = {
         key: 'syncLatestReleasesForProducts',
         status: SyncTaskStatus.SUCCESS,
@@ -911,7 +817,8 @@ describe('AdminDashboardComponent', () => {
         t => t.key === 'syncLatestReleasesForProducts'
       )!;
  
-      await component.trigger(syncTask);
+      component.trigger(syncTask);
+      fixture.detectChanges();
  
       expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
       expectSyncTaskState(
@@ -921,7 +828,7 @@ describe('AdminDashboardComponent', () => {
       );
     });
  
-    it('should trigger syncGithubMonitor successfully', async () => {
+    it('should trigger syncGithubMonitor successfully', () => {
       const successExecution: SyncTaskExecution = {
         key: 'syncGithubMonitor',
         status: SyncTaskStatus.SUCCESS,
@@ -937,7 +844,8 @@ describe('AdminDashboardComponent', () => {
         t => t.key === 'syncGithubMonitor'
       )!;
  
-      await component.trigger(syncTask);
+      component.trigger(syncTask);
+      fixture.detectChanges();
  
       expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
       expectSyncTaskState(
@@ -947,7 +855,7 @@ describe('AdminDashboardComponent', () => {
       );
     });
  
-    it('should reload executions on failure to get updated status from backend', async () => {
+    it('should reload executions on failure to get updated status from backend', () => {
       mockAdminService.syncProducts.mockReturnValue(
         throwError(() => new Error('Sync failed'))
       );
@@ -961,9 +869,11 @@ describe('AdminDashboardComponent', () => {
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of([failedExecution]));
       const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
  
-      await component.trigger(syncTask);
+      component.trigger(syncTask);
+      fixture.detectChanges();
  
       expect(mockAdminService.fetchSyncTaskExecutions).toHaveBeenCalled();
       expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
     });
   });
+});

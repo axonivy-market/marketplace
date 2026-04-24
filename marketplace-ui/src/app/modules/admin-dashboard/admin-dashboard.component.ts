@@ -69,7 +69,6 @@ export class AdminDashboardComponent implements OnInit {
   readonly expandedLogs = signal<Set<number>>(new Set());
   @ViewChild('changelogContent') changelogContent!: TemplateRef<unknown>;
 
-  isAuthenticated = false;
   errorMessage = '';
 
   showSyncTask = true;
@@ -194,6 +193,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.FAILED,
+      completedDate: new Date(),
+      message: 'Failed'
+    });
     this.reloadExecutions();
   }
 
