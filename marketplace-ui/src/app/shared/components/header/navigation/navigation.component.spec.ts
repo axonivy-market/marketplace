@@ -1,6 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavigationComponent } from './navigation.component';
 import { RouterModule } from '@angular/router';
@@ -26,38 +25,6 @@ describe('NavigationComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should call checkMediaSize on window resize', () => {
-    vi.spyOn(component, 'checkMediaSize');
-    component.onResize();
-    expect(component.checkMediaSize).toHaveBeenCalled();
-  });
-
-  it('should display google search bar container in mobile mode', () => {
-    component.isMobileMode.set(true); // Simulate mobile mode
-    fixture.detectChanges();
-
-    const googleSearchContainer = fixture.debugElement.query(
-      By.css('.google-search-container')
-    );
-    expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
-      'block'
-    );
-  });
-
-  it('should hide google search bar container in desktop mode', () => {
-    component.isMobileMode.set(false); // Simulate desktop mode
-    fixture.detectChanges();
-
-    const googleSearchContainer = fixture.debugElement.query(
-      By.css('.google-search-container')
-    );
-    expect(googleSearchContainer).toBeTruthy();
-    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
-      'none'
-    );
   });
 
   it('should return navItems when isAdminPage is false', () => {

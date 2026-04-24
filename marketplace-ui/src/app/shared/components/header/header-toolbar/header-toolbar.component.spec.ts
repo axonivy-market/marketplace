@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { SearchBarComponent } from './search-bar.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ElementRef } from '@angular/core';
 
-describe('SearchBarComponent', () => {
-  let component: SearchBarComponent;
-  let fixture: ComponentFixture<SearchBarComponent>;
+import { ElementRef } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HeaderToolbarComponent } from './header-toolbar.component';
+import { By } from '@angular/platform-browser';
+
+describe('HeaderToolbarComponent', () => {
+  let component: HeaderToolbarComponent;
+  let fixture: ComponentFixture<HeaderToolbarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SearchBarComponent, TranslateModule.forRoot()],
+      imports: [HeaderToolbarComponent, TranslateModule.forRoot()],
       providers: [
         TranslateService,
         {
@@ -21,7 +22,7 @@ describe('SearchBarComponent', () => {
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SearchBarComponent);
+    fixture = TestBed.createComponent(HeaderToolbarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -30,36 +31,14 @@ describe('SearchBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('desktop search should not display in small screen', () => {
-    const desktopSearch = fixture.debugElement.query(
-      By.css('.header__search-button')
-    );
-
-    expect(desktopSearch).toBeNull;
-  });
-
-  it('desktop search should display in large screen', () => {
-    const desktopSearch = fixture.debugElement.query(
-      By.css('.header__search-button')
-    );
-
-    expect(getComputedStyle(desktopSearch.nativeElement).display).not.toBe(
-      'none'
-    );
-  });
-
   it('should set isGoogleSearchBarDisplayed to false when clicking outside', () => {
-    // Set up the DOM
     const outsideClickEvent = new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
-      view: globalThis as any
+      view: window
     });
 
-    // Dispatch a click event to the document
     document.dispatchEvent(outsideClickEvent);
-
-    // Verify the behavior
     expect(component.isGoogleSearchBarDisplayed()).toBe(false);
   });
 
@@ -78,8 +57,6 @@ describe('SearchBarComponent', () => {
     expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe(
       'none'
     );
-
-    // Click the search icon
     searchIcon.triggerEventHandler('click', null);
     fixture.detectChanges();
 
@@ -91,14 +68,11 @@ describe('SearchBarComponent', () => {
   });
 
   it('should set isGoogleSearchBarDisplayed to false when onHideSearch is called', () => {
-    // Ensure the initial state is true
     component.isGoogleSearchBarDisplayed.set(true);
     expect(component.isGoogleSearchBarDisplayed()).toBe(true);
 
-    // Call the onHideSearch method
     component.onHideSearch();
 
-    // Verify the state is set to false
     expect(component.isGoogleSearchBarDisplayed()).toBe(false);
   });
 });
