@@ -13,6 +13,8 @@ import {
   GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME
 } from '../constants/common.constant';
 
+const GOOGLE_SEARCH_BAR_DELAY_RENDERING_TIME = 500;
+
 export class GoogleSearchBarUtils {
   static renderGoogleSearchBar(
     renderer: Renderer2,
@@ -53,7 +55,7 @@ export class GoogleSearchBarUtils {
     setTimeout(() => {
       this.addBackgroundClassToSearchBar(renderer, doc);
       this.addTextPrimaryClassToSearchInput(renderer, doc);
-    }, 500);
+    }, GOOGLE_SEARCH_BAR_DELAY_RENDERING_TIME);
   }
 
   private static addBackgroundClassToSearchBar(
