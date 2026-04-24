@@ -16,7 +16,7 @@ import {
   Router,
   RouterModule
 } from '@angular/router';
-import { EMPTY, filter, finalize, map, Observable, tap } from 'rxjs';
+import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
   SyncTaskExecution,
@@ -251,7 +251,7 @@ export class AdminDashboardComponent implements OnInit {
     this.productService.fetchAllProductsForSync()
       .subscribe(products => {
         this.products = products;
-        this.filteredProducts = products.slice(0, 10);
+        this.filteredProducts = products;
         this.showSyncOneProductDialog = true;
       });
   }
@@ -315,7 +315,6 @@ export class AdminDashboardComponent implements OnInit {
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
     this.dropdownOpen = true;
-    this.filteredProducts = this.products;
   }
 
   filterProducts(): void {

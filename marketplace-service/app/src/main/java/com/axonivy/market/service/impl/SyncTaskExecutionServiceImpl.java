@@ -89,7 +89,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
-    Objects.requireNonNull(execution);
+    Objects.requireNonNull(execution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
 
     if (status == SyncTaskStatus.RUNNING) {
       execution.setLastRunDate(execution.getCompletedDate());

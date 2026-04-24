@@ -229,16 +229,16 @@ export class ProductService {
         return hasNextPage ? this.loadProductPage(pageInfo.number + 1, pageSize, language) : EMPTY;
       }),
 
-      map(response => (response._embedded?.products ?? []).map((p: any) => ({
-          id: p.id,
-          marketDirectory: p.marketDirectory
+      map(response => (response._embedded?.products ?? []).map((product: MarketProduct) => ({
+          id: product.id,
+          marketDirectory: product.marketDirectory
         }))
       ),
 
       reduce((allProducts, currentPageProducts) => [...allProducts, ...currentPageProducts], [] as MarketProduct[]));
   }
 
-  private loadProductPage(page: number, size: number, language: Language): Observable<any> {
+  private loadProductPage(page: number, size: number, language: Language): Observable<ProductApiResponse> {
     return this.findProductsByCriteria({
       search: '',
       sort: SortOption.STANDARD,
