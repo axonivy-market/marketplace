@@ -163,28 +163,27 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {
-  this.loadingSyncTaskKey = syncTask.key;
-
-  Object.assign(syncTask, {
-    status: SyncTaskStatus.RUNNING,
-    lastRunDate: syncTask.completedDate ?? null,
-    completedDate: null,
-    message: null
-  });
-}
+    this.loadingSyncTaskKey = syncTask.key;
+    Object.assign(syncTask, {
+      status: SyncTaskStatus.RUNNING,
+      lastRunDate: syncTask.completedDate ?? null,
+      completedDate: null,
+      message: null
+    });
+  }
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {
-  syncTask.status = execution?.status ?? SyncTaskStatus.SUCCESS;
-  syncTask.completedDate = new Date();
-  syncTask.message = execution?.message ?? syncTask.message;
+    syncTask.status = execution?.status ?? SyncTaskStatus.SUCCESS;
+    syncTask.completedDate = new Date();
+    syncTask.message = execution?.message ?? syncTask.message;
 
-  if (execution?.lastRunDate) {
-    syncTask.lastRunDate = new Date(execution.lastRunDate);
-  }
-  if (execution?.completedDate) {
-    syncTask.completedDate = new Date(execution.completedDate);
-  }
-  this.reloadExecutions();
+    if (execution?.lastRunDate) {
+      syncTask.lastRunDate = new Date(execution.lastRunDate);
+    }
+    if (execution?.completedDate) {
+      syncTask.completedDate = new Date(execution.completedDate);
+    }
+    this.reloadExecutions();
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
@@ -198,49 +197,41 @@ export class AdminDashboardComponent implements OnInit {
 
   private reloadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => {
-        this.applySyncTaskExecutions(executions);
-      },
-
+      next: executions => this.applySyncTaskExecutions(executions),
       error: err => this.handleAuthError(err)
     });
   }
 
   private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
-  this.syncTasks = this.syncTasks.map(task => {
-    const execution = executions.find(e => e.key === task.key);
-    if (!execution) return task;
+    this.syncTasks = this.syncTasks.map(task => {
+      const matchingExecution = executions.find(execution => execution.key === task.key);
+      if (!matchingExecution) {
+        return task;
+      }
 
-    const serverLastRunDate = execution.lastRunDate
-      ? new Date(execution.lastRunDate)
-      : null;
+      return {
+        ...task,
+        status: matchingExecution.status ?? task.status,
+        lastRunDate: this.getLatestDate(task.lastRunDate, matchingExecution.lastRunDate),
+        completedDate: this.getLatestDate(task.completedDate, matchingExecution.completedDate),
+        message: matchingExecution.message ?? task.message
+      };
+    });
+  }
 
-    const serverCompletedDate = execution.completedDate
-      ? new Date(execution.completedDate)
-      : null;
+  private getLatestDate(existingDate?: Date, incomingDate?: string): Date | undefined {
+    if (!incomingDate) {
+      return existingDate;
+    }
 
-    return {
-      ...task,
-      status: execution.status ?? task.status,
+    const parsedIncomingDate = new Date(incomingDate);
 
-      lastRunDate:
-        serverLastRunDate &&
-        (!task.lastRunDate ||
-          serverLastRunDate > task.lastRunDate)
-          ? serverLastRunDate
-          : task.lastRunDate,
+    if (!existingDate || parsedIncomingDate > existingDate) {
+      return parsedIncomingDate;
+    }
 
-      completedDate:
-        serverCompletedDate &&
-        (!task.completedDate ||
-          serverCompletedDate > task.completedDate)
-          ? serverCompletedDate
-          : task.completedDate,
-
-      message: execution.message ?? task.message
-    };
-  });
-}
+    return existingDate;
+  }
 
   getStatusClass(status?: SyncTaskStatus): string {
     switch (status) {
@@ -257,13 +248,13 @@ export class AdminDashboardComponent implements OnInit {
 
   // Synchronize one product dialog
   private openSyncOneProductDialog(): void {
-  this.productService.fetchAllProductsForSync()
-    .subscribe(products => {
-      this.products = products;
-      this.filteredProducts = products.slice(0, 10);
-      this.showSyncOneProductDialog = true;
-    });
-}
+    this.productService.fetchAllProductsForSync()
+      .subscribe(products => {
+        this.products = products;
+        this.filteredProducts = products.slice(0, 10);
+        this.showSyncOneProductDialog = true;
+      });
+  }
 
   confirmSyncOneProduct(): void {
     const syncTask = this.syncTasks.find(t => t.key === SYNC_ONE_PRODUCT_KEY);
@@ -324,15 +315,14 @@ export class AdminDashboardComponent implements OnInit {
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
     this.dropdownOpen = true;
-    this.filteredProducts = this.products.slice(0, 10);
+    this.filteredProducts = this.products;
   }
 
   filterProducts(): void {
     const value = this.productSearch.toLowerCase();
 
     this.filteredProducts = this.products
-      .filter(product => product.id.toLowerCase().includes(value))
-      .slice(0, 10);
+      .filter(product => product.id.toLowerCase().includes(value));
 
     // Clear the market directory if ID input does not match any product IDs
     if (!this.isValidSyncOneProductValues()) {

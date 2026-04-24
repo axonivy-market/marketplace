@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of, firstValueFrom, map, reduce, EMPTY, expand } from 'rxjs';
+import { catchError, Observable, of, map, reduce, EMPTY, expand } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import {
@@ -221,64 +221,30 @@ export class ProductService {
     );
   };
 
-fetchAllProductsForSync(
-  pageSize = PAGE_SIZE,
-  language: Language = Language.EN
-): Observable<MarketProduct[]> {
-  return this.fetchAllProducts(pageSize, language);
-}
+  fetchAllProductsForSync(pageSize = PAGE_SIZE, language: Language = Language.EN): Observable<MarketProduct[]> {
+    return this.loadProductPage(0, pageSize, language).pipe(
+      expand(response => {
+        const pageInfo = response?.page;
+        const hasNextPage = pageInfo && pageInfo.number < pageInfo.totalPages - 1;
+        return hasNextPage ? this.loadProductPage(pageInfo.number + 1, pageSize, language) : EMPTY;
+      }),
 
-  private fetchAllProducts(
-  pageSize: number,
-  language: Language
-): Observable<MarketProduct[]> {
-  return this.findProductsPage(0, pageSize, language).pipe(
-    expand(response => {
-      const pageInfo = response?.page;
+      map(response => (response._embedded?.products ?? []).map((p: any) => ({
+          id: p.id,
+          marketDirectory: p.marketDirectory
+        }))
+      ),
 
-      const hasNext =
-        pageInfo && pageInfo.number < pageInfo.totalPages - 1;
+      reduce((allProducts, currentPageProducts) => [...allProducts, ...currentPageProducts], [] as MarketProduct[]));
+  }
 
-      return hasNext
-        ? this.findProductsPage(
-            pageInfo.number + 1,
-            pageSize,
-            language
-          )
-        : EMPTY;
-    }),
-
-    // extract products from each page
-   map(response =>
-  (response._embedded?.products ?? []).map((p: any) => ({
-    id: p.id,
-    marketDirectory: p.marketDirectory
-  }))
-),
-
-    // accumulate all pages into one array
-    reduce(
-      (all, pageProducts) => [...all, ...pageProducts],
-      [] as MarketProduct[]
-    )
-  );
-}
-
-private findProductsPage(
-  page: number,
-  size: number,
-  language: Language
-): Observable<any> {
-  return this.findProductsByCriteria({
-    search: '',
-    sort: SortOption.STANDARD,
-    type: TypeOption.All_TYPES,
-    isRESTClientEditor: false,
-    pageable: {
-      page,
-      size
-    },
-    language
-  });
-}
+  private loadProductPage(page: number, size: number, language: Language): Observable<any> {
+    return this.findProductsByCriteria({
+      search: '',
+      sort: SortOption.STANDARD,
+      type: TypeOption.All_TYPES,
+      isRESTClientEditor: false,
+      pageable: {page, size}, language
+    });
+  }
 }

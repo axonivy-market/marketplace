@@ -519,13 +519,6 @@ describe('AdminDashboardComponent', () => {
       component.products = manyProducts;
     });
 
-    it('should open dropdown with first 10 products', () => {
-      component.openDropdown();
-
-      expect(component.dropdownOpen).toBe(true);
-      expect(component.filteredProducts.length).toBe(10);
-    });
-
     it('should filter products by search term', () => {
       component.productSearch = 'product-1';
 
@@ -536,14 +529,6 @@ describe('AdminDashboardComponent', () => {
       expect(
         component.filteredProducts.every(p => p.id.includes('product-1'))
       ).toBe(true);
-    });
-
-    it('should limit filtered products to 10', () => {
-      component.productSearch = 'product';
-
-      component.filterProducts();
-
-      expect(component.filteredProducts.length).toBe(10);
     });
 
     it('should clear market directory when search does not match any product', () => {

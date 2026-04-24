@@ -103,6 +103,11 @@ td {
   }
 }
 
+.dropdown-menu {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
