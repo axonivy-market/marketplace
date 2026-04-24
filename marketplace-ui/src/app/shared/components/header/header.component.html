@@ -38,7 +38,7 @@
     <div class="google-search-container text-primary google-search-svg-primary">
       <div id="offcanvas-google-search" class="gcse-search"></div>
     </div>
-    <app-navigation [isAdminPage]="isAdminRoute" class="mt-4" />
-    <app-header-toolbar class="mt-auto" [isInHeaderOffCanvas]="true"></app-header-toolbar>
+    <app-navigation [isInHeaderOffCanvas]="true" [isAdminPage]="isAdminRoute" class="mt-4" />
+    <app-header-toolbar [isInHeaderOffCanvas]="true" class="mt-auto" />
   </div>
 </ng-template>

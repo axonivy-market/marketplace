@@ -1,5 +1,4 @@
-<div
-  class="google-search-container text-primary google-search-svg-primary d-block d-lg-none">
+<div class="google-search-container text-primary google-search-svg-primary d-block d-lg-none">
   <div class="gcse-search"></div>
 </div>
 
@@ -15,14 +14,14 @@
       @if (isInternal) {
         <a
           #routerActive="routerLinkActive"
-          routerLinkActive="active"
+          [routerLinkActive]="isInHeaderOffCanvas ? 'header-offcanvas-active' : 'active'"
           [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"
           [lang]="languageService.selectedLanguage()"
-          class="nav-link h-100 px-0 py-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          class="nav-link h-100 p-4 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
           [ngClass]="{
             'text-primary': routerActive.isActive,
             'text-secondary': !routerActive.isActive,
-            'active': routerActive.isActive
+            'bg-secondary': isInHeaderOffCanvas && routerActive.isActive
           }"
           aria-current="page"
           [routerLink]="item.link">
@@ -31,7 +30,7 @@
       } @else {
         <a
           [lang]="languageService.selectedLanguage()"
-          class="nav-link h-100 px-0 py-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          class="nav-link h-100 p-4 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
           aria-current="page"
           [href]="item.link">
           {{ item.label | translate }}
