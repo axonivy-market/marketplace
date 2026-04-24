@@ -17,6 +17,7 @@ export class NavigationComponent {
   @Input() navItems: NavItem[] = NAV_ITEMS;
   @Input() adminNavItems: NavItem[] = ADMIN_NAV_ITEMS;
   @Input() isAdminPage = false;
+  @Input() isInHeaderOffCanvas = false;
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
