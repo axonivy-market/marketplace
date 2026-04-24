@@ -17,7 +17,7 @@
           [routerLinkActive]="isInHeaderOffCanvas ? 'header-offcanvas-active' : 'active'"
           [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"
           [lang]="languageService.selectedLanguage()"
-          class="nav-link h-100 p-4 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
           [ngClass]="{
             'text-primary': routerActive.isActive,
             'text-secondary': !routerActive.isActive,
@@ -30,7 +30,7 @@
       } @else {
         <a
           [lang]="languageService.selectedLanguage()"
-          class="nav-link h-100 p-4 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
           aria-current="page"
           [href]="item.link">
           {{ item.label | translate }}
