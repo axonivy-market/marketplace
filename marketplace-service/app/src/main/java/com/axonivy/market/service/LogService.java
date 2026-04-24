@@ -8,7 +8,7 @@ public interface LogService {
 
   /**
    * <p>
-   * Retrieves list of compressed log files (gzip) for a specific date. Returns metadata including filename,
+   * Retrieves list of compressed log and gzip files for a specific date. Returns metadata including filename,
    * file size, and creation date for all log files matching the specified date pattern from the logs directory.
    * </p>
    *
@@ -22,8 +22,7 @@ public interface LogService {
 
   /**
    * <p>
-   * Streams the content of a log file to the provided output stream. Decompresses gzip files if necessary
-   * and streams the log content line-by-line to the output stream for efficient reading of large log files.
+   * Streams the content of a log file to the provided output stream. The file is copied as-is without decompression.
    * </p>
    *
    * @param  fileName
@@ -42,8 +41,9 @@ public interface LogService {
    * </p>
    *
    * @param  fileName
-   *              type {@link String} - the name of the log file to check (e.g., "application.log" or "application.2026-04-08.log.gz")
-   * @return {@link boolean} - true if log file exists and is readable; false if file does not exist or cannot be accessed
+   *              type {@link String} - the name of the log file to check (e.g., "application.log" or "application
+   *              .2026-04-08.log.gz")
+   * @return {@link boolean} - true if log file exists; false if file does not exist or cannot be accessed
    * @author ntqdinh
    */
   boolean isLogFileExisted(String fileName);

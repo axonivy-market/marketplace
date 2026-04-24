@@ -15,7 +15,8 @@ public interface OAuth2Service {
    * @param  oauth2AuthorizationCode
    *              type {@link Oauth2AuthorizationCode} - request object containing the OAuth2 authorization code
    *              received from GitHub after user consent
-   * @return {@link String} - the signed JWT token for authenticated session; returns null if GitHub authentication fails
+   * @return {@link String} - the signed JWT token for authenticated session; returns exception if GitHub
+   * authentication fails
    * @author nqhoan
    */
   String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode);
@@ -28,7 +29,7 @@ public interface OAuth2Service {
    * </p>
    *
    * @param  authorizationHeader
-   *              type {@link String} - the Authorization header value (format: "Bearer &lt;github_token&gt;")
+   *              type {@link String} - the Authorization header value (format: "github_token&gt;")
    * @return {@link UserInfo} - user information object containing user details and generated JWT token;
    *         throws exception if token is invalid or GitHub authentication fails
    * @author vhhoang

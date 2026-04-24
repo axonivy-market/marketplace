@@ -6,7 +6,7 @@ public interface ProductJsonContentService {
 
   /**
    * <p>
-   * Updates or creates product JSON content by replacing a specific version reference with a new version
+   * Creates product JSON content by replacing replaceVersion by currentVersion
    * in the provided JSON content. Used to manage product configuration and version-specific metadata stored
    * as JSON documents in the database.
    * </p>

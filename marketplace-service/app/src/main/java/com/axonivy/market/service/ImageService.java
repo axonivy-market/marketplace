@@ -41,16 +41,17 @@ public interface ImageService extends CoreImageService {
 
   /**
    * <p>
-   * Creates or maps an Image entity from a local file system path. Used when images have been downloaded
-   * locally from external sources. Extracts image metadata from the file path and creates an Image record
-   * associated with the specified product.
+   * Creates or maps an Image entity from a local file system path. Reads the image file content and checks
+   * for existing images with identical binary data to avoid duplicates. If a matching image exists for the
+   * product, returns the existing one; otherwise creates a new Image entity with the file content.
    * </p>
    *
    * @param  productId
    *              type {@link String} - the unique product identifier to associate the image with
    * @param  imagePath
-   *              type {@link Path} - the local file system path to the image file
-   * @return {@link Image} - the created Image entity with product association and file location information
+   *              type {@link Path} - the local file system path to the image file to read and process
+   * @return {@link Image} - the existing Image entity if content matches, or a new saved Image entity;
+   *         returns null if file cannot be read or processed
    * @author ndkhanh
    */
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
@@ -63,7 +64,7 @@ public interface ImageService extends CoreImageService {
    *
    * @param  id
    *              type {@link String} - the unique image identifier in the database
-   * @return {@link byte[]} - the raw image binary data; returns empty array if image not found or
+   * @return {@link byte[]} - the raw image binary data; returns null if image not found or
    *         cannot be read from storage
    * @author tvtphuc
    */

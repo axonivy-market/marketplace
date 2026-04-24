@@ -35,8 +35,7 @@ public interface ProductContentService {
   /**
    * <p>
    * Retrieves the download URLs for all dependency artifacts of a specific product artifact version.
-   * Parses the artifact's POM file and generates download URLs for each Maven dependency, allowing
-   * bulk download or dependency analysis.
+   * Generates download URLs for each Maven dependency, allowing bulk download or dependency analysis.
    * </p>
    *
    * @param  productId

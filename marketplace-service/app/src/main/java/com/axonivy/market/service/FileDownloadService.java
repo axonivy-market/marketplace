@@ -28,7 +28,8 @@ public interface FileDownloadService {
 
   /**
    * <p>
-   * Recursively deletes a directory and all its contents from the filesystem. Used for cleanup of cached downloads, temporary files, and extracted artifacts. The operation is permanent and cannot be undone.
+   * Recursively deletes a directory and all its contents from the filesystem. Used for cleanup of cached downloads,
+   * temporary files, and extracted artifacts. The operation is permanent and cannot be undone.
    * </p>
    *
    * @param path
@@ -63,7 +64,9 @@ public interface FileDownloadService {
 
   /**
    * <p>
-   * Downloads a file from the specified URL and unzips it to a local directory based on the provided download options, returning the path to the extracted content.
+   * Downloads a file from the specified URL and unzips it to a local directory based on the provided download
+   * options, returning the path to the extracted content. Only if: URL ends with .zip and .iar, file is not empty,
+   * directory handling allows it.
    * </p>
    *
    * @param url

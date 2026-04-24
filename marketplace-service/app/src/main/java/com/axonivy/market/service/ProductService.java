@@ -59,7 +59,7 @@ public interface ProductService {
    *              type {@link Boolean} - if true, includes development versions (dev, nightly) in the result;
    *              if false, only shows released versions; null defaults to false
    * @return {@link Product} - complete product object with all related entities (versions, artifacts, metadata, images);
-   *         returns null if product not found
+   *         returns exception if product not found
    * @author thxhuy
    */
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
@@ -75,7 +75,7 @@ public interface ProductService {
    * @param  version
    *              type {@link String} - the requested product version; if exact match not found, best available
    *              version is automatically resolved
-   * @return {@link Product} - complete product object with details for the resolved version; returns null
+   * @return {@link Product} - complete product object with details for the resolved version; returns exception
    *         if product not found or no suitable version available
    * @author ntqdinh
    */

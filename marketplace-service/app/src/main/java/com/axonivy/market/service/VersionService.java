@@ -49,9 +49,10 @@ public interface VersionService extends CoreVersionService {
 
   /**
    * <p>
-   * Retrieves the Maven repository download URL for the latest version of a specific product artifact.
-   * Constructs the full URL based on Maven coordinates (groupId, artifactId, version) for direct artifact
-   * download from Maven Central or configured Maven mirror.
+   * Retrieves the Maven artifact download URL for a specific product version and artifact. Parses the
+   * artifact parameter to extract artifact ID and file type, finds matching MavenArtifactVersion data
+   * for the product and version, and validates that the download URL matches the expected file type.
+   * Returns the download URL for direct artifact download from Maven repositories.
    * </p>
    *
    * @param  productId
@@ -59,9 +60,8 @@ public interface VersionService extends CoreVersionService {
    * @param  version
    *              type {@link String} - the specific product version to get artifact for
    * @param  artifact
-   *              type {@link String} - the artifact ID or name within the product
-   * @return {@link String} - the complete Maven artifact download URL; returns null if product, version,
-   *         or artifact not found
+   *              type {@link String} - the artifact identifier and file type (e.g., "artifact.jar" or "artifact.zip")
+   * @return {@link String} - the complete Maven artifact download URL matching the specified version and file type
    * @author ntqdinh
    */
   String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact);

@@ -22,8 +22,7 @@ public interface JwtService {
 
   /**
    * <p>
-   * Generates a JWT token directly from a GitHub access token. Creates a signed token by extracting
-   * user information from the GitHub API using the provided access token.
+   * Generates a JWT token directly from a GitHub access token. Creates a signed token using the provided access token.
    * </p>
    *
    * @param  accessToken
@@ -54,8 +53,7 @@ public interface JwtService {
    *
    * @param  token
    *              type {@link String} - the JWT token string to extract claims from
-   * @return {@link Claims} - the JWT claims object containing all token payload data; returns null
-   *         if token is invalid or parsing fails
+   * @return {@link Claims} - the JWT claims object containing all token payload data;
    * @author ndkhanh
    */
   Claims getClaimsFromToken(String token);

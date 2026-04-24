@@ -11,7 +11,7 @@ public interface SyncTaskExecutionService {
   /**
    * <p>
    * Initiates a new synchronization task of the specified type and creates a tracking record.
-   * Returns the SyncTaskExecution entity with initial status "PENDING" and assigned task ID for
+   * Returns the SyncTaskExecution entity with initial status "STARTED" and assigned task ID for
    * monitoring task progress and results.
    * </p>
    *

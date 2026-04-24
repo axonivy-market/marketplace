@@ -27,8 +27,8 @@ public interface ProductMarketplaceDataService {
   /**
    * <p>
    * Retrieves the current custom sort order configuration for all products. Returns the list of products
-   * with their manually configured sort positions if custom sorting has been configured; otherwise returns
-   * null or default configuration.
+   * with their manually configured sort positions if custom sorting has been configured; otherwise returns default
+   * configuration.
    * </p>
    *
    * @return {@link ProductCustomSortRequest} - object containing the current custom sort order for all products;
@@ -75,7 +75,7 @@ public interface ProductMarketplaceDataService {
    * @param  id
    *              type {@link String} - the unique product identifier
    * @return {@link ProductMarketplaceData} - marketplace statistics and analytics data for the product;
-   *         returns null if product not found or has no marketplace data
+   *         returns a default empty ProductMarketplaceData if not found
    * @author nntthuy
    */
   ProductMarketplaceData getProductMarketplaceData(String id);
