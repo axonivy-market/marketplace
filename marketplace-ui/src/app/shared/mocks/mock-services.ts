@@ -47,4 +47,8 @@ export class MockProductService {
   setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     return productDetail;
   }
+
+  sendRequestToGetInstallationCount(_productId: string): Observable<number> {
+    return of(0);
+  }
 }

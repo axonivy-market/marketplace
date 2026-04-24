@@ -18,4 +18,5 @@ public class CoreRequestMappingConstants {
   public static final String IMAGE = API + "/image";
   public static final String BY_ID = "/{id}";
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
+  public static final String BEST_MATCH_VERSION_BY_ID_AND_VERSION = "/{id}/{version}/best-match-version";
 }

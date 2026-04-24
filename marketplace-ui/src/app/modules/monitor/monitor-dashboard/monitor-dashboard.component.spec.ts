@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -12,7 +13,7 @@ import {
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 class MockPageTitleService {
-  setTitleOnLangChange = jasmine.createSpy('setTitleOnLangChange');
+  setTitleOnLangChange = vi.fn();
 }
 
 describe('MonitoringDashboardComponent', () => {
@@ -54,7 +55,7 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should call setTitleOnLangChange', () => {
-    spyOn(component['route'].queryParams, 'subscribe').and.callThrough();
+    vi.spyOn(component['route'].queryParams, 'subscribe');
     component.ngOnInit();
     expect(mockPageTitleService.setTitleOnLangChange).toHaveBeenCalledWith(
       'common.monitor.dashboard.pageTitle'
@@ -72,15 +73,12 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should navigate with isFocused query param when setActiveTab called', () => {
-    const navigateSpy = spyOn(
-      (component as any).router,
-      'navigate'
-    ).and.callThrough();
+    const navigateSpy = vi.spyOn((component as any).router, 'navigate');
 
     component.setActiveTab(component.FOCUSED_TAB);
     expect(navigateSpy).toHaveBeenCalledWith(
       [],
-      jasmine.objectContaining({
+      expect.objectContaining({
         relativeTo: component['route'],
         queryParamsHandling: 'merge',
         queryParams: { activeTab: 'focused' }
@@ -90,7 +88,7 @@ describe('MonitoringDashboardComponent', () => {
     component.setActiveTab(component.STANDARD_TAB);
     expect(navigateSpy).toHaveBeenCalledWith(
       [],
-      jasmine.objectContaining({
+      expect.objectContaining({
         relativeTo: component['route'],
         queryParamsHandling: 'merge',
         queryParams: { activeTab: 'standard' }

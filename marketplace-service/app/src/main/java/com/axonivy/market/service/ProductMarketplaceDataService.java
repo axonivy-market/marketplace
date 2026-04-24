@@ -1,11 +1,15 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public interface ProductMarketplaceDataService {
 
@@ -55,16 +59,19 @@ public interface ProductMarketplaceDataService {
 
   /**
    * <p>
-   * Increments the total installation count for a product across all Designer versions. Tracks the cumulative
-   * number of installations/downloads for a product regardless of the specific Designer version used.
+   * Initializes or synchronizes the total installation count for a product from legacy data. If the product
+   * hasn't been synchronized yet, reads installation counts from a legacy file or generates a random initial
+   * count, then updates the database with this initial value. Subsequent calls return the existing data
+   * without modification.
    * </p>
    *
    * @param  id
-   *              type {@link String} - the unique product identifier to increment installation count for
-   * @return {@link int} - the updated total installation count for the product
-   * @author thxhuy
+   *              type {@link String} - the unique product identifier to initialize installation count for
+   * @return {@link ProductMarketplaceData} - the updated ProductMarketplaceData object with synchronized
+   *         installation count; returns existing data if already synchronized
+   * @author nntthuy
    */
-  int updateProductInstallationCount(String id);
+  ProductMarketplaceData updateProductInstallationCount(String id);
 
   /**
    * <p>
@@ -128,4 +135,38 @@ public interface ProductMarketplaceDataService {
    * @author ntqdinh
    */
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
+
+  /**
+   * <p>
+   * Updates successor information and deprecation status for a product. Sets successor URL, deprecation
+   * requester, and deprecation date in the marketplace data. Updates the product's deprecated status and
+   * optionally creates a GitHub pull request to update the product's README with successor notes.
+   * </p>
+   *
+   * @param  productId
+   *              type {@link String} - the unique product identifier to update
+   * @param  deprecationRequest
+   *              type {@link DeprecationRequest} - request containing successor URL, deprecation details,
+   *              and pull request configuration
+   * @return {@link String} - the GitHub pull request URL if a pull request was created; returns null
+   *         if no pull request was created or product not found
+   * @throws IOException if an error occurs during GitHub API operations or file processing
+   * @author tvtphuc
+   */
+  String updateSuccessorForProduct(String productId, DeprecationRequest deprecationRequest) throws IOException;
+
+  /**
+   * <p>
+   * Retrieves product IDs filtered by their deprecation status. Returns a list of product projections
+   * containing product IDs and deprecation information for products that match the specified deprecated status.
+   * </p>
+   *
+   * @param  isDeprecated
+   *              type {@link Boolean} - filter flag; true for deprecated products, false for active products,
+   *              null to retrieve all products
+   * @return {@link List<ProductDeprecationProjection>} - list of product deprecation projections matching
+   *         the specified deprecation status; returns empty list if no products match the criteria
+   * @author tvtphuc
+   */
+  List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated);
 }

@@ -26,20 +26,14 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets",
-              "src/assets/_market",
-              "src/robots.txt",
-              "src/sitemap.xml"
-            ],
+            "assets": ["src/favicon.ico", "src/assets", "src/assets/_market", "src/robots.txt", "src/sitemap.xml"],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/markdown-it-github-alerts/styles/github-base.css",
               "node_modules/markdown-it-github-alerts/styles/github-colors-dark-media.css",
               "node_modules/markdown-it-github-alerts/styles/github-colors-light.css",
               "node_modules/easymde/dist/easymde.min.css",
+              "node_modules/@tabler/icons-webfont/dist/tabler-icons.css",
               "src/styles.scss"
             ],
             "scripts": [
@@ -129,21 +123,11 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "codeCoverage": true,
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing",
-              "src/test-setup.ts"
-            ],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": ["src/assets"],
-            "styles": ["src/styles.scss"],
-            "scripts": ["node_modules/emoji-toolkit/lib/js/joypixels.min.js"],
-            "karmaConfig": "karma.conf.js",
-            "sourceMap": true,
+            "runnerConfig": "vitest.config.mts",
+            "coverage": true,
             "watch": false
           }
         }

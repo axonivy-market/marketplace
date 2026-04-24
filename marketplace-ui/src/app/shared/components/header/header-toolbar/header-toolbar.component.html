@@ -1,0 +1,32 @@
+<div class="header-toolbar-container">
+  <ul
+    class="navbar-nav header__action d-flex flex-row-reverse flex-lg-row justify-content-between justify-content-lg-end header__button align-items-lg-center align-items-center">
+    @if (!isInHeaderOffCanvas) {
+      <li>
+        <div
+          class="google-search-container text-primary google-search-svg-primary"
+          [ngStyle]="{
+            display: isGoogleSearchBarDisplayed() ? 'block' : 'none'
+          }">
+          <div class="gcse-search"></div>
+        </div>
+      </li>
+    }
+
+    @if (!isGoogleSearchBarDisplayed()) {
+      <li class="header__button--right">
+        <app-language-selection />
+      </li>
+      <li class="header__button--right">
+        <app-theme-selection />
+      </li>
+      @if (!isInHeaderOffCanvas) {
+        <li class="search-icon d-flex justify-content-end ms-4">
+          <i
+            class="ti ti-search header__search-button"
+            (click)="onClickSearchIcon()"></i>
+        </li>
+      }
+    }
+  </ul>
+</div>

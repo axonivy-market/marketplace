@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { FaviconService } from './favicon.service';
 import { DOCUMENT } from '@angular/common';

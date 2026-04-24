@@ -10,6 +10,7 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Artifact;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.ErrorCode;
@@ -483,7 +484,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
     List<String> versionChanges =
         mavenVersions.stream().filter(
-            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+            version -> !currentVersions.contains(version) || (!CoreVersionUtils.isReleasedVersion(
                 version) && CoreVersionUtils.isOfficialVersionOrUnReleasedDevVersion(
                 mavenVersions, version))).toList();
 
@@ -553,9 +554,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
 
     return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
-
+      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
+      productItem.setInstallationCount(marketplaceData.getInstallationCount());
+      productItem.setSuccessor(marketplaceData.getSuccessor());
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
       updateFocusedStatusForProduct(product);
@@ -565,7 +566,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
+    List<String> installableVersions = CoreVersionUtils.getInstallableVersionsFromMetadataList(
         metadataRepo.findByProductId(id));
     String bestMatchVersion = CoreVersionUtils.getBestMatchVersion(installableVersions, version);
     // Cover exception case of employee onboarding without any product.json file
@@ -577,8 +578,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     return Optional.ofNullable(product).map((Product productItem) -> {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(installationCount);
+      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
+      productItem.setInstallationCount(marketplaceData.getInstallationCount());
+      productItem.setSuccessor(marketplaceData.getSuccessor());
 
       String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
@@ -608,7 +610,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
+      var releasedVersions = productRepo.getReleasedVersionsById(id);
+      versions = CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion);
+      versions = CollectionUtils.isEmpty(versions) && !isShowDevVersion ?
+          CoreVersionUtils.getVersionsToDisplay(releasedVersions, true) : versions;
       version = CollectionUtils.firstElement(versions);
     }
 
@@ -623,8 +628,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null) {
-      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
-      product.setInstallationCount(installationCount);
+      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
+      product.setInstallationCount(marketplaceData.getInstallationCount());
+      product.setSuccessor(marketplaceData.getSuccessor());
 
       String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
       product.setCompatibilityRange(compatibilityRange);
@@ -758,7 +764,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key="{#productId}")
+  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {

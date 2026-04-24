@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import {
   HttpClient,
   HttpContext,
@@ -34,7 +35,7 @@ import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { LoadingService } from '../services/loading/loading.service';
 
 describe('AuthInterceptor', () => {
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockRouter: MockedObject<Router>;
   let productComponent: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let httpClient: HttpClient;
@@ -75,7 +76,7 @@ describe('AuthInterceptor', () => {
     });
     httpClient.get('product', { headers }).subscribe({
       next() {
-        fail('Expected an error, but got a response');
+        throw new Error('Expected an error, but got a response');
       },
       error(e) {
         expect(e.status).not.toBe(200);
@@ -86,7 +87,7 @@ describe('AuthInterceptor', () => {
   it('should throw error with the url contains i18n', () => {
     httpClient.get('assets/i18n').subscribe({
       next() {
-        fail('Expected an error, but got a response');
+        throw new Error('Expected an error, but got a response');
       },
       error(e) {
         expect(e.status).not.toBe(200);
@@ -113,7 +114,7 @@ describe('AuthInterceptor', () => {
 
     httpTestingController.expectNone(`${url}`);
     expect(actualResponse).toEqual(expectedBody);
-    expect(transferState.hasKey(key)).toBeFalse();
+    expect(transferState.hasKey(key)).toBe(false);
   });
 
   it('should use API_INTERNAL_URL when running on server', () => {
@@ -179,7 +180,9 @@ describe('AuthInterceptor', () => {
           },
           {
             provide: Router,
-            useValue: jasmine.createSpyObj('Router', ['navigate'])
+            useValue: {
+              navigate: vi.fn().mockName('Router.navigate')
+            }
           }
         ]
       });
@@ -205,7 +208,7 @@ describe('AuthInterceptor', () => {
       const req = httpMock.expectOne('/app/product');
       req.flush({}, { status: 200, statusText: 'OK' });
 
-      expect(transferState.hasKey(key)).toBeFalse();
+      expect(transferState.hasKey(key)).toBe(false);
     });
   });
 
@@ -229,7 +232,7 @@ describe('AuthInterceptor', () => {
 
   it('should call handleHttpError and navigate on server error', () => {
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate');
 
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -253,9 +256,9 @@ describe('AuthInterceptor', () => {
     const key = makeStateKey<any>(`GET ${url}`);
     transferState.set(key, { id: 1 });
 
-    expect(transferState.hasKey(key)).toBeTrue();
+    expect(transferState.hasKey(key)).toBe(true);
     invalidateGetCache(transferState, url);
-    expect(transferState.hasKey(key)).toBeFalse();
+    expect(transferState.hasKey(key)).toBe(false);
   });
 
   it('should not throw or remove anything when key does not exist', () => {
@@ -265,9 +268,9 @@ describe('AuthInterceptor', () => {
 
     const key = makeStateKey<any>(`GET ${url}`);
 
-    expect(transferState.hasKey(key)).toBeFalse();
+    expect(transferState.hasKey(key)).toBe(false);
     invalidateGetCache(transferState, url);
-    expect(transferState.hasKey(key)).toBeFalse();
+    expect(transferState.hasKey(key)).toBe(false);
   });
 
   describe('apiInterceptor - ForwardingError branch', () => {
@@ -327,17 +330,18 @@ describe('AuthInterceptor', () => {
 
   describe('handleHttpError', () => {
     beforeEach(() => {
-      mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate']);
+      mockRouter = {
+        navigate: vi.fn().mockName('Router.navigate')
+      } as MockedObject<Router>;
     });
 
-    it('should throw error if status is UNAUTHORIZED', done => {
+    it('should throw error if status is UNAUTHORIZED', async () => {
       const error = new HttpErrorResponse({ status: UNAUTHORIZED });
 
       handleHttpError(mockRouter, error).subscribe({
         error: (err: HttpErrorResponse) => {
           expect(err).toBe(error);
           expect(mockRouter.navigate).not.toHaveBeenCalled();
-          done();
         }
       });
     });

@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StarRatingComponent } from './star-rating.component';
@@ -31,7 +32,7 @@ describe('StarRatingComponent', () => {
   });
 
   it('should display the correct number of stars', () => {
-    component.rate = 3;
+    fixture.componentRef.setInput('rate', 3);
     fixture.detectChanges();
 
     const stars = fixture.debugElement.queryAll(By.css('.star-feedback'));
@@ -41,7 +42,7 @@ describe('StarRatingComponent', () => {
   });
 
   it('should emit rateChange event when rate changes', () => {
-    spyOn(component.rateChange, 'emit');
+    vi.spyOn(component.rateChange, 'emit');
 
     component.onRateChange(4);
 

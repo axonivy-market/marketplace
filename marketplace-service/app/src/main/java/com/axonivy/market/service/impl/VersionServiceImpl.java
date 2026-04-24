@@ -18,7 +18,6 @@ import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.util.VersionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +69,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
   public List<VersionAndUrlModel> getInstallableVersions(String productId,
       Boolean isShowDevVersion, String designerVersion) {
     List<String> releasedVersions =
-        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
+        CoreVersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }

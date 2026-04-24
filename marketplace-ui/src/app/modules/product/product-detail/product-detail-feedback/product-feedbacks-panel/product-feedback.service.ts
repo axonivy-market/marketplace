@@ -21,6 +21,7 @@ import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
   ADMIN_SESSION_TOKEN,
+  AUTHORIZATION_HEADER,
   BEARER,
   FEEDBACK_SORT_TYPES,
   NOT_FOUND_ERROR_CODE,
@@ -67,7 +68,7 @@ export class ProductFeedbackService {
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
     const token = sessionStorage.getItem(ADMIN_SESSION_TOKEN);
-    const headers = new HttpHeaders().set('Authorization', `${BEARER} ${token}`);
+    const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());

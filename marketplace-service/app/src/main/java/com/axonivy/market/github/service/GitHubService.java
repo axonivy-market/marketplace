@@ -2,6 +2,7 @@ package com.axonivy.market.github.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -18,6 +19,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GHPullRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -294,4 +296,6 @@ public interface GitHubService {
    * @author ntqdinh
    */
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
+
+  GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
 }

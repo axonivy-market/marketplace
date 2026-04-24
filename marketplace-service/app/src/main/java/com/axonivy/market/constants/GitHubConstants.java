@@ -24,6 +24,10 @@ public class GitHubConstants {
   public static final String USERNAME = "username";
   public static final String ACCESS_TOKEN = "accessToken";
   public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
+  public static final String README_FILE_PATH = "README.md";
+  public static final String GITHUB_TEXTS_RESOURCE_PATH = "github/githubUnsupportedText.json";
+  public static final String HEADS_PREFIX = "heads/";
+  public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

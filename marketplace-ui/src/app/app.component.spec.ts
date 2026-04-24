@@ -1,49 +1,63 @@
+import type { MockedObject } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
-import { ActivatedRoute, RouterOutlet, NavigationStart, RouterModule, Router, NavigationError, Event } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterOutlet,
+  NavigationStart,
+  RouterModule,
+  Router,
+  NavigationError,
+  Event
+} from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
-import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
 import { WindowRef } from './core/services/browser/window-ref.service';
 import { DocumentRef } from './core/services/browser/document-ref.service';
+import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let activatedRoute: ActivatedRoute;
   let navigationStartSubject: Subject<NavigationStart>;
-  let appElement: HTMLElement;
   let router: Router;
   let routerEventsSubject: Subject<Event>;
 
   beforeEach(async () => {
     navigationStartSubject = new Subject<NavigationStart>();
     routerEventsSubject = new Subject<Event>();
-    const loadingServiceSpy = jasmine.createSpyObj('LoadingService', [
-      'isLoading'
-    ]);
-    const routingQueryParamServiceSpy = jasmine.createSpyObj(
-      'RoutingQueryParamService',
-      [
-        'getNavigationStartEvent',
-        'isDesignerEnv',
-        'checkSessionStorageForDesignerEnv',
-        'checkSessionStorageForDesignerVersion'
-      ]
-    );
+    const loadingServiceSpy = {
+      isLoading: vi.fn().mockName('LoadingService.isLoading')
+    };
+    const routingQueryParamServiceSpy = {
+      getNavigationStartEvent: vi
+        .fn()
+        .mockName('RoutingQueryParamService.getNavigationStartEvent'),
+      isDesignerEnv: vi.fn().mockName('RoutingQueryParamService.isDesignerEnv'),
+      checkSessionStorageForDesignerEnv: vi
+        .fn()
+        .mockName('RoutingQueryParamService.checkSessionStorageForDesignerEnv'),
+      checkSessionStorageForDesignerVersion: vi
+        .fn()
+        .mockName(
+          'RoutingQueryParamService.checkSessionStorageForDesignerVersion'
+        )
+    };
 
     const routerMock = {
       events: routerEventsSubject.asObservable(),
-      navigate: jasmine.createSpy('navigate'),
-      createUrlTree: jasmine.createSpy('createUrlTree'),
-      serializeUrl: jasmine.createSpy('serializeUrl'),
-      parseUrl: jasmine.createSpy('parseUrl'),
+      navigate: vi.fn(),
+      createUrlTree: vi.fn(),
+      serializeUrl: vi.fn(),
+      parseUrl: vi.fn(),
       url: '/',
       routerState: {
         root: {}
@@ -51,13 +65,15 @@ describe('AppComponent', () => {
     };
 
     // Mock WindowRef and DocumentRef
-    const windowRefMock = jasmine.createSpyObj('WindowRef', ['toString'], {
-      nativeWindow: window
-    });
+    const windowRefMock = {
+      toString: vi.fn().mockName('WindowRef.toString'),
+      nativeWindow: globalThis
+    };
 
-    const documentRefMock = jasmine.createSpyObj('DocumentRef', ['toString'], {
+    const documentRefMock = {
+      toString: vi.fn().mockName('DocumentRef.toString'),
       nativeDocument: document
-    });
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -91,14 +107,15 @@ describe('AppComponent', () => {
     component = fixture.componentInstance;
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
+    ) as MockedObject<RoutingQueryParamService>;
 
-    routingQueryParamService.getNavigationStartEvent.and.returnValue(
+    routingQueryParamService.getNavigationStartEvent.mockReturnValue(
       navigationStartSubject.asObservable()
     );
-    appElement = fixture.debugElement.query(
-      By.css('.app-container')
-    ).nativeElement;
+
+    vi.spyOn(GoogleSearchBarUtils, 'renderGoogleSearchBar').mockImplementation(
+      () => {}
+    );
 
     activatedRoute = TestBed.inject(ActivatedRoute);
     router = TestBed.inject(Router);
@@ -110,7 +127,7 @@ describe('AppComponent', () => {
   });
 
   it('should subscribe to query params and check session strorage if not in designer environment', () => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(false);
     const params = { someParam: 'someValue' };
 
     // Mock the queryParams observable to emit params
@@ -131,7 +148,7 @@ describe('AppComponent', () => {
   });
 
   it('should not subscribe to query params if in designer environment', () => {
-    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    routingQueryParamService.isDesignerEnv.mockReturnValue(true);
 
     // Trigger the navigation start event
     navigationStartSubject.next(new NavigationStart(1, 'testUrl'));
@@ -142,31 +159,6 @@ describe('AppComponent', () => {
     expect(
       routingQueryParamService.checkSessionStorageForDesignerVersion
     ).not.toHaveBeenCalled();
-  });
-
-  it('should hide scrollbar when burger menu is opened', () => {
-    component.isMobileMenuCollapsed = false;
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeTruthy();
-
-    expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
-
-    const headerComputedStyle = window.getComputedStyle(appElement);
-    expect(headerComputedStyle.overflow).toBe('hidden');
-  });
-
-  it('should reset header style when burger menu is closed', () => {
-    component.isMobileMenuCollapsed = true;
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeNull();
-
-    expect(
-      appElement.classList.contains('header-mobile-container')
-    ).toBeFalse();
   });
 
   it('should redirect to "/error-page" on NavigationError', () => {

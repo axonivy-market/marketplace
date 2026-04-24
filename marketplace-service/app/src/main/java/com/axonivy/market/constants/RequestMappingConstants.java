@@ -18,6 +18,8 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";
   public static final String IDS = "ids";
+  public static final String DEPRECATIONS = "deprecations";
+  public static final String DEPRECATION_BY_ID = "{productId}/deprecations";
   public static final String PRODUCT_DETAILS = API + "/product-details";
   public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
   public static final String FEEDBACK = API + "/feedback";
@@ -29,12 +31,10 @@ public class RequestMappingConstants {
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
-  public static final String BY_SPRINT = "/sprint/{sprint}";
   public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";
-  public static final String BEST_MATCH_VERSION_BY_ID_AND_VERSION = "/{id}/{version}/best-match-version";
   public static final String DOCUMENT_BEST_MATCH = "/best-match";
   public static final String VERSIONS_BY_ID = "/{id}/versions";
   public static final String PRODUCT_BY_ID = "/product/{id}";
@@ -71,4 +71,5 @@ public class RequestMappingConstants {
   public static final String DOWNLOAD_LOG_ARTIFACT = "/download";
   public static final String LOG_STREAM = "/stream";
   public static final String RELEASE_LETTER = API + "/release-letters";
+  public static final String LOG_STREAM_BY_TASK_KEY = "/stream/{taskKey}";
 }

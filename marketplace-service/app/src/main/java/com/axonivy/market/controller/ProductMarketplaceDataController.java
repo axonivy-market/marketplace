@@ -2,10 +2,15 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
+
+import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
+
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,13 +26,18 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
+import java.util.List;
+
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT_ID;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 
 @RestController
@@ -81,4 +91,25 @@ public class ProductMarketplaceDataController {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
+
+  @Authorized
+  @PutMapping(DEPRECATION_BY_ID)
+  @Operation(summary = "Update successor and deprecated for product",
+      description = "Partially update successor URL and deprecated flag for a product")
+  public ResponseEntity<String> updateDeprecatedMarketplaceData(
+      @RequestBody DeprecationRequest request, @PathVariable String productId) throws IOException {
+    String pullRequestUrl = productMarketplaceDataService.updateSuccessorForProduct(productId, request);
+    return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
+  }
+
+  @GetMapping(DEPRECATIONS)
+  @Operation(summary = "Get product deprecations by deprecated status",
+      description = "Return product deprecations filtered by deprecated flag")
+  public ResponseEntity<List<ProductDeprecationProjection>> getProductDeprecations(
+      @RequestParam(required = false) Boolean deprecated) {
+    List<ProductDeprecationProjection> productDeprecations =
+        productMarketplaceDataService.getProductIdsByDeprecated(deprecated);
+    return new ResponseEntity<>(productDeprecations, HttpStatus.OK);
+  }
+
 }

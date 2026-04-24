@@ -5,9 +5,9 @@
   [max]="5"
   [readonly]="isReadOnly">
   <ng-template let-fill="fill">
-    <i class="bi-star-fill star-feedback" [class]="starClass">
+    <i class="ti ti-star-filled star-feedback" [class]="starClass">
       @if (fill > 0) {
-      <i class="bi-star-fill filled" [style.width.%]="fill"
+      <i class="ti ti-star-filled filled" [style.width.%]="fill"
         [style.color]="isPending ? 'var(--text-feedback-time-color)' : ''"></i>
       }
     </i>

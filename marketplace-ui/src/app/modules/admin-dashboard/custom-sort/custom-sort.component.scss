@@ -1,6 +1,10 @@
 .hint-icon {
   color: var(--ivy-primary-bg);
   cursor: pointer;
+
+  i {
+    font-size: 2.5rem;
+  }
 }
 
 ::ng-deep .help-text a {
@@ -43,4 +47,35 @@
 .table-grid.loading {
   opacity: 0.6;
   pointer-events: none;
+}
+
+.rule-block {
+  grid-column: 1;
+}
+
+.form-select {
+  opacity: 80%;
+  padding: 10px 15px;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  border: 1px solid var(--active-tab-indicator-color);
+  border-radius: 10px;
+}
+
+::ng-deep {
+  .search-input {
+    font-size: 1.2rem;
+    min-width: 20rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--ivy-border-color);
+    border-radius: 0.5rem;
+    background-color: var(--ivy-secondary-bg);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--ivy-primary-bg);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  }
 }
