@@ -1,27 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, Input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../../core/services/language/language.service';
+import { AdminAuthService } from '../../../../modules/admin-dashboard/admin-auth.service';
+import { SEARCH_URL } from '../../../constants/common.constant';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
-import { LanguageService } from '../../../../core/services/language/language.service';
-import { SEARCH_URL } from '../../../constants/common.constant';
-import { FormsModule } from '@angular/forms';
-import { GithubUserBadgeComponent } from '../../github-user-badge/github-user-badge.component';
 
 @Component({
-  selector: 'app-search-bar',
+  selector: 'app-header-toolbar',
   imports: [
     CommonModule,
     TranslateModule,
     ThemeSelectionComponent,
     FormsModule,
     LanguageSelectionComponent,
-    GithubUserBadgeComponent
   ],
-  templateUrl: './search-bar.component.html',
-  styleUrl: './search-bar.component.scss'
+  templateUrl: './header-toolbar.component.html',
+  styleUrl: './header-toolbar.component.scss'
 })
-export class SearchBarComponent {
+export class HeaderToolbarComponent {
   isCollapsed = false;
   searchUrl = SEARCH_URL;
   isGoogleSearchBarDisplayed = signal(false);
@@ -29,7 +28,13 @@ export class SearchBarComponent {
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  adminAuthService = inject(AdminAuthService);
   isGoogleLoaded = false;
+  
+  userInfo = this.adminAuthService.userInfo;
+
+  @Input() 
+  isInHeaderOffCanvas = false;
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
