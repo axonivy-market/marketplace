@@ -5,9 +5,7 @@
 <!-- Navigation -->
 <ul class="p-0 d-flex flex-column flex-lg-row m-0">
   @for (item of this.items; track item.label) {
-    <li
-      class="px-0 px-lg-2 d-lg-flex justify-content-lg-center align-items-lg-center"
-      (click)="closeHeaderOffcanvas()">
+    <li class="px-0 px-lg-2 d-lg-flex justify-content-lg-center align-items-lg-center" (click)="closeHeaderOffcanvas()">
       @let isHomePage = item.link === '/';
       @let isSyncPage = item.link === '/internal-dashboard';
       @let isInternal = item.link.startsWith('/');
@@ -19,6 +17,7 @@
           [lang]="languageService.selectedLanguage()"
           class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
           [ngClass]="{
+            'header-offcanvas-nav-link': isInHeaderOffCanvas,
             'text-primary': routerActive.isActive,
             'text-secondary': !routerActive.isActive,
             'bg-secondary': isInHeaderOffCanvas && routerActive.isActive
@@ -31,6 +30,9 @@
         <a
           [lang]="languageService.selectedLanguage()"
           class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          [ngClass]="{
+            'header-offcanvas-nav-link': isInHeaderOffCanvas
+          }"
           aria-current="page"
           [href]="item.link">
           {{ item.label | translate }}

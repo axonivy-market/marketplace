@@ -19,6 +19,10 @@ ul li {
   border-radius: 0 !important;
 }
 
+.nav-link.header-offcanvas-nav-link {
+  font-size: 1.8rem;
+}
+
 .nav-link.active {
   font-weight: 600;
   border-bottom: 0.2rem solid var(--ivy-active-color);
@@ -26,7 +30,6 @@ ul li {
 
 .nav-link.header-offcanvas-active {
   font-weight: 600;
-  font-size: 1.8rem;
   width: 100%;
   border-radius: 0.5rem !important;
 }
