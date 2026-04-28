@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSecurityInfoRepository {
 
   private static final List<String> SEVERITIES = List.of("critical", "high", "medium", "low");
+  private static final String SEARCH_TEXT_PATTERN = "%%%s%%";
 
   private final EntityManager entityManager;
 
@@ -31,9 +32,9 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
 
     Query query = entityManager.createNativeQuery(sql, ProductSecurityInfo.class);
     // Bind parameter if search text exists
-    String searchText = StringUtils.trimToEmpty(criteria.getSearchText());
+    String searchText = StringUtils.trimToNull(criteria.getSearchText());
     if (searchText != null) {
-      query.setParameter(1, "%" + searchText + "%");
+      query.setParameter(1, String.format(SEARCH_TEXT_PATTERN, searchText));
     }
 
     List<?> resultList = query
@@ -49,7 +50,7 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
     Query countQuery = entityManager.createNativeQuery(countSql);
 
     if (searchText != null) {
-      countQuery.setParameter(1, "%" + searchText + "%");
+      countQuery.setParameter(1, String.format(SEARCH_TEXT_PATTERN, searchText));
     }
     long total = ((Number) countQuery.getSingleResult()).longValue();
     return new PageImpl<>(content, pageable, total);
