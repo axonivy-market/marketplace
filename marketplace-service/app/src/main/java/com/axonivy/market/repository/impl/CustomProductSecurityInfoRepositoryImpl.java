@@ -32,6 +32,7 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
     if (criteria.getSearchText() != null && !criteria.getSearchText().trim().isEmpty()) {
       query.setParameter(1, "%" + criteria.getSearchText().trim() + "%");
     }
+
     List<?> resultList = query
         .setFirstResult((int) pageable.getOffset())
         .setMaxResults(pageable.getPageSize())
@@ -61,17 +62,31 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
       default -> "psi.repo_name " + safeDirection;
     };
 
-    // Always add repo_name as deterministic tie-breaker
+    String statusCol = getStatusColumn(sortOption);
+    String statusOrder = statusCol != null
+        ? ", array_position(ARRAY['ENABLED','NO_PERMISSION','DISABLED'], " + statusCol + ") " + safeDirection : "";
+
     if (sortOption == ProductSecuritySortOption.REPO_NAME) {
       return primaryOrder;
     }
     String additionalOrder = ", psi.repo_name " + safeDirection;
-    return primaryOrder + additionalOrder;
+    return primaryOrder + statusOrder  + additionalOrder;
+  }
+
+  private String getStatusColumn(ProductSecuritySortOption sortOption) {
+    return switch (sortOption) {
+      case DEPENDABOT_ALERTS -> "psi.dependabot_status";
+      case CODE_SCANNING_ALERTS -> "psi.code_scanning_status";
+      case SECRET_SCANNING_ALERTS -> "psi.secret_scanning_status";
+      default -> null;
+    };
   }
 
   private String buildJsonSort(String column, String dir) {
     return SEVERITIES.stream()
-        .map(sev -> String.format(" CAST(COALESCE(CAST(%s AS jsonb) ->> '%s', '0') AS integer) %s", column, sev, dir))
+        .map(sev -> String.format(
+            " CAST(COALESCE(CAST(%s AS jsonb) ->> '%s', '0') AS integer) %s",
+            column, sev, dir))
         .reduce((a, b) -> a + ", " + b)
         .orElse("");
   }

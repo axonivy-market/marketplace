@@ -210,8 +210,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria,
-      Pageable pageable) {
+  public Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable) {
     return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
   }
 
