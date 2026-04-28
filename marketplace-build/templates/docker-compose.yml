@@ -11,31 +11,29 @@ services:
       - marketcache:/usr/share/nginx/html/market-cache
       - marketbrowser:/usr/share/nginx/html/browser
     ports:
-      - "4500:80"
+      - "${NGINX_PORT}:80"
     depends_on:
       - ui
       - app
+      - stable
     networks:
-      - market-network
+      - marketplace-network
 
   ui:
-    build:
-      context: ../marketplace-ui
-      dockerfile: Dockerfile
-      args:
-        - BUILD_ENV=${BUILD_ENV}
+    image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     env_file:
       - .env
     volumes:
       - marketbrowser:/browser_share
     restart: always
     command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     networks:
-      - market-network
+      - marketplace-network
 
   app:
+    image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
@@ -43,37 +41,27 @@ services:
       - ../logs/app:/app/logs
     env_file:
       - .env
-    build:
-      context: ../marketplace-service
-      dockerfile: app/Dockerfile
-      args:
-        - BUILD_VERSION=${BUILD_VERSION}
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     networks:
-      - market-network
+      - marketplace-network
 
   stable:
+    image: ghcr.io/axonivy-market/marketplace-stable:${RELEASE_VERSION}
     restart: always
     volumes:
       - ../logs/stable:/app/logs
     env_file:
       - .env
-    build:
-      context: ../marketplace-service
-      dockerfile: stable/Dockerfile
-      args:
-        - BUILD_VERSION=${STABLE_BUILD_VERSION}
-    ports:
-      - "8085:8080"
+    expose:
+      - "8080"
     networks:
-      - market-network
+      - marketplace-network
 
 networks:
-  market-network:
+  marketplace-network:
     external: true
 
 volumes:
   marketcache:
   marketbrowser:
-  postgres-data:

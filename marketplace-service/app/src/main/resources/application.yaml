@@ -56,6 +56,15 @@ springdoc:
     path: /api-docs
     version: OPENAPI_3_1
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+      base-path: /actuator
+  server:
+    base-path: /actuator    
+
 logging:
   file:
     path: '${LOGGING_FILE_PATH}'
