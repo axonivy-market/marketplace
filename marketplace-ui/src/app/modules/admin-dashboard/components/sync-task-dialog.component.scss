@@ -1,0 +1,48 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.modal-dialog {
+  position: relative;
+  transform: none;
+  margin: 0;
+  width: 90%;
+  max-width: 640px;
+  z-index: 1055;
+  pointer-events: none;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal-content {
+  background-color: var(--bs-body-bg);
+  color: inherit;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header,
+.modal-footer {
+  padding: 0.75rem 1rem;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+.btn-cancel {
+  border: 0.5px solid #ebebeb;
+}

@@ -11,6 +11,7 @@ import java.util.Optional;
 public enum SyncTaskType {
   SYNC_PRODUCTS("syncProducts"),
   SYNC_ONE_PRODUCT("syncOneProduct"),
+  SYNC_ZIP_ARTIFACTS("syncZipArtifacts"),
   SYNC_RELEASE_NOTES("syncLatestReleasesForProducts"),
   SYNC_GITHUB_MONITOR("syncGithubMonitor");
 

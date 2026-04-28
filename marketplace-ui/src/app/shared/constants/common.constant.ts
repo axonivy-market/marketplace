@@ -445,6 +445,10 @@ export const SYNC_TASKS: SyncTaskRow[] = [
     labelKey: 'common.admin.sync.tasks.syncOneProduct'
   },
   {
+    key: 'syncZipArtifacts',
+    labelKey: 'common.admin.sync.tasks.syncZipArtifacts'
+  },
+  {
     key: 'syncLatestReleasesForProducts',
     labelKey: 'common.admin.sync.tasks.syncLatestReleasesForProducts'
   },

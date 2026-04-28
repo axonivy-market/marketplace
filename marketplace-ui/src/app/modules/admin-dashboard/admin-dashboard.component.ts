@@ -40,11 +40,12 @@ import { AdminAuthService } from './admin-auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { LogStreamService } from '../../core/services/logging/log-stream.service';
 import { LogParserService, ParsedLog } from './logs-viewer/logs-viewer.service';
+import { SyncTaskDialogComponent } from './components/sync-task-dialog.component';
 
 const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SyncTaskDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -99,29 +100,22 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  private readonly syncTaskTriggers: Record<
-    SyncTaskKey,
-    () => Observable<unknown>
-  > = {
+  private readonly syncTaskTriggers: Record<SyncTaskKey, () => Observable<unknown>> = {
     syncProducts: () => this.service.syncProducts(),
-    syncLatestReleasesForProducts: () =>
-      this.service.syncLatestReleasesForProducts(),
+    syncLatestReleasesForProducts: () => this.service.syncLatestReleasesForProducts(),
     syncGithubMonitor: () => this.service.syncGithubMonitor(),
+    syncZipArtifacts: () => this.service.syncZipArtifacts(),
     syncOneProduct: () => EMPTY
   };
 
   ngOnInit(): void {
     this.loadExecutions();
     this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        if (event.urlAfterRedirects === '/internal-dashboard') {
-          this.pageTitleService.setTitleOnLangChange(
-            'common.admin.sync.pageTitle'
-          );
-        }
-      });
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
+      if (event.urlAfterRedirects === '/internal-dashboard') {
+        this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
+      }
+    });
   }
 
   private loadExecutions(): void {
@@ -136,21 +130,18 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleAuthError(err: HttpErrorResponse): void {
-    this.errorMessage =
-      err.status === UNAUTHORIZED
-        ? ERROR_MESSAGES.INVALID_TOKEN
-        : ERROR_MESSAGES.FETCH_FAILURE;
+    this.errorMessage = err.status === UNAUTHORIZED ? ERROR_MESSAGES.INVALID_TOKEN : ERROR_MESSAGES.FETCH_FAILURE;
 
     this.authService.clearToken();
   }
 
   // Synchronize
   async trigger(syncTask: SyncTaskRow): Promise<void> {
-    if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
+    this.selectedTask.set(syncTask);
+    if (syncTask.key === 'syncOneProduct' || syncTask.key === 'syncZipArtifacts') {
       await this.openSyncOneProductDialog();
       return;
     }
-
     this.runSyncTask(syncTask);
   }
 
@@ -212,12 +203,8 @@ export class AdminDashboardComponent implements OnInit {
       }
 
       syncTask.status = execution.status;
-      syncTask.triggeredAt = execution.triggeredAt
-        ? new Date(execution.triggeredAt)
-        : undefined;
-      syncTask.completedAt = execution.completedAt
-        ? new Date(execution.completedAt)
-        : undefined;
+      syncTask.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : undefined;
+      syncTask.completedAt = execution.completedAt ? new Date(execution.completedAt) : undefined;
       syncTask.message = execution.message ?? undefined;
     });
   }
@@ -242,39 +229,9 @@ export class AdminDashboardComponent implements OnInit {
     this.showSyncOneProductDialog = true;
   }
 
-  confirmSyncOneProduct(): void {
-    const syncTask = this.syncTasks.find(t => t.key === SYNC_ONE_PRODUCT_KEY);
-    if (!syncTask || !this.isValidSyncOneProductValues()) {
-      this.markSyncOneProductFailed(syncTask);
-      return;
-    }
-
-    this.executeSyncOneProduct(syncTask);
-  }
-
   isValidSyncOneProductValues(): boolean {
-    const matchedProduct = this.products.some(
-      product => product.id === this.productSearch
-    );
+    const matchedProduct = this.products.some(product => product.id === this.productSearch);
     return matchedProduct && !!this.marketDirectory;
-  }
-
-  private executeSyncOneProduct(syncTask: SyncTaskRow): void {
-    this.setSyncTaskRunning(syncTask);
-    this.logStream.resetTask(syncTask.key);
-    this.showSyncOneProductDialog = false;
-
-    this.service
-      .syncOneProduct(
-        this.productSearch,
-        this.marketDirectory.trim(),
-        this.overrideMarketItemPath
-      )
-      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
-      .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
-        error: () => this.handleSyncTaskFailure(syncTask)
-      });
   }
 
   private markSyncOneProductFailed(syncTask?: SyncTaskRow): void {
@@ -285,14 +242,13 @@ export class AdminDashboardComponent implements OnInit {
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
       completedAt: new Date(),
-      message: this.translateService.instant(
-        'common.admin.sync.syncOneProductDialog.validationMessage'
-      )
+      message: this.translateService.instant('common.admin.sync.syncOneProductDialog.validationMessage')
     });
   }
 
   cancelSyncOneProduct(): void {
     this.showSyncOneProductDialog = false;
+    this.selectedTask.set(null);
     this.productSearch = '';
     this.marketDirectory = '';
     this.overrideMarketItemPath = false;
@@ -307,9 +263,7 @@ export class AdminDashboardComponent implements OnInit {
   filterProducts(): void {
     const value = this.productSearch.toLowerCase();
 
-    this.filteredProducts = this.products
-      .filter(product => product.id.toLowerCase().includes(value))
-      .slice(0, 10);
+    this.filteredProducts = this.products.filter(product => product.id.toLowerCase().includes(value)).slice(0, 10);
 
     // Clear the market directory if ID input does not match any product IDs
     if (!this.isValidSyncOneProductValues()) {
@@ -363,5 +317,33 @@ export class AdminDashboardComponent implements OnInit {
 
   isExpanded(index: number): boolean {
     return this.expandedLogs().has(index);
+  }
+
+  handleSyncDialogConfirm(event: { productId: string; marketDirectory: string; override: boolean }): void {
+    const task = this.selectedTask();
+    if (!task) return;
+    console.log(task.key)
+    if (task.key === 'syncOneProduct') {
+      const isValid = this.products.some(p => p.id === event.productId) && !!event.marketDirectory;
+
+      if (!isValid) {
+        this.markSyncOneProductFailed(task);
+        return;
+      }
+      this.executeTask(task, this.service.syncOneProduct(event.productId, event.marketDirectory, event.override));
+    } else {
+      this.executeTask(task, this.service.syncZipArtifacts(false, event.productId));
+    }
+  }
+
+  private executeTask(task: SyncTaskRow, request$: Observable<unknown>): void {
+    this.setSyncTaskRunning(task);
+    this.logStream.resetTask(task.key);
+    this.showSyncOneProductDialog = false;
+
+    request$.pipe(finalize(() => (this.loadingSyncTaskKey = null))).subscribe({
+      next: () => this.handleSyncTaskSuccess(task),
+      error: () => this.handleSyncTaskFailure(task)
+    });
   }
 }

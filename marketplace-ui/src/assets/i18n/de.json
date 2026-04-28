@@ -324,9 +324,11 @@
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",
+        "allProducts": "Alle Produkte",
         "tasks": {
           "syncProducts": "Alle Produkte synchronisieren",
           "syncOneProduct": "Ein Produkt synchronisieren",
+          "syncZipArtifacts": "ZIP-Artefakte synchronisieren",
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
           "syncGithubMonitor": "GitHub-Monitor synchronisieren"
         },

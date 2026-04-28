@@ -324,9 +324,11 @@
         "syncLabel": "Synchronize",
         "syncingLabel": "Synchronizing...",
         "cancelLabel": "Cancel",
+        "allProducts": "All Products",
         "tasks": {
           "syncProducts": "Synchronize all products",
           "syncOneProduct": "Synchronize one product",
+          "syncZipArtifacts": "Synchronize ZIP artifacts",
           "syncLatestReleasesForProducts": "Synchronize product release notes",
           "syncGithubMonitor": "Synchronize GitHub monitor"
         },
