@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import org.slf4j.MDC;
+
 import java.util.function.Function;
 
 /**
@@ -19,15 +21,15 @@ public final class MdcContextUtils {
    * @return wrapped function with MDC context
    */
   public static <T, R> Function<T, R> wrapMdcContext(Function<T, R> function) {
-    java.util.Map<String, String> mdcContext = org.slf4j.MDC.getCopyOfContextMap();
+    java.util.Map<String, String> mdcContext = MDC.getCopyOfContextMap();
     return (T t) -> {
       if (mdcContext != null) {
-        org.slf4j.MDC.setContextMap(mdcContext);
+        MDC.setContextMap(mdcContext);
       }
       try {
         return function.apply(t);
       } finally {
-        org.slf4j.MDC.clear();
+        MDC.clear();
       }
     };
   }

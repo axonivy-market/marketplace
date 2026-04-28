@@ -6,11 +6,13 @@ import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.repository.CustomProductSecurityInfoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSecurityInfoRepository {
 
@@ -29,8 +31,9 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
 
     Query query = entityManager.createNativeQuery(sql, ProductSecurityInfo.class);
     // Bind parameter if search text exists
-    if (criteria.getSearchText() != null && !criteria.getSearchText().trim().isEmpty()) {
-      query.setParameter(1, "%" + criteria.getSearchText().trim() + "%");
+    String searchText = StringUtils.trimToEmpty(criteria.getSearchText());
+    if (searchText != null) {
+      query.setParameter(1, "%" + searchText + "%");
     }
 
     List<?> resultList = query
@@ -44,8 +47,9 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
 
     String countSql = "SELECT COUNT(*) FROM product_security_info psi" + whereClause;
     Query countQuery = entityManager.createNativeQuery(countSql);
-    if (criteria.getSearchText() != null && !criteria.getSearchText().trim().isEmpty()) {
-      countQuery.setParameter(1, "%" + criteria.getSearchText().trim() + "%");
+
+    if (searchText != null) {
+      countQuery.setParameter(1, "%" + searchText + "%");
     }
     long total = ((Number) countQuery.getSingleResult()).longValue();
     return new PageImpl<>(content, pageable, total);
@@ -89,12 +93,11 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
         .map(sev -> String.format(
             " CAST(COALESCE(CAST(%s AS jsonb) ->> '%s', '0') AS integer) %s",
             column, sev, dir))
-        .reduce((a, b) -> a + ", " + b)
-        .orElse("");
+        .collect(Collectors.joining(", "));
   }
 
   private String buildWhereClause(String searchText) {
-    if (searchText == null || searchText.trim().isEmpty()) {
+    if (StringUtils.isBlank(searchText)) {
       return "";
     }
     return " WHERE psi.repo_name ILIKE ?1";
