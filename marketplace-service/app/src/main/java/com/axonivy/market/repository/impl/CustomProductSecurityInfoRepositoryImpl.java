@@ -62,15 +62,17 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
       default -> "psi.repo_name " + safeDirection;
     };
 
-    String statusCol = getStatusColumn(sortOption);
-    String statusOrder = statusCol != null
-        ? ", array_position(ARRAY['ENABLED','NO_PERMISSION','DISABLED'], " + statusCol + ") " + safeDirection : "";
-
     if (sortOption == ProductSecuritySortOption.REPO_NAME) {
       return primaryOrder;
     }
+    String statusCol = getStatusColumn(sortOption);
+    String statusOrder = "";
+    if (statusCol != null) {
+      statusOrder = ", array_position(ARRAY['ENABLED','NO_PERMISSION','DISABLED'], " + statusCol + ") " + safeDirection;
+    }
+
     String additionalOrder = ", psi.repo_name " + safeDirection;
-    return primaryOrder + statusOrder  + additionalOrder;
+    return primaryOrder + statusOrder + additionalOrder;
   }
 
   private String getStatusColumn(ProductSecuritySortOption sortOption) {
