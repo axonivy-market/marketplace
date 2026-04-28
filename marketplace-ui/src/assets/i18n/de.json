@@ -324,7 +324,8 @@
         "syncLabel": "Synchronisieren",
         "syncingLabel": "Synchronisierung läuft …",
         "cancelLabel": "Abbrechen",
-        "allProducts": "Alle Produkte",
+        "allProductsHint": "Leer lassen, um alle Produkte zu synchronisieren",
+        "noResults": "Keine Ergebnisse gefunden",
         "tasks": {
           "syncProducts": "Alle Produkte synchronisieren",
           "syncOneProduct": "Ein Produkt synchronisieren",
@@ -332,8 +333,9 @@
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
           "syncGithubMonitor": "GitHub-Monitor synchronisieren"
         },
-        "syncOneProductDialog": {
-          "title": "Ein Produkt synchronisieren",
+        "syncProductDialog": {
+          "syncOneProductTitle": "Ein Produkt synchronisieren",
+          "syncZIPArtifactTitle": "ZIP-Artefakte synchronisieren",
           "chooseExtensionIdHint": "Wählen Sie eine Erweiterungs-ID zur Synchronisierung aus",
           "marketItemPath": "Marktplatz-Elementpfad",
           "chooseMarketItemPathHint": "Beispiel: market/demos/html-dialog/",

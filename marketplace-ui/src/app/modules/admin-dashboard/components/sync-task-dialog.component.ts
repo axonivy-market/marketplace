@@ -5,6 +5,41 @@ import { TranslateModule } from '@ngx-translate/core';
 import { SyncTaskKey } from '../admin-dashboard.service';
 import { MarketProduct } from '../../../shared/models/product.model';
 
+type TaskKey = SyncTaskKey;
+
+interface TaskConfig {
+  enableMarketPath: boolean;
+  requireProduct: boolean;
+  showAllOption: boolean;
+  showOverrideCheckbox: boolean;
+  dialogTitle: string
+}
+
+const DEFAULT_TASK_CONFIG: TaskConfig = {
+  enableMarketPath: false,
+  requireProduct: true,
+  showAllOption: false,
+  showOverrideCheckbox: false,
+  dialogTitle: 'common.admin.sync.syncProductDialog.title'
+};
+
+const TASK_CONFIGS: Partial<Record<TaskKey, TaskConfig>> = {
+  syncOneProduct: {
+    enableMarketPath: true,
+    requireProduct: true,
+    showAllOption: false,
+    showOverrideCheckbox: true,
+    dialogTitle: 'common.admin.sync.syncProductDialog.syncOneProductTitle'
+  },
+  syncZipArtifacts: {
+    enableMarketPath: false,
+    requireProduct: true,
+    showAllOption: true,
+    showOverrideCheckbox: false,
+    dialogTitle: 'common.admin.sync.syncProductDialog.syncZIPArtifactTitle'
+  }
+};
+
 @Component({
   selector: 'app-sync-task-dialog',
   standalone: true,
@@ -14,7 +49,7 @@ import { MarketProduct } from '../../../shared/models/product.model';
 })
 export class SyncTaskDialogComponent implements OnChanges {
   @Input() visible = false;
-  @Input() taskKey!: SyncTaskKey;
+  @Input() taskKey!: TaskKey;
   @Input() products: MarketProduct[] = [];
 
   @Output() confirmSync = new EventEmitter<{
@@ -32,48 +67,40 @@ export class SyncTaskDialogComponent implements OnChanges {
   dropdownOpen = false;
   filteredProducts = signal<MarketProduct[]>([]);
 
+  // Always initialized so template can safely read fields
+  currentConfig: TaskConfig = DEFAULT_TASK_CONFIG;
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['products']) {
       this.filteredProducts.set(this.products.slice(0, 10));
     }
 
+    if (changes['taskKey'] && this.taskKey) {
+      const cfg = TASK_CONFIGS[this.taskKey];
+      this.currentConfig = cfg ?? DEFAULT_TASK_CONFIG;
+    }
+
     if (changes['visible']?.currentValue === true) {
       this.reset();
+      this.filteredProducts.set(this.products.slice(0, 10));
     }
   }
 
-  getTaskConfig() {
-    switch (this.taskKey) {
-      case 'syncOneProduct':
-        return {
-          enableMarketPath: true,
-          requireProduct: true
-        };
-
-      case 'syncZipArtifacts':
-      default:
-        return {
-          enableMarketPath: false,
-          requireProduct: true
-        };
-    }
-  }
-
-  isMarketPathEnabled(): boolean {
-    return this.getTaskConfig().enableMarketPath;
-  }
-
+  // UI actions
   openDropdown(): void {
     this.dropdownOpen = true;
     this.filteredProducts.set(this.products.slice(0, 10));
   }
 
   filterProducts(): void {
-    const value = this.productSearch.toLowerCase();
+    const value = (this.productSearch ?? '').toLowerCase();
     const filtered = this.products.filter(p => p.id.toLowerCase().includes(value)).slice(0, 10);
     this.filteredProducts.set(filtered);
 
-    if (!this.products.some(p => p.id === this.productSearch)) {
+    // Only clear marketDirectory when the input does not match ANY product
+    // and the dialog does NOT allow "All products"
+    const matches = this.products.some(p => p.id === (this.productSearch ?? ''));
+    if (!matches && !this.currentConfig.showAllOption) {
       this.marketDirectory = '';
     }
     this.dropdownOpen = true;
@@ -85,51 +112,54 @@ export class SyncTaskDialogComponent implements OnChanges {
     this.dropdownOpen = false;
   }
 
-  selectAllProducts(): void {
-    this.productSearch = '';
-    this.marketDirectory = '';
-    this.dropdownOpen = false;
-  }
-
+  /**
+   * Validation rules:
+   * - If requireProduct is true:
+   *   - Empty productSearch is valid only when showAllOption is true
+   *   - Non-empty productSearch must match an existing product
+   *   - If enableMarketPath is true, marketDirectory must be non-empty when a product is selected (or when required)
+   * - If requireProduct is false: always valid
+   */
   isValid(): boolean {
-    const config = this.getTaskConfig();
+    const cfg = this.currentConfig;
+    const productSearchTrim = (this.productSearch ?? '').trim();
+    const marketDirectoryTrim = (this.marketDirectory ?? '').trim();
 
-    if (config.requireProduct) {
-      if (!this.productSearch) {
-        return true;
+    if (cfg.requireProduct) {
+      if (productSearchTrim.length === 0) {
+        return !!cfg.showAllOption;
       }
 
-      return this.products.some(p => p.id === this.productSearch) && !!this.marketDirectory;
+      const productMatch = this.products.some(p => p.id === productSearchTrim);
+      if (!productMatch) {
+        return false;
+      }
+
+      if (cfg.enableMarketPath) {
+        return marketDirectoryTrim.length > 0;
+      }
+
+      return true;
     }
 
     return true;
   }
 
   onConfirm(): void {
-    const config = this.getTaskConfig();
+    // Normalize values before emit
+    const productId = (this.productSearch ?? '').trim(); // '' -> means "all" if allowed by currentConfig
+    const marketDirectory = (this.marketDirectory ?? '').trim();
 
-    if (config.requireProduct) {
-      this.confirmSync.emit({
-        productId: this.productSearch,
-        marketDirectory: this.marketDirectory.trim(),
-        override: this.overrideMarketItemPath
-      });
-    } else {
-      this.confirmSync.emit({
-        productId: '',
-        marketDirectory: '',
-        override: false
-      });
-    }
+    this.confirmSync.emit({
+      productId,
+      marketDirectory,
+      override: this.overrideMarketItemPath
+    });
   }
 
   onCancel(): void {
     this.reset();
     this.cancelSync.emit();
-  }
-
-  isZipArtifacts(): boolean {
-    return this.taskKey === 'syncZipArtifacts';
   }
 
   private reset(): void {
