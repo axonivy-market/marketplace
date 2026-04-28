@@ -51,6 +51,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -362,6 +363,9 @@ public class GitHubServiceImpl implements GitHubService {
     } catch (HttpClientErrorException.NotFound e) {
       log.error("Not Found URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, NO_PERMISSION);
+    } catch (HttpServerErrorException.ServiceUnavailable e) {
+      log.error("Service Unavailable URL: {} with the error: {}", url, e.getMessage());
+      setStatus(instance, DISABLED);
     }
     return instance;
   }
