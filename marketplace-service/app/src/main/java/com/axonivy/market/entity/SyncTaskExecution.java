@@ -34,11 +34,17 @@ public class SyncTaskExecution extends AuditableIdEntity {
   @Enumerated(EnumType.STRING)
   private SyncTaskStatus status;
 
+  /**
+   * @deprecated
+   */
   @Deprecated(forRemoval = true, since = "1.26.0")
-  private LocalDateTime triggeredAt;
+  private transient LocalDateTime triggeredAt;
 
+  /**
+   * @deprecated
+   */
   @Deprecated(forRemoval = true, since = "1.26.0")
-  private LocalDateTime completedAt;
+  private transient LocalDateTime completedAt;
 
   private LocalDateTime lastRunDate;
 
