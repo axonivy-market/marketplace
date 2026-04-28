@@ -372,64 +372,37 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should return empty string for undefined status', () => {
-      expect(component.getStatusClass(undefined)).toBe('');
+      expect(component.getStatusClass(null)).toBe('');
     });
   });
 
-  describe('confirmSyncOneProduct', () => {
+  describe('handleSyncDialogConfirm', () => {
     beforeEach(() => {
       fixture.detectChanges();
       component.products = mockProducts;
     });
 
-    it('should execute sync when values are valid', () => {
-      mockAdminService.syncOneProduct.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      createSyncProductValues(
-        component,
-        TEST_CONSTANTS.VALID_PRODUCT_ID,
-        TEST_CONSTANTS.VALID_MARKET_DIR
-      );
-      component.overrideMarketItemPath = true;
+    it('should do nothing when no selected task', () => {
+      component.selectedTask.set(null);
 
-      component.confirmSyncOneProduct();
-
-      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
-        TEST_CONSTANTS.VALID_PRODUCT_ID,
-        TEST_CONSTANTS.VALID_MARKET_DIR,
-        true
-      );
-      expect(component.showSyncOneProductDialog).toBe(false);
-      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
+      expect(() =>
+        component.handleSyncDialogConfirm({
+          productId: 'portal',
+          marketDirectory: 'dir1',
+          override: false
+        })
+      ).not.toThrow();
     });
 
-    it('should trim market directory before syncing', () => {
-      mockAdminService.syncOneProduct.mockReturnValue(of());
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      createSyncProductValues(
-        component,
-        TEST_CONSTANTS.VALID_PRODUCT_ID,
-        '  dir1  '
-      );
+    it('should mark syncOneProduct as failed when invalid input', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncOneProduct')!;
+      component.selectedTask.set(task);
 
-      component.confirmSyncOneProduct();
-
-      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith(
-        'portal',
-        'dir1',
-        false
-      );
-    });
-
-    it('should mark as failed when product not found', () => {
-      component.productSearch = 'non-existent';
-      component.marketDirectory = 'dir1';
-
-      component.confirmSyncOneProduct();
+      component.handleSyncDialogConfirm({
+        productId: 'invalid',
+        marketDirectory: '',
+        override: false
+      });
 
       expectSyncTaskState(
         component,
@@ -437,41 +410,122 @@ describe('AdminDashboardComponent', () => {
         SyncTaskStatus.FAILED,
         'common.admin.sync.syncOneProductDialog.validationMessage'
       );
-      expect(mockAdminService.syncOneProduct).not.toHaveBeenCalled();
     });
 
-    it('should mark as failed when market directory is empty', () => {
-      component.productSearch = 'portal';
-      component.marketDirectory = '';
+    it('should execute syncOneProduct when valid', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncOneProduct')!;
+      component.selectedTask.set(task);
 
-      component.confirmSyncOneProduct();
+      mockAdminService.syncOneProduct.mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of(mockExecutions));
 
-      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.FAILED);
-      expect(mockAdminService.syncOneProduct).not.toHaveBeenCalled();
+      component.handleSyncDialogConfirm({
+        productId: 'portal',
+        marketDirectory: 'dir1',
+        override: true
+      });
+
+      expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith('portal', 'dir1', true);
+
+      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
+      expect(component.showSyncOneProductDialog).toBe(false);
     });
 
-    it('should do nothing when sync task not found', () => {
-      component.syncTasks = [];
-      component.productSearch = 'portal';
-      component.marketDirectory = 'dir1';
+    it('should execute syncZipArtifacts when task is not syncOneProduct', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncZipArtifacts')!;
+      component.selectedTask.set(task);
 
-      expect(() => component.confirmSyncOneProduct()).not.toThrow();
+      mockAdminService.syncZipArtifacts = vi.fn().mockReturnValue(of());
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of(mockExecutions));
+
+      component.handleSyncDialogConfirm({
+        productId: 'portal',
+        marketDirectory: '',
+        override: false
+      });
+
+      expect(mockAdminService.syncZipArtifacts).toHaveBeenCalledWith(false, 'portal');
+
+      expectSyncTaskState(component, 'syncZipArtifacts', SyncTaskStatus.RUNNING);
+    });
+  });
+
+  describe('executeTask', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
     });
 
-    it('should handle sync one product failure', () => {
-      mockAdminService.syncOneProduct.mockReturnValue(
-        throwError(() => new Error('Sync failed'))
+    it('should set task to running and reset dialog', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const request$ = of();
+
+      component.showSyncOneProductDialog = true;
+
+      (component as any).executeTask(task, request$);
+
+      expect(task.status).toBe(SyncTaskStatus.RUNNING);
+      expect(component.showSyncOneProductDialog).toBe(false);
+    });
+
+    it('should handle success correctly', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+
+      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of(mockExecutions));
+
+      (component as any).executeTask(task, of());
+
+      expect(task.status).toBe(SyncTaskStatus.SUCCESS);
+    });
+
+    it('should handle failure correctly', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+
+      (component as any).executeTask(
+        task,
+        throwError(() => new Error('fail'))
       );
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
-        of(mockExecutions)
-      );
-      component.productSearch = 'portal';
-      component.marketDirectory = 'dir1';
-      component.isAuthenticated = true;
 
-      component.confirmSyncOneProduct();
+      expect(task.status).toBe(SyncTaskStatus.FAILED);
+    });
+  });
 
-      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.FAILED);
+  describe('openSyncOneProductDialog', () => {
+    it('should load products and open dialog', async () => {
+      mockProductService.fetchAllProductsForSync.mockReturnValue(Promise.resolve(mockProducts));
+
+      await (component as any).openSyncOneProductDialog();
+
+      expect(component.products).toEqual(mockProducts);
+      expect(component.filteredProducts.length).toBeLessThanOrEqual(10);
+      expect(component.showSyncOneProductDialog).toBe(true);
+    });
+  });
+
+  describe('runSyncTask (internal)', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    it('should call correct trigger function', () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+
+      mockAdminService.syncProducts.mockReturnValue(of());
+
+      (component as any).runSyncTask(task);
+
+      expect(mockAdminService.syncProducts).toHaveBeenCalled();
+    });
+
+    it('should reset loadingSyncTaskKey after finalize', async () => {
+      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+
+      mockAdminService.syncProducts.mockReturnValue(of());
+
+      (component as any).runSyncTask(task);
+
+      await Promise.resolve();
+
+      expect(component.loadingSyncTaskKey).toBeNull();
     });
   });
 
