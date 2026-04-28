@@ -115,6 +115,7 @@ public class FeedbackController {
     return ResponseEntity.ok(pageResources);
   }
 
+  @Authorized
   @PutMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
