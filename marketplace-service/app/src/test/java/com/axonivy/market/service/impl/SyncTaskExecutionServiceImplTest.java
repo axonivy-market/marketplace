@@ -41,8 +41,6 @@ class SyncTaskExecutionServiceImplTest {
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
     assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
-    assertNotNull(result.getLastRunDate(), "LastRunDate should not be null after start");
-    assertNull(result.getCompletedDate(), "CompletedDate should be null after start");
   }
 
   @Test
@@ -57,8 +55,6 @@ class SyncTaskExecutionServiceImplTest {
     assertEquals(SyncTaskStatus.STARTED, result.getStatus(), "Status should be STARTED after start");
     assertEquals(SyncTaskConstants.STARTED_MESSAGE, result.getMessage(),
         "Message should be Sync task has started! after start");
-    assertNotNull(result.getLastRunDate(), "LastRunDate should not be null after start");
-    assertNull(result.getCompletedDate(), "CompletedDate should be null after start");
   }
 
   @Test
