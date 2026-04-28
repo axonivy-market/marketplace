@@ -44,6 +44,7 @@ public class SecurityMonitorController {
 
   @GetMapping
   @Operation(hidden = true)
+  @Authorized
   public ResponseEntity<PagedModel<ProductSecurityInfo>> getGitHubMarketplaceSecurity(
       @RequestParam(value = SEARCH, required = false) String searchText,
       @RequestParam(value = SORT, required = false, defaultValue = "repoName") String sort,
