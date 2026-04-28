@@ -29,7 +29,7 @@ public interface OAuth2Service {
    * </p>
    *
    * @param  authorizationHeader
-   *              type {@link String} - the Authorization header value (format: "github_token&gt;")
+   *              type {@link String} - the GitHub access token string to validate and use for JWT generation
    * @return {@link UserInfo} - user information object containing user details and generated JWT token;
    *         throws exception if token is invalid or GitHub authentication fails
    * @author vhhoang

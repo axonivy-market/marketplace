@@ -4,8 +4,7 @@ public interface CoreImageService {
 
   /**
    * <p>
-   * Reads and returns the binary image data for a product image by its ID. Retrieves the image from
-   * local storage cache or generates it on-demand, returning raw bytes suitable for serving to web clients.
+   * Reads and returns the binary image data for a product image by its ID.
    * </p>
    *
    * @param  id

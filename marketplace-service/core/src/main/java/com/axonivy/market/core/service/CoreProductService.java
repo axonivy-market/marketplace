@@ -21,7 +21,7 @@ public interface CoreProductService {
    * </p>
    *
    * @param  type
-   *              type {@link String} - product type filter (e.g., "Connector", "Plugin"); can be null for no type filtering
+   *              type {@link String} - product type filter (e.g., "Connector"); if null for will get all
    * @param  keyword
    *              type {@link String} - search keyword to filter products by name or description; can be null for no keyword filtering
    * @param  language

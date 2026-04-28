@@ -13,11 +13,11 @@ public interface GHAxonIvyMarketRepoService {
   /**
    * <p>
    * Fetches all market items from the AxonIvy market repository. Returns a map grouping
-   * market items by directory/category, allowing organized browsing of available products
+   * market items by directory, allowing organized browsing of available products
    * and plugins in the marketplace.
    * </p>
    *
-   * @return {@link Map<String, List<GHContent>>} - map of market items grouped by category/directory;
+   * @return {@link Map<String, List<GHContent>>} - map of market items grouped by directory;
    *         keys are directory names, values are lists of content files
    * @author ntqdinh
    */

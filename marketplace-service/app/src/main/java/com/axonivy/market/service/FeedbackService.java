@@ -14,7 +14,8 @@ public interface FeedbackService {
 
   /**
    * <p>
-   * Retrieves a paginated list of all feedback entries from the database, including associated product names and other related information, ordered by creation date or other specified criteria.
+   * Retrieves a paginated list of all feedback entries from the database, including associated product names and
+   * other related information, ordered by creation date or other specified criteria.
    * </p>
    *
    * @param pageable
@@ -26,7 +27,8 @@ public interface FeedbackService {
 
   /**
    * <p>
-   * Retrieves a paginated list of feedback entries for a specific product, filtering only the latest approved or pending feedbacks, and validates that the product exists before fetching.
+   * Retrieves a paginated list of feedback entries for a specific product, filtering only the latest approved and not
+   * in rejected or pending status feedbacks, and validates that the product exists before fetching.
    * </p>
    *
    * @param productId
@@ -54,7 +56,8 @@ public interface FeedbackService {
 
   /**
    * <p>
-   * Retrieves a list of feedback entries for a specific user and product combination, filtering only the latest feedbacks that are not rejected, and validates that the user and product exist.
+   * Retrieves a list of feedback entries for a specific user and product combination, filtering only the latest
+   * feedbacks that are not rejected, and validates that the user and product exist.
    * </p>
    *
    * @param userId
@@ -69,11 +72,13 @@ public interface FeedbackService {
 
   /**
    * <p>
-   * Updates the status of an existing feedback entry based on approval decision, setting it to approved or rejected, and handles deactivating other latest feedbacks if approved.
+   * Updates the status of an existing feedback entry based on approval decision, setting it to approved or rejected,
+   * and handles deactivating other latest feedbacks if approved.
    * </p>
    *
    * @param feedbackApproval
-   *              type {@link FeedbackApprovalModel} - the approval model containing feedback ID, version, and approval decision
+   *              type {@link FeedbackApprovalModel} - the approval model containing feedback ID, version, and
+   *              approval decision
    * @return {@link Feedback} - the updated feedback entry
    * @throws NotFoundException if the feedback is not found
    * @author nntthuy
@@ -82,7 +87,9 @@ public interface FeedbackService {
 
   /**
    * <p>
-   * Creates a new feedback entry or updates an existing one for the given user and product, handling pending and approved feedbacks, and validates user and product existence.
+   * Creates a new feedback entry or updates an existing one for the given user and product, handling pending and
+   * approved feedbacks, and validates user existence. Deletes pending if duplicate approved exists or reuses
+   * approved feedback if content, rating match
    * </p>
    *
    * @param feedback
@@ -98,13 +105,14 @@ public interface FeedbackService {
   /**
    * <p>
    * Retrieves aggregate rating statistics for a specific product. Returns overall rating score,
-   * rating distribution (count by star), and average rating calculated from all user feedbacks.
+   * rating distribution (count by star), and average rating calculated from all user feedbacks. Only counts latest,
+   * non-pending, non-rejected
    * </p>
    *
    * @param  productId
    *              type {@link String} - the unique product identifier to retrieve ratings for
    * @return {@link List<ProductRating>} - list of rating objects containing rating score, count, and statistics;
-   *         returns empty list if product has no ratings/feedbacks
+   *         returns empty list if product has no ratings/feedbacks and returns 0-filled stars if no data found.
    * @author ndkhanh
    */
   List<ProductRating> getProductRatingById(String productId);

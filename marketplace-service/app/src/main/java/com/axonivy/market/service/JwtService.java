@@ -53,7 +53,7 @@ public interface JwtService {
    *
    * @param  token
    *              type {@link String} - the JWT token string to extract claims from
-   * @return {@link Claims} - the JWT claims object containing all token payload data;
+   * @return {@link Claims} - the JWT claims object containing all token payload data
    * @author ndkhanh
    */
   Claims getClaimsFromToken(String token);

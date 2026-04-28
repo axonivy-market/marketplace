@@ -20,7 +20,8 @@ public interface CoreVersionService {
    * @param  productVersion
    *              type {@link String} - the specific product version to retrieve configuration for
    * @return {@link Map<String, Object>} - product JSON content as a key-value map containing metadata,
-   *         features, dependencies, and configuration; returns null if product/version not found
+   *         features, dependencies, and configuration; returns empty map if product/version not found or JSON
+   *         content cannot be parsed
    * @author ntqdinh
    */
   Map<String, Object> getProductJsonContentByIdAndVersion(String name, String productVersion);
