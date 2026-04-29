@@ -6,6 +6,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
+  public static final String USER_INFO_ATTRIBUTE = "userInfo";
 
   private final JwtService jwtService;
   private final GitHubService gitHubService;
@@ -57,11 +59,12 @@ public class AuthorizedAspect {
     if (ObjectUtils.isEmpty(token)) {
       throw throwInvalidAuthorizationException();
     }
-
     if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
-      gitHubService.validateUserInOrganizationAndTeam(token,
+      UserInfo userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+      request.setAttribute(USER_INFO_ATTRIBUTE, userInfo);
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);

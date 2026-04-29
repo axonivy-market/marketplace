@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Authorized.AuthorizationScope;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.entity.Feedback;
@@ -119,7 +120,8 @@ public class FeedbackController {
   @PutMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
-      @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval, HttpServletRequest request) {
+    var userInfo = request.getAttribute(AuthorizedAspect.USER_INFO_ATTRIBUTE);
     var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
     var model = feedbackModelAssembler.toModel(feedback);
     model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());

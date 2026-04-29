@@ -58,11 +58,16 @@ export class FeedbackApprovalComponent implements OnInit {
 
   allFeedbacks = computed(() => this.feedbacks());
   reviewingFeedbacks = computed(() => this.pendingFeedbacks());
-  constructor(private readonly storageRef: SessionStorageRef) {}
+  constructor(private readonly storageRef: SessionStorageRef) {
+    
+    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
+  }
 
   ngOnInit() {
-    this.fetchFeedbacks();
+    // this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
+    // this.fetchFeedbacks();
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
+    this.productFeedbackService.findProductFeedbacks().subscribe();
   }
 
   fetchFeedbacks(): void {
@@ -72,44 +77,57 @@ export class FeedbackApprovalComponent implements OnInit {
       this.isAuthenticated = false;
       return;
     }
+    this.productFeedbackService.findProductFeedbacks();
 
-    this.isLoading = true;
-    this.fetchUserInfo()
-      .pipe(
-        switchMap(name => {
-          if (!name) {
-            this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-            return EMPTY;
-          }
-          this.errorMessage = '';
-          return this.productFeedbackService.findProductFeedbacks();
-        }),
-        catchError(err => {
-          this.handleError(err);
-          return EMPTY;
-        }),
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
-      .subscribe();
+    // this.isLoading = true;
+    // this.fetchUserInfo()
+    //   .pipe(
+    //     switchMap(name => {
+    //       if (!name) {
+    //         this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+    //         return EMPTY;
+    //       }
+    //       this.errorMessage = '';
+    //       return this.productFeedbackService.findProductFeedbacks();
+    //     }),
+    //     catchError(err => {
+    //       console.log("Error in fetchFeedbacks");
+          
+    //       this.handleError(err);
+    //       return EMPTY;
+    //     }),
+    //     finalize(() => {
+    //       this.isLoading = false;
+    //     })
+    //   )
+    //   .subscribe();
   }
 
   fetchUserInfo(): Observable<string | null> {
-    const accessToken = this.authService.decodeToken(this.token)?.accessToken;
+    console.log(this.token);
+    let parsedToken = JSON.parse(this.token);
+    console.log(this.authService.decodeToken(parsedToken['token']));
+    
+    const accessToken = this.authService.decodeToken(parsedToken['token'])?.accessToken;
     if (!accessToken) {
+          console.log("Error in fetchUserInfo");
       this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
       return of(null);
     }
 
     return this.authService
-      .getDisplayNameFromAccessToken(accessToken)
+      .getDisplayNameFromAccessToken(parsedToken['token'])
       .pipe(
         tap(name => {
-          this.isAuthenticated = !!name;
-          this.moderatorName = name;
+          console.log(name);
+          
+          console.log("Error in tap getDisplayNameFromAccessToken");
+          
+          // this.isAuthenticated = !!name;
+          // this.moderatorName = name;
         }),
         catchError(err => {
+          console.log("Error in getDisplayNameFromAccessToken");
           this.handleError(err);
           return of(null);
         })
@@ -131,7 +149,7 @@ export class FeedbackApprovalComponent implements OnInit {
     if (this.moderatorName && feedback.id && feedback.version >= 0 && feedback.userId) {
       const approvalRequest: FeedbackApproval = {
         feedbackId: feedback.id,
-        moderatorName: this.moderatorName,
+        // moderatorName: this.moderatorName,
         version: feedback.version,
         productId: feedback.productId,
         userId: feedback.userId,

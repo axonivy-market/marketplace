@@ -67,19 +67,19 @@ export class ProductFeedbackService {
     page: number = this.page(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
-    const token = sessionStorage.getItem(ADMIN_SESSION_TOKEN);
+    console.log(JSON.parse(sessionStorage.getItem(ADMIN_SESSION_TOKEN)!));
+    const token = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_TOKEN)!)['token'];
+    console.log(token);
+    
     const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,
-        params: requestParams,
-        context: new HttpContext().set(
-          LoadingComponent,
-          LoadingComponentId.FEEDBACK_APPROVAL
-        )
+        params: requestParams
       })
       .pipe(
         tap(response => {

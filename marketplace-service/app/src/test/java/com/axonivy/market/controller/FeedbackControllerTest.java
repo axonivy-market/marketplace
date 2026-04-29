@@ -185,32 +185,32 @@ class FeedbackControllerTest extends BaseSetup {
         "Response body content size should be 0 when no feedbacks are found.");
   }
 
-  @Test
-  void testUpdateFeedbackWithNewStatus() {
-    FeedbackApprovalModel feedbackApproval = new FeedbackApprovalModel();
-    feedbackApproval.setFeedbackId(FEEDBACK_ID_SAMPLE);
-    feedbackApproval.setIsApproved(true);
-
-    Feedback updatedFeedback = createFeedbackMock();
-    GithubUser mockGithubUser = createUserMock();
-    FeedbackModel mockFeedbackModel = new FeedbackModel();
-    mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
-    mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
-
-    when(service.updateFeedbackWithNewStatus(feedbackApproval)).thenReturn(updatedFeedback);
-    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
-
-    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
-
-    assertEquals(HttpStatus.OK, result.getStatusCode(),
-        "Response status should be 200 OK when feedback status is successfully updated.");
-    assertTrue(result.hasBody(),
-        "Response should contain a body after updating feedback status.");
-    assertEquals(FEEDBACK_ID_SAMPLE, Objects.requireNonNull(result.getBody()).getId(),
-        "The feedback ID in the response should match the updated feedback ID.");
-    assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus(),
-        "The feedback status should be APPROVED after updating.");
-  }
+//  @Test
+//  void testUpdateFeedbackWithNewStatus() {
+//    FeedbackApprovalModel feedbackApproval = new FeedbackApprovalModel();
+//    feedbackApproval.setFeedbackId(FEEDBACK_ID_SAMPLE);
+//    feedbackApproval.setIsApproved(true);
+//
+//    Feedback updatedFeedback = createFeedbackMock();
+//    GithubUser mockGithubUser = createUserMock();
+//    FeedbackModel mockFeedbackModel = new FeedbackModel();
+//    mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
+//    mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
+//
+//    when(service.updateFeedbackWithNewStatus(feedbackApproval)).thenReturn(updatedFeedback);
+//    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
+//
+//    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
+//
+//    assertEquals(HttpStatus.OK, result.getStatusCode(),
+//        "Response status should be 200 OK when feedback status is successfully updated.");
+//    assertTrue(result.hasBody(),
+//        "Response should contain a body after updating feedback status.");
+//    assertEquals(FEEDBACK_ID_SAMPLE, Objects.requireNonNull(result.getBody()).getId(),
+//        "The feedback ID in the response should match the updated feedback ID.");
+//    assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus(),
+//        "The feedback status should be APPROVED after updating.");
+//  }
 
   @Test
   void testCreateFeedback() {

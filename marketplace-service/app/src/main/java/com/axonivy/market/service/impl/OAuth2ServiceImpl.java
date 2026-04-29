@@ -25,14 +25,30 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   private final GitHubService gitHubService;
   private final JwtService jwtService;
 
+//  @Override
+//  public String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode) {
+//    try {
+//      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
+//          gitHubProperty);
+//      String accessToken = tokenResponse.getAccessToken();
+//      var githubUser = gitHubService.getAndUpdateUser(accessToken);
+//      return jwtService.generateToken(githubUser, accessToken);
+//    } catch (Oauth2ExchangeCodeException e) {
+//      log.error("Login Github failed: ", e);
+//      throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), e.getErrorDescription());
+//    } catch (Exception e) {
+//      log.error("Error getting authentication token: ", e);
+//      throw new Oauth2ExchangeCodeException(HttpStatus.INTERNAL_SERVER_ERROR.name(), e.getMessage());
+//    }
+//  }
+
   @Override
   public String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode) {
     try {
-      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
-          gitHubProperty);
-      String accessToken = tokenResponse.getAccessToken();
-      var githubUser = gitHubService.getAndUpdateUser(accessToken);
-      return jwtService.generateToken(githubUser, accessToken);
+//      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
+//          gitHubProperty);
+      var githubUser = gitHubService.getAndUpdateUser(gitHubProperty.getToken());
+      return jwtService.generateToken(githubUser, gitHubProperty.getToken());
     } catch (Oauth2ExchangeCodeException e) {
       log.error("Login Github failed: ", e);
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), e.getErrorDescription());

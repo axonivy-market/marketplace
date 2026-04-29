@@ -78,6 +78,8 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    console.log("In news management");
+
     if (this.isBrowser) {
       this.pageTitleService.setTitleOnLangChange(
         'common.admin.newsManagement.pageTitle'
