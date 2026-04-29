@@ -1,4 +1,5 @@
 import { Language } from '../enums/language.enum';
+import { SecurityMonitorSortOption } from '../enums/security-monitor-sort.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { TypeOption } from '../enums/type-option.enum';
 import { Pageable } from './apis/pageable.model';
@@ -31,4 +32,11 @@ export interface ReleaseLetterCriteria {
   pageable?: Pageable;
   isReadOnly?: boolean;
   nextPageHref?: string;
+}
+
+export interface SecurityMonitorCriteria {
+  searchText: string;
+  sortOption: SecurityMonitorSortOption;
+  sortDirection: string;
+  pageable: Pageable;
 }

@@ -3,7 +3,7 @@ package com.axonivy.market.factory;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.enums.SecurityFeature;
 import lombok.AccessLevel;
