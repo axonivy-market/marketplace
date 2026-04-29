@@ -235,7 +235,11 @@ export class ProductService {
         }))
       ),
 
-      reduce((allProducts, currentPageProducts) => [...allProducts, ...currentPageProducts], [] as MarketProduct[]));
+      reduce((allProducts, currentPageProducts) => {
+        allProducts.push(...currentPageProducts);
+        return allProducts;
+      }, [] as MarketProduct[])
+    );
   }
 
   private loadProductPage(page: number, size: number, language: Language): Observable<ProductApiResponse> {

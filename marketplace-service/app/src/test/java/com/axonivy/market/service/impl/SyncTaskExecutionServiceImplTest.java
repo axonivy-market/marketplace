@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.List;
@@ -86,6 +87,20 @@ class SyncTaskExecutionServiceImplTest {
     service.markStatusFailure(execution, MESSAGE);
     assertEquals(SyncTaskStatus.FAILED, execution.getStatus(), "Status should be FAILED after markStatusFailure");
     assertNotNull(execution.getCompletedDate(), "CompletedDate should not be null after markStatusFailure");
+    assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
+  }
+
+  @Test
+  void testMarkStatusRunning() {
+    SyncTaskExecution execution = SyncTaskExecution.builder()
+        .type(SyncTaskType.SYNC_PRODUCTS)
+        .completedDate(LocalDateTime.now())
+        .build();
+    when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    service.markStatusRunning(execution, MESSAGE);
+    assertEquals(SyncTaskStatus.RUNNING, execution.getStatus(), "Status should be RUNNING after markStatusRunning");
+    assertNotNull(execution.getLastRunDate(), "LastRunDate should not be null after markStatusRunning");
+    assertNull(execution.getCompletedDate(), "CompletedDate should be null after markStatusRunning");
     assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
   }
 

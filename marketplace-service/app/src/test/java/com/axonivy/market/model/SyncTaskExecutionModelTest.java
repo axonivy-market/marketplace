@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class SyncTaskExecutionModelTest {
-  private static final LocalDateTime MOCK_LOCAL_DATE = LocalDateTime.now();
+  private static final LocalDateTime MOCK_LOCAL_DATE = LocalDateTime.of(2024, 1, 1, 0, 0);
   private static final String KEY = "key";
   private static final String MESSAGE = "message";
   private static final String DONE = "done";

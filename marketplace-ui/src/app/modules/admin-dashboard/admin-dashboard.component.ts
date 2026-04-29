@@ -154,7 +154,7 @@ export class AdminDashboardComponent implements OnInit {
     this.syncTaskTriggers[syncTask.key]()
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
-        next: (execution: unknown) => this.handleSyncTaskSuccess(syncTask, execution as SyncTaskExecution),
+        next: (e) => this.handleSyncTaskSuccess(syncTask),
         error: () => this.handleSyncTaskFailure(syncTask)
       });
   }
@@ -169,17 +169,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  private handleSyncTaskSuccess(syncTask: SyncTaskRow, execution?: SyncTaskExecution): void {
-    syncTask.status = execution?.status ?? SyncTaskStatus.SUCCESS;
+  private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
+    syncTask.status = SyncTaskStatus.SUCCESS;
     syncTask.completedDate = new Date();
-    syncTask.message = execution?.message ?? syncTask.message;
-
-    if (execution?.lastRunDate) {
-      syncTask.lastRunDate = new Date(execution.lastRunDate);
-    }
-    if (execution?.completedDate) {
-      syncTask.completedDate = new Date(execution.completedDate);
-    }
+    syncTask.message = syncTask.message;
     this.reloadExecutions();
   }
 
@@ -283,7 +276,7 @@ export class AdminDashboardComponent implements OnInit {
       )
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
-        next: (execution: unknown) => this.handleSyncTaskSuccess(syncTask, execution as SyncTaskExecution),
+        next: () => this.handleSyncTaskSuccess(syncTask),
         error: () => this.handleSyncTaskFailure(syncTask)
       });
   }
