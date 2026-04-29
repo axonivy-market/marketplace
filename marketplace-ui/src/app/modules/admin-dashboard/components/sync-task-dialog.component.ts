@@ -20,7 +20,7 @@ const DEFAULT_TASK_CONFIG: TaskConfig = {
   requireProduct: true,
   showAllOption: false,
   showOverrideCheckbox: false,
-  dialogTitle: 'common.admin.sync.syncProductDialog.title'
+  dialogTitle: 'common.admin.sync.syncProductDialog.syncOneProductTitle'
 };
 
 const TASK_CONFIGS: Partial<Record<TaskKey, TaskConfig>> = {

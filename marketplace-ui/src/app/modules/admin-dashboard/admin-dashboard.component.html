@@ -182,9 +182,9 @@
     </div>
 
     <!-- Sync One Product Dialog -->
-    @if (showSyncOneProductDialog && selectedTask()) {
+    @if (showSyncProductDialog && selectedTask()) {
       <app-sync-task-dialog
-        [visible]="showSyncOneProductDialog"
+        [visible]="showSyncProductDialog"
         [taskKey]="selectedTask()!.key"
         [products]="products"
         (cancelSync)="cancelSyncOneProduct()"

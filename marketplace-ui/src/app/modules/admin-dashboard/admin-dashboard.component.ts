@@ -75,7 +75,7 @@ export class AdminDashboardComponent implements OnInit {
 
   showSyncTask = true;
   loadingSyncTaskKey: SyncTaskKey | null = null;
-  showSyncOneProductDialog = false;
+  showSyncProductDialog = false;
 
   syncTasks = SYNC_TASKS;
   products: MarketProduct[] = [];
@@ -139,7 +139,7 @@ export class AdminDashboardComponent implements OnInit {
   async trigger(syncTask: SyncTaskRow): Promise<void> {
     this.selectedTask.set(syncTask);
     if (syncTask.key === 'syncOneProduct' || syncTask.key === 'syncZipArtifacts') {
-      await this.openSyncOneProductDialog();
+      await this.openSyncProductDialog();
       return;
     }
     this.runSyncTask(syncTask);
@@ -223,10 +223,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private async openSyncOneProductDialog(): Promise<void> {
+  private async openSyncProductDialog(): Promise<void> {
     this.products = await this.productService.fetchAllProductsForSync();
     this.filteredProducts = this.products.slice(0, 10);
-    this.showSyncOneProductDialog = true;
+    this.showSyncProductDialog = true;
   }
 
   isValidSyncOneProductValues(): boolean {
@@ -242,12 +242,12 @@ export class AdminDashboardComponent implements OnInit {
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
       completedAt: new Date(),
-      message: this.translateService.instant('common.admin.sync.syncOneProductDialog.validationMessage')
+      message: this.translateService.instant('common.admin.sync.syncProductDialog.validationMessage')
     });
   }
 
   cancelSyncOneProduct(): void {
-    this.showSyncOneProductDialog = false;
+    this.showSyncProductDialog = false;
     this.selectedTask.set(null);
     this.productSearch = '';
     this.marketDirectory = '';
@@ -340,7 +340,7 @@ export class AdminDashboardComponent implements OnInit {
   private executeTask(task: SyncTaskRow, request$: Observable<unknown>): void {
     this.setSyncTaskRunning(task);
     this.logStream.resetTask(task.key);
-    this.showSyncOneProductDialog = false;
+    this.showSyncProductDialog = false;
 
     request$.pipe(finalize(() => (this.loadingSyncTaskKey = null))).subscribe({
       next: () => this.handleSyncTaskSuccess(task),

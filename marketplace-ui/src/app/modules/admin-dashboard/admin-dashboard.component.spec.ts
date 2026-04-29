@@ -45,7 +45,7 @@ const createSyncProductValues = (
 };
 
 const expectSyncValuesToBeReset = (component: AdminDashboardComponent) => {
-  expect(component.showSyncOneProductDialog).toBe(false);
+  expect(component.showSyncProductDialog).toBe(false);
   expect(component.productSearch).toBe('');
   expect(component.marketDirectory).toBe('');
   expect(component.overrideMarketItemPath).toBe(false);
@@ -223,7 +223,7 @@ describe('AdminDashboardComponent', () => {
 
       await component.trigger(syncTask);
 
-      expect(component.showSyncOneProductDialog).toBe(true);
+      expect(component.showSyncProductDialog).toBe(true);
       expect(component.products).toEqual(mockProducts);
       expect(component.filteredProducts.length).toBe(3);
     });
@@ -408,7 +408,7 @@ describe('AdminDashboardComponent', () => {
         component,
         'syncOneProduct',
         SyncTaskStatus.FAILED,
-        'common.admin.sync.syncOneProductDialog.validationMessage'
+        'common.admin.sync.syncProductDialog.validationMessage'
       );
     });
 
@@ -428,7 +428,7 @@ describe('AdminDashboardComponent', () => {
       expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith('portal', 'dir1', true);
 
       expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
-      expect(component.showSyncOneProductDialog).toBe(false);
+      expect(component.showSyncProductDialog).toBe(false);
     });
 
     it('should execute syncZipArtifacts when task is not syncOneProduct', () => {
@@ -459,12 +459,12 @@ describe('AdminDashboardComponent', () => {
       const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
       const request$ = of();
 
-      component.showSyncOneProductDialog = true;
+      component.showSyncProductDialog = true;
 
       (component as any).executeTask(task, request$);
 
       expect(task.status).toBe(SyncTaskStatus.RUNNING);
-      expect(component.showSyncOneProductDialog).toBe(false);
+      expect(component.showSyncProductDialog).toBe(false);
     });
 
     it('should handle failure correctly', () => {
@@ -479,15 +479,15 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  describe('openSyncOneProductDialog', () => {
+  describe('openSyncProductDialog', () => {
     it('should load products and open dialog', async () => {
       mockProductService.fetchAllProductsForSync.mockReturnValue(Promise.resolve(mockProducts));
 
-      await (component as any).openSyncOneProductDialog();
+      await (component as any).openSyncProductDialog();
 
       expect(component.products).toEqual(mockProducts);
       expect(component.filteredProducts.length).toBeLessThanOrEqual(10);
-      expect(component.showSyncOneProductDialog).toBe(true);
+      expect(component.showSyncProductDialog).toBe(true);
     });
   });
 
@@ -551,7 +551,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should reset all sync one product values', () => {
-      component.showSyncOneProductDialog = true;
+      component.showSyncProductDialog = true;
       createSyncProductValues(
         component,
         TEST_CONSTANTS.VALID_PRODUCT_ID,
