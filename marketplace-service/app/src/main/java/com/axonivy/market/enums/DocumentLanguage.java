@@ -7,6 +7,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * <p>
+ * Document language enumeration defining supported languages for document indexing and display.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author pvquan
+ */
 @Getter
 @AllArgsConstructor
 public enum DocumentLanguage {

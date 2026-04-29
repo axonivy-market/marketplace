@@ -9,6 +9,14 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
+/**
+ * <p>
+ * Feedback sort option enumeration defining available sorting strategies for feedback queries and display.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ndkhanh
+ */
 @Getter
 @AllArgsConstructor
 public enum FeedbackSortOption {

@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Mail constants defining email template HTML elements and GitHub URLs for notification formatting.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MailConstants {
   public static final String GITHUB_MARKET_ORG_URL = "https://github.com/axonivy-market";

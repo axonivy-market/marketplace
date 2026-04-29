@@ -6,6 +6,14 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 
+/**
+ * <p>
+ * Sort option enumeration defining available sorting strategies for product queries and display.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @Getter
 @AllArgsConstructor
 public enum SortOption {

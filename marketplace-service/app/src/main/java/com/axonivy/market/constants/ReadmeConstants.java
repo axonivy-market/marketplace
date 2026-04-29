@@ -4,6 +4,14 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import java.util.regex.Pattern;
 
+/**
+ * <p>
+ * Readme constants defining file names and regex patterns for parsing README files and identifying demo/setup sections.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReadmeConstants {
   public static final String README_FILE_NAME = "README";
