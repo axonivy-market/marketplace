@@ -27,8 +27,8 @@ import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
   UNAUTHORIZED,
-  SYNC_TASKS
-} from '../../shared/constants/common.constant';
+  } from '../../shared/constants/common.constant';
+import { SYNC_TASKS, SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
@@ -136,7 +136,7 @@ export class AdminDashboardComponent implements OnInit {
   // Synchronize
   async trigger(syncTask: SyncTaskRow): Promise<void> {
     this.selectedTask.set(syncTask);
-    if (syncTask.key === 'syncOneProduct' || syncTask.key === 'syncZipArtifacts') {
+    if (syncTask.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT || syncTask.key === SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS) {
       await this.openSyncProductDialog();
       return;
     }
@@ -243,7 +243,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  cancelSyncOneProduct(): void {
+  cancelSyncProduct(): void {
     this.showSyncProductDialog = false;
     this.selectedTask.set(null);
     this.productSearch = '';
@@ -318,7 +318,7 @@ export class AdminDashboardComponent implements OnInit {
     if (!task) {
       return;
     }
-    if (task.key === 'syncOneProduct') {
+    if (task.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT) {
       const isValid = this.products.some(p => p.id === event.productId) && !!event.marketDirectory;
 
       if (!isValid) {

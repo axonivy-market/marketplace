@@ -187,7 +187,7 @@
         [visible]="showSyncProductDialog"
         [taskKey]="selectedTask()!.key"
         [products]="products"
-        (cancelSync)="cancelSyncOneProduct()"
+        (cancelSync)="cancelSyncProduct()"
         (confirmSync)="handleSyncDialogConfirm($event)">
       </app-sync-task-dialog>
     }

@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SyncTaskDialogComponent } from './sync-task-dialog.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarketProduct } from '../../../shared/models/product.model';
+import { SYNC_TASK_KEYS } from '../../../shared/constants/admin.constant';
 
 describe('SyncTaskDialogComponent', () => {
   let component: SyncTaskDialogComponent;
@@ -23,7 +24,7 @@ describe('SyncTaskDialogComponent', () => {
     component = fixture.componentInstance;
 
     component.products = mockProducts;
-    component.taskKey = 'syncOneProduct' as any;
+    component.taskKey = SYNC_TASK_KEYS.SYNC_ONE_PRODUCT as any;
   });
 
   it('should create', () => {
@@ -45,11 +46,11 @@ describe('SyncTaskDialogComponent', () => {
     });
 
     it('should apply task config based on taskKey', () => {
-      component.taskKey = 'syncZipArtifacts' as any;
+      component.taskKey = SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS as any;
 
       component.ngOnChanges({
         taskKey: {
-          currentValue: 'syncZipArtifacts',
+          currentValue: SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS,
           previousValue: null,
           firstChange: true,
           isFirstChange: () => true

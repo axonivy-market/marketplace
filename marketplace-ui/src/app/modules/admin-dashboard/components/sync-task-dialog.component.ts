@@ -7,7 +7,7 @@ import { MarketProduct } from '../../../shared/models/product.model';
 
 type TaskKey = SyncTaskKey;
 
-interface TaskConfig {
+interface TaskDialogConfig {
   enableMarketPath: boolean;
   requireProduct: boolean;
   showAllOption: boolean;
@@ -15,7 +15,7 @@ interface TaskConfig {
   dialogTitle: string;
 }
 
-const DEFAULT_TASK_CONFIG: TaskConfig = {
+const DEFAULT_TASK_CONFIG: TaskDialogConfig = {
   enableMarketPath: false,
   requireProduct: true,
   showAllOption: false,
@@ -23,7 +23,7 @@ const DEFAULT_TASK_CONFIG: TaskConfig = {
   dialogTitle: 'common.admin.sync.syncProductDialog.syncOneProductTitle'
 };
 
-const TASK_CONFIGS: Partial<Record<TaskKey, TaskConfig>> = {
+const DIALOG_CONFIGS: Partial<Record<TaskKey, TaskDialogConfig>> = {
   syncOneProduct: {
     enableMarketPath: true,
     requireProduct: true,
@@ -67,8 +67,7 @@ export class SyncTaskDialogComponent implements OnChanges {
   dropdownOpen = false;
   filteredProducts = signal<MarketProduct[]>([]);
 
-  // Always initialized so template can safely read fields
-  currentConfig: TaskConfig = DEFAULT_TASK_CONFIG;
+  currentConfig: TaskDialogConfig = DEFAULT_TASK_CONFIG;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['products']) {
@@ -76,7 +75,7 @@ export class SyncTaskDialogComponent implements OnChanges {
     }
 
     if (changes['taskKey'] && this.taskKey) {
-      const cfg = TASK_CONFIGS[this.taskKey];
+      const cfg = DIALOG_CONFIGS[this.taskKey];
       this.currentConfig = cfg ?? DEFAULT_TASK_CONFIG;
     }
 
@@ -86,7 +85,6 @@ export class SyncTaskDialogComponent implements OnChanges {
     }
   }
 
-  // UI actions
   openDropdown(): void {
     this.dropdownOpen = true;
     this.filteredProducts.set(this.products.slice(0, 10));
@@ -144,8 +142,7 @@ export class SyncTaskDialogComponent implements OnChanges {
   }
 
   onConfirm(): void {
-    // Normalize values before emit
-    const productId = (this.productSearch ?? '').trim(); // '' -> means "all" if allowed by currentConfig
+    const productId = (this.productSearch ?? '').trim();
     const marketDirectory = (this.marketDirectory ?? '').trim();
 
     this.confirmSync.emit({

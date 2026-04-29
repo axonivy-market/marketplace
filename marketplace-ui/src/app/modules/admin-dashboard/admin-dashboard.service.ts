@@ -16,14 +16,15 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
+import { SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
 
 export type SyncTaskKey =
-  | 'syncProducts'
-  | 'syncOneProduct'
-  | 'syncZipArtifacts'
-  | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor'
-  | 'syncGithubSecurityMonitor';
+  | typeof SYNC_TASK_KEYS.SYNC_PRODUCTS
+  | typeof SYNC_TASK_KEYS.SYNC_ONE_PRODUCT
+  | typeof SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS
+  | typeof SYNC_TASK_KEYS.SYNC_LATEST_RELEASES_FOR_PRODUCTS
+  | typeof SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR
+  | typeof SYNC_TASK_KEYS.SYNC_GITHUB_SECURITY_MONITOR;
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;

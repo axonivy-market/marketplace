@@ -569,7 +569,7 @@ describe('AdminDashboardComponent', () => {
       );
       component.overrideMarketItemPath = true;
 
-      component.cancelSyncOneProduct();
+      component.cancelSyncProduct();
 
       expectSyncValuesToBeReset(component);
     });
