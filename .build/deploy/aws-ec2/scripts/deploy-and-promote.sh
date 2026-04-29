@@ -19,21 +19,14 @@ fi
 HEALTH_CHECK_TIMEOUT=300
 HEALTH_CHECK_INTERVAL=10
 
-AUDIT_LOG="/tmp/deploy-audit-$(date +%s).log"
-log_audit() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "${AUDIT_LOG}" >&2
-}
-
 GHCR_CREDS_FILE="$(mktemp)"
 chmod 600 "${GHCR_CREDS_FILE}"
 trap "rm -f '${GHCR_CREDS_FILE}'" EXIT
 echo "${GHCR_USERNAME}" > "${GHCR_CREDS_FILE}"
 echo "${GHCR_TOKEN}" >> "${GHCR_CREDS_FILE}"
 
-echo "Deploy and Promote Release"
 echo "Node: ${NODE_NUMBER}"
 echo "Release: ${RELEASE_VERSION}"
-log_audit "Starting deploy and promote for release ${RELEASE_VERSION} on node ${NODE_NUMBER}"
 
 CREDS_TEMP_FILE="/tmp/ghcr-creds-$(date +%s)"
 scp "${SSH_OPTS[@]}" "${GHCR_CREDS_FILE}" "${SSH_USER}@${NODE_IP}:${CREDS_TEMP_FILE}" || { echo "Failed to transfer credentials"; exit 1; }
@@ -44,7 +37,7 @@ cleanup_creds() { rm -f "${CREDS_TEMP_FILE}" 2>/dev/null || true; }
 trap cleanup_creds EXIT
 set -euo pipefail
 
-REMOTE_BASE="/opt/marketplace"
+REMOTE_BASE="/home/axonivy/marketplace"
 RELEASES_PATH="${REMOTE_BASE}/releases"
 CURRENT_LINK="${RELEASES_PATH}/current"
 LIVE_NGINX_PORT="80"
@@ -106,7 +99,6 @@ else
 fi
 
 echo "--- Step 1: Deploy New Release ---"
-
 echo "Logging into ghcr.io..."
 GHCR_USERNAME="$(head -n1 "${CREDS_TEMP_FILE}")"
 GHCR_TOKEN="$(tail -n1 "${CREDS_TEMP_FILE}")"
@@ -171,7 +163,7 @@ while true; do
 
     if [[ "${ALL_HEALTHY}" == "true" ]]; then
         HEALTH_GOOD=true
-        echo "✓ Health check passed on all targets: ${HEALTH_TARGETS_LIST[*]}"
+        echo "Health check passed on all targets: ${HEALTH_TARGETS_LIST[*]}"
         break
     fi
 
@@ -180,7 +172,7 @@ while true; do
 done
 
 if [[ "${HEALTH_GOOD}" != "true" ]]; then
-    echo "✗ Health check failed for ${NEW_RELEASE_NAME}. Rolling back..."
+    echo "Health check failed for ${NEW_RELEASE_NAME}. Rolling back..."
     docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" down || true
 
     if [[ -n "${OLD_RELEASE_NAME}" && -f "${OLD_PUBLISH_PATH}/docker-compose.yml" ]]; then
@@ -190,10 +182,9 @@ if [[ "${HEALTH_GOOD}" != "true" ]]; then
     exit 1
 fi
 
-echo "✓ Deployment health check passed"
+echo "Deployment health check passed"
 
-echo "--- Step 2: Promote Release ---"
-
+echo "--- Step 2: Promote Release ---"q
 echo "Switching current symlink to ${NEW_RELEASE_NAME}..."
 ln -sfn "${NEW_RELEASE_PATH}" "${CURRENT_LINK}"
 
@@ -206,25 +197,23 @@ if docker ps --format '{{.Names}}' | grep -q 'nginx'; then
     CONTAINER_ID="$(docker ps -qf 'name=nginx' | head -n1)"
     if [[ -n "${CONTAINER_ID}" ]]; then
         docker exec "${CONTAINER_ID}" nginx -s reload || true
-        echo "✓ Nginx reloaded"
+        echo "Nginx reloaded"
     fi
 elif command -v nginx >/dev/null 2>&1; then
     nginx -s reload || true
-    echo "✓ Nginx reloaded"
+    echo "Nginx reloaded"
 else
-    echo "⚠ Nginx not found, skipping reload"
+    echo "Nginx not found, skipping reload"
 fi
 
 if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}" && -f "${OLD_PUBLISH_PATH}/docker-compose.yml" ]]; then
     echo "Cleaning up old release ${OLD_RELEASE_NAME}..."
     docker compose -f "${OLD_PUBLISH_PATH}/docker-compose.yml" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_PUBLISH_PATH}/.env" down 2>/dev/null || true
-    echo "✓ Old release stopped"
+    echo "Old release stopped"
 fi
 
 echo "Pruning unused Docker images..."
 docker image prune -af --filter "until=24h" || true
 
-echo "✓ Promotion of ${NEW_RELEASE_NAME} complete"
+echo "Promotion of ${NEW_RELEASE_NAME} complete"
 REMOTE_EOF
-
-log_audit "Deploy and promote completed successfully for ${RELEASE_VERSION} on node ${NODE_NUMBER}"

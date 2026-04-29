@@ -8,12 +8,6 @@ def parseDeploymentConfig(String jsonContent) {
     return new groovy.json.JsonSlurperClassic().parseText(jsonContent)
 }
 
-@NonCPS
-def resolveHealthCheckEndpoints(Map node) {
-    def nginxPort = node.nginxPort
-    return "${nginxPort}/app,${nginxPort}/stable"
-}
-
 pipeline {
     agent any
     
@@ -93,7 +87,6 @@ pipeline {
                         echo "Deploying and promoting release for node: ${node.name} (${node.ip})"
 
                         try {
-                            def healthCheckEndpoints = resolveHealthCheckEndpoints(node)
                             withCredentials([
                                 string(credentialsId: node.credId, variable: 'EC2_NODE'),
                                 sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
@@ -109,7 +102,7 @@ pipeline {
                                     bash ./.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
                                         "\${EC2_NODE}" \
                                         "${RELEASE_VERSION}" \
-                                        "${healthCheckEndpoints}"
+                                        "${node.healthCheckEndpoints}"
                                 """
                             }
                         } catch (Exception e) {

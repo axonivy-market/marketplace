@@ -20,25 +20,15 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${SCRIPT_DIR}/../../../../" && pwd)}"
-
+LOCAL_TEMPLATE_NGINX="${WORKSPACE_ROOT}/marketplace-build/nginx/nginx.conf"
 TEMPLATE_ROOT="${WORKSPACE_ROOT}/marketplace-build/templates"
-
 LOCAL_TEMPLATE_ENV="${TEMPLATE_ROOT}/.env"
 LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
 LOCAL_TEMPLATE_DOCKERFILE="${TEMPLATE_ROOT}/Dockerfile"
-LOCAL_TEMPLATE_NGINX="${TEMPLATE_ROOT}/nginx.conf"
-
 REMOTE_TEMPLATE_DIR="/tmp/marketplace-template-${RELEASE_VERSION}-$$"
 
-AUDIT_LOG="/tmp/deploy-audit-$(date +%s).log"
-log_audit() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "${AUDIT_LOG}" >&2
-}
-
-echo "Step 1: Merge Configuration"
 echo "Nginx Port: ${NGINX_PORT}"
 echo "Release: ${RELEASE_VERSION}"
-log_audit "Starting config merge for release ${RELEASE_VERSION}"
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" "mkdir -p '${REMOTE_TEMPLATE_DIR}'"
 
@@ -57,7 +47,7 @@ cleanup_templates() {
 }
 trap cleanup_templates EXIT
 
-REMOTE_BASE="/opt/marketplace"
+REMOTE_BASE="/home/axonivy/marketplace"
 RELEASES_PATH="${REMOTE_BASE}/releases"
 CURRENT_LINK="${RELEASES_PATH}/current"
 NEW_RELEASE_NAME="${RELEASE_VERSION}"
@@ -123,7 +113,5 @@ NEW_NGINX="${NEW_RELEASE_PATH}/config/nginx/nginx.conf"
 
 cp "${REMOTE_TEMPLATE_DIR}/template.nginx.conf" "${NEW_NGINX}"
 
-echo "Config location: /opt/marketplace/releases/${NEW_RELEASE_NAME}/publish/.env"
+echo "Config location: ${RELEASES_PATH}/${NEW_RELEASE_NAME}/publish/.env"
 REMOTE_EOF
-
-log_audit "Config merge completed successfully for ${RELEASE_VERSION}"
