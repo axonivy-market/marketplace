@@ -154,7 +154,7 @@ export class AdminDashboardComponent implements OnInit {
     this.syncTaskTriggers[syncTask.key]()
       .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
       .subscribe({
-        next: (e) => this.handleSyncTaskSuccess(syncTask),
+        next: () => this.handleSyncTaskSuccess(syncTask),
         error: () => this.handleSyncTaskFailure(syncTask)
       });
   }
@@ -172,7 +172,6 @@ export class AdminDashboardComponent implements OnInit {
   private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
     syncTask.status = SyncTaskStatus.SUCCESS;
     syncTask.completedDate = new Date();
-    syncTask.message = syncTask.message;
     this.reloadExecutions();
   }
 
