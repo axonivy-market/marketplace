@@ -81,7 +81,6 @@ merge_env_files() {
     env_vars["RELEASE_VERSION"]="${RELEASE_VERSION}"
 
     {
-        echo "Merged configuration: current + template + secret"
         for key in "${!env_vars[@]}"; do
             echo "${key}=${env_vars[$key]}"
         done | sort
