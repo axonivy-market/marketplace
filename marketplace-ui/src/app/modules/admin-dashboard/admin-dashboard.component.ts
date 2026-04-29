@@ -321,8 +321,9 @@ export class AdminDashboardComponent implements OnInit {
 
   handleSyncDialogConfirm(event: { productId: string; marketDirectory: string; override: boolean }): void {
     const task = this.selectedTask();
-    if (!task) return;
-    console.log(task.key)
+    if (!task) {
+      return;
+    }
     if (task.key === 'syncOneProduct') {
       const isValid = this.products.some(p => p.id === event.productId) && !!event.marketDirectory;
 
