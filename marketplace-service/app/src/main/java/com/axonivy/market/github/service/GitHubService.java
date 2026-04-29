@@ -183,9 +183,32 @@ public interface GitHubService {
    */
   UserInfo validateUserInOrganizationAndTeam(String accessToken, String org, String team) throws UnauthorizedException;
 
+  /**
+   * <p>
+   * Searches for product security details based on the provided criteria and returns a paginated result.
+   * Useful for filtering and retrieving security information for products according to custom search parameters.
+   * </p>
+   *
+   * @param criteria type {@link ProductSecurityCriteria} - the search criteria for filtering product security details
+   * @param pageable type {@link Pageable} - pagination and sorting information
+   * @return {@link Page}<{@link ProductSecurityInfo}> - paginated list of product security details matching the 
+   * criteria
+   * @throws IOException - if an error occurs while accessing security details
+   * @author tvtphuc
+   */
   Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable)
       throws IOException;
 
+  /**
+   * <p>
+   * Synchronizes and retrieves the latest security details for all products from GitHub repositories.
+   * This method fetches and updates security information for each product, ensuring up-to-date data.
+   * </p>
+   *
+   * @return {@link List}<{@link ProductSecurityInfo}> - list of updated product security details
+   * @throws IOException - if an error occurs during synchronization or data retrieval
+   * @author tvtphuc
+   */
   List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException;
 
   /**
@@ -287,5 +310,19 @@ public interface GitHubService {
    */
   InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
 
+  /**
+   * <p>
+   * Create PullRequest to update the README file in the specified repository to include successor notes, according to
+   * the given pull request action.
+   * This method creates or updates a pull request that documents successor information in the repository's README.
+   * </p>
+   *
+   * @param repositoryPath type {@link String} - the path or name of the GitHub repository
+   * @param action         type {@link PullRequestAction} - the action to perform on the pull request (e.g., open,
+   *                       update,close)
+   * @return {@link GHPullRequest} - the created or updated pull request for the README changes
+   * @throws IOException - if an error occurs while updating the README or interacting with GitHub
+   * @author tvtphuc
+   */
   GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
 }
