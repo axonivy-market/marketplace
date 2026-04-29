@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.core.comparator.MavenVersionComparator;
+import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -193,14 +193,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v2.getKey())) {
             return -1;
           }
-          return MavenVersionComparator.compare(v1.getKey(), v2.getKey());
+          return new LatestVersionComparator().compare(v1.getKey(), v2.getKey());
         })
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
           String ver = entry.getKey();
           ExternalDocumentMeta chosenMeta = entry.getValue().stream()
               .filter(meta -> meta.getLanguage() != null && meta.getLanguage().equals(selectedLanguage))
               .findFirst()
-              .orElse(entry.getValue().get(0));
+              .orElse(entry.getValue().getFirst());
           return DocumentInfoResponse.DocumentVersion.builder().version(ver)
               .url(host + chosenMeta.getRelativeLink()).build();
         }).toList();

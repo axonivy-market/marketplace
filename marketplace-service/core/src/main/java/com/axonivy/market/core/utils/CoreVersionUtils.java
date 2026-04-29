@@ -1,7 +1,6 @@
 package com.axonivy.market.core.utils;
 
 import com.axonivy.market.core.comparator.LatestVersionComparator;
-import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
@@ -109,13 +108,13 @@ public class CoreVersionUtils {
     //Next priority: prior released version
     if (StringUtils.isBlank(bestMatchVersion)) {
       bestMatchVersion = versions.stream().filter(
-          version -> MavenVersionComparator.compare(version, designerVersion) < 0 && isReleasedVersion(
-              version)).findAny().orElse(null);
+        version -> new LatestVersionComparator().compare(designerVersion, version) < 0 && isReleasedVersion(
+          version)).findAny().orElse(null);
     }
     //Next priority: prior dev version
     if (StringUtils.isBlank(bestMatchVersion) && allowDevVersion) {
       bestMatchVersion = versions.stream().filter(
-          version -> MavenVersionComparator.compare(version, designerVersion) < 0).findAny().orElse(null);
+          version -> new LatestVersionComparator().compare(designerVersion, version) < 0).findAny().orElse(null);
     }
     //Next priority: any prior release version
     if (StringUtils.isBlank(bestMatchVersion)) {

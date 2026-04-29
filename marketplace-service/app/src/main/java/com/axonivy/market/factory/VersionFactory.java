@@ -2,7 +2,6 @@ package com.axonivy.market.factory;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.comparator.LatestVersionComparator;
-import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.DevelopmentVersion;
@@ -68,8 +67,8 @@ public class VersionFactory extends CoreVersionFactory {
     return Optional.ofNullable(versions).stream()
         .flatMap(List::stream)
         .filter(Objects::nonNull)
-        .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1))
-        .filter(ver -> ver.startsWith(requestedVersion)).findAny().orElse(EMPTY);
+        .sorted(new LatestVersionComparator())
+        .filter(ver -> ver.startsWith(requestedVersion)).findFirst().orElse(EMPTY);
   }
 
   public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions,
