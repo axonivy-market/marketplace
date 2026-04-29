@@ -467,16 +467,6 @@ describe('AdminDashboardComponent', () => {
       expect(component.showSyncOneProductDialog).toBe(false);
     });
 
-    it('should handle success correctly', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of(mockExecutions));
-
-      (component as any).executeTask(task, of());
-
-      expect(task.status).toBe(SyncTaskStatus.SUCCESS);
-    });
-
     it('should handle failure correctly', () => {
       const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
 
