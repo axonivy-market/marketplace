@@ -9,8 +9,7 @@ public interface CoreImageService {
    *
    * @param  id
    *              type {@link String} - the unique image identifier in the database
-   * @return {@link byte[]} - the raw image binary data; returns empty array if image not found or cannot
-   *         be read from storage
+   * @return {@link byte[]} - the raw image binary data; returns null if image not found
    * @author ntqdinh
    */
   byte[] readImage(String id);
