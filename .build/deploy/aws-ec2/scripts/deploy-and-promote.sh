@@ -184,7 +184,7 @@ fi
 
 echo "Deployment health check passed"
 
-echo "--- Step 2: Promote Release ---"q
+echo "--- Step 2: Promote Release ---"
 echo "Switching current symlink to ${NEW_RELEASE_NAME}..."
 ln -sfn "${NEW_RELEASE_PATH}" "${CURRENT_LINK}"
 

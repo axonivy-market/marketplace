@@ -60,10 +60,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics
-      base-path: /actuator
-  server:
-    base-path: /actuator    
+        include: health
+      base-path: /actuator 
 
 logging:
   file:

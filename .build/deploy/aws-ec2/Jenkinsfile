@@ -61,7 +61,7 @@ pipeline {
                                     export WORKSPACE_ROOT="${env.WORKSPACE}"
                                     bash ./.build/deploy/aws-ec2/scripts/merge-config.sh \
                                         "\${EC2_NODE}" \
-                                        "${RELEASE_VERSION}" \
+                                        "${params.RELEASE_VERSION}" \
                                         "${node.nginxPort}" \
                                         "\${ENV_SECRET_FILE}"
                                 """
@@ -101,7 +101,7 @@ pipeline {
                                     export WORKSPACE_ROOT="${env.WORKSPACE}"
                                     bash ./.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
                                         "\${EC2_NODE}" \
-                                        "${RELEASE_VERSION}" \
+                                        "${params.RELEASE_VERSION}" \
                                         "${node.healthCheckEndpoints}"
                                 """
                             }
