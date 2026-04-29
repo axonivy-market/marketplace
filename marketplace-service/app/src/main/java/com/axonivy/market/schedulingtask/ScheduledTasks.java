@@ -1,13 +1,13 @@
 package com.axonivy.market.schedulingtask;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
@@ -32,7 +32,9 @@ public class ScheduledTasks {
   private static final String SYNC_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
   private static final String SYNC_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
   private static final String SYNC_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
-  private static final String SYNC_SECURITY_MONITOR_CRON = "${market.scheduling.security-monitor-cron}";
+  private static final String SEND_NOTIFICATION_SECURITY_MONITOR_CRON =
+      "${market.scheduling.send-notification-security-monitor-cron}";
+  private static final String SYNC_SECURITY_MONITOR_CRON  = "${market.scheduling.security-monitor-cron}";
 
   private final ProductRepository productRepo;
   private final ProductService productService;
@@ -42,7 +44,7 @@ public class ScheduledTasks {
   private final GithubReposService githubReposService;
   private final GitHubService gitHubService;
   private final NotificationService notificationService;
-  private final GitHubProperty gitHubProperty;
+  private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -87,17 +89,28 @@ public class ScheduledTasks {
     }, "Github repositories");
   }
 
-  @Scheduled(cron = SYNC_SECURITY_MONITOR_CRON)
-  public void syncDataForSecurityMonitor() {
+  @Scheduled(cron = SEND_NOTIFICATION_SECURITY_MONITOR_CRON)
+  public void sendNotificationForSecurityMonitor() {
     run(() ->
-        {
-          try {
-            sendNotificationForDisabledSecurityChecks();
-          } catch (IOException e) {
-            log.warn("Sync security monitor failed", e);
-          }
-        }
-        , "Github repositories security monitor");
+    {
+      try {
+        sendNotificationForDisabledSecurityChecks();
+      } catch (IOException e) {
+        log.warn("Sync security monitor failed", e);
+      }
+    }, "Send Notification for security monitor");
+  }
+
+  @Scheduled(cron = SYNC_SECURITY_MONITOR_CRON)
+  public void syncSecurityMonitor() {
+    run(() ->
+    {
+      try {
+        gitHubService.syncSecurityDetailsForProduct();
+      } catch (IOException e) {
+        log.warn("Sync security monitor failed", e);
+      }
+    }, "GitHub security monitor");
   }
 
   private static void run(Runnable runnable, String schedulingTaskName) {
@@ -112,11 +125,7 @@ public class ScheduledTasks {
   }
 
   private void sendNotificationForDisabledSecurityChecks() throws IOException {
-    List<ProductSecurityInfo> securityInfos =
-        gitHubService.getSecurityDetailsForAllProducts(gitHubProperty.getToken(),
-            GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-
-    List<DisabledSecurityEvent> disabledEvents = securityInfos.stream()
+    List<DisabledSecurityEvent> disabledEvents = productSecurityInfoRepository.findAll().stream()
         .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
         .toList();
 

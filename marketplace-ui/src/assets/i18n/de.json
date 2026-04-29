@@ -331,7 +331,8 @@
           "syncOneProduct": "Ein Produkt synchronisieren",
           "syncZipArtifacts": "ZIP-Artefakte synchronisieren",
           "syncLatestReleasesForProducts": "Produkt-Release-Notes synchronisieren",
-          "syncGithubMonitor": "GitHub-Monitor synchronisieren"
+          "syncGithubMonitor": "GitHub-Monitor synchronisieren",
+          "syncGithubSecurityMonitor": "GitHub-Security-Monitor synchronisieren"
         },
         "syncProductDialog": {
           "syncOneProductTitle": "Ein Produkt synchronisieren",
@@ -353,12 +354,14 @@
         "description": "Überwachung von Sicherheitslücken in Marketplace-Erweiterungen",
         "helpText": "Der Sicherheitsmonitor unterstützt bei der Nachverfolgung von Sicherheitsereignissen und Warnmeldungen aus GitHub-Repositories, einschließlich Dependabot-Warnungen, Code-Scanning-Ergebnissen, Secret-Scanning-Funden usw. Administratoren können identifizierte Probleme überprüfen und geeignete Maßnahmen ergreifen, um die Sicherheit der im Marketplace angebotenen Erweiterungen sicherzustellen.",
         "reloadData": "Daten neu laden",
+        "repoName": "Repository",
         "archived": "Archiviert",
         "dependabot": "Dependabot",
         "enabled": "Aktiviert",
         "disabled": "Deaktiviert",
         "noPermission": "Keine Berechtigung",
         "noVulnerabilities": "Keine Sicherheitslücken",
+        "noRepositories": "Keine Repositories gefunden.",
         "codeScanning": "Code-Scanning",
         "secretScanning": "Secret-Scanning",
         "branchProtection": "Branchenschutz",

@@ -231,7 +231,7 @@ describe('AdminDashboardService', () => {
           archived: false,
           dependabot: { status: 'enabled', alerts: {} },
           codeScanning: { status: 'enabled', alerts: {} },
-          secretScanning: { status: 'enabled', numberOfAlerts: 0 },
+          secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
           branchProtectionEnabled: true,
           lastCommitSHA: 'abc123',
           lastCommitDate: '2024-01-01T00:00:00Z'
