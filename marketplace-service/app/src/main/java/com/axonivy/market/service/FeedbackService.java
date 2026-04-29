@@ -19,7 +19,7 @@ public interface FeedbackService {
 
   List<Feedback> findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException;
 
-  Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval);
+  Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval, String username);
 
   Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException;
 

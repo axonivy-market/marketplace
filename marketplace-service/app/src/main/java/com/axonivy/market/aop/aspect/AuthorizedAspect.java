@@ -31,7 +31,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
-  public static final String USER_INFO_ATTRIBUTE = "userInfo";
+  public static final String USERNAME_ATTRIBUTE = "username";
 
   private final JwtService jwtService;
   private final GitHubService gitHubService;
@@ -64,7 +64,7 @@ public class AuthorizedAspect {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-      request.setAttribute(USER_INFO_ATTRIBUTE, userInfo);
+      request.setAttribute(USERNAME_ATTRIBUTE, userInfo.getUsername());
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);

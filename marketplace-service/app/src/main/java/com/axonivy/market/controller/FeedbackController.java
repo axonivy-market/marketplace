@@ -121,8 +121,8 @@ public class FeedbackController {
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
       @RequestBody @Valid FeedbackApprovalModel feedbackApproval, HttpServletRequest request) {
-    var userInfo = request.getAttribute(AuthorizedAspect.USER_INFO_ATTRIBUTE);
-    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
+    var username = (String) request.getAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE);
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval, username);
     var model = feedbackModelAssembler.toModel(feedback);
     model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());
     return ResponseEntity.ok(model);
