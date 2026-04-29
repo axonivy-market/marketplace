@@ -4,12 +4,11 @@ set -euo pipefail
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
-NODE_NUMBER="${3:-}"
-NGINX_PORT="${4:-}"
-ENV_SECRET_FILE="${5:-}"
+NGINX_PORT="${3:-}"
+ENV_SECRET_FILE="${4:-}"
 
-if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$NODE_NUMBER" || -z "$NGINX_PORT" || -z "$ENV_SECRET_FILE" ]]; then
-    echo "Usage: $0 <node_ip> <release_version> <node_number> <nginx_port> <env_secret_file>"
+if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$NGINX_PORT" || -z "$ENV_SECRET_FILE" ]]; then
+    echo "Usage: $0 <node_ip> <release_version> <nginx_port> <env_secret_file>"
     exit 1
 fi
 
@@ -29,14 +28,7 @@ LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
 LOCAL_TEMPLATE_DOCKERFILE="${TEMPLATE_ROOT}/Dockerfile"
 LOCAL_TEMPLATE_NGINX="${TEMPLATE_ROOT}/nginx.conf"
 
-for required_file in "${LOCAL_TEMPLATE_ENV}" "${LOCAL_TEMPLATE_COMPOSE}" "${LOCAL_TEMPLATE_DOCKERFILE}" "${LOCAL_TEMPLATE_NGINX}"; do
-    if [[ ! -f "${required_file}" ]]; then
-        echo "ERROR: Required template file not found: ${required_file}"
-        exit 1
-    fi
-done
-
-REMOTE_TEMPLATE_DIR="/tmp/marketplace-template-${RELEASE_VERSION}-node${NODE_NUMBER}-$$"
+REMOTE_TEMPLATE_DIR="/tmp/marketplace-template-${RELEASE_VERSION}-$$"
 
 AUDIT_LOG="/tmp/deploy-audit-$(date +%s).log"
 log_audit() {
@@ -44,10 +36,9 @@ log_audit() {
 }
 
 echo "Step 1: Merge Configuration"
-echo "Node: ${NODE_NUMBER}"
 echo "Nginx Port: ${NGINX_PORT}"
 echo "Release: ${RELEASE_VERSION}"
-log_audit "Starting config merge for release ${RELEASE_VERSION} on node ${NODE_NUMBER}"
+log_audit "Starting config merge for release ${RELEASE_VERSION}"
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" "mkdir -p '${REMOTE_TEMPLATE_DIR}'"
 
@@ -58,7 +49,7 @@ scp "${SSH_OPTS[@]}" "${LOCAL_TEMPLATE_NGINX}" "${SSH_USER}@${NODE_IP}:${REMOTE_
 scp "${SSH_OPTS[@]}" "${ENV_SECRET_FILE}" "${SSH_USER}@${NODE_IP}:${REMOTE_TEMPLATE_DIR}/secret.env"
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
-    "RELEASE_VERSION='${RELEASE_VERSION}' NODE_NUMBER='${NODE_NUMBER}' NGINX_PORT='${NGINX_PORT}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'
+    "RELEASE_VERSION='${RELEASE_VERSION}' NGINX_PORT='${NGINX_PORT}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
 cleanup_templates() {
@@ -135,4 +126,4 @@ cp "${REMOTE_TEMPLATE_DIR}/template.nginx.conf" "${NEW_NGINX}"
 echo "Config location: /opt/marketplace/releases/${NEW_RELEASE_NAME}/publish/.env"
 REMOTE_EOF
 
-log_audit "Config merge completed successfully for ${RELEASE_VERSION} on node ${NODE_NUMBER}"
+log_audit "Config merge completed successfully for ${RELEASE_VERSION}"

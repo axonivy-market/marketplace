@@ -4,11 +4,10 @@ set -euo pipefail
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
-NODE_NUMBER="${3:-}"
-HEALTH_CHECK_TARGETS_ARG="${4:-}"
+HEALTH_CHECK_TARGETS_ARG="${3:-}"
 
-if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$NODE_NUMBER" || -z "$HEALTH_CHECK_TARGETS_ARG" ]]; then
-    echo "Usage: $0 <node_ip> <release_version> <node_number> <health_check_targets>"
+if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$HEALTH_CHECK_TARGETS_ARG" ]]; then
+    echo "Usage: $0 <node_ip> <release_version> <health_check_targets>"
     exit 1
 fi
 

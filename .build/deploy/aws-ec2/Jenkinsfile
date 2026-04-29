@@ -52,6 +52,8 @@ pipeline {
                     }
                     def nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
                     for (node in nodesToDeploy) {
+                        echo "Merging config for node: ${node.name} (${node.ip})"
+
                         try {
                             withCredentials([
                                 string(credentialsId: node.credId, variable: 'EC2_NODE'),
@@ -66,7 +68,6 @@ pipeline {
                                     bash ./.build/deploy/aws-ec2/scripts/merge-config.sh \
                                         "\${EC2_NODE}" \
                                         "${RELEASE_VERSION}" \
-                                        "${node.nodeNum}" \
                                         "${node.nginxPort}" \
                                         "\${ENV_SECRET_FILE}"
                                 """
@@ -89,6 +90,8 @@ pipeline {
                     }
                     def nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
                     for (node in nodesToDeploy) {
+                        echo "Deploying and promoting release for node: ${node.name} (${node.ip})"
+
                         try {
                             def healthCheckEndpoints = resolveHealthCheckEndpoints(node)
                             withCredentials([
@@ -106,7 +109,6 @@ pipeline {
                                     bash ./.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
                                         "\${EC2_NODE}" \
                                         "${RELEASE_VERSION}" \
-                                        "${node.nodeNum}" \
                                         "${healthCheckEndpoints}"
                                 """
                             }
