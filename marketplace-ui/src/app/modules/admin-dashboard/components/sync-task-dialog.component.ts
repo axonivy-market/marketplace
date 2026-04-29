@@ -12,7 +12,7 @@ interface TaskConfig {
   requireProduct: boolean;
   showAllOption: boolean;
   showOverrideCheckbox: boolean;
-  dialogTitle: string
+  dialogTitle: string;
 }
 
 const DEFAULT_TASK_CONFIG: TaskConfig = {
@@ -97,8 +97,6 @@ export class SyncTaskDialogComponent implements OnChanges {
     const filtered = this.products.filter(p => p.id.toLowerCase().includes(value)).slice(0, 10);
     this.filteredProducts.set(filtered);
 
-    // Only clear marketDirectory when the input does not match ANY product
-    // and the dialog does NOT allow "All products"
     const matches = this.products.some(p => p.id === (this.productSearch ?? ''));
     if (!matches && !this.currentConfig.showAllOption) {
       this.marketDirectory = '';

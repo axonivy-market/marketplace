@@ -482,4 +482,53 @@ describe('AdminDashboardService', () => {
       req.flush(null);
     });
   });
+
+  it('should sync zip artifacts for all products when productId is omitted', () => {
+    const mockResponse: SyncTaskExecution = {
+      key: 'syncZipArtifacts',
+      status: undefined,
+      triggeredAt: '2024-01-01T00:00:00Z'
+    };
+
+    // call with resetSync = true and no productId
+    service.syncZipArtifacts(true).subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT}/zip-sync` &&
+        request.params.get(RequestParam.RESET_SYNC) === 'true' &&
+        !request.params.has(RequestParam.ID)
+    );
+    expect(req.request.method).toBe('PUT');
+    // body should be an empty object as per implementation
+    expect(req.request.body).toEqual({});
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+    req.flush(mockResponse);
+  });
+
+  it('should sync zip artifacts for a specific product when productId is provided', () => {
+    const mockResponse: SyncTaskExecution = {
+      key: 'syncZipArtifacts',
+      status: undefined,
+      triggeredAt: '2024-01-01T00:00:00Z'
+    };
+
+    // call with resetSync = false (default) and a specific productId
+    service.syncZipArtifacts(false, 'product-1').subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT}/zip-sync` &&
+        request.params.get(RequestParam.RESET_SYNC) === 'false' &&
+        request.params.get(RequestParam.ID) === 'product-1'
+    );
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({});
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+    req.flush(mockResponse);
+  });
 });

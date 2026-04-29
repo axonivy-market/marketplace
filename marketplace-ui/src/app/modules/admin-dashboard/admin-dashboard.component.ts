@@ -42,7 +42,6 @@ import { LogStreamService } from '../../core/services/logging/log-stream.service
 import { LogParserService, ParsedLog } from './logs-viewer/logs-viewer.service';
 import { SyncTaskDialogComponent } from './components/sync-task-dialog.component';
 
-const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
   imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SyncTaskDialogComponent],
@@ -79,8 +78,6 @@ export class AdminDashboardComponent implements OnInit {
 
   syncTasks = SYNC_TASKS;
   products: MarketProduct[] = [];
-  filteredProducts: MarketProduct[] = [];
-
   productSearch = '';
   marketDirectory = '';
   overrideMarketItemPath = false;
@@ -226,7 +223,6 @@ export class AdminDashboardComponent implements OnInit {
   // Synchronize one product dialog
   private async openSyncProductDialog(): Promise<void> {
     this.products = await this.productService.fetchAllProductsForSync();
-    this.filteredProducts = this.products.slice(0, 10);
     this.showSyncProductDialog = true;
   }
 
@@ -258,13 +254,10 @@ export class AdminDashboardComponent implements OnInit {
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
     this.dropdownOpen = true;
-    this.filteredProducts = this.products.slice(0, 10);
   }
 
   filterProducts(): void {
     const value = this.productSearch.toLowerCase();
-
-    this.filteredProducts = this.products.filter(product => product.id.toLowerCase().includes(value)).slice(0, 10);
 
     // Clear the market directory if ID input does not match any product IDs
     if (!this.isValidSyncOneProductValues()) {

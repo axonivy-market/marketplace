@@ -60,11 +60,17 @@
               <input
                 id="sync-market-path"
                 class="form-control"
-                [(ngModel)]="marketDirectory" />
-
-              <small class="text-muted">
-                {{ 'common.admin.sync.syncProductDialog.chooseMarketItemPathHint' | translate }}
-              </small>
+                [(ngModel)]="marketDirectory"
+                [disabled]="currentConfig.showOverrideCheckbox && !overrideMarketItemPath" />
+              @if (currentConfig.showOverrideCheckbox && !overrideMarketItemPath) {
+                <small class="text-muted">
+                  {{ 'common.admin.sync.syncProductDialog.overrideMarketItemPath' | translate }}
+                </small>
+              } @else {
+                <small class="text-muted">
+                  {{ 'common.admin.sync.syncProductDialog.chooseMarketItemPathHint' | translate }}
+                </small>
+              }
             </div>
           }
         </div>
