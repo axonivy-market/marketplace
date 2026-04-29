@@ -1,0 +1,44 @@
+
+services:
+  sonarqube:
+    image: sonarqube:latest
+    name: sonar_local
+    ports:
+      - '9000:9000'
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/mydb
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      - init
+      - postgres
+
+  postgres:
+    image: postgres:12
+    container_name: postgres_sonar
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    ports:
+      - "5432:5432"
+
+  init:
+    image: bash
+    privileged: true
+    user: root
+    volumes:
+      - ./init.sh:/init.sh
+    command: ["sh", "-e", "/init.sh"]
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  postgres_data:

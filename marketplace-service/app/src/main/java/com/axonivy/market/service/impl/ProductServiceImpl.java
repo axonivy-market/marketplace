@@ -610,10 +610,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      var releasedVersions = productRepo.getReleasedVersionsById(id);
-      versions = CoreVersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion);
-      versions = CollectionUtils.isEmpty(versions) && !isShowDevVersion ?
-          CoreVersionUtils.getVersionsToDisplay(releasedVersions, true) : versions;
+      versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
       version = CollectionUtils.firstElement(versions);
     }
 
