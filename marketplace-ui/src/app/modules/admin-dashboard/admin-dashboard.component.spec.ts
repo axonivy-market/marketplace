@@ -372,7 +372,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should return empty string for undefined status', () => {
-      expect(component.getStatusClass(null)).toBe('');
+      expect(component.getStatusClass()).toBe('');
     });
   });
 
