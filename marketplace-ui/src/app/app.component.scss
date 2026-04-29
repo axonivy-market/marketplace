@@ -5,8 +5,11 @@ body {
   font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
-header {
-  border-bottom: 0.5px solid var(--header-border-color);
+.header-separation-line {
+  opacity: 1;
+  border: none;
+  border-bottom: 1px solid var(--header-border-color);
+  margin: 0;
 }
 
 footer {
