@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <p>
- * Product JSON constants defining file names and JSON field names used in product.json configuration files and product data parsing.
+ * Product JSON constants defining file names and JSON field names used in product.json configuration files and
+ * product data parsing.
  * </p>
  *
  * @since 15/04/2026

@@ -16,17 +16,18 @@ public interface ProductService {
    * and REST client compatibility. Returns paginated results for efficient large dataset handling.
    * </p>
    *
-   * @param  type
-   *              type {@link String} - product type filter (e.g., "Connector", "Plugin"); can be null for no type filtering
-   * @param  keyword
-   *              type {@link String} - search keyword to filter products by name or description; can be null for no keyword filtering
-   * @param  language
-   *              type {@link String} - language code filter for product documentation (e.g., "en", "de"); can be null
-   * @param  isRESTClient
-   *              type {@link Boolean} - if true, filters for products compatible with REST client; if false, excludes REST client products; can be null
-   * @param  pageable
-   *              type {@link Pageable} - pagination and sorting configuration (page number, page size, sort order)
-   * @return {@link Page<Product>} - paginated list of products matching all criteria with total count and page information
+   * @param type         type {@link String} - product type filter (e.g., "Connector", "Plugin"); can be null for no
+   *                     type filtering
+   * @param keyword      type {@link String} - search keyword to filter products by name or description; can be null
+   *                     for no keyword filtering
+   * @param language     type {@link String} - language code filter for product documentation (e.g., "en", "de"); can
+   *                    be null
+   * @param isRESTClient type {@link Boolean} - if true, filters for products compatible with REST client; if false,
+   *                     excludes REST client products; can be null
+   * @param pageable     type {@link Pageable} - pagination and sorting configuration (page number, page size, sort
+   *                     order)
+   * @return {@link Page<Product>} - paginated list of products matching all criteria with total count and page
+   * information
    * @author nntthuy
    */
   Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
@@ -70,13 +71,11 @@ public interface ProductService {
    * automatically resolves to the closest compatible version using semantic versioning logic.
    * </p>
    *
-   * @param  id
-   *              type {@link String} - the unique product identifier to fetch details for
-   * @param  version
-   *              type {@link String} - the requested product version; if exact match not found, best available
-   *              version is automatically resolved
+   * @param id      type {@link String} - the unique product identifier to fetch details for
+   * @param version type {@link String} - the requested product version; if exact match not found, best available
+   *                version is automatically resolved
    * @return {@link Product} - complete product object with details for the resolved version; returns exception
-   *         if product not found or no suitable version available
+   * if product not found or no suitable version available
    * @author ntqdinh
    */
   Product fetchBestMatchProductDetail(String id, String version);
@@ -87,12 +86,11 @@ public interface ProductService {
    * information only if the exact specified version exists and is available.
    * </p>
    *
-   * @param  id
-   *              type {@link String} - the unique product identifier to fetch details for
-   * @param  version
-   *              type {@link String} - the exact product version to retrieve data for; must match released version exactly
+   * @param id      type {@link String} - the unique product identifier to fetch details for
+   * @param version type {@link String} - the exact product version to retrieve data for; must match released version
+   *               exactly
    * @return {@link Product} - complete product object with details for the specified version; returns null
-   *         if product not found or specified version does not exist
+   * if product not found or specified version does not exist
    * @author ntqdinh
    */
   Product fetchProductDetailByIdAndVersion(String id, String version);

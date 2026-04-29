@@ -9,13 +9,12 @@ public interface ReleaseLetterService {
 
   /**
    * <p>
-   * Retrieves a paginated list of all release letters from the database, optionally returning all if not read-only, ordered by creation date in descending order.
+   * Retrieves a paginated list of all release letters from the database, optionally returning all if not read-only,
+   * ordered by creation date in descending order.
    * </p>
    *
-   * @param  pageable
-   *              type {@link Pageable} - pagination and sorting information
-   * @param  isReadOnly
-   *              type {@link boolean} - flag to determine if all records should be returned without pagination
+   * @param pageable   type {@link Pageable} - pagination and sorting information
+   * @param isReadOnly type {@link boolean} - flag to determine if all records should be returned without pagination
    * @return {@link Page<ReleaseLetter>} - a page of release letters
    * @author vhhoang
    */
@@ -47,11 +46,12 @@ public interface ReleaseLetterService {
 
   /**
    * <p>
-   * Creates a new release letter based on the provided request data, validates the sprint, checks for duplicates, and handles latest flag deactivation for the same sprint.
+   * Creates a new release letter based on the provided request data, validates the sprint, checks for duplicates,
+   * and handles latest flag deactivation for the same sprint.
    * </p>
    *
-   * @param releaseLetterModelRequest
-   *              type {@link ReleaseLetterModelRequest} - the request data containing sprint, content, and latest flag
+   * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data containing sprint,
+   *                                  content, and latest flag
    * @return {@link ReleaseLetter} - the created release letter
    * @author vhhoang
    */
@@ -59,13 +59,13 @@ public interface ReleaseLetterService {
 
   /**
    * <p>
-   * Updates an existing release letter by its ID with new data from the request, validates the sprint, checks for duplicates, and handles latest flag deactivation.
+   * Updates an existing release letter by its ID with new data from the request, validates the sprint, checks for
+   * duplicates, and handles latest flag deactivation.
    * </p>
    *
-   * @param id
-   *              type {@link String} - the unique identifier of the release letter to update
-   * @param releaseLetterModelRequest
-   *              type {@link ReleaseLetterModelRequest} - the request data containing updated sprint, content, and latest flag
+   * @param id                        type {@link String} - the unique identifier of the release letter to update
+   * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data containing updated
+   *                                  sprint, content, and latest flag
    * @return {@link ReleaseLetter} - the updated release letter
    * @author vhhoang
    */
@@ -73,11 +73,11 @@ public interface ReleaseLetterService {
 
   /**
    * <p>
-   * Deletes a release letter by its unique ID. Removes the release letter completely from the database and associated systems. Operation is permanent and cannot be undone.
+   * Deletes a release letter by its unique ID. Removes the release letter completely from the database and
+   * associated systems. Operation is permanent and cannot be undone.
    * </p>
    *
-   * @param id
-   *              type {@link String} - the unique ID of the release letter to delete
+   * @param id type {@link String} - the unique ID of the release letter to delete
    * @author vhhoang
    */
   void deleteReleaseLetterById(String id);

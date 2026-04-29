@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <p>
- * Request parameter constants defining HTTP request parameter names used in API endpoints for filtering, authentication, and data retrieval.
+ * Request parameter constants defining HTTP request parameter names used in API endpoints for filtering,
+ * authentication, and data retrieval.
  * </p>
  *
  * @since 15/04/2026

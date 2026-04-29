@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <p>
- * Common constants used throughout the application for headers, delimiters, file extensions, and pagination configuration.
+ * Common constants used throughout the application for headers, delimiters, file extensions, and pagination
+ * configuration.
  * </p>
  *
  * @since 15/04/2026

@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <p>
- * PostgreSQL database constants defining column/field names and SQL ordering keywords for database queries and entity mapping.
+ * PostgreSQL database constants defining column/field names and SQL ordering keywords for database queries and
+ * entity mapping.
  * </p>
  *
  * @since 15/04/2026

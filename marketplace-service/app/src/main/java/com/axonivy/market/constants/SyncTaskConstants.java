@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <p>
- * Sync task constants defining status messages and validation messages for synchronization task execution and monitoring.
+ * Sync task constants defining status messages and validation messages for synchronization task execution and
+ * monitoring.
  * </p>
  *
  * @since 15/04/2026
