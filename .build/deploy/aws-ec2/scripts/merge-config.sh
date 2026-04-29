@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+# This script is responsible for merging the .env file for the new release based on the current release (if available), the template .env, and the secret .env.
+# It also prepares the docker-compose.yml and nginx.conf for the new release based on the provided templates.
 set -euo pipefail
 
 NODE_IP="${1:-}"

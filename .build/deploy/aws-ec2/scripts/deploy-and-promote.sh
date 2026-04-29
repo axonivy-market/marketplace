@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# This script is responsible for deploying the new release to the EC2 instance, performing health checks, and promoting the release if the health checks pass.
 set -euo pipefail
 
 NODE_IP="${1:-}"
