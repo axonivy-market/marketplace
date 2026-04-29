@@ -17,6 +17,7 @@ export const API_URI = {
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
   SYNC_GITHUB_MONITOR: `${API}/monitor-dashboard/${SYNC}`,
+  SYNC_SECURITY_MONITOR: `${API}/security-monitor`,
   SYNC_TASK_EXECUTION: `${API}/sync-task-execution`,
   SECURITY_MONITOR: `${API}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
