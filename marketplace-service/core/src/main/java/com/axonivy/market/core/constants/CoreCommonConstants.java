@@ -3,6 +3,14 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Core common constants defining shared values used across the Core module for general application functionality.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreCommonConstants {
   public static final String SLASH = "/";
