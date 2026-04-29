@@ -3,6 +3,14 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Core entity constants defining database table names for JPA entity mapping in the Core module.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author tvtphuc
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreEntityConstants {
   public static final String PRODUCT = "product";

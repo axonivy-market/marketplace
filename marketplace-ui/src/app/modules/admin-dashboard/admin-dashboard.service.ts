@@ -11,16 +11,18 @@ import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { SecurityMonitorApiResponse } from '../../shared/models/apis/security-monitor-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
+import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
 
 export type SyncTaskKey =
   | 'syncProducts'
   | 'syncOneProduct'
   | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor';
+  | 'syncGithubMonitor'
+  | 'syncGithubSecurityMonitor';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -92,6 +94,16 @@ export class AdminDashboardService {
     );
   }
 
+  syncGithubSecurityMonitor(): Observable<ProductSecurityInfo[]> {
+    return this.http.post<ProductSecurityInfo[]>(
+      `${API_URI.SYNC_SECURITY_MONITOR}`,
+      {},
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
     return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
       headers: this.adminAuth.getAuthHeaders(),
@@ -128,6 +140,27 @@ export class AdminDashboardService {
         LoadingComponentId.SECURITY_MONITOR
       )
     });
+  }
+
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
+    Observable<SecurityMonitorApiResponse> {
+    let params = new HttpParams()
+      .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SORT, criteria.sortOption)
+      .set(RequestParam.SORT_DIRECTION, criteria.sortDirection);
+
+    if (criteria.searchText) {
+      params = params.set(RequestParam.SEARCH, criteria.searchText);
+    }
+
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      }
+    );
   }
 
   getReleaseLetters(

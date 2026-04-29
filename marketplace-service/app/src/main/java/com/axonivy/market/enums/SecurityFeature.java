@@ -4,6 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * <p>
+ * Security feature enumeration defining available GitHub security features for code protection and monitoring.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @Getter
 @AllArgsConstructor
 public enum SecurityFeature {

@@ -1,11 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
@@ -39,10 +38,10 @@ class SchedulingTasksTest {
   GithubReposService gitHubReposService;
 
   @MockBean
-  NotificationService notificationService;
+  ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @MockBean
-  GitHubProperty gitHubProperty;
+  NotificationService notificationService;
 
   @Test
   void testShouldNotTriggerAfterApplicationStarted() {
@@ -59,62 +58,47 @@ class SchedulingTasksTest {
         .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductReleases());
 
     Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForSecurityMonitor());
+        .untilAsserted(() -> verify(tasks, atLeast(0)).sendNotificationForSecurityMonitor());
+
+    Awaitility.await().atMost(Durations.TEN_SECONDS)
+        .untilAsserted(() -> verify(tasks, atLeast(0)).syncSecurityMonitor());
   }
 
   @Test
   void testShouldHandleIOExceptionWhenSyncingGithubRepos() throws Exception {
-    doThrow(new IOException("failure"))
-        .when(gitHubReposService)
-        .loadAndStoreTestReports();
-
+    doThrow(new IOException("failure")).when(gitHubReposService).loadAndStoreTestReports();
     assertDoesNotThrow(() -> tasks.syncDataForGithubRepos(),
         "syncDataForGithubRepos should swallow IOException and not propagate it");
     verify(gitHubReposService).loadAndStoreTestReports();
   }
 
   @Test
-  void testShouldHandleIOExceptionWhenSyncingSecurityMonitor() throws Exception {
-    when(gitHubProperty.getToken()).thenReturn("token");
+  void testSyncSecurityMonitorShouldCallSyncSecurityDetailsForProduct() throws Exception {
+    when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of());
+    assertDoesNotThrow(() -> tasks.syncSecurityMonitor(),
+        "syncSecurityMonitor should not propagate any exception");
+    verify(gitHubService).syncSecurityDetailsForProduct();
+  }
 
-    doThrow(new IOException("failure"))
-        .when(gitHubService)
-        .getSecurityDetailsForAllProducts(
-            anyString(),
-            anyString()
-        );
-
-    assertDoesNotThrow(() -> tasks.syncDataForSecurityMonitor(),
-        "syncDataForSecurityMonitor should swallow IOException and not propagate it");
-    verify(gitHubService)
-        .getSecurityDetailsForAllProducts(
-            "token",
-            GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME
-        );
-    verify(notificationService, never()).notify(any());
+  @Test
+  void testSyncSecurityMonitorShouldSwallowIOException() throws Exception {
+    doThrow(new IOException("GitHub API unavailable")).when(gitHubService).syncSecurityDetailsForProduct();
+    assertDoesNotThrow(() -> tasks.syncSecurityMonitor(),
+        "syncSecurityMonitor should swallow IOException and not propagate it");
+    verify(gitHubService).syncSecurityDetailsForProduct();
   }
 
   @Test
   void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
-    String token = "dummy-token";
-    when(gitHubProperty.getToken()).thenReturn(token);
-
     ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
-    when(gitHubService.getSecurityDetailsForAllProducts(
-        token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME
-    )).thenReturn(List.of(securityInfo));
-
+    when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of(securityInfo));
     DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
-
+    // Mock repository to return the same ProductSecurityInfo as in the service
+    when(productSecurityInfoRepository.findAll()).thenReturn(List.of(securityInfo));
     try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
              Mockito.mockStatic(DisabledSecurityEventFactory.class)) {
-
-      mockedFactory
-          .when(() -> DisabledSecurityEventFactory.from(securityInfo))
-          .thenReturn(List.of(event));
-
-      tasks.syncDataForSecurityMonitor();
+      mockedFactory.when(() -> DisabledSecurityEventFactory.from(securityInfo)).thenReturn(List.of(event));
+      tasks.sendNotificationForSecurityMonitor();
       verify(notificationService).notify(List.of(event));
     }
   }

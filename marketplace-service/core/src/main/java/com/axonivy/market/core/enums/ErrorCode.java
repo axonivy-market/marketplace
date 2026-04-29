@@ -5,10 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * @fo {@link ErrorCode} is a presentation for a system code during proceeding data It has format cseo - 0000 c present
- * for controller s present for service e present for entity o present for other And 0000 is a successful code
+ * <p>
+ * Error code enumeration defining system error codes with standardized format (cseo-0000).
+ * Format: c=controller, s=service, e=entity, o=other, 0000=code number.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
  */
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

@@ -98,14 +98,11 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  private readonly syncTaskTriggers: Record<
-    SyncTaskKey,
-    () => Observable<unknown>
-  > = {
+  private readonly syncTaskTriggers: Record<SyncTaskKey, () => Observable<unknown>> = {
     syncProducts: () => this.service.syncProducts(),
-    syncLatestReleasesForProducts: () =>
-      this.service.syncLatestReleasesForProducts(),
+    syncLatestReleasesForProducts: () => this.service.syncLatestReleasesForProducts(),
     syncGithubMonitor: () => this.service.syncGithubMonitor(),
+    syncGithubSecurityMonitor: () => this.service.syncGithubSecurityMonitor(),
     syncOneProduct: () => EMPTY
   };
 
