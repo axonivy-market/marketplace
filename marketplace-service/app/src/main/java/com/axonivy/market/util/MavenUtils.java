@@ -209,8 +209,10 @@ public class MavenUtils {
     }
     return archivedArtifacts.stream()
         .filter(Objects::nonNull)
-        .sorted((artifact1, artifact2) -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
-      .filter(archivedArtifact -> new LatestVersionComparator().compare(version, archivedArtifact.getLastVersion()) >= 0)
+        .sorted((artifact1, artifact2)
+            -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+        .filter(
+            archivedArtifact -> new LatestVersionComparator().compare(version, archivedArtifact.getLastVersion()) >= 0)
         .findAny().orElse(null);
   }
 
