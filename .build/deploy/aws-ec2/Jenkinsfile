@@ -34,16 +34,8 @@ pipeline {
         )
     }
 
-    environment {
-        deploymentConfig
-        configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
-            jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
-            deploymentConfig = parseDeploymentConfig(jsonContent)
-        }
-        nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
-    }
-
     stages {
+
         stage('Confirm Production Deployment') {
             when {
                 expression { params.DEPLOYMENT_TARGET != 'PREVIEW node' }
@@ -53,6 +45,18 @@ pipeline {
                     message: "Deploy version ${params.RELEASE_VERSION} to ${params.DEPLOYMENT_TARGET}?",
                     submitter: 'team-octopus'
                 )
+            }
+        }
+
+        stage('Load Configuration') {
+            steps {
+                script {
+                    configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
+                        def jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
+                        deploymentConfig = parseDeploymentConfig(jsonContent)
+                        env.nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
+                    }
+                }
             }
         }
 
