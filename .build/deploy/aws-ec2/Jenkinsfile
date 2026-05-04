@@ -53,8 +53,8 @@ pipeline {
                 script {
                     configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
                         def jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
-                        deploymentConfig = parseDeploymentConfig(jsonContent)
-                        env.nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
+                        def deploymentConfig = parseDeploymentConfig(jsonContent)
+                        env.NODES_TO_DEPLOY = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
                     }
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
         stage('Merge Configuration') {
             steps {
                 script {
-                    for (node in ${env.nodesToDeploy}) {
+                    for (node in env.NODES_TO_DEPLOY) {
                         echo "Merging config for node: ${node.name} (${node.ip})"
 
                         withCredentials([
@@ -91,7 +91,7 @@ pipeline {
         stage('Deploy and Promote Release') {
             steps {
                 script {
-                    for (node in ${env.nodesToDeploy}) {
+                    for (node in env.NODES_TO_DEPLOY) {
                         echo "Deploying and promoting release for node: ${node.name} (${node.ip})"
 
                         withCredentials([
