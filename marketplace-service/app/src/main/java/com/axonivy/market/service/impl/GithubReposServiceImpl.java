@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -49,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
@@ -73,15 +75,15 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
-  public void loadAndStoreTestReports() throws IOException {
-    TimeoutGuard timeoutGuard = TimeoutGuard.of(Duration.of(5, ChronoUnit.SECONDS), "loadAndStoreTestReports");
+  public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
         .filter(product -> Boolean.FALSE != product.getListed()
-            && product.getRepositoryName() != null).toList();
+            && product.getRepositoryName() != null).toList()
+        .stream()
+        .filter(s -> s.getId().equals("openai-connector")).toList();
 
-    for (int i = 0; i < products.size(); i++) {
-      timeoutGuard.check(i, products.size());
-      syncGithubRepos(products.get(i));
+    for (Product product : products) {
+      syncGithubRepos(product);
     }
   }
 
@@ -121,8 +123,12 @@ public class GithubReposServiceImpl implements GithubReposService {
           repo.setProductId(resolvedProductId);
           return repo;
         }).orElse(from(ghRepo, resolvedProductId));
-    List<TestStep> testSteps = Arrays.stream(values()).map(
-        workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
+
+    List<TestStep> testSteps = Arrays.stream(values())
+        .map(workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow))
+        .flatMap(Collection::stream)
+        .toList();
+
     githubRepo.getTestSteps().addAll(testSteps);
     githubRepoRepository.save(githubRepo);
   }
@@ -150,11 +156,17 @@ public class GithubReposServiceImpl implements GithubReposService {
             });
 
         updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
-        return processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
+        List<TestStep> asdas =  processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
+        return asdas;
       }
-    } catch (IOException | GHException e) {
+    } catch (Throwable e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
+
+        if (e instanceof InterruptedIOException) {
+          // ✅ timeout ở đây
+          log.error("Timeout khi gọi GitHub API", e);
+        }
 
     }
     return Collections.emptyList();
@@ -209,7 +221,11 @@ public class GithubReposServiceImpl implements GithubReposService {
 
       JsonNode testData = findTestReportJson(unzipDir.toFile());
       return testStepsService.createTestSteps(testData, workflowType);
-    } catch (IOException e) {
+    } catch (Exception e) {
+      if (e instanceof InterruptedIOException) {
+        // ✅ timeout ở đây
+        log.error("Timeout khi gọi GitHub API", e);
+      }
       log.error("IO error processing artifact for repo: {}", dbRepo.getProductId(), e);
     } finally {
       try {

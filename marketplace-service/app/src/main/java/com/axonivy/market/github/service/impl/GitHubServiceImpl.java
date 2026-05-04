@@ -35,6 +35,8 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.*;
+import okhttp3.OkHttpClient;
+import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -60,6 +62,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,13 +98,23 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GitHub getGitHub() throws IOException {
-    return new GitHubBuilder().withOAuthToken(
-        Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
+    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        .callTimeout(Duration.ofSeconds(1))
+        .build();
+
+    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
+    String gitHubToken = Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim();
+    return new GitHubBuilder().withOAuthToken(gitHubToken).withConnector(gitHubConnector).build();
+//    return new GitHubBuilder().withOAuthToken(
+//        Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
   }
 
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
     return new GitHubBuilder().withOAuthToken(accessToken).build();
+//    OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(1)).build();
+//    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
+//    return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
   }
 
   @Override
