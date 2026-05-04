@@ -8,6 +8,9 @@ def parseDeploymentConfig(String jsonContent) {
     return new groovy.json.JsonSlurperClassic().parseText(jsonContent)
 }
 
+def deploymentConfig = [:]
+def nodesToDeploy = []
+
 pipeline {
     agent any
 
@@ -53,8 +56,9 @@ pipeline {
                 script {
                     configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
                         def jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
-                        def deploymentConfig = parseDeploymentConfig(jsonContent)
-                        env.NODES_TO_DEPLOY = new groovy.json.JsonOutput().toJson(resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig))
+                        deploymentConfig = parseDeploymentConfig(jsonContent)
+                        nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig) ?: []
+                        echo "Resolved ${nodesToDeploy?.size() ?: 0} node(s) for ${params.DEPLOYMENT_TARGET}"
                     }
                 }
             }
@@ -63,7 +67,7 @@ pipeline {
         stage('Merge Configuration') {
             steps {
                 script {
-                    for (node in env.NODES_TO_DEPLOY) {
+                    for (node in nodesToDeploy) {
                         echo "Merging config for node: ${node.name} (${node.ip})"
 
                         withCredentials([
@@ -91,7 +95,7 @@ pipeline {
         stage('Deploy and Promote Release') {
             steps {
                 script {
-                    for (node in env.NODES_TO_DEPLOY) {
+                    for (node in nodesToDeploy) {
                         echo "Deploying and promoting release for node: ${node.name} (${node.ip})"
 
                         withCredentials([
