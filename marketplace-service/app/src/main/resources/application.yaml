@@ -82,6 +82,7 @@ market:
     products-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_CRON}'
     products-dependency-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_DEPENDENCY_CRON}'
     github-repos-cron: '${MARKET_SCHEDULING_TASK_GITHUB_REPOS_CRON}'
+    github-repos-timeout-seconds: '${MARKET_SCHEDULING_GITHUB_REPOS_TIMEOUT_SECONDS:5}'
     documents-cron: '${MARKET_SCHEDULING_TASK_DOCUMENTS_CRON}'
     products-release-notes-cron: '${MARKET_SCHEDULING_TASK_PRODUCTS_RELEASE_NOTES_CRON}'
     security-monitor-cron: '${MARKET_SCHEDULING_TASK_SECURITY_MONITOR_CRON}'
@@ -97,6 +98,8 @@ market:
     oauth2-clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
     oauth2-clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
     token: '${MARKET_GITHUB_TOKEN}'
+    connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:1000}'
+    read-timeout: '${MARKET_GITHUB_READ_TIMEOUT:3000}'
     market:
       branch: '${MARKET_GITHUB_MARKET_BRANCH}'
   allowed:

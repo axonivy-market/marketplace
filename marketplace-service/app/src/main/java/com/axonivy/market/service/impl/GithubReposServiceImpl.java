@@ -17,6 +17,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.TimeoutGuard;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,13 +73,15 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
-  public void loadAndStoreTestReports() {
+  public void loadAndStoreTestReports() throws IOException {
+    TimeoutGuard timeoutGuard = TimeoutGuard.of(Duration.of(5, ChronoUnit.SECONDS), "loadAndStoreTestReports");
     List<Product> products = productRepository.findAll().stream()
         .filter(product -> Boolean.FALSE != product.getListed()
             && product.getRepositoryName() != null).toList();
 
-    for (Product product : products) {
-      syncGithubRepos(product);
+    for (int i = 0; i < products.size(); i++) {
+      timeoutGuard.check(i, products.size());
+      syncGithubRepos(products.get(i));
     }
   }
 
