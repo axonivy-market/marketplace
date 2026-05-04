@@ -60,7 +60,7 @@ public class AuthorizedAspect {
       throw throwInvalidAuthorizationException();
     }
     if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
-      UserInfo userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
+      var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 

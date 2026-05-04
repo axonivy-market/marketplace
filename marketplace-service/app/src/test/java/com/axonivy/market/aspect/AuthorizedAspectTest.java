@@ -71,9 +71,9 @@ class AuthorizedAspectTest {
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer valid-token");
     when(jwtService.getRawAccessToken("Bearer valid-token")).thenReturn("valid-token");
     when(gitHubService.validateUserInOrganizationAndTeam(
-        eq("valid-token"),
-        eq(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME),
-        eq(GitHubConstants.AXONIVY_MARKET_TEAM_NAME)
+        "valid-token",
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME
     )).thenReturn(mockUser);
 
     when(joinPoint.proceed()).thenReturn("success");
