@@ -7,7 +7,7 @@ RELEASE_VERSION="${2:-}"
 HEALTH_CHECK_TARGETS_ARG="${3:-}"
 
 if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$HEALTH_CHECK_TARGETS_ARG" ]]; then
-    echo "Usage: $0 <node_ip> <release_version> <health_check_targets>"
+    echo "ERROR: $0 Missing required arguments: <NODE_IP> <RELEASE_VERSION> <HEALTH_CHECK_TARGETS_ARG>"
     exit 1
 fi
 
