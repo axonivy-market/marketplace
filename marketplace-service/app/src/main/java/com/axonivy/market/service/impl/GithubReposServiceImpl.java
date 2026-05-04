@@ -78,9 +78,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   public void loadAndStoreTestReports() {
     List<Product> products = productRepository.findAll().stream()
         .filter(product -> Boolean.FALSE != product.getListed()
-            && product.getRepositoryName() != null).toList()
-        .stream()
-        .filter(s -> s.getId().equals("openai-connector")).toList();
+            && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
       syncGithubRepos(product);

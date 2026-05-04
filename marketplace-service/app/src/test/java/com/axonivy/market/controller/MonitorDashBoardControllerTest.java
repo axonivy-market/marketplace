@@ -8,6 +8,7 @@ import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kohsuke.github.GHMyself;
@@ -40,6 +41,9 @@ class MonitorDashBoardControllerTest extends BaseSetup {
   private TestStepsService testStepsService;
   @Mock
   private GitHub gitHub;
+  @Mock
+  private OkHttpClient okHttpClient;
+
   @InjectMocks
   private MonitorDashBoardController controller;
 

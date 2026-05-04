@@ -98,8 +98,7 @@ market:
     oauth2-clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
     oauth2-clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
     token: '${MARKET_GITHUB_TOKEN}'
-    connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:1000}'
-    read-timeout: '${MARKET_GITHUB_READ_TIMEOUT:3000}'
+    connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
     market:
       branch: '${MARKET_GITHUB_MARKET_BRANCH}'
   allowed:

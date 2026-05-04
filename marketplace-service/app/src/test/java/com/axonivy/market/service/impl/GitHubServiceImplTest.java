@@ -91,6 +91,9 @@ class GitHubServiceImplTest extends BaseSetup {
   private ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Mock
+  private okhttp3.OkHttpClient okHttpClient;
+
+  @Mock
   private ThreadPoolTaskScheduler taskScheduler;
 
   @Spy

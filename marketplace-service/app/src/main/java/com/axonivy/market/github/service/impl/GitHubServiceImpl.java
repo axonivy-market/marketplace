@@ -62,7 +62,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,26 +94,18 @@ public class GitHubServiceImpl implements GitHubService {
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
+  private final OkHttpClient okHttpClient;
 
   @Override
   public GitHub getGitHub() throws IOException {
-    OkHttpClient okHttpClient = new OkHttpClient.Builder()
-        .callTimeout(Duration.ofSeconds(1))
-        .build();
-
     OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
-    String gitHubToken = Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim();
-    return new GitHubBuilder().withOAuthToken(gitHubToken).withConnector(gitHubConnector).build();
-//    return new GitHubBuilder().withOAuthToken(
-//        Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
+    return new GitHubBuilder().withOAuthToken(gitHubProperty.getToken()).withConnector(gitHubConnector).build();
   }
 
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
-    return new GitHubBuilder().withOAuthToken(accessToken).build();
-//    OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(1)).build();
-//    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
-//    return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
+    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
+    return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
   }
 
   @Override
