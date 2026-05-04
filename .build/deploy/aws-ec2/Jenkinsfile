@@ -54,7 +54,7 @@ pipeline {
                     configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
                         def jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
                         def deploymentConfig = parseDeploymentConfig(jsonContent)
-                        env.NODES_TO_DEPLOY = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig)
+                        env.NODES_TO_DEPLOY = new groovy.json.JsonOutput().toJson(resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig))
                     }
                 }
             }
