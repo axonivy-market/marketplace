@@ -37,6 +37,9 @@ public class ProductDependency extends AuditableIdEntity {
 
   @Override
   public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof ProductDependency dependency)) {
       return false;
     }

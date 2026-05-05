@@ -260,8 +260,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         return new ArrayList<>();
       }
 
-      var mavelModel = convertPomToModel(fileContent);
-      return mavelModel.getDependencies().stream()
+      var mavenModel = convertPomToModel(fileContent);
+      return mavenModel.getDependencies().stream()
           .filter(dependency -> DEFAULT_PRODUCT_TYPE.equals(dependency.getType()))
           .toList();
   }
