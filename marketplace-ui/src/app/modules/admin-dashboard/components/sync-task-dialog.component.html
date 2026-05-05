@@ -50,8 +50,7 @@
               </small>
             }
           </div>
-          @if (currentConfig.enableMarketPath)
-            {
+          @if (currentConfig.enableMarketPath) {
             <div class="mb-3">
               <label class="form-label" for="sync-market-path">
                 {{ 'common.admin.sync.syncProductDialog.marketItemPath' | translate }}
@@ -62,15 +61,9 @@
                 class="form-control"
                 [(ngModel)]="marketDirectory"
                 [disabled]="currentConfig.showOverrideCheckbox && !overrideMarketItemPath" />
-              @if (currentConfig.showOverrideCheckbox && !overrideMarketItemPath) {
-                <small class="text-muted">
-                  {{ 'common.admin.sync.syncProductDialog.overrideMarketItemPath' | translate }}
-                </small>
-              } @else {
                 <small class="text-muted">
                   {{ 'common.admin.sync.syncProductDialog.chooseMarketItemPathHint' | translate }}
                 </small>
-              }
             </div>
           }
         </div>

@@ -71,7 +71,7 @@ export class SyncTaskDialogComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['products']) {
-      this.filteredProducts.set(this.products.slice(0, 10));
+      this.filteredProducts.set(this.products);
     }
 
     if (changes['taskKey'] && this.taskKey) {
@@ -81,18 +81,18 @@ export class SyncTaskDialogComponent implements OnChanges {
 
     if (changes['visible']?.currentValue === true) {
       this.reset();
-      this.filteredProducts.set(this.products.slice(0, 10));
+      this.filteredProducts.set(this.products);
     }
   }
 
   openDropdown(): void {
     this.dropdownOpen = true;
-    this.filteredProducts.set(this.products.slice(0, 10));
+    this.filteredProducts.set(this.products);
   }
 
   filterProducts(): void {
     const value = (this.productSearch ?? '').toLowerCase();
-    const filtered = this.products.filter(p => p.id.toLowerCase().includes(value)).slice(0, 10);
+    const filtered = this.products.filter(p => p.id.toLowerCase().includes(value));
     this.filteredProducts.set(filtered);
 
     const matches = this.products.some(p => p.id === (this.productSearch ?? ''));
