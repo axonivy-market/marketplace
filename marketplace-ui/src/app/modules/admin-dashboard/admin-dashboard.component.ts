@@ -108,11 +108,15 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadExecutions();
     this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
-      if (event.urlAfterRedirects === '/internal-dashboard') {
-        this.pageTitleService.setTitleOnLangChange('common.admin.sync.pageTitle');
-      }
-    });
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.urlAfterRedirects === '/internal-dashboard') {
+          this.pageTitleService.setTitleOnLangChange(
+            'common.admin.sync.pageTitle'
+          );
+        }
+      });
   }
 
   private loadExecutions(): void {
@@ -127,7 +131,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleAuthError(err: HttpErrorResponse): void {
-    this.errorMessage = err.status === UNAUTHORIZED ? ERROR_MESSAGES.INVALID_TOKEN : ERROR_MESSAGES.FETCH_FAILURE;
+    this.errorMessage =
+      err.status === UNAUTHORIZED
+        ? ERROR_MESSAGES.INVALID_TOKEN
+        : ERROR_MESSAGES.FETCH_FAILURE;
 
     this.authService.clearToken();
   }
@@ -189,8 +196,12 @@ export class AdminDashboardComponent implements OnInit {
       }
 
       syncTask.status = execution.status;
-      syncTask.triggeredAt = execution.triggeredAt ? new Date(execution.triggeredAt) : undefined;
-      syncTask.completedAt = execution.completedAt ? new Date(execution.completedAt) : undefined;
+      syncTask.triggeredAt = execution.triggeredAt
+        ? new Date(execution.triggeredAt)
+        : undefined;
+      syncTask.completedAt = execution.completedAt
+        ? new Date(execution.completedAt)
+        : undefined;
       syncTask.message = execution.message ?? undefined;
     });
   }
@@ -222,7 +233,9 @@ export class AdminDashboardComponent implements OnInit {
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
       completedAt: new Date(),
-      message: this.translateService.instant('common.admin.sync.syncProductDialog.validationMessage')
+      message: this.translateService.instant(
+        'common.admin.sync.syncOneProductDialog.validationMessage'
+      )
     });
   }
 

@@ -50,7 +50,11 @@ export class AdminDashboardService {
     );
   }
 
-  syncOneProduct(id: string, marketItemPath: string, overrideMarketItemPath = false): Observable<SyncTaskExecution> {
+  syncOneProduct(
+    id: string,
+    marketItemPath: string,
+    overrideMarketItemPath = false
+  ): Observable<SyncTaskExecution> {
     const params = new HttpParams()
       .set(RequestParam.MARKET_ITEM_PATH, marketItemPath)
       .set(RequestParam.OVERRIDE_MARKET_ITEM_PATH, overrideMarketItemPath);
@@ -62,6 +66,12 @@ export class AdminDashboardService {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
+  }
+
+  syncLatestReleasesForProducts(): Observable<void> {
+    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   syncZipArtifacts(resetSync = false, productId = ''): Observable<SyncTaskExecution> {
@@ -78,12 +88,6 @@ export class AdminDashboardService {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
-  }
-
-  syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
   }
 
   syncGithubMonitor(): Observable<string> {
@@ -145,7 +149,8 @@ export class AdminDashboardService {
     });
   }
 
-  searchSecurityDetails(criteria: SecurityMonitorCriteria): Observable<SecurityMonitorApiResponse> {
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
+    Observable<SecurityMonitorApiResponse> {
     let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
@@ -156,11 +161,13 @@ export class AdminDashboardService {
       params = params.set(RequestParam.SEARCH, criteria.searchText);
     }
 
-    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, {
-      params,
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
-    });
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      }
+    );
   }
 
   getReleaseLetters(
@@ -225,11 +232,18 @@ export class AdminDashboardService {
     );
   }
 
-  updateReleaseLetter(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
-    });
+  updateReleaseLetter(
+    id: string,
+    releaseLetterRequest: ReleaseLetter
+  ): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/${id}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
+      }
+    );
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
@@ -237,10 +251,13 @@ export class AdminDashboardService {
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http.get<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, {
-      headers: this.adminAuth.getAuthHeaders(),
-      params
-    });
+    return this.http.get<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/${id}`,
+      {
+        headers: this.adminAuth.getAuthHeaders(),
+        params
+      }
+    );
   }
 
   deleteReleaseLetterById(id: string): Observable<void> {
