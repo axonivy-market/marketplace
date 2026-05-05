@@ -1,10 +1,12 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.entity.ProductDependency;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -70,6 +72,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
    * @return total product synced
    */
   @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_ZIP_ARTIFACTS)
   public synchronized int syncIARDependenciesForProducts(Boolean resetSync, String productId) {
     var totalSyncedProductIds = 0;
     if (StringUtils.isNotBlank(productId)) {

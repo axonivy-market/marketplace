@@ -1,0 +1,100 @@
+@if (visible) {
+  <div class="modal-backdrop show"></div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header justify-content-between">
+        <h5 class="modal-title">
+          {{ currentConfig.dialogTitle | translate }}
+        </h5>
+        <button type="button" class="btn-close ms-auto" (click)="onCancel()" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="sync-extension-id">
+            {{ 'common.admin.extensionId' | translate }}
+          </label>
+
+          <div class="dropdown position-relative w-100">
+            <input
+              id="sync-extension-id"
+              type="text"
+              class="sync-extension-id form-control dropdown-toggle"
+              [(ngModel)]="productSearch"
+              (focus)="openDropdown()"
+              (input)="filterProducts()"
+            />
+
+            @if (dropdownOpen) {
+              <ul class="dropdown-menu show w-100">
+                @let results = filteredProducts();
+                @if (!results || results.length === 0) {
+                  <li class="dropdown-item disabled">
+                    {{ 'common.admin.sync.noResults' | translate }}
+                  </li>
+                } @else {
+                  @for (product of results; track product.id) {
+                    <li
+                      class="dropdown-item"
+                      (click)="selectProduct(product)">
+                      {{ product.id }}
+                    </li>
+                  }
+                }
+              </ul>
+            }
+            @if (currentConfig.showAllOption) {
+              <small class="text-muted">
+                {{ 'common.admin.sync.allProductsHint' | translate }}
+              </small>
+            }
+          </div>
+          @if (currentConfig.enableMarketPath) {
+            <div class="mb-3">
+              <label class="form-label" for="sync-market-path">
+                {{ 'common.admin.sync.syncProductDialog.marketItemPath' | translate }}
+              </label>
+
+              <input
+                id="sync-market-path"
+                class="form-control"
+                [(ngModel)]="marketDirectory"
+                [disabled]="currentConfig.showOverrideCheckbox && !overrideMarketItemPath" />
+                <small class="text-muted">
+                  {{ 'common.admin.sync.syncProductDialog.chooseMarketItemPathHint' | translate }}
+                </small>
+            </div>
+          }
+        </div>
+
+        @if (currentConfig.showOverrideCheckbox) {
+          <div class="form-check mb-2">
+            <input
+              id="overridePath"
+              type="checkbox"
+              class="form-check-input"
+              [(ngModel)]="overrideMarketItemPath" />
+            <label for="overridePath" class="form-check-label">
+              {{ 'common.admin.sync.syncProductDialog.overrideMarketItemPath' | translate }}
+            </label>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-cancel btn-secondary me-2" (click)="onCancel()">
+          {{ 'common.admin.sync.cancelLabel' | translate }}
+        </button>
+
+        <button
+          class="btn border-0 btn-primary"
+          (click)="onConfirm()"
+          [disabled]="!isValid()"
+        >
+          {{ 'common.admin.sync.syncLabel' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

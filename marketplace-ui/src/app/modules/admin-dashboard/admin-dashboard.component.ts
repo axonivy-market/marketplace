@@ -19,16 +19,15 @@ import {
 import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
-  SyncTaskExecution,
-  SyncTaskKey
+  SyncTaskExecution
 } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
 import {
   ERROR_MESSAGES,
   UNAUTHORIZED,
-  SYNC_TASKS
-} from '../../shared/constants/common.constant';
+  } from '../../shared/constants/common.constant';
+import { SYNC_TASKS, SYNC_TASK_KEYS, SyncTaskKey } from '../../shared/constants/admin.constant';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
@@ -40,11 +39,11 @@ import { AdminAuthService } from './admin-auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { LogStreamService } from '../../core/services/logging/log-stream.service';
 import { LogParserService, ParsedLog } from './logs-viewer/logs-viewer.service';
+import { SyncTaskDialogComponent } from './components/sync-task-dialog.component';
 
-const SYNC_ONE_PRODUCT_KEY = 'syncOneProduct';
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SyncTaskDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -73,12 +72,10 @@ export class AdminDashboardComponent implements OnInit {
 
   showSyncTask = true;
   loadingSyncTaskKey: SyncTaskKey | null = null;
-  showSyncOneProductDialog = false;
+  showSyncProductDialog = false;
 
   syncTasks = SYNC_TASKS;
   products: MarketProduct[] = [];
-  filteredProducts: MarketProduct[] = [];
-
   productSearch = '';
   marketDirectory = '';
   overrideMarketItemPath = false;
@@ -103,6 +100,7 @@ export class AdminDashboardComponent implements OnInit {
     syncLatestReleasesForProducts: () => this.service.syncLatestReleasesForProducts(),
     syncGithubMonitor: () => this.service.syncGithubMonitor(),
     syncGithubSecurityMonitor: () => this.service.syncGithubSecurityMonitor(),
+    syncZipArtifacts: () => this.service.syncZipArtifacts(),
     syncOneProduct: () => EMPTY
   };
 
@@ -140,23 +138,12 @@ export class AdminDashboardComponent implements OnInit {
 
   // Synchronize
   trigger(syncTask: SyncTaskRow): void {
-    if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
-      this.openSyncOneProductDialog();
+    this.selectedTask.set(syncTask);
+    if (syncTask.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT || syncTask.key === SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS) {
+      this.openSyncProductDialog();
       return;
     }
-
-    this.runSyncTask(syncTask);
-  }
-
-  private runSyncTask(syncTask: SyncTaskRow): void {
-    this.setSyncTaskRunning(syncTask);
-    this.logStream.resetTask(syncTask.key);
-    this.syncTaskTriggers[syncTask.key]()
-      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
-      .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
-        error: () => this.handleSyncTaskFailure(syncTask)
-      });
+    this.executeTask(syncTask, this.syncTaskTriggers[syncTask.key]());
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {
@@ -236,47 +223,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private openSyncOneProductDialog(): void {
+  private openSyncProductDialog(): void {
     this.productService.fetchAllProductsForSync()
       .subscribe(products => {
         this.products = products;
-        this.filteredProducts = products;
-        this.showSyncOneProductDialog = true;
-      });
-  }
-
-  confirmSyncOneProduct(): void {
-    const syncTask = this.syncTasks.find(t => t.key === SYNC_ONE_PRODUCT_KEY);
-    if (!syncTask || !this.isValidSyncOneProductValues()) {
-      this.markSyncOneProductFailed(syncTask);
-      return;
-    }
-
-    this.executeSyncOneProduct(syncTask);
-  }
-
-  isValidSyncOneProductValues(): boolean {
-    const matchedProduct = this.products.some(
-      product => product.id === this.productSearch
-    );
-    return matchedProduct && !!this.marketDirectory;
-  }
-
-  private executeSyncOneProduct(syncTask: SyncTaskRow): void {
-    this.setSyncTaskRunning(syncTask);
-    this.logStream.resetTask(syncTask.key);
-    this.showSyncOneProductDialog = false;
-
-    this.service
-      .syncOneProduct(
-        this.productSearch,
-        this.marketDirectory.trim(),
-        this.overrideMarketItemPath
-      )
-      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
-      .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
-        error: () => this.handleSyncTaskFailure(syncTask)
+        this.showSyncProductDialog = true;
       });
   }
 
@@ -289,13 +240,14 @@ export class AdminDashboardComponent implements OnInit {
       status: SyncTaskStatus.FAILED,
       completedDate: new Date(),
       message: this.translateService.instant(
-        'common.admin.sync.syncOneProductDialog.validationMessage'
+        'common.admin.sync.syncProductDialog.validationMessage'
       )
     });
   }
 
-  cancelSyncOneProduct(): void {
-    this.showSyncOneProductDialog = false;
+  cancelSyncProduct(): void {
+    this.showSyncProductDialog = false;
+    this.selectedTask.set(null);
     this.productSearch = '';
     this.marketDirectory = '';
     this.overrideMarketItemPath = false;
@@ -303,20 +255,6 @@ export class AdminDashboardComponent implements OnInit {
 
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
-    this.dropdownOpen = true;
-  }
-
-  filterProducts(): void {
-    const value = this.productSearch.toLowerCase();
-
-    this.filteredProducts = this.products
-      .filter(product => product.id.toLowerCase().includes(value));
-
-    // Clear the market directory if ID input does not match any product IDs
-    if (!this.isValidSyncOneProductValues()) {
-      this.marketDirectory = '';
-    }
-
     this.dropdownOpen = true;
   }
 
@@ -364,5 +302,34 @@ export class AdminDashboardComponent implements OnInit {
 
   isExpanded(index: number): boolean {
     return this.expandedLogs().has(index);
+  }
+
+  handleSyncDialogConfirm(event: { productId: string; marketDirectory: string; override: boolean }): void {
+    const task = this.selectedTask();
+    if (!task) {
+      return;
+    }
+    if (task.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT) {
+      const isValid = this.products.some(p => p.id === event.productId) && !!event.marketDirectory;
+
+      if (!isValid) {
+        this.markSyncOneProductFailed(task);
+        return;
+      }
+      this.executeTask(task, this.service.syncOneProduct(event.productId, event.marketDirectory, event.override));
+    } else {
+      this.executeTask(task, this.service.syncZipArtifacts(false, event.productId));
+    }
+  }
+
+  private executeTask(task: SyncTaskRow, request$: Observable<unknown>): void {
+    this.setSyncTaskRunning(task);
+    this.logStream.resetTask(task.key);
+    this.showSyncProductDialog = false;
+
+    request$.pipe(finalize(() => (this.loadingSyncTaskKey = null))).subscribe({
+      next: () => this.handleSyncTaskSuccess(task),
+      error: () => this.handleSyncTaskFailure(task)
+    });
   }
 }
