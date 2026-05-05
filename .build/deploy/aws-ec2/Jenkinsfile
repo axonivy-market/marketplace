@@ -4,20 +4,8 @@ def resolveNodesToDeploy(String deploymentTarget, Map deploymentConfig) {
 }
 
 @NonCPS
-def parseDeploymentConfig(String jsonContent) {
+def parseJsonData(String jsonContent) {
     return new groovy.json.JsonSlurperClassic().parseText(jsonContent)
-}
-
-@NonCPS
-def parseApproverUsernames(String content) {
-    if (!content) {
-        return []
-    }
-
-    return content
-        .readLines()
-        .collect { it.trim() }
-        .findAll { it && !it.startsWith('#') }
 }
 
 def deploymentConfig = [:]
@@ -61,11 +49,12 @@ pipeline {
                     def approverUsernames = []
                     configFileProvider([configFile(fileId: 'deployment-approvers', variable: 'DEPLOYMENT_APPROVERS_FILE')]) {
                         def approversContent = readFile(file: env.DEPLOYMENT_APPROVERS_FILE)
-                        approverUsernames = parseApproverUsernames(approversContent)
+                        def approversConfig = parseJsonData(approversContent)
+                        approverUsernames = approversConfig?.approvers ?: []
                     }
 
                     if (!approverUsernames) {
-                        error('No approvers configured. Please set at least one username in managed file deployment-approvers.')
+                        error('No approvers configured. Please set at least one username in managed file deployment-approvers under key approvers.')
                     }
 
                     def submitterList = approverUsernames.join(',')
@@ -90,7 +79,7 @@ pipeline {
                 script {
                     configFileProvider([configFile(fileId: 'deployment-target', variable: 'DEPLOYMENT_TARGETS_FILE')]) {
                         def jsonContent = readFile(file: env.DEPLOYMENT_TARGETS_FILE)
-                        deploymentConfig = parseDeploymentConfig(jsonContent)
+                        deploymentConfig = parseJsonData(jsonContent)
                         nodesToDeploy = resolveNodesToDeploy(params.DEPLOYMENT_TARGET, deploymentConfig) ?: []
                         echo "Resolved ${nodesToDeploy?.size() ?: 0} node(s) for ${params.DEPLOYMENT_TARGET}"
                     }
