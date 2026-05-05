@@ -16,15 +16,7 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
-import { SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
-
-export type SyncTaskKey =
-  | typeof SYNC_TASK_KEYS.SYNC_PRODUCTS
-  | typeof SYNC_TASK_KEYS.SYNC_ONE_PRODUCT
-  | typeof SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS
-  | typeof SYNC_TASK_KEYS.SYNC_LATEST_RELEASES_FOR_PRODUCTS
-  | typeof SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR
-  | typeof SYNC_TASK_KEYS.SYNC_GITHUB_SECURITY_MONITOR;
+import { SyncTaskKey } from '../../shared/constants/admin.constant';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -122,15 +114,21 @@ export class AdminDashboardService {
     });
   }
 
-  sortMarketExtensions(orderedList: string[], remainderRule = 'alphabetically'): Observable<void> {
+  sortMarketExtensions(
+    orderedList: string[],
+    remainderRule = 'alphabetically'
+  ): Observable<void> {
     const body = {
       orderedListOfProducts: orderedList,
       ruleForRemainder: remainderRule
     };
 
-    return this.http.post<void>(`${API_URI.CUSTOM_SORT}`, body, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
+    return this.http.post<void>(
+      `${API_URI.CUSTOM_SORT}`, body,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 
   getCustomSort(): Observable<CustomSortConfig> {
@@ -140,12 +138,14 @@ export class AdminDashboardService {
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
       headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.SECURITY_MONITOR
+      )
     });
   }
 
-  searchSecurityDetails(criteria: SecurityMonitorCriteria):
-    Observable<SecurityMonitorApiResponse> {
+  searchSecurityDetails(criteria: SecurityMonitorCriteria): Observable<SecurityMonitorApiResponse> {
     let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
@@ -156,13 +156,11 @@ export class AdminDashboardService {
       params = params.set(RequestParam.SEARCH, criteria.searchText);
     }
 
-    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
-      {
-        params,
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
-      }
-    );
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, {
+      params,
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+    });
   }
 
   getReleaseLetters(
@@ -195,7 +193,8 @@ export class AdminDashboardService {
       })
       .pipe(
         catchError(() => {
-          const releaseLetterListApiResponse = {} as ReleaseLetterListApiResponse;
+          const releaseLetterListApiResponse =
+            {} as ReleaseLetterListApiResponse;
           return of(releaseLetterListApiResponse);
         })
       );
@@ -206,17 +205,24 @@ export class AdminDashboardService {
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.ACTIVE_RELEASE_LETTERS}`, {
-      headers: this.adminAuth.getAuthHeaders(),
-      params
-    });
+    return this.http.get<ReleaseLetterListApiResponse>(
+      `${API_URI.ACTIVE_RELEASE_LETTERS}`,
+      {
+        headers: this.adminAuth.getAuthHeaders(),
+        params
+      }
+    );
   }
 
   createReleaseLetter(releaseLetterRequest: ReleaseLetter): Observable<void> {
-    return this.http.post<void>(`${API_URI.RELEASE_LETTERS}`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
-    });
+    return this.http.post<void>(
+      `${API_URI.RELEASE_LETTERS}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(ForwardingError, true)
+      }
+    );
   }
 
   updateReleaseLetter(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {

@@ -19,8 +19,7 @@ import {
 import { EMPTY, filter, finalize, Observable } from 'rxjs';
 import {
   AdminDashboardService,
-  SyncTaskExecution,
-  SyncTaskKey
+  SyncTaskExecution
 } from './admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/services/language/language.service';
@@ -28,7 +27,7 @@ import {
   ERROR_MESSAGES,
   UNAUTHORIZED,
   } from '../../shared/constants/common.constant';
-import { SYNC_TASKS, SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
+import { SYNC_TASKS, SYNC_TASK_KEYS, SyncTaskKey } from '../../shared/constants/admin.constant';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
@@ -140,18 +139,7 @@ export class AdminDashboardComponent implements OnInit {
       await this.openSyncProductDialog();
       return;
     }
-    this.runSyncTask(syncTask);
-  }
-
-  private runSyncTask(syncTask: SyncTaskRow): void {
-    this.setSyncTaskRunning(syncTask);
-    this.logStream.resetTask(syncTask.key);
-    this.syncTaskTriggers[syncTask.key]()
-      .pipe(finalize(() => (this.loadingSyncTaskKey = null)))
-      .subscribe({
-        next: () => this.handleSyncTaskSuccess(syncTask),
-        error: () => this.handleSyncTaskFailure(syncTask)
-      });
+    this.executeTask(syncTask, this.syncTaskTriggers[syncTask.key]());
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {
@@ -226,11 +214,6 @@ export class AdminDashboardComponent implements OnInit {
     this.showSyncProductDialog = true;
   }
 
-  isValidSyncOneProductValues(): boolean {
-    const matchedProduct = this.products.some(product => product.id === this.productSearch);
-    return matchedProduct && !!this.marketDirectory;
-  }
-
   private markSyncOneProductFailed(syncTask?: SyncTaskRow): void {
     if (!syncTask) {
       return;
@@ -253,17 +236,6 @@ export class AdminDashboardComponent implements OnInit {
 
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
-    this.dropdownOpen = true;
-  }
-
-  filterProducts(): void {
-    const value = this.productSearch.toLowerCase();
-
-    // Clear the market directory if ID input does not match any product IDs
-    if (!this.isValidSyncOneProductValues()) {
-      this.marketDirectory = '';
-    }
-
     this.dropdownOpen = true;
   }
 

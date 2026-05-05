@@ -25,7 +25,7 @@ import {
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
-import { LogStreamService } from '../../core/services/logging/log-stream.service';
+import { SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
 
 const TEST_CONSTANTS = {
   VALID_PRODUCT_ID: 'portal',
@@ -77,14 +77,14 @@ describe('AdminDashboardComponent', () => {
 
   const mockExecutions: SyncTaskExecution[] = [
     {
-      key: 'syncProducts',
+      key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
       status: SyncTaskStatus.SUCCESS,
       triggeredAt: '2024-01-01T00:00:00Z',
       completedAt: '2024-01-01T00:05:00Z',
       message: TEST_CONSTANTS.SUCCESS_MESSAGE
     },
     {
-      key: 'syncLatestReleasesForProducts',
+      key: SYNC_TASK_KEYS.SYNC_LATEST_RELEASES_FOR_PRODUCTS,
       status: SyncTaskStatus.FAILED,
       triggeredAt: '2024-01-01T00:00:00Z',
       completedAt: '2024-01-01T00:05:00Z',
@@ -218,7 +218,7 @@ describe('AdminDashboardComponent', () => {
         Promise.resolve(mockProducts)
       );
       const syncTask = component.syncTasks.find(
-        t => t.key === 'syncOneProduct'
+        t => t.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT
       )!;
 
       await component.trigger(syncTask);
@@ -232,12 +232,12 @@ describe('AdminDashboardComponent', () => {
       mockAdminService.fetchSyncTaskExecutions.mockReturnValue(
         of(mockExecutions)
       );
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
 
       await component.trigger(syncTask);
 
       expect(mockAdminService.syncProducts).toHaveBeenCalled();
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.RUNNING);
+      expectSyncTaskState(component, SYNC_TASK_KEYS.SYNC_PRODUCTS, SyncTaskStatus.RUNNING);
       expect(syncTask.completedAt).toBeDefined();
       expect(component.loadingSyncTaskKey).toBeNull();
     });
@@ -248,7 +248,7 @@ describe('AdminDashboardComponent', () => {
         of(mockExecutions)
       );
       const syncTask = component.syncTasks.find(
-        t => t.key === 'syncLatestReleasesForProducts'
+        t => t.key === SYNC_TASK_KEYS.SYNC_LATEST_RELEASES_FOR_PRODUCTS
       )!;
 
       await component.trigger(syncTask);
@@ -256,7 +256,7 @@ describe('AdminDashboardComponent', () => {
       expect(mockAdminService.syncLatestReleasesForProducts).toHaveBeenCalled();
       expectSyncTaskState(
         component,
-        'syncLatestReleasesForProducts',
+        SYNC_TASK_KEYS.SYNC_LATEST_RELEASES_FOR_PRODUCTS,
         SyncTaskStatus.RUNNING
       );
     });
@@ -267,7 +267,7 @@ describe('AdminDashboardComponent', () => {
         of(mockExecutions)
       );
       const syncTask = component.syncTasks.find(
-        t => t.key === 'syncGithubMonitor'
+        t => t.key === SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR
       )!;
 
       await component.trigger(syncTask);
@@ -275,7 +275,7 @@ describe('AdminDashboardComponent', () => {
       expect(mockAdminService.syncGithubMonitor).toHaveBeenCalled();
       expectSyncTaskState(
         component,
-        'syncGithubMonitor',
+        SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR,
         SyncTaskStatus.RUNNING
       );
     });
@@ -284,13 +284,13 @@ describe('AdminDashboardComponent', () => {
       mockAdminService.syncProducts.mockReturnValue(
         throwError(() => new Error('Sync failed'))
       );
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       component.isAuthenticated = false;
       mockAdminService.fetchSyncTaskExecutions.mockClear();
 
       await component.trigger(syncTask);
 
-      expectSyncTaskState(component, 'syncProducts', SyncTaskStatus.FAILED);
+      expectSyncTaskState(component, SYNC_TASK_KEYS.SYNC_PRODUCTS, SyncTaskStatus.FAILED);
       expect(mockAdminService.fetchSyncTaskExecutions).not.toHaveBeenCalled();
     });
   });
@@ -298,11 +298,11 @@ describe('AdminDashboardComponent', () => {
   describe('applySyncTaskExecutions', () => {
     it('should apply executions with all fields present', () => {
       fixture.detectChanges();
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
 
       expectSyncTaskState(
         component,
-        'syncProducts',
+        SYNC_TASK_KEYS.SYNC_PRODUCTS,
         SyncTaskStatus.SUCCESS,
         TEST_CONSTANTS.SUCCESS_MESSAGE
       );
@@ -313,7 +313,7 @@ describe('AdminDashboardComponent', () => {
     it('should handle executions with null values', () => {
       const executionsWithNulls: SyncTaskExecution[] = [
         {
-          key: 'syncProducts',
+          key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
           status: SyncTaskStatus.RUNNING,
           triggeredAt: undefined,
           completedAt: undefined,
@@ -325,7 +325,7 @@ describe('AdminDashboardComponent', () => {
       );
 
       fixture.detectChanges();
-      const syncTask = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
 
       expect(syncTask.status).toBe(SyncTaskStatus.RUNNING);
       expect(syncTask.triggeredAt).toBeUndefined();
@@ -394,7 +394,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should mark syncOneProduct as failed when invalid input', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncOneProduct')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT)!;
       component.selectedTask.set(task);
 
       component.handleSyncDialogConfirm({
@@ -405,14 +405,14 @@ describe('AdminDashboardComponent', () => {
 
       expectSyncTaskState(
         component,
-        'syncOneProduct',
+        SYNC_TASK_KEYS.SYNC_ONE_PRODUCT,
         SyncTaskStatus.FAILED,
         'common.admin.sync.syncProductDialog.validationMessage'
       );
     });
 
     it('should execute syncOneProduct when valid', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncOneProduct')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT)!;
       component.selectedTask.set(task);
 
       mockAdminService.syncOneProduct.mockReturnValue(of());
@@ -426,12 +426,12 @@ describe('AdminDashboardComponent', () => {
 
       expect(mockAdminService.syncOneProduct).toHaveBeenCalledWith('portal', 'dir1', true);
 
-      expectSyncTaskState(component, 'syncOneProduct', SyncTaskStatus.RUNNING);
+      expectSyncTaskState(component, SYNC_TASK_KEYS.SYNC_ONE_PRODUCT, SyncTaskStatus.RUNNING);
       expect(component.showSyncProductDialog).toBe(false);
     });
 
     it('should execute syncZipArtifacts when task is not syncOneProduct', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncZipArtifacts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS)!;
       component.selectedTask.set(task);
 
       mockAdminService.syncZipArtifacts = vi.fn().mockReturnValue(of());
@@ -445,7 +445,7 @@ describe('AdminDashboardComponent', () => {
 
       expect(mockAdminService.syncZipArtifacts).toHaveBeenCalledWith(false, 'portal');
 
-      expectSyncTaskState(component, 'syncZipArtifacts', SyncTaskStatus.RUNNING);
+      expectSyncTaskState(component, SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS, SyncTaskStatus.RUNNING);
     });
   });
 
@@ -455,7 +455,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set task to running and reset dialog', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       const request$ = of();
 
       component.showSyncProductDialog = true;
@@ -467,7 +467,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should handle success correctly', async () => {
-    const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+    const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
 
     mockAdminService.fetchSyncTaskExecutions.mockReturnValue(of(mockExecutions));
 
@@ -479,7 +479,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should handle failure correctly', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
 
       (component as any).executeTask(
         task,
@@ -501,80 +501,6 @@ describe('AdminDashboardComponent', () => {
     });
   });
 
-  describe('runSyncTask (internal)', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
-
-    it('should call correct trigger function', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      mockAdminService.syncProducts.mockReturnValue(of());
-
-      (component as any).runSyncTask(task);
-
-      expect(mockAdminService.syncProducts).toHaveBeenCalled();
-    });
-
-    it('should reset loadingSyncTaskKey after finalize', async () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
-
-      mockAdminService.syncProducts.mockReturnValue(of());
-
-      (component as any).runSyncTask(task);
-
-      await Promise.resolve();
-
-      expect(component.loadingSyncTaskKey).toBeNull();
-    });
-  });
-
-  describe('isValidSyncOneProductValues', () => {
-    beforeEach(() => {
-      component.products = mockProducts;
-    });
-
-    it('should return true when product exists and market directory is set', () => {
-      createSyncProductValues(
-        component,
-        TEST_CONSTANTS.VALID_PRODUCT_ID,
-        TEST_CONSTANTS.VALID_MARKET_DIR
-      );
-
-      expect(component.isValidSyncOneProductValues()).toBe(true);
-    });
-
-    it('should return false when product does not exist', () => {
-      createSyncProductValues(
-        component,
-        TEST_CONSTANTS.INVALID_PRODUCT_ID,
-        TEST_CONSTANTS.VALID_MARKET_DIR
-      );
-
-      expect(component.isValidSyncOneProductValues()).toBe(false);
-    });
-
-    it('should return false when market directory is empty', () => {
-      createSyncProductValues(component, TEST_CONSTANTS.VALID_PRODUCT_ID, '');
-
-      expect(component.isValidSyncOneProductValues()).toBe(false);
-    });
-
-    it('should reset all sync one product values', () => {
-      component.showSyncProductDialog = true;
-      createSyncProductValues(
-        component,
-        TEST_CONSTANTS.VALID_PRODUCT_ID,
-        TEST_CONSTANTS.VALID_MARKET_DIR
-      );
-      component.overrideMarketItemPath = true;
-
-      component.cancelSyncProduct();
-
-      expectSyncValuesToBeReset(component);
-    });
-  });
-
   describe('Product dropdown', () => {
     beforeEach(() => {
       fixture.detectChanges();
@@ -593,39 +519,6 @@ describe('AdminDashboardComponent', () => {
       component.openDropdown();
 
       expect(component.dropdownOpen).toBe(true);
-    });
-
-    it('should filter products by search term', () => {
-      component.productSearch = 'product-1';
-
-      component.filterProducts();
-
-      expect(component.dropdownOpen).toBe(true);
-    });
-
-    it('should limit filtered products to 10', () => {
-      component.productSearch = 'product';
-
-      component.filterProducts();
-
-    });
-
-    it('should clear market directory when search does not match any product', () => {
-      component.productSearch = 'non-existent';
-      component.marketDirectory = 'some-dir';
-
-      component.filterProducts();
-
-      expect(component.marketDirectory).toBe('');
-    });
-
-    it('should keep market directory when search matches a product', () => {
-      component.productSearch = 'product-1';
-      component.marketDirectory = 'dir1';
-
-      component.filterProducts();
-
-      expect(component.marketDirectory).toBe('dir1');
     });
 
     it('should select product and close dropdown', () => {
@@ -736,13 +629,13 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set selectedTask to the given syncTask', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       component.openLog(task);
       expect(component.selectedTask()).toEqual(task);
     });
 
     it('should open modal with size xl when task is RUNNING', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.RUNNING;
 
       component.openLog(task);
@@ -754,7 +647,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should open modal with size xl when task has logs', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.SUCCESS;
       logStreamSpy.hasLogs.mockReturnValue(true);
 
@@ -767,7 +660,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should open modal with size md when task is not running and has no logs', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.SUCCESS;
       logStreamSpy.hasLogs.mockReturnValue(false);
 
@@ -780,7 +673,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set windowClass has-logs when task is RUNNING', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.RUNNING;
 
       component.openLog(task);
@@ -792,7 +685,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set windowClass no-logs when task has no logs and is not running', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.SUCCESS;
 
       component.openLog(task);
@@ -804,7 +697,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should set modalDialogClass has-logs when has logs', () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       logStreamSpy.hasLogs.mockReturnValue(true);
 
       component.openLog(task);
@@ -816,18 +709,18 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should call logStream.connectTask when task is RUNNING and modal shown', async () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.RUNNING;
 
       component.openLog(task);
 
       await Promise.resolve(); // thay tick()
 
-      expect(logStreamSpy.connectTask).toHaveBeenCalledWith('syncProducts');
+      expect(logStreamSpy.connectTask).toHaveBeenCalledWith(SYNC_TASK_KEYS.SYNC_PRODUCTS);
     });
 
     it('should NOT call logStream.connectTask when task is not RUNNING', async () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       task.status = SyncTaskStatus.SUCCESS;
 
       component.openLog(task);
@@ -838,7 +731,7 @@ describe('AdminDashboardComponent', () => {
     });
 
     it('should dispatch resize event after modal shown', async () => {
-      const task = component.syncTasks.find(t => t.key === 'syncProducts')!;
+      const task = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
       const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
       vi.useFakeTimers();
       component.openLog(task);

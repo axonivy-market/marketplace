@@ -169,7 +169,6 @@ public class ProductController {
   @Authorized
   @Operation(hidden = true)
   @PutMapping(SYNC_ZIP_ARTIFACTS)
-  @TrackSyncTaskExecution(SyncTaskType.SYNC_ZIP_ARTIFACTS)
   public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
       Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
     int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);

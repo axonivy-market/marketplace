@@ -10,6 +10,7 @@ import {
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { HttpHeaders } from '@angular/common/http';
+import { SYNC_TASK_KEYS } from '../../../shared/constants/admin.constant';
 
 describe('LogStreamService', () => {
   let service: LogStreamService;
@@ -29,7 +30,7 @@ describe('LogStreamService', () => {
     } as MockedObject<AdminAuthService>;
     mockAdminAuthService.getAuthHeaders.mockReturnValue(new HttpHeaders());
 
-    fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(new Promise(() => { }));
+    fetchSpy = vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => { }));
 
     TestBed.configureTestingModule({
       providers: [

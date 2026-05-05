@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, Input, Output, EventEmitter, signal, OnChanges, SimpleChanges } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { SyncTaskKey } from '../admin-dashboard.service';
+import { SyncTaskKey } from '../../../shared/constants/admin.constant';
 import { MarketProduct } from '../../../shared/models/product.model';
 
 type TaskKey = SyncTaskKey;
