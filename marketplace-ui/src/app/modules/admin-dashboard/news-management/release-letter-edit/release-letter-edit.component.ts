@@ -42,6 +42,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
+  isSavingAsDraft = signal<boolean>(false);
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
   isBrowser: boolean;
@@ -122,18 +123,21 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   saveAsDraft() {
+    if (this.isSavingAsDraft()) {
+      return;
+    }
+
+    this.isSavingAsDraft.set(true);
     this.releaseLetter.draftContent = this.releaseLetter.content;
     if (this.isCreateMode) {
       this.adminDashboardService
         .saveAsDraft(this.prepareDraftReleaseLetter())
-        .pipe(finalize(() => this.isSubmitting.set(false)))
+        .pipe(finalize(() => this.isSavingAsDraft.set(false)))
         .subscribe({
           next: _res => {
             this.router.navigate([this.newsManangementUrl]);
           },
           error: err => {
-            console.log(err);
-
             this.handleError(err.error.helpCode);
           }
         });
@@ -141,14 +145,12 @@ export class ReleaseLetterEditComponent implements OnInit {
     else {
       this.adminDashboardService
         .saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter())
-        .pipe(finalize(() => this.isSubmitting.set(false)))
+        .pipe(finalize(() => this.isSavingAsDraft.set(false)))
         .subscribe({
           next: _res => {
             this.router.navigate([this.newsManangementUrl]);
           },
           error: err => {
-            console.log(err);
-
             this.handleError(err.error.helpCode);
           }
         });
@@ -188,5 +190,9 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   onReleaseVersionChange() {
     this.sprintErrorMessage = null;
+  }
+
+  isHandlingApiCall() {
+    return this.isSubmitting() || this.isSavingAsDraft();
   }
 }
