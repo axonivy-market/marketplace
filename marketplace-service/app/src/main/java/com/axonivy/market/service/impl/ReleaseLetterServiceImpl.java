@@ -167,6 +167,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
       ReleaseLetterModelRequest releaseLetterModelRequest) {
     String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
 
+    if (isSprintExisted(unifiedNewSprint)) {
+      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+    }
+
     newReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
     newReleaseLetter.setSprint(unifiedNewSprint);
 

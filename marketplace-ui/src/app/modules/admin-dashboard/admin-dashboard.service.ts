@@ -228,13 +228,15 @@ export class AdminDashboardService {
 
   saveAsDraftById(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft/${id}`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders()
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(ForwardingError, true)
     });
   }
 
   saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders()
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(ForwardingError, true)
     });
   }
 }
