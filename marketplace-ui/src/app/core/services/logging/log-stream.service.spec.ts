@@ -154,7 +154,7 @@ describe('LogStreamService', () => {
   });
 
   describe('task-key stream methods', () => {
-    const TASK_KEY = 'syncProducts';
+    const TASK_KEY = SYNC_TASK_KEYS.SYNC_PRODUCTS;
 
     beforeEach(() => {
       Object.defineProperty(mockAdminAuthService, 'token', {
@@ -165,7 +165,7 @@ describe('LogStreamService', () => {
 
     afterEach(() => {
       service.disconnectTask(TASK_KEY);
-      service.disconnectTask('syncGithubMonitor');
+      service.disconnectTask(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR);
     });
 
     describe('getLogs', () => {
@@ -240,7 +240,7 @@ describe('LogStreamService', () => {
           return next;
         });
 
-        const sig = service.getLogsSignal(() => 'syncGithubMonitor');
+        const sig = service.getLogsSignal(() => SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR);
         TestBed.runInInjectionContext(() => {
           expect(sig()).toEqual([]);
         });
@@ -318,7 +318,7 @@ describe('LogStreamService', () => {
 
       it('should connect different taskKeys independently', () => {
         service.connectTask(TASK_KEY);
-        service.connectTask('syncGithubMonitor');
+        service.connectTask(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR);
 
         expect(fetchSpy).toHaveBeenCalledTimes(2);
       });
@@ -415,12 +415,12 @@ describe('LogStreamService', () => {
 
       it('should only disconnect specified taskKey', () => {
         service.connectTask(TASK_KEY);
-        service.connectTask('syncGithubMonitor');
+        service.connectTask(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR);
 
         service.disconnectTask(TASK_KEY);
 
         expect(service['controllers'].has(TASK_KEY)).toBe(false);
-        expect(service['controllers'].has('syncGithubMonitor')).toBe(true);
+        expect(service['controllers'].has(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR)).toBe(true);
       });
     });
 
@@ -449,14 +449,14 @@ describe('LogStreamService', () => {
         service['taskLogs'].update(map => {
           const next = new Map(map);
           next.set(TASK_KEY, ['line 1']);
-          next.set('syncGithubMonitor', ['line 2']);
+          next.set(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR, ['line 2']);
           return next;
         });
 
         service.resetTask(TASK_KEY);
 
         expect(service.getLogs(TASK_KEY)).toEqual([]);
-        expect(service.getLogs('syncGithubMonitor')).toEqual(['line 2']);
+        expect(service.getLogs(SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR)).toEqual(['line 2']);
       });
 
       it('should not throw when resetting non-existent taskKey', () => {
