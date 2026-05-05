@@ -5,7 +5,7 @@ import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { catchError, finalize, Observable, throwError } from 'rxjs';
 import { LoadingComponent } from './api.interceptor';
-import { FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { FORBIDDEN, UNAUTHORIZED, UNDEFINED_ERROR_CODE } from '../../shared/constants/common.constant';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
@@ -36,7 +36,7 @@ export function handleHttpError(toastService: HttpToastService, error: HttpError
 
   if (isBrowser) {
     let messageKey = 'common.error.description.default';
-    if (error.status !== 0) {
+    if (error.status !== UNDEFINED_ERROR_CODE) {
       messageKey = error.error?.messageDetails || toastService.getErrorMessageKey(error.status);
     }
     const httpErrorEvent: HttpErrorEvent = {

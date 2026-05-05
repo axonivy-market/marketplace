@@ -5,9 +5,12 @@
 }
 
 .user-info-dropdown {
-  right: 0 !important;
-  left: auto;
+  z-index: 1100;
   font-size: 1.6rem;
+
+  button {
+    padding: 0.7rem 1rem;
+  }
 
   a {
     text-decoration: none;

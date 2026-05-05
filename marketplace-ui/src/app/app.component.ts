@@ -26,7 +26,6 @@ import { DocumentRef } from './core/services/browser/document-ref.service';
 export class AppComponent implements OnInit, AfterViewInit {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
-  isMobileMenuCollapsed = true;
 
   constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {}
 

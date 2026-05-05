@@ -69,7 +69,6 @@ export class AdminDashboardComponent implements OnInit {
   readonly expandedLogs = signal<Set<number>>(new Set());
   @ViewChild('changelogContent') changelogContent!: TemplateRef<unknown>;
 
-  isAuthenticated = false;
   errorMessage = '';
 
   showSyncTask = true;
@@ -99,14 +98,11 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  private readonly syncTaskTriggers: Record<
-    SyncTaskKey,
-    () => Observable<unknown>
-  > = {
+  private readonly syncTaskTriggers: Record<SyncTaskKey, () => Observable<unknown>> = {
     syncProducts: () => this.service.syncProducts(),
-    syncLatestReleasesForProducts: () =>
-      this.service.syncLatestReleasesForProducts(),
+    syncLatestReleasesForProducts: () => this.service.syncLatestReleasesForProducts(),
     syncGithubMonitor: () => this.service.syncGithubMonitor(),
+    syncGithubSecurityMonitor: () => this.service.syncGithubSecurityMonitor(),
     syncOneProduct: () => EMPTY
   };
 
@@ -126,9 +122,7 @@ export class AdminDashboardComponent implements OnInit {
 
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => {
-        this.applySyncTaskExecutions(executions);
-      },
+      next: executions => this.applySyncTaskExecutions(executions),
       error: err => {
         this.handleAuthError(err);
       }
@@ -145,9 +139,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize
-  async trigger(syncTask: SyncTaskRow): Promise<void> {
+  trigger(syncTask: SyncTaskRow): void {
     if (syncTask.key === SYNC_ONE_PRODUCT_KEY) {
-      await this.openSyncOneProductDialog();
+      this.openSyncOneProductDialog();
       return;
     }
 
@@ -169,32 +163,25 @@ export class AdminDashboardComponent implements OnInit {
     this.loadingSyncTaskKey = syncTask.key;
     Object.assign(syncTask, {
       status: SyncTaskStatus.RUNNING,
-      triggeredAt: new Date(),
-      completedAt: null,
+      lastRunDate: syncTask.completedDate ?? null,
+      completedDate: null,
       message: null
     });
   }
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
-    Object.assign(syncTask, {
-      status: SyncTaskStatus.SUCCESS,
-      completedAt: new Date(),
-      message: 'Success'
-    });
-
+    syncTask.status = SyncTaskStatus.SUCCESS;
+    syncTask.completedDate = new Date();
     this.reloadExecutions();
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
-      completedAt: new Date(),
+      completedDate: new Date(),
       message: 'Failed'
     });
-
-    if (this.isAuthenticated) {
-      this.reloadExecutions();
-    }
+    this.reloadExecutions();
   }
 
   private reloadExecutions(): void {
@@ -205,21 +192,34 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private applySyncTaskExecutions(executions: SyncTaskExecution[]): void {
-    executions.forEach(execution => {
-      const syncTask = this.syncTasks.find(t => t.key === execution.key);
-      if (!syncTask) {
-        return;
+    this.syncTasks = this.syncTasks.map(task => {
+      const matchingExecution = executions.find(execution => execution.key === task.key);
+      if (!matchingExecution) {
+        return task;
       }
 
-      syncTask.status = execution.status;
-      syncTask.triggeredAt = execution.triggeredAt
-        ? new Date(execution.triggeredAt)
-        : undefined;
-      syncTask.completedAt = execution.completedAt
-        ? new Date(execution.completedAt)
-        : undefined;
-      syncTask.message = execution.message ?? undefined;
+      return {
+        ...task,
+        status: matchingExecution.status ?? task.status,
+        lastRunDate: this.getLatestDate(task.lastRunDate, matchingExecution.lastRunDate),
+        completedDate: this.getLatestDate(task.completedDate, matchingExecution.completedDate),
+        message: matchingExecution.message ?? task.message
+      };
     });
+  }
+
+  private getLatestDate(existingDate?: Date, incomingDate?: string): Date | undefined {
+    if (!incomingDate) {
+      return existingDate;
+    }
+
+    const parsedIncomingDate = new Date(incomingDate);
+
+    if (!existingDate || parsedIncomingDate > existingDate) {
+      return parsedIncomingDate;
+    }
+
+    return existingDate;
   }
 
   getStatusClass(status?: SyncTaskStatus): string {
@@ -236,10 +236,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private async openSyncOneProductDialog(): Promise<void> {
-    this.products = await this.productService.fetchAllProductsForSync();
-    this.filteredProducts = this.products.slice(0, 10);
-    this.showSyncOneProductDialog = true;
+  private openSyncOneProductDialog(): void {
+    this.productService.fetchAllProductsForSync()
+      .subscribe(products => {
+        this.products = products;
+        this.filteredProducts = products;
+        this.showSyncOneProductDialog = true;
+      });
   }
 
   confirmSyncOneProduct(): void {
@@ -284,7 +287,7 @@ export class AdminDashboardComponent implements OnInit {
 
     Object.assign(syncTask, {
       status: SyncTaskStatus.FAILED,
-      completedAt: new Date(),
+      completedDate: new Date(),
       message: this.translateService.instant(
         'common.admin.sync.syncOneProductDialog.validationMessage'
       )
@@ -301,15 +304,13 @@ export class AdminDashboardComponent implements OnInit {
   // Product search dropdown in sync one product dialog
   openDropdown(): void {
     this.dropdownOpen = true;
-    this.filteredProducts = this.products.slice(0, 10);
   }
 
   filterProducts(): void {
     const value = this.productSearch.toLowerCase();
 
     this.filteredProducts = this.products
-      .filter(product => product.id.toLowerCase().includes(value))
-      .slice(0, 10);
+      .filter(product => product.id.toLowerCase().includes(value));
 
     // Clear the market directory if ID input does not match any product IDs
     if (!this.isValidSyncOneProductValues()) {

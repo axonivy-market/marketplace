@@ -62,7 +62,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
         }
       }),
       catchError((error: HttpErrorResponse) => {
-        // If product not found, navigate to 404 page if CRS, otherwise return a UrlTree for ErrorPage
+        // If product not found, navigate to 404 page if CSR, otherwise return a UrlTree for ErrorPage
         if (error.status === NOT_FOUND_ERROR_CODE) {
           const errorPageUrl = `/${ERROR_PAGE_PATH}/${NOT_FOUND_ERROR_CODE}`;
           if (isPlatformServer(this.platformId)) {
