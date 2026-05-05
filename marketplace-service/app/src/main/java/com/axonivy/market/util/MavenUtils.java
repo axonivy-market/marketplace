@@ -210,8 +210,8 @@ public class MavenUtils {
         .filter(Objects::nonNull)
         .sorted((artifact1, artifact2)
             -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
-        .filter(
-        archivedArtifact -> LatestVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) >= 0)
+        .filter(archivedArtifact
+            -> LatestVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) >= 0)
         .findAny().orElse(null);
   }
 
