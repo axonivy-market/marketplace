@@ -8,6 +8,18 @@ def parseDeploymentConfig(String jsonContent) {
     return new groovy.json.JsonSlurperClassic().parseText(jsonContent)
 }
 
+@NonCPS
+def parseApproverUsernames(String content) {
+    if (!content) {
+        return []
+    }
+
+    return content
+        .readLines()
+        .collect { it.trim() }
+        .findAll { it && !it.startsWith('#') }
+}
+
 def deploymentConfig = [:]
 def nodesToDeploy = []
 
@@ -46,18 +58,29 @@ pipeline {
             steps {
                 script {
                     def requester = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.first()?.userId ?: 'SYSTEM'
+                    def approverUsernames = []
+                    configFileProvider([configFile(fileId: 'deployment-approvers', variable: 'DEPLOYMENT_APPROVERS_FILE')]) {
+                        def approversContent = readFile(file: env.DEPLOYMENT_APPROVERS_FILE)
+                        approverUsernames = parseApproverUsernames(approversContent)
+                    }
+
+                    if (!approverUsernames) {
+                        error('No approvers configured. Please set at least one username in managed file deployment-approvers.')
+                    }
+
+                    def submitterList = approverUsernames.join(',')
                     def approver = input(
                         message: "Deploy version ${params.RELEASE_VERSION} to ${params.DEPLOYMENT_TARGET}?",
-                        submitter: 'team-octopus',
+                        submitter: submitterList,
                         submitterParameter: 'APPROVED_BY',
                         ok: 'Approve deployment'
                     )
 
                     if (approver == requester) {
-                        error("4-eyes policy violation: requester '${requester}' cannot self-approve. Approval must be done by another member of team-octopus.")
+                        error("4-eyes policy violation: requester '${requester}' cannot self-approve. Approval must be done by another configured approver.")
                     }
 
-                    echo "4-eyes approval passed: requested by '${requester}', approved by '${approver}'."
+                    echo "4-eyes approval passed: requested by '${requester}', approved by '${approver}' (allowed approvers: ${submitterList})."
                 }
             }
         }
