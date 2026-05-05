@@ -3,6 +3,14 @@ package com.axonivy.market.core.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Core request parameter constants defining HTTP request parameter names used in API endpoints within the Core module.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreRequestParamConstants {
   public static final String ID = "id";

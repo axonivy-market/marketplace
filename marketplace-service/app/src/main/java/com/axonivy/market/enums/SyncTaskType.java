@@ -6,6 +6,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * <p>
+ * Synchronization task type enumeration defining different types of background synchronization operations.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @Getter
 @RequiredArgsConstructor
 public enum SyncTaskType {

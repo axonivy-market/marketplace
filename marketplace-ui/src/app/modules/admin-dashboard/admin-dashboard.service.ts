@@ -21,8 +21,8 @@ import { SyncTaskKey } from '../../shared/constants/admin.constant';
 export interface SyncTaskExecution {
   key: SyncTaskKey;
   status?: SyncTaskStatus;
-  triggeredAt?: string;
-  completedAt?: string;
+  lastRunDate?: string;
+  completedDate?: string;
   message?: string;
 }
 

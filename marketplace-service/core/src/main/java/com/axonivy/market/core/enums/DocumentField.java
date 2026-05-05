@@ -4,6 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Document field enumeration defining searchable fields in the document indexing system.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

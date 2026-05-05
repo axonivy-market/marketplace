@@ -3,6 +3,15 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Common constants used throughout the application for headers, delimiters, file extensions, and pagination
+ * configuration.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommonConstants {
   public static final String REQUESTED_BY = "X-Requested-By";

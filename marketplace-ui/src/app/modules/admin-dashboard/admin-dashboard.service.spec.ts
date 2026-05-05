@@ -65,7 +65,7 @@ describe('AdminDashboardService', () => {
       const mockResponse: SyncTaskExecution = {
         key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
         status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
+        lastRunDate: '2024-01-01T00:00:00Z'
       };
 
       service.syncProducts(true).subscribe(response => {
@@ -85,7 +85,7 @@ describe('AdminDashboardService', () => {
       const mockResponse: SyncTaskExecution = {
         key: SYNC_TASK_KEYS.SYNC_ONE_PRODUCT,
         status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
+        lastRunDate: '2024-01-01T00:00:00Z'
       };
 
       service
@@ -141,13 +141,13 @@ describe('AdminDashboardService', () => {
         {
           key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
           status: undefined,
-          triggeredAt: '2024-01-01T00:00:00Z',
-          completedAt: '2024-01-01T00:05:00Z'
+          lastRunDate: '2024-01-01T00:00:00Z',
+          completedDate: '2024-01-01T00:05:00Z'
         },
         {
           key: SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR,
           status: undefined,
-          triggeredAt: '2024-01-01T01:00:00Z'
+          lastRunDate: '2024-01-01T01:00:00Z'
         }
       ];
 

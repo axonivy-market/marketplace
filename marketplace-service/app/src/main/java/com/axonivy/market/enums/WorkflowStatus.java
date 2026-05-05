@@ -2,6 +2,14 @@ package com.axonivy.market.enums;
 
 import lombok.Getter;
 
+/**
+ * <p>
+ * Workflow status enumeration defining the operational status of GitHub workflows.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @Getter
 public enum WorkflowStatus {
   ACTIVE("active"),

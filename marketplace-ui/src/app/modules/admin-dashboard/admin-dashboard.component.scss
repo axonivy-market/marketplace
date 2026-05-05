@@ -103,6 +103,21 @@ td {
   }
 }
 
+.dropdown-menu {
+  max-height: 12.5rem;
+  overflow-y: auto;
+}
+
+.modal-header,
+.modal-footer {
+  padding: 0.75rem 1rem;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
 .btn-cancel {
   border: 0.5px solid #ebebeb;
 }
@@ -134,7 +149,7 @@ td {
   text-decoration: none !important;
 
   &:focus { outline: none; }
-  &:hover { 
+  &:hover {
     opacity: 0.7;
     transform: scale(1.2);
     transition: transform 0.15s ease;
@@ -150,7 +165,7 @@ td {
 }
 
 .log-has-content {
-  height: 500px; 
+  height: 500px;
   background: #fff;
 }
 

@@ -3,6 +3,15 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Request parameter constants defining HTTP request parameter names used in API endpoints for filtering,
+ * authentication, and data retrieval.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestParamConstants {
   public static final String ARTIFACT_ID = "artifactId";

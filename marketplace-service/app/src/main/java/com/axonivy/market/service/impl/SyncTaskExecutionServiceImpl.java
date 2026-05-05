@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -39,10 +39,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
       throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
     }
     execution.setStatus(SyncTaskStatus.STARTED);
-    execution.setTriggeredAt(LocalDate.now());
-    execution.setCompletedAt(null);
     execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-
     return syncTaskExecutionRepo.save(execution);
   }
 
@@ -93,8 +90,16 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
     Objects.requireNonNull(execution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
+
+    if (status == SyncTaskStatus.RUNNING) {
+      execution.setLastRunDate(execution.getCompletedDate());
+      execution.setCompletedDate(null);
+    }
+
+    if (status == SyncTaskStatus.SUCCESS || status == SyncTaskStatus.FAILED) {
+      execution.setCompletedDate(LocalDateTime.now());
+    }
     execution.setStatus(status);
-    execution.setCompletedAt(LocalDate.now());
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
     syncTaskExecutionRepo.save(execution);
   }
