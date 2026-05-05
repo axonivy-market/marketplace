@@ -129,32 +129,19 @@ export class ReleaseLetterEditComponent implements OnInit {
 
     this.isSavingAsDraft.set(true);
     this.releaseLetter.draftContent = this.releaseLetter.content;
-    if (this.isCreateMode) {
-      this.adminDashboardService
-        .saveAsDraft(this.prepareDraftReleaseLetter())
-        .pipe(finalize(() => this.isSavingAsDraft.set(false)))
-        .subscribe({
-          next: _res => {
-            this.router.navigate([this.newsManangementUrl]);
-          },
-          error: err => {
-            this.handleError(err.error.helpCode);
-          }
-        });
-    } 
-    else {
-      this.adminDashboardService
-        .saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter())
-        .pipe(finalize(() => this.isSavingAsDraft.set(false)))
-        .subscribe({
-          next: _res => {
-            this.router.navigate([this.newsManangementUrl]);
-          },
-          error: err => {
-            this.handleError(err.error.helpCode);
-          }
-        });
-    }
+
+    const request$ = this.isCreateMode
+      ? this.adminDashboardService.saveAsDraft(this.prepareDraftReleaseLetter())
+      : this.adminDashboardService.saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter());
+
+    request$.pipe(finalize(() => this.isSavingAsDraft.set(false))).subscribe({
+      next: _res => {
+        this.router.navigate([this.newsManangementUrl]);
+      },
+      error: err => {
+        this.handleError(err.error.helpCode);
+      }
+    });
   }
 
   prepareDraftReleaseLetter(): ReleaseLetter {
