@@ -12,9 +12,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, catchError, finalize, of, switchMap, tap, Observable } from 'rxjs';
+import { EMPTY, catchError, finalize, of, switchMap, Observable } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from '../../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -23,8 +22,9 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
 import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
-import { ERROR_MESSAGES, ADMIN_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { ERROR_MESSAGES, UNAUTHORIZED } from '../../../shared/constants/common.constant';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
+import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -34,7 +34,8 @@ import { FeedbackApproval } from '../../../shared/models/feedback-approval.model
   encapsulation: ViewEncapsulation.Emulated
 })
 export class FeedbackApprovalComponent implements OnInit {
-  authService = inject(AuthService);
+  protected LoadingComponentId = LoadingComponentId;
+  adminAuthService = inject(AdminAuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
@@ -42,37 +43,25 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-  protected LoadingComponentId = LoadingComponentId;
-  token = '';
   errorMessage = '';
   isAuthenticated = false;
   activeTab = 'review';
   moderatorName!: string | null;
   isLoading = false;
-
-  feedbacks: Signal<Feedback[]> =
-    this.productFeedbackService.allFeedbacks;
-
-  pendingFeedbacks: Signal<Feedback[]> =
-    this.productFeedbackService.pendingFeedbacks;
-
+  feedbacks: Signal<Feedback[]> = this.productFeedbackService.allFeedbacks;
+  pendingFeedbacks: Signal<Feedback[]> = this.productFeedbackService.pendingFeedbacks;
   allFeedbacks = computed(() => this.feedbacks());
   reviewingFeedbacks = computed(() => this.pendingFeedbacks());
-  constructor(private readonly storageRef: SessionStorageRef) {}
 
-  ngOnInit() {
-    this.fetchFeedbacks();
+  constructor(private readonly storageRef: SessionStorageRef) {
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
   }
 
-  fetchFeedbacks(): void {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
-    if (!this.token) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-      this.isAuthenticated = false;
-      return;
-    }
+  ngOnInit() {
+    this.fetchFeedbacks();
+  }
 
+  fetchFeedbacks(): void {
     this.isLoading = true;
     this.fetchUserInfo()
       .pipe(
@@ -96,35 +85,23 @@ export class FeedbackApprovalComponent implements OnInit {
   }
 
   fetchUserInfo(): Observable<string | null> {
-    const accessToken = this.authService.decodeToken(this.token)?.accessToken;
-    if (!accessToken) {
-      this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
-      return of(null);
+    const userInfo = this.adminAuthService.loadFromSessionStorage();
+    if (userInfo && userInfo.name) {
+      this.isAuthenticated = true;
+      this.moderatorName = userInfo.name;
+      return of(userInfo.name);
     }
-
-    return this.authService
-      .getDisplayNameFromAccessToken(accessToken)
-      .pipe(
-        tap(name => {
-          this.isAuthenticated = !!name;
-          this.moderatorName = name;
-        }),
-        catchError(err => {
-          this.handleError(err);
-          return of(null);
-        })
-      );
+    return EMPTY;
   }
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
       this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+      this.isAuthenticated = false;
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
-    this.isAuthenticated = false;
     this.moderatorName = null;
-    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
