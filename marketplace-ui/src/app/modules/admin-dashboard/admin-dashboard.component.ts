@@ -137,10 +137,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize
-  async trigger(syncTask: SyncTaskRow): Promise<void> {
+  trigger(syncTask: SyncTaskRow): void {
     this.selectedTask.set(syncTask);
     if (syncTask.key === SYNC_TASK_KEYS.SYNC_ONE_PRODUCT || syncTask.key === SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS) {
-      await this.openSyncProductDialog();
+      this.openSyncProductDialog();
       return;
     }
     this.executeTask(syncTask, this.syncTaskTriggers[syncTask.key]());
