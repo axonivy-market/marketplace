@@ -67,10 +67,7 @@ export class ProductFeedbackService {
     page: number = this.page(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
-    console.log(JSON.parse(sessionStorage.getItem(ADMIN_SESSION_TOKEN)!));
     const token = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_TOKEN)!)['token'];
-    console.log(token);
-    
     const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
@@ -109,9 +106,14 @@ export class ProductFeedbackService {
       );
   }
 
-  updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
+  updateFeedbackStatus(token: string, request: FeedbackApproval): Observable<Feedback> {
+    const headers = new HttpHeaders({
+      [AUTHORIZATION_HEADER]: `${BEARER} ${token}`,
+      'Accept': 'application/vnd.github+json'
+    });
+
     return this.http
-      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request)
+      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request, { headers })
       .pipe(
         map(partialUpdatedFeedback => {
           const existingFeedback =
