@@ -478,7 +478,7 @@ describe('AdminDashboardComponent', () => {
 
   describe('openSyncProductDialog', () => {
     it('should load products and open dialog', async () => {
-      mockProductService.fetchAllProductsForSync.mockReturnValue(Promise.resolve(mockProducts));
+      mockProductService.fetchAllProductsForSync.mockReturnValue(of(mockProducts));
 
       await (component as any).openSyncProductDialog();
 

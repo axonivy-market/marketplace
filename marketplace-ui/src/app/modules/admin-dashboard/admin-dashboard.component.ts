@@ -223,9 +223,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // Synchronize one product dialog
-  private async openSyncProductDialog(): Promise<void> {
-    this.products = await this.productService.fetchAllProductsForSync();
-    this.showSyncProductDialog = true;
+  private openSyncProductDialog(): void {
+    this.productService.fetchAllProductsForSync()
+      .subscribe(products => {
+        this.products = products;
+        this.showSyncProductDialog = true;
+      });
   }
 
   private markSyncOneProductFailed(syncTask?: SyncTaskRow): void {
@@ -237,7 +240,7 @@ export class AdminDashboardComponent implements OnInit {
       status: SyncTaskStatus.FAILED,
       completedDate: new Date(),
       message: this.translateService.instant(
-        'common.admin.sync.syncOneProductDialog.validationMessage'
+        'common.admin.sync.syncProductDialog.validationMessage'
       )
     });
   }
