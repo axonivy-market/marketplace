@@ -488,7 +488,7 @@ describe('AdminDashboardService', () => {
     const mockResponse: SyncTaskExecution = {
       key: SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS,
       status: undefined,
-      triggeredAt: '2024-01-01T00:00:00Z'
+      completedDate: '2024-01-01T00:00:00Z'
     };
 
     // call with resetSync = true and no productId
@@ -513,7 +513,7 @@ describe('AdminDashboardService', () => {
     const mockResponse: SyncTaskExecution = {
       key: SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS,
       status: undefined,
-      triggeredAt: '2024-01-01T00:00:00Z'
+      completedDate: '2024-01-01T00:00:00Z'
     };
 
     // call with resetSync = false (default) and a specific productId
