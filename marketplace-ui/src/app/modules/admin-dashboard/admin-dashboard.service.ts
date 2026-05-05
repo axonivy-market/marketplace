@@ -16,13 +16,7 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
-
-export type SyncTaskKey =
-  | 'syncProducts'
-  | 'syncOneProduct'
-  | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor'
-  | 'syncGithubSecurityMonitor';
+import { SyncTaskKey } from '../../shared/constants/admin.constant';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -75,9 +69,22 @@ export class AdminDashboardService {
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(
-      `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
+    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
+  }
+
+  syncZipArtifacts(resetSync = false, productId = ''): Observable<SyncTaskExecution> {
+    let params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
+    if (productId) {
+      params = params.set(RequestParam.ID, productId);
+    }
+
+    return this.http.put<SyncTaskExecution>(
+      `${API_URI.PRODUCT}/zip-sync`,
+      {},
       {
+        params,
         headers: this.adminAuth.getAuthHeaders()
       }
     );
@@ -258,5 +265,4 @@ export class AdminDashboardService {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
-
 }

@@ -103,36 +103,6 @@ td {
   }
 }
 
-.dropdown-menu {
-  max-height: 12.5rem;
-  overflow-y: auto;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
-}
-
-.modal-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1050;
-  width: 90%;
-  max-width: 640px;
-}
-
-.modal-content {
-  background-color: var(--bs-body-bg);
-  z-index: 1000;
-  color: inherit;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
 .modal-header,
 .modal-footer {
   padding: 0.75rem 1rem;
@@ -141,10 +111,6 @@ td {
 
 .modal-body {
   padding: 1rem;
-}
-
-.btn-cancel {
-  border: 0.5px solid #ebebeb;
 }
 
 .sync-button {
@@ -174,7 +140,7 @@ td {
   text-decoration: none !important;
 
   &:focus { outline: none; }
-  &:hover { 
+  &:hover {
     opacity: 0.7;
     transform: scale(1.2);
     transition: transform 0.15s ease;
@@ -190,7 +156,7 @@ td {
 }
 
 .log-has-content {
-  height: 500px; 
+  height: 500px;
   background: #fff;
 }
 
