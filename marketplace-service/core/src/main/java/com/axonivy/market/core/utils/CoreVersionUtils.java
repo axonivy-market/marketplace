@@ -28,6 +28,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.*;
 public class CoreVersionUtils {
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern DEV_RELEASE_PATTERN = Pattern.compile(HYPHEN);
+  private static final LatestVersionComparator VERSION_COMPARATOR = LatestVersionComparator.getInstance();
 
   public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
       boolean isShowDevVersion) {
@@ -44,7 +45,7 @@ public class CoreVersionUtils {
     Predicate<String> displayVersionFilter = BooleanUtils.isTrue(isShowDevVersion)
         ? version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)
         : CoreVersionUtils::isReleasedVersion;
-    return versions.stream().filter(displayVersionFilter).distinct().sorted(new LatestVersionComparator()).toList();
+    return versions.stream().filter(displayVersionFilter).distinct().sorted(VERSION_COMPARATOR).toList();
   }
 
   public static boolean isReleasedVersion(String version) {
@@ -108,13 +109,13 @@ public class CoreVersionUtils {
     //Next priority: prior released version
     if (StringUtils.isBlank(bestMatchVersion)) {
       bestMatchVersion = versions.stream().filter(
-        version -> new LatestVersionComparator().compare(designerVersion, version) < 0 && isReleasedVersion(
+        version -> VERSION_COMPARATOR.compare(designerVersion, version) < 0 && isReleasedVersion(
           version)).findAny().orElse(null);
     }
     //Next priority: prior dev version
     if (StringUtils.isBlank(bestMatchVersion) && allowDevVersion) {
       bestMatchVersion = versions.stream().filter(
-          version -> new LatestVersionComparator().compare(designerVersion, version) < 0).findAny().orElse(null);
+          version -> VERSION_COMPARATOR.compare(designerVersion, version) < 0).findAny().orElse(null);
     }
     //Next priority: any prior release version
     if (StringUtils.isBlank(bestMatchVersion)) {
@@ -131,6 +132,6 @@ public class CoreVersionUtils {
     }
     metadataList.stream().filter(metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(
         metadata.getVersions())).forEach(productMeta -> installableVersions.addAll(productMeta.getVersions()));
-    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
+    return installableVersions.stream().distinct().sorted(VERSION_COMPARATOR).toList();
   }
 }

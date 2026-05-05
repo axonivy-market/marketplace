@@ -12,7 +12,7 @@ class LatestVersionComparatorTest {
 
   @Test
   void testCompare() {
-    LatestVersionComparator comparator = new LatestVersionComparator();
+    LatestVersionComparator comparator = LatestVersionComparator.getInstance();
 
     // Compare: newer vs older
     int result = comparator.compare("10.0.0", "9.0.0");

@@ -16,6 +16,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_P
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class CoreVersionFactory {
+  private static final LatestVersionComparator VERSION_COMPARATOR = LatestVersionComparator.getInstance();
 
   public static String findVersionStartWithOrNull(List<String> releaseVersions, String version) {
     if (CollectionUtils.isEmpty(releaseVersions)) {
@@ -28,14 +29,14 @@ public class CoreVersionFactory {
     if (releaseVersions == null || releaseVersions.isEmpty()) {
       return null;
     }
-    return releaseVersions.stream().filter(v -> new LatestVersionComparator().compare(version, v) < 0).findFirst().orElse(
+    return releaseVersions.stream().filter(v -> VERSION_COMPARATOR.compare(version, v) < 0).findFirst().orElse(
       null);
   }
 
   public static String get(List<String> versions, String requestedVersion, VersionMatchStrategy matchStrategy) {
     var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()
         .filter(Objects::nonNull)
-        .sorted(new LatestVersionComparator()).toList();
+        .sorted(VERSION_COMPARATOR).toList();
 
     // Redirect to the newest version for special keywords
     var version = DevelopmentVersion.of(requestedVersion);

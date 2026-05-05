@@ -11,14 +11,21 @@ import java.util.Comparator;
  *
  * This comparator delegates to {@link org.apache.maven.artifact.versioning.ComparableVersion}
  * and returns results so that the newest version appears before older ones (suitable for
- * passing into collection sort APIs like `.sorted(new LatestVersionComparator())`).
+ * passing into collection sort APIs like `.sorted(LatestVersionComparator.getInstance())`).
  *
- * For single pairwise comparisons in predicates or filters prefer using
- * `new ComparableVersion(a).compareTo(new ComparableVersion(b))` directly.
  */
 public class LatestVersionComparator implements Comparator<String>, Serializable {
   @Serial
   private static final long serialVersionUID = 1;
+
+  private static LatestVersionComparator instance;
+
+  public static LatestVersionComparator getInstance() {
+    if (instance == null) {
+      instance = new LatestVersionComparator();
+    }
+    return instance;
+  }
 
   @Override
   public int compare(String v1, String v2) {

@@ -30,6 +30,6 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     if (StringUtils.isBlank(designerVersion)) {
       return result;
     }
-    return result.stream().dropWhile(v -> new LatestVersionComparator().compare(v, designerVersion) < 0).toList();
+    return result.stream().dropWhile(v -> LatestVersionComparator.getInstance().compare(v, designerVersion) < 0).toList();
   }
 }
