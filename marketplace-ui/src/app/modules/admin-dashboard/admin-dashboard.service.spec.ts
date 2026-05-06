@@ -23,6 +23,7 @@ import {
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
 import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
+import { SYNC_TASKS, SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
 
 describe('AdminDashboardService', () => {
   let service: AdminDashboardService;
@@ -62,9 +63,9 @@ describe('AdminDashboardService', () => {
   describe('syncProducts', () => {
     it('should sync products with resetSync=true', () => {
       const mockResponse: SyncTaskExecution = {
-        key: 'syncProducts',
+        key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
         status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
+        lastRunDate: '2024-01-01T00:00:00Z'
       };
 
       service.syncProducts(true).subscribe(response => {
@@ -82,9 +83,9 @@ describe('AdminDashboardService', () => {
 
     it('should sync one product with overrideMarketItemPath=true', () => {
       const mockResponse: SyncTaskExecution = {
-        key: 'syncOneProduct',
+        key: SYNC_TASK_KEYS.SYNC_ONE_PRODUCT,
         status: undefined,
-        triggeredAt: '2024-01-01T00:00:00Z'
+        lastRunDate: '2024-01-01T00:00:00Z'
       };
 
       service
@@ -138,15 +139,15 @@ describe('AdminDashboardService', () => {
     it('should fetch sync task executions', () => {
       const mockExecutions: SyncTaskExecution[] = [
         {
-          key: 'syncProducts',
+          key: SYNC_TASK_KEYS.SYNC_PRODUCTS,
           status: undefined,
-          triggeredAt: '2024-01-01T00:00:00Z',
-          completedAt: '2024-01-01T00:05:00Z'
+          lastRunDate: '2024-01-01T00:00:00Z',
+          completedDate: '2024-01-01T00:05:00Z'
         },
         {
-          key: 'syncGithubMonitor',
+          key: SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR,
           status: undefined,
-          triggeredAt: '2024-01-01T01:00:00Z'
+          lastRunDate: '2024-01-01T01:00:00Z'
         }
       ];
 
@@ -231,7 +232,7 @@ describe('AdminDashboardService', () => {
           archived: false,
           dependabot: { status: 'enabled', alerts: {} },
           codeScanning: { status: 'enabled', alerts: {} },
-          secretScanning: { status: 'enabled', numberOfAlerts: 0 },
+          secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
           branchProtectionEnabled: true,
           lastCommitSHA: 'abc123',
           lastCommitDate: '2024-01-01T00:00:00Z'
@@ -481,5 +482,54 @@ describe('AdminDashboardService', () => {
 
       req.flush(null);
     });
+  });
+
+  it('should sync zip artifacts for all products when productId is omitted', () => {
+    const mockResponse: SyncTaskExecution = {
+      key: SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS,
+      status: undefined,
+      completedDate: '2024-01-01T00:00:00Z'
+    };
+
+    // call with resetSync = true and no productId
+    service.syncZipArtifacts(true).subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT}/zip-sync` &&
+        request.params.get(RequestParam.RESET_SYNC) === 'true' &&
+        !request.params.has(RequestParam.ID)
+    );
+    expect(req.request.method).toBe('PUT');
+    // body should be an empty object as per implementation
+    expect(req.request.body).toEqual({});
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+    req.flush(mockResponse);
+  });
+
+  it('should sync zip artifacts for a specific product when productId is provided', () => {
+    const mockResponse: SyncTaskExecution = {
+      key: SYNC_TASK_KEYS.SYNC_ZIP_ARTIFACTS,
+      status: undefined,
+      completedDate: '2024-01-01T00:00:00Z'
+    };
+
+    // call with resetSync = false (default) and a specific productId
+    service.syncZipArtifacts(false, 'product-1').subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      request =>
+        request.url === `${API_URI.PRODUCT}/zip-sync` &&
+        request.params.get(RequestParam.RESET_SYNC) === 'false' &&
+        request.params.get(RequestParam.ID) === 'product-1'
+    );
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({});
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+    req.flush(mockResponse);
   });
 });

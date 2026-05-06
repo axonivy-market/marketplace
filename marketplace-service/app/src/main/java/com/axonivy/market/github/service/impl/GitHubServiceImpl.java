@@ -1,13 +1,16 @@
 package com.axonivy.market.github.service.impl;
 
+import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -15,15 +18,19 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.util.MdcContextUtils;
+import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +45,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -55,13 +62,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -77,22 +82,16 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
+  private static final int MAX_CONCURRENCY = 50;
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
-  private final ThreadPoolTaskScheduler taskScheduler;
-
-  public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
-    this.restTemplate = restTemplate;
-    this.githubUserRepository = githubUserRepository;
-    this.gitHubProperty = gitHubProperty;
-    this.taskScheduler = taskScheduler;
-  }
+  private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Override
   public GitHub getGitHub() throws IOException {
@@ -212,19 +211,27 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken,
-      String orgName) throws IOException {
-    var gitHub = getGitHub(accessToken);
-    GHOrganization organization = gitHub.getOrganization(orgName);
+  public Page<ProductSecurityInfo> searchSecurityDetails(ProductSecurityCriteria criteria, Pageable pageable) {
+    return productSecurityInfoRepository.searchProductSecurityAndSorting(criteria, pageable);
+  }
 
-    List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
-        .filter(repo -> !repo.isArchived())
-        .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
-            taskScheduler.getScheduledExecutor())).toList();
+  @Override
+  @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
+  public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
+    var gitHub = getGitHub(gitHubProperty.getToken());
+    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
-            Comparator.comparing(ProductSecurityInfo::getRepoName)).toList()).join();
+    Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
+        repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+
+    List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
+        organization.listRepositories().toList(),
+        MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
+        MAX_CONCURRENCY);
+
+    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
+    log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
+    return syncedSecurityRepos;
   }
 
   public boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
@@ -244,9 +251,10 @@ public class GitHubServiceImpl implements GitHubService {
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,
       String accessToken) {
     try {
+      log.info("fetching security info for repo: {}", repo.getName());
       return fetchSecurityInfo(repo, organization, accessToken);
     } catch (IOException e) {
-      log.error("Error fetching security info for repo: " + repo.getName(), e);
+      log.error("Error fetching security info for repo: {}", repo.getName(), e);
       return new ProductSecurityInfo();
     }
   }
@@ -318,7 +326,7 @@ public class GitHubServiceImpl implements GitHubService {
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
-          secretScanning.setNumberOfAlerts(alerts.size());
+          secretScanning.setNumberOfSecretScanningAlerts(alerts.size());
           return secretScanning;
         },
         SecretScanning::new
@@ -351,11 +359,14 @@ public class GitHubServiceImpl implements GitHubService {
       }
       setStatus(instance, ENABLED);
     } catch (HttpClientErrorException.Forbidden e) {
-      log.error("Access forbidden: ", e);
+      log.error("Forbidden URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, DISABLED);
     } catch (HttpClientErrorException.NotFound e) {
-      log.error("Alerts not found: ", e);
+      log.error("Not Found URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, NO_PERMISSION);
+    } catch (HttpServerErrorException.ServiceUnavailable e) {
+      log.error("Service Unavailable URL: {} with the error: {}", url, e.getMessage());
+      setStatus(instance, DISABLED);
     }
     return instance;
   }

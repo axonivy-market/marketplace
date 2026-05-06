@@ -8,6 +8,7 @@ import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.factory.CoreVersionFactory;
 import com.axonivy.market.core.strategy.VersionMatchStrategy;
+import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.strategy.impl.StartsWithVersionStrategy;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
@@ -93,7 +94,7 @@ public class VersionFactory extends CoreVersionFactory {
 
     List<String> artifactVersions = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
         new LatestVersionComparator()).toList();
-    List<String> releasedVersions = artifactVersions.stream().filter(VersionUtils::isReleasedVersion).sorted(
+    List<String> releasedVersions = artifactVersions.stream().filter(CoreVersionUtils::isReleasedVersion).sorted(
         new LatestVersionComparator()).toList();
 
     // Get latest released version from metadata

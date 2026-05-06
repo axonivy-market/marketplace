@@ -6,6 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * <p>
+ * File status enumeration defining the modification states of files in GitHub repository operations.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @Getter
 @AllArgsConstructor
 public enum FileStatus {

@@ -11,22 +11,18 @@ import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { SecurityMonitorApiResponse } from '../../shared/models/apis/security-monitor-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
+import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
-
-export type SyncTaskKey =
-  | 'syncProducts'
-  | 'syncOneProduct'
-  | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor';
+import { SyncTaskKey } from '../../shared/constants/admin.constant';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
   status?: SyncTaskStatus;
-  triggeredAt?: string;
-  completedAt?: string;
+  lastRunDate?: string;
+  completedDate?: string;
   message?: string;
 }
 
@@ -73,9 +69,22 @@ export class AdminDashboardService {
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(
-      `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
+    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
+  }
+
+  syncZipArtifacts(resetSync = false, productId = ''): Observable<SyncTaskExecution> {
+    let params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
+    if (productId) {
+      params = params.set(RequestParam.ID, productId);
+    }
+
+    return this.http.put<SyncTaskExecution>(
+      `${API_URI.PRODUCT}/zip-sync`,
+      {},
       {
+        params,
         headers: this.adminAuth.getAuthHeaders()
       }
     );
@@ -87,6 +96,16 @@ export class AdminDashboardService {
       {},
       {
         responseType: 'text' as const,
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
+  syncGithubSecurityMonitor(): Observable<ProductSecurityInfo[]> {
+    return this.http.post<ProductSecurityInfo[]>(
+      `${API_URI.SYNC_SECURITY_MONITOR}`,
+      {},
+      {
         headers: this.adminAuth.getAuthHeaders()
       }
     );
@@ -128,6 +147,27 @@ export class AdminDashboardService {
         LoadingComponentId.SECURITY_MONITOR
       )
     });
+  }
+
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
+    Observable<SecurityMonitorApiResponse> {
+    let params = new HttpParams()
+      .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SORT, criteria.sortOption)
+      .set(RequestParam.SORT_DIRECTION, criteria.sortDirection);
+
+    if (criteria.searchText) {
+      params = params.set(RequestParam.SEARCH, criteria.searchText);
+    }
+
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      }
+    );
   }
 
   getReleaseLetters(
@@ -225,5 +265,4 @@ export class AdminDashboardService {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
-
 }

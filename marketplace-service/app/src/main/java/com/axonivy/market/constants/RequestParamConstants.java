@@ -3,6 +3,15 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Request parameter constants defining HTTP request parameter names used in API endpoints for filtering,
+ * authentication, and data retrieval.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestParamConstants {
   public static final String ARTIFACT_ID = "artifactId";
@@ -15,4 +24,7 @@ public class RequestParamConstants {
   public static final String OVERRIDE_MARKET_ITEM_PATH = "overrideMarketItemPath";
   public static final String IS_FOCUSED = "isFocused";
   public static final String SPRINT = "sprint";
+  public static final String SORT = "sort";
+  public static final String SORT_DIRECTION = "sortDirection";
+  public static final String SEARCH = "search";
 }
