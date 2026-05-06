@@ -58,11 +58,11 @@ pipeline {
                 script {
                     def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
                     git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
-                    sh """
+                    sh '''
                         ENV_FILE='./marketplace-build/templates/.env'
                         cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
                         chmod 600 "$ENV_FILE"
-                    """
+                    '''
                 }
             }
         }
