@@ -109,13 +109,13 @@ public class CoreVersionUtils {
     //Next priority: prior released version
     if (StringUtils.isBlank(bestMatchVersion)) {
       bestMatchVersion = versions.stream().filter(
-        version -> VERSION_COMPARATOR.compare(designerVersion, version) < 0 && isReleasedVersion(
+        version -> VERSION_COMPARATOR.compare(version, designerVersion) < 0 && isReleasedVersion(
           version)).findAny().orElse(null);
     }
     //Next priority: prior dev version
     if (StringUtils.isBlank(bestMatchVersion) && allowDevVersion) {
       bestMatchVersion = versions.stream().filter(
-          version -> VERSION_COMPARATOR.compare(designerVersion, version) < 0).findAny().orElse(null);
+          version -> VERSION_COMPARATOR.compare(version, designerVersion) < 0).findAny().orElse(null);
     }
     //Next priority: any prior release version
     if (StringUtils.isBlank(bestMatchVersion)) {

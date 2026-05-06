@@ -31,6 +31,6 @@ public class MavenVersionComparator implements Comparator<String>, Serializable 
   public int compare(String v1, String v2) {
     ComparableVersion cv1 = new ComparableVersion(v1);
     ComparableVersion cv2 = new ComparableVersion(v2);
-    return cv2.compareTo(cv1);
+    return cv1.compareTo(cv2);
   }
 }
