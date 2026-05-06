@@ -46,9 +46,12 @@ services:
       - matomo-app
     networks:
       - market-network
+      - marketplace-network
 
 networks:
   market-network:
+    external: true
+  marketplace-network:
     external: true
 
 volumes:
