@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -129,11 +128,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
           .filter(dependency -> dependency.getId() != null)
           .map((ProductDependency dependency) -> {
             dependency.setDependencies(new HashSet<>());
-            return dependency;
+            return productDependencyRepository.save(dependency);
           })
           .forEach((ProductDependency dependency) -> {
             log.warn("Deleting product dependencies for productId: {}, artifactId: {}, version: {}",
             dependency.getProductId(), dependency.getArtifactId(), dependency.getVersion());
+            productDependencyRepository.deleteFromJoinTableByDependencyId(dependency.getId());
             productDependencyRepository.delete(dependency);
           });
     } catch(Exception e) {
@@ -176,7 +176,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       ProductDependency mavenDependency) throws Exception {
     List<Dependency> dependencyModels = extractMavenPOMDependencies(artifact.getDownloadUrl());
     if (ObjectUtils.isEmpty(dependencyModels)) {
-      log.info("No dependency was found for requested artifact {},  version {}", artifact.getId().getArtifactId(),
+      log.info("No dependency was found for requested artifact {}, version {}", artifact.getId().getArtifactId(),
           mavenDependency.getVersion());
       return;
     }
@@ -200,14 +200,21 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       var dependencyMetadata = metadataService.getMetadataByVersion(dependencyModel, dependencyVersion);
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
+
+      // Find dependency artifact from MavenArtifactVersion
+      MavenArtifactVersion dependencyArtifact = findDependencyArtifact(dependencyProductId, dependencyArtifactId,
+          dependencyVersion);
+      if (dependencyArtifact == null || StringUtils.isBlank(dependencyArtifact.getDownloadUrl())) {
+        log.warn("Invalid download URL or cannot found the dependency artifact of {} - version {}",
+            dependencyArtifactId, version);
+        continue;
+      }
+
       // Find dependency in ProductDependency table, create a new one if not exist
       ProductDependency dependency = Optional
           .ofNullable(findProductDependencyByIds(dependencyProductId, dependencyArtifactId, dependencyVersion))
           .orElse(ProductDependency.builder().productId(dependencyProductId).artifactId(dependencyArtifactId)
               .version(dependencyVersion).build());
-      // Find download URL base on data from MavenArtifactVersion
-      MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyProductId, dependencyArtifactId,
-          dependencyVersion);
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
 
       // Save the dependency to database if it's new (doesn't have an ID yet)
@@ -237,32 +244,35 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         .map(Product::getId).toList();
   }
 
-  private MavenArtifactVersion findDownloadURLForDependency(String productId, String artifactId, String version) {
+  private MavenArtifactVersion findDependencyArtifact(String productId, String artifactId, String version) {
     var mavenArtifactVersions = mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(productId,
         artifactId, version);
     MavenArtifactVersion dependencyArtifact = null;
     if (!ObjectUtils.isEmpty(mavenArtifactVersions)) {
       dependencyArtifact = mavenArtifactVersions.get(0);
     }
-    Objects.requireNonNull(dependencyArtifact, "Cannot found the dependency artifact of " + artifactId);
-    ObjectUtils.requireNonEmpty(dependencyArtifact.getDownloadUrl(), "Invalid download URL for " + artifactId);
+
     return dependencyArtifact;
   }
 
   private List<Dependency> extractMavenPOMDependencies(String downloadUrl)
       throws IOException, XmlPullParserException, NullPointerException, HttpClientErrorException {
-    byte[] location = downloadPOMFileFromMaven(downloadUrl);
-    var mavelModel = convertPomToModel(location);
-    return mavelModel.getDependencies().stream()
-        .filter(dependency -> DEFAULT_PRODUCT_TYPE.equals(dependency.getType()))
-        .toList();
+      String pomUrl = getPomDownloadUrl(downloadUrl);
+      byte[] fileContent = fileDownloadService.downloadFile(pomUrl);
+      if (fileContent == null || fileContent.length == 0) {
+        return new ArrayList<>();
+      }
+
+      var mavenModel = convertPomToModel(fileContent);
+      return mavenModel.getDependencies().stream()
+          .filter(dependency -> DEFAULT_PRODUCT_TYPE.equals(dependency.getType()))
+          .toList();
   }
 
-  private byte[] downloadPOMFileFromMaven(String downloadUrl) throws HttpClientErrorException {
+  private String getPomDownloadUrl(String downloadUrl) throws HttpClientErrorException {
     ObjectUtils.requireNonEmpty(downloadUrl, "Download URL must not be null");
     var changeToMirrorRepo = downloadUrl.replace(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL,
         DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
-    var pomURL = changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
-    return fileDownloadService.downloadFile(pomURL);
+    return changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
   }
 }
