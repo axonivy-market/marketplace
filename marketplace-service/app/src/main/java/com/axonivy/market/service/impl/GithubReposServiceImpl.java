@@ -118,11 +118,8 @@ public class GithubReposServiceImpl implements GithubReposService {
           return repo;
         }).orElse(from(ghRepo, resolvedProductId));
 
-    List<TestStep> testSteps = Arrays.stream(values())
-        .map(workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow))
-        .flatMap(Collection::stream)
-        .toList();
-
+    List<TestStep> testSteps = Arrays.stream(values()).map(
+        workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
     githubRepoRepository.save(githubRepo);
   }
@@ -150,17 +147,11 @@ public class GithubReposServiceImpl implements GithubReposService {
             });
 
         updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
-        return  processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
+        return processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
       }
-    } catch (Throwable e) {
+    } catch (IOException | GHException e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
-
-        if (e instanceof InterruptedIOException) {
-          // ✅ timeout ở đây
-          log.error("Timeout khi gọi GitHub API", e);
-        }
-
     }
     return Collections.emptyList();
   }
@@ -214,11 +205,7 @@ public class GithubReposServiceImpl implements GithubReposService {
 
       JsonNode testData = findTestReportJson(unzipDir.toFile());
       return testStepsService.createTestSteps(testData, workflowType);
-    } catch (Exception e) {
-      if (e instanceof InterruptedIOException) {
-        // ✅ timeout ở đây
-        log.error("Timeout khi gọi GitHub API", e);
-      }
+    } catch (IOException e) {
       log.error("IO error processing artifact for repo: {}", dbRepo.getProductId(), e);
     } finally {
       try {
