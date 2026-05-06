@@ -19,7 +19,6 @@ pipeline {
         }
 
     environment {
-        NGINX_CONFIG_PATH= './config/nginx/dev/nginx.conf'
         MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
         MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
         GH_TOKEN = credentials('GH_TOKEN')
