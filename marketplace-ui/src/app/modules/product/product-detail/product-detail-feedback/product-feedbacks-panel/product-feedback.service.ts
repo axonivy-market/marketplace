@@ -67,8 +67,9 @@ export class ProductFeedbackService {
     page: number = this.page(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
-    const token = sessionStorage.getItem(ADMIN_SESSION_TOKEN);
-    const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${token}`);
+    const rawUserToken = sessionStorage.getItem(ADMIN_SESSION_TOKEN) || '';
+    const jwt = JSON.parse(rawUserToken)?.token || '';
+    const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${jwt}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());

@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
-import {
-  ComponentFixture,
-  TestBed
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FeedbackApprovalComponent } from './feedback-approval.component';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from '../../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -24,25 +20,9 @@ import { MOCK_APPROVED_FEEDBACK } from '../../../shared/mocks/mock-data';
 describe('FeedbackApprovalComponent', () => {
   let component: FeedbackApprovalComponent;
   let fixture: ComponentFixture<FeedbackApprovalComponent>;
-  let authServiceMock: MockedObject<AuthService>;
   let productFeedbackServiceMock: MockedObject<ProductFeedbackService>;
 
   beforeEach(async () => {
-    const authSpy = {
-      getToken: vi.fn().mockName('AuthService.getToken'),
-      redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub'),
-      getDisplayName: vi.fn().mockName('AuthService.getDisplayName'),
-      getUserInfo: vi.fn().mockName('AuthService.getUserInfo'),
-      getDisplayNameFromAccessToken: vi
-        .fn()
-        .mockName('AuthService.getDisplayNameFromAccessToken'),
-      decodeToken: vi.fn().mockName('AuthService.decodeToken')
-    };
-    authSpy.getDisplayName.mockReturnValue('TestUser');
-    authSpy.getDisplayNameFromAccessToken.mockReturnValue(of('TestUser'));
-    authSpy.getUserInfo.mockReturnValue(of({ name: 'TestUser' }));
-    authSpy.decodeToken.mockReturnValue({ accessToken: 'decodedAccessToken' });
-
     const productFeedbackSpy = {
       findProductFeedbacks: vi
         .fn()
@@ -60,7 +40,6 @@ describe('FeedbackApprovalComponent', () => {
       imports: [FeedbackApprovalComponent, TranslateModule.forRoot()],
       providers: [
         ThemeService,
-        { provide: AuthService, useValue: authSpy },
         { provide: AppModalService, useValue: {} },
         { provide: ProductFeedbackService, useValue: productFeedbackSpy },
         {
@@ -77,12 +56,10 @@ describe('FeedbackApprovalComponent', () => {
 
     fixture = TestBed.createComponent(FeedbackApprovalComponent);
     component = fixture.componentInstance;
-    authServiceMock = TestBed.inject(AuthService) as MockedObject<AuthService>;
     productFeedbackServiceMock = TestBed.inject(
       ProductFeedbackService
     ) as MockedObject<ProductFeedbackService>;
 
-    // Mock sessionStorage with valid JSON UserInfo
     const mockUserInfo = {
       login: 'testuser',
       name: 'TestUser',
@@ -292,7 +269,6 @@ describe('FeedbackApprovalComponent', () => {
     component.fetchFeedbacks();
     vi.runAllTimers();
 
-    // When fetchUserInfo returns EMPTY (no user info), isLoading is set to false by finalize
     expect(component.isLoading).toBe(false);
     vi.useRealTimers();
   });
@@ -336,8 +312,7 @@ describe('FeedbackApprovalComponent', () => {
 
     component.fetchUserInfo().subscribe({
       complete: () => {
-        // fetchUserInfo returns EMPTY when no user info is found
-        expect(component.moderatorName).toBeUndefined();
+        expect(component.moderatorName).toBeNull();
       }
     });
   });

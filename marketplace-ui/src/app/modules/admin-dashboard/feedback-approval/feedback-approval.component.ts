@@ -86,7 +86,7 @@ export class FeedbackApprovalComponent implements OnInit {
 
   fetchUserInfo(): Observable<string | null> {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
-    if (userInfo && userInfo.name) {
+    if (userInfo?.name) {
       this.isAuthenticated = true;
       this.moderatorName = userInfo.name;
       return of(userInfo.name);
