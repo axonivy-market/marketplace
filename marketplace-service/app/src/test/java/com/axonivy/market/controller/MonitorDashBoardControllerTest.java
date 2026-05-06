@@ -38,7 +38,7 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Mock
   private GitHubService githubService;
-  
+
   @Mock
   private TestStepsService testStepsService;
 
