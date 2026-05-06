@@ -1,28 +1,13 @@
-properties([
-  parameters([
-    [$class: 'GitParameterDefinition',
-      name: 'BRANCH',
-      type: 'PT_BRANCH',
-      defaultValue: 'origin/master',
-      description: 'Choose your GitHub branch',
-      branchFilter: '.*',
-      tagFilter: '*',
-      sortMode: 'NONE',
-      selectedValue: 'DEFAULT',
-      quickFilterEnabled: true
-    ]
-  ])
-])
-
 pipeline {
 
   agent any
   options {
     ansiColor('xterm')
+    timestamps()
+    timeout(time: 30, unit: 'MINUTES')
   }
 
   environment {
-    NGINX_CONFIG_PATH = '../config/nginx/nginx.conf'
     GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
     GITHUB_REPOSITORY_OWNER = 'axonivy-market'
     UI_IMAGE_NAME = 'marketplace-ui'
@@ -63,6 +48,17 @@ pipeline {
   }
 
   parameters {
+    gitParameter(
+      name: 'BRANCH',
+      type: 'PT_BRANCH',
+      defaultValue: 'origin/develop',
+      description: 'Choose your GitHub branch',
+      branchFilter: '.*',
+      tagFilter: '*',
+      sortMode: 'NONE',
+      selectedValue: 'DEFAULT',
+      quickFilterEnabled: true
+    )
     string(name: 'RELEASE_VERSION', defaultValue: 'latest', description: 'Release version')
   }
 
