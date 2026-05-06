@@ -7,6 +7,7 @@ pipeline {
   environment {
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
   }
 
   stages {
@@ -21,6 +22,15 @@ pipeline {
             fullName = user?.getDisplayName() ?: userId
           }
           currentBuild.displayName = "Build #${env.BUILD_NUMBER} - trigger by ${fullName}"
+        }
+      }
+    }
+
+    stage('Clone Repository') {
+      steps {
+        script {
+          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
         }
       }
     }
