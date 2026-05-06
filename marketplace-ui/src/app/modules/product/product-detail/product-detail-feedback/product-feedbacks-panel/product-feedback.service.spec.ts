@@ -228,7 +228,7 @@ describe('ProductFeedbackService', () => {
       },
       page: { totalPages: 1, totalElements: 1 }
     };
-    const token = 'mockToken';
+    const token = '{"token": "mockToken"}';
 
     vi.spyOn(sessionStorage, 'getItem').mockReturnValue(token);
 
@@ -237,7 +237,7 @@ describe('ProductFeedbackService', () => {
 
     const req = httpMock.expectOne('api/feedback/approval?page=0&size=40');
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
+    expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${JSON.parse(token).token}`);
     req.flush(mockResponse);
 
     // tap() runs synchronously on flush, so signals are already updated.

@@ -1,10 +1,7 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
-import {
-  ForwardingError,
-  LoadingComponent
-} from '../../core/interceptors/api.interceptor';
+import { CachingEnabled, LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
@@ -113,8 +110,7 @@ export class AdminDashboardService {
 
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
     return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 
@@ -195,7 +191,7 @@ export class AdminDashboardService {
 
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
-        context: new HttpContext().set(LoadingComponent, pageId),
+        context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
         params
       })
       .pipe(
@@ -215,6 +211,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
@@ -226,8 +223,7 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -240,8 +236,7 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}/${id}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -254,6 +249,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
