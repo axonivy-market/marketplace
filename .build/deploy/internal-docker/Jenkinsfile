@@ -86,7 +86,7 @@ pipeline {
                     def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
                     git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
                     sh """
-                        ENV_FILE='./marketplace-build/.env'
+                        ENV_FILE='./marketplace-build/templates/.env'
                         sed -i "s|^MARKET_API_INTERNAL_URL=.*\$|MARKET_API_INTERNAL_URL=${env.MARKET_API_INTERNAL_URL}|" \$ENV_FILE
                         sed -i "s|^MARKET_MATOMO_SITE_ID=.*\$|MARKET_MATOMO_SITE_ID=${env.MARKET_MATOMO_SITE_ID}|" \$ENV_FILE
                         sed -i "s|^MARKET_MATOMO_TRACKER_URL=.*\$|MARKET_MATOMO_TRACKER_URL=${env.MARKET_MATOMO_TRACKER_URL}|" \$ENV_FILE
@@ -122,7 +122,7 @@ pipeline {
         stage('Build and Deploy Containers') {
             steps {
                 script {
-                    dir("./marketplace-build") {
+                    dir("./marketplace-build/templates") {
                         sh """
                             docker compose build --build-arg BUILD_ENV=staging --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
                             docker compose up --force-recreate -d
