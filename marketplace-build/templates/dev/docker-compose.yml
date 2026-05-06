@@ -16,6 +16,8 @@ services:
     depends_on:
       - ui
       - app
+    networks:
+      - marketplace-network
 
   ui:
     env_file:
@@ -31,6 +33,8 @@ services:
     command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
     expose:
       - 4000
+    networks:
+      - marketplace-network
 
   app:
     restart: always
@@ -47,6 +51,8 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - 8080
+    networks:
+      - marketplace-network
 
   stable:
     restart: always
@@ -61,6 +67,12 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - "8080"
+    networks:
+      - marketplace-network
+
+networks:
+  marketplace-network:
+    external: true
 
 volumes:
   marketcache:
