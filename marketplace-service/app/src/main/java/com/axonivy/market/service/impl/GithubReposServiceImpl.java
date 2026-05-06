@@ -17,7 +17,6 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.TimeoutGuard;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -42,15 +41,12 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.from;
@@ -154,8 +150,7 @@ public class GithubReposServiceImpl implements GithubReposService {
             });
 
         updateWorkflowInfo(ghRepo, workflowInformation, workflowType, run);
-        List<TestStep> asdas =  processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
-        return asdas;
+        return  processActiveWorkflowArtifact(run, dbRepo, workflowInformation, workflowType);
       }
     } catch (Throwable e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),

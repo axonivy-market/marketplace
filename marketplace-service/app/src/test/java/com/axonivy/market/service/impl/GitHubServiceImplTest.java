@@ -116,6 +116,16 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testGetGitHubWithExplicitAccessToken() throws IOException {
+    String accessToken = "explicitToken";
+    stubOkHttpClientBuilder();
+    GitHub result = gitHubService.getGitHub(accessToken);
+
+    assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
+    verify(gitHubProperty, never()).getToken();
+  }
+
+  @Test
   void testGetOrganizationWithValidOrgName() throws IOException {
     doReturn(gitHub).when(gitHubService).getGitHub();
     GHOrganization mockOrganization = mock(GHOrganization.class);
