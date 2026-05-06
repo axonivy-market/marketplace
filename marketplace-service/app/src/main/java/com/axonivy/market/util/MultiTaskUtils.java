@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;
@@ -16,7 +15,7 @@ public final class MultiTaskUtils {
 
   public static <T, R> List<R> parallelProcessWithLimit(Collection<T> items, Function<T, R> task, int maxConcurrency) {
     Semaphore semaphore = new Semaphore(maxConcurrency);
-    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
       List<CompletableFuture<R>> futures = items.stream()
           .map(item -> CompletableFuture.supplyAsync(() -> processWithSemaphore(item, task, semaphore), executor))
           .toList();
@@ -38,5 +37,4 @@ public final class MultiTaskUtils {
       semaphore.release();
     }
   }
-
 }

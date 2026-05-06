@@ -35,12 +35,16 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Mock
   private GithubReposService githubReposService;
+
   @Mock
   private GitHubService githubService;
+  
   @Mock
   private TestStepsService testStepsService;
+
   @Mock
   private GitHub gitHub;
+
   @Mock
   private OkHttpClient okHttpClient;
 

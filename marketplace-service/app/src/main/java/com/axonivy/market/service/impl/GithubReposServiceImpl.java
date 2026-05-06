@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -117,7 +116,6 @@ public class GithubReposServiceImpl implements GithubReposService {
           repo.setProductId(resolvedProductId);
           return repo;
         }).orElse(from(ghRepo, resolvedProductId));
-
     List<TestStep> testSteps = Arrays.stream(values()).map(
         workflow -> processWorkflowWithFallback(ghRepo, githubRepo, workflow)).flatMap(Collection::stream).toList();
     githubRepo.getTestSteps().addAll(testSteps);
@@ -152,6 +150,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     } catch (IOException | GHException e) {
       log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
+
     }
     return Collections.emptyList();
   }
