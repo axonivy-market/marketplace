@@ -81,7 +81,15 @@
         "502": "Bad Gateway: Der Server hat eine ungültige Antwort von einem upstream-Server erhalten.",
         "503": "Service Unavailable: Der Server kann die Anfrage vorübergehend nicht bearbeiten.",
         "504": "Gateway Timeout: Der upstream Server konnte die Anfrage nicht rechtzeitig beantworten.",
-        "default": "Unsere Webseite macht eine kleine Pause."
+        "badRequest": "Bad Request: Der Server konnte die Anfrage nicht verstehen.",
+        "unauthorized": "Nicht autorisiert: Eine Authentifizierung ist erforderlich.",
+        "forbidden": "Nicht erlaubt: Du hast keine Berechtigung, auf diese Ressource zuzugreifen.",
+        "timeout": "Anfragetimeout: Die Anfrage hat zu lange gedauert.",
+        "networkError": "Netzwerkfehler: Konnte sich nicht mit dem Server verbinden. Bitte überprüfe deine Internetverbindung.",
+        "badGateway": "Bad Gateway: Der Server hat eine ungültige Antwort erhalten.",
+        "serviceUnavailable": "Dienst nicht verfügbar: Der Server kann die Anfrage vorübergehend nicht bearbeiten.",
+        "gatewayTimeout": "Gateway Timeout: Die Anfrage hat das Zeitlimit überschritten.",
+        "default": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut."
       },
       "buttonLabel": "Zurück zur Homepage"
     },

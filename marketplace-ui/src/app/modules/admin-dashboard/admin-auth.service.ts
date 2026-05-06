@@ -2,7 +2,6 @@ import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { UserInfo } from '../../auth/auth.service';
-import { ForwardingError } from '../../core/interceptors/api.interceptor';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import {
@@ -50,8 +49,7 @@ export class AdminAuthService {
   requestAccessToken(token: string): Observable<UserInfo> {
     this.clearToken();
     return this.httpClient.post<UserInfo>(API_URI.GITHUB_REQUEST_ACCESS,
-      { token },
-      { context: new HttpContext().set(ForwardingError, true) }
+      { token }
     );
   }
 
@@ -61,7 +59,7 @@ export class AdminAuthService {
 
   isAuthenticated(): Observable<boolean> {
     return this.httpClient.put<boolean>(API_URI.GITHUB_VALIDATE_TOKEN, {},
-      { headers: this.getAuthHeaders(), context: new HttpContext().set(ForwardingError, true) });
+      { headers: this.getAuthHeaders() });
   }
 
   getAuthHeaders(): HttpHeaders {

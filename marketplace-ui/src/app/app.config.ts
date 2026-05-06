@@ -11,6 +11,7 @@ import { Language } from './shared/enums/language.enum';
 import { RuntimeConfigService } from './core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from './core/models/runtime-config';
 import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -25,7 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideClientHydration(withI18nSupport()),
-    provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([apiInterceptor, errorInterceptor])),
     provideMatomo(() => {
       const configService = inject(RuntimeConfigService);
       return {
