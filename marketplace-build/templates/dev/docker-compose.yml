@@ -12,7 +12,7 @@ services:
       - marketcache:/usr/share/nginx/html/market-cache
       - marketbrowser:/usr/share/nginx/html/browser
     ports:
-      - "5000:80"
+      - "4500:80"
     depends_on:
       - ui
       - app
