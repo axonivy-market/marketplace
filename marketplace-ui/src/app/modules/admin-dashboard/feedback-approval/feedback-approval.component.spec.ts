@@ -312,7 +312,7 @@ describe('FeedbackApprovalComponent', () => {
 
     component.fetchUserInfo().subscribe({
       complete: () => {
-        expect(component.moderatorName).toBeNull();
+        expect(component.moderatorName).toBeUndefined();
       }
     });
   });
