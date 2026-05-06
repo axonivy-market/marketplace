@@ -72,7 +72,7 @@ class MonitorDashBoardControllerTest extends BaseSetup {
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
     doNothing().when(githubReposService).loadAndStoreTestReports();
@@ -89,7 +89,7 @@ class MonitorDashBoardControllerTest extends BaseSetup {
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
     doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
@@ -106,7 +106,7 @@ class MonitorDashBoardControllerTest extends BaseSetup {
     GHMyself fakeMyself = getFakeGHMyself();
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
-    when(gitHubService.getGitHub(TOKEN)).thenReturn(gitHub);
+    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
