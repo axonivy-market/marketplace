@@ -1,7 +1,7 @@
 package com.axonivy.market.factory;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.enums.DevelopmentVersion;
@@ -36,7 +36,7 @@ public class VersionFactory extends CoreVersionFactory {
   private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[]{"(", "]", "[", ")"};
 
   private static final VersionMatchStrategy DEFAULT_STRATEGY = new StartsWithVersionStrategy();
-  private static final LatestVersionComparator VERSION_COMPARATOR = LatestVersionComparator.getInstance();
+  private static final MavenVersionComparator VERSION_COMPARATOR = MavenVersionComparator.getInstance();
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     String resolvedVersion = defaultVersion;

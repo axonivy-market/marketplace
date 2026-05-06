@@ -1,6 +1,6 @@
 package com.axonivy.market.core.factory;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.enums.DevelopmentVersion;
 import com.axonivy.market.core.strategy.VersionMatchStrategy;
 import com.axonivy.market.core.utils.CoreVersionUtils;
@@ -16,7 +16,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.DEV_RELEASE_P
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class CoreVersionFactory {
-  private static final LatestVersionComparator VERSION_COMPARATOR = LatestVersionComparator.getInstance();
+  private static final MavenVersionComparator VERSION_COMPARATOR = MavenVersionComparator.getInstance();
 
   public static String findVersionStartWithOrNull(List<String> releaseVersions, String version) {
     if (CollectionUtils.isEmpty(releaseVersions)) {

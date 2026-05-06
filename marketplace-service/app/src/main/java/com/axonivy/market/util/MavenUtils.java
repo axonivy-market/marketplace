@@ -1,6 +1,6 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
@@ -211,7 +211,7 @@ public class MavenUtils {
         .sorted((artifact1, artifact2)
             -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
         .filter(archivedArtifact
-            -> LatestVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) >= 0)
+            -> MavenVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) >= 0)
         .findAny().orElse(null);
   }
 

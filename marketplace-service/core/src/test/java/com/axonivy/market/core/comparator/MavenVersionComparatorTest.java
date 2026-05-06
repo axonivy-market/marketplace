@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
-class LatestVersionComparatorTest {
+class MavenVersionComparatorTest {
 
   @Test
   void testCompare() {
-    LatestVersionComparator comparator = LatestVersionComparator.getInstance();
+    MavenVersionComparator comparator = MavenVersionComparator.getInstance();
 
     // Compare: newer vs older
     int result = comparator.compare("10.0.0", "9.0.0");

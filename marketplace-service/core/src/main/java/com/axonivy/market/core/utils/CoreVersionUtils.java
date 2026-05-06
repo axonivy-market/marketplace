@@ -1,6 +1,6 @@
 package com.axonivy.market.core.utils;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
@@ -28,7 +28,7 @@ import static com.axonivy.market.core.constants.CoreMavenConstants.*;
 public class CoreVersionUtils {
   private static final Pattern MAIN_VERSION_PATTERN = Pattern.compile(MAIN_VERSION_REGEX);
   private static final Pattern DEV_RELEASE_PATTERN = Pattern.compile(HYPHEN);
-  private static final LatestVersionComparator VERSION_COMPARATOR = LatestVersionComparator.getInstance();
+  private static final MavenVersionComparator VERSION_COMPARATOR = MavenVersionComparator.getInstance();
 
   public static List<String> extractAllVersions(Collection<MavenArtifactVersion> existingMavenArtifactVersion,
       boolean isShowDevVersion) {
