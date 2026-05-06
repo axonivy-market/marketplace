@@ -5,16 +5,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.util.Collections;
 import java.util.Map;
 
 @Converter
 public class StringIntegerMapConverter implements AttributeConverter<Map<String, Integer>, String> {
-
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final TypeReference<Map<String, Integer>> MAP_TYPE = new TypeReference<>() {
-  };
+  private static final Logger LOGGER = LogManager.getLogger(StringIntegerMapConverter.class);
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public String convertToDatabaseColumn(Map<String, Integer> attribute) {
@@ -22,21 +22,23 @@ public class StringIntegerMapConverter implements AttributeConverter<Map<String,
       return null;
     }
     try {
-      return OBJECT_MAPPER.writeValueAsString(attribute);
+      return objectMapper.writeValueAsString(attribute);
     } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException("Failed to serialize alert map to JSON", e);
+      LOGGER.error("Error converting map to JSON", e);
+      return null;
     }
   }
 
   @Override
   public Map<String, Integer> convertToEntityAttribute(String dbData) {
-    if (StringUtils.isBlank(dbData)) {
-      return Map.of();
+    if (dbData == null || dbData.isBlank()) {
+      return Collections.emptyMap();
     }
     try {
-      return OBJECT_MAPPER.readValue(dbData, MAP_TYPE);
+      return objectMapper.readValue(dbData, new TypeReference<>() {});
     } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException("Failed to deserialize alert map JSON", e);
+      LOGGER.error("Error converting JSON to map", e);
+      return Collections.emptyMap();
     }
   }
 }
