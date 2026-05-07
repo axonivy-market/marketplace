@@ -18,7 +18,6 @@ pipeline {
     VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
     OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
-    NGINX_CONFIG_PATH = credentials('NGINX_CONFIG_PATH')
     MARKETPLACE_ENV_FILE = credentials('MARKETPLACE_PROD_ENV_FILE')
   }
 
@@ -57,7 +56,10 @@ pipeline {
       steps {
         script {
           def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+          sh 'rm -rf target-source'
+          dir('target-source') {
+            git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+          }
         }
       }
     }
@@ -66,7 +68,7 @@ pipeline {
       steps {
         script {
           try {
-            sh 'docker compose -f ./marketplace-build/templates/docker-compose.yml down --rmi all'
+            sh 'docker compose --project-name marketplace -f ./target-source/marketplace-build/templates/docker-compose.yml down --rmi all'
           } catch (Exception e) {
             echo "Error during docker compose down, continuing: ${e}"
           }
@@ -76,27 +78,29 @@ pipeline {
 
     stage('Update Version and Tag Source') {
       steps {
-        withEnv([
-          "CORE_POM_FILE=./marketplace-service/core/pom.xml",
-          "APP_POM_FILE=./marketplace-service/app/pom.xml",
-          "STABLE_POM_FILE=./marketplace-service/stable/pom.xml",
-          "PACKAGE_FILE=./marketplace-ui/package.json"
-        ]) {
-          script {
-            sh '''
-              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $CORE_POM_FILE
-              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $APP_POM_FILE
-              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $STABLE_POM_FILE
-              sed -i 's/"version": \"[^\"]*\"/"version": \"$RELEASE_VERSION\"/' $PACKAGE_FILE
-              git config --global user.email $OCTOPUS_MAIL
-              git config --global user.name $OCTOPUS_ACCOUNT_NAME
-              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-              git push --delete origin $RELEASE_VERSION || true
-              git tag -d $RELEASE_VERSION || true
-              git commit -a -m "Update version to $RELEASE_VERSION"
-              git tag $RELEASE_VERSION
-              git push origin $RELEASE_VERSION
-            '''
+        dir('target-source') {
+          withEnv([
+            "CORE_POM_FILE=./marketplace-service/core/pom.xml",
+            "APP_POM_FILE=./marketplace-service/app/pom.xml",
+            "STABLE_POM_FILE=./marketplace-service/stable/pom.xml",
+            "PACKAGE_FILE=./marketplace-ui/package.json"
+          ]) {
+            script {
+              sh '''
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $CORE_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $APP_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $STABLE_POM_FILE
+                sed -i 's/"version": \"[^\"]*\"/"version": "$RELEASE_VERSION"/' $PACKAGE_FILE
+                git config --global user.email $OCTOPUS_MAIL
+                git config --global user.name $OCTOPUS_ACCOUNT_NAME
+                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+                git push --delete origin $RELEASE_VERSION || true
+                git tag -d $RELEASE_VERSION || true
+                git commit -a -m "Update version to $RELEASE_VERSION"
+                git tag $RELEASE_VERSION
+                git push origin $RELEASE_VERSION
+              '''
+            }
           }
         }
       }
@@ -105,8 +109,15 @@ pipeline {
     stage('Build env file') {
       steps {
         sh '''
-          ENV_FILE='./marketplace-build/templates/.env'
+          ENV_FILE='./target-source/marketplace-build/templates/.env'
           cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
+
+          if grep -q '^RELEASE_VERSION=' "$ENV_FILE"; then
+            sed -i "s|^RELEASE_VERSION=.*$|RELEASE_VERSION=$RELEASE_VERSION|" "$ENV_FILE"
+          else
+            echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$ENV_FILE"
+          fi
+
           chmod 600 "$ENV_FILE"
         '''
       }
@@ -115,11 +126,11 @@ pipeline {
     stage('Build Docker Images') {
       steps {
         script {
-          dir("./marketplace-build/templates") {
-            sh """
-              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$RELEASE_VERSION --build-arg NGINX_CONFIG_PATH=../nginx/nginx.conf --build-arg NGINX_PORT=80
-              docker compose up --force-recreate -d
-            """
+          dir("./target-source/marketplace-build/templates") {
+            sh '''
+              docker compose --project-name marketplace build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$RELEASE_VERSION --build-arg NGINX_CONFIG_PATH=../nginx/nginx.conf --build-arg NGINX_PORT=80
+              docker compose --project-name marketplace up --force-recreate -d
+            '''
           }
         }
       }
@@ -127,12 +138,12 @@ pipeline {
 
     stage('Wait for Containers') {
       steps {
-        dir('./marketplace-build') {
+        dir('./target-source/marketplace-build/templates') {
           sh '''
             timeout=300
             start_time=$(date +%s)
             while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
-              if docker compose ps | grep -q "Up"; then
+              if docker compose --project-name marketplace ps | grep -q "Up"; then
                 echo "Containers are up and running."
                 exit 0
               fi
@@ -159,7 +170,7 @@ pipeline {
         sh '''
           # Prepare UI image
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
-          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
+          docker tag $UI_IMAGE_ID:latest $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old UI image versions
           export IMAGE_NAME=$UI_IMAGE_NAME
@@ -173,7 +184,7 @@ pipeline {
         sh '''
           # Prepare App image
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
-          docker tag $APP_IMAGE_NAME $APP_IMAGE_ID:$RELEASE_VERSION
+          docker tag $APP_IMAGE_ID:latest $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old App image versions
           export IMAGE_NAME=$APP_IMAGE_NAME
@@ -187,7 +198,7 @@ pipeline {
         sh '''
           # Prepare Stable image
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
-          docker tag $STABLE_IMAGE_NAME $STABLE_IMAGE_ID:$RELEASE_VERSION
+          docker tag $STABLE_IMAGE_ID:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old Stable image versions
           export IMAGE_NAME=$STABLE_IMAGE_NAME

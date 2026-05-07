@@ -20,6 +20,10 @@ pipeline {
         timeout(time: 30, unit: 'MINUTES')
     }
 
+    environment {
+        MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+    }
+
     parameters {
         choice(
             name: 'DEPLOYMENT_TARGET',
@@ -38,6 +42,17 @@ pipeline {
     }
 
     stages {
+
+        stage('Checkout Source') {
+            steps {
+                script {
+                    sh 'rm -rf target-source'
+                    dir('target-source') {
+                        git branch: 'develop', url: env.MARKETPLACE_GIT_URL
+                    }
+                }
+            }
+        }
 
         stage('Confirm Production Deployment') {
             when {
@@ -103,7 +118,7 @@ pipeline {
                                 export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/deploy/aws-ec2/scripts/merge-config.sh \
+                                bash ./target-source/.build/deploy/aws-ec2/scripts/merge-config.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.nginxPort}" \
@@ -133,7 +148,7 @@ pipeline {
                                 export GHCR_USERNAME="\${GHCR_USERNAME}"
                                 export GHCR_TOKEN="\${GHCR_TOKEN}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
+                                bash ./target-source/.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.healthCheckEndpoints}"
