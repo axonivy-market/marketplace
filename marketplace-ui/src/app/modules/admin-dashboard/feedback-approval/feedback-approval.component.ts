@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { finalize } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -13,7 +13,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
-import { ERROR_PAGE_PATH } from '../../../shared/constants/common.constant';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
 import { AdminAuthService } from '../admin-auth.service';
 
@@ -34,7 +33,6 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-  router = inject(Router);
   errorMessage = '';
   isAuthenticated = false;
   activeTab = 'review';
@@ -55,9 +53,6 @@ export class FeedbackApprovalComponent implements OnInit {
   fetchFeedbacks(): void {
     this.isLoading = true;
     this.productFeedbackService.findProductFeedbacks().subscribe({
-      error: () => {
-        this.router.navigate([ERROR_PAGE_PATH]);
-      },
       complete: () => {
         this.isLoading = false;
       }
