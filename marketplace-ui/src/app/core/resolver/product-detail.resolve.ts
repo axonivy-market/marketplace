@@ -1,8 +1,8 @@
-import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
+import { Injectable, Optional, Inject, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve, Router, UrlTree } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { map, Observable, take, tap } from 'rxjs';
+import { EMPTY, map, Observable, take, tap, catchError, of } from 'rxjs';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -18,19 +18,20 @@ import {
   OG_IMAGE_PNG_TYPE,
   OG_IMAGE_TYPE_KEY,
   OG_TITLE_KEY,
-  SHOW_DEV_VERSION
+  SHOW_DEV_VERSION,
+  NOT_FOUND_ERROR_CODE,
+  ERROR_PAGE_PATH
 } from '../../shared/constants/common.constant';
 import { ROUTER } from '../../shared/constants/router.constant';
-import {
-  API_INTERNAL_URL,
-  API_PUBLIC_URL
-} from '../../shared/constants/api.constant';
-import { isPlatformServer } from '@angular/common';
+import { API_INTERNAL_URL, API_PUBLIC_URL } from '../../shared/constants/api.constant';
 import { FaviconService } from '../../shared/services/favicon.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { isPlatformServer } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
-export class ProductDetailResolver implements Resolve<ProductDetail> {
+export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
   constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly productDetailService: ProductDetailService,
     private readonly meta: Meta,
     private readonly titleService: Title,
@@ -40,12 +41,12 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly cookieService: CookieService,
     private readonly routingQueryParamService: RoutingQueryParamService,
     private readonly faviconService: FaviconService,
-    @Inject(PLATFORM_ID) private readonly platformId: Object,
-    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string,
-    @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string
+    private readonly router: Router,
+    @Optional() @Inject(API_INTERNAL_URL) private readonly apiInternalUrl: string | null,
+    @Optional() @Inject(API_PUBLIC_URL) private readonly apiPublicUrl: string | null
   ) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
+  resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail | UrlTree> {
     const productId = route.params[ROUTER.ID];
     const version = route.queryParamMap.get('version');
     this.productDetailService.productId.set(productId);
@@ -59,6 +60,28 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
         if (productDetail && productDetail.names) {
           this.updateProductMetadata(productDetail);
         }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // If product not found, navigate to 404 page if CSR, otherwise return a UrlTree for ErrorPage
+        if (error.status === NOT_FOUND_ERROR_CODE) {
+          const errorPageUrl = `/${ERROR_PAGE_PATH}/${NOT_FOUND_ERROR_CODE}`;
+          if (isPlatformServer(this.platformId)) {
+            return of(this.router.parseUrl(errorPageUrl));
+          }
+          this.router.navigate([errorPageUrl]);
+          return EMPTY;
+        }
+
+        // Browser network failures like net::ERR_CONNECTION_REFUSED surface as status=0.
+        if (error.status === 0) {
+          const networkErrorPageUrl = `/${ERROR_PAGE_PATH}`;
+          if (isPlatformServer(this.platformId)) {
+            return of(this.router.parseUrl(networkErrorPageUrl));
+          }
+          this.router.navigate([networkErrorPageUrl]);
+          return EMPTY;
+        }
+        return EMPTY;
       })
     );
   }
@@ -75,7 +98,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     );
     const originalLogoUrl = productDetail.logoUrl;
     let productLogoUrl = '';
-    if (isPlatformServer(this.platformId) && this.apiPublicUrl) {
+    if (isPlatformServer(this.platformId) && this.apiPublicUrl && this.apiInternalUrl) {
       productLogoUrl =
         this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
     } else {
