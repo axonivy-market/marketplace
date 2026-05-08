@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, inject } from "@angular/core";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { Component, Input } from "@angular/core";
+import { TranslateModule} from "@ngx-translate/core";
 
 @Component({
   standalone: true,
@@ -10,7 +10,6 @@ import { TranslateModule, TranslateService } from "@ngx-translate/core";
   imports: [CommonModule, TranslateModule]
 })
 export class SecurityStatusBadgeComponent {
-  translateService = inject(TranslateService);
   @Input() status: string | null = null;
   @Input() alerts: Record<string, number> | null = null;
   @Input() alertCount: number | null = null;

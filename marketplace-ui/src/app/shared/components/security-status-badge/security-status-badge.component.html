@@ -13,7 +13,7 @@
     <span [ngClass]="['badge', alert]">{{ alerts[alert] }} {{ alert }}</span>
   }
 } @else if (alertCount) {
-  <span class="badge critical">{{ alertCount }} alerts</span>
+  <span class="badge critical">{{ alertCount }} {{ 'common.admin.securityMonitor.alert' | translate }}</span>
 } @else {
   <span class="badge active">{{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}</span>
 }

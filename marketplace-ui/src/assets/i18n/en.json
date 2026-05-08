@@ -373,7 +373,8 @@
         "codeScanning": "Code Scanning",
         "secretScanning": "Secret Scanning",
         "branchProtection": "Branch Protection",
-        "lastCommit": "Last Commit"
+        "lastCommit": "Last Commit",
+        "alert": "Alert"
       },
       "customSort": {
         "pageTitle": "Custom Sort",

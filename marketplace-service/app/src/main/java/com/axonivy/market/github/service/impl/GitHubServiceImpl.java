@@ -44,6 +44,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -152,15 +154,15 @@ public class GitHubServiceImpl implements GitHubService {
       throw new MissingHeaderException();
     }
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add(GitHubConstants.Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
-    params.add(GitHubConstants.Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
-    params.add(GitHubConstants.Json.CODE, code);
+    params.add(Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
+    params.add(Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
+    params.add(Json.CODE, code);
 
     var headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
     ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
-        GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
+        GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
@@ -182,7 +184,7 @@ public class GitHubServiceImpl implements GitHubService {
       githubUser.setName(myself.getName());
       githubUser.setUsername(myself.getLogin());
       githubUser.setAvatarUrl(myself.getAvatarUrl());
-      githubUser.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+      githubUser.setProvider(GITHUB_PROVIDER_NAME);
       githubUserRepository.save(githubUser);
       return githubUser;
     } catch (IOException e) {
@@ -203,7 +205,7 @@ public class GitHubServiceImpl implements GitHubService {
         userInfo.setName(myself.getName());
         userInfo.setUsername(myself.getLogin());
         userInfo.setAvatarUrl(myself.getAvatarUrl());
-        userInfo.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        userInfo.setProvider(GITHUB_PROVIDER_NAME);
         userInfo.setUrl(String.valueOf(myself.getHtmlUrl()));
 
         return userInfo;
@@ -226,7 +228,7 @@ public class GitHubServiceImpl implements GitHubService {
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
-    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
 
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
         repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
@@ -236,12 +238,19 @@ public class GitHubServiceImpl implements GitHubService {
         MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
         MAX_CONCURRENCY);
 
-    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
+    List<ProductSecurityInfo> validSecurityInfos = productSecurityInfos.stream()
+        .filter(info -> isNotBlank(info.getRepoName()))
+        .toList();
+
+    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(validSecurityInfos);
     log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
-    List<String> syncedRepoNames = productSecurityInfos.stream()
+
+    List<String> syncedRepoNames = validSecurityInfos.stream()
         .map(ProductSecurityInfo::getRepoName)
         .toList();
-    productSecurityInfoRepository.deleteByRepoNameNotIn(syncedRepoNames);
+    if (syncedRepoNames.isEmpty()) {
+      productSecurityInfoRepository.deleteByRepoNameNotIn(syncedRepoNames);
+    }
     return syncedSecurityRepos;
   }
 
@@ -304,8 +313,8 @@ public class GitHubServiceImpl implements GitHubService {
     var dependabot = new Dependabot();
     dependabot.setAlerts(countAlertsBySeverity(
         alerts,
-        GitHubConstants.Json.SEVERITY_ADVISORY,
-        GitHubConstants.Json.SEVERITY
+        Json.SEVERITY_ADVISORY,
+        Json.SEVERITY
     ));
     return dependabot;
   }
@@ -314,8 +323,8 @@ public class GitHubServiceImpl implements GitHubService {
     var codeScanning = new CodeScanning();
     codeScanning.setAlerts(countAlertsBySeverity(
         alerts,
-        GitHubConstants.Json.RULE,
-        GitHubConstants.Json.SECURITY_SEVERITY_LEVEL
+        Json.RULE,
+        Json.SECURITY_SEVERITY_LEVEL
     ));
     return codeScanning;
   }
@@ -324,7 +333,7 @@ public class GitHubServiceImpl implements GitHubService {
       String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         GitHubServiceImpl::mapToDependabot,
         Dependabot::new
     );
@@ -334,7 +343,7 @@ public class GitHubServiceImpl implements GitHubService {
       GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
           secretScanning.setNumberOfSecretScanningAlerts(alerts.size());
@@ -348,7 +357,7 @@ public class GitHubServiceImpl implements GitHubService {
       GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         GitHubServiceImpl::mapToCodeScanning,
         CodeScanning::new
     );
@@ -366,11 +375,8 @@ public class GitHubServiceImpl implements GitHubService {
       instance = mapAlerts.apply(response.getBody() != null ? response.getBody() : List.of());
       setStatus(instance, ENABLED);
     } catch (HttpStatusCodeException e) {
-      String body = e.getResponseBodyAsString().toLowerCase();
+      String body = e.getResponseBodyAsString().toLowerCase(Locale.ROOT);
       AccessLevel status = resolveErrorStatus(e, body);
-      if (status == ENABLED) {
-        instance = mapAlerts.apply(List.of());
-      }
       log.error("Failed to fetch alerts URL: {} with the error: {}", url, e.getMessage());
       setStatus(instance, status);
     }
@@ -378,17 +384,20 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private AccessLevel resolveErrorStatus(HttpStatusCodeException e, String body) {
-    if (e instanceof HttpClientErrorException.NotFound) {
-      if (body.contains(NO_ANALYSIS_FOUND)) return NOT_SUPPORTED;
-      if (body.contains(NOT_FOUND)) return NO_PERMISSION;
+    HttpStatusCode statusCode = e.getStatusCode();
+    switch (statusCode) {
+      case HttpStatus.NOT_FOUND -> {
+        if (body.contains(NO_ANALYSIS_FOUND)) return NOT_SUPPORTED;
+        return NO_PERMISSION;
+      }
+      case HttpStatus.FORBIDDEN -> {
+        return body.contains(MUST_BE_ENABLED) ? DISABLED : NO_PERMISSION;
+      }
+      case HttpStatus.SERVICE_UNAVAILABLE -> {
+        return DISABLED;
+      }
+      default -> {return NO_PERMISSION;}
     }
-    if (e instanceof HttpClientErrorException.Forbidden) {
-      return body.contains(MUST_BE_ENABLED) ? DISABLED : NO_PERMISSION;
-    }
-    if (e instanceof HttpServerErrorException.ServiceUnavailable) {
-      return DISABLED;
-    }
-    return NO_PERMISSION;
   }
 
   private static void setStatus(Object instance, AccessLevel status) {
@@ -631,7 +640,7 @@ public class GitHubServiceImpl implements GitHubService {
     if (!readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
-    return readmeContent.replace(notice, StringUtils.EMPTY);
+    return readmeContent.replace(notice, EMPTY);
   }
 
   /**

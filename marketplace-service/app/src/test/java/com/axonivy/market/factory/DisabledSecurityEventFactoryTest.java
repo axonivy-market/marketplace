@@ -22,7 +22,7 @@ class DisabledSecurityEventFactoryTest extends BaseSetup {
     ProductSecurityInfo productSecurityInfo = mockProductSecurityInfo();
 
     List<DisabledSecurityEvent> event1 = DisabledSecurityEventFactory.from(productSecurityInfo);
-    assertThat(event1).as("Archived repositories must not produce security events").isEmpty();
+    assertThat(event1).as("Ineligible repositories must not produce security events").isEmpty();
 
     productSecurityInfo.setVisibility("PRIVATE");
     List<DisabledSecurityEvent> event2 = DisabledSecurityEventFactory.from(productSecurityInfo);
