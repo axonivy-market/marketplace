@@ -83,7 +83,7 @@ public interface FeedbackService {
    * @throws NotFoundException if the feedback is not found
    * @author nntthuy
    */
-  Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval);
+  Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval, String moderatorName);
 
   /**
    * <p>
