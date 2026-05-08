@@ -264,29 +264,25 @@ export class AdminDashboardService {
 
   saveAsDraftById(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft/${id}`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 
   saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 
   saveReleaseLetterAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 
   isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
     return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 }
