@@ -280,8 +280,14 @@ export class AdminDashboardService {
     });
   }
 
-  isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
+  isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<boolean> {
+    return this.http.get<boolean>(`${API_URI.RELEASE_LETTERS}/${id}/drafts/exists`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
+  }
+
+  getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<string> {
+    return this.http.get<string>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
       headers: this.adminAuth.getAuthHeaders()
     });
   }

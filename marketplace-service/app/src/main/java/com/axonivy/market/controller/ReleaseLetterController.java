@@ -138,20 +138,29 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterDraft> saveAsDraft(
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request) {
     var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
-    System.out.println(gitHubUserId);
     var releaseLetterDraft = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
     return ResponseEntity.ok(releaseLetterDraft);
   }
 
   @Authorized
-  @GetMapping("/release-letters/{releaseLetterId}/drafts/exists")
-  public ResponseEntity<Boolean> isDraftExisted(
-      @PathVariable String releaseLetterId,
-      @RequestParam String githubUserId
-  ) {
+  @GetMapping("/{releaseLetterId}/drafts/exists")
+  public ResponseEntity<Boolean> isDraftExisted(@PathVariable String releaseLetterId, HttpServletRequest request) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     return ResponseEntity.ok(
-        releaseLetterDraftService
-            .isDraftExistedByGitHubUserIdAndReleaseLetterId(githubUserId, releaseLetterId)
+        releaseLetterService
+            .isDraftExistedByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
+    );
+  }
+
+  @Authorized
+  @GetMapping("/{releaseLetterId}/draft")
+  public ResponseEntity<String> getDraft(
+      @PathVariable String releaseLetterId,
+      HttpServletRequest request
+  ) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    return ResponseEntity.ok(
+        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
     );
   }
 

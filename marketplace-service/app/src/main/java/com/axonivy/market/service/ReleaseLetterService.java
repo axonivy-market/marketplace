@@ -87,6 +87,8 @@ public interface ReleaseLetterService {
 
   //  ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
 
+  String getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
+
   Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 
   ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest);

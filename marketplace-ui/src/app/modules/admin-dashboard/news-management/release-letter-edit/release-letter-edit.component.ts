@@ -74,8 +74,6 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   getReleaseLetterById(id: string): void {
     this.adminDashboardService.getReleaseLetterById(id).subscribe(response => {
-      console.log(response);
-
       this.releaseLetter.id = response.id;
       this.releaseLetter.content = response.content;
       this.releaseLetter.sprint = response.sprint;
@@ -221,20 +219,15 @@ export class ReleaseLetterEditComponent implements OnInit {
     return this.isSubmitting() || this.isSavingAsDraft();
   }
 
-  // checkDraft() {
-  //   if (this.releaseLetter.draftContent !== undefined) {
-  //     console.log('there is draft');
-
-  //     this.appModalService.openDraftAlertModal().then(() => {});
-  //   }
-  //   return false;
-  // }
-
   checkDraft() {
-    if (this.releaseLetter.draftContent) {
+    if (this.adminDashboardService.isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(this.releaseLetter.id)) {
       this.appModalService.openDraftAlertModal().then((useDraft: boolean) => {
         if (useDraft) {
-          this.releaseLetter.content = this.releaseLetter.draftContent;
+          this.adminDashboardService
+            .getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(this.releaseLetter.id)
+            .subscribe((draft: string) => {
+              this.releaseLetter.content = draft;
+            });
         }
       });
     }

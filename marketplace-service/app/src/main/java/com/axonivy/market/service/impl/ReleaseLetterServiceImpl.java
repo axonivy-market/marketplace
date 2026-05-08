@@ -177,7 +177,15 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   public Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
-    return releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId).isPresent();
+    return releaseLetterDraftRepository.existsByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId);
+  }
+
+  @Override
+  public String getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
+    return releaseLetterDraftRepository
+        .findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
+        .map(ReleaseLetterDraft::getDraftContent)
+        .orElse(null);
   }
 
   private void validateReleaseLetterModelRequest(ReleaseLetterModelRequest releaseLetterModelRequest) {
