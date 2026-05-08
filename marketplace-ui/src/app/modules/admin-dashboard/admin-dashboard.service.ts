@@ -1,32 +1,25 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
-import {
-  ForwardingError,
-  LoadingComponent
-} from '../../core/interceptors/api.interceptor';
+import { CachingEnabled, LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { RequestParam } from '../../shared/enums/request-param';
 import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
 import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
+import { SecurityMonitorApiResponse } from '../../shared/models/apis/security-monitor-response.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
+import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
-
-export type SyncTaskKey =
-  | 'syncProducts'
-  | 'syncOneProduct'
-  | 'syncLatestReleasesForProducts'
-  | 'syncGithubMonitor';
+import { SyncTaskKey } from '../../shared/constants/admin.constant';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
   status?: SyncTaskStatus;
-  triggeredAt?: string;
-  completedAt?: string;
+  lastRunDate?: string;
+  completedDate?: string;
   message?: string;
 }
 
@@ -73,9 +66,22 @@ export class AdminDashboardService {
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(
-      `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
+    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
+  }
+
+  syncZipArtifacts(resetSync = false, productId = ''): Observable<SyncTaskExecution> {
+    let params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
+    if (productId) {
+      params = params.set(RequestParam.ID, productId);
+    }
+
+    return this.http.put<SyncTaskExecution>(
+      `${API_URI.PRODUCT}/zip-sync`,
+      {},
       {
+        params,
         headers: this.adminAuth.getAuthHeaders()
       }
     );
@@ -92,10 +98,19 @@ export class AdminDashboardService {
     );
   }
 
+  syncGithubSecurityMonitor(): Observable<ProductSecurityInfo[]> {
+    return this.http.post<ProductSecurityInfo[]>(
+      `${API_URI.SYNC_SECURITY_MONITOR}`,
+      {},
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
     return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(ForwardingError, true)
+      headers: this.adminAuth.getAuthHeaders()
     });
   }
 
@@ -130,6 +145,27 @@ export class AdminDashboardService {
     });
   }
 
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
+    Observable<SecurityMonitorApiResponse> {
+    let params = new HttpParams()
+      .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+      .set(RequestParam.SIZE, `${criteria.pageable.size}`)
+      .set(RequestParam.SORT, criteria.sortOption)
+      .set(RequestParam.SORT_DIRECTION, criteria.sortDirection);
+
+    if (criteria.searchText) {
+      params = params.set(RequestParam.SEARCH, criteria.searchText);
+    }
+
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      }
+    );
+  }
+
   getReleaseLetters(
     releaseLetterCriteria: ReleaseLetterCriteria,
     pageId: string = LoadingComponentId.NEWS_PAGE
@@ -155,7 +191,7 @@ export class AdminDashboardService {
 
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
-        context: new HttpContext().set(LoadingComponent, pageId),
+        context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
         params
       })
       .pipe(
@@ -175,6 +211,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterListApiResponse>(
       `${API_URI.ACTIVE_RELEASE_LETTERS}`,
       {
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
@@ -186,8 +223,7 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -200,8 +236,7 @@ export class AdminDashboardService {
       `${API_URI.RELEASE_LETTERS}/${id}`,
       releaseLetterRequest,
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(ForwardingError, true)
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }
@@ -214,6 +249,7 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
+        context: new HttpContext().set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
@@ -225,5 +261,4 @@ export class AdminDashboardService {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
-
 }

@@ -3,7 +3,7 @@ package com.axonivy.market.factory;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.SecurityFeature;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

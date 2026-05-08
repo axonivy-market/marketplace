@@ -7,7 +7,6 @@ import {
 import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { UserInfo } from '../../auth/auth.service';
-import { ForwardingError } from '../../core/interceptors/api.interceptor';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import {
@@ -134,7 +133,6 @@ describe('AdminAuthService', () => {
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ token: testToken });
-      expect(req.request.context.get(ForwardingError)).toBe(true);
 
       req.flush(mockUser);
     });

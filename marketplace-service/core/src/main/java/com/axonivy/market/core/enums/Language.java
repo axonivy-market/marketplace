@@ -4,6 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * <p>
+ * Language enumeration defining supported product description languages for marketplace display.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author vhhoang
+ */
 @Getter
 @AllArgsConstructor
 public enum Language {
