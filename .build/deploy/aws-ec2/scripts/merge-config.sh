@@ -21,8 +21,8 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${SCRIPT_DIR}/../../../../" && pwd)}"
-LOCAL_TEMPLATE_NGINX="${WORKSPACE_ROOT}/marketplace-build/nginx/nginx.conf"
-TEMPLATE_ROOT="${WORKSPACE_ROOT}/marketplace-build/templates"
+LOCAL_TEMPLATE_NGINX="${WORKSPACE_ROOT}/target-source/marketplace-build/nginx/nginx.conf"
+TEMPLATE_ROOT="${WORKSPACE_ROOT}/target-source/marketplace-build/templates"
 LOCAL_TEMPLATE_ENV="${TEMPLATE_ROOT}/.env"
 LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
 LOCAL_TEMPLATE_DOCKERFILE="${TEMPLATE_ROOT}/Dockerfile"

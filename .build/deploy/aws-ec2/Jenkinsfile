@@ -53,7 +53,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Confirm Production Deployment') {
             when {
                 expression { params.DEPLOYMENT_TARGET != 'PREVIEW node' }
@@ -118,7 +118,7 @@ pipeline {
                                 export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./target-source/.build/deploy/aws-ec2/scripts/merge-config.sh \
+                                bash ./.build/deploy/aws-ec2/scripts/merge-config.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.nginxPort}" \
@@ -148,7 +148,7 @@ pipeline {
                                 export GHCR_USERNAME="\${GHCR_USERNAME}"
                                 export GHCR_TOKEN="\${GHCR_TOKEN}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./target-source/.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
+                                bash ./.build/deploy/aws-ec2/scripts/deploy-and-promote.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.healthCheckEndpoints}"
