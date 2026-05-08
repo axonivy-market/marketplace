@@ -30,6 +30,8 @@ import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum
 import { API_URI } from '../../../../../shared/constants/api.constant';
 import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
 import { AdminAuthService } from '../../../../admin-dashboard/admin-auth.service';
+import { LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
+import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -73,7 +75,11 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers: this.adminAuthService.getAuthHeaders(),
-        params
+        params,
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.FEEDBACK_APPROVAL
+        )
       })
       .pipe(
         tap(response => {
