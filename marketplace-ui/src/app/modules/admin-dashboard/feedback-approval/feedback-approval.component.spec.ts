@@ -117,7 +117,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should switch to history tab when clicked', () => {
-    component.isAuthenticated = true;
     fixture.detectChanges();
 
     const historyTab = fixture.debugElement.query(By.css('#history-tab'));
@@ -141,7 +140,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should pass pending feedbacks to review tab’s FeedbackTableComponent', () => {
-    component.isAuthenticated = true;
     const mockPendingFeedbacks = [{ id: 1, content: 'Great product!' }] as any;
     productFeedbackServiceMock.pendingFeedbacks.set(mockPendingFeedbacks);
     fixture.detectChanges();
@@ -158,7 +156,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should pass all feedbacks to history tab’s FeedbackTableComponent', () => {
-    component.isAuthenticated = true;
     const mockAllFeedbacks = [{ id: 2, content: 'Awesome service!' }] as any;
     productFeedbackServiceMock.allFeedbacks.set(mockAllFeedbacks);
     fixture.detectChanges();
@@ -202,7 +199,6 @@ describe('FeedbackApprovalComponent', () => {
     };
     (sessionStorage.getItem as Mock).mockReturnValue(JSON.stringify(mockUserInfo));
 
-    component.isAuthenticated = true;
     fixture.detectChanges();
 
     const reviewTab = fixture.debugElement.query(By.css('#review-tab'));

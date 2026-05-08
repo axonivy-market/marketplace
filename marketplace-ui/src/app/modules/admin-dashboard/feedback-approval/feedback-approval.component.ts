@@ -14,7 +14,6 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
-import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -25,7 +24,6 @@ import { AdminAuthService } from '../admin-auth.service';
 })
 export class FeedbackApprovalComponent implements OnInit {
   protected LoadingComponentId = LoadingComponentId;
-  adminAuthService = inject(AdminAuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
@@ -33,8 +31,6 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-  errorMessage = '';
-  isAuthenticated = false;
   activeTab = 'review';
   isLoading = false;
   platformId = inject(PLATFORM_ID);
@@ -52,11 +48,14 @@ export class FeedbackApprovalComponent implements OnInit {
 
   fetchFeedbacks(): void {
     this.isLoading = true;
-    this.productFeedbackService.findProductFeedbacks().subscribe({
-      complete: () => {
-        this.isLoading = false;
-      }
-    });
+       this.productFeedbackService
+       .findProductFeedbacks()
+       .pipe(
+         finalize(() => {
+           this.isLoading = false;
+         })
+       )
+       .subscribe();
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
