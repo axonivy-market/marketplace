@@ -6,7 +6,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.regex.Pattern;
 
-import static com.axonivy.market.core.constants.CoreCommonConstants.DASH_SEPARATOR;
+import static com.axonivy.market.core.constants.CoreCommonConstants.HYPHEN;
 import static com.axonivy.market.core.constants.CoreMavenConstants.MAIN_VERSION_REGEX;
 import static com.axonivy.market.core.constants.CoreMavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -84,7 +84,7 @@ public final class MavenVersionComparator {
   }
 
   private static String[] createMainAndQualifierArray(String version) {
-    return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, MAIN_QUALIFIER_PARTS);
+    return StringUtils.defaultIfBlank(version, EMPTY).split(HYPHEN, MAIN_QUALIFIER_PARTS);
   }
 
   private static int parseToNumber(String[] versionParts, int index) {

@@ -11,7 +11,6 @@ import {
   provideHttpClient,
   withInterceptorsFromDi
 } from '@angular/common/http';
-import { ForwardingError } from '../../../core/interceptors/api.interceptor';
 
 describe('ProductDetailService', () => {
   let service: ProductDetailService;
@@ -57,7 +56,6 @@ describe('ProductDetailService', () => {
 
       const req = httpMock.expectOne(r => r.url === expectedUrl);
       expect(req.request.method).toBe('GET');
-      expect(req.request.context.get(ForwardingError)).toBe(true);
 
       req.flush(mockExternalDoc);
     });

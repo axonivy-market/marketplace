@@ -74,7 +74,8 @@ public class ProductMarketplaceDataController {
       @PathVariable(ARTIFACT_ID) String artifactId, @PathVariable(VERSION) String version) {
     ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.getProductArtifactStream(productId,
         artifactId, version);
-    if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+    if (resourceResponse == null || !resourceResponse.getStatusCode().is2xxSuccessful() ||
+        resourceResponse.getBody() == null) {
       throw new NotFoundException(ErrorCode.ARTIFACT_NOT_FOUND.getCode(), "Failed to retrieve artifact: " + artifactId);
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(

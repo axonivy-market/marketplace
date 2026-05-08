@@ -5,7 +5,6 @@ import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
-import { SyncTaskRow } from '../models/sync-task-execution.model';
 
 export const MARKET_BASE_URL = 'https://market.axonivy.com/';
 
@@ -374,6 +373,9 @@ export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
 
+// Breakpoint constants
+export const LARGE_BREAKPOINT = 992;
+
 // Open Graph Meta Tags
 export const OG_TITLE_KEY = 'og:title';
 export const OG_DESCRIPTION_KEY = 'og:description';
@@ -383,13 +385,20 @@ export const OG_IMAGE_PNG_TYPE = 'image/png';
 
 // Google constants
 export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID = 'googleCSEScript';
-export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
-export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE =
+export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
+export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_SOURCE =
   'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
 export const GOOGLE = 'google';
+export const HEADER_OFFCANVAS_GOOGLE_SEARCH_BAR_ID = 'offcanvas-google-search';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
+export const GOOGLE_SEARCH_BAR_INPUT_CLASS_NAME = '.gsc-input';
+export const GOOGLE_SEARCH_BAR_PRIMARY_TEXT_CLASS_NAME = 'text-primary';
+
+// Header constants
+export const HEADER_OFFCANVAS = 'header-offcanvas';
+export const HEADER_OFFCANVAS_BACKDROP = 'header-offcanvas-backdrop';
 
 // Theme Icon
 export const LIGHT_ICON_CLASS = 'ti ti-moon';
@@ -424,22 +433,3 @@ export const FAVICON_REL = 'icon';
 export const FAVICON_LINK_REL_QUERY = 'link[rel="icon"]';
 export const FAVICON_DEFAULT_TYPE = 'image/x-icon';
 export const FAVICON_PNG_TYPE = 'image/png';
-
-export const SYNC_TASKS: SyncTaskRow[] = [
-  {
-    key: 'syncProducts',
-    labelKey: 'common.admin.sync.tasks.syncProducts'
-  },
-  {
-    key: 'syncOneProduct',
-    labelKey: 'common.admin.sync.tasks.syncOneProduct'
-  },
-  {
-    key: 'syncLatestReleasesForProducts',
-    labelKey: 'common.admin.sync.tasks.syncLatestReleasesForProducts'
-  },
-  {
-    key: 'syncGithubMonitor',
-    labelKey: 'common.admin.sync.tasks.syncGithubMonitor'
-  }
-];

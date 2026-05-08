@@ -6,13 +6,23 @@ import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * <p>
+ * Synchronization task type enumeration defining different types of background synchronization operations.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @Getter
 @RequiredArgsConstructor
 public enum SyncTaskType {
   SYNC_PRODUCTS("syncProducts"),
   SYNC_ONE_PRODUCT("syncOneProduct"),
+  SYNC_ZIP_ARTIFACTS("syncZipArtifacts"),
   SYNC_RELEASE_NOTES("syncLatestReleasesForProducts"),
-  SYNC_GITHUB_MONITOR("syncGithubMonitor");
+  SYNC_GITHUB_MONITOR("syncGithubMonitor"),
+  SYNC_GITHUB_SECURITY_MONITOR("syncGithubSecurityMonitor");
 
   private final String key;
 

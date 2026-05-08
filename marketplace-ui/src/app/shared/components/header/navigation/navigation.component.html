@@ -1,44 +1,43 @@
-<div class="header__navigation">
-  <!-- Mobile Search Input -->
-  <div class="google-search-container text-primary google-search-svg-primary"
-    [ngStyle]="{'display' : isMobileMode() ? 'block' : 'none'}">
-    <div class="gcse-search"></div>
-  </div>
-
-  <!-- Navigation -->
-  <ul class="navbar-nav">
-    @for (item of this.items; track item.label) {
-      <li class="nav-item">
-        @let isHomePage = item.link === '/';
-        @let isSyncPage = item.link === '/internal-dashboard';
-        @let isInternal = item.link.startsWith('/');
-        @if (isInternal) {
-          <span #routerActive="routerLinkActive" routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }">
-            <a 
-            [lang]="languageService.selectedLanguage()" class="nav-link" 
-            [ngClass]="{
-                'text-primary': isMobileMode() || routerActive.isActive,
-                'text-secondary': !isMobileMode() && !routerActive.isActive,
-                active: routerActive.isActive }"
-            aria-current="page"
-            [routerLink]="item.link" >
-              {{ item.label | translate }}
-            </a>
-            <div class="active-line d-none" [ngClass]="{ 'd-lg-block': routerActive.isActive }"></div>
-          </span>
-        } @else {
-          <a 
-          [lang]="languageService.selectedLanguage()" class="nav-link" 
-          [ngClass]="isMobileMode() ? 'text-primary' : 'text-secondary'"
-          aria-current="page"
-          [href]="item.link" >
-            {{ item.label | translate }}
-          </a>
-          <!-- External links are never router-active -->
-          <div class="active-line d-none"></div>
-        }
-      </li>
-    }
-  </ul>
+<div class="google-search-container text-primary google-search-svg-primary d-block d-lg-none">
+  <div class="gcse-search"></div>
 </div>
+
+<!-- Navigation -->
+<ul class="p-0 d-flex flex-column flex-lg-row m-0">
+  @for (item of this.items; track item.label) {
+    <li class="px-0 px-lg-2 d-lg-flex justify-content-lg-center align-items-lg-center" (click)="closeHeaderOffcanvas()">
+      @let isHomePage = item.link === '/';
+      @let isSyncPage = item.link === '/internal-dashboard';
+      @let isInternal = item.link.startsWith('/');
+      @if (isInternal) {
+        <a
+          #routerActive="routerLinkActive"
+          [routerLinkActive]="isInHeaderOffCanvas ? 'header-offcanvas-active' : 'active'"
+          [routerLinkActiveOptions]="{ exact: isHomePage || isSyncPage }"
+          [lang]="languageService.selectedLanguage()"
+          class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          [ngClass]="{
+            'header-offcanvas-nav-link': isInHeaderOffCanvas,
+            'text-primary': routerActive.isActive,
+            'text-secondary': !routerActive.isActive,
+            'bg-secondary': isInHeaderOffCanvas && routerActive.isActive
+          }"
+          aria-current="page"
+          [routerLink]="item.link">
+          {{ item.label | translate }}
+        </a>
+      } @else {
+        <a
+          [lang]="languageService.selectedLanguage()"
+          class="nav-link h-100 p-3 p-lg-0 d-lg-flex justify-content-lg-center align-items-lg-center text-secondary"
+          [ngClass]="{
+            'header-offcanvas-nav-link': isInHeaderOffCanvas
+          }"
+          aria-current="page"
+          [href]="item.link">
+          {{ item.label | translate }}
+        </a>
+      }
+    </li>
+  }
+</ul>

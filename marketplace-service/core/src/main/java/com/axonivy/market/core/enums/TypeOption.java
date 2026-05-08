@@ -4,6 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * <p>
+ * Product type option enumeration defining available product type filtering categories.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @Getter
 @AllArgsConstructor
 public enum TypeOption {

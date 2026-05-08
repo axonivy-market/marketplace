@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Logging constants defining XML formatting patterns, date/time formats, and field names for structured logging output.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author pvquan
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoggingConstants {
 

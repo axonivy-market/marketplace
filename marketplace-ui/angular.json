@@ -26,15 +26,9 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/assets",
-              "src/assets/_market",
-              "src/robots.txt",
-              "src/sitemap.xml"
-            ],
+            "assets": ["src/favicon.ico", "src/assets", "src/assets/_market", "src/robots.txt", "src/sitemap.xml"],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/markdown-it-github-alerts/styles/github-base.css",
               "node_modules/markdown-it-github-alerts/styles/github-colors-dark-media.css",
               "node_modules/markdown-it-github-alerts/styles/github-colors-light.css",

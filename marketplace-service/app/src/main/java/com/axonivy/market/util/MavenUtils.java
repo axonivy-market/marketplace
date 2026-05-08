@@ -262,7 +262,7 @@ public class MavenUtils {
     if (StringUtils.isBlank(artifactId)) {
       return StringUtils.EMPTY;
     }
-    return Arrays.stream(artifactId.split(CoreCommonConstants.DASH_SEPARATOR))
+    return Arrays.stream(artifactId.split(CoreCommonConstants.HYPHEN))
         .map(part -> part.substring(0, 1).toUpperCase(Locale.getDefault()) + part.substring(1).toLowerCase(
             Locale.getDefault()))
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));

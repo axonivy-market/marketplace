@@ -26,25 +26,7 @@ class VersionUtilsTest extends BaseSetup {
         "Released version should not be identified as snapshot");
   }
 
-  @Test
-  void testIsSprintVersion() {
-    Assertions.assertTrue(VersionUtils.isSprintVersion(MOCK_SPRINT_RELEASED_VERSION),
-        "Expected sprint released version to be identified as sprint");
-    Assertions.assertFalse(VersionUtils.isSprintVersion(MOCK_SNAPSHOT_VERSION),
-        "Snapshot version should not be identified as sprint");
-    Assertions.assertFalse(VersionUtils.isSprintVersion(MOCK_RELEASED_VERSION),
-        "Released version should not be identified as sprint");
-  }
 
-  @Test
-  void testIsReleasedVersion() {
-    Assertions.assertTrue(VersionUtils.isReleasedVersion(MOCK_RELEASED_VERSION),
-        "Released version should be identified as released");
-    Assertions.assertFalse(VersionUtils.isReleasedVersion(MOCK_SNAPSHOT_VERSION),
-        "Snapshot version should not be identified as released");
-    Assertions.assertFalse(VersionUtils.isReleasedVersion(MOCK_SPRINT_RELEASED_VERSION),
-        "Sprint released version should not be identified as released");
-  }
 
   @Test
   void testIsMatchWithDesignerVersion() {
@@ -56,22 +38,6 @@ class VersionUtilsTest extends BaseSetup {
     String targetVersion = "10.0.9";
     Assertions.assertFalse(VersionUtils.isMatchWithDesignerVersion(targetVersion, MOCK_RELEASED_VERSION),
         "Target version 10.0.9 should not match with released version");
-  }
-
-  @Test
-  void testGetBugfixVersion() {
-    String shortReleasedVersion = "10.0";
-
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.getBugfixVersion(MOCK_RELEASED_VERSION),
-        "Bugfix version of released version should equal released version");
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.getBugfixVersion(MOCK_SNAPSHOT_VERSION),
-        "Bugfix version of snapshot version should equal released version");
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.getBugfixVersion(MOCK_BUGFIX_VERSION),
-        "Bugfix version of bugfix version should equal released version");
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.getBugfixVersion(MOCK_SPRINT_RELEASED_VERSION),
-        "Bugfix version of sprint released version should equal released version");
-    Assertions.assertEquals(shortReleasedVersion, VersionUtils.getBugfixVersion(shortReleasedVersion),
-        "Bugfix version of short released version should equal short version");
   }
 
   @Test

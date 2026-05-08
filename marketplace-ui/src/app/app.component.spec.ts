@@ -4,6 +4,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { GlobalToastComponent } from './shared/components/global-toast/global-toast.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import {
@@ -17,10 +18,10 @@ import {
 } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
-import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
 import { WindowRef } from './core/services/browser/window-ref.service';
 import { DocumentRef } from './core/services/browser/document-ref.service';
+import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -28,7 +29,6 @@ describe('AppComponent', () => {
   let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let activatedRoute: ActivatedRoute;
   let navigationStartSubject: Subject<NavigationStart>;
-  let appElement: HTMLElement;
   let router: Router;
   let routerEventsSubject: Subject<Event>;
 
@@ -82,6 +82,7 @@ describe('AppComponent', () => {
         RouterOutlet,
         HeaderComponent,
         FooterComponent,
+        GlobalToastComponent,
         TranslateModule.forRoot(),
         RouterModule.forRoot([])
       ],
@@ -113,9 +114,10 @@ describe('AppComponent', () => {
     routingQueryParamService.getNavigationStartEvent.mockReturnValue(
       navigationStartSubject.asObservable()
     );
-    appElement = fixture.debugElement.query(
-      By.css('.app-container')
-    ).nativeElement;
+
+    vi.spyOn(GoogleSearchBarUtils, 'renderGoogleSearchBar').mockImplementation(
+      () => {}
+    );
 
     activatedRoute = TestBed.inject(ActivatedRoute);
     router = TestBed.inject(Router);
@@ -159,33 +161,6 @@ describe('AppComponent', () => {
     expect(
       routingQueryParamService.checkSessionStorageForDesignerVersion
     ).not.toHaveBeenCalled();
-  });
-
-  it('should hide scrollbar when burger menu is opened', () => {
-    component.isMobileMenuCollapsed = false;
-    fixture.changeDetectorRef.markForCheck();
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeTruthy();
-
-    expect(appElement.classList.contains('header-mobile-container')).toBe(true);
-
-    const headerComputedStyle = globalThis.getComputedStyle(appElement);
-    // jsdom cannot compute CSS from stylesheets; verify the class that sets overflow:hidden is present
-    expect(appElement.classList.contains('header-mobile-container')).toBe(true);
-  });
-
-  it('should reset header style when burger menu is closed', () => {
-    component.isMobileMenuCollapsed = true;
-    fixture.detectChanges();
-
-    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
-    expect(headerElement).toBeNull();
-
-    expect(appElement.classList.contains('header-mobile-container')).toBe(
-      false
-    );
   });
 
   it('should redirect to "/error-page" on NavigationError', () => {

@@ -8,8 +8,6 @@ import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -27,7 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
