@@ -1,6 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +17,13 @@ public interface ReleaseLetterService {
 
   ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
 
-  ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
+//  ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
+
+  ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
+
+  //  ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
+
+  Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 
   ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
 

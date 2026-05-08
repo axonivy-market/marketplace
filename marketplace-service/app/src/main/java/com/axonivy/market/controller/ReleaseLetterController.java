@@ -1,8 +1,10 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -117,16 +120,39 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterResource);
   }
 
+//  @Authorized
+//  @PutMapping(SAVE_AS_DRAFT)
+//  @Operation(hidden = true)
+//  public ResponseEntity<ReleaseLetterModel> saveAsDraft(
+//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
+//    var updatedReleaseLetter = releaseLetterService.saveAsDraft(releaseLetterModelRequest);
+//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
+//    releaseLetterResource.add(
+//        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
+//    return ResponseEntity.ok(releaseLetterResource);
+//  }
+
   @Authorized
   @PutMapping(SAVE_AS_DRAFT)
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> saveAsDraft(
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-    var updatedReleaseLetter = releaseLetterService.saveAsDraft(releaseLetterModelRequest);
-    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-    releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
-    return ResponseEntity.ok(releaseLetterResource);
+  public ResponseEntity<ReleaseLetterDraft> saveAsDraft(
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request) {
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    System.out.println(gitHubUserId);
+    var releaseLetterDraft = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
+    return ResponseEntity.ok(releaseLetterDraft);
+  }
+
+  @Authorized
+  @GetMapping("/release-letters/{releaseLetterId}/drafts/exists")
+  public ResponseEntity<Boolean> isDraftExisted(
+      @PathVariable String releaseLetterId,
+      @RequestParam String githubUserId
+  ) {
+    return ResponseEntity.ok(
+        releaseLetterDraftService
+            .isDraftExistedByGitHubUserIdAndReleaseLetterId(githubUserId, releaseLetterId)
+    );
   }
 
   @Authorized

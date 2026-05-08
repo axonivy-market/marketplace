@@ -239,4 +239,18 @@ export class AdminDashboardService {
       context: new HttpContext().set(ForwardingError, true)
     });
   }
+
+  saveReleaseLetterAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(ForwardingError, true)
+    });
+  }
+
+  isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(ForwardingError, true)
+    });
+  }
 }

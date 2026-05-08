@@ -30,6 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
+  public static final String GITHUB_USER_ID_ATTRIBUTE = "gitHubUserId";
 
   private final JwtService jwtService;
   private final GitHubService gitHubService;
@@ -59,9 +60,11 @@ public class AuthorizedAspect {
     }
 
     if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
-      gitHubService.validateUserInOrganizationAndTeam(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+      var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
+          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+          GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+      request.setAttribute(GITHUB_USER_ID_ATTRIBUTE, userInfo.getGitHubId());
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);

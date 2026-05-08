@@ -6,6 +6,7 @@ import { AddFeedbackDialogComponent } from '../../modules/product/product-detail
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
 import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { ReleaseLetter } from '../models/release-letter-request.model';
+import { ReleaseLetterDraftAlertModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-draft-alert-modal/release-letter-draft-alert-modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -61,6 +62,17 @@ export class AppModalService {
 
     modalRef.componentInstance.id = releaseLetter.id;
     modalRef.componentInstance.sprint = releaseLetter.sprint;
+
+    return modalRef.result;
+  }
+
+  openDraftAlertModal() {
+    const modalRef = this.modalService.open(
+      ReleaseLetterDraftAlertModalComponent,
+      {
+        size: 'lg'
+      }
+    );
 
     return modalRef.result;
   }

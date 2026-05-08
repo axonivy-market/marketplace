@@ -1,0 +1,21 @@
+<div>
+  <div class="modal-header">
+    <h3>{{ 'common.admin.newsManagement.warning' | translate }}</h3>
+  </div>
+  <div class="modal-body">
+    <div class="p-0 release-letter-content">
+        This release letter has a draft version. Do you want to apply it?
+    </div>
+    <div class="modal-footer">
+      <button
+        (click)="onConfirm()"
+        type="button"
+        [lang]="languageService.selectedLanguage()"
+        class="btn border-0 mb-0 me-2"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'">
+        Yes
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="activeModal.close('Close click')">Close</button>
+    </div>
+  </div>
+</div>

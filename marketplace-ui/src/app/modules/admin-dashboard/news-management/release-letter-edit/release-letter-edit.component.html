@@ -46,7 +46,7 @@
           name="sprint-name"
           autocomplete="on"
           type="text"
-          [disabled]="isSubmitting()"
+          [disabled]="isHandlingApiCall() || !isCreateMode"
           [lang]="languageService.selectedLanguage()"
           class="form-control input__search bg-secondary my-4"
           [class]="sprintErrorMessage !== null && sprintErrorMessage !== '' ? 'error-input' : ''"

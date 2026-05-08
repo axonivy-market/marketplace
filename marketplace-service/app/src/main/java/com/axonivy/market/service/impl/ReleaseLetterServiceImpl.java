@@ -3,9 +3,11 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
+import com.axonivy.market.repository.ReleaseLetterDraftRepository;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 import com.axonivy.market.service.ReleaseLetterService;
 import jakarta.transaction.Transactional;
@@ -33,6 +35,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private static final Pattern GITHUB_USERNAME_PATTERN = Pattern.compile(GITHUB_USERNAME_REGEX,
       Pattern.UNICODE_CHARACTER_CLASS);
   private final ReleaseLetterRepository releaseLetterRepository;
+  private final ReleaseLetterDraftRepository releaseLetterDraftRepository;
   private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
   @Override
@@ -113,22 +116,53 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     if (deletedRow == 0) {
       throw new NotFoundException(ErrorCode.RELEASE_LETTER_NOT_FOUND, "Not found release letter with id: " + id);
     }
+    releaseLetterDraftRepository.deleteByReleaseLetterId(id);
   }
+
+//  @Transactional
+//  @Override
+//  public ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
+//    validateReleaseLetterModelRequest(releaseLetterModelRequest);
+//
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
+////    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
+////
+////    ReleaseLetter releaseLetter = optional
+////        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
+////        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
+//
+//    return releaseLetterRepository.save(releaseLetter);
+//  }
 
   @Transactional
   @Override
-  public ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
+  public ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
-    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
 //    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
 //
 //    ReleaseLetter releaseLetter = optional
 //        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
 //        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
 
-    return releaseLetterRepository.save(releaseLetter);
+    return handleDraft(releaseLetterModelRequest, gitHubUserId);
   }
+
+//  @Transactional
+//  @Override
+//  public ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
+//    validateReleaseLetterModelRequest(releaseLetterModelRequest);
+//
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
+////    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
+////
+////    ReleaseLetter releaseLetter = optional
+////        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
+////        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
+//
+//    return releaseLetterRepository.save(releaseLetter);
+//  }
 
   @Transactional
   @Override
@@ -139,6 +173,11 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     handleSavedAsDraftForExistedReleaseLetter(foundReleaseLetter, releaseLetterModelRequest);
 
     return releaseLetterRepository.save(foundReleaseLetter);
+  }
+
+  @Override
+  public Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
+    return releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId).isPresent();
   }
 
   private void validateReleaseLetterModelRequest(ReleaseLetterModelRequest releaseLetterModelRequest) {
@@ -177,6 +216,55 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     return newReleaseLetter;
   }
+
+  private ReleaseLetterDraft handleDraft(ReleaseLetterModelRequest request, String gitHubUserId) {
+    String sprint = unifySprint(request.getSprint());
+
+    ReleaseLetter releaseLetter = releaseLetterRepository
+        .findBySprint(sprint)
+        .orElseGet(() -> createReleaseLetter(request));
+
+    return upsertDraft(releaseLetter.getId(), gitHubUserId, request.getDraftContent());
+  }
+
+  private ReleaseLetterDraft upsertDraft(String releaseLetterId, String githubUserId, String draftContent) {
+    ReleaseLetterDraft draft = releaseLetterDraftRepository
+        .findByGitHubUserIdAndReleaseLetterId(githubUserId, releaseLetterId)
+        .orElseGet(() -> {
+          ReleaseLetterDraft d = new ReleaseLetterDraft();
+          d.setReleaseLetterId(releaseLetterId);
+          d.setGitHubUserId(githubUserId);
+          return d;
+        });
+
+    draft.setDraftContent(transformContent(draftContent));
+
+    return releaseLetterDraftRepository.save(draft);
+  }
+
+//  private ReleaseLetterDraft handleSavedAsDraftForNewReleaseLetter2(ReleaseLetter newReleaseLetter,
+//      ReleaseLetterModelRequest releaseLetterModelRequest) {
+//    String unifiedNewSprint = unifySprint(releaseLetterModelRequest.getSprint());
+//    Optional<ReleaseLetter> existing = releaseLetterRepository.findBySprint(unifiedNewSprint);
+//
+//    ReleaseLetter releaseLetter = existing.orElseGet(() -> {
+//      ReleaseLetter rl = new ReleaseLetter();
+//      rl.setSprint(unifiedNewSprint);
+//      rl.setContent(null); // or default
+//      rl.setLatest(true);  // depends on your logic
+//      return releaseLetterRepository.save(rl);
+//    });
+//
+//    if (isSprintExisted(unifiedNewSprint)) {
+//      throw new AlreadyExistedException(ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getCode(),
+//          ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
+//    }
+//
+//    newReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
+//    newReleaseLetter.setSprint(unifiedNewSprint);
+//
+//    return newReleaseLetter;
+//  }
 
   private boolean isSprintExisted(String requestedSprint) {
     return releaseLetterRepository.existsBySprint(unifySprint(requestedSprint));

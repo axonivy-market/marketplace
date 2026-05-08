@@ -14,6 +14,7 @@ import {
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
+import { AppModalService } from '../../../../shared/services/app-modal.service';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -27,6 +28,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   adminDashboardService = inject(AdminDashboardService);
+  appModalService = inject(AppModalService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   easyMDE!: EasyMDE;
@@ -38,7 +40,8 @@ export class ReleaseLetterEditComponent implements OnInit {
     content: '',
     createdAt: '',
     updatedAt: '',
-    latest: false
+    latest: false,
+    draftContent: ''
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
@@ -66,14 +69,20 @@ export class ReleaseLetterEditComponent implements OnInit {
         this.isCreateMode = true;
       }
     });
+    // this.checkDraft();
   }
 
   getReleaseLetterById(id: string): void {
     this.adminDashboardService.getReleaseLetterById(id).subscribe(response => {
+      console.log(response);
+
       this.releaseLetter.id = response.id;
       this.releaseLetter.content = response.content;
       this.releaseLetter.sprint = response.sprint;
       this.releaseLetter.latest = response.latest;
+      this.releaseLetter.draftContent = response.draftContent;
+
+      this.checkDraft();
     });
   }
 
@@ -122,6 +131,28 @@ export class ReleaseLetterEditComponent implements OnInit {
       });
   }
 
+  // saveAsDraft() {
+  //   if (this.isSavingAsDraft()) {
+  //     return;
+  //   }
+
+  //   this.isSavingAsDraft.set(true);
+  //   this.releaseLetter.draftContent = this.releaseLetter.content;
+
+  //   const request$ = this.isCreateMode
+  //     ? this.adminDashboardService.saveAsDraft(this.prepareDraftReleaseLetter())
+  //     : this.adminDashboardService.saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter());
+
+  //   request$.pipe(finalize(() => this.isSavingAsDraft.set(false))).subscribe({
+  //     next: _res => {
+  //       this.router.navigate([this.newsManangementUrl]);
+  //     },
+  //     error: err => {
+  //       this.handleError(err.error.helpCode);
+  //     }
+  //   });
+  // }
+
   saveAsDraft() {
     if (this.isSavingAsDraft()) {
       return;
@@ -130,23 +161,30 @@ export class ReleaseLetterEditComponent implements OnInit {
     this.isSavingAsDraft.set(true);
     this.releaseLetter.draftContent = this.releaseLetter.content;
 
-    const request$ = this.isCreateMode
-      ? this.adminDashboardService.saveAsDraft(this.prepareDraftReleaseLetter())
-      : this.adminDashboardService.saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter());
-
-    request$.pipe(finalize(() => this.isSavingAsDraft.set(false))).subscribe({
-      next: _res => {
-        this.router.navigate([this.newsManangementUrl]);
-      },
-      error: err => {
-        this.handleError(err.error.helpCode);
-      }
-    });
+    this.adminDashboardService
+      .saveReleaseLetterAsDraft(this.prepareDraftReleaseLetter())
+      .pipe(finalize(() => this.isSavingAsDraft.set(false)))
+      .subscribe({
+        next: _res => {
+          this.router.navigate([this.newsManangementUrl]);
+        },
+        error: err => {
+          this.handleError(err.error.helpCode);
+        }
+      });
   }
+
+  // prepareDraftReleaseLetter(): ReleaseLetter {
+  //   return {
+  //     ...this.releaseLetter,
+  //     draftContent: this.releaseLetter.content
+  //   };
+  // }
 
   prepareDraftReleaseLetter(): ReleaseLetter {
     return {
       ...this.releaseLetter,
+      content: this.isCreateMode ? '' : this.releaseLetter.content,
       draftContent: this.releaseLetter.content
     };
   }
@@ -181,5 +219,24 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   isHandlingApiCall() {
     return this.isSubmitting() || this.isSavingAsDraft();
+  }
+
+  // checkDraft() {
+  //   if (this.releaseLetter.draftContent !== undefined) {
+  //     console.log('there is draft');
+
+  //     this.appModalService.openDraftAlertModal().then(() => {});
+  //   }
+  //   return false;
+  // }
+
+  checkDraft() {
+    if (this.releaseLetter.draftContent) {
+      this.appModalService.openDraftAlertModal().then((useDraft: boolean) => {
+        if (useDraft) {
+          this.releaseLetter.content = this.releaseLetter.draftContent;
+        }
+      });
+    }
   }
 }
