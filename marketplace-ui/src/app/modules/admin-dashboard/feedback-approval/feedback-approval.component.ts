@@ -44,44 +44,27 @@ export class FeedbackApprovalComponent implements OnInit {
   adminAuthService = inject(AdminAuthService);
   router = inject(Router);
   protected LoadingComponentId = LoadingComponentId;
-  token = '';
+  token: string | null = null;
   errorMessage = '';
   isAuthenticated = false;
   activeTab = 'review';
-  moderatorName!: string | null;
   isLoading = false;
 
   feedbacks: Signal<Feedback[]> = this.productFeedbackService.allFeedbacks;
-
   pendingFeedbacks: Signal<Feedback[]> = this.productFeedbackService.pendingFeedbacks;
 
   allFeedbacks = computed(() => this.feedbacks());
   reviewingFeedbacks = computed(() => this.pendingFeedbacks());
 
   constructor(private readonly storageRef: SessionStorageRef) {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
   }
 
   ngOnInit() {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
-    if (!this.token) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-      this.isAuthenticated = false;
-      return;
-    }
     this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
     this.fetchFeedbacks();
-    // this.productFeedbackService.findProductFeedbacks().subscribe();
   }
 
   fetchFeedbacks(): void {
-    // this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
-    // if (!this.token) {
-    //   this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-    //   this.isAuthenticated = false;
-    //   return;
-    // }
-
     this.isLoading = true;
     this.productFeedbackService.findProductFeedbacks().subscribe({
       error: err => {
@@ -91,58 +74,15 @@ export class FeedbackApprovalComponent implements OnInit {
         this.isLoading = false;
       }
     });
-
-    // this.isLoading = true;
-    // this.fetchUserInfo()
-    //   .pipe(
-    //     switchMap(name => {
-    //       if (!name) {
-    //         this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-    //         return EMPTY;
-    //       }
-    //       this.errorMessage = '';
-    //       return this.productFeedbackService.findProductFeedbacks();
-    //     }),
-    //     catchError(err => {
-    //       this.handleError(err);
-    //       return EMPTY;
-    //     }),
-    //     finalize(() => {
-    //       this.isLoading = false;
-    //     })
-    //   )
-    //   .subscribe();
-  }
-
-  fetchUserInfo(): Observable<string | null> {
-    let parsedToken = JSON.parse(this.token);
-
-    const accessToken = this.authService.decodeToken(parsedToken['token'])?.accessToken;
-    if (!accessToken) {
-      this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
-      return of(null);
-    }
-
-    return this.authService.getDisplayNameFromAccessToken(parsedToken['token']).pipe(
-      tap(name => {
-        // this.isAuthenticated = !!name;
-        // this.moderatorName = name;
-      }),
-      catchError(err => {
-        this.handleError(err);
-        return of(null);
-      })
-    );
   }
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
+      this.router.navigate([ERROR_PAGE_PATH]);
     } else {
       this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
     this.isAuthenticated = false;
-    this.moderatorName = null;
     sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
   }
 
