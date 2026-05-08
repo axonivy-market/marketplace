@@ -24,6 +24,7 @@ import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -571,7 +573,7 @@ class GitHubServiceImplTest extends BaseSetup {
         eq(HttpMethod.GET),
         any(HttpEntity.class),
         any(ParameterizedTypeReference.class))
-    ).thenThrow(HttpClientErrorException.NotFound.class);
+    ).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.NO_PERMISSION,
@@ -597,7 +599,13 @@ class GitHubServiceImplTest extends BaseSetup {
         eq(HttpMethod.GET),
         any(HttpEntity.class),
         any(ParameterizedTypeReference.class))
-    ).thenThrow(HttpClientErrorException.Forbidden.class);
+    ).thenThrow(HttpClientErrorException.Forbidden.create(
+        "Forbidden",
+        HttpStatus.FORBIDDEN,
+        "Forbidden",
+        HttpHeaders.EMPTY,
+        "Code Security must be enabled for this repository to use code scanning.".getBytes(StandardCharsets.UTF_8),
+        StandardCharsets.UTF_8));
 
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
 

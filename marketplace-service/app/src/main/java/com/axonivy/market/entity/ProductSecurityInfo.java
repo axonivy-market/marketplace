@@ -34,7 +34,6 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
 
   @Id
   private String repoName;
-  private boolean isArchived;
   private String visibility;
   private boolean branchProtectionEnabled;
   private Date lastCommitDate;

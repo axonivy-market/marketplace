@@ -1,7 +1,6 @@
 export interface ProductSecurityInfo {
   repoName: string;
   visibility: string;
-  archived: boolean;
   dependabot: {
     status: string;
     alerts: Record<string, number>;

@@ -1,0 +1,19 @@
+@if (enabled !== null) {
+  <span [class]="'badge ' + (enabled ? 'active' : 'none')">
+    {{ (enabled ? 'common.admin.securityMonitor.enabled' : 'common.admin.securityMonitor.disabled') | translate }}
+  </span>
+} @else if (status === 'DISABLED') {
+  <span class="badge none">{{ 'common.admin.securityMonitor.disabled' | translate }}</span>
+} @else if (status === 'NO_PERMISSION') {
+  <span class="badge no-permission">{{ 'common.admin.securityMonitor.noPermission' | translate }}</span>
+} @else if (status === 'NOT_SUPPORTED') {
+  <span class="badge none">{{ 'common.admin.securityMonitor.notSupported' | translate }}</span>
+} @else if (alerts && hasAlerts(alerts)) {
+  @for (alert of alertKeys(alerts); track $index) {
+    <span [ngClass]="['badge', alert]">{{ alerts[alert] }} {{ alert }}</span>
+  }
+} @else if (alertCount) {
+  <span class="badge critical">{{ alertCount }} alerts</span>
+} @else {
+  <span class="badge active">{{ 'common.admin.securityMonitor.noVulnerabilities' | translate }}</span>
+}

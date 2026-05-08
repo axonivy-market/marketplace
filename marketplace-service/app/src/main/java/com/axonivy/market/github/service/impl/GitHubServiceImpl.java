@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -52,6 +53,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -63,6 +65,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -87,6 +90,10 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+
+  private static final String NO_ANALYSIS_FOUND = "no analysis found";
+  private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String NOT_FOUND   = "not found";
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -225,12 +232,16 @@ public class GitHubServiceImpl implements GitHubService {
         repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
 
     List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
-        organization.listRepositories().toList(),
+        organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
         MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
         MAX_CONCURRENCY);
 
     List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
     log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
+    List<String> syncedRepoNames = productSecurityInfos.stream()
+        .map(ProductSecurityInfo::getRepoName)
+        .toList();
+    productSecurityInfoRepository.deleteByRepoNameNotIn(syncedRepoNames);
     return syncedSecurityRepos;
   }
 
@@ -352,26 +363,35 @@ public class GitHubServiceImpl implements GitHubService {
     var instance = defaultInstanceSupplier.get();
     try {
       ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken, url);
-      if (response.getBody() != null) {
-        instance = mapAlerts.apply(response.getBody());
-      } else {
+      instance = mapAlerts.apply(response.getBody() != null ? response.getBody() : List.of());
+      setStatus(instance, ENABLED);
+    } catch (HttpStatusCodeException e) {
+      String body = e.getResponseBodyAsString().toLowerCase();
+      AccessLevel status = resolveErrorStatus(e, body);
+      if (status == ENABLED) {
         instance = mapAlerts.apply(List.of());
       }
-      setStatus(instance, ENABLED);
-    } catch (HttpClientErrorException.Forbidden e) {
-      log.error("Forbidden URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, DISABLED);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.error("Not Found URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, NO_PERMISSION);
-    } catch (HttpServerErrorException.ServiceUnavailable e) {
-      log.error("Service Unavailable URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, DISABLED);
+      log.error("Failed to fetch alerts URL: {} with the error: {}", url, e.getMessage());
+      setStatus(instance, status);
     }
     return instance;
   }
 
-  private static void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
+  private AccessLevel resolveErrorStatus(HttpStatusCodeException e, String body) {
+    if (e instanceof HttpClientErrorException.NotFound) {
+      if (body.contains(NO_ANALYSIS_FOUND)) return NOT_SUPPORTED;
+      if (body.contains(NOT_FOUND)) return NO_PERMISSION;
+    }
+    if (e instanceof HttpClientErrorException.Forbidden) {
+      return body.contains(MUST_BE_ENABLED) ? DISABLED : NO_PERMISSION;
+    }
+    if (e instanceof HttpServerErrorException.ServiceUnavailable) {
+      return DISABLED;
+    }
+    return NO_PERMISSION;
+  }
+
+  private static void setStatus(Object instance, AccessLevel status) {
     if (instance instanceof Dependabot dependabot) {
       dependabot.setStatus(status);
     } else if (instance instanceof SecretScanning secretScanning) {
