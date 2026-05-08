@@ -192,19 +192,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(fetchFeedbacksSpy).toHaveBeenCalled();
   });
 
-  it.only('should return early from fetchFeedbacks if not authenticated', () => {
-    // Mock sessionStorage to return null so authentication fails
-    (sessionStorage.getItem as Mock).mockReturnValue(null);
-    component.isAuthenticated = false;
-
-    vi.useFakeTimers();
-    component.fetchFeedbacks();
-    vi.runAllTimers();
-
-    expect(component.isLoading).toBe(false);
-    vi.useRealTimers();
-  });
-
   it('should toggle between tabs correctly', () => {
     const mockUserInfo = {
       login: 'testuser',

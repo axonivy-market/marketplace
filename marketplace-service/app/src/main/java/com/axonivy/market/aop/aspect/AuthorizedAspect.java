@@ -6,7 +6,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
