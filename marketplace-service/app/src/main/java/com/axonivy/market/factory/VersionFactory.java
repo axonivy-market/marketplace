@@ -68,7 +68,7 @@ public class VersionFactory extends CoreVersionFactory {
     return Optional.ofNullable(versions).stream()
         .flatMap(List::stream)
         .filter(Objects::nonNull)
-      .sorted(VERSION_COMPARATOR.reversed())
+        .sorted(VERSION_COMPARATOR.reversed())
         .filter(ver -> ver.startsWith(requestedVersion)).findFirst().orElse(EMPTY);
   }
 

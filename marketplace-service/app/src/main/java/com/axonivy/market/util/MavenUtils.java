@@ -211,7 +211,7 @@ public class MavenUtils {
         .filter(archivedArtifact
             -> MavenVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) <= 0)
         .min((artifact1, artifact2)
-        -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+            -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
         .orElse(null);
   }
 

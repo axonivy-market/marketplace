@@ -3,6 +3,7 @@ package com.axonivy.market.core.comparator;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -34,7 +35,8 @@ class MavenVersionComparatorTest {
       "Versions should be sorted with newest first when using reversed comparator");
 
     // Case 1: various pre-releases and a SNAPSHOT
-    String[] case1 = ("13.2.0-a5,13.2.0-a6,13.2.0-a7,14.0.0-b1,14.0.0-b2,14.0.0-b3,14.0.0-SNAPSHOT").split(",");
+    String[] case1 = ("13.2.0-a5,13.2.0-a6,13.2.0-a7,14.0.0-b1,14.0.0-b2,14.0.0-b3,14.0.0-SNAPSHOT")
+        .split(CoreCommonConstants.COMMA);
     List<String> listVersions1 = Arrays.asList(case1);
     List<String> sortedVersions1 = listVersions1.stream().sorted(comparator.reversed()).toList();
     for (int i = 0; i < sortedVersions1.size() - 1; i++) {
@@ -43,7 +45,8 @@ class MavenVersionComparatorTest {
     }
 
     // Case 2: representative subset (not the full original list)
-    String[] case2 = ("8.0.39,9.1.0.0-SNAPSHOT,9.4.0-m229,9.4.0,11.1.0-m240,11.1.0,14.0.0-SNAPSHOT").split(",");
+    String[] case2 = ("8.0.39,9.1.0.0-SNAPSHOT,9.4.0-m229,9.4.0,11.1.0-m240,11.1.0,14.0.0-SNAPSHOT")
+        .split(CoreCommonConstants.COMMA);
     List<String> listVersions2 = Arrays.asList(case2);
     List<String> sortedVersions2 = listVersions2.stream().sorted(comparator.reversed()).toList();
     for (int i = 0; i < sortedVersions2.size() - 1; i++) {
