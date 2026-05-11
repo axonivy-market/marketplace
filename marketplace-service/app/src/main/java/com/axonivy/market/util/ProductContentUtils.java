@@ -118,6 +118,14 @@ public final class ProductContentUtils {
   /**
    * Finds the nearest section start that comes strictly after the given position.
    * Returns INDEX_NOT_FOUND if no section exists after the given position.
+   * Case 1: Demo → Setup → Component
+     * demo(10)  → next = min(setup=50, component=90) = 50
+     * setup(50) → next = component=90
+     * component(90) → next = -1 → hết file
+   * Case 2: Setup → Demo → Component
+     * setup(10) → next = min(demo=50, component=90) = 50
+     * demo(50)  → next = component=90
+     * component(90) → next = -1 → end of file
    */
   private static int findNextSectionAfter(int currentStart, int... sectionStarts) {
     int next = INDEX_NOT_FOUND;
