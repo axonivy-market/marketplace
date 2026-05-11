@@ -437,10 +437,6 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  scrollToTop(): void {
-    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
@@ -451,13 +447,13 @@ export class ProductDetailComponent implements AfterViewInit {
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(content.description,this.languageService.selectedLanguage()),
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.description, this.languageService.selectedLanguage()),
       demo:
         content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage( content.demo,this.languageService.selectedLanguage()),
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.demo, this.languageService.selectedLanguage()),
       setup:
         content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(content.setup,this.languageService.selectedLanguage()),
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.setup, this.languageService.selectedLanguage()),
       component:
         content.component !== null &&
         CommonUtils.isContentDisplayedBasedOnLanguage(content.component, this.languageService.selectedLanguage()),

@@ -194,7 +194,7 @@ export class ReleasePreviewComponent implements OnInit {
     return (
       !!tabContent &&
       Object.keys(tabContent).length > 0 &&
-      CommonUtils.isContentDisplayedBasedOnLanguage( tabContent,this.languageService.selectedLanguage())
+      CommonUtils.isContentDisplayedBasedOnLanguage(tabContent,this.languageService.selectedLanguage())
     );
   }
 

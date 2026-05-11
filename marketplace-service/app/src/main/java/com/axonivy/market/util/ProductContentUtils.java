@@ -88,9 +88,14 @@ public final class ProductContentUtils {
     String description = (firstSection == INDEX_NOT_FOUND) ? removeFirstLine(readmeContents) : removeFirstLine(
         readmeContents.substring(0, firstSection));
 
-    String demo = extractIfExists(readmeContents, firstDemoIndex, DEMO_PATTERN, firstSetUpIndex);
-    String setup = extractIfExists(readmeContents, firstSetUpIndex, SETUP_PATTERN, firstComponentIndex);
-    String component = extractIfExists(readmeContents, firstComponentIndex, COMPONENT_PATTERN, firstSetUpIndex);
+    int[] sectionStarts = {firstDemoIndex, firstSetUpIndex, firstComponentIndex};
+
+    String demo = extractIfExists(readmeContents, firstDemoIndex, DEMO_PATTERN,
+        findNextSectionAfter(firstDemoIndex, sectionStarts));
+    String setup = extractIfExists(readmeContents, firstSetUpIndex, SETUP_PATTERN,
+        findNextSectionAfter(firstSetUpIndex, sectionStarts));
+    String component = extractIfExists(readmeContents, firstComponentIndex, COMPONENT_PATTERN,
+        findNextSectionAfter(firstComponentIndex, sectionStarts));
 
     var model = new ReadmeContentsModel();
     model.setDescription(description.trim());
@@ -108,6 +113,20 @@ public final class ProductContentUtils {
       return a;
     }
     return Math.min(a, b);
+  }
+
+  /**
+   * Finds the nearest section start that comes strictly after the given position.
+   * Returns INDEX_NOT_FOUND if no section exists after the given position.
+   */
+  private static int findNextSectionAfter(int currentStart, int... sectionStarts) {
+    int next = INDEX_NOT_FOUND;
+    for (int sectionIndex : sectionStarts) {
+      if (sectionIndex != INDEX_NOT_FOUND && sectionIndex > currentStart) {
+        next = (next == INDEX_NOT_FOUND) ? sectionIndex : Math.min(next, sectionIndex);
+      }
+    }
+    return next;
   }
 
   private static String extractIfExists(String content, int start, Pattern pattern, int nextSectionStart) {
@@ -175,6 +194,7 @@ public final class ProductContentUtils {
     productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
     productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
+    productModuleContent.setComponent(replaceEmptyContentsWithEnContent(moduleContents.get(COMPONENT)));
   }
 
   /**

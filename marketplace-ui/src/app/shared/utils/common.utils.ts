@@ -1,6 +1,6 @@
 import { Language } from '../enums/language.enum';
 import { ItemDropdown } from '../models/item-dropdown.model';
-import { DisplayValue } from '../models/display-value.model';
+import { DisplayValue } from './../models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 
 export class CommonUtils {
