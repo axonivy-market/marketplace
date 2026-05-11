@@ -39,8 +39,7 @@ public class ImageServiceImpl implements ImageService {
     try (InputStream contentStream = ghContent.read()) {
       return IOUtils.toByteArray(contentStream);
     } catch (IOException | UnsupportedOperationException exception) {
-      log.error("Cannot get content of product image {} ", ghContent.getName());
-      log.error(exception);
+      log.error("Cannot get content of product image {}: {}", ghContent.getName(), exception.getMessage(), exception);
       return getImageByDownloadUrl(downloadUrl);
     }
   }
