@@ -45,7 +45,7 @@ public class CoreVersionUtils {
     Predicate<String> displayVersionFilter = BooleanUtils.isTrue(isShowDevVersion)
         ? version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)
         : CoreVersionUtils::isReleasedVersion;
-    return versions.stream().filter(displayVersionFilter).distinct().sorted(VERSION_COMPARATOR).toList();
+    return versions.stream().filter(displayVersionFilter).distinct().sorted(VERSION_COMPARATOR.reversed()).toList();
   }
 
   public static boolean isReleasedVersion(String version) {
@@ -132,6 +132,6 @@ public class CoreVersionUtils {
     }
     metadataList.stream().filter(metadata -> CoreMavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(
         metadata.getVersions())).forEach(productMeta -> installableVersions.addAll(productMeta.getVersions()));
-    return installableVersions.stream().distinct().sorted(VERSION_COMPARATOR).toList();
+    return installableVersions.stream().distinct().sorted(VERSION_COMPARATOR.reversed()).toList();
   }
 }

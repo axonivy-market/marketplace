@@ -36,7 +36,7 @@ public class CoreVersionFactory {
   public static String get(List<String> versions, String requestedVersion, VersionMatchStrategy matchStrategy) {
     var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()
         .filter(Objects::nonNull)
-        .sorted((v1, v2) -> VERSION_COMPARATOR.compare(v2, v1)).toList();
+        .sorted(VERSION_COMPARATOR.reversed()).toList();
 
     // Redirect to the newest version for special keywords
     var version = DevelopmentVersion.of(requestedVersion);

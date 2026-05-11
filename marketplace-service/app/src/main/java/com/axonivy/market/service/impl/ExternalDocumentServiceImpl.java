@@ -193,7 +193,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v2.getKey())) {
             return -1;
           }
-          return MavenVersionComparator.getInstance().compare(v1.getKey(), v2.getKey());
+          return MavenVersionComparator.getInstance().compare(v2.getKey(), v1.getKey());
         })
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
           String ver = entry.getKey();
