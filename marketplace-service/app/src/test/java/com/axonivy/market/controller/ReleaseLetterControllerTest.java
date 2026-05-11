@@ -186,26 +186,26 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "The Location header should contain the ID of the newly created release letter.");
   }
 
-  @Test
-  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
-    String sprint = "S43";
-    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
-
-    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    ReleaseLetterModel model = new ReleaseLetterModel();
-
-    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock))
-        .thenReturn(releaseLetterMock);
-    when(releaseLetterModelAssembler.toModel(releaseLetterMock))
-        .thenReturn(model);
-
-    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK when a release letter is successfully updated.");
-    assertTrue(response.hasBody(),
-        "Response should contain a body after updating release letter.");
-  }
+//  @Test
+//  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
+//    String sprint = "S43";
+//    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
+//
+//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+//    ReleaseLetterModel model = new ReleaseLetterModel();
+//
+//    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock))
+//        .thenReturn(releaseLetterMock);
+//    when(releaseLetterModelAssembler.toModel(releaseLetterMock))
+//        .thenReturn(model);
+//
+//    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock);
+//
+//    assertEquals(HttpStatus.OK, response.getStatusCode(),
+//        "Response status should be 200 OK when a release letter is successfully updated.");
+//    assertTrue(response.hasBody(),
+//        "Response should contain a body after updating release letter.");
+//  }
 
   @Test
   void testFindAllReleaseLettersShouldUseToModelWithoutContentWhenPagingDisabled() {

@@ -14,6 +14,7 @@ import { ReleaseLetter } from '../../shared/models/release-letter-request.model'
 import { ReleaseLetterCriteria, SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { AdminAuthService } from './admin-auth.service';
 import { SyncTaskKey } from '../../shared/constants/admin.constant';
+import { ReleaseLetterDraftApiResponse } from '../../shared/models/apis/release-letter-draft-response.model';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -286,8 +287,8 @@ export class AdminDashboardService {
     });
   }
 
-  getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<string> {
-    return this.http.get<string>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
+  getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse> {
+    return this.http.get<ReleaseLetterDraftApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
       headers: this.adminAuth.getAuthHeaders()
     });
   }

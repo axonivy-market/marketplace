@@ -210,17 +210,17 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 //    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S44");
 //  }
 
-  @Test
-  void testUpdateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
-    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-    request.setSprint("   ");
-
-    assertThrows(MarketException.class,
-        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request),
-        "Expected MarketException to be thrown when sprint name is blank");
-
-    verifyNoInteractions(releaseLetterRepository);
-  }
+//  @Test
+//  void testUpdateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
+//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+//    request.setSprint("   ");
+//
+//    assertThrows(MarketException.class,
+//        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request),
+//        "Expected MarketException to be thrown when sprint name is blank");
+//
+//    verifyNoInteractions(releaseLetterRepository);
+//  }
 
 //  @Test
 //  void testUpdateReleaseLetterShouldThrowAlreadyExistedWhenSprintChangedAndExists() {

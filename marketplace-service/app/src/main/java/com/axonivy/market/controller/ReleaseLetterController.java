@@ -5,6 +5,9 @@ import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
+import com.axonivy.market.model.ExternalDocumentModel;
+import com.axonivy.market.model.ReadmeContentsModel;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
@@ -23,6 +26,7 @@ import org.springframework.hateoas.PagedModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -111,9 +115,10 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
       @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id,
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request
   ) {
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest);
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest, gitHubUserId);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
         linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
@@ -142,26 +147,32 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterDraft);
   }
 
-  @Authorized
-  @GetMapping("/{releaseLetterId}/drafts/exists")
-  public ResponseEntity<Boolean> isDraftExisted(@PathVariable String releaseLetterId, HttpServletRequest request) {
-    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
-    return ResponseEntity.ok(
-        releaseLetterService
-            .isDraftExistedByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
-    );
-  }
+//  @Authorized
+//  @GetMapping("/{releaseLetterId}/drafts/exists")
+//  public ResponseEntity<Boolean> isDraftExisted(@PathVariable String releaseLetterId, HttpServletRequest request) {
+//    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+//    return ResponseEntity.ok(
+//        releaseLetterService
+//            .isDraftExistedByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
+//    );
+//  }
 
   @Authorized
   @GetMapping("/{releaseLetterId}/draft")
-  public ResponseEntity<String> getDraft(
+  public ResponseEntity<ReleaseLetterDraftModel> getDraft(
       @PathVariable String releaseLetterId,
       HttpServletRequest request
   ) {
     String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
-    return ResponseEntity.ok(
-        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
-    );
+    var releaseLetterDraft = releaseLetterService
+        .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId);
+
+    if (releaseLetterDraft == null) {
+      return ResponseEntity.ok(null);
+    }
+
+    var model = ReleaseLetterDraftModel.from(releaseLetterDraft);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @Authorized

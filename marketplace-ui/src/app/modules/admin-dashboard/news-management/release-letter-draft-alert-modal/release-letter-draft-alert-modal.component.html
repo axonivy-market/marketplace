@@ -4,7 +4,7 @@
   </div>
   <div class="modal-body">
     <div class="p-0 release-letter-content">
-        This release letter has a draft version. Do you want to apply it?
+        You have unfinished draft for this release letter. Do you want to continue editing it?
     </div>
     <div class="modal-footer">
       <button
@@ -15,7 +15,7 @@
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'">
         Yes
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="activeModal.close('Close click')">Close</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Close</button>
     </div>
   </div>
 </div>

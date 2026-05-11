@@ -5,7 +5,6 @@ export interface ReleaseLetterApiResponse {
   createdAt: string;
   updatedAt: string;
   latest: boolean;
-  draftContent?: string;
   _links?: {
     self: {
       href: string;

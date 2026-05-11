@@ -67,10 +67,11 @@ public interface ReleaseLetterService {
    * @param id                        type {@link String} - the unique identifier of the release letter to update
    * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data containing updated
    *                                  sprint, content, and latest flag
+   * @param gitHubUserId              type {@link String} - the Github user id taken from the request
    * @return {@link ReleaseLetter} - the updated release letter
    * @author vhhoang
    */
-  ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
+  ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
 
   /**
    * <p>
@@ -87,7 +88,9 @@ public interface ReleaseLetterService {
 
   //  ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
 
-  String getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
+  ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
+
+  void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 
   Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 

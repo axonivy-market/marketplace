@@ -85,7 +85,8 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Override
   @Transactional
-  public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
+  public ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest,
+      String gitHubUserId) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
     var foundReleaseLetter = findReleaseLetterById(id);
@@ -99,12 +100,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
     foundReleaseLetter.setLatest(releaseLetterModelRequest.isLatest());
     foundReleaseLetter.setContent(transformContent(releaseLetterModelRequest.getContent()));
-    foundReleaseLetter.setDraftContent(transformContent(releaseLetterModelRequest.getDraftContent()));
     foundReleaseLetter.setSprint(unifiedNewSprint);
 
     if (releaseLetterModelRequest.isLatest()) {
       releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
     }
+
+    deleteDraftByGitHubUserIdAndReleaseLetterId(gitHubUserId,id);
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }
@@ -119,27 +121,35 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     releaseLetterDraftRepository.deleteByReleaseLetterId(id);
   }
 
+  @Transactional
+  @Override
+  public void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
+    releaseLetterDraftRepository.deleteByGitHubUserIdAndReleaseLetterIdReturningCount(gitHubUserId, releaseLetterId);
+  }
+
 //  @Transactional
 //  @Override
 //  public ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
 //    validateReleaseLetterModelRequest(releaseLetterModelRequest);
 //
-//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
-////    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
-////
-////    ReleaseLetter releaseLetter = optional
-////        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
-////        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(),
+//    releaseLetterModelRequest);
+
+  /// /    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
+  /// /
+  /// /    ReleaseLetter releaseLetter = optional
+  /// /        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
+  /// /        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
 //
 //    return releaseLetterRepository.save(releaseLetter);
 //  }
-
   @Transactional
   @Override
   public ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
 
-//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(),
+//    releaseLetterModelRequest);
 //    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
 //
 //    ReleaseLetter releaseLetter = optional
@@ -154,16 +164,17 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 //  public ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest) {
 //    validateReleaseLetterModelRequest(releaseLetterModelRequest);
 //
-//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest);
-////    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
-////
-////    ReleaseLetter releaseLetter = optional
-////        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
-////        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
+//    ReleaseLetter releaseLetter = handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(),
+//    releaseLetterModelRequest);
+
+  /// /    Optional<ReleaseLetter> optional = releaseLetterRepository.findById(id);
+  /// /
+  /// /    ReleaseLetter releaseLetter = optional
+  /// /        .map(existing -> handleSavedAsDraftForExistedReleaseLetter(existing, releaseLetterModelRequest))
+  /// /        .orElseGet(() -> handleSavedAsDraftForNewReleaseLetter(new ReleaseLetter(), releaseLetterModelRequest));
 //
 //    return releaseLetterRepository.save(releaseLetter);
 //  }
-
   @Transactional
   @Override
   public ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest) {
@@ -181,10 +192,12 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   @Override
-  public String getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
-    return releaseLetterDraftRepository
-        .findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
-        .map(ReleaseLetterDraft::getDraftContent)
+  public ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId,
+      String releaseLetterId) {
+//    return releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId).orElseThrow(
+//        () -> new NotFoundException(ErrorCode.RELEASE_LETTER_DRAFT_NOT_FOUND,
+//            "Not found draft of release letter with id: " + releaseLetterId));
+    return releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
         .orElse(null);
   }
 
@@ -239,10 +252,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     ReleaseLetterDraft draft = releaseLetterDraftRepository
         .findByGitHubUserIdAndReleaseLetterId(githubUserId, releaseLetterId)
         .orElseGet(() -> {
-          ReleaseLetterDraft d = new ReleaseLetterDraft();
-          d.setReleaseLetterId(releaseLetterId);
-          d.setGitHubUserId(githubUserId);
-          return d;
+          var newReleaseLetterDraft = new ReleaseLetterDraft();
+          newReleaseLetterDraft.setReleaseLetterId(releaseLetterId);
+          newReleaseLetterDraft.setGitHubUserId(githubUserId);
+          return newReleaseLetterDraft;
         });
 
     draft.setDraftContent(transformContent(draftContent));

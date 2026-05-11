@@ -3,7 +3,7 @@ import { Component, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
@@ -46,6 +46,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
   isSavingAsDraft = signal<boolean>(false);
+  isInitializing = signal<boolean>(false);
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
   isBrowser: boolean;
@@ -64,23 +65,10 @@ export class ReleaseLetterEditComponent implements OnInit {
       if (idParam) {
         this.isCreateMode = false;
         this.selectedId = idParam;
-        this.getReleaseLetterById(this.selectedId);
+        this.loadReleaseLetterWithDraftCheck(this.selectedId);
       } else {
         this.isCreateMode = true;
       }
-    });
-    // this.checkDraft();
-  }
-
-  getReleaseLetterById(id: string): void {
-    this.adminDashboardService.getReleaseLetterById(id).subscribe(response => {
-      this.releaseLetter.id = response.id;
-      this.releaseLetter.content = response.content;
-      this.releaseLetter.sprint = response.sprint;
-      this.releaseLetter.latest = response.latest;
-      this.releaseLetter.draftContent = response.draftContent;
-
-      this.checkDraft();
     });
   }
 
@@ -129,28 +117,6 @@ export class ReleaseLetterEditComponent implements OnInit {
       });
   }
 
-  // saveAsDraft() {
-  //   if (this.isSavingAsDraft()) {
-  //     return;
-  //   }
-
-  //   this.isSavingAsDraft.set(true);
-  //   this.releaseLetter.draftContent = this.releaseLetter.content;
-
-  //   const request$ = this.isCreateMode
-  //     ? this.adminDashboardService.saveAsDraft(this.prepareDraftReleaseLetter())
-  //     : this.adminDashboardService.saveAsDraftById(this.releaseLetter.id, this.prepareDraftReleaseLetter());
-
-  //   request$.pipe(finalize(() => this.isSavingAsDraft.set(false))).subscribe({
-  //     next: _res => {
-  //       this.router.navigate([this.newsManangementUrl]);
-  //     },
-  //     error: err => {
-  //       this.handleError(err.error.helpCode);
-  //     }
-  //   });
-  // }
-
   saveAsDraft() {
     if (this.isSavingAsDraft()) {
       return;
@@ -171,13 +137,6 @@ export class ReleaseLetterEditComponent implements OnInit {
         }
       });
   }
-
-  // prepareDraftReleaseLetter(): ReleaseLetter {
-  //   return {
-  //     ...this.releaseLetter,
-  //     draftContent: this.releaseLetter.content
-  //   };
-  // }
 
   prepareDraftReleaseLetter(): ReleaseLetter {
     return {
@@ -216,20 +175,33 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   isHandlingApiCall() {
-    return this.isSubmitting() || this.isSavingAsDraft();
+    return this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing();
   }
 
-  checkDraft() {
-    if (this.adminDashboardService.isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(this.releaseLetter.id)) {
-      this.appModalService.openDraftAlertModal().then((useDraft: boolean) => {
-        if (useDraft) {
-          this.adminDashboardService
-            .getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(this.releaseLetter.id)
-            .subscribe((draft: string) => {
-              this.releaseLetter.content = draft;
-            });
+  loadReleaseLetterWithDraftCheck(id: string) {
+    if (this.isHandlingApiCall()) {
+      return;
+    }
+
+    this.isInitializing.set(true);
+    this.adminDashboardService
+      .getReleaseLetterById(id)
+      .pipe(
+        switchMap(releaseLetter => {
+          this.releaseLetter = releaseLetter;
+
+          return this.adminDashboardService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
+        }),
+        finalize(() => this.isInitializing.set(false))
+      )
+      .subscribe(draft => {
+        if (draft !== null) {
+          this.appModalService.openDraftAlertModal().then(useDraft => {
+            if (useDraft) {
+              this.releaseLetter.content = draft.draftContent;
+            }
+          });
         }
       });
-    }
   }
 }

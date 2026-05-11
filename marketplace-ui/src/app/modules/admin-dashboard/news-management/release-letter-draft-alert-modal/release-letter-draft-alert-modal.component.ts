@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
@@ -17,16 +16,12 @@ export class ReleaseLetterDraftAlertModalComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
 
-  constructor(
-    public activeModal: NgbActiveModal,
-    private readonly sanitizer: DomSanitizer
-  ) {}
+  constructor(public activeModal: NgbActiveModal) {}
 
   onConfirm() {
     this.activeModal.close(true);
   }
 
-  // NO button
   onCancel() {
     this.activeModal.close(false);
   }
