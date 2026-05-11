@@ -219,10 +219,10 @@ class ProductContentUtilsTest extends BaseSetup {
     String readmeContents = getMockReadmeContent();
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
-    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_FILE, readmeContentsModel);
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents, MOCK_README_FILE, readmeContentsModel);
     String readmeDEContents = getMockReadmeContent(MOCK_README_DE_FILE);
     ReadmeContentsModel readmeDEContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeDEContents);
-    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_DE_FILE, readmeDEContentsModel);
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents, MOCK_README_DE_FILE, readmeDEContentsModel);
     ProductModuleContent productModuleContent = new ProductModuleContent();
     ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
     assertEquals(3, moduleContents.size(), "Module contents should contain 3 sections (description, demo, setup)");

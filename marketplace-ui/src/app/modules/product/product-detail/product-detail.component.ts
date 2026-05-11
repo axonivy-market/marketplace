@@ -451,26 +451,19 @@ export class ProductDetailComponent implements AfterViewInit {
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.description,
-          this.languageService.selectedLanguage()
-        ),
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.description,this.languageService.selectedLanguage()),
       demo:
         content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.demo,
-          this.languageService.selectedLanguage()
-        ),
+        CommonUtils.isContentDisplayedBasedOnLanguage( content.demo,this.languageService.selectedLanguage()),
       setup:
         content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.setup,
-          this.languageService.selectedLanguage()
-        ),
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.setup,this.languageService.selectedLanguage()),
+      component:
+        content.component !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.component, this.languageService.selectedLanguage()),
       dependency: content.isDependency,
       changelog: this.productReleaseSafeHtmls().length !== 0
     };
-
     return conditions[value] ?? false;
   }
 
@@ -635,6 +628,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
+      console.log(detailTab.value)
       if (this.getContent(detailTab.value)) {
         displayedTabs.push(detailTab);
       }
