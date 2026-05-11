@@ -5,6 +5,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,7 +64,11 @@ public class AuthorizedAspect {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-      request.setAttribute(USERNAME_ATTRIBUTE, userInfo.getUsername());
+      var username = userInfo.getUsername();
+      if (StringUtils.isBlank(username)) {
+        throw new UnauthorizedException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
+      }
+      request.setAttribute(USERNAME_ATTRIBUTE, username);
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);

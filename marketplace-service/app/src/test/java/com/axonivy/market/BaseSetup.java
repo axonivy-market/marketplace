@@ -111,6 +111,7 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String JWT_TOKEN = "sampleJwtToken";
   public static final String DEFAULT_HOST = "http://localhost:";
   public static final String OPEN_API_SPEC_PATH = "src/test/resources/generated-spec.yaml";
+  public static final String MODERATOR_NAME = "test-moderator";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();

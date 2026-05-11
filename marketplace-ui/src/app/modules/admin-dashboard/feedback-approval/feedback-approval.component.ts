@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { finalize } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -14,6 +14,9 @@ import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
+import { UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { REQUEST_ACCESS_PATH } from '../admin-auth.guard';
+import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -31,6 +34,8 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
+  router = inject(Router);
+  adminAuthService = inject(AdminAuthService);
   activeTab = 'review';
   isLoading = false;
   platformId = inject(PLATFORM_ID);
@@ -48,14 +53,21 @@ export class FeedbackApprovalComponent implements OnInit {
 
   fetchFeedbacks(): void {
     this.isLoading = true;
-       this.productFeedbackService
-       .findProductFeedbacks()
-       .pipe(
-         finalize(() => {
-           this.isLoading = false;
-         })
-       )
-       .subscribe();
+    this.productFeedbackService
+      .findProductFeedbacks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        error: error => {
+          if (UNAUTHORIZED === error.status) {
+            this.adminAuthService.logout();
+            this.router.navigate([REQUEST_ACCESS_PATH]);
+          }
+        }
+      });
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {

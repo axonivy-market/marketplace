@@ -263,7 +263,6 @@ class FeedbackServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateFeedbackWithNewStatusApproved() {
-    String moderatorName = "test-moderator";
     String feedbackId = "1";
     int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
@@ -273,12 +272,12 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
-    Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel, moderatorName);
+    Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel, MODERATOR_NAME);
 
     assertNotNull(result, "Updated feedback should not be null");
     assertEquals(feedbackId, result.getId(), "Feedback ID should match the requested ID");
     assertEquals(FeedbackStatus.APPROVED, result.getFeedbackStatus(), "Feedback status should be updated to APPROVED");
-    assertEquals(moderatorName, result.getModeratorName(), "Moderator name should match the name passed into service");
+    assertEquals(MODERATOR_NAME, result.getModeratorName(), "Moderator name should match the name passed into service");
     assertNotNull(result.getReviewDate(), "Review date should be set when feedback is approved");
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
@@ -287,7 +286,6 @@ class FeedbackServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateFeedbackWithNewStatusRejected() {
-    String moderatorName = "test-moderator";
     String feedbackId = "1";
     int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
@@ -297,12 +295,12 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
-    Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel, moderatorName);
+    Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel, MODERATOR_NAME);
 
     assertNotNull(result, "Updated feedback should not be null");
     assertEquals(feedbackId, result.getId(), "Feedback ID should match the requested ID");
     assertEquals(FeedbackStatus.REJECTED, result.getFeedbackStatus(), "Feedback status should be updated to REJECTED");
-    assertEquals(moderatorName, result.getModeratorName(), "Moderator name should match the name passed into service");
+    assertEquals(MODERATOR_NAME, result.getModeratorName(), "Moderator name should match the name passed into service");
     assertNotNull(result.getReviewDate(), "Review date should be set when feedback is rejected");
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);

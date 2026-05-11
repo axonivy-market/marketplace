@@ -19,7 +19,6 @@ import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
-  ADMIN_SESSION_TOKEN,
   BEARER,
   FEEDBACK_SORT_TYPES,
   NOT_FOUND_ERROR_CODE,
@@ -98,12 +97,6 @@ export class ProductFeedbackService {
           this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
         }),
         catchError(response => {
-          if (
-            response.status === NOT_FOUND_ERROR_CODE &&
-            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
-          ) {
-            sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
-          }
           return throwError(() => response);
         })
       );

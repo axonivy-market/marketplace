@@ -199,17 +199,16 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
-    String moderatorName = "test-moderator";
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, moderatorName);
+    request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, MODERATOR_NAME);
 
-    when(service.updateFeedbackWithNewStatus(feedbackApproval, moderatorName)).thenReturn(updatedFeedback);
+    when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
 
     var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, request);
 
-    verify(service).updateFeedbackWithNewStatus(feedbackApproval, "test-moderator");
+    verify(service).updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME);
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when feedback status is successfully updated.");
     assertTrue(result.hasBody(),
@@ -218,7 +217,7 @@ class FeedbackControllerTest extends BaseSetup {
         "The feedback ID in the response should match the updated feedback ID.");
     assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus(),
         "The feedback status should be APPROVED after updating.");
-    assertEquals(moderatorName, result.getBody().getModeratorName(),
+    assertEquals(MODERATOR_NAME, result.getBody().getModeratorName(),
         "The result moderator name should match the moderator name from the request.");
   }
 
@@ -249,7 +248,7 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedback.setRating(5);
     mockFeedback.setFeedbackStatus(FeedbackStatus.APPROVED);
     mockFeedback.setReviewDate(LocalDateTime.now());
-    mockFeedback.setModeratorName("test-moderator");
+    mockFeedback.setModeratorName(MODERATOR_NAME);
     return mockFeedback;
   }
 

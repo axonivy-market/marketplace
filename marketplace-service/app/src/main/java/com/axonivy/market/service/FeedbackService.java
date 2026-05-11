@@ -79,6 +79,8 @@ public interface FeedbackService {
    * @param feedbackApproval
    *              type {@link FeedbackApprovalModel} - the approval model containing feedback ID, version, and
    *              approval decision
+   * @param moderatorName
+   *              type {@link String} - the GitHub username taken from the request
    * @return {@link Feedback} - the updated feedback entry
    * @throws NotFoundException if the feedback is not found
    * @author nntthuy
