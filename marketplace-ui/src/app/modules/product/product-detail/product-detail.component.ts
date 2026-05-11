@@ -624,7 +624,6 @@ export class ProductDetailComponent implements AfterViewInit {
     this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
-      console.log(detailTab.value)
       if (this.getContent(detailTab.value)) {
         displayedTabs.push(detailTab);
       }
