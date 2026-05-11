@@ -21,6 +21,7 @@ import { ProductStarRatingService } from '../product-star-rating-panel/product-s
 import {
   BEARER,
   FEEDBACK_SORT_TYPES,
+  GITHUB_JSON_MEDIA_TYPE,
   NOT_FOUND_ERROR_CODE,
   TOKEN_KEY,
   USER_NOT_FOUND_ERROR_CODE
@@ -103,7 +104,7 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
-    const headers = this.adminAuthService.getAuthHeaders().set('Accept', 'application/vnd.github+json');
+    const headers = this.adminAuthService.getAuthHeaders().set('Accept', GITHUB_JSON_MEDIA_TYPE);
 
     return this.http
       .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request, { headers })
