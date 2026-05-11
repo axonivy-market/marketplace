@@ -127,7 +127,7 @@ public final class ProductContentUtils {
      * demo(50)  → next = component=90
      * component(90) → next = -1 → end of file
    */
-  private static int findNextSectionAfter(int currentStart, int... sectionStarts) {
+  private static int findNextSectionAfter(int currentStart, int[] sectionStarts) {
     int next = INDEX_NOT_FOUND;
     for (int sectionIndex : sectionStarts) {
       if (sectionIndex != INDEX_NOT_FOUND && sectionIndex > currentStart) {
