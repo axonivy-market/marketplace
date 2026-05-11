@@ -36,12 +36,11 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public byte[] getImageBinary(GHContent ghContent, String downloadUrl) {
-    try {
-      InputStream contentStream = ghContent.read();
+    try (InputStream contentStream = ghContent.read()) {
       return IOUtils.toByteArray(contentStream);
-    } catch (IOException ioException) {
+    } catch (IOException | UnsupportedOperationException exception) {
       log.error("Cannot get content of product image {} ", ghContent.getName());
-      log.error(ioException);
+      log.error(exception);
       return getImageByDownloadUrl(downloadUrl);
     }
   }
