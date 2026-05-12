@@ -66,7 +66,7 @@ public class AuthorizedAspect {
 
       var username = userInfo.getUsername();
       if (StringUtils.isBlank(username)) {
-        throw new UnauthorizedException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
+        throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
       }
       request.setAttribute(USERNAME_ATTRIBUTE, username);
     }

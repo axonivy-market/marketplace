@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -112,6 +113,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
+  @Transactional
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval, String moderatorName) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         .map((Feedback existingFeedback) -> {

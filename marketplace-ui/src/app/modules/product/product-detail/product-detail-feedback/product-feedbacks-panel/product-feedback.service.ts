@@ -96,9 +96,6 @@ export class ProductFeedbackService {
             this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
           }
           this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
-        }),
-        catchError(response => {
-          return throwError(() => response);
         })
       );
   }
