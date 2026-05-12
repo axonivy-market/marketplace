@@ -96,6 +96,7 @@
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
               [isMavenDropins]="productDetail().mavenDropins"
+              [isDeprecated]="productDetail().deprecated ?? false"
               [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)

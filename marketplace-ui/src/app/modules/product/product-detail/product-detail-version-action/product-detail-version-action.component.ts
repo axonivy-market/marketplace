@@ -52,6 +52,10 @@ const ZIP = '.zip';
 const ANCHOR_ELEMENT = 'a';
 const BLOB = 'blob';
 const RESPONSE = 'response';
+const DEFAULT_INSTALL_TOOLTIP =
+  "<p class='text-primary'>Please open the <a href='https://market.axonivy.com' class='ivy__link'>Axon Ivy Market</a> inside your <a class='ivy__link' href='https://developer.axonivy.com/download'>Axon Ivy Designer</a> (minimum version 9.2.0)</p>";
+const DEPRECATED_INSTALL_TOOLTIP =
+  'Installing deprecated connectors is not recommended. Use at your own discretion.';
 
 @Component({
   selector: 'app-product-detail-version-action',
@@ -68,9 +72,10 @@ const RESPONSE = 'response';
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
-  @Output() triggerUpdateInstallationCount = new EventEmitter<void>;
+  @Output() triggerUpdateInstallationCount = new EventEmitter<void>();
   @Input() productId!: string;
   @Input() isMavenDropins!: boolean;
+  @Input() isDeprecated = false;
   @Input() actionType!: ProductDetailActionType;
   @Input() product!: ProductDetail;
   protected ProductDetailActionType = ProductDetailActionType;
@@ -343,10 +348,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onNavigateToContactPage(): void {
-    window.open(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
-      '_blank'
-    );
+    window.open(`https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`, '_blank');
+  }
+
+  getInstallTooltipMessage(): string {
+    return this.isDeprecated ? DEPRECATED_INSTALL_TOOLTIP : DEFAULT_INSTALL_TOOLTIP;
   }
 
   getTrackingEnvironmentBasedOnActionType() {
