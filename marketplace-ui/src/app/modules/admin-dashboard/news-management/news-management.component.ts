@@ -27,6 +27,7 @@ import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { AdminDashboardService } from './../admin-dashboard.service';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NewsManagementService } from './news-management.service';
 
 @Component({
   selector: 'app-news-management',
@@ -51,6 +52,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   pageTitleService = inject(PageTitleService);
   loadingService = inject(LoadingService);
   adminDashboardService = inject(AdminDashboardService);
+  newsManagementService = inject(NewsManagementService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   subscriptions: Subscription[] = [];
@@ -109,16 +111,17 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
     this.appModalService
       .openDeleteReleaseLetterConfirmModal(releaseLetter)
       .then(() => {
-        this.adminDashboardService
+        this.newsManagementService
           .getReleaseLetters(this.releaseLetterCriteria)
           .subscribe(res => {
             this.releaseLetterList.set(res._embedded.releaseLetterModelList);
           });
-      });
+      })
+      .catch(() => {});
   }
 
   loadReleaseLetters(): void {
-    const sub = this.adminDashboardService
+    const sub = this.newsManagementService
       .getReleaseLetters(this.releaseLetterCriteria)
       .subscribe({
         next: response => {

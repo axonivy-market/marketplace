@@ -48,11 +48,7 @@ export class AdminDashboardService {
     );
   }
 
-  syncOneProduct(
-    id: string,
-    marketItemPath: string,
-    overrideMarketItemPath = false
-  ): Observable<SyncTaskExecution> {
+  syncOneProduct(id: string, marketItemPath: string, overrideMarketItemPath = false): Observable<SyncTaskExecution> {
     const params = new HttpParams()
       .set(RequestParam.MARKET_ITEM_PATH, marketItemPath)
       .set(RequestParam.OVERRIDE_MARKET_ITEM_PATH, overrideMarketItemPath);
@@ -115,21 +111,15 @@ export class AdminDashboardService {
     });
   }
 
-  sortMarketExtensions(
-    orderedList: string[],
-    remainderRule = 'alphabetically'
-  ): Observable<void> {
+  sortMarketExtensions(orderedList: string[], remainderRule = 'alphabetically'): Observable<void> {
     const body = {
       orderedListOfProducts: orderedList,
       ruleForRemainder: remainderRule
     };
 
-    return this.http.post<void>(
-      `${API_URI.CUSTOM_SORT}`, body,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
+    return this.http.post<void>(`${API_URI.CUSTOM_SORT}`, body, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   getCustomSort(): Observable<CustomSortConfig> {
@@ -139,15 +129,11 @@ export class AdminDashboardService {
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
       headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(
-        LoadingComponent,
-        LoadingComponentId.SECURITY_MONITOR
-      )
+      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
     });
   }
 
-  searchSecurityDetails(criteria: SecurityMonitorCriteria):
-    Observable<SecurityMonitorApiResponse> {
+  searchSecurityDetails(criteria: SecurityMonitorCriteria): Observable<SecurityMonitorApiResponse> {
     let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
@@ -158,88 +144,71 @@ export class AdminDashboardService {
       params = params.set(RequestParam.SEARCH, criteria.searchText);
     }
 
-    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
-      {
-        params,
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
-      }
-    );
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, {
+      params,
+      headers: this.adminAuth.getAuthHeaders(),
+      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+    });
   }
 
-  getReleaseLetters(
-    releaseLetterCriteria: ReleaseLetterCriteria,
-    pageId: string = LoadingComponentId.NEWS_PAGE
-  ): Observable<ReleaseLetterListApiResponse> {
-    let params = new HttpParams();
-    let url = '';
+  // getReleaseLetters(
+  //   releaseLetterCriteria: ReleaseLetterCriteria,
+  //   pageId: string = LoadingComponentId.NEWS_PAGE
+  // ): Observable<ReleaseLetterListApiResponse> {
+  //   let params = new HttpParams();
+  //   let url = '';
 
-    if (releaseLetterCriteria.nextPageHref) {
-      url = releaseLetterCriteria.nextPageHref;
-    } else {
-      url = `${API_URI.RELEASE_LETTERS}`;
+  //   if (releaseLetterCriteria.nextPageHref) {
+  //     url = releaseLetterCriteria.nextPageHref;
+  //   } else {
+  //     url = `${API_URI.RELEASE_LETTERS}`;
 
-      if (releaseLetterCriteria.pageable) {
-        params = params
-          .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
-          .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
-          .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
-      }
-    }
+  //     if (releaseLetterCriteria.pageable) {
+  //       params = params
+  //         .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
+  //         .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
+  //         .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
+  //     }
+  //   }
 
-    const ts = Date.now().toString();
-    params = params.set(RequestParam.TIMESTAMP, ts);
+  //   const ts = Date.now().toString();
+  //   params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http
-      .get<ReleaseLetterListApiResponse>(url, {
-        context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
-        params
-      })
-      .pipe(
-        catchError(() => {
-          const releaseLetterListApiResponse =
-            {} as ReleaseLetterListApiResponse;
-          return of(releaseLetterListApiResponse);
-        })
-      );
-  }
+  //   return this.http
+  //     .get<ReleaseLetterListApiResponse>(url, {
+  //       context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
+  //       params
+  //     })
+  //     .pipe(
+  //       catchError(() => {
+  //         const releaseLetterListApiResponse = {} as ReleaseLetterListApiResponse;
+  //         return of(releaseLetterListApiResponse);
+  //       })
+  //     );
+  // }
 
   getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
     let params = new HttpParams();
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http.get<ReleaseLetterListApiResponse>(
-      `${API_URI.ACTIVE_RELEASE_LETTERS}`,
-      {
-        context: new HttpContext().set(CachingEnabled, false),
-        headers: this.adminAuth.getAuthHeaders(),
-        params
-      }
-    );
+    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.ACTIVE_RELEASE_LETTERS}`, {
+      context: new HttpContext().set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
+      params
+    });
   }
 
   createReleaseLetter(releaseLetterRequest: ReleaseLetter): Observable<void> {
-    return this.http.post<void>(
-      `${API_URI.RELEASE_LETTERS}`,
-      releaseLetterRequest,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
+    return this.http.post<void>(`${API_URI.RELEASE_LETTERS}`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
-  updateReleaseLetter(
-    id: string,
-    releaseLetterRequest: ReleaseLetter
-  ): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/${id}`,
-      releaseLetterRequest,
-      {
-        headers: this.adminAuth.getAuthHeaders()
-      }
-    );
+  updateReleaseLetter(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
+    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
@@ -247,17 +216,13 @@ export class AdminDashboardService {
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http.get<ReleaseLetterApiResponse>(
-      `${API_URI.RELEASE_LETTERS}/${id}`,
-      {
-        // context: new HttpContext().set(CachingEnabled, false),
-        context: new HttpContext()
-          .set(LoadingComponent, LoadingComponentId.RELEASE_LETTER_EDIT)
-          .set(CachingEnabled, false),
-        headers: this.adminAuth.getAuthHeaders(),
-        params
-      }
-    );
+    return this.http.get<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, {
+      context: new HttpContext()
+        .set(LoadingComponent, LoadingComponentId.RELEASE_LETTER_EDIT)
+        .set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
+      params
+    });
   }
 
   deleteReleaseLetterById(id: string): Observable<void> {
@@ -267,9 +232,13 @@ export class AdminDashboardService {
   }
 
   saveAsDraftById(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft/${id}`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
+    return this.http.put<ReleaseLetterApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/save-as-draft/${id}`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 
   saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
@@ -292,7 +261,8 @@ export class AdminDashboardService {
 
   getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse> {
     return this.http.get<ReleaseLetterDraftApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
-      headers: this.adminAuth.getAuthHeaders()
+      context: new HttpContext().set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
     });
   }
 }

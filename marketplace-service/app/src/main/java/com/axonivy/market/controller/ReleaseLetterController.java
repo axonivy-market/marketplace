@@ -101,7 +101,7 @@ public class ReleaseLetterController {
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-    var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
+    var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest, false);
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
         .buildAndExpand(newReleaseLetter.getId())
@@ -125,18 +125,6 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterResource);
   }
 
-//  @Authorized
-//  @PutMapping(SAVE_AS_DRAFT)
-//  @Operation(hidden = true)
-//  public ResponseEntity<ReleaseLetterModel> saveAsDraft(
-//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-//    var updatedReleaseLetter = releaseLetterService.saveAsDraft(releaseLetterModelRequest);
-//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-//    releaseLetterResource.add(
-//        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
-//    return ResponseEntity.ok(releaseLetterResource);
-//  }
-
   @Authorized
   @PutMapping(SAVE_AS_DRAFT)
   @Operation(hidden = true)
@@ -147,25 +135,15 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(releaseLetterDraft);
   }
 
-//  @Authorized
-//  @GetMapping("/{releaseLetterId}/drafts/exists")
-//  public ResponseEntity<Boolean> isDraftExisted(@PathVariable String releaseLetterId, HttpServletRequest request) {
-//    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
-//    return ResponseEntity.ok(
-//        releaseLetterService
-//            .isDraftExistedByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId)
-//    );
-//  }
-
   @Authorized
-  @GetMapping("/{releaseLetterId}/draft")
+  @GetMapping(DRAFT_BY_ID)
   public ResponseEntity<ReleaseLetterDraftModel> getDraft(
-      @PathVariable String releaseLetterId,
+      @PathVariable String id,
       HttpServletRequest request
   ) {
     String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     var releaseLetterDraft = releaseLetterService
-        .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId);
+        .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
 
     if (releaseLetterDraft == null) {
       return ResponseEntity.ok(null);
@@ -175,19 +153,19 @@ public class ReleaseLetterController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @Authorized
-  @PutMapping(SAVE_AS_DRAFT_BY_ID)
-  @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> saveAsDraftById(
-      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
-          in = ParameterIn.PATH) String id,
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-    var updatedReleaseLetter = releaseLetterService.saveAsDraftById(id, releaseLetterModelRequest);
-    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-    releaseLetterResource.add(
-        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
-    return ResponseEntity.ok(releaseLetterResource);
-  }
+//  @Authorized
+//  @PutMapping(SAVE_AS_DRAFT_BY_ID)
+//  @Operation(hidden = true)
+//  public ResponseEntity<ReleaseLetterModel> saveAsDraftById(
+//      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
+//          in = ParameterIn.PATH) String id,
+//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
+//    var updatedReleaseLetter = releaseLetterService.saveAsDraftById(id, releaseLetterModelRequest);
+//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
+//    releaseLetterResource.add(
+//        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
+//    return ResponseEntity.ok(releaseLetterResource);
+//  }
 
   @Authorized
   @DeleteMapping(BY_ID)

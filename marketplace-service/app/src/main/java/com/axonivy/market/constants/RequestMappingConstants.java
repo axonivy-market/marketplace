@@ -31,8 +31,8 @@ public class RequestMappingConstants {
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
-  public static final String SAVE_AS_DRAFT_BY_ID = "/save-as-draft" + BY_ID;
   public static final String SAVE_AS_DRAFT = "/save-as-draft";
+  public static final String DRAFT_BY_ID = "/{id}/draft";
   public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";

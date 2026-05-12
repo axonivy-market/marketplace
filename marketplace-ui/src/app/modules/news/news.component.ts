@@ -32,6 +32,7 @@ import { Subscription, throwError } from 'rxjs';
 import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
 import { DEFAULT_PAGEABLE } from '../../shared/constants/common.constant';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { NewsManagementService } from '../admin-dashboard/news-management/news-management.service';
 
 @Component({
   selector: 'app-news',
@@ -56,6 +57,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   adminDashboardService = inject(AdminDashboardService);
+  newsManagementService = inject(NewsManagementService);
   markdownService = inject(MarkdownService);
   loadingService = inject(LoadingService);
   emptyReleaseLetterTitle = '';
@@ -125,7 +127,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadReleaseLetters(): void {
-    const sub = this.adminDashboardService
+    const sub = this.newsManagementService
       .getReleaseLetters(this.releaseLetterCriteria)
       .subscribe({
         next: response => {

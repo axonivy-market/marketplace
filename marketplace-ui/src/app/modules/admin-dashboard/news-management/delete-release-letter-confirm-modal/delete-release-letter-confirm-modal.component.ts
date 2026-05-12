@@ -5,6 +5,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { CommonModule } from '@angular/common';
 import { AdminDashboardService } from '../../admin-dashboard.service';
+import { NewsManagementService } from '../news-management.service';
 
 @Component({
   selector: 'app-delete-release-letter-confirm-modal',
@@ -23,11 +24,12 @@ export class DeleteReleaseLetterConfirmModalComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   adminDashboardService = inject(AdminDashboardService);
+  newsManagementService = inject(NewsManagementService);
 
   constructor(public activeModal: NgbActiveModal) {}
 
   deleteReleaseLetterById() {
-    this.adminDashboardService
+    this.newsManagementService
       .deleteReleaseLetterById(this.id)
       .subscribe({
         next: () => {

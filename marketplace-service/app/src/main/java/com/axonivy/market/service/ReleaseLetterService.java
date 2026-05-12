@@ -56,7 +56,7 @@ public interface ReleaseLetterService {
    * @return {@link ReleaseLetter} - the created release letter
    * @author vhhoang
    */
-  ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest);
+  ReleaseLetter createReleaseLetter(ReleaseLetterModelRequest releaseLetterModelRequest, boolean isDraft);
 
   /**
    * <p>
@@ -82,19 +82,11 @@ public interface ReleaseLetterService {
    * @param id type {@link String} - the unique ID of the release letter to delete
    * @author vhhoang
    */
-//  ReleaseLetter saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
+  void deleteReleaseLetterById(String id);
 
   ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
-
-  //  ReleaseLetterDraft saveAsReleaseLetterDraft(ReleaseLetterModelRequest releaseLetterModelRequest);
 
   ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 
   void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
-
-  Boolean isDraftExistedByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
-
-  ReleaseLetter saveAsDraftById(String id, ReleaseLetterModelRequest releaseLetterModelRequest);
-
-  void deleteReleaseLetterById(String id);
 }

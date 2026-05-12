@@ -27,10 +27,6 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 
-  @Schema(description = "Release letter draft content", example = "This is the draft of release letter of " +
-      "Marketplace sprint 43")
-  private String draftContent;
-
   @Schema(description = "Decide whether the created release letter should be the latest", example = "false")
   private boolean isLatest;
 

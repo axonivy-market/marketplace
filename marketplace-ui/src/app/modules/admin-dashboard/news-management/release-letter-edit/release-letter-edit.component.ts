@@ -18,6 +18,7 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
 import { AppModalService } from '../../../../shared/services/app-modal.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
+import { NewsManagementService } from '../news-management.service';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -32,6 +33,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   adminDashboardService = inject(AdminDashboardService);
+  newsManagementService = inject(NewsManagementService);
   appModalService = inject(AppModalService);
   router = inject(Router);
   route = inject(ActivatedRoute);
@@ -52,6 +54,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   isSubmitting = signal<boolean>(false);
   isSavingAsDraft = signal<boolean>(false);
   isInitializing = signal<boolean>(false);
+  isHandlingApiCall = computed(() => this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing());
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
   isBrowser: boolean;
@@ -94,7 +97,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   createReleaseLetter(releaseLetter: ReleaseLetter) {
-    this.adminDashboardService
+    this.newsManagementService
       .createReleaseLetter(releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
@@ -109,7 +112,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   updateReleaseLetter(releaseLetter: ReleaseLetter) {
-    this.adminDashboardService
+    this.newsManagementService
       .updateReleaseLetter(releaseLetter.id, releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
@@ -129,9 +132,8 @@ export class ReleaseLetterEditComponent implements OnInit {
 
     this.isSavingAsDraft.set(true);
     this.releaseLetter.draftContent = this.releaseLetter.content;
-
-    this.adminDashboardService
-      .saveReleaseLetterAsDraft(this.prepareDraftReleaseLetter())
+    this.newsManagementService
+      .saveAsDraft(this.prepareDraftReleaseLetter())
       .pipe(finalize(() => this.isSavingAsDraft.set(false)))
       .subscribe({
         next: _res => {
@@ -179,32 +181,33 @@ export class ReleaseLetterEditComponent implements OnInit {
     this.sprintErrorMessage = null;
   }
 
-  isHandlingApiCall = computed(() => this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing());
-
   loadReleaseLetterWithDraftCheck(id: string) {
     if (this.isHandlingApiCall()) {
       return;
     }
 
     this.isInitializing.set(true);
-    this.adminDashboardService
+    this.newsManagementService
       .getReleaseLetterById(id)
       .pipe(
         switchMap(releaseLetter => {
           this.releaseLetter = releaseLetter;
 
-          return this.adminDashboardService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
+          return this.newsManagementService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
         }),
         finalize(() => this.isInitializing.set(false)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(draft => {
         if (draft !== null) {
-          this.appModalService.openDraftAlertModal().then(useDraft => {
-            if (useDraft) {
-              this.releaseLetter.content = draft.draftContent;
-            }
-          });
+          this.appModalService
+            .openDraftAlertModal()
+            .then(useDraft => {
+              if (useDraft) {
+                this.releaseLetter.content = draft.draftContent;
+              }
+            })
+            .catch(() => {});
         }
       });
   }

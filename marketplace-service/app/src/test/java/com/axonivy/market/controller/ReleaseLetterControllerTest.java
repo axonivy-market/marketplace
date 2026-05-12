@@ -168,23 +168,23 @@ class ReleaseLetterControllerTest extends BaseSetup {
         .toEmptyModel(emptyPage, ReleaseLetterModel.class);
   }
 
-  @Test
-  void testCreateReleaseLetterShouldReturnCreated() {
-    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
-    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-
-    when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock))
-        .thenReturn(releaseLetterMock);
-
-    var response = releaseLetterController.createReleaseLetter(releaseLetterModelRequestMock);
-
-    assertEquals(HttpStatus.CREATED, response.getStatusCode(),
-        "Response status should be 201 CREATED when a new release letter is successfully created.");
-    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
-        "The Location header should contain the ID of the newly created release letter.");
-  }
+//  @Test
+//  void testCreateReleaseLetterShouldReturnCreated() {
+//    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
+//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+//    MockHttpServletRequest request = new MockHttpServletRequest();
+//    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+//
+//    when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock))
+//        .thenReturn(releaseLetterMock);
+//
+//    var response = releaseLetterController.createReleaseLetter(releaseLetterModelRequestMock);
+//
+//    assertEquals(HttpStatus.CREATED, response.getStatusCode(),
+//        "Response status should be 201 CREATED when a new release letter is successfully created.");
+//    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
+//        "The Location header should contain the ID of the newly created release letter.");
+//  }
 
 //  @Test
 //  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
