@@ -8,12 +8,10 @@ import { ProductFeedbackService } from '../../product/product-detail/product-det
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { ActivatedRoute } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
-import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
 import { Feedback } from '../../../shared/models/feedback.model';
-import { HttpErrorResponse } from '@angular/common/http';
 import { FeedbackStatus } from '../../../shared/enums/feedback-status.enum';
 import { MOCK_APPROVED_FEEDBACK } from '../../../shared/mocks/mock-data';
 
@@ -100,7 +98,6 @@ describe('FeedbackApprovalComponent', () => {
       of(updatedFeedback)
     );
 
-    component.moderatorName = 'TestUser';
     vi.spyOn(component, 'fetchFeedbacks');
     component.onClickReviewButton(feedback, true);
 
@@ -120,7 +117,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should switch to history tab when clicked', () => {
-    component.isAuthenticated = true;
     fixture.detectChanges();
 
     const historyTab = fixture.debugElement.query(By.css('#history-tab'));
@@ -144,7 +140,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should pass pending feedbacks to review tab’s FeedbackTableComponent', () => {
-    component.isAuthenticated = true;
     const mockPendingFeedbacks = [{ id: 1, content: 'Great product!' }] as any;
     productFeedbackServiceMock.pendingFeedbacks.set(mockPendingFeedbacks);
     fixture.detectChanges();
@@ -161,7 +156,6 @@ describe('FeedbackApprovalComponent', () => {
   });
 
   it('should pass all feedbacks to history tab’s FeedbackTableComponent', () => {
-    component.isAuthenticated = true;
     const mockAllFeedbacks = [{ id: 2, content: 'Awesome service!' }] as any;
     productFeedbackServiceMock.allFeedbacks.set(mockAllFeedbacks);
     fixture.detectChanges();
@@ -195,84 +189,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(fetchFeedbacksSpy).toHaveBeenCalled();
   });
 
-  it('should handle fetchUserInfo success', () => {
-    const mockUserInfo = {
-      login: 'testuser',
-      name: 'TestUser',
-      avatarUrl: 'https://example.com/avatar.jpg',
-      url: 'https://github.com/testuser',
-      token: 'testToken'
-    };
-    (sessionStorage.getItem as Mock).mockReturnValue(JSON.stringify(mockUserInfo));
-
-    component.fetchUserInfo().subscribe(result => {
-      expect(result).toBe('TestUser');
-      expect(component.isAuthenticated).toBe(true);
-      expect(component.moderatorName).toBe('TestUser');
-    });
-  });
-
-  it('should handle non-unauthorized errors in fetchFeedbacks', () => {
-    const mockUserInfo = {
-      login: 'testuser',
-      name: 'TestUser',
-      avatarUrl: 'https://example.com/avatar.jpg',
-      url: 'https://github.com/testuser',
-      token: 'testToken'
-    };
-    (sessionStorage.getItem as Mock).mockReturnValue(JSON.stringify(mockUserInfo));
-
-    const errorResponse = new HttpErrorResponse({ status: 500 });
-    productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
-      throwError(() => errorResponse)
-    );
-
-    vi.useFakeTimers();
-    component.fetchFeedbacks();
-    vi.runAllTimers();
-
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.FETCH_FAILURE);
-    expect(component.isLoading).toBe(false);
-    vi.useRealTimers();
-  });
-
-  it('should handle unauthorized error in fetchFeedbacks', () => {
-    const mockUserInfo = {
-      login: 'testuser',
-      name: 'TestUser',
-      avatarUrl: 'https://example.com/avatar.jpg',
-      url: 'https://github.com/testuser',
-      token: 'testToken'
-    };
-    (sessionStorage.getItem as Mock).mockReturnValue(JSON.stringify(mockUserInfo));
-
-    const errorResponse = new HttpErrorResponse({ status: 401 });
-    productFeedbackServiceMock.findProductFeedbacks.mockReturnValue(
-      throwError(() => errorResponse)
-    );
-
-    vi.useFakeTimers();
-    component.fetchFeedbacks();
-    vi.runAllTimers();
-
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-    expect(component.isLoading).toBe(false);
-    vi.useRealTimers();
-  });
-
-  it('should return early from fetchFeedbacks if not authenticated', () => {
-    // Mock sessionStorage to return null so authentication fails
-    (sessionStorage.getItem as Mock).mockReturnValue(null);
-    component.isAuthenticated = false;
-
-    vi.useFakeTimers();
-    component.fetchFeedbacks();
-    vi.runAllTimers();
-
-    expect(component.isLoading).toBe(false);
-    vi.useRealTimers();
-  });
-
   it('should toggle between tabs correctly', () => {
     const mockUserInfo = {
       login: 'testuser',
@@ -283,7 +199,6 @@ describe('FeedbackApprovalComponent', () => {
     };
     (sessionStorage.getItem as Mock).mockReturnValue(JSON.stringify(mockUserInfo));
 
-    component.isAuthenticated = true;
     fixture.detectChanges();
 
     const reviewTab = fixture.debugElement.query(By.css('#review-tab'));
@@ -304,16 +219,5 @@ describe('FeedbackApprovalComponent', () => {
       expect(reviewTab.classes['active']).toBe(true);
       expect(historyTab.classes['active']).toBeUndefined();
     }
-  });
-
-  it('should call handleError when fetchUserInfo fails', () => {
-    // Mock sessionStorage to return null - no user info, so it returns EMPTY
-    (sessionStorage.getItem as Mock).mockReturnValue(null);
-
-    component.fetchUserInfo().subscribe({
-      complete: () => {
-        expect(component.moderatorName).toBeUndefined();
-      }
-    });
   });
 });
