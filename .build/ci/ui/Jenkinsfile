@@ -54,11 +54,20 @@ pipeline {
       steps {
         withSonarQubeEnv('Sonar') {
           dir(UI_DIR) {
-            sh '''
-              sonar-scanner \
-                -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
-            '''
+            script {
+              def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+              def sonarArgs = "-Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=\"${SONAR_PROJECT_NAME}\""
+
+              if (env.CHANGE_ID && env.CHANGE_BRANCH && env.CHANGE_TARGET) {
+                sonarArgs += " -Dsonar.pullrequest.key=${env.CHANGE_ID}"
+                sonarArgs += " -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH}"
+                sonarArgs += " -Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
+              } else {
+                sonarArgs += " -Dsonar.branch.name=${gitBranch}"
+              }
+
+              sh "sonar-scanner ${sonarArgs}"
+            }
           }
         }
       }
