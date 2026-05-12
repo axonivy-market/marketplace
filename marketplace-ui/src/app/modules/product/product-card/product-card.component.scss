@@ -20,6 +20,14 @@ img {
   font-size: 14px;
 }
 
+.card__tag--deprecated {
+  background-color: #F973161A;
+  color: #D7610F !important;
+  font-size: 1.4rem;
+  font-weight: 400;
+  border: 1px solid #F9731640;
+}
+
 .card__description {
   font-weight: 400;
   font-size: 16px;
