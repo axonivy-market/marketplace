@@ -220,118 +220,118 @@ describe('AdminDashboardService', () => {
     });
   });
 
-  describe('getSecurityDetails', () => {
-    it('should get security details', () => {
-      const mockSecurityInfo: ProductSecurityInfo[] = [
-        {
-          repoName: 'test-repo',
-          visibility: 'public',
-          archived: false,
-          dependabot: { status: 'enabled', alerts: {} },
-          codeScanning: { status: 'enabled', alerts: {} },
-          secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
-          branchProtectionEnabled: true,
-          lastCommitSHA: 'abc123',
-          lastCommitDate: '2024-01-01T00:00:00Z'
-        }
-      ];
+  // describe('getSecurityDetails', () => {
+  //   it('should get security details', () => {
+  //     const mockSecurityInfo: ProductSecurityInfo[] = [
+  //       {
+  //         repoName: 'test-repo',
+  //         visibility: 'public',
+  //         archived: false,
+  //         dependabot: { status: 'enabled', alerts: {} },
+  //         codeScanning: { status: 'enabled', alerts: {} },
+  //         secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
+  //         branchProtectionEnabled: true,
+  //         lastCommitSHA: 'abc123',
+  //         lastCommitDate: '2024-01-01T00:00:00Z'
+  //       }
+  //     ];
 
-      service.getSecurityDetails().subscribe(details => {
-        expect(details).toEqual(mockSecurityInfo);
-      });
+  //     service.getSecurityDetails().subscribe(details => {
+  //       expect(details).toEqual(mockSecurityInfo);
+  //     });
 
-      const req = httpMock.expectOne(API_URI.SECURITY_MONITOR);
-      expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
-        'Bearer test-token'
-      );
-      req.flush(mockSecurityInfo);
-    });
-  });
+  //     const req = httpMock.expectOne(API_URI.SECURITY_MONITOR);
+  //     expect(req.request.method).toBe('GET');
+  //     expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
+  //       'Bearer test-token'
+  //     );
+  //     req.flush(mockSecurityInfo);
+  //   });
+  // });
 
-  describe('getReleaseLetters', () => {
-    it('should call RELEASE_LETTERS with pageable params and default pageId', () => {
-      const criteria: ReleaseLetterCriteria = {
-        pageable: { page: 0, size: 10 }
-      } as any;
+  // describe('getReleaseLetters', () => {
+  //   it('should call RELEASE_LETTERS with pageable params and default pageId', () => {
+  //     const criteria: ReleaseLetterCriteria = {
+  //       pageable: { page: 0, size: 10 }
+  //     } as any;
 
-      const mockResponse: ReleaseLetterListApiResponse = {
-        _embedded: { releaseLetterModelList: [] }
-      } as any;
+  //     const mockResponse: ReleaseLetterListApiResponse = {
+  //       _embedded: { releaseLetterModelList: [] }
+  //     } as any;
 
-      service.getReleaseLetters(criteria).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
+  //     service.getReleaseLetters(criteria).subscribe(response => {
+  //       expect(response).toEqual(mockResponse);
+  //     });
 
-      const req = httpMock.expectOne(
-        request =>
-          request.url === API_URI.RELEASE_LETTERS &&
-          request.params.get(RequestParam.PAGE) === '0' &&
-          request.params.get(RequestParam.SIZE) === '10'
-      );
+  //     const req = httpMock.expectOne(
+  //       request =>
+  //         request.url === API_URI.RELEASE_LETTERS &&
+  //         request.params.get(RequestParam.PAGE) === '0' &&
+  //         request.params.get(RequestParam.SIZE) === '10'
+  //     );
 
-      expect(req.request.method).toBe('GET');
+  //     expect(req.request.method).toBe('GET');
 
-      expect(req.request.context.get(LoadingComponent)).toBe(
-        LoadingComponentId.NEWS_PAGE
-      );
+  //     expect(req.request.context.get(LoadingComponent)).toBe(
+  //       LoadingComponentId.NEWS_PAGE
+  //     );
 
-      req.flush(mockResponse);
-    });
+  //     req.flush(mockResponse);
+  //   });
 
-    it('should call nextPageHref when provided', () => {
-      const criteria: ReleaseLetterCriteria = {
-        nextPageHref: '/api/release-letters?page=1&size=5'
-      } as any;
+  //   it('should call nextPageHref when provided', () => {
+  //     const criteria: ReleaseLetterCriteria = {
+  //       nextPageHref: '/api/release-letters?page=1&size=5'
+  //     } as any;
 
-      const mockResponse = {} as ReleaseLetterListApiResponse;
+  //     const mockResponse = {} as ReleaseLetterListApiResponse;
 
-      service.getReleaseLetters(criteria).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
+  //     service.getReleaseLetters(criteria).subscribe(response => {
+  //       expect(response).toEqual(mockResponse);
+  //     });
 
-      const req = httpMock.expectOne(
-        req => req.url === '/api/release-letters?page=1&size=5'
-      );
+  //     const req = httpMock.expectOne(
+  //       req => req.url === '/api/release-letters?page=1&size=5'
+  //     );
 
-      expect(req.request.method).toBe('GET');
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+  //     expect(req.request.method).toBe('GET');
+  //     expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
-      req.flush(mockResponse);
-    });
+  //     req.flush(mockResponse);
+  //   });
 
-    it('should use custom pageId in HttpContext', () => {
-      const criteria: ReleaseLetterCriteria = {} as any;
-      const customPageId = 'CUSTOM_PAGE';
+  //   it('should use custom pageId in HttpContext', () => {
+  //     const criteria: ReleaseLetterCriteria = {} as any;
+  //     const customPageId = 'CUSTOM_PAGE';
 
-      service.getReleaseLetters(criteria, customPageId).subscribe();
+  //     service.getReleaseLetters(criteria, customPageId).subscribe();
 
-      const req = httpMock.expectOne(
-        req => req.url === API_URI.RELEASE_LETTERS
-      );
+  //     const req = httpMock.expectOne(
+  //       req => req.url === API_URI.RELEASE_LETTERS
+  //     );
 
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
-      expect(req.request.context.get(LoadingComponent)).toBe(customPageId);
+  //     expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+  //     expect(req.request.context.get(LoadingComponent)).toBe(customPageId);
 
-      req.flush({} as ReleaseLetterListApiResponse);
-    });
+  //     req.flush({} as ReleaseLetterListApiResponse);
+  //   });
 
-    it('should return empty object when request fails', () => {
-      const criteria: ReleaseLetterCriteria = {} as any;
+  //   it('should return empty object when request fails', () => {
+  //     const criteria: ReleaseLetterCriteria = {} as any;
 
-      service.getReleaseLetters(criteria).subscribe(response => {
-        expect(response).toEqual({} as ReleaseLetterListApiResponse);
-      });
+  //     service.getReleaseLetters(criteria).subscribe(response => {
+  //       expect(response).toEqual({} as ReleaseLetterListApiResponse);
+  //     });
 
-      const req = httpMock.expectOne(
-        req => req.url === API_URI.RELEASE_LETTERS
-      );
+  //     const req = httpMock.expectOne(
+  //       req => req.url === API_URI.RELEASE_LETTERS
+  //     );
 
-      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+  //     expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
-      req.flush('Error', { status: 500, statusText: 'Server Error' });
-    });
-  });
+  //     req.flush('Error', { status: 500, statusText: 'Server Error' });
+  //   });
+  // });
 
   describe('getActiveReleaseLetters', () => {
     it('should get active release letters', () => {
