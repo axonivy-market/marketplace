@@ -664,6 +664,30 @@ export class ProductDetailComponent implements AfterViewInit {
     });
   }
 
+  getDeprecationSuccessorUrl(): string | null {
+    const successor = this.productDetail().successor?.trim();
+    if (!successor) return null;
+    try {
+      const url = new URL(successor);
+      return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getDeprecationSuccessorName(): string {
+    const successor = this.productDetail().successor?.trim();
+    if (!successor) return '';
+    try {
+      const url = new URL(successor);
+      if (!['http:', 'https:'].includes(url.protocol)) return successor;
+      const parts = url.pathname.split('/').filter(p => !!p);
+      return decodeURIComponent(parts.at(-1) || url.hostname);
+    } catch {
+      return successor;
+    }
+  }
+
   renderGithubAlert(value: string): SafeHtml {
     const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);

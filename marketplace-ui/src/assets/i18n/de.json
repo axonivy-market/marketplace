@@ -175,7 +175,12 @@
         "contactUs": {
           "label": "Kontakt"
         },
-        "changelog": "Changelog"
+        "changelog": "Changelog",
+        "deprecatedBanner": {
+          "title": "VERALTET",
+          "description": "Diese Erweiterung ist veraltet und wird keine Updates oder Support mehr erhalten. Sie könnte in einer zukünftigen Version entfernt werden.",
+          "recommendedAlternative": "Empfohlene Alternative"
+        }
       }
     },
     "feedback": {

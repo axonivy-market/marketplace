@@ -47,6 +47,8 @@
                   }}
                 </h1>
               </div>
+
+
               <!-- Product review, download count & type bar -->
               <div
                 class="d-flex flex-row align-items-start module-gap default-cursor">
@@ -99,6 +101,36 @@
                 loadDetailTabs($event)
               "></app-product-detail-version-action>
           </div>
+          @if (productDetail().deprecated) {
+            <div class="deprecation-banner d-flex flex-column flex-xl-row justify-content-between align-items-stretch">
+              <div class="deprecation-banner-left d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="ti ti-alert-triangle deprecation-banner-icon"></i>
+                  <span class="deprecation-banner-title" [lang]="languageService.selectedLanguage()">
+                    {{ 'common.product.detail.deprecatedBanner.title' | translate }}
+                  </span>
+                </div>
+                <p class="deprecation-banner-description mb-0" [lang]="languageService.selectedLanguage()">
+                  {{ 'common.product.detail.deprecatedBanner.description' | translate }}
+                </p>
+              </div>
+              @if (productDetail().successor) {
+                <div class="deprecation-banner-divider"></div>
+                <div class="deprecation-banner-right d-flex flex-column justify-content-center">
+                  <span class="deprecation-banner-alternative-label" [lang]="languageService.selectedLanguage()">
+                    {{ 'common.product.detail.deprecatedBanner.recommendedAlternative' | translate }}
+                  </span>
+                  <a
+                    class="deprecation-banner-alternative-link"
+                    [href]="productDetail().successor"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {{ getDeprecationSuccessorName() }} &rarr;
+                  </a>
+                </div>
+              }
+            </div>
+          }
         }
       </div>
 

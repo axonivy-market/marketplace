@@ -175,7 +175,12 @@
         "contactUs": {
           "label": "Contact us"
         },
-        "changelog": "Changelog"
+        "changelog": "Changelog",
+        "deprecatedBanner": {
+          "title": "DEPRECATED",
+          "description": "This extension is deprecated and will no longer receive updates or support. It may be removed in a future release.",
+          "recommendedAlternative": "Recommended alternative"
+        }
       }
     },
     "feedback": {
