@@ -15,14 +15,17 @@ import { ReleaseLetter } from '../../../../shared/models/release-letter-request.
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { AdminDashboardService } from '../../admin-dashboard.service';
 import { AppModalService } from '../../../../shared/services/app-modal.service';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 
 @Component({
   selector: 'app-release-letter-edit',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent, LoadingSpinnerComponent],
   templateUrl: './release-letter-edit.component.html',
   styleUrl: './release-letter-edit.component.scss'
 })
 export class ReleaseLetterEditComponent implements OnInit {
+  protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -192,7 +195,8 @@ export class ReleaseLetterEditComponent implements OnInit {
 
           return this.adminDashboardService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
         }),
-        finalize(() => this.isInitializing.set(false))
+        finalize(() => this.isInitializing.set(false)),
+        // takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(draft => {
         if (draft !== null) {

@@ -250,7 +250,10 @@ export class AdminDashboardService {
     return this.http.get<ReleaseLetterApiResponse>(
       `${API_URI.RELEASE_LETTERS}/${id}`,
       {
-        context: new HttpContext().set(CachingEnabled, false),
+        // context: new HttpContext().set(CachingEnabled, false),
+        context: new HttpContext()
+          .set(LoadingComponent, LoadingComponentId.RELEASE_LETTER_EDIT)
+          .set(CachingEnabled, false),
         headers: this.adminAuth.getAuthHeaders(),
         params
       }
