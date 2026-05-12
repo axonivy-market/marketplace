@@ -75,11 +75,11 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers: this.adminAuthService.getAuthHeaders(),
-        params,
         context: new HttpContext().set(
           LoadingComponent,
           LoadingComponentId.FEEDBACK_APPROVAL
-        )
+        ),
+        params
       })
       .pipe(
         tap(response => {
