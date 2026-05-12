@@ -442,7 +442,7 @@
         "title": "Axon Ivy Market News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
         "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
-        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"
       },

@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, DestroyRef, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,6 +35,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   appModalService = inject(AppModalService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  destroyRef = inject(DestroyRef);
   easyMDE!: EasyMDE;
   selectedId = '';
   selectedSprint = '';
@@ -177,9 +179,7 @@ export class ReleaseLetterEditComponent implements OnInit {
     this.sprintErrorMessage = null;
   }
 
-  isHandlingApiCall() {
-    return this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing();
-  }
+  isHandlingApiCall = computed(() => this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing());
 
   loadReleaseLetterWithDraftCheck(id: string) {
     if (this.isHandlingApiCall()) {
@@ -196,7 +196,7 @@ export class ReleaseLetterEditComponent implements OnInit {
           return this.adminDashboardService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
         }),
         finalize(() => this.isInitializing.set(false)),
-        // takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(draft => {
         if (draft !== null) {

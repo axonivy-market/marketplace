@@ -1,9 +1,9 @@
 <div class="release-letter-edit-container container-fluid">
-  <div class="position-relative">
+  <!-- <div class="position-relative">
     <app-loading-spinner
       containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded overlay-background z-1"
       [key]="LoadingComponentId.RELEASE_LETTER_EDIT" />
-  </div>
+  </div> -->
   <div
     id="back-to-news-management-button"
     [ngClass]="themeService.isDarkMode() ? 'text-light' : 'text-link-blue'"
@@ -68,7 +68,7 @@
       }
       <div>
         <app-markdown-editor
-          [isSubmittingSignal]="isSubmitting"
+          [isCallingApiSignal]="isHandlingApiCall"
           [(contentValue)]="releaseLetter.content!"
           [placeholder]="translateService.get('common.admin.releaseLetterEdit.contentPlaceholder') | async"
           [autosaveId]="releaseLetter.sprint"></app-markdown-editor>
@@ -151,4 +151,7 @@
       }
     </form>
   </div>
+  <app-loading-spinner
+    containerClasses="position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.RELEASE_LETTER_EDIT" />
 </div>
