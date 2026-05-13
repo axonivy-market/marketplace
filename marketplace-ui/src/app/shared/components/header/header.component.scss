@@ -1,5 +1,19 @@
-.navbar {
-  opacity: 0px;
+.header-container {
+  height: 7rem;
+  min-height: 7rem;
+  max-height: 7rem;
+}
+
+::ng-deep .header-offcanvas {
+  top: 7.5rem !important;
+  height: calc(100% - 7.5rem) !important;
+  width: 100vw !important;
+}
+
+::ng-deep .header-offcanvas-backdrop {
+  top: 7.5rem !important;
+  height: calc(100% - 7.5rem) !important;
+  opacity: 0 !important;
 }
 
 .navbar-brand {
@@ -35,8 +49,6 @@
   }
 }
 
-@media all and (max-width: 1200px) {
-  .header__navbar-content {
-    height: 90vh;
-  }
+::ng-deep .gsc-search-box {
+  max-width: 100% !important;
 }

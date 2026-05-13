@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Entity table name constants defining database table names for JPA entity mapping.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EntityConstants {
   public static final String GITHUB_USER = "github_user";
@@ -17,4 +25,5 @@ public class EntityConstants {
   public static final String WORKFLOW_INFORMATION = "workflow_information";
   public static final String SYNC_TASK_EXECUTION = "sync_task";
   public static final String RELEASE_LETTER = "release_letter";
+  public static final String PRODUCT_SECURITY_INFO = "product_security_info";
 }

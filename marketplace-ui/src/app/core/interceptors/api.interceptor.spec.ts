@@ -1,33 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
-import {
-  HttpClient,
-  HttpContext,
-  HttpErrorResponse,
-  HttpHeaders,
-  provideHttpClient,
-  withInterceptors
-} from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting
-} from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { EMPTY, of } from 'rxjs';
+import { of } from 'rxjs';
 import { ProductComponent } from '../../modules/product/product.component';
-import {
-  DESIGNER_SESSION_STORAGE_VARIABLE,
-  ERROR_CODES,
-  ERROR_PAGE_PATH,
-  UNAUTHORIZED
-} from '../../shared/constants/common.constant';
-import {
-  apiInterceptor,
-  ForwardingError,
-  handleHttpError,
-  invalidateGetCache
-} from './api.interceptor';
+import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../../shared/constants/common.constant';
+import { apiInterceptor, CachingEnabled } from './api.interceptor';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
@@ -35,8 +15,6 @@ import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { LoadingService } from '../services/loading/loading.service';
 
 describe('AuthInterceptor', () => {
-  let mockRouter: MockedObject<Router>;
-  let productComponent: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
@@ -66,7 +44,6 @@ describe('AuthInterceptor', () => {
     httpTestingController = TestBed.inject(HttpTestingController);
 
     fixture = TestBed.createComponent(ProductComponent);
-    productComponent = fixture.componentInstance;
     fixture.detectChanges();
   });
 
@@ -156,7 +133,7 @@ describe('AuthInterceptor', () => {
     req.flush({});
   });
 
-  describe('apiInterceptor - non-GET branch', () => {
+  describe('apiInterceptor - CACHING_ENABLED', () => {
     let http: HttpClient;
     let httpMock: HttpTestingController;
 
@@ -169,20 +146,11 @@ describe('AuthInterceptor', () => {
           provideHttpClientTesting(),
           {
             provide: RuntimeConfigService,
-            useValue: { get: () => '/app' } // match real behavior
+            useValue: { get: () => '/app' }
           },
           {
             provide: LoadingService,
-            useValue: {
-              showLoading: () => {},
-              hideLoading: () => {}
-            }
-          },
-          {
-            provide: Router,
-            useValue: {
-              navigate: vi.fn().mockName('Router.navigate')
-            }
+            useValue: { showLoading: () => {}, hideLoading: () => {} }
           }
         ]
       });
@@ -195,19 +163,18 @@ describe('AuthInterceptor', () => {
       httpMock.verify();
     });
 
-    it('should invalidate GET cache when non-GET request succeeds', () => {
+    it('should NOT cache GET response when CachingEnabled is false', () => {
       const transferState = TestBed.inject(TransferState);
-
       const url = 'product';
+      const body = { id: 1 };
+      const context = new HttpContext().set(CachingEnabled, false);
 
-      const key = makeStateKey<any>(`GET ${url}`);
-      transferState.set(key, { old: 'data' });
-
-      http.post(url, { name: 'new' }).subscribe();
+      http.get(url, { context }).subscribe();
 
       const req = httpMock.expectOne('/app/product');
-      req.flush({}, { status: 200, statusText: 'OK' });
+      req.flush(body);
 
+      const key = makeStateKey<any>(`GET ${url}`);
       expect(transferState.hasKey(key)).toBe(false);
     });
   });
@@ -230,140 +197,4 @@ describe('AuthInterceptor', () => {
     expect(transferState.get(key, null)).toEqual(body);
   });
 
-  it('should call handleHttpError and navigate on server error', () => {
-    const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate');
-
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
-
-    http.get('product').subscribe({
-      error: () => {}
-    });
-
-    const req = httpMock.expectOne('/app/product');
-
-    req.flush({}, { status: 500, statusText: 'Server Error' });
-
-    expect(router.navigate).toHaveBeenCalled();
-  });
-
-  it('should remove GET cache when key exists', () => {
-    const transferState = TestBed.inject(TransferState);
-
-    const url = 'product';
-
-    const key = makeStateKey<any>(`GET ${url}`);
-    transferState.set(key, { id: 1 });
-
-    expect(transferState.hasKey(key)).toBe(true);
-    invalidateGetCache(transferState, url);
-    expect(transferState.hasKey(key)).toBe(false);
-  });
-
-  it('should not throw or remove anything when key does not exist', () => {
-    const transferState = TestBed.inject(TransferState);
-
-    const url = 'non-existing';
-
-    const key = makeStateKey<any>(`GET ${url}`);
-
-    expect(transferState.hasKey(key)).toBe(false);
-    invalidateGetCache(transferState, url);
-    expect(transferState.hasKey(key)).toBe(false);
-  });
-
-  describe('apiInterceptor - ForwardingError branch', () => {
-    let http: HttpClient;
-    let httpMock: HttpTestingController;
-
-    beforeEach(() => {
-      TestBed.resetTestingModule();
-
-      TestBed.configureTestingModule({
-        providers: [
-          provideHttpClient(withInterceptors([apiInterceptor])),
-          provideHttpClientTesting(),
-          {
-            provide: RuntimeConfigService,
-            useValue: {
-              get: () => 'http://api'
-            }
-          },
-          {
-            provide: LoadingService,
-            useValue: {
-              showLoading: () => {},
-              hideLoading: () => {}
-            }
-          }
-        ]
-      });
-
-      http = TestBed.inject(HttpClient);
-      httpMock = TestBed.inject(HttpTestingController);
-    });
-
-    afterEach(() => {
-      httpMock.verify(); // ensures no unexpected requests
-    });
-
-    it('should cache GET response when ForwardingError is true', () => {
-      const transferState = TestBed.inject(TransferState);
-
-      const url = 'product';
-      const body = { id: 1 };
-
-      const context = new HttpContext().set(ForwardingError, true);
-
-      http.get(url, { context }).subscribe();
-
-      const req = httpMock.expectOne('http://api/product');
-
-      req.flush(body);
-
-      const key = makeStateKey<unknown>(`GET ${url}`);
-
-      expect(transferState.get(key, null)).toEqual(body);
-    });
-  });
-
-  describe('handleHttpError', () => {
-    beforeEach(() => {
-      mockRouter = {
-        navigate: vi.fn().mockName('Router.navigate')
-      } as MockedObject<Router>;
-    });
-
-    it('should throw error if status is UNAUTHORIZED', async () => {
-      const error = new HttpErrorResponse({ status: UNAUTHORIZED });
-
-      handleHttpError(mockRouter, error).subscribe({
-        error: (err: HttpErrorResponse) => {
-          expect(err).toBe(error);
-          expect(mockRouter.navigate).not.toHaveBeenCalled();
-        }
-      });
-    });
-
-    it('should navigate to specific error page if status is in ERROR_CODES', () => {
-      const error = new HttpErrorResponse({ status: ERROR_CODES[0] });
-
-      const result = handleHttpError(mockRouter, error);
-
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        `${ERROR_PAGE_PATH}/${error.status}`
-      ]);
-      expect(result).toBe(EMPTY);
-    });
-
-    it('should navigate to generic error page if status not in ERROR_CODES', () => {
-      const error = new HttpErrorResponse({ status: 418 });
-
-      const result = handleHttpError(mockRouter, error);
-
-      expect(mockRouter.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
-      expect(result).toBe(EMPTY);
-    });
-  });
 });

@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Meta constants defining metadata file names and default vendor information for products.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nntthuy
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MetaConstants {
   public static final String META_FILE = "meta.json";

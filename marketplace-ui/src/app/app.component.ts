@@ -1,5 +1,6 @@
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { GlobalToastComponent } from './shared/components/global-toast/global-toast.component';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
@@ -18,14 +19,13 @@ import { DocumentRef } from './core/services/browser/document-ref.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, BackToTopComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, BackToTopComponent, GlobalToastComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, AfterViewInit {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
-  isMobileMenuCollapsed = true;
 
   constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) {}
 

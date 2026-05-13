@@ -8,6 +8,7 @@ import {
   AUTHORIZATION_HEADER,
   BEARER,
   FEEDBACK_APPROVAL_STATE,
+  GITHUB_JSON_MEDIA_TYPE,
   TOKEN_KEY
 } from '../shared/constants/common.constant';
 import { WindowRef } from '../core/services/browser/window-ref.service';
@@ -186,7 +187,7 @@ export class AuthService {
   getUserInfo(token: string): Observable<GitHubUser> {
     const headers = new HttpHeaders({
       [AUTHORIZATION_HEADER]: `${BEARER} ${token}`,
-      'Accept': 'application/vnd.github+json'
+      'Accept': GITHUB_JSON_MEDIA_TYPE
     });
     return this.httpClientWithoutInterceptor.get<GitHubUser>(this.userApiUrl, { headers }).pipe(
       map(response => ({

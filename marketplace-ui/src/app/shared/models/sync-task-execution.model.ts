@@ -1,8 +1,8 @@
 import { SyncTaskExecution } from '../../modules/admin-dashboard/admin-dashboard.service';
 
 export interface SyncTaskRow
-  extends Omit<SyncTaskExecution, 'triggeredAt' | 'completedAt'> {
+  extends Omit<SyncTaskExecution, 'lastRunDate' | 'completedDate'> {
   labelKey: string;
-  triggeredAt?: Date;
-  completedAt?: Date;
+  lastRunDate?: Date;
+  completedDate?: Date;
 }

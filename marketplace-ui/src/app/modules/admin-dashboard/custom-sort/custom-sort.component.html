@@ -35,7 +35,7 @@
   <section>
     <div class="table-grid d-grid" [class.loading]="isLoading">
       <app-custom-sort-card
-        [title]="'common.admin.customSort.sortedExtensions' | translate"
+        [title]="'common.admin.customSort.prioritizedExtensions' | translate"
         [badge]="sortingExtensions.length">
         <thead>
           <tr>
@@ -180,6 +180,21 @@
           }
         </tbody>
       </app-custom-sort-card>
+
+      <div class="rule-block border rounded-4 shadow-sm d-flex flex-column">
+        <header
+          class="d-flex justify-content-between align-items-center gap-3 flex-wrap px-4 py-3 border-bottom search-box">
+          <h3 class="text-primary m-0">
+            {{ translateService.get('common.admin.customSort.ruleForRemainder') | async }}
+          </h3>
+
+          <app-common-dropdown
+            [items]="ruleDropdown()"
+            [selectedItem]="remainderRuleLabel | translate"
+            buttonClass="form-select form-select-sm fs-md search-input"
+            (itemSelected)="onSelectSortRule($event.value)" />
+        </header>
+      </div>
     </div>
 
     <div class="d-flex align-items-center gap-3 mt-4 flex-wrap justify-content-start">

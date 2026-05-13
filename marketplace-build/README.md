@@ -1,32 +1,109 @@
-# Get starts with Marketplace build
+# Marketplace Build
 
-### Setup PostgreSQL 
-* Run ``docker pull postgres`` to pull the latest PostgreSQL image and execute ``docker volume create marketplace_service_data`` to create a named volume to persist PostgreSQL data
+Infrastructure and deployment assets for Marketplace.
 
-* Then start a PostgreSQL container with the created volume 
-``docker run --name postgres_container \
-              -e POSTGRES_USER=${POSTGRES_USERNAME} \
-              -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-              -e POSTGRES_DB=${MARKETPLACE_DB} \
-              -d -p 5432:5432 \
-              -v marketplace_service_data:/var/lib/postgresql/data postgres``
+## Current Status
 
-Remember to replace *${POSTGRES_USERNAME}*, *${POSTGRES_PASSWORD}* with the credentials specified in [`marketplace-build/docker-compose.yml`](marketplace-build/docker-compose.yml). Additionally, set *${MARKETPLACE_DB}* to the database name specified in *${POSTGRES_HOST_URL}* within the same file.
+- Active: deployment template stack in `templates/` (nginx + ui + app + stable).
+- Active: optional Matomo stack in `matomo/`.
+- Active: optional local SonarQube stack in `sonar/`.
 
-### Docker build for local environment
-#### Update the PostgreSQL configuration for env
-* Navigate to ``marketplace-build/dev`` and edit ``.env`` base on your postgreSQL configuration
+## Folder Structure
 
-* Navigate to ``marketplace-build/dev``
+```text
+marketplace-build/
+├── README.md
+├── .dockerignore
+├── templates/
+│   ├── docker-compose.yml   # Main deployment template
+│   ├── .env                 # Environment template
+│   └── Dockerfile           # NGINX image for deployment stack
+├── nginx/
+│   └── nginx.conf           # Reverse proxy and cache rules
+├── matomo/
+│   ├── docker-compose.yml   # Optional Matomo stack
+│   ├── .env                 # Matomo credentials (local/dev)
+│   ├── matomo.conf
+│   └── config.ini.php
+└── sonar/
+    ├── docker-compose.yml   # Optional local SonarQube stack
+    ├── init.sh
+    └── init-db.sh
+```
 
-* Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
+## Prerequisites
 
-### Docker release
-To release a new version for marketplace images, please trigger the ``Docker Release`` actions.
-* This GH Actions will trigger the ``Docker build`` on the master branch.
-* Login to GitHub Registry Hub.
-* Deploy new image to packages.
-Please verify the result in the ``Package`` after the build is completed.
+- Docker 24+
+- Docker Compose v2 (`docker compose`)
+- Existing Docker network: `marketplace-network`
+- For Matomo: additional Docker network `market-network`
 
-### Start Docker compose for PROD/SPRINT deployment
-* Navigate to ``marketplace-build/release`` run ``docker-compose up -d`` to clone the docker images from GitHub packages and start the website
+Create networks if they do not exist yet:
+
+```bash
+docker network create marketplace-network || true
+docker network create market-network || true
+```
+
+## Deploy Marketplace Stack (Template)
+
+The main stack is defined in `templates/docker-compose.yml`.
+
+1. Go to the template folder:
+
+```bash
+cd marketplace-build/templates
+```
+
+2. Update `templates/.env` values for your environment.
+
+Important values to verify:
+
+- `RELEASE_VERSION` (image tag for `ghcr.io/axonivy-market/*` images)
+- `POSTGRES_HOST_URL`, `POSTGRES_USERNAME`, `POSTGRES_PASSWORD`
+- `NGINX_PORT`
+- `NGINX_CONFIG_PATH` should point to existing nginx config (recommended: `../nginx/nginx.conf`)
+
+3. Ensure any host-mounted files/paths in `templates/docker-compose.yml` exist on your machine (for example `/home/axonivy/marketplace/data/market-installations.json`).
+
+4. Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+5. Stop the stack:
+
+```bash
+docker compose down
+```
+
+## Start Optional Matomo
+
+```bash
+cd marketplace-build/matomo
+docker compose --env-file .env up -d
+```
+
+Notes:
+
+- `matomo/.env` is intended for local/development usage.
+- Matomo requires both external networks declared in its compose file.
+
+## Start Optional SonarQube (Local)
+
+```bash
+cd marketplace-build/sonar
+docker compose up -d
+```
+
+Notes:
+
+- This stack exposes SonarQube on `http://localhost:9000`.
+- It also binds PostgreSQL to `5432`, which may conflict with another local PostgreSQL.
+
+## Image Release
+
+Marketplace application images (`marketplace-ui`, `marketplace-app`, `marketplace-stable`) are pulled from GitHub Container Registry and tagged by `RELEASE_VERSION`.
+
+Use your CI pipeline (for example, the repository Docker release workflow) to publish new tags, then update `RELEASE_VERSION` in `templates/.env` before redeploying.
