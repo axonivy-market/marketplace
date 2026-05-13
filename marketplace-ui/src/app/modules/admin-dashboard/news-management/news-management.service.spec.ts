@@ -11,6 +11,8 @@ import { API_URI } from '../../../shared/constants/api.constant';
 import { RequestParam } from '../../../shared/enums/request-param';
 import { LoadingComponent } from '../../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
+import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
 
 describe('NewsManagementService', () => {
   let service: NewsManagementService;
@@ -45,6 +47,134 @@ describe('NewsManagementService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  describe('getActiveReleaseLetters', () => {
+    it('should get active release letters', () => {
+      const mockResponse: ReleaseLetterListApiResponse = {
+        _embedded: {
+          releaseLetterModelList: [
+            {
+              sprint: 'S50',
+              createdAt: '2024-02-01T00:00:00Z',
+              content: 'Active release content'
+            } as any
+          ]
+        },
+        _links: {
+          self: { href: '/api/active-release-letters' }
+        }
+      } as any;
+
+      service.getActiveReleaseLetters().subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(req => req.url === API_URI.ACTIVE_RELEASE_LETTERS);
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('createReleaseLetter', () => {
+    it('should create a release letter with ForwardingError context', () => {
+      const releaseLetterRequest: ReleaseLetter = {
+        sprint: 'S51',
+        content: 'New release content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      service.createReleaseLetter(releaseLetterRequest).subscribe(response => {
+        expect(response).toBeNull();
+      });
+
+      const req = httpMock.expectOne(API_URI.RELEASE_LETTERS);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      req.flush(null);
+    });
+  });
+
+  describe('updateReleaseLetter', () => {
+    it('should update release letter by sprint with ForwardingError context', () => {
+      const selectedId = '123';
+
+      const releaseLetterRequest: ReleaseLetter = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      const mockResponse: ReleaseLetterApiResponse = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      service.updateReleaseLetter(selectedId, releaseLetterRequest).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
+
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('getReleaseLetterById', () => {
+    it('should get release letter by id', () => {
+      const id = '123';
+
+      const mockResponse: ReleaseLetterApiResponse = {
+        id,
+        sprint: 'S52',
+        content: 'Sprint 52 release content',
+        createdAt: '2024-02-10T00:00:00Z'
+      } as any;
+
+      service.getReleaseLetterById(id).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${API_URI.RELEASE_LETTERS}/${id}`);
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('deleteReleaseLetterById', () => {
+    it('should delete release letter by id', () => {
+      const id = '123';
+
+      service.deleteReleaseLetterById(id).subscribe(response => {
+        expect(response).toBeNull();
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${id}`);
+
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      req.flush(null);
+    });
   });
 
   describe('getReleaseLetters', () => {
