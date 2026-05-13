@@ -10,7 +10,6 @@ import {
   inject,
   Input,
   model,
-  NgZone,
   Output,
   PLATFORM_ID,
   Signal,
@@ -42,7 +41,7 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { finalize, take } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
 
 const showDevVersionCookieName = 'showDevVersions';
@@ -119,23 +118,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   );
   isCheckedAppForEngine!: boolean;
   isBrowser: boolean;
-  ngZone = inject(NgZone);
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.ngZone.onStable.pipe(take(1)).subscribe(() => {
-        import('bootstrap').then(bs => {
-          const Tooltip = bs.Tooltip;
-          const elements = document.querySelectorAll(
-            '[data-bs-toggle="tooltip"]'
-          );
-          elements.forEach(el => new Tooltip(el));
-        });
-      });
+    if (this.isBrowser) {
+      const bootstrapGlobal = (globalThis as { bootstrap?: { Tooltip?: new (el: Element) => unknown } }).bootstrap;
+      const Tooltip = bootstrapGlobal?.Tooltip;
+      if (!Tooltip) {
+        return;
+      }
+
+      const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      elements.forEach(el => new Tooltip(el));
     }
   }
 
