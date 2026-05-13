@@ -71,7 +71,8 @@ public interface ReleaseLetterService {
    * @return {@link ReleaseLetter} - the updated release letter
    * @author vhhoang
    */
-  ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
+  ReleaseLetter updateReleaseLetter(String id, ReleaseLetterModelRequest releaseLetterModelRequest,
+      String gitHubUserId);
 
   /**
    * <p>

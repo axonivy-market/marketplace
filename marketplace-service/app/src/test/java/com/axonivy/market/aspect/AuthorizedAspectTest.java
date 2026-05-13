@@ -115,9 +115,28 @@ class AuthorizedAspectTest {
   }
 
   @Test
-  void testValidateAuthorizationWhenTokenIsEmptyShouldThrowException() throws Throwable {
+  void testValidateAuthorizationWhenTokenIsNullShouldThrowException() throws Throwable {
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer invalid-token");
     when(jwtService.getRawAccessToken("Bearer invalid-token")).thenReturn(null);
+
+    Oauth2ExchangeCodeException exception = assertThrows(
+        Oauth2ExchangeCodeException.class,
+        () -> authorizedAspect.validateAuthorization(joinPoint, authorized),
+        "Should throw exception when extracted token is null"
+    );
+
+    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
+        "Error code should be BAD_REQUEST when token is null");
+
+    verify(jwtService).getRawAccessToken("Bearer invalid-token");
+    verifyNoInteractions(gitHubService);
+    verify(joinPoint, never()).proceed();
+  }
+
+  @Test
+  void testValidateAuthorizationWhenTokenIsEmptyShouldThrowException() throws Throwable {
+    when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer invalid-token");
+    when(jwtService.getRawAccessToken("Bearer invalid-token")).thenReturn("");
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
@@ -131,20 +150,6 @@ class AuthorizedAspectTest {
     verify(jwtService).getRawAccessToken("Bearer invalid-token");
     verifyNoInteractions(gitHubService);
     verify(joinPoint, never()).proceed();
-  }
-
-  @Test
-  void testValidateAuthorizationWhenTokenIsBlankShouldThrowException() {
-    when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer invalid-token");
-    when(jwtService.getRawAccessToken("Bearer invalid-token")).thenReturn("");
-
-    Oauth2ExchangeCodeException exception = assertThrows(
-        Oauth2ExchangeCodeException.class,
-        () -> authorizedAspect.validateAuthorization(joinPoint, authorized)
-    );
-
-    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
-        "Error code should be BAD_REQUEST when Token is blank");
   }
 
   @Test
