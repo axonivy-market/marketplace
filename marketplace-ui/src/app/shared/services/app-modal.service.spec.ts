@@ -113,7 +113,8 @@ describe('AppModalService', () => {
     expect(modalServiceSpy.open).toHaveBeenCalledWith(
       DeleteReleaseLetterConfirmModalComponent,
       {
-        size: 'lg'
+        size: 'lg',
+        centered: true
       }
     );
 

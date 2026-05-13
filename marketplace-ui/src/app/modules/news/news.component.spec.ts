@@ -9,17 +9,18 @@ import { PageTitleService } from '../../shared/services/page-title.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { of, throwError } from 'rxjs';
+import { NewsManagementService } from '../admin-dashboard/news-management/news-management.service';
 
 describe('NewsComponent', () => {
   let component: NewsComponent;
   let fixture: ComponentFixture<NewsComponent>;
 
-  let mockAdminDashboardService: any;
+  let mockNewsManagementService: any;
   let mockPageTitleService: any;
   let mockMarkdownService: any;
 
   beforeEach(async () => {
-    mockAdminDashboardService = {
+    mockNewsManagementService = {
       getReleaseLetters: vi.fn().mockReturnValue(
         of({
           _embedded: { releaseLetterModelList: [] },
@@ -41,7 +42,7 @@ describe('NewsComponent', () => {
       imports: [NewsComponent, TranslateModule.forRoot()],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },
-        { provide: AdminDashboardService, useValue: mockAdminDashboardService },
+        { provide: NewsManagementService, useValue: mockNewsManagementService },
         TranslateService,
         { provide: PageTitleService, useValue: mockPageTitleService },
         { provide: MarkdownService, useValue: mockMarkdownService },
@@ -166,7 +167,7 @@ describe('NewsComponent', () => {
       }
     };
 
-    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(response));
+    mockNewsManagementService.getReleaseLetters.mockReturnValue(of(response));
 
     component.loadReleaseLetters();
 
@@ -250,7 +251,7 @@ describe('NewsComponent', () => {
   });
 
   it('should return early if response is null', () => {
-    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(null));
+    mockNewsManagementService.getReleaseLetters.mockReturnValue(of(null));
 
     const freshFixture = TestBed.createComponent(NewsComponent);
     const freshComponent = freshFixture.componentInstance;
@@ -265,7 +266,7 @@ describe('NewsComponent', () => {
   it('should handle error from getReleaseLetters', () => {
     const testError = new Error('Test error');
 
-    mockAdminDashboardService.getReleaseLetters.mockReturnValue(
+    mockNewsManagementService.getReleaseLetters.mockReturnValue(
       throwError(() => testError)
     );
 

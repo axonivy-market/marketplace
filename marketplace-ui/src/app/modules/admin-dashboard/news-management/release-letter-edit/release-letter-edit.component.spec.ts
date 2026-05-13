@@ -10,8 +10,8 @@ import {
   SPRINT_CANNOT_BE_BLANK
 } from '../../../../shared/constants/common.constant';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
-import { AdminDashboardService } from '../../admin-dashboard.service';
 import { ReleaseLetterEditComponent } from './release-letter-edit.component';
+import { NewsManagementService } from '../news-management.service';
 
 vi.mock('easymde', () => {
   class FakeEasyMDE {
@@ -58,8 +58,8 @@ const mockResponse = {
 describe('ReleaseLetterEditComponent', () => {
   let component: ReleaseLetterEditComponent;
   let fixture: ComponentFixture<ReleaseLetterEditComponent>;
-
-  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
+  
+  let newsManagementServiceMock: MockedObject<NewsManagementService>;
   let routerMock: MockedObject<Router>;
   let activatedRouteMock: any;
   let pageTitleServiceMock: MockedObject<PageTitleService>;
@@ -70,19 +70,19 @@ describe('ReleaseLetterEditComponent', () => {
       paramMap: of(convertToParamMap({}))
     };
 
-    adminDashboardServiceMock = {
+    newsManagementServiceMock = {
       getReleaseLetterById: vi
         .fn()
-        .mockName('AdminDashboardService.getReleaseLetterById'),
+        .mockName('NewsManagementService.getReleaseLetterById'),
       getReleaseLetterBySprint: vi
         .fn()
-        .mockName('AdminDashboardService.getReleaseLetterBySprint'),
+        .mockName('NewsManagementService.getReleaseLetterBySprint'),
       createReleaseLetter: vi
         .fn()
-        .mockName('AdminDashboardService.createReleaseLetter'),
+        .mockName('NewsManagementService.createReleaseLetter'),
       updateReleaseLetter: vi
         .fn()
-        .mockName('AdminDashboardService.updateReleaseLetter')
+        .mockName('NewsManagementService.updateReleaseLetter')
     } as any;
 
     routerMock = {
@@ -124,7 +124,7 @@ describe('ReleaseLetterEditComponent', () => {
       imports: [ReleaseLetterEditComponent],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },
-        { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
+        { provide: NewsManagementService, useValue: newsManagementServiceMock },
         { provide: Router, useValue: routerMock },
         { provide: PageTitleService, useValue: pageTitleServiceMock },
         { provide: TranslateService, useValue: translateServiceMock },
@@ -154,7 +154,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should initialize in edit mode and load release letter', () => {
-    adminDashboardServiceMock.getReleaseLetterById.mockReturnValue(
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(
       of(mockResponse)
     );
 
@@ -200,7 +200,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should navigate after successful create', () => {
-    adminDashboardServiceMock.createReleaseLetter.mockReturnValue(of(void 0));
+    newsManagementServiceMock.createReleaseLetter.mockReturnValue(of(void 0));
 
     component.createReleaseLetter(component.releaseLetter);
 
@@ -213,7 +213,7 @@ describe('ReleaseLetterEditComponent', () => {
   it('should handle error on create', () => {
     translateServiceMock.instant.mockReturnValue('translated');
 
-    adminDashboardServiceMock.createReleaseLetter.mockReturnValue(
+    newsManagementServiceMock.createReleaseLetter.mockReturnValue(
       throwError(() => ({
         error: { helpCode: 'SOME_ERROR' }
       }))
@@ -226,7 +226,7 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should navigate after successful update', () => {
-    adminDashboardServiceMock.updateReleaseLetter.mockReturnValue(
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(
       of(mockResponse)
     );
 
