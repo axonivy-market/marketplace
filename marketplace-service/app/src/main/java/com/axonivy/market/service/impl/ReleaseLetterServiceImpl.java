@@ -22,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Log4j2

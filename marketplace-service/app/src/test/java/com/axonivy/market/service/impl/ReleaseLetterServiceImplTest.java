@@ -6,6 +6,7 @@ import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
+import com.axonivy.market.repository.ReleaseLetterDraftRepository;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 
 import org.junit.jupiter.api.Test;
@@ -34,9 +35,13 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   private static final String UNIFIED_RELEASE_LETTER_SPRINT_NAME = "DEMO";
   private static final String RELEASE_LETTER_CONTENT_SAMPLE = "Demo content";
   private static final String RELEASE_LETTER_ID_SAMPLE = "release-letter-id";
+  private static final String GITHUB_USER_ID = "123456";
 
   @Mock
   private ReleaseLetterRepository releaseLetterRepository;
+
+  @Mock
+  private ReleaseLetterDraftRepository releaseLetterDraftRepository;
 
   @InjectMocks
   private ReleaseLetterServiceImpl releaseLetterService;
@@ -104,223 +109,235 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     assertEquals(page, result, "Resulting page of latest ReleaseLetters should match repository response");
   }
 
-//  @Test
-//  void testShouldThrowMarketExceptionWhenSprintNameIsEmpty() {
-//    ReleaseLetterModelRequest releaseLetterModelRequestMock = new ReleaseLetterModelRequest();
-//    releaseLetterModelRequestMock.setSprint("   ");
-//
-//    assertThrows(MarketException.class,
-//        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock),
-//        "Expected MarketException to be thrown when sprint name is blank");
-//  }
-//
-//  @Test
-//  void testShouldThrowMarketExceptionWhenSprintNameIsNull() {
-//    ReleaseLetterModelRequest releaseLetterModelRequestMock = new ReleaseLetterModelRequest();
-//    releaseLetterModelRequestMock.setSprint(null);
-//
-//    assertThrows(MarketException.class,
-//            () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock),
-//            "Expected MarketException to be thrown when sprint name is blank");
-//  }
-//
-//  @Test
-//  void testShouldThrowWhenSprintAlreadyExists() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setSprint("S43");
-//
-//    when(releaseLetterRepository.existsBySprint("S43"))
-//        .thenReturn(true);
-//    assertThrows(AlreadyExistedException.class,
-//        () -> releaseLetterService.createReleaseLetter(request),
-//        "Expected AlreadyExistedException to be thrown when sprint name already exists");
-//  }
-//
-//  @Test
-//  void testShouldCreateReleaseLetterSuccessfully() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setSprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
-//    request.setContent("Thanks @john");
-//    request.setLatest(false);
-//
-//    when(releaseLetterRepository.existsBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE.trim().toUpperCase())).thenReturn(
-//        false);
-//    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.createReleaseLetter(request);
-//
-//    assertEquals(UNIFIED_RELEASE_LETTER_SPRINT_NAME, result.getSprint(),
-//        "Result sprint name should be unified to uppercase");
-//    assertEquals("Thanks https://github.com/john", result.getContent(),
-//        "Content should transform GitHub username into GitHub profile link");
-//  }
-//
-//  @Test
-//  void testCreateReleaseLetterShouldSetEmptyContentWhenContentIsNull() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("S45");
-//    request.setContent(null);
-//    request.setLatest(false);
-//
-//    when(releaseLetterRepository.existsBySprint("S45")).thenReturn(false);
-//    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.createReleaseLetter(request);
-//
-//    assertNotNull(result, "Result should not be null");
-//    assertEquals("", result.getContent(),
-//            "Content should be empty string when original content is null");
-//  }
-//
-//  @Test
-//  void testShouldDeactivateOthersWhenLatestIsTrue() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setSprint("S43");
-//    request.setContent("content");
-//    request.setLatest(true);
-//
-//    when(releaseLetterRepository.existsBySprint("S43"))
-//        .thenReturn(false);
-//
-//    releaseLetterService.createReleaseLetter(request);
-//
-//    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S43");
-//  }
+  @Test
+  void testShouldThrowMarketExceptionWhenSprintNameIsEmpty() {
+    ReleaseLetterModelRequest releaseLetterModelRequestMock = new ReleaseLetterModelRequest();
+    releaseLetterModelRequestMock.setSprint("   ");
 
-//  @Test
-//  void testShouldUpdateSuccessfully() {
-//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("S44");
-//    request.setContent("Hello @dev");
-//    request.setLatest(true);
-//
-//    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(releaseLetterMock));
-//    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(false);
-//    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
-//
-//    assertEquals("S44", result.getSprint(), "Result sprint should match requested Sprint");
-//    assertEquals("Hello https://github.com/dev", result.getContent(),
-//            "Result content should have the correct transformed github account link");
-//
-//    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S44");
-//  }
+    assertThrows(MarketException.class,
+        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false),
+        "Expected MarketException to be thrown when sprint name is blank");
+  }
 
-//  @Test
-//  void testUpdateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setSprint("   ");
-//
-//    assertThrows(MarketException.class,
-//        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request),
-//        "Expected MarketException to be thrown when sprint name is blank");
-//
-//    verifyNoInteractions(releaseLetterRepository);
-//  }
+  @Test
+  void testShouldThrowMarketExceptionWhenSprintNameIsNull() {
+    ReleaseLetterModelRequest releaseLetterModelRequestMock = new ReleaseLetterModelRequest();
+    releaseLetterModelRequestMock.setSprint(null);
 
-//  @Test
-//  void testUpdateReleaseLetterShouldThrowAlreadyExistedWhenSprintChangedAndExists() {
-//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("S44");
-//
-//    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(releaseLetterMock));
-//    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(true);
-//
-//    String id = request.getId();
-//    assertThrows(AlreadyExistedException.class,
-//            () -> releaseLetterService.updateReleaseLetter(id, request),
-//            "Expected AlreadyExistedException to be thrown when sprint name already exists");
-//  }
-//
-//  @Test
-//  void testUpdateReleaseLetterShouldUpdateSuccessfullyWhenSprintNotChanged() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("S43");
-//    request.setLatest(false);
-//    request.setContent("Fixed by @john");
-//
-//    ReleaseLetter existing = new ReleaseLetter();
-//    existing.setId(RELEASE_LETTER_ID_SAMPLE);
-//    existing.setSprint("S43");
-//
-//    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
-//    when(releaseLetterRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
-//
-//    assertEquals("S43", result.getSprint(), "Result sprint should match requested Sprint");
-//    assertFalse(result.isLatest(), "Result release letter should not be active");
-//    assertEquals("Fixed by https://github.com/john", result.getContent(),
-//        "Content should transform GitHub username into GitHub profile link");
-//
-//    verify(releaseLetterRepository).findById(request.getId());
-//    verify(releaseLetterRepository).save(existing);
-//  }
-//
-//  @Test
-//  void testUpdateReleaseLetterShouldUpdateSprintWhenSprintChangedAndNotExists() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("s44");
-//    request.setLatest(false);
-//    request.setContent("Reviewed by @alice");
-//
-//    ReleaseLetter existing = new ReleaseLetter();
-//    existing.setId(RELEASE_LETTER_ID_SAMPLE);
-//    existing.setSprint("S43");
-//
-//    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(false);
-//    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
-//    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
-//
-//    assertNotNull(result, "Result should not be null when sprint is successfully changed");
-//    assertEquals("S44", result.getSprint(), "Sprint should be normalized to uppercase and updated");
-//    assertEquals("Reviewed by https://github.com/alice", result.getContent(),
-//        "Content should correctly replace GitHub username with profile link"
-//    );
-//
-//    assertFalse(result.isLatest(), "Latest flag should remain false");
-//
-//    verify(releaseLetterRepository).existsBySprint("S44");
-//    verify(releaseLetterRepository).save(existing);
-//  }
-//
-//  @Test
-//  void testUpdateReleaseLetterShouldDeactivateOthersWhenIsLatestTrue() {
-//    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-//    request.setId(RELEASE_LETTER_ID_SAMPLE);
-//    request.setSprint("S43");
-//    request.setLatest(true);
-//    request.setContent("Thanks @bob");
-//
-//    ReleaseLetter existing = new ReleaseLetter();
-//    existing.setId(RELEASE_LETTER_ID_SAMPLE);
-//    existing.setSprint("S43");
-//
-//    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
-//    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
-//
-//    assertNotNull(result, "Result should not be null when marking release letter as latest");
-//    assertTrue(result.isLatest(), "Latest flag should be updated to true");
-//
-//    assertEquals("Thanks https://github.com/bob", result.getContent(),
-//        "Content should correctly transform GitHub username into link"
-//    );
-//
-//    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S43");
-//    verify(releaseLetterRepository).save(existing);
-//  }
+    assertThrows(MarketException.class,
+        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false),
+        "Expected MarketException to be thrown when sprint name is blank");
+  }
+
+  @Test
+  void testShouldThrowWhenSprintAlreadyExists() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setSprint("S43");
+
+    when(releaseLetterRepository.existsBySprint("S43"))
+        .thenReturn(true);
+    assertThrows(AlreadyExistedException.class,
+        () -> releaseLetterService.createReleaseLetter(request, false),
+        "Expected AlreadyExistedException to be thrown when sprint name already exists");
+  }
+
+  @Test
+  void testShouldCreateReleaseLetterSuccessfully() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setSprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE);
+    request.setContent("Thanks @john");
+    request.setLatest(false);
+
+    when(releaseLetterRepository.existsBySprint(RELEASE_LETTER_SPRINT_NAME_SAMPLE.trim().toUpperCase())).thenReturn(
+        false);
+    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.createReleaseLetter(request, false);
+
+    assertEquals(UNIFIED_RELEASE_LETTER_SPRINT_NAME, result.getSprint(),
+        "Result sprint name should be unified to uppercase");
+    assertEquals("Thanks https://github.com/john", result.getContent(),
+        "Content should transform GitHub username into GitHub profile link");
+  }
+
+  @Test
+  void testCreateReleaseLetterShouldSetEmptyContentWhenContentIsNull() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S45");
+    request.setContent(null);
+    request.setLatest(false);
+
+    when(releaseLetterRepository.existsBySprint("S45")).thenReturn(false);
+    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.createReleaseLetter(request, false);
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals("", result.getContent(),
+        "Content should be empty string when original content is null");
+  }
+
+  @Test
+  void testShouldDeactivateOthersWhenLatestIsTrue() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setSprint("S43");
+    request.setContent("content");
+    request.setLatest(true);
+
+    when(releaseLetterRepository.existsBySprint("S43"))
+        .thenReturn(false);
+
+    releaseLetterService.createReleaseLetter(request, false);
+
+    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S43");
+  }
+
+  @Test
+  void testShouldUpdateSuccessfully() {
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S44");
+    request.setContent("Hello @dev");
+    request.setLatest(true);
+
+    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(releaseLetterMock));
+    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(false);
+    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+
+    assertEquals("S44", result.getSprint(), "Result sprint should match requested Sprint");
+    assertEquals("Hello https://github.com/dev", result.getContent(),
+        "Result content should have the correct transformed github account link");
+
+    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S44");
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    );
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldThrowExceptionWhenSprintIsBlank() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setSprint("   ");
+
+    assertThrows(MarketException.class,
+        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request, GITHUB_USER_ID),
+        "Expected MarketException to be thrown when sprint name is blank");
+
+    verifyNoInteractions(releaseLetterRepository);
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldThrowAlreadyExistedWhenSprintChangedAndExists() {
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S44");
+
+    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(releaseLetterMock));
+    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(true);
+
+    String id = request.getId();
+    assertThrows(AlreadyExistedException.class,
+            () -> releaseLetterService.updateReleaseLetter(id, request, GITHUB_USER_ID),
+            "Expected AlreadyExistedException to be thrown when sprint name already exists");
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldUpdateSuccessfullyWhenSprintNotChanged() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S43");
+    request.setLatest(false);
+    request.setContent("Fixed by @john");
+
+    ReleaseLetter existing = new ReleaseLetter();
+    existing.setId(RELEASE_LETTER_ID_SAMPLE);
+    existing.setSprint("S43");
+
+    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
+    when(releaseLetterRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+
+    assertEquals("S43", result.getSprint(), "Result sprint should match requested Sprint");
+    assertFalse(result.isLatest(), "Result release letter should not be active");
+    assertEquals("Fixed by https://github.com/john", result.getContent(),
+        "Content should transform GitHub username into GitHub profile link");
+
+    verify(releaseLetterRepository).findById(request.getId());
+    verify(releaseLetterRepository).save(existing);
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    );
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldUpdateSprintWhenSprintChangedAndNotExists() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("s44");
+    request.setLatest(false);
+    request.setContent("Reviewed by @alice");
+
+    ReleaseLetter existing = new ReleaseLetter();
+    existing.setId(RELEASE_LETTER_ID_SAMPLE);
+    existing.setSprint("S43");
+
+    when(releaseLetterRepository.existsBySprint("S44")).thenReturn(false);
+    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
+    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+
+    assertNotNull(result, "Result should not be null when sprint is successfully changed");
+    assertEquals("S44", result.getSprint(), "Sprint should be normalized to uppercase and updated");
+    assertEquals("Reviewed by https://github.com/alice", result.getContent(),
+        "Content should correctly replace GitHub username with profile link"
+    );
+
+    assertFalse(result.isLatest(), "Latest flag should remain false");
+
+    verify(releaseLetterRepository).existsBySprint("S44");
+    verify(releaseLetterRepository).save(existing);
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    );
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldDeactivateOthersWhenIsLatestTrue() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S43");
+    request.setLatest(true);
+    request.setContent("Thanks @bob");
+
+    ReleaseLetter existing = new ReleaseLetter();
+    existing.setId(RELEASE_LETTER_ID_SAMPLE);
+    existing.setSprint("S43");
+
+    when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
+    when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+
+    assertNotNull(result, "Result should not be null when marking release letter as latest");
+    assertTrue(result.isLatest(), "Latest flag should be updated to true");
+
+    assertEquals("Thanks https://github.com/bob", result.getContent(),
+        "Content should correctly transform GitHub username into link"
+    );
+
+    verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S43");
+    verify(releaseLetterRepository).save(existing);
+  }
 
   @Test
   void testDeleteReleaseLetterWhenIdExists() {
@@ -330,6 +347,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     releaseLetterService.deleteReleaseLetterById(id);
     verify(releaseLetterRepository).deleteByIdReturningCount(id);
+    verify(releaseLetterDraftRepository).deleteByReleaseLetterId(id);
   }
 
   @Test
@@ -338,8 +356,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     when(releaseLetterRepository.deleteByIdReturningCount(id)).thenReturn(0);
     assertThrows(NotFoundException.class,
-            () -> releaseLetterService.deleteReleaseLetterById(id),
-            "Expected NotFoundException to be thrown when id does not exist");
+        () -> releaseLetterService.deleteReleaseLetterById(id),
+        "Expected NotFoundException to be thrown when id does not exist");
 
     verify(releaseLetterRepository).deleteByIdReturningCount(id);
   }

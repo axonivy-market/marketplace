@@ -40,6 +40,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
   private static final String RELEASE_LETTER_SPRINT_NAME_SAMPLE = "DEMO";
   private static final String RELEASE_LETTER_CONTENT_SAMPLE = "Demo content";
   private static final String RELEASE_LETTER_ID_SAMPLE = "release-letter-id";
+  private static final String GITHUB_USER_ID = "123456";
 
   @Mock
   private ReleaseLetterService releaseLetterService;
@@ -173,8 +174,8 @@ class ReleaseLetterControllerTest extends BaseSetup {
   void testCreateReleaseLetterShouldReturnCreated() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockRequest));
 
     when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false))
         .thenReturn(releaseLetterMock);
@@ -190,15 +191,14 @@ class ReleaseLetterControllerTest extends BaseSetup {
   @Test
   void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
     String sprint = "S43";
-    String gitHubUserId = "123456";
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
 
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     ReleaseLetterModel model = new ReleaseLetterModel();
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(gitHubUserId);
-    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock, gitHubUserId))
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(GITHUB_USER_ID);
+    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock, GITHUB_USER_ID))
         .thenReturn(releaseLetterMock);
     when(releaseLetterModelAssembler.toModel(releaseLetterMock))
         .thenReturn(model);

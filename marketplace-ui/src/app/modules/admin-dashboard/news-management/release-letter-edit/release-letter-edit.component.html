@@ -111,34 +111,6 @@
           <span>Submit</span>
         </button>
       </div>
-      <!-- <button
-        id="save-as-draft-button"
-        type="button"
-        class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
-        [disabled]="isSubmitting()"
-        [lang]="languageService.selectedLanguage()">
-        @if (isSubmitting()) {
-          <div class="spinner-border spinner-border-sm" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        }
-        <span>Save as Draft</span>
-      </button>
-      <button
-        id="submit-button"
-        type="submit"
-        class="mt-4 btn border-0 submit-button text-center d-flex align-items-center justify-content-center"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
-        [disabled]="isSubmitting()"
-        [lang]="languageService.selectedLanguage()">
-        @if (isSubmitting()) {
-          <div class="spinner-border spinner-border-sm" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        }
-        <span>Submit</span>
-      </button> -->
       @if (genericErrorMessage !== null && genericErrorMessage !== '') {
         <p id="generic-error-message">
           {{ genericErrorMessage }}
