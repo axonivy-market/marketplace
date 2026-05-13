@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.*;
 
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.model.UserInfo;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,9 +64,18 @@ class AuthorizedAspectTest {
   
   @Test
   void testAuthorizedSuccess() throws Throwable {
+    UserInfo mockUser = new UserInfo();
+    mockUser.setUsername("test-user");
+
     when(authorized.scope()).thenReturn(Authorized.AuthorizationScope.ORGANIZATION_TEAM);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer valid-token");
     when(jwtService.getRawAccessToken("Bearer valid-token")).thenReturn("valid-token");
+    when(gitHubService.validateUserInOrganizationAndTeam(
+        "valid-token",
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME
+    )).thenReturn(mockUser);
+
     when(joinPoint.proceed()).thenReturn("success");
     
     Object result = authorizedAspect.validateAuthorization(joinPoint, authorized);

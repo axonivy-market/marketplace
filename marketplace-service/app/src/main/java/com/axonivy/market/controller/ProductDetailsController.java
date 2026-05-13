@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
@@ -34,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -207,7 +209,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
-  @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
+  @Authorized
+  @PutMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   @Operation(summary = "Sync latest releases from GitHub for all products",
       description = "Sync latest releases from GitHub for all products")
   public void syncLatestReleasesForProducts() throws IOException {

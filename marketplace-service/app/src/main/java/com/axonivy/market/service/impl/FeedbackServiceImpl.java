@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -112,10 +113,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
+  @Transactional
+  public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval, String moderatorName) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         .map((Feedback existingFeedback) -> {
-          applyUpdatesToFeedback(feedbackApproval, existingFeedback);
+          applyUpdatesToFeedback(feedbackApproval, existingFeedback, moderatorName);
 
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
@@ -123,7 +125,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         ));
   }
 
-  private void applyUpdatesToFeedback(FeedbackApprovalModel feedbackApproval, Feedback existingFeedback) {
+  private void applyUpdatesToFeedback(FeedbackApprovalModel feedbackApproval, Feedback existingFeedback,
+      String moderatorName) {
     boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
     var newStatus = FeedbackStatus.REJECTED;
     if (isApproved) {
@@ -139,7 +142,7 @@ public class FeedbackServiceImpl implements FeedbackService {
       }
     }
     existingFeedback.setFeedbackStatus(newStatus);
-    existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
+    existingFeedback.setModeratorName(moderatorName);
     existingFeedback.setReviewDate(LocalDateTime.now());
     if (isApproved) {
       existingFeedback.setIsLatest(true);

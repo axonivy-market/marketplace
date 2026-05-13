@@ -63,9 +63,13 @@ export class AdminDashboardService {
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
-    return this.http.get<void>(`${API_URI.PRODUCT_DETAILS}/sync-release-notes`, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
+    return this.http.put<void>(
+      `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
+      null,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 
   syncZipArtifacts(resetSync = false, productId = ''): Observable<SyncTaskExecution> {

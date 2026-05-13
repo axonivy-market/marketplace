@@ -30,6 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
+  public static final String USERNAME_ATTRIBUTE = "username";
   public static final String GITHUB_USER_ID_ATTRIBUTE = "gitHubUserId";
 
   private final JwtService jwtService;
@@ -58,13 +59,18 @@ public class AuthorizedAspect {
     if (ObjectUtils.isEmpty(token)) {
       throw throwInvalidAuthorizationException();
     }
-
     if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
       var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
-          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-          GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-      request.setAttribute(GITHUB_USER_ID_ATTRIBUTE, userInfo.getGitHubId());
+      var username = userInfo.getUsername();
+      var gitHubUserId = userInfo.getGitHubId();
+      if (StringUtils.isBlank(username) || StringUtils.isBlank(gitHubUserId)) {
+        throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
+      }
+      request.setAttribute(USERNAME_ATTRIBUTE, username);
+      request.setAttribute(GITHUB_USER_ID_ATTRIBUTE, gitHubUserId);
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);
