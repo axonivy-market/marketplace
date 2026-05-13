@@ -17,7 +17,9 @@ vi.mock('easymde', () => {
   class FakeEasyMDE {
     codemirror = {
       setOption() {},
-      getCursor() { return { line: 0, ch: 0 }; },
+      getCursor() {
+        return { line: 0, ch: 0 };
+      },
       setCursor() {},
       getWrapperElement() {
         const container = document.createElement('div');
@@ -37,7 +39,9 @@ vi.mock('easymde', () => {
     private _value = '';
     constructor(public config: any) {}
     value(val?: string): any {
-      if (val !== undefined) { this._value = val; }
+      if (val !== undefined) {
+        this._value = val;
+      }
       return this._value;
     }
     toTextArea() {}
@@ -58,7 +62,7 @@ const mockResponse = {
 describe('ReleaseLetterEditComponent', () => {
   let component: ReleaseLetterEditComponent;
   let fixture: ComponentFixture<ReleaseLetterEditComponent>;
-  
+
   let newsManagementServiceMock: MockedObject<NewsManagementService>;
   let routerMock: MockedObject<Router>;
   let activatedRouteMock: any;
@@ -71,18 +75,10 @@ describe('ReleaseLetterEditComponent', () => {
     };
 
     newsManagementServiceMock = {
-      getReleaseLetterById: vi
-        .fn()
-        .mockName('NewsManagementService.getReleaseLetterById'),
-      getReleaseLetterBySprint: vi
-        .fn()
-        .mockName('NewsManagementService.getReleaseLetterBySprint'),
-      createReleaseLetter: vi
-        .fn()
-        .mockName('NewsManagementService.createReleaseLetter'),
-      updateReleaseLetter: vi
-        .fn()
-        .mockName('NewsManagementService.updateReleaseLetter')
+      getReleaseLetterById: vi.fn().mockName('NewsManagementService.getReleaseLetterById'),
+      getReleaseLetterBySprint: vi.fn().mockName('NewsManagementService.getReleaseLetterBySprint'),
+      createReleaseLetter: vi.fn().mockName('NewsManagementService.createReleaseLetter'),
+      updateReleaseLetter: vi.fn().mockName('NewsManagementService.updateReleaseLetter')
     } as any;
 
     routerMock = {
@@ -114,9 +110,7 @@ describe('ReleaseLetterEditComponent', () => {
     });
 
     pageTitleServiceMock = {
-      setTitleOnLangChange: vi
-        .fn()
-        .mockName('PageTitleService.setTitleOnLangChange')
+      setTitleOnLangChange: vi.fn().mockName('PageTitleService.setTitleOnLangChange')
     } as any;
     // End of mocking TranslateService
 
@@ -148,15 +142,11 @@ describe('ReleaseLetterEditComponent', () => {
     fixture.detectChanges();
 
     expect(component.isCreateMode).toBe(true);
-    expect(pageTitleServiceMock.setTitleOnLangChange).toHaveBeenCalledWith(
-      'common.admin.newsManagement.pageTitle'
-    );
+    expect(pageTitleServiceMock.setTitleOnLangChange).toHaveBeenCalledWith('common.admin.newsManagement.pageTitle');
   });
 
   it('should initialize in edit mode and load release letter', () => {
-    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(
-      of(mockResponse)
-    );
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(of(mockResponse));
 
     activatedRouteMock.paramMap = of(convertToParamMap({ id: '123' }));
 
@@ -179,9 +169,7 @@ describe('ReleaseLetterEditComponent', () => {
     component.onSubmit(event);
 
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(component.createReleaseLetter).toHaveBeenCalledWith(
-      component.releaseLetter
-    );
+    expect(component.createReleaseLetter).toHaveBeenCalledWith(component.releaseLetter);
   });
 
   it('should call updateReleaseLetter in edit mode', () => {
@@ -194,9 +182,7 @@ describe('ReleaseLetterEditComponent', () => {
 
     component.onSubmit(event);
 
-    expect(component.updateReleaseLetter).toHaveBeenCalledWith(
-      component.releaseLetter
-    );
+    expect(component.updateReleaseLetter).toHaveBeenCalledWith(component.releaseLetter);
   });
 
   it('should navigate after successful create', () => {
@@ -204,9 +190,7 @@ describe('ReleaseLetterEditComponent', () => {
 
     component.createReleaseLetter(component.releaseLetter);
 
-    expect(routerMock.navigate).toHaveBeenCalledWith([
-      '/internal-dashboard/news-management'
-    ]);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/internal-dashboard/news-management']);
     expect(component.isSubmitting()).toBe(false);
   });
 
@@ -226,15 +210,11 @@ describe('ReleaseLetterEditComponent', () => {
   });
 
   it('should navigate after successful update', () => {
-    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(
-      of(mockResponse)
-    );
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(of(mockResponse));
 
     component.updateReleaseLetter(component.releaseLetter);
 
-    expect(routerMock.navigate).toHaveBeenCalledWith([
-      '/internal-dashboard/news-management'
-    ]);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/internal-dashboard/news-management']);
   });
 
   it('should set sprint error for blank sprint', () => {
@@ -248,9 +228,7 @@ describe('ReleaseLetterEditComponent', () => {
   it('should set sprint error for existing sprint', () => {
     translateServiceMock.instant.mockReturnValue('exists error');
 
-    component.handleError(
-      RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString()
-    );
+    component.handleError(RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString());
 
     expect(component.sprintErrorMessage).toBe('exists error');
   });
@@ -266,9 +244,7 @@ describe('ReleaseLetterEditComponent', () => {
   it('should navigate back to news management', () => {
     component.onClickingBackToNewsManagementButton();
 
-    expect(routerMock.navigate).toHaveBeenCalledWith([
-      '/internal-dashboard/news-management'
-    ]);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/internal-dashboard/news-management']);
   });
 
   it('should reset sprint error message on version change', () => {
