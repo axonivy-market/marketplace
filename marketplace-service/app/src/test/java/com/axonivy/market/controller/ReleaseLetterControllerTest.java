@@ -1,11 +1,13 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,8 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReleaseLetterControllerTest extends BaseSetup {
@@ -168,44 +169,47 @@ class ReleaseLetterControllerTest extends BaseSetup {
         .toEmptyModel(emptyPage, ReleaseLetterModel.class);
   }
 
-//  @Test
-//  void testCreateReleaseLetterShouldReturnCreated() {
-//    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
-//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-//    MockHttpServletRequest request = new MockHttpServletRequest();
-//    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-//
-//    when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock))
-//        .thenReturn(releaseLetterMock);
-//
-//    var response = releaseLetterController.createReleaseLetter(releaseLetterModelRequestMock);
-//
-//    assertEquals(HttpStatus.CREATED, response.getStatusCode(),
-//        "Response status should be 201 CREATED when a new release letter is successfully created.");
-//    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
-//        "The Location header should contain the ID of the newly created release letter.");
-//  }
+  @Test
+  void testCreateReleaseLetterShouldReturnCreated() {
+    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-//  @Test
-//  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
-//    String sprint = "S43";
-//    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
-//
-//    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-//    ReleaseLetterModel model = new ReleaseLetterModel();
-//
-//    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock))
-//        .thenReturn(releaseLetterMock);
-//    when(releaseLetterModelAssembler.toModel(releaseLetterMock))
-//        .thenReturn(model);
-//
-//    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock);
-//
-//    assertEquals(HttpStatus.OK, response.getStatusCode(),
-//        "Response status should be 200 OK when a release letter is successfully updated.");
-//    assertTrue(response.hasBody(),
-//        "Response should contain a body after updating release letter.");
-//  }
+    when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false))
+        .thenReturn(releaseLetterMock);
+
+    var response = releaseLetterController.createReleaseLetter(releaseLetterModelRequestMock);
+
+    assertEquals(HttpStatus.CREATED, response.getStatusCode(),
+        "Response status should be 201 CREATED when a new release letter is successfully created.");
+    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
+        "The Location header should contain the ID of the newly created release letter.");
+  }
+
+  @Test
+  void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
+    String sprint = "S43";
+    String gitHubUserId = "123456";
+    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
+
+    ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    ReleaseLetterModel model = new ReleaseLetterModel();
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(gitHubUserId);
+    when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock, gitHubUserId))
+        .thenReturn(releaseLetterMock);
+    when(releaseLetterModelAssembler.toModel(releaseLetterMock))
+        .thenReturn(model);
+
+    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock, mockRequest);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when a release letter is successfully updated.");
+    assertTrue(response.hasBody(),
+        "Response should contain a body after updating release letter.");
+  }
 
   @Test
   void testFindAllReleaseLettersShouldUseToModelWithoutContentWhenPagingDisabled() {

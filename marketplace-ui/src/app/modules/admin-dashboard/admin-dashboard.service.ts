@@ -44,7 +44,11 @@ export class AdminDashboardService {
     );
   }
 
-  syncOneProduct(id: string, marketItemPath: string, overrideMarketItemPath = false): Observable<SyncTaskExecution> {
+  syncOneProduct(
+    id: string, 
+    marketItemPath: string, 
+    overrideMarketItemPath = false
+  ): Observable<SyncTaskExecution> {
     const params = new HttpParams()
       .set(RequestParam.MARKET_ITEM_PATH, marketItemPath)
       .set(RequestParam.OVERRIDE_MARKET_ITEM_PATH, overrideMarketItemPath);
@@ -111,7 +115,10 @@ export class AdminDashboardService {
     });
   }
 
-  sortMarketExtensions(orderedList: string[], remainderRule = 'alphabetically'): Observable<void> {
+  sortMarketExtensions(
+    orderedList: string[], 
+    remainderRule = 'alphabetically'
+  ): Observable<void> {
     const body = {
       orderedListOfProducts: orderedList,
       ruleForRemainder: remainderRule
@@ -129,11 +136,15 @@ export class AdminDashboardService {
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
       headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      context: new HttpContext().set(
+        LoadingComponent, 
+        LoadingComponentId.SECURITY_MONITOR
+      )
     });
   }
 
-  searchSecurityDetails(criteria: SecurityMonitorCriteria): Observable<SecurityMonitorApiResponse> {
+  searchSecurityDetails(criteria: SecurityMonitorCriteria): 
+    Observable<SecurityMonitorApiResponse> {
     let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
       .set(RequestParam.SIZE, `${criteria.pageable.size}`)
@@ -144,10 +155,12 @@ export class AdminDashboardService {
       params = params.set(RequestParam.SEARCH, criteria.searchText);
     }
 
-    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, {
-      params,
-      headers: this.adminAuth.getAuthHeaders(),
-      context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
-    });
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, 
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders(),
+        context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
+      }
+    );
   }
 }

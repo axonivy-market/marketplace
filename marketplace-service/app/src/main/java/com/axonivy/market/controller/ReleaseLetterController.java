@@ -5,8 +5,6 @@ import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
-import com.axonivy.market.model.ExternalDocumentModel;
-import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
@@ -152,20 +150,6 @@ public class ReleaseLetterController {
     var model = ReleaseLetterDraftModel.from(releaseLetterDraft);
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
-
-//  @Authorized
-//  @PutMapping(SAVE_AS_DRAFT_BY_ID)
-//  @Operation(hidden = true)
-//  public ResponseEntity<ReleaseLetterModel> saveAsDraftById(
-//      @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
-//          in = ParameterIn.PATH) String id,
-//      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-//    var updatedReleaseLetter = releaseLetterService.saveAsDraftById(id, releaseLetterModelRequest);
-//    var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
-//    releaseLetterResource.add(
-//        linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
-//    return ResponseEntity.ok(releaseLetterResource);
-//  }
 
   @Authorized
   @DeleteMapping(BY_ID)
