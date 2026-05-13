@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
@@ -387,6 +388,162 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     assertEquals(1, result.getSize(), "Page size should equal list size");
     assertEquals(1, result.getTotalElements(), "Total elements should equal list size");
     assertEquals(list, result.getContent(), "Page content should match repository result");
+  }
+
+  @Test
+  void testSaveAsDraftShouldCreateReleaseLetterWhenReleaseLetterDoesNotExist() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("s45");
+    request.setDraftContent("Draft by @john");
+
+    ReleaseLetter createdReleaseLetter = new ReleaseLetter();
+    createdReleaseLetter.setId(RELEASE_LETTER_ID_SAMPLE);
+    createdReleaseLetter.setSprint("S45");
+
+    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE)).thenReturn(Optional.empty());
+    when(releaseLetterRepository.existsBySprint("S45")).thenReturn(false);
+    when(releaseLetterRepository.save(any(ReleaseLetter.class))).thenReturn(createdReleaseLetter);
+    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(Optional.empty());
+    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+
+    assertNotNull(result, "Saved draft result should not be null");
+    assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
+        "Release letter id should match created release letter");
+    assertEquals(GITHUB_USER_ID, result.getGitHubUserId(),
+        "GitHub user id should match requested user");
+    assertEquals("Draft by https://github.com/john", result.getDraftContent(),
+        "Draft content should transform GitHub username into profile link");
+
+    verify(releaseLetterRepository).findById(RELEASE_LETTER_ID_SAMPLE);
+    verify(releaseLetterRepository).save(any(ReleaseLetter.class));
+    verify(releaseLetterDraftRepository).save(any(ReleaseLetterDraft.class));
+  }
+
+  @Test
+  void testSaveAsDraftShouldUpdateExistingDraftWhenDraftAlreadyExists() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S43");
+    request.setDraftContent("Updated by @alice");
+
+    ReleaseLetter existingReleaseLetter = createReleaseLetterMock();
+
+    ReleaseLetterDraft existingDraft = new ReleaseLetterDraft();
+    existingDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
+    existingDraft.setGitHubUserId(GITHUB_USER_ID);
+    existingDraft.setDraftContent("Old draft");
+
+    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
+        .thenReturn(Optional.of(existingReleaseLetter));
+    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(Optional.of(existingDraft));
+    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+
+    assertNotNull(result, "Updated draft result should not be null");
+    assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
+        "Release letter id should remain unchanged");
+    assertEquals("Updated by https://github.com/alice", result.getDraftContent(),
+        "Draft content should be updated and transformed correctly");
+
+    verify(releaseLetterRepository).findById(RELEASE_LETTER_ID_SAMPLE);
+    verify(releaseLetterDraftRepository).save(existingDraft);
+  }
+
+  @Test
+  void testSaveAsDraftShouldThrowMarketExceptionWhenSprintIsBlank() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setSprint("   ");
+
+    assertThrows(MarketException.class,
+        () -> releaseLetterService.saveAsDraft(request, GITHUB_USER_ID),
+        "Expected MarketException to be thrown when sprint is blank");
+
+    verifyNoInteractions(releaseLetterRepository);
+    verifyNoInteractions(releaseLetterDraftRepository);
+  }
+
+  @Test
+  void testGetDraftContentByGitHubUserIdAndReleaseLetterIdShouldReturnDraftWhenExists() {
+    ReleaseLetterDraft existingDraft = new ReleaseLetterDraft();
+    existingDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
+    existingDraft.setGitHubUserId(GITHUB_USER_ID);
+    existingDraft.setDraftContent("Draft content");
+
+    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(Optional.of(existingDraft));
+
+    ReleaseLetterDraft result =
+        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
+            GITHUB_USER_ID,
+            RELEASE_LETTER_ID_SAMPLE
+        );
+
+    assertNotNull(result, "Returned draft should not be null");
+    assertEquals("Draft content", result.getDraftContent(),
+        "Draft content should match repository result");
+
+    verify(releaseLetterDraftRepository)
+        .findByGitHubUserIdAndReleaseLetterId(GITHUB_USER_ID, RELEASE_LETTER_ID_SAMPLE);
+  }
+
+  @Test
+  void testGetDraftContentByGitHubUserIdAndReleaseLetterIdShouldReturnNullWhenDraftDoesNotExist() {
+    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(Optional.empty());
+
+    ReleaseLetterDraft result =
+        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
+            GITHUB_USER_ID,
+            RELEASE_LETTER_ID_SAMPLE
+        );
+
+    assertNull(result, "Result should be null when draft does not exist");
+
+    verify(releaseLetterDraftRepository)
+        .findByGitHubUserIdAndReleaseLetterId(GITHUB_USER_ID, RELEASE_LETTER_ID_SAMPLE);
+  }
+
+  @Test
+  void testSaveAsDraftShouldSetEmptyDraftContentWhenDraftContentIsNull() {
+    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
+    request.setId(RELEASE_LETTER_ID_SAMPLE);
+    request.setSprint("S43");
+    request.setDraftContent(null);
+
+    ReleaseLetter existingReleaseLetter = createReleaseLetterMock();
+
+    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
+        .thenReturn(Optional.of(existingReleaseLetter));
+
+    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(Optional.empty());
+
+    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+
+    assertNotNull(result, "Saved draft result should not be null");
+    assertEquals("", result.getDraftContent(),
+        "Draft content should be empty string when original draft content is null");
   }
 
   private ReleaseLetter createReleaseLetterMock() {
