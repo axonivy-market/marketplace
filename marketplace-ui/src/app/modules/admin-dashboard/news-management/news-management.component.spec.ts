@@ -6,7 +6,6 @@ import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminDashboardService } from '../admin-dashboard.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
@@ -16,7 +15,6 @@ describe('NewsManagementComponent', () => {
   let component: NewsManagementComponent;
   let fixture: ComponentFixture<NewsManagementComponent>;
 
-  let adminDashboardServiceMock: any;
   let newsManagementServiceMock: any;
   let appModalServiceMock: any;
   let pageTitleServiceMock: any;
@@ -48,10 +46,6 @@ describe('NewsManagementComponent', () => {
   };
 
   beforeEach(async () => {
-    adminDashboardServiceMock = {
-      getReleaseLetters: vi.fn().mockReturnValue(of(mockResponse))
-    };
-
     newsManagementServiceMock = {
       getReleaseLetters: vi.fn().mockReturnValue(of(mockResponse))
     };
@@ -77,7 +71,6 @@ describe('NewsManagementComponent', () => {
         { provide: PLATFORM_ID, useValue: 'browser' },
         { provide: ActivatedRoute, useValue: {} },
         { provide: Router, useValue: routerMock },
-        { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
         { provide: NewsManagementService, useValue: newsManagementServiceMock },
         { provide: AppModalService, useValue: appModalServiceMock },
         { provide: PageTitleService, useValue: pageTitleServiceMock }
@@ -101,7 +94,6 @@ describe('NewsManagementComponent', () => {
       'common.admin.newsManagement.pageTitle'
     );
 
-    // expect(adminDashboardServiceMock.getReleaseLetters).toHaveBeenCalled();
     expect(newsManagementServiceMock.getReleaseLetters).toHaveBeenCalled();
   });
 
@@ -154,7 +146,6 @@ describe('NewsManagementComponent', () => {
       appModalServiceMock.openDeleteReleaseLetterConfirmModal
     ).toHaveBeenCalledWith(mockReleaseLetters[0]);
 
-    // expect(adminDashboardServiceMock.getReleaseLetters).toHaveBeenCalled();
     expect(newsManagementServiceMock.getReleaseLetters).toHaveBeenCalled();
 
     expect(component.releaseLetterList()).toEqual(mockReleaseLetters);
@@ -171,7 +162,6 @@ describe('NewsManagementComponent', () => {
   });
 
   it('should do nothing if backend response is null', () => {
-    // adminDashboardServiceMock.getReleaseLetters.mockReturnValue(of(null));
     newsManagementServiceMock.getReleaseLetters.mockReturnValue(of(null));
 
     component.releaseLetterList.set([]);
