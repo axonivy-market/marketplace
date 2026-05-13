@@ -4,6 +4,8 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.entity.ReleaseLetterDraft;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
@@ -28,8 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -184,7 +185,8 @@ class ReleaseLetterControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode(),
         "Response status should be 201 CREATED when a new release letter is successfully created.");
-    assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
+    assertTrue(
+        Objects.requireNonNull(response.getHeaders().getLocation()).toString().contains(releaseLetterMock.getId()),
         "The Location header should contain the ID of the newly created release letter.");
   }
 
@@ -240,13 +242,105 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "Response body should match paged model returned by assembler.");
 
     verify(releaseLetterService).findAllReleaseLetters(pageable, isPaging);
-    verify(pagedResourcesAssembler).toModel(eq(page),any(RepresentationModelAssembler.class));
+    verify(pagedResourcesAssembler).toModel(eq(page), any(RepresentationModelAssembler.class));
   }
 
   @Test
   void testDeleteReleaseLetterShouldCallService() {
     releaseLetterController.deleteReleaseLetter(RELEASE_LETTER_ID_SAMPLE);
     verify(releaseLetterService).deleteReleaseLetterById(RELEASE_LETTER_ID_SAMPLE);
+  }
+
+  @Test
+  void testSaveAsDraftShouldReturnDraftSuccessfully() {
+    ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
+
+    ReleaseLetterDraft releaseLetterDraft = new ReleaseLetterDraft();
+    releaseLetterDraft.setId("draft-id");
+    releaseLetterDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
+    releaseLetterDraft.setDraftContent(RELEASE_LETTER_CONTENT_SAMPLE);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(GITHUB_USER_ID);
+    when(releaseLetterService.saveAsDraft(releaseLetterModelRequestMock, GITHUB_USER_ID))
+        .thenReturn(releaseLetterDraft);
+
+    ResponseEntity<ReleaseLetterDraft> response =
+        releaseLetterController.saveAsDraft(releaseLetterModelRequestMock, mockRequest);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when saving draft succeeds.");
+    assertNotNull(response.getBody(),
+        "Response body should contain the saved draft.");
+    assertEquals(releaseLetterDraft, response.getBody(),
+        "Response body should match the saved draft returned from service.");
+    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    verify(releaseLetterService)
+        .saveAsDraft(releaseLetterModelRequestMock, GITHUB_USER_ID);
+  }
+
+  @Test
+  void testGetDraftShouldReturnDraftModelWhenDraftExists() {
+    ReleaseLetterDraft releaseLetterDraft = new ReleaseLetterDraft();
+    releaseLetterDraft.setId("draft-id");
+    releaseLetterDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
+    releaseLetterDraft.setDraftContent(RELEASE_LETTER_CONTENT_SAMPLE);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
+        .thenReturn(GITHUB_USER_ID);
+
+    when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(releaseLetterDraft);
+
+    ResponseEntity<ReleaseLetterDraftModel> response =
+        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, mockRequest);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when draft exists.");
+    assertNotNull(response.getBody(),
+        "Response body should contain the draft model when draft exists.");
+    assertEquals(releaseLetterDraft.getId(), response.getBody().getId(),
+        "Draft model ID should match the draft entity ID.");
+    assertEquals(releaseLetterDraft.getReleaseLetterId(), response.getBody().getReleaseLetterId(),
+        "Release letter ID should match the draft entity.");
+    assertEquals(releaseLetterDraft.getDraftContent(), response.getBody().getDraftContent(),
+        "Draft content should match the draft entity.");
+    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    verify(releaseLetterService)
+        .getDraftContentByGitHubUserIdAndReleaseLetterId(
+            GITHUB_USER_ID,
+            RELEASE_LETTER_ID_SAMPLE
+        );
+  }
+
+  @Test
+  void testGetDraftShouldReturnNullBodyWhenDraftDoesNotExist() {
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
+        .thenReturn(GITHUB_USER_ID);
+    when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
+        GITHUB_USER_ID,
+        RELEASE_LETTER_ID_SAMPLE
+    )).thenReturn(null);
+
+    ResponseEntity<ReleaseLetterDraftModel> response =
+        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, mockRequest);
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when no draft exists.");
+    assertNull(response.getBody(),
+        "Response body should be null when no draft exists.");
+    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    verify(releaseLetterService)
+        .getDraftContentByGitHubUserIdAndReleaseLetterId(
+            GITHUB_USER_ID,
+            RELEASE_LETTER_ID_SAMPLE
+        );
   }
 
   private ReleaseLetter createReleaseLetterMock() {
