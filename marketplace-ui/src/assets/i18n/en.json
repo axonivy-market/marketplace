@@ -4,7 +4,9 @@
     "language": {
       "english": "English",
       "french": "Français",
-      "german": "Deutsch"
+      "german": "Deutsch",
+      "yes": "Yes",
+      "no": "No"
     },
     "team": {
       "title": "Meet Team Octopus",
@@ -465,7 +467,8 @@
         "delete": "Delete",
         "cancel": "Cancel",
         "warning": "Warning",
-        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint",
+        "draftAlertMessage": "You have unfinished draft for this release letter. Do you want to continue editing it?"
       },
       "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",

@@ -4,7 +4,7 @@
   </div>
   <div class="modal-body">
     <div class="p-0 release-letter-content">
-        You have unfinished draft for this release letter. Do you want to continue editing it?
+      {{ translateService.get('common.admin.newsManagement.draftAlertMessage') | async }}
     </div>
     <div class="modal-footer">
       <button
@@ -13,9 +13,9 @@
         [lang]="languageService.selectedLanguage()"
         class="btn border-0 mb-0 me-2"
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'">
-        Yes
+        {{ translateService.get('common.language.yes') | async }}
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Close</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">{{ translateService.get('common.language.no') | async }}</button>
     </div>
   </div>
 </div>
