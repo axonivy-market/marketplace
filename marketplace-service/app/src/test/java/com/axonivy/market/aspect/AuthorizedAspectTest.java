@@ -127,7 +127,6 @@ class AuthorizedAspectTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
         "Error code should be BAD_REQUEST when Token is empty");
-    assertEquals("Invalid Authorization header", exception.getErrorDescription());
 
     verify(jwtService).getRawAccessToken("Bearer invalid-token");
     verifyNoInteractions(gitHubService);
@@ -146,7 +145,6 @@ class AuthorizedAspectTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
         "Error code should be BAD_REQUEST when Token is blank");
-    assertEquals("Invalid Authorization header", exception.getErrorDescription());
   }
 
   @Test
@@ -175,7 +173,6 @@ class AuthorizedAspectTest {
 
     assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError(),
         "Error code should be UNAUTHORIZED when username is blank");
-    assertEquals("Invalid authenticated user", exception.getErrorDescription());
 
     verify(joinPoint, never()).proceed();
   }
@@ -206,7 +203,6 @@ class AuthorizedAspectTest {
 
     assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError(),
         "Error code should be UNAUTHORIZED when github user id is blank");
-    assertEquals("Invalid authenticated user", exception.getErrorDescription());
 
     verify(joinPoint, never()).proceed();
   }

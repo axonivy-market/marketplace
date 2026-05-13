@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ReleaseLetterDraftModelTest {
   @Test
-  void shouldBuildReleaseLetterDraftModelFromEntity() {
+  void testShouldBuildReleaseLetterDraftModelFromEntity() {
     ReleaseLetterDraft releaseLetterDraft = new ReleaseLetterDraft();
     releaseLetterDraft.setId("draft-id");
     releaseLetterDraft.setReleaseLetterId("release-letter-id");
@@ -25,7 +25,7 @@ public class ReleaseLetterDraftModelTest {
   }
 
   @Test
-  void shouldCreateModelUsingBuilder() {
+  void testShouldCreateModelUsingBuilder() {
     ReleaseLetterDraftModel model = ReleaseLetterDraftModel.builder()
         .id("id")
         .releaseLetterId("release-id")
@@ -41,7 +41,7 @@ public class ReleaseLetterDraftModelTest {
   }
 
   @Test
-  void shouldCreateModelUsingAllArgsConstructor() {
+  void testShouldCreateModelUsingAllArgsConstructor() {
     ReleaseLetterDraftModel model =
         new ReleaseLetterDraftModel("id", "release-id", "content");
 
@@ -54,7 +54,7 @@ public class ReleaseLetterDraftModelTest {
   }
 
   @Test
-  void shouldSetAndGetValues() {
+  void testShouldSetAndGetValues() {
     ReleaseLetterDraftModel model = new ReleaseLetterDraftModel();
 
     model.setId("id");
