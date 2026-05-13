@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NewsComponent } from './news.component';
 import { ElementRef, PLATFORM_ID } from '@angular/core';
-import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
