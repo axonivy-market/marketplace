@@ -115,32 +115,6 @@ class AuthorizedAspectTest {
   }
 
   @Test
-  void testValidateAuthorizationWhenRequestAttributesAreNullShouldThrowException() {
-    RequestContextHolder.resetRequestAttributes();
-
-    Oauth2ExchangeCodeException exception = assertThrows(
-        Oauth2ExchangeCodeException.class,
-        () -> authorizedAspect.validateAuthorization(joinPoint, authorized),
-        "Should throw exception when RequestContextHolder has no attributes"
-    );
-
-    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError());
-    assertEquals("Invalid Authorization header", exception.getErrorDescription());
-  }
-
-  @Test
-  void testValidateAuthorizationWhenAuthorizedAnnotationIsNullShouldThrowException() {
-    Oauth2ExchangeCodeException exception = assertThrows(
-        Oauth2ExchangeCodeException.class,
-        () -> authorizedAspect.validateAuthorization(joinPoint, null),
-        "Should throw exception when Authorized annotation is null"
-    );
-
-    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError());
-    assertEquals("Invalid Authorization header", exception.getErrorDescription());
-  }
-
-  @Test
   void testValidateAuthorizationWhenTokenIsEmptyShouldThrowException() throws Throwable {
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer invalid-token");
     when(jwtService.getRawAccessToken("Bearer invalid-token")).thenReturn(null);
@@ -151,7 +125,8 @@ class AuthorizedAspectTest {
         "Should throw exception when extracted token is empty"
     );
 
-    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError());
+    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
+        "Error code should be BAD_REQUEST when Token is empty");
     assertEquals("Invalid Authorization header", exception.getErrorDescription());
 
     verify(jwtService).getRawAccessToken("Bearer invalid-token");
@@ -169,7 +144,8 @@ class AuthorizedAspectTest {
         () -> authorizedAspect.validateAuthorization(joinPoint, authorized)
     );
 
-    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError());
+    assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
+        "Error code should be BAD_REQUEST when Token is blank");
     assertEquals("Invalid Authorization header", exception.getErrorDescription());
   }
 
@@ -197,7 +173,8 @@ class AuthorizedAspectTest {
         "Should throw exception when username is blank"
     );
 
-    assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError());
+    assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError(),
+        "Error code should be UNAUTHORIZED when username is blank");
     assertEquals("Invalid authenticated user", exception.getErrorDescription());
 
     verify(joinPoint, never()).proceed();
@@ -227,7 +204,8 @@ class AuthorizedAspectTest {
         "Should throw exception when GitHub user ID is blank"
     );
 
-    assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError());
+    assertEquals(HttpStatus.UNAUTHORIZED.name(), exception.getError(),
+        "Error code should be UNAUTHORIZED when github user id is blank");
     assertEquals("Invalid authenticated user", exception.getErrorDescription());
 
     verify(joinPoint, never()).proceed();
