@@ -66,6 +66,7 @@ class AuthorizedAspectTest {
   void testAuthorizedSuccess() throws Throwable {
     UserInfo mockUser = new UserInfo();
     mockUser.setUsername("test-user");
+    mockUser.setGitHubId("123456");
 
     when(authorized.scope()).thenReturn(Authorized.AuthorizationScope.ORGANIZATION_TEAM);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer valid-token");
