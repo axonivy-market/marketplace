@@ -95,7 +95,7 @@ public interface ReleaseLetterService {
    * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data to be stored as draft
    *                                  content
    * @param gitHubUserId              type {@link String} - the GitHub user id that owns the draft
-   * @return {@link ReleaseLetterDraft} - the persisted draft after the save operation
+   * @return {@link ReleaseLetterDraftModel} - the persisted draft after the save operation
    * @author vhhoang
    */
   ReleaseLetterDraftModel saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);

@@ -16,11 +16,6 @@ public interface ReleaseLetterDraftRepository extends JpaRepository<ReleaseLette
       String releaseLetterId
   );
 
-  boolean existsByGitHubUserIdAndReleaseLetterId(
-      String githubUserId,
-      String releaseLetterId
-  );
-
   void deleteByReleaseLetterId(String releaseLetterId);
 
   @Modifying
