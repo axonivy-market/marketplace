@@ -368,10 +368,9 @@ export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
 export const ADMIN_SESSION_TOKEN = 'admin-session-token';
 export const GITHUB_USER = 'github-user';
-
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
-
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
+export const GITHUB_JSON_MEDIA_TYPE = 'application/vnd.github+json';
 
 // Breakpoint constants
 export const LARGE_BREAKPOINT = 992;
