@@ -43,7 +43,6 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
-import { Tooltip } from 'bootstrap';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
