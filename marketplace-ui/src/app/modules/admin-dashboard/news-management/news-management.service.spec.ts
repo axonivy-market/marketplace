@@ -154,7 +154,6 @@ describe('NewsManagementService', () => {
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
-
       expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush(mockResponse);
@@ -280,7 +279,6 @@ describe('NewsManagementService', () => {
 
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(releaseLetterRequest);
-
       expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
 
       req.flush(mockResponse);
