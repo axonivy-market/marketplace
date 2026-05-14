@@ -38,14 +38,24 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private final ReleaseLetterDraftRepository releaseLetterDraftRepository;
   private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
+//  @Override
+//  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
+//    if (!isReadOnly) {
+//      return new PageImpl<>(releaseLetterRepository.findAll(defaultSorting));
+//    }
+//
+//    Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSorting);
+//    return releaseLetterRepository.findAll(sortedPageable);
+//  }
+
   @Override
   public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
     if (!isReadOnly) {
-      return new PageImpl<>(releaseLetterRepository.findAll(defaultSorting));
+      return new PageImpl<>(releaseLetterRepository.findAllWithContent(defaultSorting));
     }
 
     Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSorting);
-    return releaseLetterRepository.findAll(sortedPageable);
+    return releaseLetterRepository.findAllWithContent(sortedPageable);
   }
 
   @Override

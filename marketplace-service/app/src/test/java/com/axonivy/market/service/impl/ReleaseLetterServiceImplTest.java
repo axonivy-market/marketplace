@@ -51,17 +51,18 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testShouldUseDefaultSortingWhenNotSorted() {
     PageRequest pageable = PageRequest.of(0, 10);
-    boolean isPaging = true;
+    boolean isReadOnly = true;
+
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
-    when(releaseLetterRepository.findAll(any(Pageable.class)))
-        .thenReturn(page);
+    when(releaseLetterRepository.findAllWithContent(any(Pageable.class))).thenReturn(page);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
 
     ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-    verify(releaseLetterRepository).findAll(captor.capture());
+
+    verify(releaseLetterRepository).findAllWithContent(captor.capture());
 
     Pageable usedPageable = captor.getValue();
 
@@ -69,7 +70,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
         "Sort order should not be null");
     assertEquals(Sort.Direction.DESC,
         Objects.requireNonNull(usedPageable.getSort().getOrderFor("createdAt")).getDirection(),
-        "Sort order should be createAt");
+        "Sort order should be createdAt DESC");
     assertEquals(1, result.getTotalElements(), "Total elements in page should be 1");
     assertEquals(1, result.getContent().size(), "Content list size should be 1");
   }
@@ -367,24 +368,23 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testFindAllReleaseLettersShouldReturnSinglePageWhenPagingDisabled() {
     Pageable pageable = PageRequest.of(5, 1);
-    boolean isPaging = false;
+    boolean isReadOnly = false;
 
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     List<ReleaseLetter> list = List.of(releaseLetterMock);
 
-    when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(list);
+    when(releaseLetterRepository.findAllWithContent(any(Sort.class))).thenReturn(list);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
-
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
     ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
-    verify(releaseLetterRepository).findAll(sortCaptor.capture());
+
+    verify(releaseLetterRepository).findAllWithContent(sortCaptor.capture());
 
     Sort usedSort = sortCaptor.getValue();
     Sort.Order order = usedSort.getOrderFor("createdAt");
 
     assertNotNull(order, "Sort should contain 'createdAt' property");
     assertEquals(Sort.Direction.DESC, order.getDirection(), "Sort direction should be DESC");
-
     assertEquals(0, result.getNumber(), "Page number should always be 0 when paging disabled");
     assertEquals(1, result.getSize(), "Page size should equal list size");
     assertEquals(1, result.getTotalElements(), "Total elements should equal list size");
