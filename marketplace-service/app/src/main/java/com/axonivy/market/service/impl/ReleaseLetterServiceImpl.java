@@ -38,16 +38,6 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   private final ReleaseLetterDraftRepository releaseLetterDraftRepository;
   private final Sort defaultSorting = Sort.by(Sort.Direction.DESC, "createdAt");
 
-//  @Override
-//  public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
-//    if (!isReadOnly) {
-//      return new PageImpl<>(releaseLetterRepository.findAll(defaultSorting));
-//    }
-//
-//    Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSorting);
-//    return releaseLetterRepository.findAll(sortedPageable);
-//  }
-
   @Override
   public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
     if (!isReadOnly) {
@@ -115,7 +105,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
       releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
     }
 
-    deleteDraftByGitHubUserIdAndReleaseLetterId(gitHubUserId,id);
+    deleteDraftByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }
