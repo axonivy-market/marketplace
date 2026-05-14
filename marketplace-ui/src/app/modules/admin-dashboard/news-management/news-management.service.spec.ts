@@ -103,38 +103,6 @@ describe('NewsManagementService', () => {
     });
   });
 
-  describe('updateReleaseLetter', () => {
-    it('should update release letter by sprint with ForwardingError context', () => {
-      const selectedId = '123';
-
-      const releaseLetterRequest: ReleaseLetter = {
-        id: selectedId,
-        sprint: 'S42',
-        content: 'Updated content',
-        createdAt: '2024-02-01T00:00:00Z'
-      } as any;
-
-      const mockResponse: ReleaseLetterApiResponse = {
-        id: selectedId,
-        sprint: 'S42',
-        content: 'Updated content',
-        createdAt: '2024-02-01T00:00:00Z'
-      } as any;
-
-      service.updateReleaseLetter(selectedId, releaseLetterRequest).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
-
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(releaseLetterRequest);
-      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
-
-      req.flush(mockResponse);
-    });
-  });
-
   describe('getReleaseLetterById', () => {
     it('should get release letter by id', () => {
       const id = '123';

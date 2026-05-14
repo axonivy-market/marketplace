@@ -27,8 +27,7 @@ public interface ReleaseLetterService {
    * Retrieves a single release letter by its unique identifier from the database.
    * </p>
    *
-   * @param id
-   *              type {@link String} - the unique identifier of the release letter
+   * @param id type {@link String} - the unique identifier of the release letter
    * @return {@link ReleaseLetter} - the release letter
    * @author vhhoang
    */
@@ -39,8 +38,7 @@ public interface ReleaseLetterService {
    * Retrieves a paginated list of the latest release letters marked as latest from the database.
    * </p>
    *
-   * @param pageable
-   *              type {@link Pageable} - pagination and sorting information
+   * @param pageable type {@link Pageable} - pagination and sorting information
    * @return {@link Page<ReleaseLetter>} - a page of the latest release letters
    * @author vhhoang
    */
@@ -86,9 +84,42 @@ public interface ReleaseLetterService {
    */
   void deleteReleaseLetterById(String id);
 
+  /**
+   * <p>
+   * Saves the provided release letter content as a draft for the given GitHub user. This operation writes draft
+   * data to the persistence layer and may create a new draft entry or update an existing one for the same user.
+   * </p>
+   *
+   * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data to be stored as draft
+   *                                  content
+   * @param gitHubUserId              type {@link String} - the GitHub user id that owns the draft
+   * @return {@link ReleaseLetterDraft} - the persisted draft after the save operation
+   * @author vhhoang
+   */
   ReleaseLetterDraftModel saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
 
+  /**
+   * <p>
+   * Retrieves draft content for the given GitHub user and release letter identifier. If no matching draft exists,
+   * this method returns {@code null}.
+   * </p>
+   *
+   * @param gitHubUserId    type {@link String} - the GitHub user id that owns the draft
+   * @param releaseLetterId type {@link String} - the release letter identifier associated with the draft
+   * @return {@link ReleaseLetterDraft} - the matching draft, or {@code null} if no draft exists
+   * @author vhhoang
+   */
   ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 
+  /**
+   * <p>
+   * Deletes the draft associated with the given GitHub user and release letter identifier. This operation removes
+   * the matching draft from the persistence layer. If no matching draft exists, the operation has no effect.
+   * </p>
+   *
+   * @param gitHubUserId    type {@link String} - the GitHub user id that owns the draft
+   * @param releaseLetterId type {@link String} - the release letter identifier associated with the draft
+   * @author vhhoang
+   */
   void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 }
