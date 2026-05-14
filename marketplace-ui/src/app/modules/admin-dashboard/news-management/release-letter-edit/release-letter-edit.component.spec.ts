@@ -438,4 +438,57 @@ describe('ReleaseLetterEditComponent', () => {
 
     expect(component.releaseLetter.draftContent).toBe('draft content');
   });
+
+  it('should set sprintCannotBeBlank error message when help code is SPRINT_CANNOT_BE_BLANK', () => {
+    translateServiceMock.instant.mockReturnValue('sprint cannot be blank');
+
+    component.handleError(SPRINT_CANNOT_BE_BLANK.toString());
+
+    expect(translateServiceMock.instant).toHaveBeenCalledWith(
+      'common.admin.releaseLetterEdit.sprintCannotBeBlankErrorMessage'
+    );
+    expect(component.sprintErrorMessage).toBe('sprint cannot be blank');
+    expect(component.genericErrorMessage).toBeNull();
+  });
+
+  it('should set sprintAlreadyExists error message when help code is RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED', () => {
+    translateServiceMock.instant.mockReturnValue('sprint already exists');
+
+    component.handleError(RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString());
+
+    expect(translateServiceMock.instant).toHaveBeenCalledWith(
+      'common.admin.releaseLetterEdit.sprintAlreadyExistsErrorMessage'
+    );
+    expect(component.sprintErrorMessage).toBe('sprint already exists');
+    expect(component.genericErrorMessage).toBeNull();
+  });
+
+  it('should set generic error message for unknown help code', () => {
+    translateServiceMock.instant.mockReturnValue('generic error');
+
+    component.handleError('UNKNOWN_ERROR');
+
+    expect(translateServiceMock.instant).toHaveBeenCalledWith('common.admin.releaseLetterEdit.genericErrorMessage');
+    expect(component.genericErrorMessage).toBe('generic error');
+  });
+
+  it('should overwrite previous sprint error when unknown error occurs', () => {
+    component.sprintErrorMessage = 'old sprint error';
+
+    translateServiceMock.instant.mockReturnValue('generic error');
+
+    component.handleError('UNKNOWN_ERROR');
+
+    expect(component.genericErrorMessage).toBe('generic error');
+  });
+
+  it('should overwrite previous generic error when sprint blank error occurs', () => {
+    component.genericErrorMessage = 'old generic error';
+
+    translateServiceMock.instant.mockReturnValue('blank sprint error');
+
+    component.handleError(SPRINT_CANNOT_BE_BLANK.toString());
+
+    expect(component.sprintErrorMessage).toBe('blank sprint error');
+  });
 });
