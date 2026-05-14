@@ -1800,4 +1800,43 @@ describe('ProductDetailComponent', () => {
 
     expect(spy).toHaveBeenCalledWith('demo', true, true);
   });
+
+  describe('getDeprecationSuccessorName', () => {
+    it('should return empty string when successor is empty string', () => {
+      component.productDetail.set({ ...MOCK_PRODUCT_DETAIL, successor: '' });
+      expect(component.getDeprecationSuccessorName()).toBe('');
+    });
+
+    it('should return last path segment for a valid URL', () => {
+      component.productDetail.set({
+        ...MOCK_PRODUCT_DETAIL,
+        successor: 'https://market.axonivy.com/portal'
+      });
+      expect(component.getDeprecationSuccessorName()).toBe('portal');
+    });
+
+    it('should return decoded last path segment for an encoded URL', () => {
+      component.productDetail.set({
+        ...MOCK_PRODUCT_DETAIL,
+        successor: 'https://market.axonivy.com/my%20connector'
+      });
+      expect(component.getDeprecationSuccessorName()).toBe('my connector');
+    });
+
+    it('should return hostname when URL has no path segments', () => {
+      component.productDetail.set({
+        ...MOCK_PRODUCT_DETAIL,
+        successor: 'https://market.axonivy.com'
+      });
+      expect(component.getDeprecationSuccessorName()).toBe('market.axonivy.com');
+    });
+
+    it('should handle URL with trailing slash', () => {
+      component.productDetail.set({
+        ...MOCK_PRODUCT_DETAIL,
+        successor: 'https://market.axonivy.com/portal/'
+      });
+      expect(component.getDeprecationSuccessorName()).toBe('portal');
+    });
+  });
 });

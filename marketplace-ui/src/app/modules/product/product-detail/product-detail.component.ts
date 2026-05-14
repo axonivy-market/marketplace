@@ -659,10 +659,11 @@ export class ProductDetailComponent implements AfterViewInit {
 
   getDeprecationSuccessorName(): string {
     const successor = this.productDetail().successor?.trim();
-    if (!successor) return '';
+    if (!successor) {
+      return '';
+    }
     try {
       const url = new URL(successor);
-      if (!['http:', 'https:'].includes(url.protocol)) return successor;
       const parts = url.pathname.split('/').filter(p => !!p);
       return decodeURIComponent(parts.at(-1) || url.hostname);
     } catch {
