@@ -52,6 +52,8 @@ public interface ReleaseLetterService {
    *
    * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data containing sprint,
    *                                  content, and latest flag
+   * @param isDraft                   indicates whether the release letter should be saved
+   *                                  as a draft
    * @return {@link ReleaseLetter} - the created release letter
    * @author vhhoang
    */

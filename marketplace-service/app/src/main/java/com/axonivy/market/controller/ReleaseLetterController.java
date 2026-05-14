@@ -135,6 +135,7 @@ public class ReleaseLetterController {
 
   @Authorized
   @GetMapping(DRAFT_BY_ID)
+  @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterDraftModel> getDraft(
       @PathVariable String id,
       HttpServletRequest request
