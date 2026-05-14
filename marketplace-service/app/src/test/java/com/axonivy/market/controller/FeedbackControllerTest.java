@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
@@ -36,6 +37,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -197,11 +199,16 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
-    when(service.updateFeedbackWithNewStatus(feedbackApproval)).thenReturn(updatedFeedback);
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, MODERATOR_NAME);
+
+    when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
 
-    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
+    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, request);
 
+    verify(service).updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME);
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when feedback status is successfully updated.");
     assertTrue(result.hasBody(),
@@ -210,6 +217,8 @@ class FeedbackControllerTest extends BaseSetup {
         "The feedback ID in the response should match the updated feedback ID.");
     assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus(),
         "The feedback status should be APPROVED after updating.");
+    assertEquals(MODERATOR_NAME, result.getBody().getModeratorName(),
+        "The result moderator name should match the moderator name from the request.");
   }
 
   @Test
@@ -238,8 +247,8 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
     mockFeedback.setFeedbackStatus(FeedbackStatus.APPROVED);
-    mockFeedback.setModeratorName("Admin");
     mockFeedback.setReviewDate(LocalDateTime.now());
+    mockFeedback.setModeratorName(MODERATOR_NAME);
     return mockFeedback;
   }
 
