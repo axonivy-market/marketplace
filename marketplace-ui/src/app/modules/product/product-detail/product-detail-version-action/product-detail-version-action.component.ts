@@ -43,6 +43,7 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
+import { Tooltip } from 'bootstrap';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
@@ -125,12 +126,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     if (this.isBrowser) {
-      const bootstrapGlobal = (globalThis as { bootstrap?: { Tooltip?: new (el: Element) => unknown } }).bootstrap;
-      const Tooltip = bootstrapGlobal?.Tooltip;
-      if (!Tooltip) {
-        return;
-      }
-
       const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       elements.forEach(el => new Tooltip(el));
     }
