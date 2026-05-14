@@ -105,7 +105,6 @@ export class ReleaseLetterEditComponent implements OnInit {
           this.router.navigate([this.newsManangementUrl]);
         },
         error: err => {
-          console.log(err);
           this.handleError(err.error.helpCode);
         }
       });
