@@ -13,6 +13,7 @@ import { LoadingComponent } from '../../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
+import { fail } from 'assert';
 
 describe('NewsManagementService', () => {
   let service: NewsManagementService;
@@ -250,6 +251,82 @@ describe('NewsManagementService', () => {
       expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
 
       req.flush('Error', { status: 500, statusText: 'Server Error' });
+    });
+  });
+
+  describe('updateReleaseLetter', () => {
+    it('should update release letter by id', () => {
+      const selectedId = '123';
+
+      const releaseLetterRequest: ReleaseLetter = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      const mockResponse: ReleaseLetterApiResponse = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content',
+        createdAt: '2024-02-01T00:00:00Z'
+      } as any;
+
+      service.updateReleaseLetter(selectedId, releaseLetterRequest).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
+
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      req.flush(mockResponse);
+    });
+
+    it('should propagate error when update release letter fails', () => {
+      const selectedId = '123';
+
+      const releaseLetterRequest: ReleaseLetter = {
+        id: selectedId,
+        sprint: 'S42',
+        content: 'Updated content'
+      } as any;
+
+      const mockError = {
+        status: 500,
+        statusText: 'Server Error'
+      };
+
+      service.updateReleaseLetter(selectedId, releaseLetterRequest).subscribe({
+        next: () => {
+          fail('Expected request to fail');
+        },
+        error: error => {
+          expect(error.status).toBe(500);
+          expect(error.statusText).toBe('Server Error');
+        }
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
+
+      expect(req.request.method).toBe('PUT');
+
+      req.flush('Error updating release letter', mockError);
+    });
+
+    it('should call correct endpoint when updating release letter', () => {
+      const selectedId = 'release-letter-id';
+
+      service.updateReleaseLetter(selectedId, {} as ReleaseLetter).subscribe();
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
+
+      expect(req.request.url).toBe(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
+
+      req.flush({} as ReleaseLetterApiResponse);
     });
   });
 });

@@ -268,4 +268,174 @@ describe('ReleaseLetterEditComponent', () => {
 
     expect(component.createReleaseLetter).not.toHaveBeenCalled();
   });
+
+  it('should call updateReleaseLetter service and navigate on success', () => {
+    const releaseLetter = {
+      ...component.releaseLetter,
+      id: '123'
+    };
+
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(of(mockResponse));
+
+    component.updateReleaseLetter(releaseLetter);
+
+    expect(newsManagementServiceMock.updateReleaseLetter).toHaveBeenCalledWith('123', releaseLetter);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/internal-dashboard/news-management']);
+    expect(component.isSubmitting()).toBe(false);
+  });
+
+  it('should handle error when updateReleaseLetter fails', () => {
+    translateServiceMock.instant.mockReturnValue('translated error');
+
+    const releaseLetter = {
+      ...component.releaseLetter,
+      id: '123'
+    };
+
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: 'UNKNOWN_ERROR'
+        }
+      }))
+    );
+
+    component.updateReleaseLetter(releaseLetter);
+
+    expect(newsManagementServiceMock.updateReleaseLetter).toHaveBeenCalledWith('123', releaseLetter);
+    expect(component.genericErrorMessage).toBe('translated error');
+    expect(component.isSubmitting()).toBe(false);
+  });
+
+  it('should set sprint error when updateReleaseLetter returns sprint blank error', () => {
+    translateServiceMock.instant.mockReturnValue('sprint blank error');
+
+    const releaseLetter = {
+      ...component.releaseLetter,
+      id: '123'
+    };
+
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: SPRINT_CANNOT_BE_BLANK.toString()
+        }
+      }))
+    );
+
+    component.updateReleaseLetter(releaseLetter);
+
+    expect(component.sprintErrorMessage).toBe('sprint blank error');
+    expect(component.isSubmitting()).toBe(false);
+  });
+
+  it('should set sprint exists error when updateReleaseLetter returns duplicated sprint error', () => {
+    translateServiceMock.instant.mockReturnValue('sprint existed error');
+
+    const releaseLetter = {
+      ...component.releaseLetter,
+      id: '123'
+    };
+
+    newsManagementServiceMock.updateReleaseLetter.mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString()
+        }
+      }))
+    );
+
+    component.updateReleaseLetter(releaseLetter);
+
+    expect(component.sprintErrorMessage).toBe('sprint existed error');
+    expect(component.isSubmitting()).toBe(false);
+  });
+
+  it('should call saveAsDraft service and navigate on success', () => {
+    const draftReleaseLetter = {
+      ...component.releaseLetter,
+      content: '',
+      draftContent: component.releaseLetter.content
+    };
+
+    newsManagementServiceMock.saveAsDraft = vi.fn().mockReturnValue(of(mockResponse));
+
+    component.saveAsDraft();
+
+    expect(newsManagementServiceMock.saveAsDraft).toHaveBeenCalledWith(draftReleaseLetter);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/internal-dashboard/news-management']);
+    expect(component.isSavingAsDraft()).toBe(false);
+  });
+
+  it('should handle error when saveAsDraft fails', () => {
+    translateServiceMock.instant.mockReturnValue('translated error');
+
+    newsManagementServiceMock.saveAsDraft = vi.fn().mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: 'UNKNOWN_ERROR'
+        }
+      }))
+    );
+
+    component.saveAsDraft();
+
+    expect(newsManagementServiceMock.saveAsDraft).toHaveBeenCalled();
+    expect(component.genericErrorMessage).toBe('translated error');
+    expect(component.isSavingAsDraft()).toBe(false);
+  });
+
+  it('should set sprint error when saveAsDraft returns sprint blank error', () => {
+    translateServiceMock.instant.mockReturnValue('sprint blank error');
+
+    newsManagementServiceMock.saveAsDraft = vi.fn().mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: SPRINT_CANNOT_BE_BLANK.toString()
+        }
+      }))
+    );
+
+    component.saveAsDraft();
+
+    expect(component.sprintErrorMessage).toBe('sprint blank error');
+    expect(component.isSavingAsDraft()).toBe(false);
+  });
+
+  it('should set sprint exists error when saveAsDraft returns duplicated sprint error', () => {
+    translateServiceMock.instant.mockReturnValue('sprint existed error');
+
+    newsManagementServiceMock.saveAsDraft = vi.fn().mockReturnValue(
+      throwError(() => ({
+        error: {
+          helpCode: RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.toString()
+        }
+      }))
+    );
+
+    component.saveAsDraft();
+
+    expect(component.sprintErrorMessage).toBe('sprint existed error');
+    expect(component.isSavingAsDraft()).toBe(false);
+  });
+
+  it('should not save draft if already saving as draft', () => {
+    component.isSavingAsDraft.set(true);
+
+    newsManagementServiceMock.saveAsDraft = vi.fn();
+
+    component.saveAsDraft();
+
+    expect(newsManagementServiceMock.saveAsDraft).not.toHaveBeenCalled();
+  });
+
+  it('should set draftContent before saving draft', () => {
+    component.releaseLetter.content = 'draft content';
+
+    newsManagementServiceMock.saveAsDraft = vi.fn().mockReturnValue(of(mockResponse));
+
+    component.saveAsDraft();
+
+    expect(component.releaseLetter.draftContent).toBe('draft content');
+  });
 });
