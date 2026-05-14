@@ -79,13 +79,6 @@ import { Page } from '../../../shared/models/apis/page.model';
 import { RouteUtils } from '../../../shared/utils/route.utils';
 import { Language } from '../../../shared/enums/language.enum';
 
-export interface DetailTab {
-  activeClass: string;
-  tabId: string;
-  value: string;
-  label: string;
-}
-
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -662,17 +655,6 @@ export class ProductDetailComponent implements AfterViewInit {
           this.renderGithubAlert(translatedContent);
       }
     });
-  }
-
-  getDeprecationSuccessorUrl(): string | null {
-    const successor = this.productDetail().successor?.trim();
-    if (!successor) return null;
-    try {
-      const url = new URL(successor);
-      return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null;
-    } catch {
-      return null;
-    }
   }
 
   getDeprecationSuccessorName(): string {
