@@ -78,7 +78,10 @@ describe('ReleaseLetterEditComponent', () => {
       getReleaseLetterById: vi.fn().mockName('NewsManagementService.getReleaseLetterById'),
       getReleaseLetterBySprint: vi.fn().mockName('NewsManagementService.getReleaseLetterBySprint'),
       createReleaseLetter: vi.fn().mockName('NewsManagementService.createReleaseLetter'),
-      updateReleaseLetter: vi.fn().mockName('NewsManagementService.updateReleaseLetter')
+      updateReleaseLetter: vi.fn().mockName('NewsManagementService.updateReleaseLetter'),
+      getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId: vi
+        .fn()
+        .mockName('NewsManagementService.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId')
     } as any;
 
     routerMock = {

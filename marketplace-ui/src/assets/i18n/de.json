@@ -461,6 +461,8 @@
         "sprintHeader": "Sprint: ",
         "latest": "Latest",
         "actions": "Actions",
+        "submit": "Submit",
+        "saveAsDraft": "Save as Draft",
         "create": "Create",
         "view": "View",
         "edit": "Edit",
@@ -468,7 +470,7 @@
         "cancel": "Cancel",
         "warning": "Warning",
         "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint",
-        "draftAlertMessage": "You have unfinished draft for this release letter. Do you want to continue editing it?"
+        "draftAlertMessage": "You have an unfinished draft for this release letter. Do you want to continue editing it?"
       },
       "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",

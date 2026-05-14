@@ -2,6 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +68,7 @@ public interface ReleaseLetterService {
    * @param id                        type {@link String} - the unique identifier of the release letter to update
    * @param releaseLetterModelRequest type {@link ReleaseLetterModelRequest} - the request data containing updated
    *                                  sprint, content, and latest flag
-   * @param gitHubUserId              type {@link String} - the Github user id taken from the request
+   * @param gitHubUserId              type {@link String} - the GitHub user id taken from the request
    * @return {@link ReleaseLetter} - the updated release letter
    * @author vhhoang
    */
@@ -85,7 +86,7 @@ public interface ReleaseLetterService {
    */
   void deleteReleaseLetterById(String id);
 
-  ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
+  ReleaseLetterDraftModel saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId);
 
   ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 

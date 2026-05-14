@@ -126,11 +126,11 @@ public class ReleaseLetterController {
   @Authorized
   @PutMapping(SAVE_AS_DRAFT)
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterDraft> saveAsDraft(
+  public ResponseEntity<ReleaseLetterDraftModel> saveAsDraft(
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request) {
     var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
-    var releaseLetterDraft = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
-    return ResponseEntity.ok(releaseLetterDraft);
+    var releaseLetterDraftModel = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
+    return ResponseEntity.ok(releaseLetterDraftModel);
   }
 
   @Authorized

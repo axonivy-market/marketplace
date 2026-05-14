@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { CommonModule } from '@angular/common';
-import { AdminDashboardService } from '../../admin-dashboard.service';
 import { NewsManagementService } from '../news-management.service';
 
 @Component({
@@ -23,7 +22,6 @@ export class DeleteReleaseLetterConfirmModalComponent {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
-  adminDashboardService = inject(AdminDashboardService);
   newsManagementService = inject(NewsManagementService);
 
   constructor(public activeModal: NgbActiveModal) {}

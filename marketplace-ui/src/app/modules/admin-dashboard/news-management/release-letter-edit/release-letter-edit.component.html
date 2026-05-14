@@ -94,7 +94,7 @@
               <span class="visually-hidden">Loading...</span>
             </div>
           }
-          <span>Save as Draft</span>
+          <span>{{ translateService.get('common.admin.releaseLetterEdit.saveAsDraft') | async }}</span>
         </button>
         <button
           id="submit-button"
@@ -108,7 +108,7 @@
               <span class="visually-hidden">Loading...</span>
             </div>
           }
-          <span>Submit</span>
+          <span>{{ translateService.get('common.admin.releaseLetterEdit.submit') | async }}</span>
         </button>
       </div>
       @if (genericErrorMessage !== null && genericErrorMessage !== '') {

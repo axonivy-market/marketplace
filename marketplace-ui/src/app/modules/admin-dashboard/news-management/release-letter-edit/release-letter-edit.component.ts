@@ -14,7 +14,6 @@ import {
 } from '../../../../shared/constants/common.constant';
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
-import { AdminDashboardService } from '../../admin-dashboard.service';
 import { AppModalService } from '../../../../shared/services/app-modal.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
@@ -32,7 +31,6 @@ export class ReleaseLetterEditComponent implements OnInit {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  adminDashboardService = inject(AdminDashboardService);
   newsManagementService = inject(NewsManagementService);
   appModalService = inject(AppModalService);
   router = inject(Router);
@@ -192,7 +190,7 @@ export class ReleaseLetterEditComponent implements OnInit {
         switchMap(releaseLetter => {
           this.releaseLetter = releaseLetter;
 
-          return this.newsManagementService.getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id);
+          return this.newsManagementService.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id);
         }),
         finalize(() => this.isInitializing.set(false)),
         takeUntilDestroyed(this.destroyRef)

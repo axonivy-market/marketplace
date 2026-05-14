@@ -6,6 +6,7 @@ import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterDraftRepository;
 import com.axonivy.market.repository.ReleaseLetterRepository;
@@ -214,7 +215,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
         "Result content should have the correct transformed github account link");
 
     verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S44");
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
         RELEASE_LETTER_ID_SAMPLE
     );
@@ -244,8 +245,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     String id = request.getId();
     assertThrows(AlreadyExistedException.class,
-            () -> releaseLetterService.updateReleaseLetter(id, request, GITHUB_USER_ID),
-            "Expected AlreadyExistedException to be thrown when sprint name already exists");
+        () -> releaseLetterService.updateReleaseLetter(id, request, GITHUB_USER_ID),
+        "Expected AlreadyExistedException to be thrown when sprint name already exists");
   }
 
   @Test
@@ -272,7 +273,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).findById(request.getId());
     verify(releaseLetterRepository).save(existing);
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
         RELEASE_LETTER_ID_SAMPLE
     );
@@ -306,7 +307,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).existsBySprint("S44");
     verify(releaseLetterRepository).save(existing);
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterIdReturningCount(
+    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
         RELEASE_LETTER_ID_SAMPLE
     );
@@ -411,13 +412,11 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+    ReleaseLetterDraftModel result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
 
     assertNotNull(result, "Saved draft result should not be null");
     assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
         "Release letter id should match created release letter");
-    assertEquals(GITHUB_USER_ID, result.getGitHubUserId(),
-        "GitHub user id should match requested user");
     assertEquals("Draft by https://github.com/john", result.getDraftContent(),
         "Draft content should transform GitHub username into profile link");
 
@@ -436,6 +435,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     ReleaseLetter existingReleaseLetter = createReleaseLetterMock();
 
     ReleaseLetterDraft existingDraft = new ReleaseLetterDraft();
+    existingDraft.setId("draft-id");
     existingDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
     existingDraft.setGitHubUserId(GITHUB_USER_ID);
     existingDraft.setDraftContent("Old draft");
@@ -449,14 +449,17 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+    ReleaseLetterDraftModel result =
+        releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
 
-    assertNotNull(result, "Updated draft result should not be null");
+    assertNotNull(result,
+        "Updated draft result should not be null");
     assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
         "Release letter id should remain unchanged");
     assertEquals("Updated by https://github.com/alice", result.getDraftContent(),
         "Draft content should be updated and transformed correctly");
-
+    assertEquals("draft-id", result.getId(),
+        "Draft id should remain unchanged after update");
     verify(releaseLetterRepository).findById(RELEASE_LETTER_ID_SAMPLE);
     verify(releaseLetterDraftRepository).save(existingDraft);
   }
@@ -530,18 +533,18 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
         .thenReturn(Optional.of(existingReleaseLetter));
-
     when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
         RELEASE_LETTER_ID_SAMPLE
     )).thenReturn(Optional.empty());
-
     when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetterDraft result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
+    ReleaseLetterDraftModel result =
+        releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
 
-    assertNotNull(result, "Saved draft result should not be null");
+    assertNotNull(result,
+        "Saved draft result should not be null");
     assertEquals("", result.getDraftContent(),
         "Draft content should be empty string when original draft content is null");
   }

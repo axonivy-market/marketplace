@@ -23,7 +23,6 @@ import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-lette
 import { ReleaseLetterSafeHtml } from '../../shared/models/release-letter-safe-html-model';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
-import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { Link } from '../../shared/models/apis/link.model';
 import { Page } from '../../shared/models/apis/page.model';
 import { LoadingService } from '../../core/services/loading/loading.service';
@@ -56,7 +55,6 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  adminDashboardService = inject(AdminDashboardService);
   newsManagementService = inject(NewsManagementService);
   markdownService = inject(MarkdownService);
   loadingService = inject(LoadingService);

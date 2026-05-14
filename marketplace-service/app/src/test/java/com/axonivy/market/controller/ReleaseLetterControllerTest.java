@@ -255,25 +255,26 @@ class ReleaseLetterControllerTest extends BaseSetup {
   void testSaveAsDraftShouldReturnDraftSuccessfully() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
 
-    ReleaseLetterDraft releaseLetterDraft = new ReleaseLetterDraft();
-    releaseLetterDraft.setId("draft-id");
-    releaseLetterDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
-    releaseLetterDraft.setDraftContent(RELEASE_LETTER_CONTENT_SAMPLE);
+    ReleaseLetterDraftModel releaseLetterDraftModel = ReleaseLetterDraftModel.builder()
+        .id("draft-id")
+        .releaseLetterId(RELEASE_LETTER_ID_SAMPLE)
+        .draftContent(RELEASE_LETTER_CONTENT_SAMPLE)
+        .build();
 
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(GITHUB_USER_ID);
+    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
+        .thenReturn(GITHUB_USER_ID);
     when(releaseLetterService.saveAsDraft(releaseLetterModelRequestMock, GITHUB_USER_ID))
-        .thenReturn(releaseLetterDraft);
-
-    ResponseEntity<ReleaseLetterDraft> response =
+        .thenReturn(releaseLetterDraftModel);
+    ResponseEntity<ReleaseLetterDraftModel> response =
         releaseLetterController.saveAsDraft(releaseLetterModelRequestMock, mockRequest);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when saving draft succeeds.");
     assertNotNull(response.getBody(),
         "Response body should contain the saved draft.");
-    assertEquals(releaseLetterDraft, response.getBody(),
+    assertEquals(releaseLetterDraftModel, response.getBody(),
         "Response body should match the saved draft returned from service.");
     verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     verify(releaseLetterService)

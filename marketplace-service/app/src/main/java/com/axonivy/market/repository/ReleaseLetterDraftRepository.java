@@ -26,6 +26,6 @@ public interface ReleaseLetterDraftRepository extends JpaRepository<ReleaseLette
   @Modifying
   @Query("DELETE from ReleaseLetterDraft r where r.gitHubUserId = :gitHubUserId AND r.releaseLetterId = " +
       ":releaseLetterId")
-  void deleteByGitHubUserIdAndReleaseLetterIdReturningCount(@Param("gitHubUserId") String gitHubUserId,
+  void deleteByGitHubUserIdAndReleaseLetterId(@Param("gitHubUserId") String gitHubUserId,
       @Param("releaseLetterId") String releaseLetterId);
 }

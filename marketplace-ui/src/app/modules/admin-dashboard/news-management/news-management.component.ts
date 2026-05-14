@@ -25,7 +25,6 @@ import { ReleaseLetterCriteria } from '../../../shared/models/criteria.model';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
-import { AdminDashboardService } from './../admin-dashboard.service';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NewsManagementService } from './news-management.service';
 
@@ -51,7 +50,6 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   loadingService = inject(LoadingService);
-  adminDashboardService = inject(AdminDashboardService);
   newsManagementService = inject(NewsManagementService);
   router = inject(Router);
   route = inject(ActivatedRoute);

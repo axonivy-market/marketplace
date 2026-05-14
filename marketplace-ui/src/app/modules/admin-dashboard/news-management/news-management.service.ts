@@ -99,20 +99,14 @@ export class NewsManagementService {
     });
   }
 
-  saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
+  saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterDraftApiResponse> {
+    return this.http.put<ReleaseLetterDraftApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
       headers: this.adminAuth.getAuthHeaders()
     });
   }
 
-  isReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<boolean> {
-    return this.http.get<boolean>(`${API_URI.RELEASE_LETTERS}/${id}/drafts/exists`, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
-  }
-
-  getReleaseLetterDraftExistedByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse> {
-    return this.http.get<ReleaseLetterDraftApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
+  getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse | null> {
+    return this.http.get<ReleaseLetterDraftApiResponse | null>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
       context: new HttpContext().set(CachingEnabled, false),
       headers: this.adminAuth.getAuthHeaders()
     });

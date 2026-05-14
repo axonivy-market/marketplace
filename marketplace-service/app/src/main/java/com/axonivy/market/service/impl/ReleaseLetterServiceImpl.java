@@ -6,6 +6,7 @@ import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.repository.ReleaseLetterDraftRepository;
 import com.axonivy.market.repository.ReleaseLetterRepository;
@@ -122,12 +123,12 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Transactional
   @Override
   public void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
-    releaseLetterDraftRepository.deleteByGitHubUserIdAndReleaseLetterIdReturningCount(gitHubUserId, releaseLetterId);
+    releaseLetterDraftRepository.deleteByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId);
   }
 
   @Transactional
   @Override
-  public ReleaseLetterDraft saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId) {
+  public ReleaseLetterDraftModel saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
     return handleDraft(releaseLetterModelRequest, gitHubUserId);
   }
@@ -147,7 +148,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     }
   }
 
-  private ReleaseLetterDraft handleDraft(ReleaseLetterModelRequest request, String gitHubUserId) {
+  private ReleaseLetterDraftModel handleDraft(ReleaseLetterModelRequest request, String gitHubUserId) {
     ReleaseLetter releaseLetter = releaseLetterRepository
         .findById(request.getId())
         .orElseGet(() -> createReleaseLetter(request, true));
@@ -155,7 +156,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     return upsertDraft(releaseLetter.getId(), gitHubUserId, request.getDraftContent());
   }
 
-  private ReleaseLetterDraft upsertDraft(String releaseLetterId, String githubUserId, String draftContent) {
+  private ReleaseLetterDraftModel upsertDraft(String releaseLetterId, String githubUserId, String draftContent) {
     ReleaseLetterDraft draft = releaseLetterDraftRepository
         .findByGitHubUserIdAndReleaseLetterId(githubUserId, releaseLetterId)
         .orElseGet(() -> {
@@ -166,8 +167,9 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
         });
 
     draft.setDraftContent(transformContent(draftContent));
+    ReleaseLetterDraft savedDraft = releaseLetterDraftRepository.save(draft);
 
-    return releaseLetterDraftRepository.save(draft);
+    return ReleaseLetterDraftModel.from(savedDraft);
   }
 
   private boolean isSprintExisted(String requestedSprint) {
