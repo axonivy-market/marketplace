@@ -4,8 +4,8 @@
  **/
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
-  apiInternalUrl: 'http://localhost:8080',
+  apiUrl: 'http://marketplace.server.ivy-cloud.com:4500/app',
+  apiInternalUrl: 'http://marketplace.server.ivy-cloud.com:4500/app',
   githubOAuthAppClientId: 'Iv23livu9HbsC4Q24eSC',
   githubOAuthCallback: '/auth/github/callback',
   githubApiUrl: 'https://api.github.com',

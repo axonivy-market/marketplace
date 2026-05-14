@@ -43,7 +43,6 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
-import { Tooltip } from 'bootstrap';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
@@ -125,10 +124,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.isBrowser) {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    void this.initializeTooltips();
+  }
+
+  private async initializeTooltips(): Promise<void> {
+    // try {
+      const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
       const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       elements.forEach(el => new Tooltip(el));
-    }
+    // } catch {
+      // Ignore tooltip initialization errors in non-browser/test teardown edge cases.
+    // }
   }
 
   onSelectArtifact(artifact: ItemDropdown) {
