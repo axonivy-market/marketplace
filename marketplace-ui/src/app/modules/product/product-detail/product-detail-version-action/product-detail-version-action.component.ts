@@ -132,13 +132,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   private async initializeTooltips(): Promise<void> {
-    // try {
-      const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
-      const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-      elements.forEach(el => new Tooltip(el));
-    // } catch {
-      // Ignore tooltip initialization errors in non-browser/test teardown edge cases.
-    // }
+    const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
+    const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    elements.forEach(el => new Tooltip(el));
   }
 
   onSelectArtifact(artifact: ItemDropdown) {
