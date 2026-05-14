@@ -19,11 +19,7 @@ public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, St
 
   boolean existsBySprint(String releaseVersion);
 
-  boolean existsById(@NonNull String id);
-
   Page<ReleaseLetter> findByIsLatest(boolean isLatest, Pageable pageable);
-
-  void deleteBySprint(String sprint);
 
   @Modifying
   @Query("DELETE from ReleaseLetter r where r.id = :id")
