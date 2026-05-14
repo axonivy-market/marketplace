@@ -1,6 +1,6 @@
 ::ng-deep .custom-tooltip {
   --bs-tooltip-bg: var(--bs-body-bg);
-  --bs-tooltip-color: black;
+  --bs-tooltip-color: var(--bs-body-color);
   --bs-tooltip-font-size: 12px;
   --bs-tooltip-opacity: inherit !important;
   background-color: var(--bs-body-bg);
