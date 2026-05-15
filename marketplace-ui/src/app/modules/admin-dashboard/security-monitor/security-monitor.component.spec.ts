@@ -31,7 +31,7 @@ describe('SecurityMonitorComponent', () => {
           archived: false,
           branchProtectionEnabled: true,
           lastCommitDate: new Date().toISOString(),
-          lastCommitSHA: 'abc123',
+          latestCommitSHA: 'abc123',
           dependabot: { status: 'ACTIVE', alerts: {} },
           codeScanning: { status: 'ACTIVE', alerts: {} },
           secretScanning: { status: 'ACTIVE', numberOfAlerts: 0 }
