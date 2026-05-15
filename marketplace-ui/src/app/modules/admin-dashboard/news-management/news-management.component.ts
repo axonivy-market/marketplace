@@ -27,6 +27,8 @@ import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NewsManagementService } from './news-management.service';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-news-management',
@@ -35,7 +37,8 @@ import { NewsManagementService } from './news-management.service';
     FormsModule,
     RouterModule,
     TranslateModule,
-    NgbTooltip
+    NgbTooltip,
+    LoadingSpinnerComponent
   ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
@@ -44,6 +47,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   @ViewChild('releaseLetterObserver', { static: false })
   observerElement!: ElementRef;
 
+  protected LoadingComponentId = LoadingComponentId;
   isBrowser: boolean;
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
@@ -110,7 +114,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
       .openDeleteReleaseLetterConfirmModal(releaseLetter)
       .then(() => {
         this.newsManagementService
-          .getReleaseLetters(this.releaseLetterCriteria)
+          .getReleaseLetters(this.releaseLetterCriteria, LoadingComponentId.NEWS_MANAGEMENT)
           .subscribe(res => {
             this.releaseLetterList.set(res._embedded.releaseLetterModelList);
           });
@@ -120,7 +124,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
 
   loadReleaseLetters(): void {
     const sub = this.newsManagementService
-      .getReleaseLetters(this.releaseLetterCriteria)
+      .getReleaseLetters(this.releaseLetterCriteria, LoadingComponentId.NEWS_MANAGEMENT)
       .subscribe({
         next: response => {
           if (!response) {

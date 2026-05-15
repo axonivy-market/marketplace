@@ -112,16 +112,4 @@ public interface ReleaseLetterService {
    * @author vhhoang
    */
   ReleaseLetterDraft getDraftContentByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
-
-  /**
-   * <p>
-   * Deletes the draft associated with the given GitHub user and release letter identifier. This operation removes
-   * the matching draft from the persistence layer. If no matching draft exists, the operation has no effect.
-   * </p>
-   *
-   * @param gitHubUserId    type {@link String} - the GitHub user id that owns the draft
-   * @param releaseLetterId type {@link String} - the release letter identifier associated with the draft
-   * @author vhhoang
-   */
-  void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId);
 }

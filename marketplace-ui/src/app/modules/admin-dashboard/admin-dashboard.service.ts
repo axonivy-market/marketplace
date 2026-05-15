@@ -45,8 +45,8 @@ export class AdminDashboardService {
   }
 
   syncOneProduct(
-    id: string, 
-    marketItemPath: string, 
+    id: string,
+    marketItemPath: string,
     overrideMarketItemPath = false
   ): Observable<SyncTaskExecution> {
     const params = new HttpParams()
@@ -116,7 +116,7 @@ export class AdminDashboardService {
   }
 
   sortMarketExtensions(
-    orderedList: string[], 
+    orderedList: string[],
     remainderRule = 'alphabetically'
   ): Observable<void> {
     const body = {
@@ -137,13 +137,13 @@ export class AdminDashboardService {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
       headers: this.adminAuth.getAuthHeaders(),
       context: new HttpContext().set(
-        LoadingComponent, 
+        LoadingComponent,
         LoadingComponentId.SECURITY_MONITOR
       )
     });
   }
 
-  searchSecurityDetails(criteria: SecurityMonitorCriteria): 
+  searchSecurityDetails(criteria: SecurityMonitorCriteria):
     Observable<SecurityMonitorApiResponse> {
     let params = new HttpParams()
       .set(RequestParam.PAGE, `${criteria.pageable.page}`)
@@ -155,7 +155,7 @@ export class AdminDashboardService {
       params = params.set(RequestParam.SEARCH, criteria.searchText);
     }
 
-    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`, 
+    return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
       {
         params,
         headers: this.adminAuth.getAuthHeaders(),

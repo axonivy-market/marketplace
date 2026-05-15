@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -70,7 +71,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
           ErrorCode.RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED.getHelpText());
     }
     var releaseLetter = ReleaseLetter.builder()
-        .content(isDraft ? "" : transformContent(releaseLetterModelRequest.getContent()))
+        .content(isDraft ? StringUtils.EMPTY : transformContent(releaseLetterModelRequest.getContent()))
         .sprint(unifiedSprint)
         .isLatest(!isDraft && releaseLetterModelRequest.isLatest())
         .build();
@@ -104,8 +105,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
     if (releaseLetterModelRequest.isLatest()) {
       releaseLetterRepository.deactivateOtherLatestReleaseLetters(unifiedNewSprint);
     }
-
-    deleteDraftByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
+    releaseLetterDraftRepository.deleteByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
 
     return releaseLetterRepository.save(foundReleaseLetter);
   }
@@ -122,15 +122,13 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
 
   @Transactional
   @Override
-  public void deleteDraftByGitHubUserIdAndReleaseLetterId(String gitHubUserId, String releaseLetterId) {
-    releaseLetterDraftRepository.deleteByGitHubUserIdAndReleaseLetterId(gitHubUserId, releaseLetterId);
-  }
-
-  @Transactional
-  @Override
   public ReleaseLetterDraftModel saveAsDraft(ReleaseLetterModelRequest releaseLetterModelRequest, String gitHubUserId) {
     validateReleaseLetterModelRequest(releaseLetterModelRequest);
-    return handleDraft(releaseLetterModelRequest, gitHubUserId);
+    ReleaseLetter releaseLetter = releaseLetterRepository
+        .findById(releaseLetterModelRequest.getId())
+        .orElseGet(() -> createReleaseLetter(releaseLetterModelRequest, true));
+
+    return upsertDraft(releaseLetter.getId(), gitHubUserId, releaseLetterModelRequest.getDraftContent());
   }
 
   @Override
@@ -141,19 +139,10 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   }
 
   private void validateReleaseLetterModelRequest(ReleaseLetterModelRequest releaseLetterModelRequest) {
-    if (releaseLetterModelRequest.getSprint() == null
-        || ObjectUtils.isEmpty(releaseLetterModelRequest.getSprint().trim())) {
+    if (releaseLetterModelRequest.getSprint() == null || releaseLetterModelRequest.getSprint().isBlank()) {
       throw new MarketException(ErrorCode.SPRINT_CANNOT_BE_BLANK.getCode(),
           ErrorCode.SPRINT_CANNOT_BE_BLANK.getHelpText());
     }
-  }
-
-  private ReleaseLetterDraftModel handleDraft(ReleaseLetterModelRequest request, String gitHubUserId) {
-    ReleaseLetter releaseLetter = releaseLetterRepository
-        .findById(request.getId())
-        .orElseGet(() -> createReleaseLetter(request, true));
-
-    return upsertDraft(releaseLetter.getId(), gitHubUserId, request.getDraftContent());
   }
 
   private ReleaseLetterDraftModel upsertDraft(String releaseLetterId, String githubUserId, String draftContent) {

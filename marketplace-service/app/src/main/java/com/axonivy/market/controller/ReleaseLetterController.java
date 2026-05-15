@@ -4,7 +4,6 @@ import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
-import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
@@ -97,7 +96,7 @@ public class ReleaseLetterController {
   @Authorized
   @PostMapping()
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
+  public ResponseEntity<Void> createReleaseLetter(
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
     var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest, false);
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -136,10 +135,7 @@ public class ReleaseLetterController {
   @Authorized
   @GetMapping(DRAFT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterDraftModel> getDraft(
-      @PathVariable String id,
-      HttpServletRequest request
-  ) {
+  public ResponseEntity<ReleaseLetterDraftModel> getDraft(@PathVariable String id, HttpServletRequest request) {
     String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     var releaseLetterDraft = releaseLetterService
         .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);

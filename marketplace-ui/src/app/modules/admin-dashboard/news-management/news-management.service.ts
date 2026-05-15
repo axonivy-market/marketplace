@@ -24,7 +24,7 @@ export class NewsManagementService {
     pageId: string = LoadingComponentId.NEWS_PAGE
   ): Observable<ReleaseLetterListApiResponse> {
     let params = new HttpParams();
-    let url = '';
+    let url: string;
 
     if (releaseLetterCriteria.nextPageHref) {
       url = releaseLetterCriteria.nextPageHref;
@@ -39,8 +39,8 @@ export class NewsManagementService {
       }
     }
 
-    const ts = Date.now().toString();
-    params = params.set(RequestParam.TIMESTAMP, ts);
+    const currentTimeStamp = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, currentTimeStamp);
 
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {

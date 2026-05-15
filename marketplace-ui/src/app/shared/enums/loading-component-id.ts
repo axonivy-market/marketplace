@@ -10,5 +10,6 @@ export enum LoadingComponentId {
   MONITORING_DASHBOARD = 'monitoring-repo',
   NEWS_PAGE = 'news-page',
   TOKEN_REQUEST = 'token-request',
-  RELEASE_LETTER_EDIT = 'release-letter-edit'
+  RELEASE_LETTER_EDIT = 'release-letter-edit',
+  NEWS_MANAGEMENT = 'news-management'
 }

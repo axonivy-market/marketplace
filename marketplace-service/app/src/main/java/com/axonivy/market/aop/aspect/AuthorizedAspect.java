@@ -66,7 +66,7 @@ public class AuthorizedAspect {
 
       var username = userInfo.getUsername();
       var gitHubUserId = userInfo.getGitHubId();
-      if (StringUtils.isBlank(username) || StringUtils.isBlank(gitHubUserId)) {
+      if (StringUtils.isAnyBlank(username, gitHubUserId)) {
         throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
       }
       request.setAttribute(USERNAME_ATTRIBUTE, username);
