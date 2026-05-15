@@ -37,10 +37,16 @@ pipeline {
 
     stage('Build And Test Project') {
       steps {
-        sh 'npm i --prefix ./marketplace-ui'
-        sh 'npm run build --prefix ./marketplace-ui'
-        sh 'rm -rf ./marketplace-ui/dist/server ./marketplace-ui/.angular/cache'
-        sh 'npm run test --prefix ./marketplace-ui'
+        dir('./marketplace-ui') {
+          sh '''
+          rm -rf ./node_modules
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          chmod -R u+w ./dist/server ./.angular/cache || true
+          rm -rf ./dist/server ./.angular/cache || true
+          npm test
+          '''
+        }
       }
     }
 

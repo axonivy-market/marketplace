@@ -126,10 +126,14 @@ pipeline {
     stage('Build Docker Images') {
       steps {
         script {
-          dir("./target-source/marketplace-build/templates") {
+          dir("./target-source/marketplace-build/templates/dev") {
             sh '''
-              docker compose --project-name marketplace build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$RELEASE_VERSION --build-arg NGINX_CONFIG_PATH=../nginx/nginx.conf --build-arg NGINX_PORT=80
-              docker compose --project-name marketplace up --force-recreate -d
+                export NGINX_CONFIG_PATH=../../nginx/nginx.conf
+                export BUILD_ENV=production
+                export BUILD_VERSION=$RELEASE_VERSION
+                export NGINX_PORT=80
+                docker compose --project-name marketplace up --build
+                docker compose --project-name marketplace up --force-recreate -d
             '''
           }
         }
