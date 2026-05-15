@@ -41,7 +41,7 @@ public class ReleaseLetterServiceImpl implements ReleaseLetterService {
   @Override
   public Page<ReleaseLetter> findAllReleaseLetters(Pageable pageable, boolean isReadOnly) {
     if (!isReadOnly) {
-      return new PageImpl<>(releaseLetterRepository.findAllWithContent(defaultSorting));
+      return new PageImpl<>(releaseLetterRepository.findAll(defaultSorting));
     }
 
     Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSorting);

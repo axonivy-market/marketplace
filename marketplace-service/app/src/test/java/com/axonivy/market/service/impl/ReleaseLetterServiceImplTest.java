@@ -373,12 +373,12 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     List<ReleaseLetter> list = List.of(releaseLetterMock);
 
-    when(releaseLetterRepository.findAllWithContent(any(Sort.class))).thenReturn(list);
+    when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(list);
 
     Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
     ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
 
-    verify(releaseLetterRepository).findAllWithContent(sortCaptor.capture());
+    verify(releaseLetterRepository).findAll(sortCaptor.capture());
 
     Sort usedSort = sortCaptor.getValue();
     Sort.Order order = usedSort.getOrderFor("createdAt");

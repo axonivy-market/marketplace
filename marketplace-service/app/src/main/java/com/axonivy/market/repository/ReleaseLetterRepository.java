@@ -15,14 +15,7 @@ import java.util.List;
 
 @Repository
 public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, String> {
-  @Query("""
-      SELECT r
-      FROM ReleaseLetter r
-      WHERE r.content IS NOT NULL
-        AND TRIM(r.content) <> ''
-      """)
-  List<ReleaseLetter> findAllWithContent(Sort sort);
-
+  
   @Query("""
       SELECT r
       FROM ReleaseLetter r
