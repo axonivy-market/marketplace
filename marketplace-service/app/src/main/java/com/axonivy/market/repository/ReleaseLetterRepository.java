@@ -15,7 +15,7 @@ import java.util.List;
 
 @Repository
 public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, String> {
-  
+
   @Query("""
       SELECT r
       FROM ReleaseLetter r
