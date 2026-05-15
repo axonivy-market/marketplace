@@ -1,14 +1,14 @@
 package com.axonivy.market.github.model;
 
+import com.axonivy.market.core.converter.StringIntegerMapConverter;
 import com.axonivy.market.enums.AccessLevel;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Convert;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -22,7 +22,7 @@ public class CodeScanning implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Convert(converter = StringIntegerMapConverter.class)
   private Map<String, Integer> alerts;
 
   @Enumerated(EnumType.STRING)

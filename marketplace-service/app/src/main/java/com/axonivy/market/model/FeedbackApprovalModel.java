@@ -20,7 +20,5 @@ public class FeedbackApprovalModel {
 
   private Boolean isApproved;
 
-  private String moderatorName;
-
   private Integer version;
 }

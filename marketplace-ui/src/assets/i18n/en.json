@@ -81,7 +81,15 @@
         "502": "Bad Gateway: The server received an invalid response from an upstream server.",
         "503": "Service Unavailable: The server is temporarily unable to handle the request.",
         "504": "Gateway Timeout: The upstream server failed to send a request in time.",
-        "default": "Our website is taking a break."
+        "badRequest": "Bad Request: The server could not understand the request.",
+        "unauthorized": "Unauthorized: Authentication is required.",
+        "forbidden": "Forbidden: You do not have permission to access this resource.",
+        "timeout": "Request Timeout: The request took too long to complete.",
+        "networkError": "Network Error: Could not connect to the server. Please check your internet connection.",
+        "badGateway": "Bad Gateway: The server received an invalid response.",
+        "serviceUnavailable": "Service Unavailable: The server is temporarily unable to handle the request.",
+        "gatewayTimeout": "Gateway Timeout: The request timed out.",
+        "default": "An unexpected error occurred. Please try again later."
       },
       "buttonLabel": "Back to homepage"
     },
@@ -324,15 +332,19 @@
         "syncLabel": "Synchronize",
         "syncingLabel": "Synchronizing...",
         "cancelLabel": "Cancel",
+        "allProductsHint": "Leave empty to synchronize all products",
+        "noResults": "No results found",
         "tasks": {
           "syncProducts": "Synchronize all products",
           "syncOneProduct": "Synchronize one product",
+          "syncZipArtifacts": "Synchronize ZIP artifacts",
           "syncLatestReleasesForProducts": "Synchronize product release notes",
           "syncGithubMonitor": "Synchronize GitHub monitor",
           "syncGithubSecurityMonitor": "Synchronize GitHub Security monitor"
         },
-        "syncOneProductDialog": {
-          "title": "Synchronize One Product",
+        "syncProductDialog": {
+          "syncOneProductTitle": "Synchronize One Product",
+          "syncZIPArtifactTitle": "Synchronize ZIP artifacts",
           "chooseExtensionIdHint": "Choose an extension ID to synchronize",
           "marketItemPath": "Market Item Path",
           "chooseMarketItemPathHint": "Example: market/demos/html-dialog/",

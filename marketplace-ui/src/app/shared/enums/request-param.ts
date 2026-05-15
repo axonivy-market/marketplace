@@ -1,4 +1,5 @@
 export enum RequestParam {
+  ID = 'id',
   TYPE = 'type',
   KEYWORD = 'keyword',
   SORT = 'sort',
