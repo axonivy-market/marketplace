@@ -1,5 +1,13 @@
 package com.axonivy.market.constants;
 
+/**
+ * <p>
+ * Directory constants defining directory paths for file storage, caching, and repository management.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

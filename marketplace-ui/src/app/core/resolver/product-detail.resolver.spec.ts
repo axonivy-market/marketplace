@@ -1,9 +1,10 @@
 ﻿import type { Mock, MockedObject } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
-import { of } from 'rxjs';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { ProductDetailResolver } from './product-detail.resolve';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -12,10 +13,7 @@ import { ProductService } from '../../modules/product/product.service';
 import { CookieService } from 'ngx-cookie-service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import {
-  MOCK_PRODUCT_DETAIL,
-  MOCK_PRODUCTS
-} from '../../shared/mocks/mock-data';
+import { MOCK_PRODUCT_DETAIL, MOCK_PRODUCTS } from '../../shared/mocks/mock-data';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { Language } from '../../shared/enums/language.enum';
 import {
@@ -24,9 +22,11 @@ import {
   OG_IMAGE_KEY,
   OG_IMAGE_PNG_TYPE,
   OG_IMAGE_TYPE_KEY,
-  OG_TITLE_KEY
+  OG_TITLE_KEY,
+  NOT_FOUND_ERROR_CODE
 } from '../../shared/constants/common.constant';
 import { FaviconService } from '../../shared/services/favicon.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 const products = MOCK_PRODUCTS._embedded.products;
 
@@ -37,10 +37,8 @@ describe('ProductDetailResolver', () => {
   let titleService: MockedObject<Title>;
   let languageService: MockedObject<LanguageService>;
   let loadingService: MockedObject<LoadingService>;
-  let productService: MockedObject<ProductService>;
-  let cookieService: MockedObject<CookieService>;
-  let routingQueryParamService: MockedObject<RoutingQueryParamService>;
   let faviconService: MockedObject<FaviconService>;
+  let router: MockedObject<Router>;
   let activatedRoute: ActivatedRoute;
   let routeSnapshot: ActivatedRouteSnapshot;
 
@@ -90,6 +88,10 @@ describe('ProductDetailResolver', () => {
     const faviconServiceSpy = {
       setFavicon: vi.fn().mockName('FaviconService.setFavicon')
     };
+    const routerSpy = {
+      parseUrl: vi.fn().mockName('Router.parseUrl'),
+      navigate: vi.fn().mockName('Router.navigate')
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -108,6 +110,14 @@ describe('ProductDetailResolver', () => {
         {
           provide: FaviconService,
           useValue: faviconServiceSpy
+        },
+        {
+          provide: Router,
+          useValue: routerSpy
+        },
+        {
+          provide: PLATFORM_ID,
+          useValue: 'server'
         },
         {
           provide: ActivatedRoute,
@@ -129,6 +139,7 @@ describe('ProductDetailResolver', () => {
     resolver = TestBed.inject(ProductDetailResolver);
     activatedRoute = TestBed.inject(ActivatedRoute);
     routeSnapshot = activatedRoute.snapshot;
+    router = TestBed.inject(Router) as MockedObject<Router>;
     productDetailService = TestBed.inject(
       ProductDetailService
     ) as MockedObject<ProductDetailService>;
@@ -203,6 +214,78 @@ describe('ProductDetailResolver', () => {
       });
 
       expect(emissionCount).toBe(1);
+    });
+
+    it('should return UrlTree wrapped in Observable for 404 error', () => {
+      const error404 = new HttpErrorResponse({ status: NOT_FOUND_ERROR_CODE });
+      const mockUrlTree = {} as UrlTree;
+      (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => error404));
+      router.parseUrl.mockReturnValue(mockUrlTree);
+
+      resolver.resolve(routeSnapshot).subscribe(result => {
+        expect(result).toBe(mockUrlTree);
+        expect(router.parseUrl).toHaveBeenCalledWith('/error-page/404');
+      });
+    });
+
+    it('should return UrlTree wrapped in Observable for status 0 network errors on server', () => {
+      const networkError = new HttpErrorResponse({ status: 0 });
+      const mockUrlTree = {} as UrlTree;
+      (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => networkError));
+      router.parseUrl.mockReturnValue(mockUrlTree);
+
+      resolver.resolve(routeSnapshot).subscribe(result => {
+        expect(result).toBe(mockUrlTree);
+        expect(router.parseUrl).toHaveBeenCalledWith('/error-page');
+      });
+    });
+
+    it('should navigate to generic error page for status 0 network errors on browser', () => {
+      const browserResolver = new ProductDetailResolver(
+        'browser' as unknown as object,
+        productDetailService,
+        meta,
+        titleService,
+        languageService,
+        loadingService,
+        TestBed.inject(ProductService) as MockedObject<ProductService>,
+        TestBed.inject(CookieService) as MockedObject<CookieService>,
+        TestBed.inject(RoutingQueryParamService) as MockedObject<RoutingQueryParamService>,
+        faviconService,
+        router,
+        null,
+        null
+      );
+      const networkError = new HttpErrorResponse({ status: 0 });
+      vi.spyOn(browserResolver, 'getProductDetailObservable').mockReturnValue(throwError(() => networkError));
+
+      let completed = false;
+      let thrownError: unknown;
+      browserResolver.resolve(routeSnapshot).subscribe({
+        complete: () => { completed = true; },
+        error: err => { thrownError = err; }
+      });
+
+      expect(router.navigate).toHaveBeenCalledWith(['/error-page']);
+      expect(completed).toBe(true);
+      expect(thrownError).toBeUndefined();
+    });
+
+    it('should complete empty for non-404 errors so navigation cancels without NavigationError', () => {
+      const error500 = new HttpErrorResponse({ status: 500 });
+      (resolver.getProductDetailObservable as Mock).mockReturnValue(throwError(() => error500));
+
+      let completed = false;
+      let thrownError: unknown;
+      resolver.resolve(routeSnapshot).subscribe({
+        complete: () => { completed = true; },
+        error: err => { thrownError = err; }
+      });
+
+      // EMPTY from resolver → NavigationCancel (not NavigationError), no redirect
+      expect(completed).toBe(true);
+      expect(thrownError).toBeUndefined();
+      expect(router.parseUrl).not.toHaveBeenCalled();
     });
   });
 

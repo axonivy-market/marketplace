@@ -18,7 +18,7 @@ import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
-import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
@@ -111,6 +111,7 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String JWT_TOKEN = "sampleJwtToken";
   public static final String DEFAULT_HOST = "http://localhost:";
   public static final String OPEN_API_SPEC_PATH = "src/test/resources/generated-spec.yaml";
+  public static final String MODERATOR_NAME = "test-moderator";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -390,7 +391,6 @@ public class BaseSetup extends CoreBaseSetup {
   protected FeedbackApprovalModel mockFeedbackApproval() {
     return FeedbackApprovalModel.builder()
         .feedbackId("1")
-        .moderatorName("Admin")
         .build();
   }
 

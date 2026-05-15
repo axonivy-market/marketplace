@@ -3,6 +3,14 @@ package com.axonivy.market.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * <p>
+ * Maven constants defining artifact naming patterns, Maven repository URLs, version tags, and metadata file formats.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author ntqdinh
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MavenConstants {
   public static final String PRODUCT_ARTIFACT_POSTFIX = "-product";

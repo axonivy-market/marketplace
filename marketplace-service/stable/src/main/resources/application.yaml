@@ -40,3 +40,10 @@ springdoc:
   api-docs:
     path: /api-docs
     version: OPENAPI_3_1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /actuator

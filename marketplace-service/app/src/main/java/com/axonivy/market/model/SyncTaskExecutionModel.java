@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -18,16 +18,16 @@ import java.time.LocalDate;
 public class SyncTaskExecutionModel {
   private String key;
   private SyncTaskStatus status;
-  private LocalDate triggeredAt;
-  private LocalDate completedAt;
+  private LocalDateTime lastRunDate;
+  private LocalDateTime completedDate;
   private String message;
 
   public static SyncTaskExecutionModel from(SyncTaskExecution execution) {
     return SyncTaskExecutionModel.builder()
         .key(execution.getType().getKey())
         .status(execution.getStatus())
-        .triggeredAt(execution.getTriggeredAt())
-        .completedAt(execution.getCompletedAt())
+        .lastRunDate(execution.getLastRunDate())
+        .completedDate(execution.getCompletedDate())
         .message(execution.getMessage())
         .build();
   }

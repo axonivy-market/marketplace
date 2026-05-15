@@ -12,9 +12,9 @@ export interface ProductSecurityInfo {
   };
   secretScanning: {
     status: string;
-    numberOfAlerts: number;
+    numberOfSecretScanningAlerts: number;
   };
   branchProtectionEnabled: boolean;
-  lastCommitSHA: string;
+  latestCommitSHA: string;
   lastCommitDate: string;
 }

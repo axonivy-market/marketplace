@@ -2,6 +2,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   Component,
+  computed,
   inject,
   OnInit,
   Renderer2,
@@ -27,6 +28,9 @@ import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { CustomSortCardComponent } from './custom-sort-card/custom-sort-card.component';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
+import { SORT_TYPES } from '../../../shared/constants/common.constant';
+import { CommonUtils } from '../../../shared/utils/common.utils';
 
 const SORTED_ID = 'sorted-extensions';
 const AVAILABLE_ID = 'available-extensions';
@@ -40,7 +44,8 @@ const MESSAGE_DISPLAY_TIME = 3000;
     CdkDrag,
     CdkDropList,
     CdkDragPlaceholder,
-    CustomSortCardComponent
+    CustomSortCardComponent,
+    CommonDropdownComponent
   ],
   templateUrl: './custom-sort.component.html',
   styleUrls: ['./custom-sort.component.scss'],
@@ -59,8 +64,10 @@ export class CustomSortComponent implements OnInit {
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
-  remainderRule: string = SortOption.ALPHABETICALLY;
 
+  ruleDropdown = computed(() => SORT_TYPES.filter(item => item.value !== SortOption.STANDARD));
+  remainderRuleValue: SortOption = SortOption.ALPHABETICALLY;
+  remainderRuleLabel = '';
   searchTerm = '';
   isLoading = false;
   isSaving = false;
@@ -73,6 +80,11 @@ export class CustomSortComponent implements OnInit {
     this.pageTitleService.setTitleOnLangChange(
       'common.admin.customSort.pageTitle'
     );
+  }
+
+  onSelectSortRule(sort: SortOption): void {
+    this.remainderRuleValue = sort;
+    this.remainderRuleLabel = CommonUtils.getLabel(sort, this.ruleDropdown());
   }
 
   get filteredAvailableExtensions(): string[] {
@@ -221,7 +233,7 @@ export class CustomSortComponent implements OnInit {
     this.isSaving = true;
 
     this.adminDashboardService
-      .sortMarketExtensions(this.sortingExtensions, this.remainderRule)
+      .sortMarketExtensions(this.sortingExtensions, this.remainderRuleValue)
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
@@ -248,6 +260,13 @@ export class CustomSortComponent implements OnInit {
     try {
       const productIds = await firstValueFrom(this.productService.fetchAllProductIds()) ?? [];
       const customSort = await lastValueFrom(this.adminDashboardService.getCustomSort()) ?? null;
+      const validSortValues = Object.values(SortOption);
+      const rule = customSort?.ruleForRemainder;
+      this.remainderRuleValue = validSortValues.includes(rule as SortOption)
+        ? (rule as SortOption)
+        : this.ruleDropdown()[0].value;
+
+      this.remainderRuleLabel = CommonUtils.getLabel(this.remainderRuleValue, this.ruleDropdown());
       this.applyCustomSort(productIds, customSort);
     } finally {
       this.isLoading = false;
@@ -259,7 +278,6 @@ export class CustomSortComponent implements OnInit {
     customSort: CustomSortConfig | null
   ): void {
     const orderedIds = customSort?.orderedListOfProducts ?? [];
-    const remainderRule = customSort?.ruleForRemainder ?? SortOption.ALPHABETICALLY;
 
     const sortedSet = new Set(
       orderedIds.filter(productId => productIds.includes(productId))
@@ -267,6 +285,5 @@ export class CustomSortComponent implements OnInit {
 
     this.sortingExtensions = Array.from(sortedSet);
     this.allExtensions = productIds.filter(productId => !sortedSet.has(productId));
-    this.remainderRule = remainderRule;
   }
 }

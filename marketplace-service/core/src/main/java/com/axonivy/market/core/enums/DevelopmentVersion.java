@@ -7,6 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * <p>
+ * Development version enumeration defining different version types for product releases and tracking.
+ * </p>
+ *
+ * @since 15/04/2026
+ * @author nqhoan
+ */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

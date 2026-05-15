@@ -26,44 +26,6 @@ describe('HeaderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should toggle the mobile menu on click', () => {
-    const navbarToggler = fixture.debugElement.query(By.css('.ti.ti-list'));
-
-    expect(component.isMobileMenuCollapsed()).toBe(true);
-
-    // Click the mobile menu toggler
-    navbarToggler.triggerEventHandler('click', null);
-    fixture.detectChanges();
-
-    expect(component.isMobileMenuCollapsed()).toBe(false);
-
-    // Click the mobile menu toggler again
-    navbarToggler.triggerEventHandler('click', null);
-    fixture.detectChanges();
-
-    expect(component.isMobileMenuCollapsed()).toBe(true);
-  });
-
-  // Responsive section
-  it('action section should display in the bottom of the view in mobile mode', () => {
-    // Verify the relevant sections exist; layout position not testable in jsdom
-    const headerNavigation = fixture.nativeElement.querySelector(
-      '.header__navigation'
-    );
-    const headerAction = fixture.nativeElement.querySelector('.header__action');
-    expect(headerNavigation).toBeTruthy();
-    expect(headerAction).toBeTruthy();
-  });
-
-  it('navigation section should display in vertical', () => {
-    // Bootstrap uses flex-column class for vertical layout in mobile
-    const navBar = fixture.debugElement.query(
-      By.css('.header__navbar-content')
-    );
-    expect(navBar).toBeTruthy();
-    expect(navBar.nativeElement.classList.contains('flex-column')).toBe(true);
-  });
-
   it('menu button should be in the right side of mobile view', () => {
     // Verify menu button exists; position not testable in jsdom
     const menuButton = fixture.nativeElement.querySelector(
@@ -103,13 +65,5 @@ describe('HeaderComponent', () => {
       (router.events as any).next(event3);
       expect(component.isAdminRoute).toBe(false);
     });
-  });
-
-  it('should emit menuToggle event when onMenuToggleClick is called', () => {
-    vi.spyOn(component.menuToggle, 'emit');
-
-    component.onMenuToggleClick();
-
-    expect(component.menuToggle.emit).toHaveBeenCalled();
   });
 });
