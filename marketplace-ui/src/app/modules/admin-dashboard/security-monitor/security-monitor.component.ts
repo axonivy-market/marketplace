@@ -190,11 +190,11 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
+  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, latestCommitSHA?: string): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
-      additionalPath = lastCommitSHA ?? '';
+      additionalPath = latestCommitSHA ?? '';
     }
     if (path) {
       this.navigateToPage(repoName, path, additionalPath);
