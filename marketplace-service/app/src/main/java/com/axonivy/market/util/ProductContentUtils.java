@@ -121,13 +121,16 @@ public final class ProductContentUtils {
    * Case 1: Demo → Setup → Component
      * demo(10)  → next = min(setup=50, component=90) = 50
      * setup(50) → next = component=90
-     * component(90) → next = -1 → hết file
+     * component(90) → next = -1 → end of file
    * Case 2: Setup → Demo → Component
      * setup(10) → next = min(demo=50, component=90) = 50
      * demo(50)  → next = component=90
      * component(90) → next = -1 → end of file
    */
   private static int findNextSectionAfter(int currentStart, int[] sectionStarts) {
+    if (currentStart == INDEX_NOT_FOUND) {
+      return INDEX_NOT_FOUND;
+    }
     int next = INDEX_NOT_FOUND;
     for (int sectionIndex : sectionStarts) {
       if (sectionIndex != INDEX_NOT_FOUND && sectionIndex > currentStart) {

@@ -11,7 +11,7 @@ export class MultilingualismPipe implements PipeTransform {
     let displayValue = '';
     if (value) {
       displayValue = value[language] ?? '';
-      if (displayValue === undefined || displayValue === '') {
+      if (displayValue === '') {
         displayValue = value[Language.EN] ?? '';
       }
     }

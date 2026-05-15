@@ -262,7 +262,11 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
     demo: {
       en: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```'
     },
-    component: null,
+    component: {
+      en: '- Signature: getSubPdf\n' +
+        '   Input: processingId: java.util.UUID, index: Integer, fileName: String\n' +
+        '   Result: file: java.io.File, error: ch.ivyteam.ivy.bpm.error.BpmError'
+    },
     isDependency: true,
     name: 'cron job',
     groupId: 'com.axonivy.utils.cronjob',

@@ -61,7 +61,7 @@ public class ProductModuleContent extends AbstractAuditableEntity<String> {
   @Column(name = DEMO, columnDefinition = TEXT_TYPE)
   private Map<String, String> demo;
 
-  @Schema(description = "Component tab content", example = "{ \"de\": \"Components\", \"en\": \"Components\" ")
+  @Schema(description = "Component tab content", example = "{ \"de\": \"Components\", \"en\": \"Components\" }")
   @ElementCollection
   @CollectionTable(name = PRODUCT_MODULE_CONTENT_COMPONENT, joinColumns = @JoinColumn(name = PRODUCT_MODULE_CONTENT_ID))
   @MapKeyColumn(name = LANGUAGE)
