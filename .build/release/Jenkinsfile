@@ -18,7 +18,7 @@ pipeline {
     VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
     OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
-    MARKETPLACE_ENV_FILE = credentials('MARKETPLACE_PROD_ENV_FILE')
+    MARKETPLACE_ENV_FILE = credentials('PREVIEW_ENV_FILE')
   }
 
   parameters {
@@ -126,14 +126,13 @@ pipeline {
     stage('Build Docker Images') {
       steps {
         script {
-          dir("./target-source/marketplace-build/templates/dev") {
+          dir('./target-source/marketplace-build/templates/dev') {
             sh '''
                 export NGINX_CONFIG_PATH=../../nginx/nginx.conf
                 export BUILD_ENV=production
                 export BUILD_VERSION=$RELEASE_VERSION
                 export NGINX_PORT=80
-                docker compose --project-name marketplace up --build
-                docker compose --project-name marketplace up --force-recreate -d
+                docker compose --project-name marketplace up --build --force-recreate -d
             '''
           }
         }
@@ -174,7 +173,7 @@ pipeline {
         sh '''
           # Prepare UI image
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
-          docker tag $UI_IMAGE_ID:latest $UI_IMAGE_ID:$RELEASE_VERSION
+          docker tag $UI_IMAGE_NAME:latest $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old UI image versions
           export IMAGE_NAME=$UI_IMAGE_NAME
@@ -188,7 +187,7 @@ pipeline {
         sh '''
           # Prepare App image
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
-          docker tag $APP_IMAGE_ID:latest $APP_IMAGE_ID:$RELEASE_VERSION
+          docker tag $APP_IMAGE_NAME:latest $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old App image versions
           export IMAGE_NAME=$APP_IMAGE_NAME
@@ -202,7 +201,7 @@ pipeline {
         sh '''
           # Prepare Stable image
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
-          docker tag $STABLE_IMAGE_ID:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
+          docker tag $STABLE_IMAGE_NAME:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old Stable image versions
           export IMAGE_NAME=$STABLE_IMAGE_NAME
