@@ -69,6 +69,7 @@ class ImageControllerTest {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
+    headers.set("X-Content-Type-Options", "nosniff");
     ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
 
     ResponseEntity<byte[]> result = imageController.findPreviewImageByName("sample.png");
@@ -76,6 +77,21 @@ class ImageControllerTest {
     assertEquals(expectedResult, result,
         "Preview image should be returned with correct headers and HTTP 200 status when data exists");
   }
+
+    @Test
+    void testFindPreviewImageByNameUsesDetectedContentType() {
+    byte[] mockImageData = "preview data".getBytes();
+    when(imageService.readPreviewImageByName("sample.jpg")).thenReturn(mockImageData);
+
+    ResponseEntity<byte[]> result = imageController.findPreviewImageByName("sample.jpg");
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+          "Status should be 200 OK when preview image data exists");
+    assertEquals(MediaType.IMAGE_JPEG, result.getHeaders().getContentType(),
+          "Preview images should be served with a media type derived from the requested filename");
+    assertEquals("nosniff", result.getHeaders().getFirst("X-Content-Type-Options"),
+          "Preview responses should disable MIME sniffing");
+    }
 
   @Test
   void testFindPreviewImageByNameWhenImageEmpty() {

@@ -224,6 +224,17 @@ class ImageServiceImplTest extends BaseSetup {
     }
   }
 
+  @Test
+  void testReadPreviewImageByNameRejectsNonImageFile() {
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+      byte[] result = imageService.readPreviewImageByName("secret.txt");
+
+      assertEquals(0, result.length,
+          "Non-image preview file names should be rejected before the filesystem is searched");
+      mockedFiles.verify(() -> Files.walk(any()), never());
+    }
+  }
+
 
   @Test
   void testReadPreviewImageByNameIOException() {

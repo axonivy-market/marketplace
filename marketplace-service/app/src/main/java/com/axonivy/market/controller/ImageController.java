@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +33,8 @@ public class ImageController extends CoreImageController {
   public ResponseEntity<byte[]> findPreviewImageByName(
       @PathVariable("imageName") String imageName) {
     var headers = new HttpHeaders();
-    headers.setContentType(MediaType.IMAGE_PNG);
+    headers.setContentType(MediaTypeFactory.getMediaType(imageName).orElse(MediaType.APPLICATION_OCTET_STREAM));
+    headers.set("X-Content-Type-Options", "nosniff");
     byte[] imageData = imageService.readPreviewImageByName(imageName);
     if (imageData.length == 0) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
