@@ -8,8 +8,14 @@ RELEASE_VERSION="${2:-}"
 NGINX_PORT="${3:-}"
 ENV_SECRET_FILE="${4:-}"
 
-if [[ -z "$NODE_IP" || -z "$RELEASE_VERSION" || -z "$NGINX_PORT" || -z "$ENV_SECRET_FILE" ]]; then
-    echo "ERROR: $0 Missing required arguments: <NODE_IP> <RELEASE_VERSION> <NGINX_PORT> <ENV_SECRET_FILE>"
+missing_args=()
+[[ -z "$NODE_IP" ]] && missing_args+=("NODE_IP")
+[[ -z "$RELEASE_VERSION" ]] && missing_args+=("RELEASE_VERSION")
+[[ -z "$NGINX_PORT" ]] && missing_args+=("NGINX_PORT")
+[[ -z "$ENV_SECRET_FILE" ]] && missing_args+=("ENV_SECRET_FILE")
+if [[ ${#missing_args[@]} -gt 0 ]]; then
+    echo "ERROR: $0 Missing required arguments: ${missing_args[*]}"
+    echo "Usage: $0 <NODE_IP> <RELEASE_VERSION> <NGINX_PORT> <ENV_SECRET_FILE>"
     exit 1
 fi
 
