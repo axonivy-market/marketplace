@@ -30,10 +30,10 @@ import jakarta.servlet.http.HttpServletRequest;
 class AuthorizedAspectTest {
   @Mock
   private HttpServletRequest request;
-  
+
   @Mock
   private JwtService jwtService;
-  
+
   @Mock
   private GitHubService gitHubService;
 
@@ -42,26 +42,26 @@ class AuthorizedAspectTest {
 
   @Mock
   private Authorized authorized;
-  
+
   @InjectMocks
   private AuthorizedAspect authorizedAspect;
-  
+
   @BeforeEach
   void setup() {
     ServletRequestAttributes attributes = new ServletRequestAttributes(request);
     RequestContextHolder.setRequestAttributes(attributes);
   }
-  
+
   @Test
   void testUnauthorizedThrowsException() {
     when(request.getHeader(AUTHORIZATION)).thenReturn(null);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn(null);
-    
-    assertThrows(Oauth2ExchangeCodeException.class, 
+
+    assertThrows(Oauth2ExchangeCodeException.class,
         () -> authorizedAspect.validateAuthorization(joinPoint, authorized),
         "Should throw Oauth2ExchangeCodeException when no authorization header is present");
   }
-  
+
   @Test
   void testAuthorizedSuccess() throws Throwable {
     UserInfo mockUser = new UserInfo();
@@ -78,10 +78,14 @@ class AuthorizedAspectTest {
     )).thenReturn(mockUser);
 
     when(joinPoint.proceed()).thenReturn("success");
-    
+
     Object result = authorizedAspect.validateAuthorization(joinPoint, authorized);
-    
+
     assertEquals("success", result, "Should return the result from proceed when authorized");
+
+    verify(request).setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, "test-user");
+    verify(request).setAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE, "123456");
+    verify(request).setAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE, "valid-token");
     verify(joinPoint).proceed();
   }
 
