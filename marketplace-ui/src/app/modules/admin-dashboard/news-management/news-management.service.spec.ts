@@ -14,6 +14,7 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
 import { fail } from 'assert';
+import { ReleaseLetterDraftApiResponse } from '../../../shared/models/apis/release-letter-draft-response.model';
 
 describe('NewsManagementService', () => {
   let service: NewsManagementService;
@@ -293,6 +294,72 @@ describe('NewsManagementService', () => {
       expect(req.request.url).toBe(`${API_URI.RELEASE_LETTERS}/${selectedId}`);
 
       req.flush({} as ReleaseLetterApiResponse);
+    });
+  });
+
+  describe('saveAsDraft', () => {
+    it('should save release letter as draft', () => {
+      const releaseLetterRequest: ReleaseLetter = {
+        id: '123',
+        sprint: 'S52',
+        content: 'Release content',
+        draftContent: 'Draft content',
+        createdAt: '2024-02-10T00:00:00Z'
+      } as any;
+
+      const mockResponse: ReleaseLetterDraftApiResponse = {
+        id: 'draft-123',
+        draftContent: 'Draft content'
+      } as any;
+
+      service.saveAsDraft(releaseLetterRequest).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/save-as-draft`);
+
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(releaseLetterRequest);
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+
+      req.flush(mockResponse);
+    });
+
+    it('should propagate error when save as draft fails', () => {
+      const releaseLetterRequest: ReleaseLetter = {
+        id: '123',
+        sprint: 'S52',
+        draftContent: 'Draft content'
+      } as any;
+
+      service.saveAsDraft(releaseLetterRequest).subscribe({
+        next: () => {
+          fail('Expected request to fail');
+        },
+        error: error => {
+          expect(error.status).toBe(500);
+          expect(error.statusText).toBe('Server Error');
+        }
+      });
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/save-as-draft`);
+
+      expect(req.request.method).toBe('PUT');
+
+      req.flush('Error saving draft', {
+        status: 500,
+        statusText: 'Server Error'
+      });
+    });
+
+    it('should call correct endpoint when saving draft', () => {
+      service.saveAsDraft({} as ReleaseLetter).subscribe();
+
+      const req = httpMock.expectOne(`${API_URI.RELEASE_LETTERS}/save-as-draft`);
+
+      expect(req.request.url).toBe(`${API_URI.RELEASE_LETTERS}/save-as-draft`);
+
+      req.flush({} as ReleaseLetterDraftApiResponse);
     });
   });
 });
