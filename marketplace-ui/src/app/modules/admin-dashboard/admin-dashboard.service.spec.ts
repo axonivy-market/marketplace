@@ -110,7 +110,7 @@ describe('AdminDashboardService', () => {
       const req = httpMock.expectOne(
         `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
       );
-      expect(req.request.method).toBe('GET');
+      expect(req.request.method).toBe('PUT');
       expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );

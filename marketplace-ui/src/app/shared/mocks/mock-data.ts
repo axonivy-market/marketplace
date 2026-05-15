@@ -424,7 +424,6 @@ export const MOCK_FEEDBACKS: Feedback[] = [
 export const MOCK_APPROVED_FEEDBACK: FeedbackApproval = {
   feedbackId: '1',
   isApproved: true,
-  moderatorName: 'TestUser',
   version: 2,
   productId: '123',
   userId: '7c419872-4acf-48e9-b2e5-c6b268d21f53'
