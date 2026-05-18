@@ -495,18 +495,6 @@ describe('ReleaseLetterEditComponent', () => {
     expect(component.sprintErrorMessage).toBe('blank sprint error');
   });
 
-  it('should handle SPRINT_CANNOT_BE_BLANK error', () => {
-    translateServiceMock.instant.mockReturnValue('blank sprint');
-
-    component.handleError(SPRINT_CANNOT_BE_BLANK.toString());
-
-    expect(translateServiceMock.instant).toHaveBeenCalledWith(
-      'common.admin.releaseLetterEdit.sprintCannotBeBlankErrorMessage'
-    );
-
-    expect(component.sprintErrorMessage).toBe('blank sprint');
-  });
-
   it('should handle RELEASE_LETTER_RELEASE_VERSION_ALREADY_EXISTED error', () => {
     translateServiceMock.instant.mockReturnValue('already existed');
 

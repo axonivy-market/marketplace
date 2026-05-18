@@ -30,7 +30,7 @@ export class ReleaseLetterModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.newsManagementService.getReleaseLetterById(this.id).subscribe(response => { 
+    this.newsManagementService.getReleaseLetterById(this.id).subscribe(response => {
       this.sprintHeader = this.getSprintHeader(response.sprint);
       this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
     });
@@ -42,10 +42,6 @@ export class ReleaseLetterModalComponent implements OnInit {
   }
 
   getSprintHeader(sprint: string) {
-    return (
-      this.translateService.instant(
-        'common.admin.newsManagement.sprintHeader'
-      ) + sprint
-    );
+    return this.translateService.instant('common.admin.newsManagement.sprintHeader') + sprint;
   }
 }

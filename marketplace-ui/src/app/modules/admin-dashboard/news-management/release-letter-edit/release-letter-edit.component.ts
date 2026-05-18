@@ -80,7 +80,7 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    if (this.isSubmitting()) {
+    if (this.isHandlingApiCall()) {
       return;
     }
 

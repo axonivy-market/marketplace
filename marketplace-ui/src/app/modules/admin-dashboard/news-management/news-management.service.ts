@@ -55,12 +55,12 @@ export class NewsManagementService {
       );
   }
 
-  getActiveReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
+  getLatestReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
     let params = new HttpParams();
     const ts = Date.now().toString();
     params = params.set(RequestParam.TIMESTAMP, ts);
 
-    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.ACTIVE_RELEASE_LETTERS}`, {
+    return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.LATEST_RELEASE_LETTERS}`, {
       context: new HttpContext().set(CachingEnabled, false),
       headers: this.adminAuth.getAuthHeaders(),
       params

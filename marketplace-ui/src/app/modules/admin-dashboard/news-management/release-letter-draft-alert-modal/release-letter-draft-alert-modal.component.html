@@ -15,7 +15,11 @@
         [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'">
         {{ translateService.get('common.language.yes') | async }}
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+      <button
+        type="button"
+        [lang]="languageService.selectedLanguage()"
+        class="btn btn-outline-secondary"
+        (click)="onCancel()">
         {{ translateService.get('common.language.no') | async }}
       </button>
     </div>

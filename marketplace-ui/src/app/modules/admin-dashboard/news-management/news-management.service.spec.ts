@@ -51,28 +51,28 @@ describe('NewsManagementService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getActiveReleaseLetters', () => {
-    it('should get active release letters', () => {
+  describe('getLatestReleaseLetters', () => {
+    it('should get latest release letters', () => {
       const mockResponse: ReleaseLetterListApiResponse = {
         _embedded: {
           releaseLetterModelList: [
             {
               sprint: 'S50',
               createdAt: '2024-02-01T00:00:00Z',
-              content: 'Active release content'
+              content: 'Latest release content'
             } as any
           ]
         },
         _links: {
-          self: { href: '/api/active-release-letters' }
+          self: { href: '/api/latest-release-letters' }
         }
       } as any;
 
-      service.getActiveReleaseLetters().subscribe(response => {
+      service.getLatestReleaseLetters().subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(req => req.url === API_URI.ACTIVE_RELEASE_LETTERS);
+      const req = httpMock.expectOne(req => req.url === API_URI.LATEST_RELEASE_LETTERS);
 
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
@@ -81,6 +81,7 @@ describe('NewsManagementService', () => {
       req.flush(mockResponse);
     });
   });
+
 
   describe('createReleaseLetter', () => {
     it('should create a release letter with ForwardingError context', () => {
