@@ -40,9 +40,14 @@ export class HeaderOffcanvasService {
       GoogleSearchBarUtils.addCustomClassToSearchBar(renderer, doc);
     });
 
-    this.offcanvasRef.result.finally(() => {
-      this.offcanvasRef = null;
-    });
+    this.offcanvasRef.result.then(
+      () => {
+        this.offcanvasRef = null;
+      },
+      () => {
+        this.offcanvasRef = null;
+      }
+    );
   }
 
   toggle(content: TemplateRef<any>, renderer: Renderer2) {
