@@ -154,7 +154,7 @@ while true; do
             health_path="/${app_name}/actuator/health"
         fi
 
-        HEALTH="$(curl -sf "http://127.0.0.1:${health_port}${health_path}" 2>/dev/null | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | cut -d'"' -f4 || true)"
+        HEALTH="$(curl -sf "http://localhost:${health_port}${health_path}" 2>/dev/null | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | cut -d'"' -f4 || true)"
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
             PENDING_STATUS+=("${health_target}:${HEALTH:-unknown}")
