@@ -95,8 +95,36 @@ merge_env_files() {
     chmod 600 "${output_env}"
 }
 
+merge_compose_files() {
+    local current_compose="$1"
+    local template_compose="$2"
+    local output_compose="$3"
+    local tmp_compose="${output_compose}.tmp"
+
+    # Keep template as source of truth, then layer current values where supported by compose merge.
+    if [[ -n "${current_compose}" && -f "${current_compose}" ]]; then
+        if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+            if docker compose -f "${template_compose}" -f "${current_compose}" config --no-interpolate > "${tmp_compose}"; then
+                mv "${tmp_compose}" "${output_compose}"
+                return 0
+            fi
+        elif command -v docker-compose >/dev/null 2>&1; then
+            if docker-compose -f "${template_compose}" -f "${current_compose}" config > "${tmp_compose}"; then
+                mv "${tmp_compose}" "${output_compose}"
+                return 0
+            fi
+        fi
+
+        echo "WARNING: Failed to merge current docker-compose.yml; using template only."
+        rm -f "${tmp_compose}" 2>/dev/null || true
+    fi
+
+    cp "${template_compose}" "${output_compose}"
+}
+
 echo "Merging .env for ${NEW_RELEASE_NAME}..."
 CURRENT_ENV_FILE=""
+CURRENT_COMPOSE_FILE=""
 if [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/publish/.env" ]]; then
     CURRENT_ENV_FILE="${CURRENT_LINK}/publish/.env"
 elif [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/.env" ]]; then
@@ -110,7 +138,13 @@ merge_env_files "${CURRENT_ENV_FILE}" "${REMOTE_TEMPLATE_DIR}/template.env" "${R
 echo "Preparing docker-compose.yml for ${NEW_RELEASE_NAME}..."
 NEW_COMPOSE="${NEW_RELEASE_PATH}/publish/docker-compose.yml"
 
-cp "${REMOTE_TEMPLATE_DIR}/template.compose.yml" "${NEW_COMPOSE}"
+if [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/publish/docker-compose.yml" ]]; then
+    CURRENT_COMPOSE_FILE="${CURRENT_LINK}/publish/docker-compose.yml"
+elif [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/docker-compose.yml" ]]; then
+    CURRENT_COMPOSE_FILE="${CURRENT_LINK}/docker-compose.yml"
+fi
+
+merge_compose_files "${CURRENT_COMPOSE_FILE}" "${REMOTE_TEMPLATE_DIR}/template.compose.yml" "${NEW_COMPOSE}"
 
 cp "${REMOTE_TEMPLATE_DIR}/template.Dockerfile" "${NEW_RELEASE_PATH}/publish/Dockerfile"
 

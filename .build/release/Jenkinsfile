@@ -132,6 +132,11 @@ pipeline {
                 export BUILD_ENV=production
                 export BUILD_VERSION=$RELEASE_VERSION
                 export NGINX_PORT=80
+                export STABLE_LOG_PATH=/home/axonivy/marketplace/logs/stable
+                export APP_LOG_PATH=/home/axonivy/marketplace/logs/app
+                export NGINX_LOG_PATH=/home/axonivy/marketplace/logs/nginx
+                export NGINX_CACHE_PATH=/home/axonivy/marketplace/cache
+                export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/data/market-installations.json
                 docker compose --project-name marketplace up --build --force-recreate -d
             '''
           }
