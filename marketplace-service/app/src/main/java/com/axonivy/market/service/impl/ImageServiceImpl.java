@@ -115,6 +115,7 @@ public class ImageServiceImpl implements ImageService {
     return imageRepository.findById(id).map(Image::getImageData).orElse(null);
   }
 
+  @Deprecated(since = "1.27.0", forRemoval = true)
   @Override
   public byte[] readPreviewImageByName(String imageName) {
     if (!isAllowedPreviewImageName(imageName)) {

@@ -18,15 +18,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.constants.PreviewConstants.IMAGE_DOWNLOAD_URL;
 import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 
 @Log4j2
@@ -41,15 +42,17 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     try {
       ZipSafetyScanner.analyze(file);
       FileUtils.unzip(file, PREVIEW_DIR);
-      return extractReadme(baseUrl, PREVIEW_DIR);
+      return extractReadme(PREVIEW_DIR);
     } catch (IOException e) {
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
       throw new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR.getCode(),
           ErrorCode.FILE_PROCESSING_ERROR.getHelpText());
+    } finally {
+      clearPreviewDirectory(Paths.get(PREVIEW_DIR));
     }
   }
 
-  public ReleasePreview extractReadme(String baseUrl, String location) throws IOException {
+  public ReleasePreview extractReadme(String location) throws IOException {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
     try (Stream<Path> readmePathStream = Files.walk(Paths.get(location))) {
       List<Path> readmeFiles = readmePathStream.filter(Files::isRegularFile)
@@ -59,15 +62,14 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
         return null;
       }
       for (Path readmeFile : readmeFiles) {
-        processReadme(readmeFile, moduleContents, baseUrl, location);
+        processReadme(readmeFile, moduleContents, location);
       }
       return ReleasePreview.from(moduleContents);
     }
   }
 
-  public String updateImagesWithDownloadUrl(String unzippedFolderPath,
-      String readmeContents, String baseUrl) throws IOException {
-    Map<String, String> imageUrls = new HashMap<>();
+  public String updateImagesWithInlineImages(String unzippedFolderPath, String readmeContents) throws IOException {
+    Map<String, String> imageDataUris = new HashMap<>();
     try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
       List<Path> allImagePaths = imagePathStream
           .filter(Files::isRegularFile)
@@ -75,22 +77,28 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
               path.getFileName().toString().toLowerCase(Locale.getDefault())).matches())
           .toList();
 
-      allImagePaths.stream()
-          .filter(Objects::nonNull)
-          .forEach((Path imagePath) -> {
-            var imageFileName = imagePath.getFileName().toString();
-            var downloadURLFormat = String.format(IMAGE_DOWNLOAD_URL, baseUrl, imageFileName);
-            imageUrls.put(imageFileName, downloadURLFormat);
-          });
-      return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+      for (Path imagePath : allImagePaths.stream().filter(Objects::nonNull).toList()) {
+        var imageFileName = imagePath.getFileName().toString();
+        imageDataUris.put(imageFileName, buildInlineImageSource(imagePath));
+      }
+      return ProductContentUtils.replaceImageDirWithImageCustomId(imageDataUris, readmeContents);
     }
   }
 
-  public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
-      String baseUrl, String location) throws IOException {
+  private String buildInlineImageSource(Path imagePath) throws IOException {
+    var mediaType = resolveInlineMediaType(imagePath);
+    var base64Content = Base64.getEncoder().encodeToString(Files.readAllBytes(imagePath));
+    return String.format("data:%s;base64,%s", mediaType, base64Content);
+  }
+
+  private String resolveInlineMediaType(Path imagePath) throws IOException {
+    return Optional.ofNullable(Files.probeContentType(imagePath)).orElse("application/octet-stream");
+  }
+
+  public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents, String location) throws IOException {
     var readmeContents = Files.readString(readmeFile);
     if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-      readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
+      readmeContents = updateImagesWithInlineImages(location, readmeContents);
     }
     var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
     ProductContentUtils.mappingDescriptionSetupAndDemo(
@@ -100,4 +108,12 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     );
   }
 
+  private void clearPreviewDirectory(Path unzipDir) {
+    try {
+      FileUtils.clearDirectory(unzipDir);
+      Files.deleteIfExists(unzipDir);
+    } catch (IOException e) {
+      log.warn("#extract Failed to clear preview directory {}: {}", PREVIEW_DIR, e.getMessage());
+    }
+  }
 }
