@@ -158,7 +158,7 @@ class ReleasePreviewServiceImplTest {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenAnswer(invocation -> null);
       fileUtils.when(() -> FileUtils.clearDirectory(any())).thenAnswer(invocation -> null);
 
-      ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extract(mockMultipartFile);
       assertNotNull(result, "Release preview should NOT be null");
       fileUtils.verify(() -> FileUtils.clearDirectory(any()), times(1));
     }
@@ -171,9 +171,8 @@ class ReleasePreviewServiceImplTest {
     try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenThrow(new IOException());
     }
-    String tempDirPath = tempDirectory.toString();
     assertThrows(FileProcessingException.class,
-        () -> releasePreviewService.extract(mockMultipartFile, tempDirPath),
+        () -> releasePreviewService.extract(mockMultipartFile),
         "Should throw error if unzipping file failed");
   }
 
