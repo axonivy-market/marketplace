@@ -114,8 +114,7 @@ class ReleasePreviewServiceImplTest {
           .thenReturn(true);
       mockedFiles.when(() -> Files.readString(any()))
           .thenReturn(README_CONTENT);
-      doReturn(UPDATED_README_CONTENT).when(releasePreviewService)
-          .updateImagesWithInlineImages(any(), anyString());
+      doReturn(UPDATED_README_CONTENT).when(releasePreviewService).updateImagesWithInlineImages(any(), anyString());
 
       ReleasePreview result = releasePreviewService.extractReadme(tempDirectory.toString());
       assertNotNull(result, "Release preview should not be null");
@@ -143,8 +142,7 @@ class ReleasePreviewServiceImplTest {
           .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
       String tempDirPath = tempDirectory.toString();
-      assertThrows(FileProcessingException.class,
-          () -> releasePreviewService.extractReadme(tempDirPath),
+      assertThrows(FileProcessingException.class, () -> releasePreviewService.extractReadme(tempDirPath),
           "Should throw IOException if walking readme directory fails"
       );
     }

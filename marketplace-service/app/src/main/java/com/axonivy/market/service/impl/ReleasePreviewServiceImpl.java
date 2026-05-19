@@ -95,7 +95,8 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
     return Optional.ofNullable(Files.probeContentType(imagePath)).orElse("application/octet-stream");
   }
 
-  public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents, String location) throws IOException {
+  public void processReadme(Path readmeFile, Map<String, Map<String, String>> moduleContents,
+      String location) throws IOException {
     var readmeContents = Files.readString(readmeFile);
     if (ProductContentUtils.hasImageDirectives(readmeContents)) {
       readmeContents = updateImagesWithInlineImages(location, readmeContents);
