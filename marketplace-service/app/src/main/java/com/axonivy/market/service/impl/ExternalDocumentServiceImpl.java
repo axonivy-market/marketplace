@@ -321,13 +321,22 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     var symlinkPath = artifactRoot.resolve(majorVersion);
 
     try {
-      prepareDirectoryForSymlinkPath(symlinkPath);
-      var targetPath = Path.of(fileName.toString());
-      Files.createSymbolicLink(symlinkPath, targetPath);
+      unlinkSymlink(symlinkPath);      
+      Files.createSymbolicLink(symlinkPath, Path.of(fileName.toString()));
       return symlinkPath.toString();
     } catch (IOException e) {
       log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
       return null;
+    }
+  }
+  
+  private void unlinkSymlink(Path symlinkPath) {    
+    try {
+      if (Files.isSymbolicLink(symlinkPath)) {
+        Files.delete(symlinkPath);        
+      }
+    } catch (IOException e) {
+      log.error("Failed to unlink symlink at {}: {}", symlinkPath, e.getMessage());
     }
   }
 
