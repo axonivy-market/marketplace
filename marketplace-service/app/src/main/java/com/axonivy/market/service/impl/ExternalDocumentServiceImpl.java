@@ -317,26 +317,20 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return createSymlinkSafely(artifactRoot, fileName, majorVersion);
   }
 
-  private String createSymlinkSafely(Path artifactRoot, Path fileName, String majorVersion) {
-    var symlinkPath = artifactRoot.resolve(majorVersion);
-
+  private String createSymlinkSafely(Path artifactRoot, Path targetPath, String majorVersion) {
+    var symlinkPath = artifactRoot.resolve(majorVersion);    
     try {
-      unlinkSymlink(symlinkPath);      
-      Files.createSymbolicLink(symlinkPath, Path.of(fileName.toString()));
+      if (Files.isSymbolicLink(symlinkPath)) {
+	    Path currentTargetPath = Files.readSymbolicLink(symlinkPath);
+	    if (!StringUtils.equals(targetPath.toString(), currentTargetPath.toString())) {
+	    	Files.delete(symlinkPath);
+	    	Files.createSymbolicLink(symlinkPath, Path.of(targetPath.toString()));	    	
+	    }	    
+      }         
       return symlinkPath.toString();
     } catch (IOException e) {
       log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
       return null;
-    }
-  }
-  
-  private void unlinkSymlink(Path symlinkPath) {    
-    try {
-      if (Files.isSymbolicLink(symlinkPath)) {
-        Files.delete(symlinkPath);        
-      }
-    } catch (IOException e) {
-      log.error("Failed to unlink symlink at {}: {}", symlinkPath, e.getMessage());
     }
   }
 
