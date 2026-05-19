@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,16 +51,41 @@ public class ReleaseLetterController {
 
   @GetMapping
   @Operation(summary = "Retrieve a paginated list of all release letter")
-  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(
-      @ParameterObject Pageable pageable,
-      @RequestParam(required = false, name = "isReadOnly", defaultValue = "true") boolean isReadOnly) {
-    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(@ParameterObject Pageable pageable) {
+    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, true);
 
     if (releaseLetters.isEmpty()) {
       return generateEmptyPagedModel();
     }
 
-    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
+    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, true);
+    pageModel.forEach(model ->
+        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterById(model.getId())).withSelfRel())
+    );
+
+    return ResponseEntity.ok(pageModel);
+  }
+
+  @Authorized
+  @GetMapping("/management")
+  @Operation(summary = "Retrieve a list of all release letter for management")
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLettersForManagement(
+      @ParameterObject Pageable pageable, HttpServletRequest request) {
+    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, false);
+
+    if (releaseLetters.isEmpty()) {
+      return generateEmptyPagedModel();
+    }
+
+    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, false);
+    String gitHubUserId =
+        (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+
+    pageModel.forEach(model -> {
+      var releaseLetterDraft = releaseLetterService
+          .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, model.getId());
+      model.setHasDraft(releaseLetterDraft != null);
+    });
     pageModel.forEach(model ->
         model.add(linkTo(methodOn(this.getClass()).findReleaseLetterById(model.getId())).withSelfRel())
     );

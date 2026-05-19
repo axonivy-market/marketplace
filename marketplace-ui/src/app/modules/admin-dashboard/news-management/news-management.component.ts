@@ -64,16 +64,17 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
     pageable: DEFAULT_PAGEABLE,
-    isReadOnly: false
+    // isReadOnly: false
   };
   tableHeadersClass = 'text-primary text-center';
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
-    { key: '.sprint', class: this.tableHeadersClass },
+    { key: '.sprint', class: this.tableHeadersClass }, 
     { key: '.createdAt', class: this.tableHeadersClass },
     { key: '.updatedAt', class: this.tableHeadersClass },
     { key: '.latest', class: this.tableHeadersClass },
+    { key: '.draft', class: this.tableHeadersClass },
     { key: '.actions', class: this.tableHeadersClass }
   ];
 

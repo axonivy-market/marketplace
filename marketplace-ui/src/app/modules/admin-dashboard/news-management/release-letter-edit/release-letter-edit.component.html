@@ -85,6 +85,7 @@
           id="save-as-draft-button"
           type="button"
           class="btn border-0 submit-button text-center d-flex align-items-center justify-content-center me-3"
+          placement="bottom" ngbTooltip="Tooltip on bottom"
           [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
           [disabled]="isHandlingApiCall()"
           [lang]="languageService.selectedLanguage()"

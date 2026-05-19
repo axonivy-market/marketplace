@@ -1,26 +1,20 @@
-import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
-import { TestBed } from '@angular/core/testing';
+import { HttpHeaders } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting
 } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import { SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
+import { API_URI } from '../../shared/constants/api.constant';
+import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
+import { RequestParam } from '../../shared/enums/request-param';
+import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
+import { AdminAuthService } from './admin-auth.service';
 import {
   AdminDashboardService,
   SyncTaskExecution
 } from './admin-dashboard.service';
-import { AdminAuthService } from './admin-auth.service';
-import { API_URI } from '../../shared/constants/api.constant';
-import { RequestParam } from '../../shared/enums/request-param';
-import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { HttpHeaders } from '@angular/common/http';
-import { ReleaseLetterListApiResponse } from '../../shared/models/apis/release-letter-list-response.model';
-import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
-import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { LoadingComponent } from '../../core/interceptors/api.interceptor';
-import { ReleaseLetter } from '../../shared/models/release-letter-request.model';
-import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-letter-response.model';
-import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
-import { SYNC_TASKS, SYNC_TASK_KEYS } from '../../shared/constants/admin.constant';
 
 describe('AdminDashboardService', () => {
   let service: AdminDashboardService;

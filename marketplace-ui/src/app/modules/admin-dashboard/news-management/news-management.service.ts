@@ -29,11 +29,11 @@ export class NewsManagementService {
     if (releaseLetterCriteria.nextPageHref) {
       url = releaseLetterCriteria.nextPageHref;
     } else {
-      url = `${API_URI.RELEASE_LETTERS}`;
+      url = `${API_URI.RELEASE_LETTERS}/management`;
 
       if (releaseLetterCriteria.pageable) {
         params = params
-          .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
+          // .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
           .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }
@@ -45,6 +45,7 @@ export class NewsManagementService {
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
         context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
+        headers: this.adminAuth.getAuthHeaders(),
         params
       })
       .pipe(
@@ -53,6 +54,11 @@ export class NewsManagementService {
           return of(releaseLetterListApiResponse);
         })
       );
+
+    //       return this.http.get<ReleaseLetterDraftApiResponse | null>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
+    //   context: new HttpContext().set(CachingEnabled, false),
+    //   headers: this.adminAuth.getAuthHeaders()
+    // });
   }
 
   getLatestReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
@@ -100,9 +106,13 @@ export class NewsManagementService {
   }
 
   saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterDraftApiResponse> {
-    return this.http.put<ReleaseLetterDraftApiResponse>(`${API_URI.RELEASE_LETTERS}/save-as-draft`, releaseLetterRequest, {
-      headers: this.adminAuth.getAuthHeaders()
-    });
+    return this.http.put<ReleaseLetterDraftApiResponse>(
+      `${API_URI.RELEASE_LETTERS}/save-as-draft`,
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
   }
 
   getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse | null> {

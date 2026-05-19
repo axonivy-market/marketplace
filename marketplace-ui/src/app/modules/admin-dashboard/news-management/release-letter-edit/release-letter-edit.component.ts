@@ -18,10 +18,19 @@ import { AppModalService } from '../../../../shared/services/app-modal.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { NewsManagementService } from '../news-management.service';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-release-letter-edit',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, MarkdownEditorComponent, LoadingSpinnerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule,
+    MarkdownEditorComponent,
+    LoadingSpinnerComponent,
+    NgbTooltip
+  ],
   templateUrl: './release-letter-edit.component.html',
   styleUrl: './release-letter-edit.component.scss'
 })
