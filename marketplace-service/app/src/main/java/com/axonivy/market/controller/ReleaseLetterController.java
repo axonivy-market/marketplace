@@ -173,7 +173,7 @@ public class ReleaseLetterController {
     PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
 
     if (!isReadOnly) {
-      pageModel.forEach(model -> {
+      pageModel.forEach((ReleaseLetterModel model) -> {
         var releaseLetterDraft = releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId,
             model.getId());
         model.setHasDraft(releaseLetterDraft != null);

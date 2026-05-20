@@ -32,7 +32,6 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,56 +54,49 @@ class ReleaseLetterControllerTest extends BaseSetup {
   @InjectMocks
   private ReleaseLetterController releaseLetterController;
 
-//  @Test
-//  void testFindAllReleaseLettersShouldReturnPagedModelWhenDataExists() {
-//    PageRequest pageable = PageRequest.of(0, 20);
-//    boolean isPaging = true;
-//    ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
-//
-//    Page<ReleaseLetter> mockReleaseLetters = new PageImpl<>(List.of(mockReleaseLetter), pageable, 1);
-//
-//    ReleaseLetterModel model = new ReleaseLetterModel();
-//    PagedModel<ReleaseLetterModel> pagedModel =
-//        PagedModel.of(List.of(model), new PagedModel.PageMetadata(1, 0, 1));
-//
-//    when(releaseLetterService.findAllReleaseLetters(pageable, isPaging)).thenReturn(mockReleaseLetters);
-//    when(pagedResourcesAssembler.toModel(mockReleaseLetters, releaseLetterModelAssembler))
-//        .thenReturn(pagedModel);
-//
-//    ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-//        releaseLetterController.findAllReleaseLetters(pageable, isPaging);
-//
-//    assertEquals(HttpStatus.OK, response.getStatusCode(),
-//        "Response status should be 200 OK when release letters exist.");
-//    assertEquals(pagedModel, response.getBody(),
-//        "Response body content size should match the number of release letters returned.");
-//
-//    verify(releaseLetterService).findAllReleaseLetters(pageable, isPaging);
-//    verify(pagedResourcesAssembler).toModel(mockReleaseLetters, releaseLetterModelAssembler);
-//  }
+  @Test
+  void testFindAllReleaseLettersShouldReturnPagedModelWhenDataExists() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
+    Page<ReleaseLetter> mockReleaseLetters = new PageImpl<>(List.of(mockReleaseLetter), pageable, 1);
+    ReleaseLetterModel model = new ReleaseLetterModel();
 
-//  @Test
-//  void testFindAllReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
-//    PageRequest pageable = PageRequest.of(0, 20);
-//    boolean isPaging = true;
-//    Page<ReleaseLetter> emptyPage = Page.empty();
-//
-//    PagedModel<ReleaseLetterModel> emptyModel = PagedModel.empty();
-//
-//    when(releaseLetterService.findAllReleaseLetters(pageable, isPaging)).thenReturn(emptyPage);
-//    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-//
-//    ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-//        releaseLetterController.findAllReleaseLetters(pageable, isPaging);
-//
-//    assertEquals(HttpStatus.OK, response.getStatusCode(),
-//        "Response status should be 200 OK when empty page returned.");
-//    assertEquals(emptyModel, response.getBody(),
-//        "Response body should be empty.");
-//
-//    verify(pagedResourcesAssembler)
-//        .toEmptyModel(emptyPage, ReleaseLetterModel.class);
-//  }
+    PagedModel<ReleaseLetterModel> pagedModel =
+        PagedModel.of(List.of(model), new PagedModel.PageMetadata(1, 0, 1));
+
+    when(releaseLetterService.findAllReleaseLetters(pageable, true)).thenReturn(mockReleaseLetters);
+    when(pagedResourcesAssembler.toModel(mockReleaseLetters, releaseLetterModelAssembler)).thenReturn(pagedModel);
+
+    ResponseEntity<PagedModel<ReleaseLetterModel>> response = releaseLetterController.findAllReleaseLetters(pageable);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when release letters exist.");
+    assertEquals(pagedModel, response.getBody(),
+        "Response body should match paged model.");
+
+    verify(releaseLetterService).findAllReleaseLetters(pageable, true);
+    verify(pagedResourcesAssembler).toModel(mockReleaseLetters, releaseLetterModelAssembler);
+  }
+
+  @Test
+  void testFindAllReleaseLettersShouldReturnEmptyPagedModelWhenNoData() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    Page<ReleaseLetter> emptyPage = Page.empty();
+    PagedModel<ReleaseLetterModel> emptyModel = PagedModel.empty();
+
+    when(releaseLetterService.findAllReleaseLetters(pageable, true)).thenReturn(emptyPage);
+    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
+
+    ResponseEntity<PagedModel<ReleaseLetterModel>> response = releaseLetterController.findAllReleaseLetters(pageable);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK when empty page returned.");
+    assertEquals(emptyModel, response.getBody(),
+        "Response body should be empty.");
+
+    verify(releaseLetterService).findAllReleaseLetters(pageable, true);
+    verify(pagedResourcesAssembler).toEmptyModel(emptyPage, ReleaseLetterModel.class);
+  }
 
   @Test
   void testFindReleaseLetterByIdShouldReturnReleaseLetter() {
@@ -213,37 +205,35 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "Response should contain a body after updating release letter.");
   }
 
-//  @Test
-//  void testFindAllReleaseLettersShouldUseToModelWithoutContentWhenPagingDisabled() {
-//    PageRequest pageable = PageRequest.of(0, 20);
-//    boolean isPaging = false;
-//
-//    ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
-//    Page<ReleaseLetter> page = new PageImpl<>(List.of(mockReleaseLetter), pageable, 1);
-//
-//    ReleaseLetterModel model = new ReleaseLetterModel();
-//    PagedModel<ReleaseLetterModel> pagedModel =
-//        PagedModel.of(List.of(model), new PagedModel.PageMetadata(1, 0, 1));
-//
-//    when(releaseLetterService.findAllReleaseLetters(pageable, isPaging)).thenReturn(page);
-//
-//    when(pagedResourcesAssembler.toModel(
-//        eq(page),
-//        any(RepresentationModelAssembler.class)
-//    )).thenReturn(pagedModel);
-//
-//    ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-//        releaseLetterController.findAllReleaseLetters(pageable, isPaging);
-//
-//    assertEquals(HttpStatus.OK, response.getStatusCode(),
-//        "Response status should be 200 OK when release letters exist and paging disabled.");
-//
-//    assertEquals(pagedModel, response.getBody(),
-//        "Response body should match paged model returned by assembler.");
-//
-//    verify(releaseLetterService).findAllReleaseLetters(pageable, isPaging);
-//    verify(pagedResourcesAssembler).toModel(eq(page), any(RepresentationModelAssembler.class));
-//  }
+  @Test
+  void testFindAllReleaseLettersForManagementShouldUseAssemblerWithoutContent() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    ReleaseLetter mockReleaseLetter = createReleaseLetterMock();
+    Page<ReleaseLetter> page = new PageImpl<>(List.of(mockReleaseLetter), pageable, 1);
+    ReleaseLetterModel model = new ReleaseLetterModel();
+    model.setId("release-letter-id");
+    PagedModel<ReleaseLetterModel> pagedModel =
+        PagedModel.of(List.of(model), new PagedModel.PageMetadata(1, 0, 1));
+
+    HttpServletRequest request = mock(HttpServletRequest.class);
+
+    when(request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn("github-user-id");
+    when(releaseLetterService.findAllReleaseLetters(pageable, false)).thenReturn(page);
+    when(pagedResourcesAssembler.toModel(eq(page), any(RepresentationModelAssembler.class))).thenReturn(pagedModel);
+    when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(anyString(), anyString()))
+        .thenReturn(null);
+
+    ResponseEntity<PagedModel<ReleaseLetterModel>> response =
+        releaseLetterController.findAllReleaseLettersForManagement(pageable, request);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be 200 OK.");
+    assertEquals(pagedModel, response.getBody(),
+        "Response body should match paged model returned by assembler.");
+
+    verify(releaseLetterService).findAllReleaseLetters(pageable, false);
+    verify(pagedResourcesAssembler).toModel(eq(page), any(RepresentationModelAssembler.class));
+  }
 
   @Test
   void testDeleteReleaseLetterShouldCallService() {
