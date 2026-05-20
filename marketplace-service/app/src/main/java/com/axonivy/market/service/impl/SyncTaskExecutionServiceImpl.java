@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +34,16 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Transactional
   @Override
   public SyncTaskExecution start(SyncTaskType jobType) {
-    SyncTaskExecution execution = findOrCreate(jobType);
-    if (SyncTaskStatus.RUNNING == execution.getStatus()) {
-      String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(jobType);
-      throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
+    List<SyncTaskExecution> executions = findExecutionsByType(jobType);
+    if (hasActiveExecution(executions)) {
+      throw taskAlreadyRunning(jobType);
     }
+
+    if (executions.isEmpty()) {
+      return createExecution(jobType);
+    }
+
+    SyncTaskExecution execution = executions.getFirst();
     execution.setStatus(SyncTaskStatus.STARTED);
     execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
     return syncTaskExecutionRepo.save(execution);
@@ -80,12 +86,48 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
         .orElse(null);
   }
 
-  private SyncTaskExecution findOrCreate(SyncTaskType type) {
-    return syncTaskExecutionRepo.findByType(type)
-        .orElseGet(() -> SyncTaskExecution.builder()
-            .type(type)
-            .build()
-        );
+  private List<SyncTaskExecution> findExecutionsByType(SyncTaskType type) {
+    return syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type);
+  }
+
+  private SyncTaskExecution createExecution(SyncTaskType type) {
+    SyncTaskExecution execution = SyncTaskExecution.builder()
+        .type(type)
+        .status(SyncTaskStatus.STARTED)
+        .message(SyncTaskConstants.STARTED_MESSAGE)
+        .build();
+    try {
+      return syncTaskExecutionRepo.saveAndFlush(execution);
+    } catch (DataIntegrityViolationException ex) {
+      List<SyncTaskExecution> executions = findExecutionsByType(type);
+      if (hasActiveExecution(executions)) {
+        throw taskAlreadyRunning(type);
+      }
+
+      return executions.stream()
+          .findFirst()
+          .map(existingExecution -> {
+            existingExecution.setStatus(SyncTaskStatus.STARTED);
+            existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
+            return syncTaskExecutionRepo.save(existingExecution);
+          })
+          .orElseThrow(() -> ex);
+    }
+  }
+
+  private boolean hasActiveExecution(List<SyncTaskExecution> executions) {
+    return executions.stream()
+        .map(SyncTaskExecution::getStatus)
+        .anyMatch(this::isActiveStatus);
+  }
+
+  private boolean isActiveStatus(SyncTaskStatus status) {
+    return status == SyncTaskStatus.STARTED || status == SyncTaskStatus.RUNNING;
+  }
+
+  private TaskAlreadyRunningException taskAlreadyRunning(SyncTaskType type) {
+    String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(type);
+    return new TaskAlreadyRunningException(taskAlreadyRunningMessage);
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {

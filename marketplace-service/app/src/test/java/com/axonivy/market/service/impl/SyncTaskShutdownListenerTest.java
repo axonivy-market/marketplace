@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
-import java.util.Optional;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class SyncTaskShutdownListenerTest {
@@ -37,8 +37,8 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
 
-    when(syncTaskExecutionRepo.findByType(any()))
-        .thenReturn(Optional.of(runningExecution));
+    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
+        .thenReturn(List.of(runningExecution));
 
     listener.onShutdown();
     verify(syncTaskExecutionService, atLeastOnce())
@@ -53,12 +53,25 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution finishedExecution = mock(SyncTaskExecution.class);
     when(finishedExecution.getStatus()).thenReturn(SyncTaskStatus.SUCCESS);
 
-    when(syncTaskExecutionRepo.findByType(any()))
-        .thenReturn(Optional.of(finishedExecution));
+    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
+        .thenReturn(List.of(finishedExecution));
 
     listener.onShutdown();
     verify(syncTaskExecutionService, never())
         .markStatusFailure(any(), any());
+  }
+
+  @Test
+  void testShouldMarkStartedExecutionAsFailed() {
+    SyncTaskExecution startedExecution = mock(SyncTaskExecution.class);
+    when(startedExecution.getStatus()).thenReturn(SyncTaskStatus.STARTED);
+
+    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
+        .thenReturn(List.of(startedExecution));
+
+    listener.onShutdown();
+    verify(syncTaskExecutionService, atLeastOnce())
+        .markStatusFailure(startedExecution, "Application shutdown during execution");
   }
 
   @Test
@@ -67,8 +80,8 @@ class SyncTaskShutdownListenerTest {
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
     when(runningExecution.getType()).thenReturn(SyncTaskType.values()[0]);
 
-    when(syncTaskExecutionRepo.findByType(any()))
-        .thenReturn(Optional.of(runningExecution));
+    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
+        .thenReturn(List.of(runningExecution));
 
     doThrow(mock(DataAccessException.class))
         .when(syncTaskExecutionService)

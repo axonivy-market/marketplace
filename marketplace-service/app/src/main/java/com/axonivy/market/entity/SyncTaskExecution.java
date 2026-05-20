@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,6 +29,7 @@ public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
 
+  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private SyncTaskType type;
 

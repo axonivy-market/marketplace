@@ -10,6 +10,7 @@ import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -34,8 +35,8 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testStartCreatesNewExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
-    when(repo.findByType(type)).thenReturn(Optional.empty());
-    when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(repo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type)).thenReturn(List.of());
+    when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
@@ -48,7 +49,7 @@ class SyncTaskExecutionServiceImplTest {
   void testStartUpdatesExistingExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existing = SyncTaskExecution.builder().type(type).build();
-    when(repo.findByType(type)).thenReturn(Optional.of(existing));
+    when(repo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type)).thenReturn(List.of(existing));
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
@@ -63,12 +64,38 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
         SyncTaskStatus.RUNNING).build();
-    when(repo.findByType(type)).thenReturn(Optional.of(existedSyncTaskExecution));
+    when(repo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type)).thenReturn(List.of(existedSyncTaskExecution));
 
     assertThrows(TaskAlreadyRunningException.class,
         () -> service.start(type), "Should throw TaskAlreadyRunningException when execution status is " +
             "RUNNING");
   }
+
+    @Test
+    void testStartThrowTaskAlreadyRunningExceptionWhenSyncTaskStatusIsStarted() {
+    SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
+    SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
+      SyncTaskStatus.STARTED).build();
+    when(repo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type)).thenReturn(List.of(existedSyncTaskExecution));
+
+    assertThrows(TaskAlreadyRunningException.class,
+      () -> service.start(type), "Should throw TaskAlreadyRunningException when execution status is " +
+        "STARTED");
+    }
+
+    @Test
+    void testStartThrowTaskAlreadyRunningExceptionWhenCreateCollidesWithActiveExecution() {
+    SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
+    SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
+      SyncTaskStatus.STARTED).build();
+    when(repo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(type))
+      .thenReturn(List.of())
+      .thenReturn(List.of(existedSyncTaskExecution));
+    when(repo.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("duplicate key"));
+
+    assertThrows(TaskAlreadyRunningException.class,
+      () -> service.start(type), "Should throw TaskAlreadyRunningException when another node creates the row");
+    }
 
   @Test
   void testMarkStatusSuccess() {

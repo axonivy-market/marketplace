@@ -13,7 +13,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @Log4j2
 @Component
@@ -25,11 +24,12 @@ public class SyncTaskShutdownListener {
 
   @EventListener(ContextClosedEvent.class)
   public void onShutdown() {
-    log.info("Application context is shutting down. Marking RUNNING sync jobs as FAILED.");
+    log.info("Application context is shutting down. Marking STARTED and RUNNING sync jobs as FAILED.");
     Arrays.stream(SyncTaskType.values())
-        .map(syncTaskExecutionRepo::findByType)
-        .flatMap(Optional::stream)
-        .filter(execution -> execution.getStatus() == SyncTaskStatus.RUNNING)
+        .map(syncTaskExecutionRepo::findAllByTypeOrderByUpdatedAtDescCreatedAtDesc)
+        .flatMap(java.util.Collection::stream)
+        .filter(execution -> execution.getStatus() == SyncTaskStatus.STARTED
+            || execution.getStatus() == SyncTaskStatus.RUNNING)
         .forEach((SyncTaskExecution execution) -> {
           try {
             syncTaskExecutionService.markStatusFailure(execution, "Application shutdown during execution");
