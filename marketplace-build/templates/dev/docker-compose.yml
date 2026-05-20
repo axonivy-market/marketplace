@@ -51,8 +51,8 @@ services:
       dockerfile: app/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
-    expose:
-      - 8080
+    ports:
+      - "8080:8080"
     networks:
       - marketplace-network
 

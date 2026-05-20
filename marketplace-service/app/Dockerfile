@@ -2,10 +2,9 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-COPY app/target/*.jar app.jar
+ARG BUILD_VERSION
+COPY app/target/app-${BUILD_VERSION}.jar app.jar
 
-EXPOSE 8080 5005
+EXPOSE 8080
 
-CMD java \
--agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
--jar app.jar
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar"]
