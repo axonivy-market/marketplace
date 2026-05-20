@@ -188,6 +188,11 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
     label: 'common.product.detail.installationGuide'
   },
   {
+    activeClass: "activeTab === 'component'",
+    value: 'component',
+    label: 'common.product.detail.components'
+  },
+  {
     activeClass: "activeTab === 'dependency'",
     value: 'dependency',
     label: 'common.product.detail.maven.label'
@@ -197,21 +202,6 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
     tabId: 'tab-changelog',
     value: 'changelog',
     label: 'common.product.detail.changelog'
-  }
-];
-
-export const FEEDBACK_APPROVAL_TABS: ItemDropdown[] = [
-  {
-    activeClass: "activeTab === 'review'",
-    tabId: 'review-tab',
-    value: 'review',
-    label: 'Review feedback'
-  },
-  {
-    activeClass: "activeTab === 'history'",
-    tabId: 'history-tab',
-    value: 'history',
-    label: 'History'
   }
 ];
 
