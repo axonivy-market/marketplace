@@ -2,7 +2,6 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+import static com.axonivy.market.constants.ReadmeConstants.*;
 import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
 
 public final class ProductContentUtils {
@@ -34,6 +34,7 @@ public final class ProductContentUtils {
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
+  public static final String COMPONENT = "component";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s(\\s+\"[^\"]+\")?\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
   private static final String FIRST_REGEX_CAPTURING_GROUP = "$1";
@@ -78,21 +79,29 @@ public final class ProductContentUtils {
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
   public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
-    int firstDemoIndex = findSectionStart(ReadmeConstants.DEMO_PATTERN, readmeContents);
-    int firstSetUpIndex = findSectionStart(ReadmeConstants.SETUP_PATTERN, readmeContents);
+    int firstDemoIndex = findSectionStart(DEMO_PATTERN, readmeContents);
+    int firstSetUpIndex = findSectionStart(SETUP_PATTERN, readmeContents);
+    int firstComponentIndex = findSectionStart(COMPONENT_PATTERN, readmeContents);
 
     int firstSection = minNonNegative(firstDemoIndex, firstSetUpIndex);
 
     String description = (firstSection == INDEX_NOT_FOUND) ? removeFirstLine(readmeContents) : removeFirstLine(
         readmeContents.substring(0, firstSection));
 
-    String demo = extractIfExists(readmeContents, firstDemoIndex, ReadmeConstants.DEMO_PATTERN, firstSetUpIndex);
-    String setup = extractIfExists(readmeContents, firstSetUpIndex, ReadmeConstants.SETUP_PATTERN, firstDemoIndex);
+    int[] sectionStarts = {firstDemoIndex, firstSetUpIndex, firstComponentIndex};
+
+    String demo = extractIfExists(readmeContents, firstDemoIndex, DEMO_PATTERN,
+        findNextSectionAfter(firstDemoIndex, sectionStarts));
+    String setup = extractIfExists(readmeContents, firstSetUpIndex, SETUP_PATTERN,
+        findNextSectionAfter(firstSetUpIndex, sectionStarts));
+    String component = extractIfExists(readmeContents, firstComponentIndex, COMPONENT_PATTERN,
+        findNextSectionAfter(firstComponentIndex, sectionStarts));
 
     var model = new ReadmeContentsModel();
     model.setDescription(description.trim());
     model.setDemo(demo.trim());
     model.setSetup(setup.trim());
+    model.setComponent(component.trim());
     return model;
   }
 
@@ -104,6 +113,31 @@ public final class ProductContentUtils {
       return a;
     }
     return Math.min(a, b);
+  }
+
+  /**
+   * Finds the nearest section start that comes strictly after the given position.
+   * Returns INDEX_NOT_FOUND if no section exists after the given position.
+   * Case 1: Demo → Setup → Component
+     * demo(10)  → next = min(setup=50, component=90) = 50
+     * setup(50) → next = component=90
+     * component(90) → next = -1 → end of file
+   * Case 2: Setup → Demo → Component
+     * setup(10) → next = min(demo=50, component=90) = 50
+     * demo(50)  → next = component=90
+     * component(90) → next = -1 → end of file
+   */
+  private static int findNextSectionAfter(int currentStart, int[] sectionStarts) {
+    if (currentStart == INDEX_NOT_FOUND) {
+      return INDEX_NOT_FOUND;
+    }
+    int next = INDEX_NOT_FOUND;
+    for (int sectionIndex : sectionStarts) {
+      if (sectionIndex != INDEX_NOT_FOUND && sectionIndex > currentStart) {
+        next = (next == INDEX_NOT_FOUND) ? sectionIndex : Math.min(next, sectionIndex);
+      }
+    }
+    return next;
   }
 
   private static String extractIfExists(String content, int start, Pattern pattern, int nextSectionStart) {
@@ -171,6 +205,7 @@ public final class ProductContentUtils {
     productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
     productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
+    productModuleContent.setComponent(replaceEmptyContentsWithEnContent(moduleContents.get(COMPONENT)));
   }
 
   /**
@@ -187,7 +222,7 @@ public final class ProductContentUtils {
     return readmeContents;
   }
 
-  public static void mappingDescriptionSetupAndDemo(Map<String, Map<String, String>> moduleContents,
+  public static void mappingDescriptionSetupAndDemoAndComponent(Map<String, Map<String, String>> moduleContents,
       String readmeFileName, ReadmeContentsModel readmeContentsModel) {
     String locale = Optional.ofNullable(getReadmeFileLocale(readmeFileName))
         .filter(StringUtils::isNotEmpty)
@@ -198,6 +233,7 @@ public final class ProductContentUtils {
         readmeContentsModel.getDescription());
     moduleContents.computeIfAbsent(SETUP, key -> new HashMap<>()).put(locale, readmeContentsModel.getSetup());
     moduleContents.computeIfAbsent(DEMO, key -> new HashMap<>()).put(locale, readmeContentsModel.getDemo());
+    moduleContents.computeIfAbsent(COMPONENT, key -> new HashMap<>()).put(locale, readmeContentsModel.getComponent());
   }
 
   public static List<GHRelease> extractReleasesPage(List<GHRelease> ghReleases, Pageable pageable) {
