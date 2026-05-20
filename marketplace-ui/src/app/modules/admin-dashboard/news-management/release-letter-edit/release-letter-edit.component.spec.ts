@@ -12,6 +12,7 @@ import {
 import { PageTitleService } from '../../../../shared/services/page-title.service';
 import { ReleaseLetterEditComponent } from './release-letter-edit.component';
 import { NewsManagementService } from '../news-management.service';
+import { AppModalService } from '../../../../shared/services/app-modal.service';
 
 vi.mock('easymde', () => {
   class FakeEasyMDE {
@@ -69,10 +70,15 @@ describe('ReleaseLetterEditComponent', () => {
   let activatedRouteMock: any;
   let pageTitleServiceMock: MockedObject<PageTitleService>;
   let translateServiceMock: MockedObject<TranslateService>;
+  let appModalServiceMock: any;
 
   beforeEach(async () => {
     activatedRouteMock = {
       paramMap: of(convertToParamMap({}))
+    };
+
+    appModalServiceMock = {
+      openDraftAlertModal: vi.fn().mockName('AppModalService.openDraftAlertModal')
     };
 
     newsManagementServiceMock = {
@@ -126,6 +132,7 @@ describe('ReleaseLetterEditComponent', () => {
         { provide: Router, useValue: routerMock },
         { provide: PageTitleService, useValue: pageTitleServiceMock },
         { provide: TranslateService, useValue: translateServiceMock },
+        { provide: AppModalService, useValue: appModalServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRouteMock
@@ -516,5 +523,78 @@ describe('ReleaseLetterEditComponent', () => {
     expect(translateServiceMock.instant).toHaveBeenCalledWith('common.admin.releaseLetterEdit.genericErrorMessage');
 
     expect(component.genericErrorMessage).toBe('generic error');
+  });
+
+  it('should not load release letter when an API call is already being handled', () => {
+    component.isSubmitting.set(true);
+
+    component.loadReleaseLetterWithDraftCheck('123');
+
+    expect(newsManagementServiceMock.getReleaseLetterById).not.toHaveBeenCalled();
+    expect(newsManagementServiceMock.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId).not.toHaveBeenCalled();
+
+    expect(component.isInitializing()).toBe(false);
+  });
+
+  it('should replace content with draft content when draft exists and user chooses to use it', async () => {
+    const releaseLetterResponse = {
+      ...mockResponse,
+      content: 'original content'
+    };
+
+    const draftResponse = {
+      draftContent: 'draft content'
+    };
+
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(of(releaseLetterResponse));
+
+    newsManagementServiceMock.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId.mockReturnValue(
+      of(draftResponse as any)
+    );
+
+    appModalServiceMock.openDraftAlertModal.mockResolvedValue(true);
+
+    component.loadReleaseLetterWithDraftCheck('123');
+
+    await Promise.resolve();
+
+    expect(appModalServiceMock.openDraftAlertModal).toHaveBeenCalled();
+    expect(component.releaseLetter.content).toBe('draft content');
+  });
+
+  it('should keep original content when user declines draft usage', async () => {
+    const releaseLetterResponse = {
+      ...mockResponse,
+      content: 'original content'
+    };
+
+    const draftResponse = {
+      draftContent: 'draft content'
+    };
+
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(of(releaseLetterResponse));
+
+    newsManagementServiceMock.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId.mockReturnValue(
+      of(draftResponse as any)
+    );
+
+    appModalServiceMock.openDraftAlertModal.mockResolvedValue(false);
+
+    component.loadReleaseLetterWithDraftCheck('123');
+
+    await Promise.resolve();
+
+    expect(appModalServiceMock.openDraftAlertModal).toHaveBeenCalled();
+    expect(component.releaseLetter.content).toBe('original content');
+  });
+
+  it('should not open draft modal when draft is null', () => {
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(of(mockResponse));
+
+    newsManagementServiceMock.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId.mockReturnValue(of(null));
+
+    component.loadReleaseLetterWithDraftCheck('123');
+
+    expect(appModalServiceMock.openDraftAlertModal).not.toHaveBeenCalled();
   });
 });
