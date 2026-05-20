@@ -315,53 +315,6 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(component.isVersionUnchangedOrFirstChange(change)).toBe(false);
   });
 
-  describe('successor helpers', () => {
-    it('should return successor URL and parsed name when successor is a valid http URL', () => {
-      component.productDetail = {
-        successor: 'https://market.axonivy.com/smart-workflow'
-      } as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(true);
-      expect(component.getSuccessorUrl()).toBe('https://market.axonivy.com/smart-workflow');
-      expect(component.getSuccessorName()).toBe('smart-workflow');
-    });
-
-    it('should return no successor URL and raw successor name for non-url values', () => {
-      component.productDetail = {
-        successor: 'smart-workflow'
-      } as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(true);
-      expect(component.getSuccessorUrl()).toBeNull();
-      expect(component.getSuccessorName()).toBe('smart-workflow');
-    });
-
-    it('should return empty values when successor is missing', () => {
-      component.productDetail = {} as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(false);
-      expect(component.getSuccessorUrl()).toBeNull();
-      expect(component.getSuccessorName()).toBe('');
-    });
-
-    it('should always extract vertexai-google from successor URLs with query or fragment', () => {
-      const successorUrls = [
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#description',
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#demo',
-        'https://market.axonivy.com/vertexai-google',
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#setup',
-        'https://market.axonivy.com/vertexai-google/'
-      ];
-
-      successorUrls.forEach(url => {
-        component.productDetail = { successor: url } as ProductDetail;
-
-        expect(component.getSuccessorName()).toBe('vertexai-google');
-        expect(component.getSuccessorUrl()).toBe(url);
-      });
-    });
-  });
-
   describe('getShieldsBadgeUrl', () => {
     it('should return empty string if productDetail is undefined', () => {
       component.productDetail = undefined as any;

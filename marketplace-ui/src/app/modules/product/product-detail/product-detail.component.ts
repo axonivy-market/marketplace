@@ -657,20 +657,6 @@ export class ProductDetailComponent implements AfterViewInit {
     });
   }
 
-  getDeprecationSuccessorName(): string {
-    const successor = this.productDetail().successor?.trim();
-    if (!successor) {
-      return '';
-    }
-    try {
-      const url = new URL(successor);
-      const parts = url.pathname.split('/').filter(p => !!p);
-      return decodeURIComponent(parts.at(-1) || url.hostname);
-    } catch {
-      return successor;
-    }
-  }
-
   renderGithubAlert(value: string): SafeHtml {
     const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);

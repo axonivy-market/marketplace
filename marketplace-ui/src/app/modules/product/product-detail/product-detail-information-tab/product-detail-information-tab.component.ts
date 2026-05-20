@@ -190,24 +190,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     return successorUrl ? successorUrl.toString() : null;
   }
 
-  getSuccessorName(): string {
-    const successor = this.productDetail?.successor?.trim();
-    if (!successor) {
-      return '';
-    }
-
-    const successorUrl = this.parseSuccessorUrl(successor);
-    if (!successorUrl) {
-      return successor;
-    }
-
-    const pathnameParts = successorUrl.pathname
-      .split('/')
-      .filter(part => !!part);
-
-    return decodeURIComponent(pathnameParts.at(-1) || successorUrl.hostname);
-  }
-
   private parseSuccessorUrl(successor: string | undefined): URL | null {
     const normalizedSuccessor = successor?.trim();
     if (!normalizedSuccessor) {

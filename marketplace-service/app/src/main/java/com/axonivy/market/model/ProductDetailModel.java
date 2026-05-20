@@ -61,6 +61,8 @@ public class ProductDetailModel extends ProductModel {
   private Boolean isFocusedProduct;
   @Schema(description = "The success of deprecated product", example = "https://market.axonivy.com/portal")
   private String successor;
+  @Schema(description = "The name of replacement product", example = "portal")
+  private String productReplacementName;
 
   @Override
   public int hashCode() {
@@ -124,5 +126,6 @@ public class ProductDetailModel extends ProductModel {
     model.setMavenDropins(product.isMavenDropins());
     model.setIsFocusedProduct(product.getIsFocused());
     model.setSuccessor(product.getSuccessor());
+    model.setProductReplacementName(product.getProductReplacementName());
   }
 }

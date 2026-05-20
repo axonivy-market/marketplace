@@ -19,6 +19,8 @@ describe('DeprecateFormDialogComponent', () => {
     component = fixture.componentInstance;
     component.visible = true;
     component.deprecationRequest = {
+      hasProductReplacement: false,
+      productReplacementName: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -47,6 +49,18 @@ describe('DeprecateFormDialogComponent', () => {
 
     items[0].triggerEventHandler('mousedown', null);
     expect(component.selectProduct.emit).toHaveBeenCalledWith('cms-live-editor');
+  });
+
+  it('should conditionally render replacement fields based on checkbox state', () => {
+    expect(fixture.debugElement.query(By.css('#hasProductReplacementCheckbox'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="productReplacementNameInputPlaceholder"]'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).toBeNull();
+
+    component.deprecationRequest.hasProductReplacement = true;
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('input[placeholder*="productReplacementNameInputPlaceholder"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).not.toBeNull();
   });
 
   it('should show validation error for productId when present', () => {

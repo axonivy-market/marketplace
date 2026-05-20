@@ -103,6 +103,8 @@ public class Product extends AbstractAuditableEntity<String> {
   private Boolean isFocused;
   @Transient
   private String successor;
+  @Transient
+  private String productReplacementName;
 
   @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)

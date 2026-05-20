@@ -130,6 +130,8 @@ describe('DeprecationManagementComponent', () => {
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
     component.deprecationRequest = {
+      hasProductReplacement: true,
+      productReplacementName: 'Portal',
       successorUrl: 'https://market.axonivy.com/portal',
       isAddReadme: true,
       isDeprecated: true,
@@ -151,6 +153,8 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isDeprecating).toBe(false);
     expect(component.isCopySuccessVisible).toBe(false);
     expect(component.deprecationRequest).toEqual({
+      hasProductReplacement: false,
+      productReplacementName: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -168,12 +172,27 @@ describe('DeprecationManagementComponent', () => {
     expect(component.validationErrors.productId).toContain('extensionIdRequired');
 
     component.productId = 'cms-live-editor';
+    component.deprecationRequest.hasProductReplacement = true;
+    component.deprecationRequest.productReplacementName = '';
+    component.deprecationRequest.successorUrl = '';
+    expect(component.validateForm()).toBe(false);
+    expect(component.validationErrors.productReplacementName).toContain('productReplacementNameRequired');
+    expect(component.validationErrors.successorUrl).toContain('successorRequired');
+
+    component.deprecationRequest.productReplacementName = 'Portal';
     component.deprecationRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.successorUrl).toContain('invalidSuccessorUrl');
 
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
+
+    component.deprecationRequest.hasProductReplacement = false;
+    component.deprecationRequest.productReplacementName = 'Stale value';
+    component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
+    expect(component.validateForm()).toBe(true);
+    expect(component.deprecationRequest.productReplacementName).toBe('');
+    expect(component.deprecationRequest.successorUrl).toBe('');
   });
 
   it('should filter deprecated table by product id', () => {

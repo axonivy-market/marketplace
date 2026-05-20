@@ -483,6 +483,8 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Create Pull Request to update Readme",
+        "hasProductReplacement": "Has Product Replacement?",
+        "productReplacementName": "Product replacement name:",
         "successor": "Successor:",
         "confirmRemoveDeprecatedContent": "Are you sure to remove deprecation for this extension?",
         "confirmRemoveDeprecatedTitle": "Remove deprecation confirmation",
@@ -493,6 +495,8 @@
         "action": "Action",
         "validation": {
           "extensionIdRequired": "Extension ID is required",
+          "productReplacementNameRequired": "Product replacement name is required",
+          "successorRequired": "Successor is required",
           "invalidSuccessorUrl": "URL must start with http:// or https://"
         },
         "deprecateSuccess": "Extension has been deprecated successfully!",
@@ -502,6 +506,7 @@
         "copiedLabel": "Copied!",
         "deprecateProduct": "Deprecate Product",
         "productIdInputPlaceholder": "Please select extension id to deprecate",
+        "productReplacementNameInputPlaceholder": "Please enter product replacement name",
         "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
       },
       "releaseLetterEdit": {

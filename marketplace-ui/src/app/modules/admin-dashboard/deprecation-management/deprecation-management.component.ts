@@ -62,6 +62,8 @@ export class DeprecationManagementComponent implements OnInit {
 
   dropdownOpen = false;
   deprecationRequest: DeprecationRequest = {
+    hasProductReplacement: false,
+    productReplacementName: '',
     successorUrl: '',
     isAddReadme: false,
     isDeprecated: false,
@@ -76,7 +78,11 @@ export class DeprecationManagementComponent implements OnInit {
   tableSearchTerm = '';
   moderatorName = '';
   // Validation state
-  validationErrors: { productId?: string; successorUrl?: string } = {};
+  validationErrors: {
+    productId?: string;
+    productReplacementName?: string;
+    successorUrl?: string;
+  } = {};
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
@@ -104,6 +110,8 @@ export class DeprecationManagementComponent implements OnInit {
       this.isCopySuccessVisible = false;
       this.productId = '';
       this.deprecationRequest = {
+        hasProductReplacement: false,
+        productReplacementName: '',
         successorUrl: '',
         isAddReadme: false,
         isDeprecated: false,
@@ -184,6 +192,8 @@ export class DeprecationManagementComponent implements OnInit {
         // Reset deprecate form after closing deprecate success dialog
         this.productId = '';
         this.deprecationRequest = {
+          hasProductReplacement: false,
+          productReplacementName: '',
           successorUrl: '',
           isAddReadme: false,
           isDeprecated: false,
@@ -232,15 +242,31 @@ export class DeprecationManagementComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate successorUrl (optional but must match pattern if provided)
-    if (this.deprecationRequest.successorUrl && this.deprecationRequest.successorUrl.trim() !== '') {
-      const urlPattern = /^(http|https):\/\/.*$/;
-      if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
-        this.validationErrors['successorUrl'] = this.translateService.instant(
-          'common.admin.deprecation.validation.invalidSuccessorUrl'
+    if (this.deprecationRequest.hasProductReplacement) {
+      if (!this.deprecationRequest.productReplacementName?.trim()) {
+        this.validationErrors.productReplacementName = this.translateService.instant(
+          'common.admin.deprecation.validation.productReplacementNameRequired'
         );
         isValid = false;
       }
+
+      if (!this.deprecationRequest.successorUrl?.trim()) {
+        this.validationErrors.successorUrl = this.translateService.instant(
+          'common.admin.deprecation.validation.successorRequired'
+        );
+        isValid = false;
+      } else {
+        const urlPattern = /^(http|https):\/\/.*$/;
+        if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
+          this.validationErrors.successorUrl = this.translateService.instant(
+            'common.admin.deprecation.validation.invalidSuccessorUrl'
+          );
+          isValid = false;
+        }
+      }
+    } else {
+      this.deprecationRequest.productReplacementName = '';
+      this.deprecationRequest.successorUrl = '';
     }
 
     return isValid;

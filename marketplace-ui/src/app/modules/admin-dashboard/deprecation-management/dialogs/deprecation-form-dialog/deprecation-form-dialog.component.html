@@ -38,22 +38,54 @@
           }
         </div>
 
-        <div class="mb-2">
-          <label class="form-label">{{ 'common.admin.deprecation.successor' | translate }}</label>
+        <div class="form-check mb-4">
           <input
-            type="text"
-            [class.form-control]="true"
-            [class.is-invalid]="validationErrors['successorUrl']"
-            [(ngModel)]="deprecationRequest.successorUrl"
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="deprecationRequest.hasProductReplacement"
             [disabled]="isDeprecating"
-            placeholder="{{ 'common.admin.deprecation.successorInputPlaceholder' | translate }}"
+            id="hasProductReplacementCheckbox"
           />
-          @if (validationErrors['successorUrl']) {
-            <div class="invalid-feedback d-block">
-              {{ validationErrors['successorUrl'] }}
-            </div>
-          }
+          <label class="form-check-label" for="hasProductReplacementCheckbox">
+            {{ 'common.admin.deprecation.hasProductReplacement' | translate }}
+          </label>
         </div>
+
+        @if (deprecationRequest.hasProductReplacement) {
+          <div class="mb-2">
+            <label class="form-label">{{ 'common.admin.deprecation.productReplacementName' | translate }}</label>
+            <input
+              type="text"
+              [class.form-control]="true"
+              [class.is-invalid]="validationErrors['productReplacementName']"
+              [(ngModel)]="deprecationRequest.productReplacementName"
+              [disabled]="isDeprecating"
+              placeholder="{{ 'common.admin.deprecation.productReplacementNameInputPlaceholder' | translate }}"
+            />
+            @if (validationErrors['productReplacementName']) {
+              <div class="invalid-feedback d-block">
+                {{ validationErrors['productReplacementName'] }}
+              </div>
+            }
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">{{ 'common.admin.deprecation.successor' | translate }}</label>
+            <input
+              type="text"
+              [class.form-control]="true"
+              [class.is-invalid]="validationErrors['successorUrl']"
+              [(ngModel)]="deprecationRequest.successorUrl"
+              [disabled]="isDeprecating"
+              placeholder="{{ 'common.admin.deprecation.successorInputPlaceholder' | translate }}"
+            />
+            @if (validationErrors['successorUrl']) {
+              <div class="invalid-feedback d-block">
+                {{ validationErrors['successorUrl'] }}
+              </div>
+            }
+          </div>
+        }
 
         <div class="form-check mt-3">
           <input
