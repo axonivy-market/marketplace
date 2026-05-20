@@ -22,7 +22,7 @@ img {
 
 .card__tag--deprecated {
   background-color: #F973161A;
-  color: #D7610F;
+  color: var(--deprecated-banner-text);
   box-shadow: inset 0 0 0 1px #f9731640;
 }
 

@@ -101,7 +101,9 @@
               "></app-product-detail-version-action>
           </div>
           @if (productDetail().deprecated) {
-            <div class="deprecation-banner d-flex flex-column flex-xl-row justify-content-between align-items-stretch">
+            <div
+              class="deprecation-banner d-flex flex-column flex-xl-row justify-content-between align-items-stretch"
+              [ngClass]="{ 'deprecation-banner--with-successor': productDetail().successor }">
               <div class="deprecation-banner-left d-flex flex-column">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <i class="ti ti-alert-triangle deprecation-banner-icon"></i>

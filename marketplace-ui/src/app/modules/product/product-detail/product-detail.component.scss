@@ -275,10 +275,17 @@
   min-width: 0;
   gap: 1.8rem;
   padding-right: 3.2rem;
-  border-right: 1px solid var(--deprecated-banner-divider);
 
   @media (max-width: 1199px) {
     flex: 1;
+  }
+}
+
+.deprecation-banner--with-successor .deprecation-banner-left {
+  border-right: 1px solid var(--deprecated-banner-divider);
+
+  @media (max-width: 1199px) {
+    border-right: none;
   }
 }
 
@@ -306,7 +313,6 @@
   flex: 3;
   min-width: 0;
   gap: 0.6rem;
-  border-left: 1px solid var(--deprecated-banner-divider);
   padding-left: 3.2rem;
 
   @media (max-width: 1199px) {
@@ -316,6 +322,17 @@
     padding-left: 0;
     padding-top: 3.2rem;
     margin-top: 3.2rem;
+  }
+}
+
+.deprecation-banner--with-successor .deprecation-banner-right {
+  border-left: 1px solid var(--deprecated-banner-divider);
+}
+
+.deprecation-banner--with-successor .deprecation-banner-right {
+  @media (max-width: 1199px) {
+    border-left: none;
+    border-top: 1px solid var(--deprecated-banner-divider);
   }
 }
 

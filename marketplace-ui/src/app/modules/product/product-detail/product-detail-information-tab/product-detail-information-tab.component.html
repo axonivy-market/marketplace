@@ -51,7 +51,7 @@
             data-bs-placement="bottom"
             data-bs-html="true"
             data-bs-custom-class="custom-tooltip"
-            [attr.data-bs-title]="'<p class=&quot;text-primary&quot;>' + ('common.product.detail.information.value.successorToolTip' | translate) + '</p>'"></i>
+            [attr.data-bs-title]="getInstallTooltipMessage()"></i>
         </span>
         <div class="text-primary successor-value">
           @if (hasSuccessor()) {

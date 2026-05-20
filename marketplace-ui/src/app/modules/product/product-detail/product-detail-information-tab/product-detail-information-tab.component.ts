@@ -6,11 +6,15 @@ import {
   SimpleChange,
   SimpleChanges
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { SHOW_DEV_VERSION, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
+import {
+  SHOW_DEV_VERSION,
+  VERSION,
+  VERSION_PARAM
+} from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
@@ -49,6 +53,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   router = inject(Router);
   shieldsBadgeUrl = '';
   repoName = '';
+  translateService = inject(TranslateService);
 
   ngOnInit(): void {
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
@@ -203,5 +208,10 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     } catch {
       return null;
     }
+  }
+
+  getInstallTooltipMessage(): string {
+    const message =  this.translateService.instant('common.product.detail.information.value.successorToolTip');
+    return '<p class=text-primary>' + message + '</p>';
   }
 }
