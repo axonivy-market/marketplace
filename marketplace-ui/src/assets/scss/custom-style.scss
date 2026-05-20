@@ -111,6 +111,8 @@ details summary {
   --monitoring-border-color: #e7e7e7;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-install-button-bg: #fe7c22;
+  --deprecated-install-button-text: #{$white};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -246,6 +248,8 @@ details summary {
   --monitoring-border-color: #4f4e4e;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-install-button-bg: #fe7c22;
+  --deprecated-install-button-text: #{$white};
 
   a {
     color: #{$white};
@@ -324,7 +328,7 @@ details summary {
   }
 
   /** End Star Rating Summary **/
-  
+
   /** EasyMDE Cursor **/
 
   .EasyMDEContainer .CodeMirror-cursor {

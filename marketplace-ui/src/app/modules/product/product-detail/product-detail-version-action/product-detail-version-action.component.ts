@@ -25,7 +25,8 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION, DEPRECATED_INSTALL_TOOLTIP, DEFAULT_INSTALL_TOOLTIP }
+  from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -43,7 +44,6 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
-
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
 const DOC = '-doc';
@@ -51,9 +51,6 @@ const ZIP = '.zip';
 const ANCHOR_ELEMENT = 'a';
 const BLOB = 'blob';
 const RESPONSE = 'response';
-const DEFAULT_INSTALL_TOOLTIP =
-  "<p class='text-primary'>Please open the <a href='https://market.axonivy.com' class='ivy__link'>Axon Ivy Market</a> inside your <a class='ivy__link' href='https://developer.axonivy.com/download'>Axon Ivy Designer</a> (minimum version 9.2.0)</p>";
-const DEPRECATED_INSTALL_TOOLTIP = 'Installing deprecated connectors is not recommended. Use at your own discretion.';
 
 @Component({
   selector: 'app-product-detail-version-action',

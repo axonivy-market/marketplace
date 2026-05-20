@@ -40,7 +40,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   @Schema(description = "Extension folder directory in market repository",
       example = "market/connector/adobe-acrobat-sign-connector/")
   private String marketDirectory;
-  @Schema(description = "deprecated", example = "true")
+  @Schema(description = "Whether the product is deprecated", example = "true")
   private Boolean deprecated;
 
   @Override

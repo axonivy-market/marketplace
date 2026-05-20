@@ -22,6 +22,7 @@
       <div class="d-flex gap-2">
         @if (product.deprecated) {
           <div
+            [lang]="languageService.selectedLanguage()"
             class="card__tag card__tag--deprecated lh-md px-2 py-1 text-capitalize">
             {{ 'common.deprecated' | translate }}
           </div>

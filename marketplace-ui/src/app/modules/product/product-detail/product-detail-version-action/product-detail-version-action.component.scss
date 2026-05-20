@@ -1,6 +1,6 @@
 ::ng-deep .custom-tooltip {
   --bs-tooltip-bg: var(--bs-body-bg);
-  --bs-tooltip-color: var(--bs-body-color);
+  --bs-tooltip-color: black;
   --bs-tooltip-font-size: 12px;
   --bs-tooltip-opacity: inherit !important;
   background-color: var(--bs-body-bg);
@@ -94,8 +94,8 @@
 }
 
 .btn__install-deprecated {
-  background-color: #fe7c22 !important;
-  color: #ffffff !important;
+  background-color: var(--deprecated-install-button-bg);
+  color: var(--deprecated-install-button-text);
 }
 
 .primary-color {
