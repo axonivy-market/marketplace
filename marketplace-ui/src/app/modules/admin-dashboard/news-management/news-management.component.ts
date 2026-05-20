@@ -64,7 +64,7 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
     pageable: DEFAULT_PAGEABLE,
-    // isReadOnly: false
+    isReadOnly: false
   };
   tableHeadersClass = 'text-primary text-center';
 

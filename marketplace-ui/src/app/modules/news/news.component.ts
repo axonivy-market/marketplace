@@ -35,14 +35,7 @@ import { NewsManagementService } from '../admin-dashboard/news-management/news-m
 
 @Component({
   selector: 'app-news',
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    TranslateModule,
-    NgbAccordionModule,
-    LoadingSpinnerComponent
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, NgbAccordionModule, LoadingSpinnerComponent],
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss'
 })
@@ -60,8 +53,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingService = inject(LoadingService);
   emptyReleaseLetterTitle = '';
   subscriptions: Subscription[] = [];
-  releaseLetterSafeHtmlContentList: WritableSignal<ReleaseLetterSafeHtml[]> =
-    signal([]);
+  releaseLetterSafeHtmlContentList: WritableSignal<ReleaseLetterSafeHtml[]> = signal([]);
   newsLinks!: Link;
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
@@ -90,9 +82,7 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  toSafeHtmlModelList(
-    items: ReleaseLetterApiResponse[]
-  ): ReleaseLetterSafeHtml[] {
+  toSafeHtmlModelList(items: ReleaseLetterApiResponse[]): ReleaseLetterSafeHtml[] {
     return items.map(item => this.toSafeHtmlModel(item));
   }
 
@@ -118,40 +108,29 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.newsLinks || !this.newsPages) {
       return false;
     }
-    return (
-      this.newsPages.number < this.newsPages.totalPages &&
-      this.newsLinks?.next !== undefined
-    );
+    return this.newsPages.number < this.newsPages.totalPages && this.newsLinks?.next !== undefined;
   }
 
   loadReleaseLetters(): void {
-    const sub = this.newsManagementService
-      .getReleaseLetters(this.releaseLetterCriteria)
-      .subscribe({
-        next: response => {
-          if (!response) {
-            return;
-          }
-          const newReleaseLetters =
-            response._embedded?.releaseLetterModelList ?? [];
-          if (newReleaseLetters.length === 0) {
-            this.emptyReleaseLetterTitle = this.translateService.instant(
-              'common.admin.news.emptyLatestReleaseLetter'
-            );
-          } else {
-            this.releaseLetterSafeHtmlContentList.update(
-              existingReleaseLetters =>
-                existingReleaseLetters.concat(
-                  this.toSafeHtmlModelList(newReleaseLetters)
-                )
-            );
-          }
-          this.newsLinks = response._links;
-          this.newsPages = response.page;
-          this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
-        },
-        error: error => throwError(() => error)
-      });
+    const sub = this.newsManagementService.getReleaseLetters(this.releaseLetterCriteria).subscribe({
+      next: response => {
+        if (!response) {
+          return;
+        }
+        const newReleaseLetters = response._embedded?.releaseLetterModelList ?? [];
+        if (newReleaseLetters.length === 0) {
+          this.emptyReleaseLetterTitle = this.translateService.instant('common.admin.news.emptyLatestReleaseLetter');
+        } else {
+          this.releaseLetterSafeHtmlContentList.update(existingReleaseLetters =>
+            existingReleaseLetters.concat(this.toSafeHtmlModelList(newReleaseLetters))
+          );
+        }
+        this.newsLinks = response._links;
+        this.newsPages = response.page;
+        this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
+      },
+      error: error => throwError(() => error)
+    });
 
     this.subscriptions.push(sub);
   }

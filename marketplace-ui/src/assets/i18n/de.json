@@ -456,6 +456,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "draft": "Draft",
         "createdAt": "Created at",
         "updatedAt": "Updated at",
         "sprintHeader": "Sprint: ",

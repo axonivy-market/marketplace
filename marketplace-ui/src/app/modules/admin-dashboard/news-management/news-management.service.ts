@@ -29,7 +29,7 @@ export class NewsManagementService {
     if (releaseLetterCriteria.nextPageHref) {
       url = releaseLetterCriteria.nextPageHref;
     } else {
-      url = `${API_URI.RELEASE_LETTERS}/management`;
+      url = releaseLetterCriteria.isReadOnly ? API_URI.RELEASE_LETTERS : `${API_URI.RELEASE_LETTERS}/management`;
 
       if (releaseLetterCriteria.pageable) {
         params = params
@@ -54,11 +54,6 @@ export class NewsManagementService {
           return of(releaseLetterListApiResponse);
         })
       );
-
-    //       return this.http.get<ReleaseLetterDraftApiResponse | null>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
-    //   context: new HttpContext().set(CachingEnabled, false),
-    //   headers: this.adminAuth.getAuthHeaders()
-    // });
   }
 
   getLatestReleaseLetters(): Observable<ReleaseLetterListApiResponse> {
