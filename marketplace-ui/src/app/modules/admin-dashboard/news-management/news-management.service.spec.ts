@@ -82,7 +82,6 @@ describe('NewsManagementService', () => {
     });
   });
 
-
   describe('createReleaseLetter', () => {
     it('should create a release letter with ForwardingError context', () => {
       const releaseLetterRequest: ReleaseLetter = {
@@ -112,6 +111,7 @@ describe('NewsManagementService', () => {
       const mockResponse: ReleaseLetterApiResponse = {
         id,
         sprint: 'S52',
+        hasDraft: false,
         content: 'Sprint 52 release content',
         createdAt: '2024-02-10T00:00:00Z'
       } as any;
@@ -150,7 +150,8 @@ describe('NewsManagementService', () => {
   describe('getReleaseLetters', () => {
     it('should call RELEASE_LETTERS with pageable params and default pageId', () => {
       const criteria: ReleaseLetterCriteria = {
-        pageable: { page: 0, size: 10 }
+        pageable: { page: 0, size: 10 },
+        isReadOnly: true
       } as any;
 
       const mockResponse: ReleaseLetterListApiResponse = {
@@ -169,7 +170,6 @@ describe('NewsManagementService', () => {
       );
 
       expect(req.request.method).toBe('GET');
-
       expect(req.request.context.get(LoadingComponent)).toBe(LoadingComponentId.NEWS_PAGE);
 
       req.flush(mockResponse);
@@ -177,7 +177,8 @@ describe('NewsManagementService', () => {
 
     it('should call nextPageHref when provided', () => {
       const criteria: ReleaseLetterCriteria = {
-        nextPageHref: '/api/release-letters?page=1&size=5'
+        nextPageHref: '/api/release-letters?page=1&size=5',
+        isReadOnly: true
       } as any;
 
       const mockResponse = {} as ReleaseLetterListApiResponse;
@@ -195,7 +196,9 @@ describe('NewsManagementService', () => {
     });
 
     it('should use custom pageId in HttpContext', () => {
-      const criteria: ReleaseLetterCriteria = {} as any;
+      const criteria: ReleaseLetterCriteria = {
+        isReadOnly: true
+      } as any;
       const customPageId = 'CUSTOM_PAGE';
 
       service.getReleaseLetters(criteria, customPageId).subscribe();
@@ -209,7 +212,9 @@ describe('NewsManagementService', () => {
     });
 
     it('should return empty object when request fails', () => {
-      const criteria: ReleaseLetterCriteria = {} as any;
+      const criteria: ReleaseLetterCriteria = {
+        isReadOnly: true
+      } as any;
 
       service.getReleaseLetters(criteria).subscribe(response => {
         expect(response).toEqual({} as ReleaseLetterListApiResponse);

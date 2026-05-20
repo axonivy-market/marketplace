@@ -54,6 +54,7 @@ const mockResponse = {
   id: '123',
   sprint: 'S43',
   content: 'content',
+  hasDraft: false,
   latest: true,
   createdAt: '2026-02-01',
   updatedAt: '2026-02-02'

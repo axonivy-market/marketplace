@@ -33,7 +33,6 @@ export class NewsManagementService {
 
       if (releaseLetterCriteria.pageable) {
         params = params
-          // .set(RequestParam.IS_READ_ONLY, `${releaseLetterCriteria.isReadOnly}`)
           .set(RequestParam.PAGE, `${releaseLetterCriteria.pageable.page}`)
           .set(RequestParam.SIZE, `${releaseLetterCriteria.pageable.size}`);
       }

@@ -163,7 +163,6 @@ public class ReleaseLetterController {
       Pageable pageable,
       boolean isReadOnly,
       String gitHubUserId) {
-
     Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
 
     if (releaseLetters.isEmpty()) {
