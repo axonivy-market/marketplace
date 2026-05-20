@@ -111,6 +111,10 @@ details summary {
   --monitoring-border-color: #e7e7e7;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-banner-bg: #f973161a;
+  --deprecated-banner-border: #f9731640;
+  --deprecated-banner-divider: #e0c5b0;
+  --deprecated-banner-text: #d7610f;
   --deprecated-install-button-bg: #fe7c22;
   --deprecated-install-button-text: #{$white};
 
@@ -248,6 +252,10 @@ details summary {
   --monitoring-border-color: #4f4e4e;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-banner-bg: #f973161a;
+  --deprecated-banner-border: #f9731640;
+  --deprecated-banner-divider: #e0c5b0;
+  --deprecated-banner-text: #d7610f;
   --deprecated-install-button-bg: #fe7c22;
   --deprecated-install-button-text: #{$white};
 

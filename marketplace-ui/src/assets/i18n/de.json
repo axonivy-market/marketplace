@@ -179,7 +179,7 @@
         "changelog": "Changelog",
         "deprecatedBanner": {
           "title": "VERALTET",
-          "description": "Diese Erweiterung ist veraltet und wird keine Updates oder Support mehr erhalten. Sie könnte in einer zukünftigen Version entfernt werden.",
+          "description": "Diese Erweiterung ist veraltet und erhält keine Updates oder Unterstützung mehr. Sie wird in Release 14 entfernt.",
           "recommendedAlternative": "Empfohlene Alternative"
         }
       }
