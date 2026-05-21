@@ -129,6 +129,7 @@
         "type": "Type",
         "description": "Description",
         "installationGuide": "Installation Guide",
+        "components": "Components",
         "demo": "Demo",
         "maven": {
           "label": "Maven",

@@ -1,18 +1,10 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  Signal,
-  ViewEncapsulation
-} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
-import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, catchError, finalize, of, switchMap, Observable } from 'rxjs';
+import { finalize } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from '../../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
@@ -21,9 +13,9 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
-import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
-import { ERROR_MESSAGES, UNAUTHORIZED } from '../../../shared/constants/common.constant';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
+import { UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { REQUEST_ACCESS_PATH } from '../admin-auth.guard';
 import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
@@ -35,7 +27,6 @@ import { AdminAuthService } from '../admin-auth.service';
 })
 export class FeedbackApprovalComponent implements OnInit {
   protected LoadingComponentId = LoadingComponentId;
-  adminAuthService = inject(AdminAuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
@@ -43,72 +34,46 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-  errorMessage = '';
-  isAuthenticated = false;
+  router = inject(Router);
+  adminAuthService = inject(AdminAuthService);
   activeTab = 'review';
-  moderatorName!: string | null;
   isLoading = false;
+  platformId = inject(PLATFORM_ID);
   feedbacks: Signal<Feedback[]> = this.productFeedbackService.allFeedbacks;
   pendingFeedbacks: Signal<Feedback[]> = this.productFeedbackService.pendingFeedbacks;
   allFeedbacks = computed(() => this.feedbacks());
   reviewingFeedbacks = computed(() => this.pendingFeedbacks());
 
-  constructor(private readonly storageRef: SessionStorageRef) {
-    this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
-  }
-
   ngOnInit() {
-    this.fetchFeedbacks();
+    if (isPlatformBrowser(this.platformId)) {
+      this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
+      this.fetchFeedbacks();
+    }
   }
 
   fetchFeedbacks(): void {
     this.isLoading = true;
-    this.fetchUserInfo()
+    this.productFeedbackService
+      .findProductFeedbacks()
       .pipe(
-        switchMap(name => {
-          if (!name) {
-            this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-            return EMPTY;
-          }
-          this.errorMessage = '';
-          return this.productFeedbackService.findProductFeedbacks();
-        }),
-        catchError(err => {
-          this.handleError(err);
-          return EMPTY;
-        }),
         finalize(() => {
           this.isLoading = false;
         })
       )
-      .subscribe();
-  }
-
-  fetchUserInfo(): Observable<string | null> {
-    const userInfo = this.adminAuthService.loadFromSessionStorage();
-    if (userInfo?.name) {
-      this.isAuthenticated = true;
-      this.moderatorName = userInfo.name;
-      return of(userInfo.name);
-    }
-    return EMPTY;
-  }
-
-  private handleError(err: HttpErrorResponse): void {
-    if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-      this.isAuthenticated = false;
-    } else {
-      this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
-    }
-    this.moderatorName = null;
+      .subscribe({
+        error: error => {
+          if (UNAUTHORIZED === error.status) {
+            this.adminAuthService.logout();
+            this.router.navigate([REQUEST_ACCESS_PATH]);
+          }
+        }
+      });
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && feedback.version >= 0 && feedback.userId) {
+    if (feedback.id && feedback.version >= 0 && feedback.userId) {
       const approvalRequest: FeedbackApproval = {
         feedbackId: feedback.id,
-        moderatorName: this.moderatorName,
         version: feedback.version,
         productId: feedback.productId,
         userId: feedback.userId,
@@ -122,9 +87,7 @@ export class FeedbackApprovalComponent implements OnInit {
             this.isLoading = false;
           })
         )
-        .subscribe({
-          error: err => this.handleError(err)
-      });
+        .subscribe();
     }
   }
 

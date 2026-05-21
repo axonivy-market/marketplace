@@ -14,24 +14,24 @@ import {
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
-  ADMIN_SESSION_TOKEN,
-  AUTHORIZATION_HEADER,
   BEARER,
   FEEDBACK_SORT_TYPES,
+  GITHUB_JSON_MEDIA_TYPE,
   NOT_FOUND_ERROR_CODE,
   TOKEN_KEY,
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import { API_URI } from '../../../../../shared/constants/api.constant';
-import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
+import { AdminAuthService } from '../../../../admin-dashboard/admin-auth.service';
+import { LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
+import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -45,6 +45,7 @@ export class ProductFeedbackService {
   private readonly productStarRatingService = inject(ProductStarRatingService);
   private readonly http = inject(HttpClient);
   private readonly cookieService = inject(CookieService);
+  private readonly adminAuthService = inject(AdminAuthService);
 
   sort: WritableSignal<string> = signal(FEEDBACK_SORT_TYPES[0].value);
   page: WritableSignal<number> = signal(0);
@@ -67,20 +68,18 @@ export class ProductFeedbackService {
     page: number = this.page(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
-    const rawUserToken = sessionStorage.getItem(ADMIN_SESSION_TOKEN) || '';
-    const jwt = JSON.parse(rawUserToken)?.token || '';
-    const headers = new HttpHeaders().set(AUTHORIZATION_HEADER, `${BEARER} ${jwt}`);
-    const requestParams = new HttpParams()
+    const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
-        headers,
-        params: requestParams,
+        headers: this.adminAuthService.getAuthHeaders(),
         context: new HttpContext().set(
           LoadingComponent,
           LoadingComponentId.FEEDBACK_APPROVAL
-        )
+        ),
+        params
       })
       .pipe(
         tap(response => {
@@ -97,22 +96,15 @@ export class ProductFeedbackService {
             this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
           }
           this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
-        }),
-        catchError(response => {
-          if (
-            response.status === NOT_FOUND_ERROR_CODE &&
-            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
-          ) {
-            sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
-          }
-          return throwError(() => response);
         })
       );
   }
 
   updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
+    const headers = this.adminAuthService.getAuthHeaders().set('Accept', GITHUB_JSON_MEDIA_TYPE);
+
     return this.http
-      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request)
+      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request, { headers })
       .pipe(
         map(partialUpdatedFeedback => {
           const existingFeedback =

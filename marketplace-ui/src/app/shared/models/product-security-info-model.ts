@@ -14,6 +14,6 @@ export interface ProductSecurityInfo {
     numberOfSecretScanningAlerts: number;
   };
   branchProtectionEnabled: boolean;
-  lastCommitSHA: string;
+  latestCommitSHA: string;
   lastCommitDate: string;
 }

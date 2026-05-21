@@ -110,7 +110,7 @@ describe('AdminDashboardService', () => {
       const req = httpMock.expectOne(
         `${API_URI.PRODUCT_DETAILS}/sync-release-notes`
       );
-      expect(req.request.method).toBe('GET');
+      expect(req.request.method).toBe('PUT');
       expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe(
         'Bearer test-token'
       );
@@ -230,7 +230,7 @@ describe('AdminDashboardService', () => {
           codeScanning: { status: 'enabled', alerts: {} },
           secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
           branchProtectionEnabled: true,
-          lastCommitSHA: 'abc123',
+          latestCommitSHA: 'abc123',
           lastCommitDate: '2024-01-01T00:00:00Z'
         }
       ];

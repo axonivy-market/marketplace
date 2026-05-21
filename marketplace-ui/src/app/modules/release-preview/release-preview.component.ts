@@ -189,15 +189,12 @@ export class ReleasePreviewComponent implements OnInit {
 
   getContent(value: string): boolean {
     const content = this.readmeContent();
-
     const tabContent = content?.[value as keyof ReleasePreviewData];
+
     return (
       !!tabContent &&
       Object.keys(tabContent).length > 0 &&
-      CommonUtils.isContentDisplayedBasedOnLanguage(
-        tabContent,
-        this.languageService.selectedLanguage()
-      )
+      CommonUtils.isContentDisplayedBasedOnLanguage(tabContent,this.languageService.selectedLanguage())
     );
   }
 
@@ -206,7 +203,7 @@ export class ReleasePreviewComponent implements OnInit {
   }
 
   getReadmeContentValue(key: ItemDropdown): DisplayValue | null {
-    type tabName = 'description' | 'demo' | 'setup';
+    type tabName = 'description' | 'demo' | 'setup' | 'component';
     const value = key.value as tabName;
     return this.readmeContent()?.[value] ?? null;
   }

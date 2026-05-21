@@ -437,40 +437,26 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  scrollToTop(): void {
-    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
     if (!content || Object.keys(content).length === 0) {
       return false;
     }
+    const currentLanguage = this.languageService.selectedLanguage();
+    const hasComponentContent = content.component !== null &&
+      CommonUtils.isContentDisplayedBasedOnLanguage(content.component,currentLanguage);
 
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.description,
-          this.languageService.selectedLanguage()
-        ),
-      demo:
-        content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.demo,
-          this.languageService.selectedLanguage()
-        ),
-      setup:
-        content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.setup,
-          this.languageService.selectedLanguage()
-        ),
-      dependency: content.isDependency,
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.description, currentLanguage),
+      demo: content.demo !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.demo, currentLanguage),
+      setup: content.setup !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.setup, currentLanguage),
+      component: hasComponentContent,
+      dependency: !hasComponentContent && content.isDependency,
       changelog: this.productReleaseSafeHtmls().length !== 0
     };
-
     return conditions[value] ?? false;
   }
 
