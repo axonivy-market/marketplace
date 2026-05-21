@@ -87,6 +87,11 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
         .orElse(null);
   }
 
+  /**
+   * Creates the sync task row in STARTED state so other nodes can observe that the task has already been claimed.
+   * If another node wins the insert race first, the unique-constraint failure is converted into either an
+   * in-progress error or a reuse of the existing non-active row.
+   */
   private SyncTaskExecution createExecution(SyncTaskType type) {
     SyncTaskExecution execution = SyncTaskExecution.builder()
         .status(SyncTaskStatus.STARTED)
