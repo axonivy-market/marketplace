@@ -1,20 +1,11 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  Signal,
-  ViewEncapsulation
-} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
-import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, catchError, finalize, of, switchMap, tap, Observable } from 'rxjs';
+import { finalize } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from '../../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -22,9 +13,10 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { PageTitleService } from '../../../shared/services/page-title.service';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { Feedback } from '../../../shared/models/feedback.model';
-import { SessionStorageRef } from '../../../core/services/browser/session-storage-ref.service';
-import { ERROR_MESSAGES, ADMIN_SESSION_TOKEN, UNAUTHORIZED } from '../../../shared/constants/common.constant';
 import { FeedbackApproval } from '../../../shared/models/feedback-approval.model';
+import { UNAUTHORIZED } from '../../../shared/constants/common.constant';
+import { REQUEST_ACCESS_PATH } from '../admin-auth.guard';
+import { AdminAuthService } from '../admin-auth.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -34,7 +26,7 @@ import { FeedbackApproval } from '../../../shared/models/feedback-approval.model
   encapsulation: ViewEncapsulation.Emulated
 })
 export class FeedbackApprovalComponent implements OnInit {
-  authService = inject(AuthService);
+  protected LoadingComponentId = LoadingComponentId;
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
@@ -42,96 +34,46 @@ export class FeedbackApprovalComponent implements OnInit {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
   pageTitleService = inject(PageTitleService);
-  protected LoadingComponentId = LoadingComponentId;
-  token = '';
-  errorMessage = '';
-  isAuthenticated = false;
+  router = inject(Router);
+  adminAuthService = inject(AdminAuthService);
   activeTab = 'review';
-  moderatorName!: string | null;
   isLoading = false;
-
-  feedbacks: Signal<Feedback[]> =
-    this.productFeedbackService.allFeedbacks;
-
-  pendingFeedbacks: Signal<Feedback[]> =
-    this.productFeedbackService.pendingFeedbacks;
-
+  platformId = inject(PLATFORM_ID);
+  feedbacks: Signal<Feedback[]> = this.productFeedbackService.allFeedbacks;
+  pendingFeedbacks: Signal<Feedback[]> = this.productFeedbackService.pendingFeedbacks;
   allFeedbacks = computed(() => this.feedbacks());
   reviewingFeedbacks = computed(() => this.pendingFeedbacks());
-  constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    this.fetchFeedbacks();
-    this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
+    if (isPlatformBrowser(this.platformId)) {
+      this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
+      this.fetchFeedbacks();
+    }
   }
 
   fetchFeedbacks(): void {
-    this.token = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN) ?? '';
-    if (!this.token) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-      this.isAuthenticated = false;
-      return;
-    }
-
     this.isLoading = true;
-    this.fetchUserInfo()
+    this.productFeedbackService
+      .findProductFeedbacks()
       .pipe(
-        switchMap(name => {
-          if (!name) {
-            this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-            return EMPTY;
-          }
-          this.errorMessage = '';
-          return this.productFeedbackService.findProductFeedbacks();
-        }),
-        catchError(err => {
-          this.handleError(err);
-          return EMPTY;
-        }),
         finalize(() => {
           this.isLoading = false;
         })
       )
-      .subscribe();
-  }
-
-  fetchUserInfo(): Observable<string | null> {
-    const accessToken = this.authService.decodeToken(this.token)?.accessToken;
-    if (!accessToken) {
-      this.handleError(new HttpErrorResponse({ status: UNAUTHORIZED }));
-      return of(null);
-    }
-
-    return this.authService
-      .getDisplayNameFromAccessToken(accessToken)
-      .pipe(
-        tap(name => {
-          this.isAuthenticated = !!name;
-          this.moderatorName = name;
-        }),
-        catchError(err => {
-          this.handleError(err);
-          return of(null);
-        })
-      );
-  }
-
-  private handleError(err: HttpErrorResponse): void {
-    if (err.status === UNAUTHORIZED) {
-      this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-    } else {
-      this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
-    }
-    this.isAuthenticated = false;
-    this.moderatorName = null;
-    sessionStorage.removeItem(ADMIN_SESSION_TOKEN);
+      .subscribe({
+        error: error => {
+          if (UNAUTHORIZED === error.status) {
+            this.adminAuthService.logout();
+            this.router.navigate([REQUEST_ACCESS_PATH]);
+          }
+        }
+      });
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && feedback.version >= 0 && feedback.userId) {
+    if (feedback.id && feedback.version >= 0 && feedback.userId) {
       const approvalRequest: FeedbackApproval = {
         feedbackId: feedback.id,
-        moderatorName: this.moderatorName,
         version: feedback.version,
         productId: feedback.productId,
         userId: feedback.userId,
@@ -145,9 +87,7 @@ export class FeedbackApprovalComponent implements OnInit {
             this.isLoading = false;
           })
         )
-        .subscribe({
-          error: err => this.handleError(err)
-      });
+        .subscribe();
     }
   }
 

@@ -41,12 +41,12 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private String latestCommitSHA;
 
   @Embedded
-  @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts"))
+  @AttributeOverride(name = "alerts", column = @Column(name = "dependabot_alerts", columnDefinition = "text"))
   @AttributeOverride(name = "status", column = @Column(name = "dependabot_status"))
   private Dependabot dependabot;
 
   @Embedded
-  @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts"))
+  @AttributeOverride(name = "alerts", column = @Column(name = "code_scanning_alerts", columnDefinition = "text"))
   @AttributeOverride(name = "status", column = @Column(name = "code_scanning_status"))
   private CodeScanning codeScanning;
 

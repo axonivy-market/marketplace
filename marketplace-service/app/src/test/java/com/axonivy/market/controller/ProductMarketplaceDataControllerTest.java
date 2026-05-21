@@ -84,6 +84,18 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
+  void testGetArtifactResourceStreamWhenServiceReturnsNullShouldThrowNotFoundException() {
+    when(productMarketplaceDataService.getProductArtifactStream(
+        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(null);
+
+    assertThrows(NotFoundException.class,
+        () -> productMarketplaceDataController.getArtifactResourceStream(
+            MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION),
+        "Expected NotFoundException when service returns null ResponseEntity");
+  }
+
+  @Test
   void testFindInstallationCount() {
     when(productMarketplaceDataService.getInstallationCount(MOCK_PRODUCT_ID)).thenReturn(5);
     var result = productMarketplaceDataController.findInstallationCount(MOCK_PRODUCT_ID);

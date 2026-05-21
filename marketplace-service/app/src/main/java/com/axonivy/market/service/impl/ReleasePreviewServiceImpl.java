@@ -93,7 +93,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       readmeContents = updateImagesWithDownloadUrl(location, readmeContents, baseUrl);
     }
     var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    ProductContentUtils.mappingDescriptionSetupAndDemo(
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(
         moduleContents,
         readmeFile.getFileName().toString(),
         readmeContentsModel

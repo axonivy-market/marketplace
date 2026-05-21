@@ -49,19 +49,24 @@ public class ProductModuleContent extends AbstractAuditableEntity<String> {
 
   @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
   @ElementCollection
-  @CollectionTable(name = PRODUCT_MODULE_CONTENT_SETUP, joinColumns = @JoinColumn(name =
-      PRODUCT_MODULE_CONTENT_ID))
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_SETUP, joinColumns = @JoinColumn(name = PRODUCT_MODULE_CONTENT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = SETUP, columnDefinition = TEXT_TYPE)
   private Map<String, String> setup;
 
   @Schema(description = "Demo tab content", example = "{ \"de\": \"Demo\", \"en\": \"Demo\" ")
   @ElementCollection
-  @CollectionTable(name = PRODUCT_MODULE_CONTENT_DEMO, joinColumns = @JoinColumn(name =
-      PRODUCT_MODULE_CONTENT_ID))
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_DEMO, joinColumns = @JoinColumn(name = PRODUCT_MODULE_CONTENT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = DEMO, columnDefinition = TEXT_TYPE)
   private Map<String, String> demo;
+
+  @Schema(description = "Component tab content", example = "{ \"de\": \"Components\", \"en\": \"Components\" }")
+  @ElementCollection
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_COMPONENT, joinColumns = @JoinColumn(name = PRODUCT_MODULE_CONTENT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = COMPONENT, columnDefinition = TEXT_TYPE)
+  private Map<String, String> component;
 
   @Schema(description = "Is dependency artifact", example = "true")
   private Boolean isDependency;
