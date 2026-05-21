@@ -250,12 +250,7 @@ export class DeprecationManagementComponent implements OnInit {
         isValid = false;
       }
 
-      if (!this.deprecationRequest.successorUrl?.trim()) {
-        this.validationErrors.successorUrl = this.translateService.instant(
-          'common.admin.deprecation.validation.successorRequired'
-        );
-        isValid = false;
-      } else {
+      if (this.deprecationRequest.successorUrl?.trim()) {
         const urlPattern = /^(http|https):\/\/.*$/;
         if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
           this.validationErrors.successorUrl = this.translateService.instant(
@@ -263,6 +258,11 @@ export class DeprecationManagementComponent implements OnInit {
           );
           isValid = false;
         }
+      } else {
+        this.validationErrors.successorUrl = this.translateService.instant(
+          'common.admin.deprecation.validation.successorRequired'
+        );
+        isValid = false;
       }
     } else {
       this.deprecationRequest.productReplacementName = '';

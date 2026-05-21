@@ -226,7 +226,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
 
   getInstallTooltipMessage(): string {
     const message =  this.translateService.instant('common.product.detail.information.value.successorToolTip');
-    return '<p class=text-primary>' + message + '</p>';
+    return `<p class=text-primary>${message}</p>`;
   }
 
   ngOnDestroy(): void {
@@ -242,7 +242,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
 
     const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
     Tooltip.getInstance(tooltipElement)?.dispose();
-    new Tooltip(tooltipElement);
+    new Tooltip(tooltipElement).enable();
   }
 
   private async disposeSuccessorTooltip(): Promise<void> {
