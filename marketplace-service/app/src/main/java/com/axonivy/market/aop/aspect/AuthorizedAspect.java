@@ -64,7 +64,7 @@ public class AuthorizedAspect {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-      var username = userInfo.getUsername();
+      var username = userInfo.getName();
       var gitHubUserId = userInfo.getGitHubId();
       if (StringUtils.isAnyBlank(username, gitHubUserId)) {
         throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
