@@ -97,9 +97,7 @@
   background-color: var(--deprecated-install-button-bg);
   color: var(--deprecated-install-button-text);
 
-  &:hover,
-  &:focus,
-  &:focus-visible {
+  &:hover {
     color: var(--deprecated-install-button-text);
     border-color: transparent;
     box-shadow: none;
