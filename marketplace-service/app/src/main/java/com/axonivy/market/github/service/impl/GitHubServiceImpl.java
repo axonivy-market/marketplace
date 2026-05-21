@@ -3,12 +3,12 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
@@ -19,7 +19,6 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -53,8 +52,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -81,7 +78,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.*;
+import static com.axonivy.market.enums.PullRequestAction.REMOVE;
 import static org.apache.commons.lang3.StringUtils.*;
 
 
@@ -95,7 +92,6 @@ public class GitHubServiceImpl implements GitHubService {
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
-  private static final String NOT_FOUND   = "not found";
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -248,7 +244,7 @@ public class GitHubServiceImpl implements GitHubService {
     List<String> syncedRepoNames = validSecurityInfos.stream()
         .map(ProductSecurityInfo::getRepoName)
         .toList();
-    if (syncedRepoNames.isEmpty()) {
+    if (!CollectionUtils.isEmpty(syncedRepoNames)) {
       productSecurityInfoRepository.deleteByRepoNameNotIn(syncedRepoNames);
     }
     return syncedSecurityRepos;
