@@ -56,7 +56,7 @@ export class AppModalService {
     const modalRef = this.modalService.open(
       DeleteReleaseLetterConfirmModalComponent,
       {
-        size: 'lg',
+        size: 'md',
         centered: true
       }
     );

@@ -1,12 +1,12 @@
 <div>
   <div class="modal-header">
-    <h3>{{ 'common.admin.newsManagement.warning' | translate }}</h3>
+    <h5><strong>{{ 'common.admin.newsManagement.warning' | translate }}</strong></h5>
   </div>
   <div class="modal-body">
-    <div class="p-0 release-letter-content">
+    <h5 class="p-0">
       {{ 'common.admin.newsManagement.deleteConfirmMessage' | translate }}
       <b>{{ sprint }}</b>?
-    </div>
+    </h5>
     <div class="modal-footer">
       <button
         (click)="activeModal.dismiss()"
