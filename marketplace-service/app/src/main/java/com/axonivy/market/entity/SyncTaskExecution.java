@@ -29,7 +29,7 @@ public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
 
-  @Column(nullable = false)
+  @Column(unique = true, nullable = false)
   @Enumerated(EnumType.STRING)
   private SyncTaskType type;
 
