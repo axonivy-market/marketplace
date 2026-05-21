@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
-import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class SyncTaskShutdownListenerTest {
@@ -37,8 +37,8 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
 
-    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
-        .thenReturn(List.of(runningExecution));
+    when(syncTaskExecutionRepo.findByType(any()))
+        .thenReturn(Optional.of(runningExecution));
 
     listener.onShutdown();
     verify(syncTaskExecutionService, atLeastOnce())
@@ -53,8 +53,8 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution finishedExecution = mock(SyncTaskExecution.class);
     when(finishedExecution.getStatus()).thenReturn(SyncTaskStatus.SUCCESS);
 
-    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
-        .thenReturn(List.of(finishedExecution));
+    when(syncTaskExecutionRepo.findByType(any()))
+        .thenReturn(Optional.of(finishedExecution));
 
     listener.onShutdown();
     verify(syncTaskExecutionService, never())
@@ -66,8 +66,8 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution startedExecution = mock(SyncTaskExecution.class);
     when(startedExecution.getStatus()).thenReturn(SyncTaskStatus.STARTED);
 
-    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
-        .thenReturn(List.of(startedExecution));
+    when(syncTaskExecutionRepo.findByType(any()))
+        .thenReturn(Optional.of(startedExecution));
 
     listener.onShutdown();
     verify(syncTaskExecutionService, atLeastOnce())
@@ -80,8 +80,8 @@ class SyncTaskShutdownListenerTest {
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);
     when(runningExecution.getType()).thenReturn(SyncTaskType.values()[0]);
 
-    when(syncTaskExecutionRepo.findAllByTypeOrderByUpdatedAtDescCreatedAtDesc(any()))
-        .thenReturn(List.of(runningExecution));
+    when(syncTaskExecutionRepo.findByType(any()))
+        .thenReturn(Optional.of(runningExecution));
 
     doThrow(mock(DataAccessException.class))
         .when(syncTaskExecutionService)
