@@ -91,10 +91,25 @@ class SyncTaskExecutionServiceImplTest {
     when(repo.findByType(type))
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(existedSyncTaskExecution));
-    when(repo.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("duplicate key"));
+    when(repo.saveAndFlush(any())).thenThrow(
+        new DataIntegrityViolationException("Unique constraint violation while creating sync task execution"));
 
     assertThrows(SyncTaskInProgressException.class,
         () -> service.start(type), "Should throw SyncTaskInProgressException when another node creates the row");
+  }
+
+  @Test
+  void testStartRethrowsDataIntegrityViolationExceptionWhenCreateFailsAndNoRowExists() {
+    SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
+    DataIntegrityViolationException exception = new DataIntegrityViolationException(
+        "Unique constraint violation while creating sync task execution");
+    when(repo.findByType(type))
+        .thenReturn(Optional.empty())
+        .thenReturn(Optional.empty());
+    when(repo.saveAndFlush(any())).thenThrow(exception);
+
+    assertThrows(DataIntegrityViolationException.class,
+        () -> service.start(type), "Should rethrow DataIntegrityViolationException when no row can be re-read");
   }
 
   @Test

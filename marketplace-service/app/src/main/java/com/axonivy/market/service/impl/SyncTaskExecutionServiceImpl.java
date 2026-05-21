@@ -100,7 +100,8 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
       return syncTaskExecutionRepo.findByType(type)
           .map((SyncTaskExecution existingExecution) -> {
             if (isActiveStatus(existingExecution.getStatus())) {
-              String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(type);
+              String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(
+                  type);
               throw new SyncTaskInProgressException(syncTaskInProgressMessage);
             }
 
