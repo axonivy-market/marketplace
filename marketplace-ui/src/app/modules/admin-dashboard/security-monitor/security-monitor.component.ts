@@ -25,12 +25,13 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { SecurityMonitorSortOption } from '../../../shared/enums/security-monitor-sort.enum';
 import { SecurityMonitorCriteria } from '../../../shared/models/criteria.model';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { SecurityStatusBadgeComponent } from '../../../shared/components/security-status-badge/security-status-badge.component';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
   selector: 'app-security-monitor',
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, SecurityStatusBadgeComponent, TranslateModule, NgbPaginationModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss']
 })

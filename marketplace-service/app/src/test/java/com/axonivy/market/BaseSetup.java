@@ -434,7 +434,6 @@ public class BaseSetup extends CoreBaseSetup {
     return ProductSecurityInfo.builder()
         .repoName("test-repo")
         .visibility("PUBLIC")
-        .isArchived(false)
         .branchProtectionEnabled(true).build();
   }
 
