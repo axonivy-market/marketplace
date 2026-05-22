@@ -102,7 +102,7 @@ describe('AppModalService', () => {
     const result = await service.openDeleteReleaseLetterConfirmModal(mockResponse);
 
     expect(modalServiceSpy.open).toHaveBeenCalledWith(DeleteReleaseLetterConfirmModalComponent, {
-      size: 'lg',
+      size: 'md',
       centered: true
     });
 
