@@ -67,7 +67,9 @@ export class ReleasePreviewComponent implements OnInit {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
   });
-  loadedReadmeContent: { [key: string]: SafeHtml } = {};
+  loadedReadmeContent: Signal<{ [key: string]: SafeHtml }> = computed(() =>
+    this.buildRenderedReadmeContent()
+  );
 
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -165,7 +167,6 @@ export class ReleasePreviewComponent implements OnInit {
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
         this.readmeContent.set(response);
-        this.renderReadmeContent();
         this.isUploaded = true;
         this.shouldShowHint = false;
       },
@@ -208,7 +209,12 @@ export class ReleasePreviewComponent implements OnInit {
     return this.readmeContent()?.[value] ?? null;
   }
 
-  private renderReadmeContent(): void {
+  private buildRenderedReadmeContent(): { [key: string]: SafeHtml } {
+    const renderedContent: { [key: string]: SafeHtml } = {};
+
+    this.languageService.selectedLanguage();
+    this.readmeContent();
+
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
       if (contentValue) {
@@ -217,7 +223,6 @@ export class ReleasePreviewComponent implements OnInit {
             contentValue,
             this.languageService.selectedLanguage()
           ) || '';
-
         const renderedHtml =
           this.markdownService.parseMarkdown(translatedContent);
 
@@ -226,8 +231,10 @@ export class ReleasePreviewComponent implements OnInit {
           renderedHtml
         );
 
-        this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
+        renderedContent[tab.value] = sanitizedHtml ?? '';
       }
     }
+
+    return renderedContent;
   }
 }

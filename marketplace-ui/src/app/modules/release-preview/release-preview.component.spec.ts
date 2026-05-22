@@ -249,9 +249,7 @@ describe('ReleasePreviewComponent', () => {
 
     component.handlePreviewPage();
 
-    const descriptionHtml = component.loadedReadmeContent[
-      'description'
-    ] as unknown as string;
+    const descriptionHtml = component.loadedReadmeContent()['description'] as unknown as string;
     expect(descriptionHtml).toContain('<details>');
     expect(descriptionHtml).toContain('<summary>More description</summary>');
     expect(descriptionHtml).toContain('<strong>This is a test</strong>');
