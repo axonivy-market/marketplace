@@ -16,7 +16,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.time.LocalDateTime;
 
-import static com.axonivy.market.constants.EntityConstants.SYNC_TASK_EXECUTION;
+import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 
 @Getter
 @Setter
@@ -24,7 +24,7 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_TASK_EXECUTION;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = SYNC_TASK_EXECUTION)
+@Table(name = SYNC_TASK)
 public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;

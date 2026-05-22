@@ -37,14 +37,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     Optional<SyncTaskExecution> execution = syncTaskExecutionRepo.findByType(jobType);
     if (execution.isPresent()) {
       SyncTaskExecution existingExecution = execution.get();
-      if (isActiveStatus(existingExecution.getStatus())) {
-        String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
-        throw new SyncTaskInProgressException(syncTaskInProgressMessage);
-      }
-
-      existingExecution.setStatus(SyncTaskStatus.STARTED);
-      existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-      return syncTaskExecutionRepo.save(existingExecution);
+      return restartSyncTaskExecution(jobType, existingExecution);
     }
 
     return createExecution(jobType);
@@ -103,19 +96,20 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
       return syncTaskExecutionRepo.saveAndFlush(execution);
     } catch (DataIntegrityViolationException ex) {
       return syncTaskExecutionRepo.findByType(type)
-          .map((SyncTaskExecution existingExecution) -> {
-            if (isActiveStatus(existingExecution.getStatus())) {
-              String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(
-                  type);
-              throw new SyncTaskInProgressException(syncTaskInProgressMessage);
-            }
-
-            existingExecution.setStatus(SyncTaskStatus.STARTED);
-            existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-            return syncTaskExecutionRepo.save(existingExecution);
-          })
+          .map((SyncTaskExecution existingExecution) -> restartSyncTaskExecution(type, existingExecution))
           .orElseThrow(() -> ex);
     }
+  }
+
+  private SyncTaskExecution restartSyncTaskExecution(SyncTaskType jobType, SyncTaskExecution existingExecution) {
+    if (isActiveStatus(existingExecution.getStatus())) {
+      String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
+      throw new SyncTaskInProgressException(syncTaskInProgressMessage);
+    }
+
+    existingExecution.setStatus(SyncTaskStatus.STARTED);
+    existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
+    return syncTaskExecutionRepo.save(existingExecution);
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
