@@ -800,6 +800,30 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testCreateSymlinkForParentExistingSymlinkWithDifferentTarget() throws IOException {    
+    Path productDir = CACHE_ROOT_PATH.resolve(PORTAL);
+    Path versionDir = productDir.resolve("12.5.0");
+    Path docDir = versionDir.resolve(DOC_DIR);
+    Files.createDirectories(docDir);
+
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      Path symlinkPath = productDir.resolve(TEST_VERSION_12_5);
+      Path newTargetPath = Path.of("12.5.0");
+      Path oldTargetPath = Path.of("12.0.0");
+
+      filesMock.when(() -> Files.isSymbolicLink(symlinkPath)).thenReturn(true);
+      filesMock.when(() -> Files.readSymbolicLink(symlinkPath)).thenReturn(oldTargetPath);
+      filesMock.when(() -> Files.createSymbolicLink(eq(symlinkPath), eq(newTargetPath))).thenReturn(symlinkPath);
+
+      String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION_12_5);
+
+      assertEquals(symlinkPath.toString(), result, "Should return new symlink path after recreation");
+      filesMock.verify(() -> Files.delete(symlinkPath), times(1));
+      filesMock.verify(() -> Files.createSymbolicLink(eq(symlinkPath), eq(newTargetPath)), times(1));
+    }
+  }
+
+  @Test
   void testCreateSymlinkForParentIOException() throws IOException {
     Path cacheRoot = Paths.get(DirectoryConstants.DATA_CACHE_DIR).toAbsolutePath().normalize();
     Path productDir = cacheRoot.resolve(PORTAL);

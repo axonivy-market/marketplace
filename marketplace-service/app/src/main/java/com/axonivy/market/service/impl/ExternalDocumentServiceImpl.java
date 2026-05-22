@@ -317,13 +317,17 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return createSymlinkSafely(artifactRoot, fileName, majorVersion);
   }
 
-  private String createSymlinkSafely(Path artifactRoot, Path fileName, String majorVersion) {
+  private String createSymlinkSafely(Path artifactRoot, Path targetPath, String majorVersion) {
     var symlinkPath = artifactRoot.resolve(majorVersion);
-
     try {
-      prepareDirectoryForSymlinkPath(symlinkPath);
-      var targetPath = Path.of(fileName.toString());
-      Files.createSymbolicLink(symlinkPath, targetPath);
+      if (Files.isSymbolicLink(symlinkPath)) {
+        var currentTargetPath = Files.readSymbolicLink(symlinkPath);
+        if (StringUtils.equals(targetPath.toString(), currentTargetPath.toString())) {
+          return symlinkPath.toString();
+        }
+        Files.delete(symlinkPath);
+      }
+      Files.createSymbolicLink(symlinkPath, Path.of(targetPath.toString()));
       return symlinkPath.toString();
     } catch (IOException e) {
       log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
