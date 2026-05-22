@@ -1,16 +1,10 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  Component,
-  Inject,
-  inject,
-  OnInit,
-  PLATFORM_ID,
-  signal
-} from '@angular/core';
+import { Component, computed, DestroyRef, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
@@ -20,7 +14,11 @@ import {
 } from '../../../../shared/constants/common.constant';
 import { ReleaseLetter } from '../../../../shared/models/release-letter-request.model';
 import { PageTitleService } from '../../../../shared/services/page-title.service';
-import { AdminDashboardService } from '../../admin-dashboard.service';
+import { AppModalService } from '../../../../shared/services/app-modal.service';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
+import { NewsManagementService } from '../news-management.service';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-release-letter-edit',
@@ -29,19 +27,24 @@ import { AdminDashboardService } from '../../admin-dashboard.service';
     FormsModule,
     RouterModule,
     TranslateModule,
-    MarkdownEditorComponent
+    MarkdownEditorComponent,
+    LoadingSpinnerComponent,
+    NgbTooltip
   ],
   templateUrl: './release-letter-edit.component.html',
   styleUrl: './release-letter-edit.component.scss'
 })
 export class ReleaseLetterEditComponent implements OnInit {
+  protected LoadingComponentId = LoadingComponentId;
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  adminDashboardService = inject(AdminDashboardService);
+  newsManagementService = inject(NewsManagementService);
+  appModalService = inject(AppModalService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  destroyRef = inject(DestroyRef);
   easyMDE!: EasyMDE;
   selectedId = '';
   selectedSprint = '';
@@ -51,10 +54,14 @@ export class ReleaseLetterEditComponent implements OnInit {
     content: '',
     createdAt: '',
     updatedAt: '',
-    latest: false
+    latest: false,
+    draftContent: ''
   };
   isCreateMode = true;
   isSubmitting = signal<boolean>(false);
+  isSavingAsDraft = signal<boolean>(false);
+  isInitializing = signal<boolean>(false);
+  isHandlingApiCall = computed(() => this.isSubmitting() || this.isSavingAsDraft() || this.isInitializing());
   sprintErrorMessage: string | null = null;
   genericErrorMessage: string | null = null;
   isBrowser: boolean;
@@ -66,36 +73,23 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   ngOnInit() {
     if (this.isBrowser) {
-      this.pageTitleService.setTitleOnLangChange(
-        'common.admin.newsManagement.pageTitle'
-      );
+      this.pageTitleService.setTitleOnLangChange('common.admin.newsManagement.pageTitle');
     }
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
         this.isCreateMode = false;
         this.selectedId = idParam;
-        this.getReleaseLetterById(this.selectedId);
+        this.loadReleaseLetterWithDraftCheck(this.selectedId);
       } else {
         this.isCreateMode = true;
       }
     });
   }
 
-  getReleaseLetterById(id: string): void {
-    this.adminDashboardService
-      .getReleaseLetterById(id)
-      .subscribe(response => {
-        this.releaseLetter.id = response.id;
-        this.releaseLetter.content = response.content;
-        this.releaseLetter.sprint = response.sprint;
-        this.releaseLetter.latest = response.latest;
-      });
-  }
-
   onSubmit(event: Event) {
     event.preventDefault();
-    if (this.isSubmitting()) {
+    if (this.isHandlingApiCall()) {
       return;
     }
 
@@ -110,13 +104,9 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   createReleaseLetter(releaseLetter: ReleaseLetter) {
-    this.adminDashboardService
+    this.newsManagementService
       .createReleaseLetter(releaseLetter)
-      .pipe(
-        finalize(() => {
-          this.isSubmitting.set(false);
-        })
-      )
+      .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: _res => {
           this.router.navigate([this.newsManangementUrl]);
@@ -128,7 +118,7 @@ export class ReleaseLetterEditComponent implements OnInit {
   }
 
   updateReleaseLetter(releaseLetter: ReleaseLetter) {
-    this.adminDashboardService
+    this.newsManagementService
       .updateReleaseLetter(releaseLetter.id, releaseLetter)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
@@ -139,6 +129,34 @@ export class ReleaseLetterEditComponent implements OnInit {
           this.handleError(err.error.helpCode);
         }
       });
+  }
+
+  saveAsDraft() {
+    if (this.isSavingAsDraft()) {
+      return;
+    }
+
+    this.isSavingAsDraft.set(true);
+    this.releaseLetter.draftContent = this.releaseLetter.content;
+    this.newsManagementService
+      .saveAsDraft(this.prepareDraftReleaseLetter())
+      .pipe(finalize(() => this.isSavingAsDraft.set(false)))
+      .subscribe({
+        next: _res => {
+          this.router.navigate([this.newsManangementUrl]);
+        },
+        error: err => {
+          this.handleError(err.error.helpCode);
+        }
+      });
+  }
+
+  prepareDraftReleaseLetter(): ReleaseLetter {
+    return {
+      ...this.releaseLetter,
+      content: this.isCreateMode ? '' : this.releaseLetter.content,
+      draftContent: this.releaseLetter.content
+    };
   }
 
   handleError(errorHelpCode: string) {
@@ -156,9 +174,7 @@ export class ReleaseLetterEditComponent implements OnInit {
         return;
 
       default:
-        this.genericErrorMessage = this.translateService.instant(
-          'common.admin.releaseLetterEdit.genericErrorMessage'
-        );
+        this.genericErrorMessage = this.translateService.instant('common.admin.releaseLetterEdit.genericErrorMessage');
         return;
     }
   }
@@ -169,5 +185,36 @@ export class ReleaseLetterEditComponent implements OnInit {
 
   onReleaseVersionChange() {
     this.sprintErrorMessage = null;
+  }
+
+  loadReleaseLetterWithDraftCheck(id: string) {
+    if (this.isHandlingApiCall()) {
+      return;
+    }
+
+    this.isInitializing.set(true);
+    this.newsManagementService
+      .getReleaseLetterById(id)
+      .pipe(
+        switchMap(releaseLetter => {
+          this.releaseLetter = releaseLetter;
+
+          return this.newsManagementService.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id);
+        }),
+        finalize(() => this.isInitializing.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(draft => {
+        if (draft !== null) {
+          this.appModalService
+            .openDraftAlertModal()
+            .then(useDraft => {
+              if (useDraft) {
+                this.releaseLetter.content = draft.draftContent;
+              }
+            })
+            .catch(() => {});
+        }
+      });
   }
 }

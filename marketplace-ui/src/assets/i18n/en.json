@@ -4,7 +4,9 @@
     "language": {
       "english": "English",
       "french": "Français",
-      "german": "Deutsch"
+      "german": "Deutsch",
+      "yes": "Yes",
+      "no": "No"
     },
     "team": {
       "title": "Meet Team Octopus",
@@ -443,7 +445,7 @@
         "title": "Axon Ivy Market News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
         "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
-        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"
       },
@@ -455,6 +457,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "draft": "Draft",
         "createdAt": "Created at",
         "updatedAt": "Updated at",
         "sprintHeader": "Sprint: ",
@@ -466,7 +469,8 @@
         "delete": "Delete",
         "cancel": "Cancel",
         "warning": "Warning",
-        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint",
+        "draftAlertMessage": "You have an unfinished draft for this release letter. Do you want to continue editing it?"
       },
       "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",
@@ -515,7 +519,9 @@
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
-        "genericErrorMessage": "An error occurred while processing your request. Please try again."
+        "genericErrorMessage": "An error occurred while processing your request. Please try again.",
+        "submit": "Submit",
+        "saveAsDraft": "Save as Draft"
       },
       "gitHubUserBadge": {
         "gitHubAccount": "GitHub account",
