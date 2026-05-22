@@ -220,7 +220,6 @@ describe('AdminDashboardService', () => {
         {
           repoName: 'test-repo',
           visibility: 'public',
-          archived: false,
           dependabot: { status: 'enabled', alerts: {} },
           codeScanning: { status: 'enabled', alerts: {} },
           secretScanning: { status: 'enabled', numberOfSecretScanningAlerts: 0 },
