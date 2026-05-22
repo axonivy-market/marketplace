@@ -66,6 +66,17 @@ pipeline {
                 }
             }
         }
+
+        stage('Build and Test with Maven') {
+          steps {
+            script {
+              sh '''
+                mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
+              '''
+            }
+          }
+        }
+
         stage('Build and Deploy Containers') {
             steps {
                 script {
