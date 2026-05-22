@@ -1,6 +1,6 @@
 package com.axonivy.market.stable.service.impl;
 
-import com.axonivy.market.core.comparator.LatestVersionComparator;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.repository.CoreMavenArtifactVersionRepository;
 import com.axonivy.market.core.repository.CoreMetadataRepository;
@@ -30,6 +30,6 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
     if (StringUtils.isBlank(designerVersion)) {
       return result;
     }
-    return result.stream().dropWhile(v -> new LatestVersionComparator().compare(v, designerVersion) < 0).toList();
+    return result.stream().dropWhile(v -> MavenVersionComparator.getInstance().compare(v, designerVersion) > 0).toList();
   }
 }
