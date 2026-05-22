@@ -321,7 +321,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     var symlinkPath = artifactRoot.resolve(majorVersion);
     try {
       if (Files.isSymbolicLink(symlinkPath)) {
-        Path currentTargetPath = Files.readSymbolicLink(symlinkPath);
+        var currentTargetPath = Files.readSymbolicLink(symlinkPath);
         if (StringUtils.equals(targetPath.toString(), currentTargetPath.toString())) {
           return symlinkPath.toString();
         }
