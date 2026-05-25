@@ -67,7 +67,7 @@ pipeline {
             }
         }
 
-        stage('Build and Test with Maven') {
+        stage('Build skip tests with Maven') {
           steps {
             script {
               sh '''
