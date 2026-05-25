@@ -1,15 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-
 import { MarkdownService } from './markdown.service';
 import MarkdownIt from 'markdown-it';
 import { GITHUB_PULL_REQUEST_NUMBER_REGEX } from '../constants/common.constant';
-
-vi.mock('dompurify', () => ({
-  default: {
-    sanitize: vi.fn((html: string) => html)
-  }
-}));
 
 describe('MarkdownService', () => {
   let service: MarkdownService;
