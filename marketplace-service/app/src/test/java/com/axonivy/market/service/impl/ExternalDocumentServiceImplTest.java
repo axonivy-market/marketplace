@@ -124,6 +124,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().orElse(new Product()).getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(
@@ -143,6 +144,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(portalGuideDirectoryPath);
     when(externalDocumentMetaRepository.save(any())).thenReturn(new ExternalDocumentMeta());
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, TEST_VERSION);
     verify(externalDocumentMetaRepository, times(4)).save(any());
   }
