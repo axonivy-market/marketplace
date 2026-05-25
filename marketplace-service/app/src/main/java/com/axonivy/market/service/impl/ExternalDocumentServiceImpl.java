@@ -458,7 +458,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .toList();
   }
 
-  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync, String workingDirectory) {    
+  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync,
+		  String workingDirectory) {    
     var downloadOption = DownloadOption.builder()
         .workingDirectory(workingDirectory)
         .isForced(isResetSync)
