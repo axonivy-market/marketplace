@@ -459,7 +459,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync,
-		  String workingDirectory) {    
+		  String workingDirectory) {
     var downloadOption = DownloadOption.builder()
         .workingDirectory(workingDirectory)
         .isForced(isResetSync)
