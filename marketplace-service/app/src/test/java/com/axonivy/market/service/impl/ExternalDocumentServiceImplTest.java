@@ -99,6 +99,39 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testDetermineProductIdsForSyncWithSpecificProductId() {
+    List<String> result = service.determineProductIdsForSync(PORTAL);
+    assertEquals(List.of(PORTAL), result, "Should return list with only the given product ID");
+    verify(productRepository, never()).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithNullProductId() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(
+        List.of(mockPortalProduct().orElse(new Product())));
+    List<String> result = service.determineProductIdsForSync(null);
+    assertEquals(List.of(PORTAL), result, "Should return IDs from findAllProductsHaveDocument when productId is null");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithBlankProductId() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(
+        List.of(mockPortalProduct().orElse(new Product())));
+    List<String> result = service.determineProductIdsForSync(StringUtils.EMPTY);
+    assertEquals(List.of(PORTAL), result, "Should return IDs from findAllProductsHaveDocument when productId is blank");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithNoProducts() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(Collections.emptyList());
+    List<String> result = service.determineProductIdsForSync(null);
+    assertTrue(result.isEmpty(), "Should return empty list when no products have documents");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
+  }
+
+  @Test
   void testSyncDocumentForNonProduct() {
     when(productRepository.findProductByIdAndRelatedData(null)).thenReturn(null);
     service.syncDocumentForProduct(null, false, null);
@@ -124,6 +157,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().orElse(new Product()).getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(
@@ -143,6 +177,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(portalGuideDirectoryPath);
     when(externalDocumentMetaRepository.save(any())).thenReturn(new ExternalDocumentMeta());
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, TEST_VERSION);
     verify(externalDocumentMetaRepository, times(4)).save(any());
   }

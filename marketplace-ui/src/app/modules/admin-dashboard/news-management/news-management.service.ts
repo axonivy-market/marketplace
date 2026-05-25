@@ -110,9 +110,13 @@ export class NewsManagementService {
   }
 
   getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id: string): Observable<ReleaseLetterDraftApiResponse | null> {
+    let params = new HttpParams();
+    const currentTimeStamp = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, currentTimeStamp);
     return this.http.get<ReleaseLetterDraftApiResponse | null>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
       context: new HttpContext().set(CachingEnabled, false),
-      headers: this.adminAuth.getAuthHeaders()
+      headers: this.adminAuth.getAuthHeaders(),
+      params
     });
   }
 }
