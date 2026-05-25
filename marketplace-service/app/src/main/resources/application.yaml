@@ -23,7 +23,7 @@ spring:
   jpa:
     show-sql: '${SHOW_SQL}'
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
