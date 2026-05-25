@@ -6,7 +6,6 @@ import { of, throwError } from 'rxjs';
 import { LanguageService } from '../../core/services/language/language.service';
 import { Language } from '../../shared/enums/language.enum';
 import { TranslateModule } from '@ngx-translate/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import {
   provideHttpClient,
   withInterceptorsFromDi
@@ -22,13 +21,6 @@ describe('ReleasePreviewComponent', () => {
   let fixture: ComponentFixture<ReleasePreviewComponent>;
   let releasePreviewService: ReleasePreviewService;
   let languageService: MockedObject<LanguageService>;
-  let sanitizerSpy: MockedObject<DomSanitizer>;
-  const spy = {
-    bypassSecurityTrustHtml: vi
-      .fn()
-      .mockName('DomSanitizer.bypassSecurityTrustHtml'),
-    sanitize: vi.fn().mockName('DomSanitizer.sanitize')
-  };
 
   beforeEach(async () => {
     const languageServiceSpy = {
@@ -43,14 +35,12 @@ describe('ReleasePreviewComponent', () => {
         {
           provide: LanguageService,
           useValue: languageServiceSpy
-        },
-        { provide: DomSanitizer, useValue: spy }
+        }
       ]
     }).compileComponents();
     languageService = TestBed.inject(
       LanguageService
     ) as MockedObject<LanguageService>;
-    sanitizerSpy = TestBed.inject(DomSanitizer) as MockedObject<DomSanitizer>;
   });
 
   beforeEach(() => {
@@ -223,10 +213,9 @@ describe('ReleasePreviewComponent', () => {
     expect(component.activeTab).toBe('setup');
   });
 
-  it('should render and sanitize readme content', () => {
+  it('should render readme content', () => {
     const markdownService = TestBed.inject(MarkdownService);
     vi.spyOn(markdownService, 'parseMarkdown');
-    sanitizerSpy.sanitize.mockImplementation((_ctx, html) => html as string);
     languageService.selectedLanguage.mockReturnValue(Language.EN);
     vi.spyOn(releasePreviewService, 'extractZipDetails').mockReturnValue(
       of({
