@@ -283,7 +283,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-    String workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
+    var workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
     if (!isResetSync && doesDocExistInShareFolder(workingDirectory)) {
       return workingDirectory;
     }
