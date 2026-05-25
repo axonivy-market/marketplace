@@ -9,7 +9,7 @@ import { ReleaseLetterCriteria } from '../../../shared/models/criteria.model';
 import { ReleaseLetterListApiResponse } from '../../../shared/models/apis/release-letter-list-response.model';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { RequestParam } from '../../../shared/enums/request-param';
-import { LoadingComponent } from '../../../core/interceptors/api.interceptor';
+import { CachingEnabled, LoadingComponent } from '../../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
@@ -366,6 +366,67 @@ describe('NewsManagementService', () => {
       expect(req.request.url).toBe(`${API_URI.RELEASE_LETTERS}/save-as-draft`);
 
       req.flush({} as ReleaseLetterDraftApiResponse);
+    });
+  });
+
+  describe('getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId', () => {
+    it('should get release letter draft by release letter id', () => {
+      const id = '123';
+
+      const mockResponse: ReleaseLetterDraftApiResponse = {
+        id: 'draft-123',
+        draftContent: 'Draft content'
+      } as any;
+
+      service.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${API_URI.RELEASE_LETTERS}/${id}/draft`);
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
+      expect(req.request.params.has(RequestParam.TIMESTAMP)).toBe(true);
+      expect(req.request.context.get(CachingEnabled)).toBe(false);
+
+      req.flush(mockResponse);
+    });
+
+    it('should return null when no draft exists', () => {
+      const id = '123';
+
+      service.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id).subscribe(response => {
+        expect(response).toBeNull();
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${API_URI.RELEASE_LETTERS}/${id}/draft`);
+
+      expect(req.request.method).toBe('GET');
+
+      req.flush(null);
+    });
+
+    it('should propagate error when request fails', () => {
+      const id = '123';
+
+      service.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id).subscribe({
+        next: () => {
+          fail('Expected request to fail');
+        },
+        error: error => {
+          expect(error.status).toBe(500);
+          expect(error.statusText).toBe('Server Error');
+        }
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${API_URI.RELEASE_LETTERS}/${id}/draft`);
+
+      expect(req.request.method).toBe('GET');
+
+      req.flush('Error getting draft', {
+        status: 500,
+        statusText: 'Server Error'
+      });
     });
   });
 });
