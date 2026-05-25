@@ -283,7 +283,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+    String workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
+    if (!isResetSync && doesDocExistInShareFolder(workingDirectory)) {
+      return workingDirectory;
+    }
+    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync, workingDirectory);
   }
 
   private void createSymlinkForMajorVersions(Path versionFolder, List<String> majorVersions) {
@@ -454,8 +458,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .toList();
   }
 
-  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
-    String workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
+  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync, String workingDirectory) {    
     var downloadOption = DownloadOption.builder()
         .workingDirectory(workingDirectory)
         .isForced(isResetSync)
