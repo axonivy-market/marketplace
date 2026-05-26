@@ -10,6 +10,10 @@ $ivyApproveButtonColor: #47c46b;
 $ivyRejectButtonColor: #e5151c;
 
 $ivyReleasePreviewErrorColor: #dc3545;
+$ivyDeprecatedBannerBg: #f973161a;
+$ivyDeprecatedBannerBorder: #f9731640;
+$ivyDeprecatedBannerDivider: #e0c5b0;
+$ivyDeprecatedInstallButtonBg: #fe7c22;
 
 // Light
 $ivyPrimaryColorLight: #007095;
@@ -111,11 +115,11 @@ details summary {
   --monitoring-border-color: #e7e7e7;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
-  --deprecated-banner-bg: #f973161a;
-  --deprecated-banner-border: #f9731640;
-  --deprecated-banner-divider: #e0c5b0;
+  --deprecated-banner-bg: #{$ivyDeprecatedBannerBg};
+  --deprecated-banner-border: #{$ivyDeprecatedBannerBorder};
+  --deprecated-banner-divider: #{$ivyDeprecatedBannerDivider};
   --deprecated-banner-text: #d7610f;
-  --deprecated-install-button-bg: #fe7c22;
+  --deprecated-install-button-bg: #{$ivyDeprecatedInstallButtonBg};
   --deprecated-install-button-text: #{$white};
 
   .bg-primary {
@@ -252,11 +256,11 @@ details summary {
   --monitoring-border-color: #4f4e4e;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
-  --deprecated-banner-bg: #f973161a;
-  --deprecated-banner-border: #f9731640;
-  --deprecated-banner-divider: #e0c5b0;
-  --deprecated-banner-text: #FE7C22;
-  --deprecated-install-button-bg: #fe7c22;
+  --deprecated-banner-bg: #{$ivyDeprecatedBannerBg};
+  --deprecated-banner-border: #{$ivyDeprecatedBannerBorder};
+  --deprecated-banner-divider: #{$ivyDeprecatedBannerDivider};
+  --deprecated-banner-text: #{$ivyDeprecatedInstallButtonBg};
+  --deprecated-install-button-bg: #{$ivyDeprecatedInstallButtonBg};
   --deprecated-install-button-text: #{$white};
 
   a {

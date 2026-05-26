@@ -506,8 +506,13 @@
         "copiedLabel": "Copied!",
         "deprecateProduct": "Deprecate Product",
         "productIdInputPlaceholder": "Please select extension id to deprecate",
-        "productReplacementNameInputPlaceholder": "Please enter product replacement name",
-        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
+        "productReplacementNameInputPlaceholder": "Please enter alternative extension name e.g. VertexAI Google",
+        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal",
+        "extensionIdTooltip": "The unique identifier of the marketplace extension you want to deprecate (e.g. portal).",
+        "hasProductReplacementTooltip": "Check this if there is a newer or alternative extension that replaces this one.",
+        "productReplacementNameTooltip": "The display name of the extension that replaces the deprecated one.",
+        "successorTooltip": "The full URL to the successor extension on the marketplace (must start with http:// or https://).",
+        "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice."
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

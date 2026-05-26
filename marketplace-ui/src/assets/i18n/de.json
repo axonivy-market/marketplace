@@ -506,8 +506,13 @@
         "copiedLabel": "Kopiert!",
         "deprecateProduct": "Produkt als veraltet markieren",
         "productIdInputPlaceholder": "Bitte wähle die zu veraltende Erweiterungs-ID aus",
-        "productReplacementNameInputPlaceholder": "Bitte Namen des Ersatzprodukts eingeben",
-        "successorInputPlaceholder": "Bitte gib den Pfad der Nachfolge-Erweiterung an, z. B. https://market.axonivy.com/portal"
+        "productReplacementNameInputPlaceholder": "Bitte gib den Namen der alternativen Erweiterung ein, z. B. VertexAI Google",
+        "successorInputPlaceholder": "Bitte gib den Pfad der Nachfolge-Erweiterung an, z. B. https://market.axonivy.com/portal",
+        "extensionIdTooltip": "Die eindeutige Kennung der Marketplace-Erweiterung, die du als veraltet markieren möchtest (z. B. portal).",
+        "hasProductReplacementTooltip": "Aktiviere dies, wenn es eine neuere oder alternative Erweiterung gibt, die diese ersetzt.",
+        "productReplacementNameTooltip": "Der Anzeigename der Erweiterung, die die veraltete ersetzt.",
+        "successorTooltip": "Die vollständige URL zur Nachfolge-Erweiterung im Marketplace (muss mit http:// oder https:// beginnen).",
+        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert."
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

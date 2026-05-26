@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DeprecationRequest } from '../../../../../shared/models/deprecation-request';
 
 @Component({
   selector: 'app-deprecate-form-dialog',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, NgbTooltip, TranslateModule],
   templateUrl: './deprecation-form-dialog.component.html',
   styleUrl: './deprecation-form-dialog.component.scss'
 })

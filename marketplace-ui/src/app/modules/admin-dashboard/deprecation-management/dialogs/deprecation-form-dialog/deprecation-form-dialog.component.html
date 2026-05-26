@@ -12,7 +12,13 @@
 
       <div class="modal-body">
         <div class="mb-4 position-relative">
-          <label class="form-label">{{ 'common.admin.deprecation.extensionId' | translate }}</label>
+          <label class="form-label">
+            {{ 'common.admin.deprecation.extensionId' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.extensionIdTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
+          </label>
           <input
             type="text"
             [class.form-control]="true"
@@ -48,12 +54,22 @@
           />
           <label class="form-check-label" for="has-product-replacement-checkbox">
             {{ 'common.admin.deprecation.hasProductReplacement' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.hasProductReplacementTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
           </label>
         </div>
 
         @if (deprecationRequest.hasProductReplacement) {
           <div class="mb-2">
-            <label class="form-label">{{ 'common.admin.deprecation.productReplacementName' | translate }}</label>
+            <label class="form-label">
+              {{ 'common.admin.deprecation.productReplacementName' | translate }}
+              <i class="ti ti-info-circle ms-1"
+                 placement="top"
+                 [ngbTooltip]="'common.admin.deprecation.productReplacementNameTooltip' | translate"
+                 tooltipClass="custom-tooltip-class"></i>
+            </label>
             <input
               type="text"
               [class.form-control]="true"
@@ -70,7 +86,13 @@
           </div>
 
           <div class="mb-2">
-            <label class="form-label">{{ 'common.admin.deprecation.successor' | translate }}</label>
+            <label class="form-label">
+              {{ 'common.admin.deprecation.successor' | translate }}
+              <i class="ti ti-info-circle ms-1"
+                 placement="top"
+                 [ngbTooltip]="'common.admin.deprecation.successorTooltip' | translate"
+                 tooltipClass="custom-tooltip-class"></i>
+            </label>
             <input
               type="text"
               [class.form-control]="true"
@@ -98,6 +120,10 @@
           />
           <label class="form-check-label" for="add-readme-checkbox">
             {{ 'common.admin.deprecation.updateForReadmeText' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.updateForReadmeTextTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
           </label>
         </div>
       </div>
