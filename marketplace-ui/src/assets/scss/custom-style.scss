@@ -12,7 +12,7 @@ $ivyRejectButtonColor: #e5151c;
 $ivyReleasePreviewErrorColor: #dc3545;
 $ivyDeprecatedBannerBg: #f973161a;
 $ivyDeprecatedBannerBorder: #f9731640;
-$ivyDeprecatedBannerDivider: #e0c5b0;
+$ivyDeprecatedBannerDivider: #B0B0B0;
 $ivyDeprecatedInstallButtonBg: #fe7c22;
 
 // Light
@@ -21,6 +21,7 @@ $ivyPrimaryColorHoverLight: #00445c;
 $ivySecondaryColorLight: #f8f8f8;
 $ivySecondaryButtonHoverLight: #ebebeb;
 $ivyPrimaryTextColorLight: #1b1b1b;
+$ivyPrimaryTextColorDark: #ffffff;
 $ivySecondaryTextLight: #4a4a4a;
 $ivyNormalTextColorLight: #fafafa;
 
@@ -221,6 +222,7 @@ details summary {
   --ivy-active-color: #{$white};
 
   --ivy-text-normal-color: #{$ivyBodyBackgroundDark};
+  --ivy-text-primary-color: #{$ivyPrimaryTextColorDark};
   --ivy-text-secondary-color: #{$ivySecondaryTextDark};
 
   --ivy-border-color: #{$ivySecondaryTextLight};
