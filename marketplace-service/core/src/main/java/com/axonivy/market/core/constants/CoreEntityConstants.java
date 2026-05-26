@@ -30,12 +30,10 @@ public class CoreEntityConstants {
   public static final String PRODUCT_MODULE_CONTENT_SETUP = "product_module_content_setup";
   public static final String PRODUCT_MODULE_CONTENT_DESCRIPTION = "product_module_content_description";
   public static final String PRODUCT_MODULE_CONTENT_DEMO = "product_module_content_demo";
-  public static final String PRODUCT_MODULE_CONTENT_COMPONENT = "product_module_content_component";
   public static final String LANGUAGE = "language";
   public static final String SETUP = "setup";
   public static final String DEMO = "demo";
   public static final String DESCRIPTION = "description";
-  public static final String COMPONENT = "component";
   public static final String NAME = "name";
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String PRODUCT_NAME = "product_name";

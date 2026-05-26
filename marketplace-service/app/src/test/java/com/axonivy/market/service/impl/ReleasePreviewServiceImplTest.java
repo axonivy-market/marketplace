@@ -61,7 +61,8 @@ class ReleasePreviewServiceImplTest {
         .updateImagesWithDownloadUrl(tempDirectory.toString(), README_CONTENT, BASE_URL);
     releasePreviewService.processReadme(tempReadmeFile, moduleContents, BASE_URL, tempDirectory.toString());
 
-    assertEquals(4, moduleContents.size(),"Module contents size should be 4");
+    assertEquals(3, moduleContents.size(),
+        "Module contents size should be 3");
     Files.deleteIfExists(tempReadmeFile);
   }
 

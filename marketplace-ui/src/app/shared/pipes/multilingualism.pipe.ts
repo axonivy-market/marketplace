@@ -10,9 +10,9 @@ export class MultilingualismPipe implements PipeTransform {
   transform(value: DisplayValue | null, language: Language, _args?: []): string {
     let displayValue = '';
     if (value) {
-      displayValue = value[language] ?? '';
-      if (displayValue === '') {
-        displayValue = value[Language.EN] ?? '';
+      displayValue = value[language];
+      if (displayValue === undefined || displayValue === '') {
+        displayValue = value[Language.EN];
       }
     }
     return displayValue;

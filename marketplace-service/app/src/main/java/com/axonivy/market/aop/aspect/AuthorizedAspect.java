@@ -31,7 +31,6 @@ public class AuthorizedAspect {
 
   public static final String VALIDATED_TOKEN_ATTRIBUTE = "validatedAccessToken";
   public static final String USERNAME_ATTRIBUTE = "username";
-  public static final String GITHUB_USER_ID_ATTRIBUTE = "gitHubUserId";
 
   private final JwtService jwtService;
   private final GitHubService gitHubService;
@@ -64,13 +63,11 @@ public class AuthorizedAspect {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-      var username = userInfo.getName();
-      var gitHubUserId = userInfo.getGitHubId();
-      if (StringUtils.isAnyBlank(username, gitHubUserId)) {
+      var username = userInfo.getUsername();
+      if (StringUtils.isBlank(username)) {
         throw new Oauth2ExchangeCodeException(HttpStatus.UNAUTHORIZED.name(),"Invalid authenticated user");
       }
       request.setAttribute(USERNAME_ATTRIBUTE, username);
-      request.setAttribute(GITHUB_USER_ID_ATTRIBUTE, gitHubUserId);
     }
 
     request.setAttribute(VALIDATED_TOKEN_ATTRIBUTE, token);

@@ -25,13 +25,12 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { SecurityMonitorSortOption } from '../../../shared/enums/security-monitor-sort.enum';
 import { SecurityMonitorCriteria } from '../../../shared/models/criteria.model';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { SecurityStatusBadgeComponent } from '../../../shared/components/security-status-badge/security-status-badge.component';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
   selector: 'app-security-monitor',
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, SecurityStatusBadgeComponent, TranslateModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, TranslateModule, NgbPaginationModule],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss']
 })
@@ -191,11 +190,11 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, latestCommitSHA?: string): void {
+  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
-      additionalPath = latestCommitSHA ?? '';
+      additionalPath = lastCommitSHA ?? '';
     }
     if (path) {
       this.navigateToPage(repoName, path, additionalPath);

@@ -8,7 +8,6 @@ import { AddFeedbackDialogComponent } from '../../modules/product/product-detail
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
 import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { AppModalService } from './app-modal.service';
-import { ReleaseLetterDraftAlertModalComponent } from '../../modules/admin-dashboard/news-management/release-letter-draft-alert-modal/release-letter-draft-alert-modal.component';
 
 const mockResponse = {
   id: '123',
@@ -38,11 +37,14 @@ describe('AppModalService', () => {
 
   it('should open ShowFeedbacksDialogComponent with correct options', () => {
     service.openShowFeedbacksDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(ShowFeedbacksDialogComponent, {
-      centered: true,
-      modalDialogClass: 'show-feedbacks-modal-dialog',
-      windowClass: 'overflow-hidden'
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      ShowFeedbacksDialogComponent,
+      {
+        centered: true,
+        modalDialogClass: 'show-feedbacks-modal-dialog',
+        windowClass: 'overflow-hidden'
+      }
+    );
   });
 
   it('should open AddFeedbackDialogComponent with correct options and return result', async () => {
@@ -50,11 +52,14 @@ describe('AppModalService', () => {
     modalServiceSpy.open.mockReturnValue({ result: mockResult } as any);
 
     const result = await service.openAddFeedbackDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(AddFeedbackDialogComponent, {
-      fullscreen: 'md',
-      centered: true,
-      modalDialogClass: 'add-feedback-modal-dialog'
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      AddFeedbackDialogComponent,
+      {
+        fullscreen: 'md',
+        centered: true,
+        modalDialogClass: 'add-feedback-modal-dialog'
+      }
+    );
     expect(result).toBe('test result');
   });
 
@@ -78,11 +83,14 @@ describe('AppModalService', () => {
 
     service.openReleaseLetterModal(mockId);
 
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(ReleaseLetterModalComponent, {
-      fullscreen: 'md',
-      centered: true,
-      size: 'xl'
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      ReleaseLetterModalComponent,
+      {
+        fullscreen: 'md',
+        centered: true,
+        size: 'xl'
+      }
+    );
 
     expect(mockModalRef.componentInstance.id).toBe(mockId);
   });
@@ -99,34 +107,18 @@ describe('AppModalService', () => {
 
     modalServiceSpy.open.mockReturnValue(mockModalRef);
 
-    const result = await service.openDeleteReleaseLetterConfirmModal(mockResponse);
+    const result =
+      await service.openDeleteReleaseLetterConfirmModal(mockResponse);
 
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(DeleteReleaseLetterConfirmModalComponent, {
-      size: 'md',
-      centered: true
-    });
+    expect(modalServiceSpy.open).toHaveBeenCalledWith(
+      DeleteReleaseLetterConfirmModalComponent,
+      {
+        size: 'lg'
+      }
+    );
 
     expect(mockModalRef.componentInstance.id).toBe(id);
     expect(mockModalRef.componentInstance.sprint).toBe(sprint);
-    expect(result).toBe(true);
-  });
-
-  it('should open ReleaseLetterDraftAlertModalComponent and return result', async () => {
-    const mockResult = Promise.resolve(true);
-
-    const mockModalRef = {
-      result: mockResult
-    } as any;
-
-    modalServiceSpy.open.mockReturnValue(mockModalRef);
-
-    const result = await service.openDraftAlertModal();
-
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(ReleaseLetterDraftAlertModalComponent, {
-      size: 'lg',
-      centered: true
-    });
-
     expect(result).toBe(true);
   });
 });

@@ -189,6 +189,12 @@
     border: 1px solid gray;
     color: var(--ivy-text-secondary-color);
   }
+
+  .archived {
+    @extend .repo-badge;
+    border: 1px solid orange;
+    color: orange;
+  }
 }
 
 .cell-link {
@@ -209,6 +215,49 @@
 
   &:hover {
     color: var(--ivy-primary-bg);
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  color: white;
+  border: none;
+  font-weight: 500;
+
+  &.critical {
+    background-color: #e63946;
+  }
+
+  &.high {
+    background-color: #f4a261;
+  }
+
+  &.medium,
+  &.warning {
+    background-color: #f4d35e;
+    color: #333;
+  }
+
+  &.low,
+  &.note {
+    background-color: #90be6d;
+  }
+
+  &.error {
+    background-color: #d00000;
+  }
+
+  &.none,
+  &.no-permission {
+    background-color: #ccc;
+    color: #666;
+  }
+
+  &.active {
+    background-color: #2a9d8f;
   }
 }
 

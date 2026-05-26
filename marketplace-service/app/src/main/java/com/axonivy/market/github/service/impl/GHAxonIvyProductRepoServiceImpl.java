@@ -82,8 +82,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
 
-    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents,
-        readmeFile.getName(), readmeContentsModel);
+    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
   }
 
   public String updateImagesWithDownloadUrl(String productId, List<GHContent> contents, String readmeContents) {

@@ -13,5 +13,4 @@ public class ReadmeContentsModel {
   private String description;
   private String demo;
   private String setup;
-  private String component;
 }

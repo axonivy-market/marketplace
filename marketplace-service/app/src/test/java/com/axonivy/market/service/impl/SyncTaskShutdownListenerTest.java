@@ -62,21 +62,6 @@ class SyncTaskShutdownListenerTest {
   }
 
   @Test
-  void testShouldMarkStartedExecutionAsFailed() {
-    SyncTaskExecution startedExecution = mock(SyncTaskExecution.class);
-    SyncTaskType startedType = SyncTaskType.values()[0];
-    when(startedExecution.getStatus()).thenReturn(SyncTaskStatus.STARTED);
-
-    when(syncTaskExecutionRepo.findByType(startedType)).thenReturn(Optional.of(startedExecution));
-    when(syncTaskExecutionRepo.findByType(argThat(type -> type != startedType)))
-        .thenReturn(Optional.empty());
-
-    listener.onShutdown();
-    verify(syncTaskExecutionService, times(1))
-        .markStatusFailure(startedExecution, "Application shutdown during execution");
-  }
-
-  @Test
   void testShouldContinueWhenDataAccessExceptionThrown() {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getStatus()).thenReturn(SyncTaskStatus.RUNNING);

@@ -14,8 +14,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "market.github")
 public class GitHubProperty {
+
   private String token;
   private String oauth2ClientId;
   private String oauth2ClientSecret;
-  private long connectTimeout;
+
 }

@@ -25,10 +25,8 @@ import { ReleaseLetterCriteria } from '../../../shared/models/criteria.model';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
+import { AdminDashboardService } from './../admin-dashboard.service';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
-import { NewsManagementService } from './news-management.service';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-news-management',
@@ -37,8 +35,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
     FormsModule,
     RouterModule,
     TranslateModule,
-    NgbTooltip,
-    LoadingSpinnerComponent
+    NgbTooltip
   ],
   templateUrl: './news-management.component.html',
   styleUrl: './news-management.component.scss'
@@ -47,14 +44,13 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   @ViewChild('releaseLetterObserver', { static: false })
   observerElement!: ElementRef;
 
-  protected LoadingComponentId = LoadingComponentId;
   isBrowser: boolean;
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
   loadingService = inject(LoadingService);
-  newsManagementService = inject(NewsManagementService);
+  adminDashboardService = inject(AdminDashboardService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   subscriptions: Subscription[] = [];
@@ -70,11 +66,10 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
 
   readonly tableHeaders = [
     { key: '.number', class: 'text-primary' },
-    { key: '.sprint', class: this.tableHeadersClass }, 
+    { key: '.sprint', class: this.tableHeadersClass },
     { key: '.createdAt', class: this.tableHeadersClass },
     { key: '.updatedAt', class: this.tableHeadersClass },
     { key: '.latest', class: this.tableHeadersClass },
-    { key: '.draft', class: this.tableHeadersClass },
     { key: '.actions', class: this.tableHeadersClass }
   ];
 
@@ -114,18 +109,17 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
     this.appModalService
       .openDeleteReleaseLetterConfirmModal(releaseLetter)
       .then(() => {
-        this.newsManagementService
-          .getReleaseLetters(this.releaseLetterCriteria, LoadingComponentId.NEWS_MANAGEMENT)
+        this.adminDashboardService
+          .getReleaseLetters(this.releaseLetterCriteria)
           .subscribe(res => {
             this.releaseLetterList.set(res._embedded.releaseLetterModelList);
           });
-      })
-      .catch(() => {});
+      });
   }
 
   loadReleaseLetters(): void {
-    const sub = this.newsManagementService
-      .getReleaseLetters(this.releaseLetterCriteria, LoadingComponentId.NEWS_MANAGEMENT)
+    const sub = this.adminDashboardService
+      .getReleaseLetters(this.releaseLetterCriteria)
       .subscribe({
         next: response => {
           if (!response) {

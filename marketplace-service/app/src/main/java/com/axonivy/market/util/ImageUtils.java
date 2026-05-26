@@ -31,7 +31,6 @@ public final class ImageUtils {
     mappingImageUrl(productModuleContent.getDescription(), isProduction);
     mappingImageUrl(productModuleContent.getDemo(), isProduction);
     mappingImageUrl(productModuleContent.getSetup(), isProduction);
-    mappingImageUrl(productModuleContent.getComponent(), isProduction);
     return productModuleContent;
   }
 

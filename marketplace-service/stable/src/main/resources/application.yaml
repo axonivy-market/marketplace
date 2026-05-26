@@ -2,7 +2,6 @@ server:
   port: '8085'
   forward-headers-strategy: framework
   servlet:
-    context-path: /stable
     session:
       cookie:
         secure: 'true'

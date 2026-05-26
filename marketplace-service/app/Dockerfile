@@ -1,10 +1,22 @@
-FROM eclipse-temurin:21-jre
-
+# Stage 1: Maven build
+FROM maven:3.9-eclipse-temurin-21 AS build-api
 WORKDIR /app
+COPY . .
+RUN mvn clean install -DskipTests -pl app -am
 
+# Stage 2: Run the application
+FROM tomcat:10.1-jdk21-openjdk-slim
+WORKDIR /app
+# Remove the default ROOT webapp to avoid conflicts
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+
+# Copy the WAR file to the webapps directory in Tomcat
 ARG BUILD_VERSION
-COPY app/target/app-${BUILD_VERSION}.jar app.jar
+COPY --from=build-api /app/app/target/app-${BUILD_VERSION}.war /usr/local/tomcat/webapps/app.war
 
+# Expose port 8080
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar"]
+# Start Tomcat
+CMD ["catalina.sh", "run"]
+

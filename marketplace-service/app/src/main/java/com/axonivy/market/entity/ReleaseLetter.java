@@ -22,7 +22,6 @@ import java.io.Serial;
 @Entity
 @Table(name = RELEASE_LETTER)
 public class ReleaseLetter extends AuditableIdEntity {
-
   @Serial
   private static final long serialVersionUID = 1;
   private String sprint;

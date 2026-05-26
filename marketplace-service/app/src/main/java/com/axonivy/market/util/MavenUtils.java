@@ -208,11 +208,9 @@ public class MavenUtils {
     }
     return archivedArtifacts.stream()
         .filter(Objects::nonNull)
-        .filter(archivedArtifact
-            -> MavenVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) <= 0)
-        .min((artifact1, artifact2)
-            -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
-        .orElse(null);
+        .sorted((artifact1, artifact2) -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+        .filter(archivedArtifact -> MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) >= 0)
+        .findAny().orElse(null);
   }
 
   public static String buildSnapshotMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId,

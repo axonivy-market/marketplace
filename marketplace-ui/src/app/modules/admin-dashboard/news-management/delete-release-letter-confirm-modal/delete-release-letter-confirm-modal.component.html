@@ -1,34 +1,31 @@
 <div>
   <div class="modal-header">
-    <h5><strong>{{ 'common.admin.newsManagement.warning' | translate }}</strong></h5>
+    <h2>{{ 'common.admin.newsManagement.warning' | translate }}</h2>
   </div>
   <div class="modal-body">
-    <h5 class="p-0">
+    <div class="p-0 release-letter-content">
       {{ 'common.admin.newsManagement.deleteConfirmMessage' | translate }}
       <b>{{ sprint }}</b>?
-    </h5>
+    </div>
     <div class="modal-footer">
       <button
         (click)="activeModal.dismiss()"
         type="button"
-        [disabled]="isHandlingApiCall()"
         [lang]="languageService.selectedLanguage()"
         class="btn border-0 mb-0 me-2"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light'">
+        [ngClass]="
+          themeService.isDarkMode()
+            ? 'btn-light text-dark'
+            : 'btn-primary text-light'
+        ">
         {{ translateService.get('common.admin.newsManagement.cancel') | async }}
       </button>
       <button
         (click)="deleteReleaseLetterById()"
         type="button"
-        [disabled]="isHandlingApiCall()"
         [lang]="languageService.selectedLanguage()"
-        class="btn delete-button border-0 border-0 text-center d-flex align-items-center justify-content-center me-3">
-        @if (isHandlingApiCall()) {
-          <div class="spinner-border spinner-border-sm me-2" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        }
-        <span>{{ translateService.get('common.admin.newsManagement.delete') | async }}</span>
+        class="btn delete-button border-0 mb-0 me-2">
+        {{ translateService.get('common.admin.newsManagement.delete') | async }}
       </button>
     </div>
   </div>

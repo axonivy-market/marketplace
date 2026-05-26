@@ -3,12 +3,9 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.ReleaseLetter;
-import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.MarketException;
-import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
-import com.axonivy.market.repository.ReleaseLetterDraftRepository;
 import com.axonivy.market.repository.ReleaseLetterRepository;
 
 import org.junit.jupiter.api.Test;
@@ -37,13 +34,9 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   private static final String UNIFIED_RELEASE_LETTER_SPRINT_NAME = "DEMO";
   private static final String RELEASE_LETTER_CONTENT_SAMPLE = "Demo content";
   private static final String RELEASE_LETTER_ID_SAMPLE = "release-letter-id";
-  private static final String GITHUB_USER_ID = "123456";
 
   @Mock
   private ReleaseLetterRepository releaseLetterRepository;
-
-  @Mock
-  private ReleaseLetterDraftRepository releaseLetterDraftRepository;
 
   @InjectMocks
   private ReleaseLetterServiceImpl releaseLetterService;
@@ -51,18 +44,17 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testShouldUseDefaultSortingWhenNotSorted() {
     PageRequest pageable = PageRequest.of(0, 10);
-    boolean isReadOnly = true;
-
+    boolean isPaging = true;
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
-    when(releaseLetterRepository.findAllWithContent(any(Pageable.class))).thenReturn(page);
+    when(releaseLetterRepository.findAll(any(Pageable.class)))
+        .thenReturn(page);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
 
     ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-
-    verify(releaseLetterRepository).findAllWithContent(captor.capture());
+    verify(releaseLetterRepository).findAll(captor.capture());
 
     Pageable usedPageable = captor.getValue();
 
@@ -70,7 +62,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
         "Sort order should not be null");
     assertEquals(Sort.Direction.DESC,
         Objects.requireNonNull(usedPageable.getSort().getOrderFor("createdAt")).getDirection(),
-        "Sort order should be createdAt DESC");
+        "Sort order should be createAt");
     assertEquals(1, result.getTotalElements(), "Total elements in page should be 1");
     assertEquals(1, result.getContent().size(), "Content list size should be 1");
   }
@@ -103,11 +95,11 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     Page<ReleaseLetter> page = new PageImpl<>(List.of(releaseLetterMock));
 
-    when(releaseLetterRepository.findByIsLatest(true, pageable)).thenReturn(page);
+    when(releaseLetterRepository.findByLatest(true, pageable)).thenReturn(page);
 
     Page<ReleaseLetter> result = releaseLetterService.findLatestReleaseLetter(pageable);
 
-    verify(releaseLetterRepository).findByIsLatest(true, pageable);
+    verify(releaseLetterRepository).findByLatest(true, pageable);
 
     assertEquals(page, result, "Resulting page of latest ReleaseLetters should match repository response");
   }
@@ -118,7 +110,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     releaseLetterModelRequestMock.setSprint("   ");
 
     assertThrows(MarketException.class,
-        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false),
+        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock),
         "Expected MarketException to be thrown when sprint name is blank");
   }
 
@@ -128,8 +120,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     releaseLetterModelRequestMock.setSprint(null);
 
     assertThrows(MarketException.class,
-        () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false),
-        "Expected MarketException to be thrown when sprint name is blank");
+            () -> releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock),
+            "Expected MarketException to be thrown when sprint name is blank");
   }
 
   @Test
@@ -140,7 +132,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.existsBySprint("S43"))
         .thenReturn(true);
     assertThrows(AlreadyExistedException.class,
-        () -> releaseLetterService.createReleaseLetter(request, false),
+        () -> releaseLetterService.createReleaseLetter(request),
         "Expected AlreadyExistedException to be thrown when sprint name already exists");
   }
 
@@ -155,7 +147,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
         false);
     when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.createReleaseLetter(request, false);
+    ReleaseLetter result = releaseLetterService.createReleaseLetter(request);
 
     assertEquals(UNIFIED_RELEASE_LETTER_SPRINT_NAME, result.getSprint(),
         "Result sprint name should be unified to uppercase");
@@ -174,11 +166,11 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.existsBySprint("S45")).thenReturn(false);
     when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.createReleaseLetter(request, false);
+    ReleaseLetter result = releaseLetterService.createReleaseLetter(request);
 
     assertNotNull(result, "Result should not be null");
     assertEquals("", result.getContent(),
-        "Content should be empty string when original content is null");
+            "Content should be empty string when original content is null");
   }
 
   @Test
@@ -191,7 +183,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.existsBySprint("S43"))
         .thenReturn(false);
 
-    releaseLetterService.createReleaseLetter(request, false);
+    releaseLetterService.createReleaseLetter(request);
 
     verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S43");
   }
@@ -209,17 +201,13 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.existsBySprint("S44")).thenReturn(false);
     when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
 
     assertEquals("S44", result.getSprint(), "Result sprint should match requested Sprint");
     assertEquals("Hello https://github.com/dev", result.getContent(),
-        "Result content should have the correct transformed github account link");
+            "Result content should have the correct transformed github account link");
 
     verify(releaseLetterRepository).deactivateOtherLatestReleaseLetters("S44");
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    );
   }
 
   @Test
@@ -228,7 +216,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     request.setSprint("   ");
 
     assertThrows(MarketException.class,
-        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request, GITHUB_USER_ID),
+        () -> releaseLetterService.updateReleaseLetter(RELEASE_LETTER_ID_SAMPLE, request),
         "Expected MarketException to be thrown when sprint name is blank");
 
     verifyNoInteractions(releaseLetterRepository);
@@ -246,8 +234,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     String id = request.getId();
     assertThrows(AlreadyExistedException.class,
-        () -> releaseLetterService.updateReleaseLetter(id, request, GITHUB_USER_ID),
-        "Expected AlreadyExistedException to be thrown when sprint name already exists");
+            () -> releaseLetterService.updateReleaseLetter(id, request),
+            "Expected AlreadyExistedException to be thrown when sprint name already exists");
   }
 
   @Test
@@ -265,7 +253,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
     when(releaseLetterRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
 
     assertEquals("S43", result.getSprint(), "Result sprint should match requested Sprint");
     assertFalse(result.isLatest(), "Result release letter should not be active");
@@ -274,10 +262,6 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).findById(request.getId());
     verify(releaseLetterRepository).save(existing);
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    );
   }
 
   @Test
@@ -296,7 +280,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
     when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
 
     assertNotNull(result, "Result should not be null when sprint is successfully changed");
     assertEquals("S44", result.getSprint(), "Sprint should be normalized to uppercase and updated");
@@ -308,10 +292,6 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     verify(releaseLetterRepository).existsBySprint("S44");
     verify(releaseLetterRepository).save(existing);
-    verify(releaseLetterDraftRepository).deleteByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    );
   }
 
   @Test
@@ -329,7 +309,7 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
     when(releaseLetterRepository.findById(request.getId())).thenReturn(Optional.of(existing));
     when(releaseLetterRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request, GITHUB_USER_ID);
+    ReleaseLetter result = releaseLetterService.updateReleaseLetter(request.getId(), request);
 
     assertNotNull(result, "Result should not be null when marking release letter as latest");
     assertTrue(result.isLatest(), "Latest flag should be updated to true");
@@ -350,7 +330,6 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     releaseLetterService.deleteReleaseLetterById(id);
     verify(releaseLetterRepository).deleteByIdReturningCount(id);
-    verify(releaseLetterDraftRepository).deleteByReleaseLetterId(id);
   }
 
   @Test
@@ -359,8 +338,8 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     when(releaseLetterRepository.deleteByIdReturningCount(id)).thenReturn(0);
     assertThrows(NotFoundException.class,
-        () -> releaseLetterService.deleteReleaseLetterById(id),
-        "Expected NotFoundException to be thrown when id does not exist");
+            () -> releaseLetterService.deleteReleaseLetterById(id),
+            "Expected NotFoundException to be thrown when id does not exist");
 
     verify(releaseLetterRepository).deleteByIdReturningCount(id);
   }
@@ -368,16 +347,16 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
   @Test
   void testFindAllReleaseLettersShouldReturnSinglePageWhenPagingDisabled() {
     Pageable pageable = PageRequest.of(5, 1);
-    boolean isReadOnly = false;
+    boolean isPaging = false;
 
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     List<ReleaseLetter> list = List.of(releaseLetterMock);
 
     when(releaseLetterRepository.findAll(any(Sort.class))).thenReturn(list);
 
-    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
-    ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
+    Page<ReleaseLetter> result = releaseLetterService.findAllReleaseLetters(pageable, isPaging);
 
+    ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
     verify(releaseLetterRepository).findAll(sortCaptor.capture());
 
     Sort usedSort = sortCaptor.getValue();
@@ -385,168 +364,11 @@ class ReleaseLetterServiceImplTest extends BaseSetup {
 
     assertNotNull(order, "Sort should contain 'createdAt' property");
     assertEquals(Sort.Direction.DESC, order.getDirection(), "Sort direction should be DESC");
+
     assertEquals(0, result.getNumber(), "Page number should always be 0 when paging disabled");
     assertEquals(1, result.getSize(), "Page size should equal list size");
     assertEquals(1, result.getTotalElements(), "Total elements should equal list size");
     assertEquals(list, result.getContent(), "Page content should match repository result");
-  }
-
-  @Test
-  void testSaveAsDraftShouldCreateReleaseLetterWhenReleaseLetterDoesNotExist() {
-    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-    request.setId(RELEASE_LETTER_ID_SAMPLE);
-    request.setSprint("s45");
-    request.setDraftContent("Draft by @john");
-
-    ReleaseLetter createdReleaseLetter = new ReleaseLetter();
-    createdReleaseLetter.setId(RELEASE_LETTER_ID_SAMPLE);
-    createdReleaseLetter.setSprint("S45");
-
-    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE)).thenReturn(Optional.empty());
-    when(releaseLetterRepository.existsBySprint("S45")).thenReturn(false);
-    when(releaseLetterRepository.save(any(ReleaseLetter.class))).thenReturn(createdReleaseLetter);
-    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    )).thenReturn(Optional.empty());
-    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    ReleaseLetterDraftModel result = releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
-
-    assertNotNull(result, "Saved draft result should not be null");
-    assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
-        "Release letter id should match created release letter");
-    assertEquals("Draft by https://github.com/john", result.getDraftContent(),
-        "Draft content should transform GitHub username into profile link");
-
-    verify(releaseLetterRepository).findById(RELEASE_LETTER_ID_SAMPLE);
-    verify(releaseLetterRepository).save(any(ReleaseLetter.class));
-    verify(releaseLetterDraftRepository).save(any(ReleaseLetterDraft.class));
-  }
-
-  @Test
-  void testSaveAsDraftShouldUpdateExistingDraftWhenDraftAlreadyExists() {
-    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-    request.setId(RELEASE_LETTER_ID_SAMPLE);
-    request.setSprint("S43");
-    request.setDraftContent("Updated by @alice");
-
-    ReleaseLetter existingReleaseLetter = createReleaseLetterMock();
-
-    ReleaseLetterDraft existingDraft = new ReleaseLetterDraft();
-    existingDraft.setId("draft-id");
-    existingDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
-    existingDraft.setGitHubUserId(GITHUB_USER_ID);
-    existingDraft.setDraftContent("Old draft");
-
-    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
-        .thenReturn(Optional.of(existingReleaseLetter));
-    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    )).thenReturn(Optional.of(existingDraft));
-    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    ReleaseLetterDraftModel result =
-        releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
-
-    assertNotNull(result,
-        "Updated draft result should not be null");
-    assertEquals(RELEASE_LETTER_ID_SAMPLE, result.getReleaseLetterId(),
-        "Release letter id should remain unchanged");
-    assertEquals("Updated by https://github.com/alice", result.getDraftContent(),
-        "Draft content should be updated and transformed correctly");
-    assertEquals("draft-id", result.getId(),
-        "Draft id should remain unchanged after update");
-    verify(releaseLetterRepository).findById(RELEASE_LETTER_ID_SAMPLE);
-    verify(releaseLetterDraftRepository).save(existingDraft);
-  }
-
-  @Test
-  void testSaveAsDraftShouldThrowMarketExceptionWhenSprintIsBlank() {
-    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-    request.setSprint("   ");
-
-    assertThrows(MarketException.class,
-        () -> releaseLetterService.saveAsDraft(request, GITHUB_USER_ID),
-        "Expected MarketException to be thrown when sprint is blank");
-
-    verifyNoInteractions(releaseLetterRepository);
-    verifyNoInteractions(releaseLetterDraftRepository);
-  }
-
-  @Test
-  void testGetDraftContentByGitHubUserIdAndReleaseLetterIdShouldReturnDraftWhenExists() {
-    ReleaseLetterDraft existingDraft = new ReleaseLetterDraft();
-    existingDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
-    existingDraft.setGitHubUserId(GITHUB_USER_ID);
-    existingDraft.setDraftContent("Draft content");
-
-    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    )).thenReturn(Optional.of(existingDraft));
-
-    ReleaseLetterDraft result =
-        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
-            GITHUB_USER_ID,
-            RELEASE_LETTER_ID_SAMPLE
-        );
-
-    assertNotNull(result, "Returned draft should not be null");
-    assertEquals("Draft content", result.getDraftContent(),
-        "Draft content should match repository result");
-
-    verify(releaseLetterDraftRepository)
-        .findByGitHubUserIdAndReleaseLetterId(GITHUB_USER_ID, RELEASE_LETTER_ID_SAMPLE);
-  }
-
-  @Test
-  void testGetDraftContentByGitHubUserIdAndReleaseLetterIdShouldReturnNullWhenDraftDoesNotExist() {
-    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    )).thenReturn(Optional.empty());
-
-    ReleaseLetterDraft result =
-        releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
-            GITHUB_USER_ID,
-            RELEASE_LETTER_ID_SAMPLE
-        );
-
-    assertNull(result, "Result should be null when draft does not exist");
-
-    verify(releaseLetterDraftRepository)
-        .findByGitHubUserIdAndReleaseLetterId(GITHUB_USER_ID, RELEASE_LETTER_ID_SAMPLE);
-  }
-
-  @Test
-  void testSaveAsDraftShouldSetEmptyDraftContentWhenDraftContentIsNull() {
-    ReleaseLetterModelRequest request = new ReleaseLetterModelRequest();
-    request.setId(RELEASE_LETTER_ID_SAMPLE);
-    request.setSprint("S43");
-    request.setDraftContent(null);
-
-    ReleaseLetter existingReleaseLetter = createReleaseLetterMock();
-
-    when(releaseLetterRepository.findById(RELEASE_LETTER_ID_SAMPLE))
-        .thenReturn(Optional.of(existingReleaseLetter));
-    when(releaseLetterDraftRepository.findByGitHubUserIdAndReleaseLetterId(
-        GITHUB_USER_ID,
-        RELEASE_LETTER_ID_SAMPLE
-    )).thenReturn(Optional.empty());
-    when(releaseLetterDraftRepository.save(any(ReleaseLetterDraft.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    ReleaseLetterDraftModel result =
-        releaseLetterService.saveAsDraft(request, GITHUB_USER_ID);
-
-    assertNotNull(result,
-        "Saved draft result should not be null");
-    assertEquals("", result.getDraftContent(),
-        "Draft content should be empty string when original draft content is null");
   }
 
   private ReleaseLetter createReleaseLetterMock() {

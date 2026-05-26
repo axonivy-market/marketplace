@@ -16,10 +16,6 @@ public class ReleaseLetterModelRequest {
   @Schema(description = "Release letter content", example = "This is the release letter of Marketplace sprint 43")
   private String content;
 
-  @Schema(description = "Release letter draft content", example = "This is the draft release letter of Marketplace " +
-      "sprint 43")
-  private String draftContent;
-
   @Schema(description = "Sprint sprint", example = "S42")
   private String sprint;
 

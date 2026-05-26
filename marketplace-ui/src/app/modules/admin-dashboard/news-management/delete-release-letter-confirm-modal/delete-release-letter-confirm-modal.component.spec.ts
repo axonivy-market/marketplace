@@ -1,4 +1,3 @@
-import { NewsManagementService } from './../news-management.service';
 import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -6,20 +5,22 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, Subject } from 'rxjs';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
+import { AdminDashboardService } from '../../admin-dashboard.service';
 import { DeleteReleaseLetterConfirmModalComponent } from './delete-release-letter-confirm-modal.component';
 
 describe('DeleteReleaseLetterConfirmModalComponent', () => {
   let component: DeleteReleaseLetterConfirmModalComponent;
   let fixture: ComponentFixture<DeleteReleaseLetterConfirmModalComponent>;
-  let newsManagementServiceMock: MockedObject<NewsManagementService>;
+
+  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
   let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
-    newsManagementServiceMock = {
+    adminDashboardServiceMock = {
       deleteReleaseLetterById: vi
         .fn()
-        .mockName('NewsManagementService.deleteReleaseLetterById')
-    } as MockedObject<NewsManagementService>;
+        .mockName('AdminDashboardService.deleteReleaseLetterById')
+    } as MockedObject<AdminDashboardService>;
 
     activeModalMock = {
       close: vi.fn().mockName('NgbActiveModal.close'),
@@ -33,7 +34,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
         TranslateModule.forRoot()
       ],
       providers: [
-        { provide: NewsManagementService, useValue: newsManagementServiceMock },
+        { provide: AdminDashboardService, useValue: adminDashboardServiceMock },
         { provide: NgbActiveModal, useValue: activeModalMock },
         TranslateService,
         ThemeService
@@ -52,14 +53,14 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
   it('should call deleteReleaseLetterById and close modal on success', () => {
     component.id = '123';
 
-    newsManagementServiceMock.deleteReleaseLetterById.mockReturnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.mockReturnValue(
       of(void 0)
     );
 
     component.deleteReleaseLetterById();
 
     expect(
-      newsManagementServiceMock.deleteReleaseLetterById
+      adminDashboardServiceMock.deleteReleaseLetterById
     ).toHaveBeenCalledWith('123');
 
     expect(activeModalMock.close).toHaveBeenCalled();
@@ -69,7 +70,7 @@ describe('DeleteReleaseLetterConfirmModalComponent', () => {
     component.id = '123';
 
     const subject = new Subject<void>();
-    newsManagementServiceMock.deleteReleaseLetterById.mockReturnValue(
+    adminDashboardServiceMock.deleteReleaseLetterById.mockReturnValue(
       subject.asObservable()
     );
 

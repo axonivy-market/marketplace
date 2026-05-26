@@ -14,5 +14,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AccessLevel {
-  ENABLED, NO_PERMISSION, NOT_SUPPORTED, DISABLED;
+  NO_PERMISSION, ENABLED, DISABLED
 }

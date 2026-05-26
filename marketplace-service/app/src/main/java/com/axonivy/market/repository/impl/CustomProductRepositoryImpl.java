@@ -38,7 +38,6 @@ public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl
         Hibernate.initialize(content.getDescription());
         Hibernate.initialize(content.getSetup());
         Hibernate.initialize(content.getDemo());
-        Hibernate.initialize(content.getComponent());
         result.setProductModuleContent(content);
       }
     }

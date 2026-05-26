@@ -66,6 +66,6 @@ public class DisabledSecurityEventFactory {
   }
 
   private static boolean isRepoEligible(ProductSecurityInfo info) {
-    return GHRepository.Visibility.PUBLIC.name().equalsIgnoreCase(info.getVisibility());
+    return !info.isArchived() && GHRepository.Visibility.PUBLIC.name().equalsIgnoreCase(info.getVisibility());
   }
 }

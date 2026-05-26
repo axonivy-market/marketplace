@@ -2,7 +2,6 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
-import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.ProductSecuritySortOption;
 import com.axonivy.market.repository.CustomProductSecurityInfoRepository;
 import jakarta.persistence.EntityManager;
@@ -11,20 +10,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.axonivy.market.core.constants.CoreCommonConstants.COMMA;
-import static com.axonivy.market.core.constants.CoreCommonConstants.SINGLE_QUOTE;
 
 public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSecurityInfoRepository {
 
   private static final List<String> SEVERITIES = List.of("critical", "high", "medium", "low");
   private static final String SEARCH_TEXT_PATTERN = "%%%s%%";
-  private static final String ACCESS_LEVEL_VALUES = Arrays.stream(AccessLevel.values())
-      .map(level -> SINGLE_QUOTE + level.name() + SINGLE_QUOTE)
-      .collect(Collectors.joining(COMMA));
 
   private final EntityManager entityManager;
 
@@ -80,7 +73,7 @@ public class CustomProductSecurityInfoRepositoryImpl implements CustomProductSec
     String statusCol = getStatusColumn(sortOption);
     String statusOrder = "";
     if (statusCol != null) {
-      statusOrder = ", array_position(ARRAY[" + ACCESS_LEVEL_VALUES + "], " + statusCol + ") " + safeDirection;
+      statusOrder = ", array_position(ARRAY['ENABLED','NO_PERMISSION','DISABLED'], " + statusCol + ") " + safeDirection;
     }
 
     String additionalOrder = ", psi.repo_name " + safeDirection;

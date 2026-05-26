@@ -113,7 +113,7 @@ describe('MarkdownEditorComponent', () => {
 
     component.autosaveId = 'test-id';
     submittingSignal = signal(false);
-    fixture.componentRef.setInput('isCallingApiSignal', submittingSignal);
+    fixture.componentRef.setInput('isSubmittingSignal', submittingSignal);
 
     fixture.detectChanges();
   });

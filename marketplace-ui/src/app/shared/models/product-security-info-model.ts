@@ -1,6 +1,7 @@
 export interface ProductSecurityInfo {
   repoName: string;
   visibility: string;
+  archived: boolean;
   dependabot: {
     status: string;
     alerts: Record<string, number>;
@@ -14,6 +15,6 @@ export interface ProductSecurityInfo {
     numberOfSecretScanningAlerts: number;
   };
   branchProtectionEnabled: boolean;
-  latestCommitSHA: string;
+  lastCommitSHA: string;
   lastCommitDate: string;
 }

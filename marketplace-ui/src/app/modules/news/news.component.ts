@@ -23,6 +23,7 @@ import { ReleaseLetterApiResponse } from '../../shared/models/apis/release-lette
 import { ReleaseLetterSafeHtml } from '../../shared/models/release-letter-safe-html-model';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { Link } from '../../shared/models/apis/link.model';
 import { Page } from '../../shared/models/apis/page.model';
 import { LoadingService } from '../../core/services/loading/loading.service';
@@ -31,11 +32,17 @@ import { Subscription, throwError } from 'rxjs';
 import { ReleaseLetterCriteria } from '../../shared/models/criteria.model';
 import { DEFAULT_PAGEABLE } from '../../shared/constants/common.constant';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { NewsManagementService } from '../admin-dashboard/news-management/news-management.service';
 
 @Component({
   selector: 'app-news',
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, NgbAccordionModule, LoadingSpinnerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule,
+    NgbAccordionModule,
+    LoadingSpinnerComponent
+  ],
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss'
 })
@@ -48,12 +55,13 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  newsManagementService = inject(NewsManagementService);
+  adminDashboardService = inject(AdminDashboardService);
   markdownService = inject(MarkdownService);
   loadingService = inject(LoadingService);
   emptyReleaseLetterTitle = '';
   subscriptions: Subscription[] = [];
-  releaseLetterSafeHtmlContentList: WritableSignal<ReleaseLetterSafeHtml[]> = signal([]);
+  releaseLetterSafeHtmlContentList: WritableSignal<ReleaseLetterSafeHtml[]> =
+    signal([]);
   newsLinks!: Link;
   newsPages!: Page;
   releaseLetterCriteria: ReleaseLetterCriteria = {
@@ -82,7 +90,9 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  toSafeHtmlModelList(items: ReleaseLetterApiResponse[]): ReleaseLetterSafeHtml[] {
+  toSafeHtmlModelList(
+    items: ReleaseLetterApiResponse[]
+  ): ReleaseLetterSafeHtml[] {
     return items.map(item => this.toSafeHtmlModel(item));
   }
 
@@ -108,29 +118,40 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.newsLinks || !this.newsPages) {
       return false;
     }
-    return this.newsPages.number < this.newsPages.totalPages && this.newsLinks?.next !== undefined;
+    return (
+      this.newsPages.number < this.newsPages.totalPages &&
+      this.newsLinks?.next !== undefined
+    );
   }
 
   loadReleaseLetters(): void {
-    const sub = this.newsManagementService.getReleaseLetters(this.releaseLetterCriteria).subscribe({
-      next: response => {
-        if (!response) {
-          return;
-        }
-        const newReleaseLetters = response._embedded?.releaseLetterModelList ?? [];
-        if (newReleaseLetters.length === 0) {
-          this.emptyReleaseLetterTitle = this.translateService.instant('common.admin.news.emptyLatestReleaseLetter');
-        } else {
-          this.releaseLetterSafeHtmlContentList.update(existingReleaseLetters =>
-            existingReleaseLetters.concat(this.toSafeHtmlModelList(newReleaseLetters))
-          );
-        }
-        this.newsLinks = response._links;
-        this.newsPages = response.page;
-        this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
-      },
-      error: error => throwError(() => error)
-    });
+    const sub = this.adminDashboardService
+      .getReleaseLetters(this.releaseLetterCriteria)
+      .subscribe({
+        next: response => {
+          if (!response) {
+            return;
+          }
+          const newReleaseLetters =
+            response._embedded?.releaseLetterModelList ?? [];
+          if (newReleaseLetters.length === 0) {
+            this.emptyReleaseLetterTitle = this.translateService.instant(
+              'common.admin.news.emptyLatestReleaseLetter'
+            );
+          } else {
+            this.releaseLetterSafeHtmlContentList.update(
+              existingReleaseLetters =>
+                existingReleaseLetters.concat(
+                  this.toSafeHtmlModelList(newReleaseLetters)
+                )
+            );
+          }
+          this.newsLinks = response._links;
+          this.newsPages = response.page;
+          this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
+        },
+        error: error => throwError(() => error)
+      });
 
     this.subscriptions.push(sub);
   }

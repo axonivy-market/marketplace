@@ -4,7 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import MarkdownIt from 'markdown-it';
 import { MarkdownService } from '../../../../shared/services/markdown.service';
-import { NewsManagementService } from '../news-management.service';
+import { AdminDashboardService } from '../../admin-dashboard.service';
 
 @Component({
   selector: 'app-release-letter-modal',
@@ -18,7 +18,7 @@ export class ReleaseLetterModalComponent implements OnInit {
 
   markdownService = inject(MarkdownService);
   translateService = inject(TranslateService);
-  newsManagementService = inject(NewsManagementService);
+  adminDashboardService = inject(AdminDashboardService);
 
   md: MarkdownIt = new MarkdownIt();
   sprintHeader = '';
@@ -30,7 +30,7 @@ export class ReleaseLetterModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.newsManagementService.getReleaseLetterById(this.id).subscribe(response => {
+    this.adminDashboardService.getReleaseLetterById(this.id).subscribe(response => { 
       this.sprintHeader = this.getSprintHeader(response.sprint);
       this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
     });
@@ -42,6 +42,10 @@ export class ReleaseLetterModalComponent implements OnInit {
   }
 
   getSprintHeader(sprint: string) {
-    return this.translateService.instant('common.admin.newsManagement.sprintHeader') + sprint;
+    return (
+      this.translateService.instant(
+        'common.admin.newsManagement.sprintHeader'
+      ) + sprint
+    );
   }
 }

@@ -3,23 +3,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NewsComponent } from './news.component';
 import { ElementRef, PLATFORM_ID } from '@angular/core';
+import { AdminDashboardService } from '../admin-dashboard/admin-dashboard.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageTitleService } from '../../shared/services/page-title.service';
 import { MarkdownService } from '../../shared/services/markdown.service';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { of, throwError } from 'rxjs';
-import { NewsManagementService } from '../admin-dashboard/news-management/news-management.service';
 
 describe('NewsComponent', () => {
   let component: NewsComponent;
   let fixture: ComponentFixture<NewsComponent>;
 
-  let mockNewsManagementService: any;
+  let mockAdminDashboardService: any;
   let mockPageTitleService: any;
   let mockMarkdownService: any;
 
   beforeEach(async () => {
-    mockNewsManagementService = {
+    mockAdminDashboardService = {
       getReleaseLetters: vi.fn().mockReturnValue(
         of({
           _embedded: { releaseLetterModelList: [] },
@@ -41,7 +41,7 @@ describe('NewsComponent', () => {
       imports: [NewsComponent, TranslateModule.forRoot()],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },
-        { provide: NewsManagementService, useValue: mockNewsManagementService },
+        { provide: AdminDashboardService, useValue: mockAdminDashboardService },
         TranslateService,
         { provide: PageTitleService, useValue: mockPageTitleService },
         { provide: MarkdownService, useValue: mockMarkdownService },
@@ -166,7 +166,7 @@ describe('NewsComponent', () => {
       }
     };
 
-    mockNewsManagementService.getReleaseLetters.mockReturnValue(of(response));
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(response));
 
     component.loadReleaseLetters();
 
@@ -250,7 +250,7 @@ describe('NewsComponent', () => {
   });
 
   it('should return early if response is null', () => {
-    mockNewsManagementService.getReleaseLetters.mockReturnValue(of(null));
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(of(null));
 
     const freshFixture = TestBed.createComponent(NewsComponent);
     const freshComponent = freshFixture.componentInstance;
@@ -265,7 +265,7 @@ describe('NewsComponent', () => {
   it('should handle error from getReleaseLetters', () => {
     const testError = new Error('Test error');
 
-    mockNewsManagementService.getReleaseLetters.mockReturnValue(
+    mockAdminDashboardService.getReleaseLetters.mockReturnValue(
       throwError(() => testError)
     );
 

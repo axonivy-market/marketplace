@@ -28,9 +28,10 @@ describe('SecurityMonitorComponent', () => {
         {
           repoName: 'repo-a',
           visibility: 'public',
+          archived: false,
           branchProtectionEnabled: true,
           lastCommitDate: new Date().toISOString(),
-          latestCommitSHA: 'abc123',
+          lastCommitSHA: 'abc123',
           dependabot: { status: 'ACTIVE', alerts: {} },
           codeScanning: { status: 'ACTIVE', alerts: {} },
           secretScanning: { status: 'ACTIVE', numberOfAlerts: 0 }
@@ -108,6 +109,12 @@ describe('SecurityMonitorComponent', () => {
       'https://github.com/axonivy-market/example-repo/commit/abc123',
       '_blank'
     );
+  });
+
+  it('should handle empty alerts correctly in hasAlerts', () => {
+    createComponent();
+    expect(component.hasAlerts({})).toBe(false);
+    expect(component.hasAlerts({ alert1: 1 })).toBe(true);
   });
 
   it('should return correct alert keys from alertKeys', () => {

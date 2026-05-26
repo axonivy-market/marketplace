@@ -27,18 +27,14 @@ public final class MultiTaskUtils {
   }
 
   private static <T, R> R processWithSemaphore(T item, Function<T, R> task, Semaphore semaphore) {
-    boolean isAcquired = false;
     try {
       semaphore.acquire();
-      isAcquired = true;
       return task.apply(item);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return null;
     } finally {
-      if (isAcquired) {
-        semaphore.release();
-      }
+      semaphore.release();
     }
   }
 }

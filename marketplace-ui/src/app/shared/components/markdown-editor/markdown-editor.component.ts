@@ -36,7 +36,7 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
   private mde?: EasyMDE;
   isMDEReady = false;
   contentValue = model<string>('');
-  isCallingApiSignal = input<Signal<boolean>>();
+  isSubmittingSignal = input<Signal<boolean>>();
   textPrimaryClass = 'text-primary';
   bgSecondaryClass = 'bg-secondary';
 
@@ -47,7 +47,7 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
   constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     effect(() => {
       const value = this.contentValue() ?? '';
-      const submitting = this.isCallingApiSignal()?.();
+      const submitting = this.isSubmittingSignal()?.();
 
       if (!this.mde) {
         return;
