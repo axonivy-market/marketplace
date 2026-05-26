@@ -314,6 +314,10 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
+  getDeprecationSuccessorName(): string {
+    return this.productDetail().successor?.trim() ?? '';
+  }
+
   hasMoreChangelogs() {
     if (!this.changeLogLinks || !this.changeLogPages) {
       return false;

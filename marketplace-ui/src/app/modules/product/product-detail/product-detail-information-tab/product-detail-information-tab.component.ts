@@ -224,7 +224,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
     }
   }
 
-  getInstallTooltipMessage(): string {
+  getSuccessorTooltipMessage(): string {
     const message =  this.translateService.instant('common.product.detail.information.value.successorToolTip');
     return `<p class=text-primary>${message}</p>`;
   }

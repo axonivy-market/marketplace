@@ -44,9 +44,9 @@
             class="form-check-input"
             [(ngModel)]="deprecationRequest.hasProductReplacement"
             [disabled]="isDeprecating"
-            id="hasProductReplacementCheckbox"
+            id="has-product-replacement-checkbox"
           />
-          <label class="form-check-label" for="hasProductReplacementCheckbox">
+          <label class="form-check-label" for="has-product-replacement-checkbox">
             {{ 'common.admin.deprecation.hasProductReplacement' | translate }}
           </label>
         </div>
@@ -94,9 +94,9 @@
             [(ngModel)]="deprecationRequest.isAddReadme"
             [disabled]="isDeprecating"
             (click)="readmeChecked.emit()"
-            id="addReadmeCheckbox"
+            id="add-readme-checkbox"
           />
-          <label class="form-check-label" for="addReadmeCheckbox">
+          <label class="form-check-label" for="add-readme-checkbox">
             {{ 'common.admin.deprecation.updateForReadmeText' | translate }}
           </label>
         </div>
@@ -125,4 +125,3 @@
     [class.backdrop-closing]="isClosing"
     (click)="!isDeprecating && closeDialog.emit()"></div>
 }
-

@@ -52,7 +52,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should conditionally render replacement fields based on checkbox state', () => {
-    expect(fixture.debugElement.query(By.css('#hasProductReplacementCheckbox'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('#has-product-replacement-checkbox'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="productReplacementNameInputPlaceholder"]'))).toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).toBeNull();
 
@@ -98,7 +98,7 @@ describe('DeprecateFormDialogComponent', () => {
     vi.spyOn(component.readmeChecked, 'emit');
     vi.spyOn(component.submitForm, 'emit');
 
-    const readmeCheckbox = fixture.debugElement.query(By.css('#addReadmeCheckbox'));
+    const readmeCheckbox = fixture.debugElement.query(By.css('#add-readme-checkbox'));
     readmeCheckbox.triggerEventHandler('click', null);
 
     const submitButton = fixture.debugElement.query(By.css('.btn-primary'));

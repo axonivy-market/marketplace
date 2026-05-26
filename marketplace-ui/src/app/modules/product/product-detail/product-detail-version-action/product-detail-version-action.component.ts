@@ -25,7 +25,7 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { SHOW_DEV_VERSION, VERSION, DEPRECATED_INSTALL_TOOLTIP, DEFAULT_INSTALL_TOOLTIP }
+import { SHOW_DEV_VERSION, VERSION, INSTALL_TOOLTIP }
   from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
@@ -76,7 +76,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected ProductDetailActionType = ProductDetailActionType;
   protected MatomoCategory = MatomoCategory;
   protected MatomoAction = MatomoAction;
-  trackedEnvironmentForMatomo = '';
 
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
@@ -346,7 +345,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getInstallTooltipMessage(): string {
-    return this.isDeprecated ? DEPRECATED_INSTALL_TOOLTIP : DEFAULT_INSTALL_TOOLTIP;
+    return this.isDeprecated ? INSTALL_TOOLTIP.deprecatedWarning : INSTALL_TOOLTIP.defaultMessage;
   }
 
   getTrackingEnvironmentBasedOnActionType() {

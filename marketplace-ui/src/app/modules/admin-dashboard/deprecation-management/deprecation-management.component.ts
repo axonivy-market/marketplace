@@ -61,16 +61,7 @@ export class DeprecationManagementComponent implements OnInit {
   productId = '';
 
   dropdownOpen = false;
-  deprecationRequest: DeprecationRequest = {
-    hasProductReplacement: false,
-    productReplacementName: '',
-    successorUrl: '',
-    isAddReadme: false,
-    isDeprecated: false,
-    pullRequestAction: PullRequestAction.ADD,
-    deprecationRequester: '',
-    deprecationDate: new Date()
-  };
+  deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedItems: DeprecatedProductInfo[] = [];
@@ -91,6 +82,20 @@ export class DeprecationManagementComponent implements OnInit {
     this.initializeDeprecatedRows();
   }
 
+  private createEmptyDeprecationRequest(deprecationDate: Date | null = new Date(), deprecationRequester = ''):
+    DeprecationRequest {
+    return {
+      hasProductReplacement: false,
+      productReplacementName: '',
+      successorUrl: '',
+      isAddReadme: false,
+      isDeprecated: false,
+      pullRequestAction: PullRequestAction.ADD,
+      deprecationRequester,
+      deprecationDate
+    };
+  }
+
   private initializeDeprecatedRows(): void {
     this.refreshDeprecatedRows();
   }
@@ -109,16 +114,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
       this.productId = '';
-      this.deprecationRequest = {
-        hasProductReplacement: false,
-        productReplacementName: '',
-        successorUrl: '',
-        isAddReadme: false,
-        isDeprecated: false,
-        deprecationDate: null,
-        pullRequestAction: PullRequestAction.ADD,
-        deprecationRequester: this.moderatorName
-      };
+      this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       this.validationErrors = {};
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
@@ -191,15 +187,7 @@ export class DeprecationManagementComponent implements OnInit {
       if (shouldResetDeprecateForm) {
         // Reset deprecate form after closing deprecate success dialog
         this.productId = '';
-        this.deprecationRequest = {
-          hasProductReplacement: false,
-          productReplacementName: '',
-          successorUrl: '',
-          isAddReadme: false,
-          isDeprecated: false,
-          pullRequestAction: PullRequestAction.ADD,
-          deprecationRequester: this.moderatorName
-        };
+        this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       }
     }, this.DIALOG_CLOSE_DELAY_MS);
   }

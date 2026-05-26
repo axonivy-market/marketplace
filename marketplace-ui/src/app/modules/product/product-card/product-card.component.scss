@@ -21,9 +21,9 @@ img {
 }
 
 .card__tag--deprecated {
-  background-color: #F973161A;
+  background-color: var(--deprecated-banner-bg);
   color: var(--deprecated-banner-text);
-  box-shadow: inset 0 0 0 1px #f9731640;
+  box-shadow: inset 0 0 0 1px var(--deprecated-banner-border);
 }
 
 .card__description {

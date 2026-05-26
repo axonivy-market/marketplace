@@ -402,7 +402,7 @@ describe('ProductDetailInformationTabComponent', () => {
       const translated = 'This product is deprecated and no longer maintained.';
       vi.spyOn(component.translateService, 'instant').mockReturnValue(translated);
 
-      const result = component.getInstallTooltipMessage();
+      const result = component.getSuccessorTooltipMessage();
 
       expect(component.translateService.instant).toHaveBeenCalledWith(
         'common.product.detail.information.value.successorToolTip'

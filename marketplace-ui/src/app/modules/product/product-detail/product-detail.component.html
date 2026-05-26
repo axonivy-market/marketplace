@@ -103,7 +103,7 @@
           @if (productDetail().deprecated) {
             <div
               class="deprecation-banner d-flex flex-column flex-xl-row justify-content-between align-items-stretch"
-              [ngClass]="{ 'deprecation-banner--with-successor': productDetail().successor }">
+              [ngClass]="{ 'deprecation-banner--with-successor': getDeprecationSuccessorName() }">
               <div class="deprecation-banner-left d-flex flex-column">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <i class="ti ti-alert-triangle deprecation-banner-icon"></i>
@@ -115,14 +115,14 @@
                   {{ 'common.product.detail.deprecatedBanner.description' | translate }}
                 </p>
               </div>
-              @if (productDetail().successor) {
+              @if (getDeprecationSuccessorName()) {
                 <div class="deprecation-banner-right d-flex flex-column justify-content-center">
                   <span class="deprecation-banner-alternative-label" [lang]="languageService.selectedLanguage()">
                     {{ 'common.product.detail.deprecatedBanner.recommendedAlternative' | translate }}
                   </span>
                   <a
                     class="deprecation-banner-alternative-link"
-                    [href]="productDetail().successor"
+                    [href]="getDeprecationSuccessorName()"
                     target="_blank"
                     rel="noopener noreferrer">
                     {{ productDetail().productReplacementName }} &rarr;

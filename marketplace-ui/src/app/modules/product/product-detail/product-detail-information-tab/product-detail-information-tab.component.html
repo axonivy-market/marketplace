@@ -51,7 +51,7 @@
             data-bs-placement="bottom"
             data-bs-html="true"
             data-bs-custom-class="custom-tooltip"
-            [attr.data-bs-title]="getInstallTooltipMessage()"></i>
+            [attr.data-bs-title]="getSuccessorTooltipMessage()"></i>
         </span>
         <div class="text-primary successor-value">
           @if (hasSuccessor()) {
@@ -60,7 +60,7 @@
                 [href]="getSuccessorUrl()"
                 target="_blank"
                 rel="noopener noreferrer">
-                {{ productDetail.productReplacementName }}
+                {{ productDetail.productReplacementName?.trim() || getSuccessorUrl() }}
               </a>
           } @else {
             {{
