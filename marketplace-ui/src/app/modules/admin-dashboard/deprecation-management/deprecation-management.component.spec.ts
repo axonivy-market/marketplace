@@ -130,8 +130,8 @@ describe('DeprecationManagementComponent', () => {
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
     component.deprecationRequest = {
-      hasProductReplacement: true,
-      productReplacementName: 'Portal',
+      hasAlternativeExtension: true,
+      alternativeExtension: 'Portal',
       successorUrl: 'https://market.axonivy.com/portal',
       isAddReadme: true,
       isDeprecated: true,
@@ -153,8 +153,8 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isDeprecating).toBe(false);
     expect(component.isCopySuccessVisible).toBe(false);
     expect(component.deprecationRequest).toEqual({
-      hasProductReplacement: false,
-      productReplacementName: '',
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -172,14 +172,14 @@ describe('DeprecationManagementComponent', () => {
     expect(component.validationErrors.productId).toContain('extensionIdRequired');
 
     component.productId = 'cms-live-editor';
-    component.deprecationRequest.hasProductReplacement = true;
-    component.deprecationRequest.productReplacementName = '';
+    component.deprecationRequest.hasAlternativeExtension = true;
+    component.deprecationRequest.alternativeExtension = '';
     component.deprecationRequest.successorUrl = '';
     expect(component.validateForm()).toBe(false);
-    expect(component.validationErrors.productReplacementName).toContain('productReplacementNameRequired');
+    expect(component.validationErrors.alternativeExtension).toContain('alternativeExtensionRequired');
     expect(component.validationErrors.successorUrl).toContain('successorRequired');
 
-    component.deprecationRequest.productReplacementName = 'Portal';
+    component.deprecationRequest.alternativeExtension = 'Portal';
     component.deprecationRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.successorUrl).toContain('invalidSuccessorUrl');
@@ -187,11 +187,11 @@ describe('DeprecationManagementComponent', () => {
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
 
-    component.deprecationRequest.hasProductReplacement = false;
-    component.deprecationRequest.productReplacementName = 'Stale value';
+    component.deprecationRequest.hasAlternativeExtension = false;
+    component.deprecationRequest.alternativeExtension = 'Stale value';
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
-    expect(component.deprecationRequest.productReplacementName).toBe('');
+    expect(component.deprecationRequest.alternativeExtension).toBe('');
     expect(component.deprecationRequest.successorUrl).toBe('');
   });
 

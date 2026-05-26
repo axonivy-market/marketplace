@@ -33,7 +33,7 @@ public class ProductMarketplaceData extends AbstractGenericEntity<String> {
   private String successor;
   private Date deprecationDate;
   private String deprecationRequester;
-  private String productReplacementName;
+  private String alternativeExtension;
 
   @Override
   public String getId() {

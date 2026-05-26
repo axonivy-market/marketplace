@@ -209,7 +209,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
           productMarketplaceData.setDeprecationDate(deprecationDate);
           productMarketplaceData.setSuccessor(request.getSuccessorUrl());
           productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
-          productMarketplaceData.setProductReplacementName(request.getProductReplacementName());
+          productMarketplaceData.setAlternativeExtension(request.getAlternativeExtension());
           productMarketplaceDataRepo.save(productMarketplaceData);
         });
 

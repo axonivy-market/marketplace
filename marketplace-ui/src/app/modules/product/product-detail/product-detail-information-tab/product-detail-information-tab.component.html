@@ -60,7 +60,7 @@
                 [href]="getSuccessorUrl()"
                 target="_blank"
                 rel="noopener noreferrer">
-                {{ productDetail.productReplacementName?.trim() || getSuccessorUrl() }}
+                {{ productDetail.alternativeExtension?.trim() || getSuccessorUrl() }}
               </a>
           } @else {
             {{

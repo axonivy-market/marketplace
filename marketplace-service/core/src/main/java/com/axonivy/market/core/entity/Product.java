@@ -104,7 +104,7 @@ public class Product extends AbstractAuditableEntity<String> {
   @Transient
   private String successor;
   @Transient
-  private String productReplacementName;
+  private String alternativeExtension;
 
   @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)

@@ -22,7 +22,7 @@ export interface ProductDetail {
   contactUs: boolean;
   deprecated?: boolean;
   successor?: string;
-  productReplacementName?: string;
+  alternativeExtension?: string;
   installationCount: number;
   productModuleContent: ProductModuleContent;
   mavenDropins: boolean;

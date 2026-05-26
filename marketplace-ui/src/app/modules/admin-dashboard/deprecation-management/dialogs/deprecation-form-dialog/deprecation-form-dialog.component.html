@@ -48,39 +48,39 @@
           <input
             type="checkbox"
             class="form-check-input"
-            [(ngModel)]="deprecationRequest.hasProductReplacement"
+            [(ngModel)]="deprecationRequest.hasAlternativeExtension"
             [disabled]="isDeprecating"
-            id="has-product-replacement-checkbox"
+            id="has-alternative-extension-checkbox"
           />
-          <label class="form-check-label" for="has-product-replacement-checkbox">
-            {{ 'common.admin.deprecation.hasProductReplacement' | translate }}
+          <label class="form-check-label" for="has-alternative-extension-checkbox">
+            {{ 'common.admin.deprecation.hasAlternativeExtension' | translate }}
             <i class="ti ti-info-circle ms-1"
                placement="top"
-               [ngbTooltip]="'common.admin.deprecation.hasProductReplacementTooltip' | translate"
+               [ngbTooltip]="'common.admin.deprecation.hasAlternativeExtensionTooltip' | translate"
                tooltipClass="custom-tooltip-class"></i>
           </label>
         </div>
 
-        @if (deprecationRequest.hasProductReplacement) {
+        @if (deprecationRequest.hasAlternativeExtension) {
           <div class="mb-2">
             <label class="form-label">
-              {{ 'common.admin.deprecation.productReplacementName' | translate }}
+              {{ 'common.admin.deprecation.alternativeExtension' | translate }}
               <i class="ti ti-info-circle ms-1"
                  placement="top"
-                 [ngbTooltip]="'common.admin.deprecation.productReplacementNameTooltip' | translate"
+                 [ngbTooltip]="'common.admin.deprecation.alternativeExtensionTooltip' | translate"
                  tooltipClass="custom-tooltip-class"></i>
             </label>
             <input
               type="text"
               [class.form-control]="true"
-              [class.is-invalid]="validationErrors['productReplacementName']"
-              [(ngModel)]="deprecationRequest.productReplacementName"
+              [class.is-invalid]="validationErrors['alternativeExtension']"
+              [(ngModel)]="deprecationRequest.alternativeExtension"
               [disabled]="isDeprecating"
-              placeholder="{{ 'common.admin.deprecation.productReplacementNameInputPlaceholder' | translate }}"
+              placeholder="{{ 'common.admin.deprecation.alternativeExtensionInputPlaceholder' | translate }}"
             />
-            @if (validationErrors['productReplacementName']) {
+            @if (validationErrors['alternativeExtension']) {
               <div class="invalid-feedback d-block">
-                {{ validationErrors['productReplacementName'] }}
+                {{ validationErrors['alternativeExtension'] }}
               </div>
             }
           </div>

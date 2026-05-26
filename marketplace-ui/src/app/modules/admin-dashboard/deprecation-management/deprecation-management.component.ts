@@ -71,7 +71,7 @@ export class DeprecationManagementComponent implements OnInit {
   // Validation state
   validationErrors: {
     productId?: string;
-    productReplacementName?: string;
+    alternativeExtension?: string;
     successorUrl?: string;
   } = {};
 
@@ -85,8 +85,8 @@ export class DeprecationManagementComponent implements OnInit {
   private createEmptyDeprecationRequest(deprecationDate: Date | null = new Date(), deprecationRequester = ''):
     DeprecationRequest {
     return {
-      hasProductReplacement: false,
-      productReplacementName: '',
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -230,10 +230,10 @@ export class DeprecationManagementComponent implements OnInit {
       isValid = false;
     }
 
-    if (this.deprecationRequest.hasProductReplacement) {
-      if (!this.deprecationRequest.productReplacementName?.trim()) {
-        this.validationErrors.productReplacementName = this.translateService.instant(
-          'common.admin.deprecation.validation.productReplacementNameRequired'
+    if (this.deprecationRequest.hasAlternativeExtension) {
+      if (!this.deprecationRequest.alternativeExtension?.trim()) {
+        this.validationErrors.alternativeExtension = this.translateService.instant(
+          'common.admin.deprecation.validation.alternativeExtensionRequired'
         );
         isValid = false;
       }
@@ -253,7 +253,7 @@ export class DeprecationManagementComponent implements OnInit {
         isValid = false;
       }
     } else {
-      this.deprecationRequest.productReplacementName = '';
+      this.deprecationRequest.alternativeExtension = '';
       this.deprecationRequest.successorUrl = '';
     }
 

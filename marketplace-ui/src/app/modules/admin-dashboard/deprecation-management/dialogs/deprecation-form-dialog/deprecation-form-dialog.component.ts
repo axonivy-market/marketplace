@@ -21,7 +21,7 @@ export class DeprecationFormDialogComponent {
   @Input() productId = '';
   @Input() validationErrors: {
     productId?: string;
-    productReplacementName?: string;
+    alternativeExtension?: string;
     successorUrl?: string;
   } = {};
   @Output() closeDialog = new EventEmitter<void>();

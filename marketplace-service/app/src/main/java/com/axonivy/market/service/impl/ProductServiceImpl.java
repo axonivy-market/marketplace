@@ -562,7 +562,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
     productItem.setInstallationCount(marketplaceData.getInstallationCount());
     productItem.setSuccessor(marketplaceData.getSuccessor());
-    productItem.setProductReplacementName(marketplaceData.getProductReplacementName());
+    productItem.setAlternativeExtension(marketplaceData.getAlternativeExtension());
     String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
     productItem.setCompatibilityRange(compatibilityRange);
     updateFocusedStatusForProduct(product);

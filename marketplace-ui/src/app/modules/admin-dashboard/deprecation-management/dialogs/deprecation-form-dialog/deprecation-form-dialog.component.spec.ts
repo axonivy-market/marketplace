@@ -19,8 +19,8 @@ describe('DeprecateFormDialogComponent', () => {
     component = fixture.componentInstance;
     component.visible = true;
     component.deprecationRequest = {
-      hasProductReplacement: false,
-      productReplacementName: '',
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -53,13 +53,13 @@ describe('DeprecateFormDialogComponent', () => {
 
   it('should conditionally render replacement fields based on checkbox state', () => {
     expect(fixture.debugElement.query(By.css('#has-product-replacement-checkbox'))).not.toBeNull();
-    expect(fixture.debugElement.query(By.css('input[placeholder*="productReplacementNameInputPlaceholder"]'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="alternativeExtensionInputPlaceholder"]'))).toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).toBeNull();
 
-    component.deprecationRequest.hasProductReplacement = true;
+    component.deprecationRequest.hasAlternativeExtension = true;
     fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.css('input[placeholder*="productReplacementNameInputPlaceholder"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="alternativeExtensionInputPlaceholder"]'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).not.toBeNull();
   });
 
