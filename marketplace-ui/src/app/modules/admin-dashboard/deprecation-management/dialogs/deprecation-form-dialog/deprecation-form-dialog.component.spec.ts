@@ -52,7 +52,7 @@ describe('DeprecateFormDialogComponent', () => {
   });
 
   it('should conditionally render replacement fields based on checkbox state', () => {
-    expect(fixture.debugElement.query(By.css('#has-product-replacement-checkbox'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('#has-alternative-extension-checkbox'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="alternativeExtensionInputPlaceholder"]'))).toBeNull();
     expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).toBeNull();
 
