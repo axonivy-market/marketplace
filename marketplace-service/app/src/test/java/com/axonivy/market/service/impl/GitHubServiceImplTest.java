@@ -24,6 +24,7 @@ import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -91,6 +93,9 @@ class GitHubServiceImplTest extends BaseSetup {
   private ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Mock
+  private okhttp3.OkHttpClient okHttpClient;
+
+  @Mock
   private ThreadPoolTaskScheduler taskScheduler;
 
   @Spy
@@ -99,6 +104,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testGetGitHubWithValidToken() throws IOException {
+    stubOkHttpClientBuilder();
     when(gitHubProperty.getToken()).thenReturn("validToken");
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
     verify(gitHubProperty).getToken();
@@ -106,13 +112,24 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testGetGitHubWithNullToken() throws IOException {
+    stubOkHttpClientBuilder();
     when(gitHubProperty.getToken()).thenReturn(null);
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created even when token is null");
   }
 
   @Test
+  void testGetGitHubWithExplicitAccessToken() throws IOException {
+    String accessToken = "explicitToken";
+    stubOkHttpClientBuilder();
+    GitHub result = gitHubService.getGitHub(accessToken);
+
+    assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
+    verify(gitHubProperty, never()).getToken();
+  }
+
+  @Test
   void testGetOrganizationWithValidOrgName() throws IOException {
-    when(gitHubService.getGitHub()).thenReturn(gitHub);
+    doReturn(gitHub).when(gitHubService).getGitHub();
     GHOrganization mockOrganization = mock(GHOrganization.class);
     when(gitHub.getOrganization("test-org")).thenReturn(mockOrganization);
 
@@ -120,7 +137,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
     assertNotNull(organization, "Expected organization to be returned for valid org name 'test-org'");
 
-    verify(gitHubProperty).getToken();
     verify(gitHubService).getGitHub();
     verify(gitHub).getOrganization("test-org");
   }
@@ -156,13 +172,14 @@ class GitHubServiceImplTest extends BaseSetup {
   void testGetRepositoryValidRepositoryPath() throws IOException {
     String repositoryPath = "my-org/my-repo";
     GHRepository mockRepository = mock(GHRepository.class);
-    when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-    when(gitHubService.getGitHub().getRepository(repositoryPath)).thenReturn(mockRepository);
+    GitHub mockGitHub = mock(GitHub.class);
+    doReturn(mockGitHub).when(gitHubService).getGitHub();
+    when(mockGitHub.getRepository(repositoryPath)).thenReturn(mockRepository);
 
     GHRepository repository = gitHubService.getRepository(repositoryPath);
 
     assertNotNull(repository, "Expected repository to be returned for valid repository path 'my-org/my-repo'");
-    verify(gitHubService.getGitHub()).getRepository(repositoryPath);
+    verify(mockGitHub).getRepository(repositoryPath);
   }
 
   @Test
@@ -305,8 +322,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
-    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
+    doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
+    doReturn(true).when(gitHubService).isUserInOrganizationAndTeam(gitHub, organization, team);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
     GithubUser result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
@@ -391,8 +408,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String team = "teamName";
 
     GitHub gitHubMock = mock(GitHub.class);
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHubMock);
-    when(gitHubService.isUserInOrganizationAndTeam(gitHubMock, organization, team)).thenReturn(false);
+    doReturn(gitHubMock).when(gitHubService).getGitHub(accessToken);
+    doReturn(false).when(gitHubService).isUserInOrganizationAndTeam(gitHubMock, organization, team);
 
     UnauthorizedException exception = assertThrows(
         UnauthorizedException.class,
@@ -571,7 +588,7 @@ class GitHubServiceImplTest extends BaseSetup {
         eq(HttpMethod.GET),
         any(HttpEntity.class),
         any(ParameterizedTypeReference.class))
-    ).thenThrow(HttpClientErrorException.NotFound.class);
+    ).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.NO_PERMISSION,
@@ -597,7 +614,13 @@ class GitHubServiceImplTest extends BaseSetup {
         eq(HttpMethod.GET),
         any(HttpEntity.class),
         any(ParameterizedTypeReference.class))
-    ).thenThrow(HttpClientErrorException.Forbidden.class);
+    ).thenThrow(HttpClientErrorException.Forbidden.create(
+        "Forbidden",
+        HttpStatus.FORBIDDEN,
+        "Forbidden",
+        HttpHeaders.EMPTY,
+        "Code Security must be enabled for this repository to use code scanning.".getBytes(StandardCharsets.UTF_8),
+        StandardCharsets.UTF_8));
 
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
 
@@ -694,7 +717,7 @@ class GitHubServiceImplTest extends BaseSetup {
     String repositoryPath = "org/repo";
     GHRepository mockRepository = mock(GHRepository.class);
     GitHub mockGitHub = mock(GitHub.class);
-    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
+    doReturn(mockGitHub).when(gitHubService).getGitHub();
     when(mockGitHub.getRepository(repositoryPath)).thenReturn(mockRepository);
 
     GHRepository result = gitHubService.getRepository(repositoryPath);
@@ -705,7 +728,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRepositoryGhFileNotFoundException() throws IOException {
-    when(gitHubService.getGitHub()).thenReturn(gitHub);
+    doReturn(gitHub).when(gitHubService).getGitHub();
     when(gitHub.getRepository("missing/repo")).thenThrow(new GHFileNotFoundException());
 
     GHRepository result = gitHubService.getRepository("missing/repo");
@@ -715,7 +738,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testGetRepositoryIOException() throws IOException {
-    when(gitHubService.getGitHub()).thenReturn(gitHub);
+    doReturn(gitHub).when(gitHubService).getGitHub();
     when(gitHub.getRepository("error/repo")).thenThrow(new IOException("IO error"));
 
     GHRepository result = gitHubService.getRepository("error/repo");
@@ -731,7 +754,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRepository mockRepository = mock(GHRepository.class);
     PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
 
-    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    doReturn(mockRepository).when(gitHubService).getRepository(repoName);
     when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
     doAnswer(invocation -> null).when(mockPagedIterable).forEach(any());
 
@@ -749,7 +772,7 @@ class GitHubServiceImplTest extends BaseSetup {
     String repoName = "test-org/error-repo";
     String productId = "test-product-id";
 
-    when(gitHubService.getRepository(repoName)).thenThrow(new IOException("Network error"));
+    doThrow(new IOException("Network error")).when(gitHubService).getRepository(repoName);
 
     assertThrows(IOException.class, () -> gitHubService.getRepoOfficialReleases(repoName, productId),
         "Should propagate IOException when repository access fails");
@@ -780,7 +803,7 @@ class GitHubServiceImplTest extends BaseSetup {
     List<GHRelease> allReleases = Arrays.asList(officialRelease1, draftRelease1, officialRelease2, draftRelease2,
         officialRelease3);
 
-    when(gitHubService.getRepository(repoName)).thenReturn(mockRepository);
+    doReturn(mockRepository).when(gitHubService).getRepository(repoName);
     when(mockRepository.listReleases()).thenReturn(mockPagedIterable);
     doAnswer(invocation -> {
       Consumer<GHRelease> consumer = invocation.getArgument(0);
@@ -869,7 +892,7 @@ class GitHubServiceImplTest extends BaseSetup {
   void testGetAndUpdateUserThrowsNotFoundExceptionOnIOException() throws Exception {
     // given
     String accessToken = "token";
-    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    doReturn(gitHub).when(gitHubService).getGitHub(accessToken);
     when(gitHub.getMyself()).thenThrow(new IOException("GitHub API down"));
 
     // when + then
@@ -1316,6 +1339,10 @@ class GitHubServiceImplTest extends BaseSetup {
     when(pullRequestQueryBuilder.state(GHIssueState.OPEN)).thenReturn(pullRequestQueryBuilder);
     when(pullRequestQueryBuilder.list()).thenReturn(pagedPullRequests);
     when(pagedPullRequests.toList()).thenReturn(pullRequests);
+  }
+
+  private void stubOkHttpClientBuilder() {
+    when(okHttpClient.newBuilder()).thenReturn(new okhttp3.OkHttpClient.Builder());
   }
 
 }

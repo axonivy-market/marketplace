@@ -8,6 +8,8 @@ services:
     restart: always
     volumes:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
+      - ${NGINX_CACHE_PATH}:/usr/share/nginx/html/cache
+      - ${NGINX_LOG_PATH}:/var/log/nginx
       - marketcache:/usr/share/nginx/html/market-cache
       - marketbrowser:/usr/share/nginx/html/browser
     ports:
@@ -36,9 +38,9 @@ services:
     image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
+      - ${MARKET_INSTALLATIONS_PATH}:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
-      - ../logs/app:/app/logs
+      - ${APP_LOG_PATH}:/app/logs
     env_file:
       - .env
     expose:
@@ -50,7 +52,7 @@ services:
     image: ghcr.io/axonivy-market/marketplace-stable:${RELEASE_VERSION}
     restart: always
     volumes:
-      - ../logs/stable:/app/logs
+      - ${STABLE_LOG_PATH}:/app/logs
     env_file:
       - .env
     expose:

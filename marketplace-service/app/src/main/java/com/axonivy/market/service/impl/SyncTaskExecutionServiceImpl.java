@@ -4,7 +4,7 @@ import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
+import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +34,13 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Transactional
   @Override
   public SyncTaskExecution start(SyncTaskType jobType) {
-    SyncTaskExecution execution = findOrCreate(jobType);
-    if (SyncTaskStatus.RUNNING == execution.getStatus()) {
-      String taskAlreadyRunningMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(jobType);
-      throw new TaskAlreadyRunningException(taskAlreadyRunningMessage);
+    Optional<SyncTaskExecution> execution = syncTaskExecutionRepo.findByType(jobType);
+    if (execution.isPresent()) {
+      SyncTaskExecution existingExecution = execution.get();
+      return restartSyncTaskExecution(jobType, existingExecution);
     }
-    execution.setStatus(SyncTaskStatus.STARTED);
-    execution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-    return syncTaskExecutionRepo.save(execution);
+
+    return createExecution(jobType);
   }
 
   @Transactional
@@ -80,12 +80,36 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
         .orElse(null);
   }
 
-  private SyncTaskExecution findOrCreate(SyncTaskType type) {
-    return syncTaskExecutionRepo.findByType(type)
-        .orElseGet(() -> SyncTaskExecution.builder()
-            .type(type)
-            .build()
-        );
+  /**
+   * Creates the sync task row in STARTED state so other nodes can observe that the task has already been claimed.
+   * If another node wins the insert race first, the unique-constraint failure is converted into either an
+   * in-progress error or a reuse of the existing non-active row.
+   */
+  private SyncTaskExecution createExecution(SyncTaskType type) {
+    SyncTaskExecution execution = SyncTaskExecution.builder()
+        .status(SyncTaskStatus.STARTED)
+        .message(SyncTaskConstants.STARTED_MESSAGE)
+        .type(type)
+        .build();
+
+    try {
+      return syncTaskExecutionRepo.saveAndFlush(execution);
+    } catch (DataIntegrityViolationException ex) {
+      return syncTaskExecutionRepo.findByType(type)
+          .map((SyncTaskExecution existingExecution) -> restartSyncTaskExecution(type, existingExecution))
+          .orElseThrow(() -> ex);
+    }
+  }
+
+  private SyncTaskExecution restartSyncTaskExecution(SyncTaskType jobType, SyncTaskExecution existingExecution) {
+    if (isActiveStatus(existingExecution.getStatus())) {
+      String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
+      throw new SyncTaskInProgressException(syncTaskInProgressMessage);
+    }
+
+    existingExecution.setStatus(SyncTaskStatus.STARTED);
+    existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
+    return syncTaskExecutionRepo.save(existingExecution);
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
@@ -102,5 +126,9 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     execution.setStatus(status);
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
     syncTaskExecutionRepo.save(execution);
+  }
+
+  private boolean isActiveStatus(SyncTaskStatus status) {
+    return status == SyncTaskStatus.STARTED || status == SyncTaskStatus.RUNNING;
   }
 }

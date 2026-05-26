@@ -1,7 +1,6 @@
 package com.axonivy.market.factory;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.core.comparator.LatestVersionComparator;
 import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Metadata;
@@ -37,6 +36,7 @@ public class VersionFactory extends CoreVersionFactory {
   private static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[]{"(", "]", "[", ")"};
 
   private static final VersionMatchStrategy DEFAULT_STRATEGY = new StartsWithVersionStrategy();
+  private static final MavenVersionComparator VERSION_COMPARATOR = MavenVersionComparator.getInstance();
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     String resolvedVersion = defaultVersion;
@@ -68,8 +68,8 @@ public class VersionFactory extends CoreVersionFactory {
     return Optional.ofNullable(versions).stream()
         .flatMap(List::stream)
         .filter(Objects::nonNull)
-        .sorted((v1, v2) -> MavenVersionComparator.compare(v2, v1))
-        .filter(ver -> ver.startsWith(requestedVersion)).findAny().orElse(EMPTY);
+        .sorted(VERSION_COMPARATOR.reversed())
+        .filter(ver -> ver.startsWith(requestedVersion)).findFirst().orElse(EMPTY);
   }
 
   public static Map<String, String> getMapMajorVersionToLatestVersion(List<String> versions,
@@ -89,17 +89,17 @@ public class VersionFactory extends CoreVersionFactory {
 
     // Get latest dev version from metadata
     if (Objects.nonNull(version) && version != DevelopmentVersion.LATEST) {
-      return metadataList.stream().map(Metadata::getLatest).min(new LatestVersionComparator()).orElse(EMPTY);
+      return metadataList.stream().map(Metadata::getLatest).max(VERSION_COMPARATOR).orElse(EMPTY);
     }
 
     List<String> artifactVersions = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
-        new LatestVersionComparator()).toList();
+        VERSION_COMPARATOR.reversed()).toList();
     List<String> releasedVersions = artifactVersions.stream().filter(CoreVersionUtils::isReleasedVersion).sorted(
-        new LatestVersionComparator()).toList();
+        VERSION_COMPARATOR.reversed()).toList();
 
     // Get latest released version from metadata
     if (version == DevelopmentVersion.LATEST) {
-      return releasedVersions.stream().min(new LatestVersionComparator()).orElse(EMPTY);
+      return releasedVersions.stream().max(VERSION_COMPARATOR).orElse(EMPTY);
     }
 
     String result;
