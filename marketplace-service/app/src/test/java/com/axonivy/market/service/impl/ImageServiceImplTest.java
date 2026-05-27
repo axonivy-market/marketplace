@@ -170,7 +170,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("java:S5738")
   void testReadPreviewImageByNameImageExists() {
     Path imagePath = Path.of(IMAGE_NAME);
 
@@ -194,7 +194,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("java:S5738")
   void testReadPreviewImageByNameNotFoundDirectory() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
@@ -208,7 +208,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("java:S5738")
   void testReadPreviewImageByNameNotFoundImage() {
     Path imagePath = Path.of(IMAGE_NAME);
 
@@ -228,7 +228,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("java:S5738")
   void testReadPreviewImageByNameRejectsNonImageFile() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       byte[] result = imageService.readPreviewImageByName("secret.txt");
@@ -241,7 +241,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("java:S5738")
   void testReadPreviewImageByNameIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
 
