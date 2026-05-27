@@ -95,7 +95,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testMappingImageFromDownloadedFolder() {
-    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
       String productId = "connectivity-demo";
 
       byte[] newImageData = "connectivity-image-data".getBytes();
@@ -121,7 +121,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testMappingImageFromDownloadedFolderWhenImageExists() {
-    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
       String productId = "connectivity-demo";
 
       byte[] existingImageData = "connectivity-image-data".getBytes();
@@ -149,7 +149,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testMappingImageFromDownloadedFolderReturnNull() {
-    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
       String productId = "connectivity-demo";
       Path imagePath = Path.of("connectivity-image.png");
       mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath))
@@ -170,6 +170,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testReadPreviewImageByNameImageExists() {
     Path imagePath = Path.of(IMAGE_NAME);
 
@@ -193,6 +194,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testReadPreviewImageByNameNotFoundDirectory() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
@@ -206,6 +208,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
+  @SuppressWarnings("deprecation")
   void testReadPreviewImageByNameNotFoundImage() {
     Path imagePath = Path.of(IMAGE_NAME);
 
@@ -225,6 +228,7 @@ class ImageServiceImplTest extends BaseSetup {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testReadPreviewImageByNameRejectsNonImageFile() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       byte[] result = imageService.readPreviewImageByName("secret.txt");
@@ -237,6 +241,7 @@ class ImageServiceImplTest extends BaseSetup {
 
 
   @Test
+  @SuppressWarnings("deprecation")
   void testReadPreviewImageByNameIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
 

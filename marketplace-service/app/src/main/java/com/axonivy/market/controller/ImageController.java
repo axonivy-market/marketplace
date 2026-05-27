@@ -27,18 +27,4 @@ public class ImageController extends CoreImageController {
     super(imageService);
     this.imageService = imageService;
   }
-
-  @GetMapping(BY_FILE_NAME)
-  @Operation(hidden = true)
-  public ResponseEntity<byte[]> findPreviewImageByName(
-      @PathVariable("imageName") String imageName) {
-    var headers = new HttpHeaders();
-    headers.setContentType(MediaTypeFactory.getMediaType(imageName).orElse(MediaType.APPLICATION_OCTET_STREAM));
-    headers.set("X-Content-Type-Options", "nosniff");
-    byte[] imageData = imageService.readPreviewImageByName(imageName);
-    if (imageData.length == 0) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-    return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
-  }
 }
