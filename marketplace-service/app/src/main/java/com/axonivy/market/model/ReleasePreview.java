@@ -25,11 +25,14 @@ public class ReleasePreview {
     private Map<String, String> setup;
     @Schema(description = "Demo tab content", example = "{ \"de\": \"Demo\", \"en\": \"Demo\" ")
     private Map<String, String> demo;
+    @Schema(description = "Component tab content", example = "{ \"de\": \"Component\", \"en\": \"Component\" }")
+    private Map<String, String> component;
 
     public static ReleasePreview from(Map<String, Map<String, String>> moduleContents) {
         return ReleasePreview.builder().description(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)))
                 .demo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)))
                 .setup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)))
+                .component(replaceEmptyContentsWithEnContent(moduleContents.get(COMPONENT)))
                 .build();
     }
 
