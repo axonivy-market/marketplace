@@ -111,9 +111,9 @@
                     {{ 'common.product.detail.deprecatedBanner.title' | translate }}
                   </span>
                 </div>
-                <p class="deprecation-banner-description mb-0" [lang]="languageService.selectedLanguage()">
+                <h4 class="deprecation-banner-description mb-0" [lang]="languageService.selectedLanguage()">
                   {{ 'common.product.detail.deprecatedBanner.description' | translate }}
-                </p>
+                </h4>
               </div>
               @if (getDeprecationSuccessorName()) {
                 <div class="deprecation-banner-right d-flex flex-column justify-content-center">
