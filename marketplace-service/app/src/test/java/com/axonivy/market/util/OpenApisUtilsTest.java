@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
@@ -24,21 +25,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApisUtilsTest {
-
     @LocalServerPort
     private int port;
+    
+    @Value("${server.servlet.context-path:}")
+    private String contextPath;
+    
     private static final String VALIDATOR_URL = "https://validator.swagger.io/validator/debug";
     private static final RestTemplate restTemplate = new RestTemplate();
 
     private String getSpecUrl() {
-        return DEFAULT_HOST + port + "/api-docs";
+        return DEFAULT_HOST + port + contextPath + "/api-docs";
     }
 
     @Test
     void testFetchAndValidateOpenApi() throws IOException {
         String savedPath = fetchOpenApiYaml();
         boolean isValid = validateUsingSwaggerIO(savedPath);
-        FileUtils.clearDirectory(Path.of(savedPath));
+        if (StringUtils.isNotBlank(savedPath)) {
+            FileUtils.clearDirectory(Path.of(savedPath));
+        }
         assertTrue(isValid, "Expected remote Swagger validator to pass");
     }
 
