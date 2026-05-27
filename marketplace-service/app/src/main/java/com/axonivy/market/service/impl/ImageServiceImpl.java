@@ -121,34 +121,31 @@ public class ImageServiceImpl implements ImageService {
   @Deprecated(since = "1.27.0", forRemoval = true)
   @Override
   public byte[] readPreviewImageByName(String imageName) {
+    byte[] imageContent = new byte[0];
+    var previewPath = Paths.get(PREVIEW_DIR);
     if (!isAllowedPreviewImageName(imageName)) {
       log.info("#readPreviewImageByName: Rejected preview file name {}", imageName);
-      return new byte[0];
-    }
-
-    var previewPath = Paths.get(PREVIEW_DIR);
-    if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
+    } else if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
       log.info("#readPreviewImageByName: Preview folder not found");
-      return new byte[0];
-    }
-
-    try {
-      Optional<Path> imagePath = Files.walk(previewPath)
-          .filter(Files::isRegularFile)
-          .filter(path -> isAllowedPreviewImageName(path.getFileName().toString()))
-          .filter(path -> path.getFileName().toString().equalsIgnoreCase(imageName))
-          .findFirst();
-      if (imagePath.isEmpty()) {
-        log.info("#readPreviewImageByName: Image with name {} is missing", imageName);
-        return new byte[0];
+    } else {
+      try {
+        Optional<Path> imagePath = Files.walk(previewPath)
+            .filter(Files::isRegularFile)
+            .filter(path -> isAllowedPreviewImageName(path.getFileName().toString()))
+            .filter(path -> path.getFileName().toString().equalsIgnoreCase(imageName))
+            .findFirst();
+        if (imagePath.isEmpty()) {
+          log.info("#readPreviewImageByName: Image with name {} is missing", imageName);
+        } else {
+          InputStream contentStream = MavenUtils.extractedContentStream(imagePath.get());
+          assert contentStream != null;
+          imageContent = IOUtils.toByteArray(contentStream);
+        }
+      } catch (IOException e) {
+        log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
       }
-      InputStream contentStream = MavenUtils.extractedContentStream(imagePath.get());
-        assert contentStream != null;
-        return IOUtils.toByteArray(contentStream);
-    } catch (IOException e) {
-      log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
-      return new byte[0];
     }
+    return imageContent;
   }
 
   private boolean isAllowedPreviewImageName(String imageName) {
