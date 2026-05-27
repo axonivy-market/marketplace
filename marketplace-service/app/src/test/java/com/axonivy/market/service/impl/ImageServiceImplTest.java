@@ -19,9 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -166,4 +168,88 @@ class ImageServiceImplTest extends BaseSetup {
     var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null);
     assertNull(result, "Result should be null when GHContent is not provided (null input)");
   }
+
+  @Test
+  void testReadPreviewImageByNameImageExists() {
+    Path imagePath = Path.of(IMAGE_NAME);
+
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
+         MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
+      mockedFiles.when(() -> Files.exists(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isDirectory(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isRegularFile(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.walk(any())).thenReturn(Stream.of(imagePath));
+
+      InputStream mockedInputStream = new ByteArrayInputStream("mocked image content".getBytes());
+      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(mockedInputStream);
+
+      byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
+
+      assertNotNull(result,
+          "Result should not be null when the image file exists and can be read successfully");
+      assertArrayEquals("mocked image content".getBytes(), result,
+          "Returned image bytes should match the expected mocked image content");
+    }
+  }
+
+  @Test
+  void testReadPreviewImageByNameNotFoundDirectory() {
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+      mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
+
+      byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
+
+      assertEquals(0, result.length,
+          "When the image directory does not exist, the service should return an empty byte array");
+    }
+  }
+
+
+  @Test
+  void testReadPreviewImageByNameNotFoundImage() {
+    Path imagePath = Path.of(IMAGE_NAME);
+
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
+         MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
+
+      mockedFiles.when(() -> Files.exists(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isDirectory(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isRegularFile(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.walk(any())).thenReturn(Stream.of(imagePath));
+
+      byte[] result = imageService.readPreviewImageByName("wrong.png");
+
+      assertEquals(0, result.length,
+          "When the requested image name does not match any existing file, the service should return an empty byte array");
+    }
+  }
+
+  @Test
+  void testReadPreviewImageByNameRejectsNonImageFile() {
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+      byte[] result = imageService.readPreviewImageByName("secret.txt");
+
+      assertEquals(0, result.length,
+          "Non-image preview file names should be rejected before the filesystem is searched");
+      mockedFiles.verify(() -> Files.walk(any()), never());
+    }
+  }
+
+
+  @Test
+  void testReadPreviewImageByNameIOException() {
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+
+      mockedFiles.when(() -> Files.exists(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isDirectory(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.isRegularFile(any())).thenReturn(true);
+      mockedFiles.when(() -> Files.walk(any())).thenThrow(new IOException("Exception!!"));
+
+      assertDoesNotThrow(
+          () -> imageService.readPreviewImageByName(IMAGE_NAME),
+          "The service should handle IOExceptions gracefully without throwing them to the caller"
+      );
+    }
+  }
+
 }
