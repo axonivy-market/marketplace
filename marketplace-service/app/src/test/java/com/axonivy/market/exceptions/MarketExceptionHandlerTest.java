@@ -127,10 +127,10 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void testHandleTaskAlreadyRunningException() {
-    TaskAlreadyRunningException taskAlreadyRunningException = new TaskAlreadyRunningException(
-        "Task is already running!");
-    var responseEntity = exceptionHandler.handleTaskAlreadyRunningException(taskAlreadyRunningException);
+  void testHandleSyncTaskInProgressException() {
+    SyncTaskInProgressException syncTaskInProgressException = new SyncTaskInProgressException(
+      "Task is already in progress!");
+    var responseEntity = exceptionHandler.handleSyncTaskInProgressException(syncTaskInProgressException);
     assertEquals(HttpStatus.ACCEPTED, responseEntity.getStatusCode(),
         "Expected HTTP 202 ACCEPTED");
     assertNotNull(responseEntity.getBody(), "Response body should not be null");
