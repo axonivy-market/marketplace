@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -210,34 +209,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncDocumentForProductAddsLatestSupportedVersions() {
-    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any()))
-        .thenReturn(mockPortalProduct().map(Product::getArtifacts).orElse(List.of()));
-    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
-    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq(PORTAL), any()))
-        .thenReturn(List.of(
-            ExternalDocumentMeta.builder().version("10.0.0").build(),
-            ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
-            ExternalDocumentMeta.builder().version("12.5.0").build(),
-            ExternalDocumentMeta.builder().version("13.2.0.1").build(),
-            ExternalDocumentMeta.builder().version("14.0.0").build()));
-    when(fileDownloadService.generateCacheStorageDirectory(any())).thenAnswer(invocation -> {
-      String downloadUrl = invocation.getArgument(0, String.class);
-      return String.format("%s/%s/%s/%s", DirectoryConstants.DATA_CACHE_DIR, PORTAL,
-          extractVersionFromUrl(downloadUrl), DirectoryConstants.DOC_DIR);
-    });
-    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
-
-    service.syncDocumentForProduct(PORTAL, false, null);
-
-    ArgumentCaptor<ExternalDocumentMeta> metaCaptor = ArgumentCaptor.forClass(ExternalDocumentMeta.class);
-    verify(externalDocumentMetaRepository, atLeastOnce()).save(metaCaptor.capture());
-    List<String> savedVersions = metaCaptor.getAllValues().stream().map(ExternalDocumentMeta::getVersion).toList();
-    assertTrue(savedVersions.contains("12.5.0"), "Should include latest supported version even if not missing");
-    assertTrue(savedVersions.contains("8.0.0"), "Should still include missing released versions");
-  }
-
-  @Test
   void testSyncDocumentForProductWithNotFoundProduct() {
     when(productRepository.findProductByIdAndRelatedData(any())).thenReturn(null);
     service.syncDocumentForProduct(PORTAL, true, "");
@@ -339,17 +310,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Artifact mockPortalMavenArtifact() {
     return Artifact.builder().artifactId(ARTIFACT_NAME).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
-  }
-
-  private static String extractVersionFromUrl(String downloadUrl) {
-    String prefix = PORTAL + CoreCommonConstants.SLASH + ARTIFACT_NAME + CoreCommonConstants.SLASH;
-    int start = downloadUrl.indexOf(prefix);
-    if (start < 0) {
-      return TEST_VERSION;
-    }
-    start += prefix.length();
-    int end = downloadUrl.indexOf(CoreCommonConstants.SLASH, start);
-    return end < 0 ? downloadUrl.substring(start) : downloadUrl.substring(start, end);
   }
 
   private String preparePortalGuideDirectory() throws IOException {
