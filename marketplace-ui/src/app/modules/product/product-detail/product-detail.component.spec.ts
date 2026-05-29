@@ -1800,4 +1800,5 @@ describe('ProductDetailComponent', () => {
 
     expect(spy).toHaveBeenCalledWith('demo', true, true);
   });
+
 });

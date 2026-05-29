@@ -1,5 +1,6 @@
 {
   "common": {
+    "deprecated": "Veraltet",
     "branch": "Axon Ivy Marktplatz",
     "language": {
       "english": "Englisch",
@@ -177,7 +178,12 @@
         "contactUs": {
           "label": "Kontakt"
         },
-        "changelog": "Changelog"
+        "changelog": "Changelog",
+        "deprecatedBanner": {
+          "title": "VERALTET",
+          "description": "Diese Erweiterung ist veraltet und erhält keine Updates oder Unterstützung mehr. Sie wird in Release 14 entfernt.",
+          "recommendedAlternative": "Empfohlene Alternative"
+        }
       }
     },
     "feedback": {
@@ -478,30 +484,40 @@
         "description": "Manage how deprecated extensions are displayed",
         "helpText": "Configure the deprecated extensions. Administrators can add, update for products",
         "availableExtensions": "Deprecated Extensions",
-        "searchPlaceholder": "Search an extension",
+        "searchPlaceholder": "Suche nach einer Erweiterung",
         "order": "Order",
         "deprecatedButton": "Deprecate",
-        "updateForReadmeText": "Create Pull Request to update Readme",
-        "successor": "Successor:",
+        "updateForReadmeText": "Pull Request erstellen, um die README zu aktualisieren",
+        "hasAlternativeExtension": "Hat diese Erweiterung einen Ersatz?",
+        "alternativeExtension": "Name der alternativen Erweiterung:",
+        "successor": "Nachfolger:",
         "confirmRemoveDeprecatedContent": "Are you sure to remove deprecation for this extension?",
         "confirmRemoveDeprecatedTitle": "Remove deprecation confirmation",
         "removeDeprecated": "Remove deprecated",
-        "extensionId": "Extension ID:",
-        "deprecatedTime": "Deprecated time",
-        "requester": "Requester",
+        "extensionId": "Erweiterungs-ID:",
+        "deprecatedTime": "Zeitpunkt der Veraltung",
+        "requester": "Anforderer",
         "action": "Aktion",
         "validation": {
           "extensionIdRequired": "Erweiterungs-ID ist erforderlich",
+          "alternativeExtensionRequired": "Der Name der alternativen Erweiterung ist erforderlich",
+          "successorRequired": "Nachfolger ist erforderlich",
           "invalidSuccessorUrl": "URL muss mit http:// oder https:// beginnen"
         },
-        "deprecateSuccess": "Extension has been deprecated successfully!",
-        "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
+        "deprecateSuccess": "Die Erweiterung wurde erfolgreich als veraltet markiert!",
+        "removeDeprecatedSuccess": "Die Kennzeichnung als veraltet wurde erfolgreich entfernt!",
         "pullRequestLabel": "Pull Request URL",
-        "copyLabel": "Copy",
-        "copiedLabel": "Copied!",
-        "deprecateProduct": "Deprecate Product",
-        "productIdInputPlaceholder": "Please select extension id to deprecate",
-        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
+        "copyLabel": "Kopieren",
+        "copiedLabel": "Kopiert!",
+        "deprecateProduct": "Produkt als veraltet markieren",
+        "productIdInputPlaceholder": "Bitte wähle die zu veraltende Erweiterungs-ID aus",
+        "alternativeExtensionInputPlaceholder": "Bitte gib den Namen der alternativen Erweiterung ein, z. B. Axon Ivy Smart Workflow",
+        "successorInputPlaceholder": "Bitte gib den Pfad der Nachfolge-Erweiterung an, z. B. https://market.axonivy.com/smart-workflow",
+        "extensionIdTooltip": "Die eindeutige Kennung der Marketplace-Erweiterung, die du als veraltet markieren möchtest (z. B. portal).",
+        "hasAlternativeExtensionTooltip": "Aktiviere dies, wenn es eine neuere oder alternative Erweiterung gibt, die diese ersetzt.",
+        "alternativeExtensionTooltip": "Der Anzeigename der Erweiterung, die die veraltete ersetzt.",
+        "successorTooltip": "Die vollständige URL zur Nachfolge-Erweiterung im Marketplace (muss mit http:// oder https:// beginnen).",
+        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert."
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

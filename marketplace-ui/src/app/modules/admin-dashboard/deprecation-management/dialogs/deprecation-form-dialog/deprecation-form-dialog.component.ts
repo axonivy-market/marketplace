@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DeprecationRequest } from '../../../../../shared/models/deprecation-request';
 
 @Component({
   selector: 'app-deprecate-form-dialog',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, NgbTooltip, TranslateModule],
   templateUrl: './deprecation-form-dialog.component.html',
   styleUrl: './deprecation-form-dialog.component.scss'
 })
@@ -18,7 +19,11 @@ export class DeprecationFormDialogComponent {
   @Input() filteredProductIds: string[] = [];
   @Input() deprecationRequest!: DeprecationRequest;
   @Input() productId = '';
-  @Input() validationErrors: { productId?: string; successorUrl?: string } = {};
+  @Input() validationErrors: {
+    productId?: string;
+    alternativeExtension?: string;
+    successorUrl?: string;
+  } = {};
   @Output() closeDialog = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<void>();
   @Output() openDropdown = new EventEmitter<void>();
