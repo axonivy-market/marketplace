@@ -223,8 +223,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
             ExternalDocumentMeta.builder().version("14.0.0").build()));
     when(fileDownloadService.generateCacheStorageDirectory(any())).thenAnswer(invocation -> {
       String downloadUrl = invocation.getArgument(0, String.class);
-      return DirectoryConstants.DATA_DIR + "/market-cache/" + PORTAL + "/" + extractVersionFromUrl(downloadUrl)
-          + "/doc";
+      return String.join("/", DirectoryConstants.DATA_CACHE_DIR, PORTAL, extractVersionFromUrl(downloadUrl), DOC_DIR);
     });
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
 
