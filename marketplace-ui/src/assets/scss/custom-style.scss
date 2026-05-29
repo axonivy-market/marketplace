@@ -21,7 +21,6 @@ $ivyPrimaryColorHoverLight: #00445c;
 $ivySecondaryColorLight: #f8f8f8;
 $ivySecondaryButtonHoverLight: #ebebeb;
 $ivyPrimaryTextColorLight: #1b1b1b;
-$ivyPrimaryTextColorDark: #ffffff;
 $ivySecondaryTextLight: #4a4a4a;
 $ivyNormalTextColorLight: #fafafa;
 
@@ -222,7 +221,7 @@ details summary {
   --ivy-active-color: #{$white};
 
   --ivy-text-normal-color: #{$ivyBodyBackgroundDark};
-  --ivy-text-primary-color: #{$ivyPrimaryTextColorDark};
+  --ivy-text-primary-color: #{$white};
   --ivy-text-secondary-color: #{$ivySecondaryTextDark};
 
   --ivy-border-color: #{$ivySecondaryTextLight};
