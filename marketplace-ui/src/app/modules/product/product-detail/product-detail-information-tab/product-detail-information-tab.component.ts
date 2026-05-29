@@ -254,7 +254,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
     }
 
     tooltipContext.Tooltip.getInstance(tooltipContext.element)?.dispose();
-    new tooltipContext.Tooltip(tooltipContext.element);
+    tooltipContext.Tooltip.getOrCreateInstance(tooltipContext.element);
   }
 
   private async disposeSuccessorTooltip(): Promise<void> {

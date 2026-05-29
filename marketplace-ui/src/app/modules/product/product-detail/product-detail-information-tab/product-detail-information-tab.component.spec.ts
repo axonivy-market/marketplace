@@ -1,13 +1,29 @@
 import { beforeEach, afterEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
 
-const mockTooltipEnable = vi.fn();
-const mockTooltipDispose = vi.fn();
-const mockTooltipGetInstance = vi.fn();
-const MockTooltipConstructor = vi.fn().mockImplementation(() => ({
-  enable: mockTooltipEnable,
-  dispose: mockTooltipDispose
-}));
-(MockTooltipConstructor as any).getInstance = mockTooltipGetInstance;
+const {
+  mockTooltipDispose,
+  mockTooltipGetInstance,
+  mockTooltipGetOrCreateInstance,
+  MockTooltipConstructor
+} = vi.hoisted(() => {
+  const mockTooltipDispose = vi.fn();
+  const mockTooltipGetInstance = vi.fn();
+  const mockTooltipGetOrCreateInstance = vi.fn();
+  const MockTooltipConstructor = vi.fn().mockImplementation(() => ({
+    dispose: mockTooltipDispose
+  }));
+
+  (MockTooltipConstructor as any).getInstance = mockTooltipGetInstance;
+  (MockTooltipConstructor as any).getOrCreateInstance =
+    mockTooltipGetOrCreateInstance;
+
+  return {
+    mockTooltipDispose,
+    mockTooltipGetInstance,
+    mockTooltipGetOrCreateInstance,
+    MockTooltipConstructor
+  };
+});
 
 vi.mock('bootstrap/js/dist/tooltip', () => ({
   default: MockTooltipConstructor
@@ -512,6 +528,54 @@ describe('ProductDetailInformationTabComponent', () => {
       vi.runAllTimers();
 
       expect(refreshSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  describe('successor tooltip lifecycle', () => {
+    beforeEach(() => {
+      mockTooltipDispose.mockReset();
+      mockTooltipGetInstance.mockReset();
+      mockTooltipGetOrCreateInstance.mockReset();
+      MockTooltipConstructor.mockClear();
+    });
+
+    it('should recreate tooltip instance when refreshing successor tooltip', async () => {
+      const mockElement = document.createElement('i');
+      const existingTooltip = { dispose: mockTooltipDispose };
+      mockTooltipGetInstance.mockReturnValue(existingTooltip);
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(mockElement);
+
+      await (component as any).refreshSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).toHaveBeenCalledWith(mockElement);
+      expect(mockTooltipDispose).toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).toHaveBeenCalledWith(mockElement);
+      expect(MockTooltipConstructor).not.toHaveBeenCalled();
+    });
+
+    it('should dispose tooltip instance when destroying successor tooltip', async () => {
+      const mockElement = document.createElement('i');
+      const existingTooltip = { dispose: mockTooltipDispose };
+      mockTooltipGetInstance.mockReturnValue(existingTooltip);
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(mockElement);
+
+      await (component as any).disposeSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).toHaveBeenCalledWith(mockElement);
+      expect(mockTooltipDispose).toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing when refreshing successor tooltip without hint icon', async () => {
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(null);
+
+      await (component as any).refreshSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).not.toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).not.toHaveBeenCalled();
     });
   });
 
