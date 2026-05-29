@@ -151,13 +151,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return List.of(forceSyncedVersion);
     }
 
-    List<String> needToBeSyncedDocVersions = new ArrayList<>(
-        getMissingVersions(productId, isResetSync, releasedVersions, artifact));
-    latestSupportedDocVersions.values().stream()
-        .filter(StringUtils::isNotBlank)
-        .filter(version -> !needToBeSyncedDocVersions.contains(version))
-        .forEach(needToBeSyncedDocVersions::add);
-    return needToBeSyncedDocVersions;
+    List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
+    List<String> versionsNeedToBeSynced = new ArrayList<>(missingVersions);
+    for (String latestVersion : latestSupportedDocVersions.values()) {
+      if (StringUtils.isNotBlank(latestVersion) && !versionsNeedToBeSynced.contains(latestVersion)) {
+        versionsNeedToBeSynced.add(latestVersion);
+      }
+    }
+    return versionsNeedToBeSynced;
   }
 
   private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,
