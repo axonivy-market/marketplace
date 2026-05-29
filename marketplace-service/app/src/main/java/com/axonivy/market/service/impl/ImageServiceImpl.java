@@ -117,8 +117,9 @@ public class ImageServiceImpl implements ImageService {
 
   /**
    * @deprecated
+   * This method does not use anymore, and will be removed in release 1.27.0
    */
-  @Deprecated(since = "1.27.0", forRemoval = true)
+  @Deprecated(since = "1.26.0", forRemoval = true)
   @Override
   public byte[] readPreviewImageByName(String imageName) {
     var imageContent = new byte[0];
