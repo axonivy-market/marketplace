@@ -178,7 +178,8 @@ describe('ReleasePreviewComponent', () => {
     component.readmeContent.set({
       description: { en: 'Description content' },
       setup: {},
-      demo: {}
+      demo: {},
+      component: {}
     });
 
     const selectedLanguage = Language.DE;
@@ -225,7 +226,8 @@ describe('ReleasePreviewComponent', () => {
         setup: {
           en: '<details><summary>How to setup</summary><p>This is a setup test</p></details>'
         },
-        demo: {}
+        demo: {},
+        component: {}
       })
     );
 

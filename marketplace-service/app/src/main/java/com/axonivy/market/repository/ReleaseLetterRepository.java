@@ -10,17 +10,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
 public interface ReleaseLetterRepository extends JpaRepository<ReleaseLetter, String> {
-  Optional<ReleaseLetter> findBySprint(String sprint);
+
+  @Query("""
+      SELECT r
+      FROM ReleaseLetter r
+      WHERE r.content IS NOT NULL
+        AND TRIM(r.content) <> ''
+      """)
+  Page<ReleaseLetter> findAllWithContent(Pageable pageable);
 
   boolean existsBySprint(String releaseVersion);
 
-  Page<ReleaseLetter> findByLatest(boolean isLatest, Pageable pageable);
-
-  void deleteBySprint(String sprint);
+  Page<ReleaseLetter> findByIsLatest(boolean isLatest, Pageable pageable);
 
   @Modifying
   @Query("DELETE from ReleaseLetter r where r.id = :id")

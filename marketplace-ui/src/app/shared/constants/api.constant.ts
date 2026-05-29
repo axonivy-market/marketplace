@@ -24,7 +24,7 @@ export const API_URI = {
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   LOGS: `${API}/logs`,
   RELEASE_LETTERS: `${API}/release-letters`,
-  ACTIVE_RELEASE_LETTERS: `${API}/release-letters/active`,
+  LATEST_RELEASE_LETTERS: `${API}/release-letters/latest`,
   PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,
   PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID: (id: string) =>
     `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`

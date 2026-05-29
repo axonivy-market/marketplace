@@ -25,7 +25,8 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION, INSTALL_TOOLTIP }
+  from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -43,7 +44,6 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
-
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
 const DOC = '-doc';
@@ -67,15 +67,15 @@ const RESPONSE = 'response';
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
-  @Output() triggerUpdateInstallationCount = new EventEmitter<void>;
+  @Output() triggerUpdateInstallationCount = new EventEmitter<void>();
   @Input() productId!: string;
   @Input() isMavenDropins!: boolean;
+  @Input() isDeprecated = false;
   @Input() actionType!: ProductDetailActionType;
   @Input() product!: ProductDetail;
   protected ProductDetailActionType = ProductDetailActionType;
   protected MatomoCategory = MatomoCategory;
   protected MatomoAction = MatomoAction;
-  trackedEnvironmentForMatomo = '';
 
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
@@ -341,10 +341,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onNavigateToContactPage(): void {
-    window.open(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
-      '_blank'
-    );
+    window.open(`https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`, '_blank');
+  }
+
+  getInstallTooltipMessage(): string {
+    return this.isDeprecated ? INSTALL_TOOLTIP.deprecatedWarning : INSTALL_TOOLTIP.defaultMessage;
   }
 
   getTrackingEnvironmentBasedOnActionType() {

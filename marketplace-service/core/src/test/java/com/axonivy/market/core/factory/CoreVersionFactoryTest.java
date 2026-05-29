@@ -42,7 +42,7 @@ class CoreVersionFactoryTest {
   void testFindLowerVersionHappy() {
     List<String> releaseVersions = List.of("10.0.0", "9.0.0");
     String result = CoreVersionFactory.findLowerVersion(releaseVersions, "11.0.0");
-    // MavenVersionComparator logic: "10.0.0" < "11.0.0"
+    // MavenVersionComparator natural ordering: "10.0.0" < "11.0.0"
     assertEquals("10.0.0", result);
   }
 

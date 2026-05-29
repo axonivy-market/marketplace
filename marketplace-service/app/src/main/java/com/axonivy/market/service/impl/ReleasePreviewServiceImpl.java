@@ -102,7 +102,7 @@ public class ReleasePreviewServiceImpl implements ReleasePreviewService {
       readmeContents = updateImagesWithInlineImages(location, readmeContents);
     }
     var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
-    ProductContentUtils.mappingDescriptionSetupAndDemo(
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(
         moduleContents,
         readmeFile.getFileName().toString(),
         readmeContentsModel
