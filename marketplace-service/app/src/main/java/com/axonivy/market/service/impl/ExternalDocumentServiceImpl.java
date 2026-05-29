@@ -149,7 +149,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         var location = String.join(File.separator, DirectoryConstants.DATA_DIR, DirectoryConstants.CACHE_DIR,
         DirectoryConstants.PORTAL_DIR, DirectoryConstants.PORTAL_GUIDE_DIR, latestVersion,
         DirectoryConstants.DOC_DIR);
-        createSymlinkForMajorVersion(Paths.get(location), majorVersion);
+        if (doesDocExistInShareFolder(location)) {
+        	createSymlinkForMajorVersion(Paths.get(location), majorVersion);
+        }
       }
     }  
 
