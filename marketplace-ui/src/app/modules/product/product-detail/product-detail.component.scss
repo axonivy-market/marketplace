@@ -289,17 +289,15 @@
   }
 }
 
-.deprecation-banner-icon {
-  color: var(--deprecated-banner-text);
-  font-size: 2.2rem;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
+.deprecation-banner-icon,
 .deprecation-banner-title {
   color: var(--deprecated-banner-text);
-  font-weight: 500;
   font-size: 2.2rem;
+  font-weight: 500;
+}
+
+.deprecation-banner-icon {
+  flex-shrink: 0;
 }
 
 .deprecation-banner-description {

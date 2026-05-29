@@ -234,23 +234,32 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
     this.disposeSuccessorTooltip();
   }
 
-  private async refreshSuccessorTooltip(): Promise<void> {
-    const tooltipElement = this.hostElement.nativeElement.querySelector('.hint-icon') as HTMLElement | null;
-    if (!tooltipElement) {
-      return;
+  private async getTooltipElementAndClass(): Promise<{ element: HTMLElement | null; Tooltip: any; }> {
+    const element = this.hostElement.nativeElement.querySelector('.hint-icon') as HTMLElement | null;
+    if (!element) {
+      return { element: null, Tooltip: null };
     }
 
     const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
-    Tooltip.getInstance(tooltipElement)?.dispose();
-    new Tooltip(tooltipElement).enable();
+    return { element, Tooltip };
+  }
+
+  private async refreshSuccessorTooltip(): Promise<void> {
+    const { element, Tooltip } = await this.getTooltipElementAndClass();
+    if (!element || !Tooltip) {
+      return;
+    }
+
+    Tooltip.getInstance(element)?.dispose();
+    new Tooltip(element);
   }
 
   private async disposeSuccessorTooltip(): Promise<void> {
-    const tooltipElement = this.hostElement.nativeElement.querySelector('.hint-icon') as HTMLElement | null;
-    if (!tooltipElement) {
+    const { element, Tooltip } = await this.getTooltipElementAndClass();
+    if (!element || !Tooltip) {
       return;
     }
-    const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
-    Tooltip.getInstance(tooltipElement)?.dispose();
+
+    Tooltip.getInstance(element)?.dispose();
   }
 }
