@@ -12,7 +12,13 @@
 
       <div class="modal-body">
         <div class="mb-4 position-relative">
-          <label class="form-label">{{ 'common.admin.deprecation.extensionId' | translate }}</label>
+          <label class="form-label">
+            {{ 'common.admin.deprecation.extensionId' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.extensionIdTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
+          </label>
           <input
             type="text"
             [class.form-control]="true"
@@ -38,22 +44,70 @@
           }
         </div>
 
-        <div class="mb-2">
-          <label class="form-label">{{ 'common.admin.deprecation.successor' | translate }}</label>
+        <div class="form-check mb-4">
           <input
-            type="text"
-            [class.form-control]="true"
-            [class.is-invalid]="validationErrors['successorUrl']"
-            [(ngModel)]="deprecationRequest.successorUrl"
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="deprecationRequest.hasAlternativeExtension"
             [disabled]="isDeprecating"
-            placeholder="{{ 'common.admin.deprecation.successorInputPlaceholder' | translate }}"
+            id="has-alternative-extension-checkbox"
           />
-          @if (validationErrors['successorUrl']) {
-            <div class="invalid-feedback d-block">
-              {{ validationErrors['successorUrl'] }}
-            </div>
-          }
+          <label class="form-check-label" for="has-alternative-extension-checkbox">
+            {{ 'common.admin.deprecation.hasAlternativeExtension' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.hasAlternativeExtensionTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
+          </label>
         </div>
+
+        @if (deprecationRequest.hasAlternativeExtension) {
+          <div class="mb-2">
+            <label class="form-label">
+              {{ 'common.admin.deprecation.alternativeExtension' | translate }}
+              <i class="ti ti-info-circle ms-1"
+                 placement="top"
+                 [ngbTooltip]="'common.admin.deprecation.alternativeExtensionTooltip' | translate"
+                 tooltipClass="custom-tooltip-class"></i>
+            </label>
+            <input
+              type="text"
+              [class.form-control]="true"
+              [class.is-invalid]="validationErrors['alternativeExtension']"
+              [(ngModel)]="deprecationRequest.alternativeExtension"
+              [disabled]="isDeprecating"
+              placeholder="{{ 'common.admin.deprecation.alternativeExtensionInputPlaceholder' | translate }}"
+            />
+            @if (validationErrors['alternativeExtension']) {
+              <div class="invalid-feedback d-block">
+                {{ validationErrors['alternativeExtension'] }}
+              </div>
+            }
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">
+              {{ 'common.admin.deprecation.successor' | translate }}
+              <i class="ti ti-info-circle ms-1"
+                 placement="top"
+                 [ngbTooltip]="'common.admin.deprecation.successorTooltip' | translate"
+                 tooltipClass="custom-tooltip-class"></i>
+            </label>
+            <input
+              type="text"
+              [class.form-control]="true"
+              [class.is-invalid]="validationErrors['successorUrl']"
+              [(ngModel)]="deprecationRequest.successorUrl"
+              [disabled]="isDeprecating"
+              placeholder="{{ 'common.admin.deprecation.successorInputPlaceholder' | translate }}"
+            />
+            @if (validationErrors['successorUrl']) {
+              <div class="invalid-feedback d-block">
+                {{ validationErrors['successorUrl'] }}
+              </div>
+            }
+          </div>
+        }
 
         <div class="form-check mt-3">
           <input
@@ -62,10 +116,14 @@
             [(ngModel)]="deprecationRequest.isAddReadme"
             [disabled]="isDeprecating"
             (click)="readmeChecked.emit()"
-            id="addReadmeCheckbox"
+            id="add-readme-checkbox"
           />
-          <label class="form-check-label" for="addReadmeCheckbox">
+          <label class="form-check-label" for="add-readme-checkbox">
             {{ 'common.admin.deprecation.updateForReadmeText' | translate }}
+            <i class="ti ti-info-circle ms-1"
+               placement="top"
+               [ngbTooltip]="'common.admin.deprecation.updateForReadmeTextTooltip' | translate"
+               tooltipClass="custom-tooltip-class"></i>
           </label>
         </div>
       </div>
@@ -93,4 +151,3 @@
     [class.backdrop-closing]="isClosing"
     (click)="!isDeprecating && closeDialog.emit()"></div>
 }
-

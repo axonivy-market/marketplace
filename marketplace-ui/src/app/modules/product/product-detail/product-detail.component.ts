@@ -79,13 +79,6 @@ import { Page } from '../../../shared/models/apis/page.model';
 import { RouteUtils } from '../../../shared/utils/route.utils';
 import { Language } from '../../../shared/enums/language.enum';
 
-export interface DetailTab {
-  activeClass: string;
-  tabId: string;
-  value: string;
-  label: string;
-}
-
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -319,6 +312,10 @@ export class ProductDetailComponent implements AfterViewInit {
         ratingLabels.noFeedbackLabel
       );
     }
+  }
+
+  getDeprecationSuccessorName(): string {
+    return this.productDetail().successor?.trim() ?? '';
   }
 
   hasMoreChangelogs() {

@@ -61,14 +61,7 @@ export class DeprecationManagementComponent implements OnInit {
   productId = '';
 
   dropdownOpen = false;
-  deprecationRequest: DeprecationRequest = {
-    successorUrl: '',
-    isAddReadme: false,
-    isDeprecated: false,
-    pullRequestAction: PullRequestAction.ADD,
-    deprecationRequester: '',
-    deprecationDate: new Date()
-  };
+  deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedItems: DeprecatedProductInfo[] = [];
@@ -76,13 +69,31 @@ export class DeprecationManagementComponent implements OnInit {
   tableSearchTerm = '';
   moderatorName = '';
   // Validation state
-  validationErrors: { productId?: string; successorUrl?: string } = {};
+  validationErrors: {
+    productId?: string;
+    alternativeExtension?: string;
+    successorUrl?: string;
+  } = {};
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username?.trim() || '';
     this.deprecationRequest.deprecationRequester = this.moderatorName;
     this.initializeDeprecatedRows();
+  }
+
+  private createEmptyDeprecationRequest(deprecationDate: Date | null = new Date(), deprecationRequester = ''):
+    DeprecationRequest {
+    return {
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
+      successorUrl: '',
+      isAddReadme: false,
+      isDeprecated: false,
+      pullRequestAction: PullRequestAction.ADD,
+      deprecationRequester,
+      deprecationDate
+    };
   }
 
   private initializeDeprecatedRows(): void {
@@ -103,14 +114,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
       this.productId = '';
-      this.deprecationRequest = {
-        successorUrl: '',
-        isAddReadme: false,
-        isDeprecated: false,
-        deprecationDate: null,
-        pullRequestAction: PullRequestAction.ADD,
-        deprecationRequester: this.moderatorName
-      };
+      this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       this.validationErrors = {};
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
@@ -183,13 +187,7 @@ export class DeprecationManagementComponent implements OnInit {
       if (shouldResetDeprecateForm) {
         // Reset deprecate form after closing deprecate success dialog
         this.productId = '';
-        this.deprecationRequest = {
-          successorUrl: '',
-          isAddReadme: false,
-          isDeprecated: false,
-          pullRequestAction: PullRequestAction.ADD,
-          deprecationRequester: this.moderatorName
-        };
+        this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       }
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
@@ -232,15 +230,31 @@ export class DeprecationManagementComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate successorUrl (optional but must match pattern if provided)
-    if (this.deprecationRequest.successorUrl && this.deprecationRequest.successorUrl.trim() !== '') {
-      const urlPattern = /^(http|https):\/\/.*$/;
-      if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
-        this.validationErrors['successorUrl'] = this.translateService.instant(
-          'common.admin.deprecation.validation.invalidSuccessorUrl'
+    if (this.deprecationRequest.hasAlternativeExtension) {
+      if (!this.deprecationRequest.alternativeExtension?.trim()) {
+        this.validationErrors.alternativeExtension = this.translateService.instant(
+          'common.admin.deprecation.validation.alternativeExtensionRequired'
         );
         isValid = false;
       }
+
+      if (this.deprecationRequest.successorUrl?.trim()) {
+        const urlPattern = /^(http|https):\/\/.*$/;
+        if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
+          this.validationErrors.successorUrl = this.translateService.instant(
+            'common.admin.deprecation.validation.invalidSuccessorUrl'
+          );
+          isValid = false;
+        }
+      } else {
+        this.validationErrors.successorUrl = this.translateService.instant(
+          'common.admin.deprecation.validation.successorRequired'
+        );
+        isValid = false;
+      }
+    } else {
+      this.deprecationRequest.alternativeExtension = '';
+      this.deprecationRequest.successorUrl = '';
     }
 
     return isValid;
