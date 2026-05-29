@@ -428,4 +428,4 @@ export const INSTALL_TOOLTIP = {
     "<p class='text-primary'>Please open the <a href='https://market.axonivy.com' class='ivy__link'>Axon Ivy Market</a> inside your <a class='ivy__link' href='https://developer.axonivy.com/download'>Axon Ivy Designer</a> (minimum version 9.2.0)</p>",
   deprecatedWarning:
     "<p class='text-primary'>Installing deprecated extensions is not recommended. Use at your own discretion.</p>"
-}
+};
