@@ -7,7 +7,7 @@ import {
   computed,
   signal,
   OnInit,
-  SecurityContext
+  effect
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -20,7 +20,6 @@ import { PRODUCT_DETAIL_TABS } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { CommonDropdownComponent } from '../../shared/components/common-dropdown/common-dropdown.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 import { MarkdownService } from '../../shared/services/markdown.service';
@@ -54,9 +53,7 @@ export class ReleasePreviewComponent implements OnInit {
   isDragging = false;
   file: File | null = null;
   errorMessage: string | null = null;
-  readmeContent: WritableSignal<ReleasePreviewData> = signal(
-    {} as ReleasePreviewData
-  );
+  readmeContent: WritableSignal<ReleasePreviewData> = signal({} as ReleasePreviewData);
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -67,12 +64,21 @@ export class ReleasePreviewComponent implements OnInit {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
   });
-  loadedReadmeContent: { [key: string]: SafeHtml } = {};
-
-  private readonly sanitizer = inject(DomSanitizer);
+  loadedReadmeContent: { [key: string]: string } = {};
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
   private readonly markdownService = inject(MarkdownService);
+
+  constructor() {
+    effect(() => {
+      this.languageService.selectedLanguage();
+
+      // Re-render markdown when language changes
+      if (this.isUploaded) {
+        this.renderReadmeContent();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.pageTitleService.setTitleOnLangChange('common.preview.pageTitle');
@@ -209,24 +215,15 @@ export class ReleasePreviewComponent implements OnInit {
   }
 
   private renderReadmeContent(): void {
+    this.loadedReadmeContent = {};
+
     for (const tab of this.detailTabs) {
       const contentValue = this.getReadmeContentValue(tab);
+
       if (contentValue) {
         const translatedContent =
-          new MultilingualismPipe().transform(
-            contentValue,
-            this.languageService.selectedLanguage()
-          ) || '';
-
-        const renderedHtml =
-          this.markdownService.parseMarkdown(translatedContent);
-
-        const sanitizedHtml = this.sanitizer.sanitize(
-          SecurityContext.HTML,
-          renderedHtml
-        );
-
-        this.loadedReadmeContent[tab.value] = sanitizedHtml ?? '';
+          new MultilingualismPipe().transform(contentValue, this.languageService.selectedLanguage()) || '';
+        this.loadedReadmeContent[tab.value] = this.markdownService.parseMarkdown(translatedContent);
       }
     }
   }
