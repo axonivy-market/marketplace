@@ -135,26 +135,29 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
     for (Artifact artifact : docArtifacts) {
-      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(forceSyncedVersion) ?
-          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(forceSyncedVersion);
+      List<String> needToBeSyncedDocVersions = getVersionsNeedToBeSynced(productId, isResetSync,
+          releasedVersions, artifact, forceSyncedVersion, latestSupportedDocVersions);
+      
       needToBeSyncedDocVersions.forEach(version ->
           handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
       );
     }
-    
-    for (Map.Entry<String, String> entry : latestSupportedDocVersions.entrySet()) {
-      String majorVersion = entry.getKey();
-      String latestVersion = entry.getValue();
-      if (StringUtils.isNotBlank(latestVersion) ) {
-        var location = String.join(File.separator, DirectoryConstants.DATA_DIR, DirectoryConstants.CACHE_DIR,
-        DirectoryConstants.PORTAL_DIR, DirectoryConstants.PORTAL_GUIDE_DIR, latestVersion,
-        DirectoryConstants.DOC_DIR);
-        if (doesDocExistInShareFolder(location)) {
-        	createSymlinkForMajorVersion(Paths.get(location), majorVersion);
-        }
-      }
-    }  
+  }
 
+  private List<String> getVersionsNeedToBeSynced(String productId, boolean isResetSync,
+      List<String> releasedVersions, Artifact artifact, String forceSyncedVersion,
+      Map<String, String> latestSupportedDocVersions) {
+    if (StringUtils.isNotBlank(forceSyncedVersion)) {
+      return List.of(forceSyncedVersion);
+    }
+
+    List<String> needToBeSyncedDocVersions = new ArrayList<>(
+        getMissingVersions(productId, isResetSync, releasedVersions, artifact));
+    latestSupportedDocVersions.values().stream()
+        .filter(StringUtils::isNotBlank)
+        .filter(version -> !needToBeSyncedDocVersions.contains(version))
+        .forEach(needToBeSyncedDocVersions::add);
+    return needToBeSyncedDocVersions;
   }
 
   private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,
@@ -276,6 +279,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     List<String> matchedMajorVersions = getMatchedMajorVersions(latestSupportedDocVersions, version);
+    createSymlinkForMajorVersions(Paths.get(location), matchedMajorVersions);
     buildDocumentWithLanguage(location, artifact, productId, version, matchedMajorVersions);
   }
 
@@ -301,6 +305,13 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return workingDirectory;
     }
     return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync, workingDirectory);
+  }
+
+  private void createSymlinkForMajorVersions(Path versionFolder, List<String> majorVersions) {
+    if (versionFolder == null || CollectionUtils.isEmpty(majorVersions)) {
+      return;
+    }
+    majorVersions.forEach(majorVersion -> createSymlinkForMajorVersion(versionFolder, majorVersion));
   }
 
   public String createSymlinkForMajorVersion(Path versionFolder, String majorVersion) {
