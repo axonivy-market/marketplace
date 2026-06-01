@@ -27,7 +27,7 @@
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
     "@popperjs/core": "^2.11.8",
-    "@tabler/icons-webfont": "^3.35.0",
+    "@tabler/icons-webfont": "3.35.0",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.1.2",
     "bootstrap": "^5.3.8",
@@ -65,8 +65,8 @@
     "@types/node": "^20.19.37",
     "jsdom": "^26.1.0",
     "prettier": "^3.7.4",
-    "vitest": "^4.1.2",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.2"
   },
   "overrides": {
     "picomatch": "^4.0.4"
