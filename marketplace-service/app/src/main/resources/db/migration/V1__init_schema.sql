@@ -8,84 +8,100 @@
 -- CORE MODULE TABLES
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS product (
-    id                             VARCHAR(255) NOT NULL PRIMARY KEY,
-    market_directory               VARCHAR(255),
-    tags                           TEXT         NOT NULL DEFAULT '',
-    released_versions              TEXT         NOT NULL DEFAULT '',
-    logo_url                       VARCHAR(255),
-    listed                         BOOLEAN,
-    deprecated                     BOOLEAN,
-    type                           VARCHAR(255),
-    vendor                         VARCHAR(255),
-    vendor_url                     VARCHAR(255),
-    version                        VARCHAR(255),
-    vendor_image                   VARCHAR(255),
-    vendor_image_dark_mode         VARCHAR(255),
-    platform_review                VARCHAR(255),
-    cost                           VARCHAR(255),
-    repository_name                VARCHAR(255),
-    source_url                     VARCHAR(255),
-    status_badge_url               VARCHAR(255),
-    language                       VARCHAR(255),
-    industry                       VARCHAR(255),
-    validate                       BOOLEAN,
-    contact_us                     BOOLEAN,
-    newest_published_date          TIMESTAMP,
-    first_published_date           TIMESTAMP,
-    newest_release_version         VARCHAR(255),
-    synchronized_installation_count BOOLEAN,
-    logo_id                        VARCHAR(255),
-    created_at                     TIMESTAMP,
-    updated_at                     TIMESTAMP
+CREATE TABLE public.flyway_schema_history (
+    installed_rank integer NOT NULL,
+    version VARCHAR(50),
+    description VARCHAR(200) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    script VARCHAR(1000) NOT NULL,
+    checksum integer,
+    installed_by VARCHAR(100) NOT NULL,
+    installed_on timestamp without time zone DEFAULT now() NOT NULL,
+    execution_time integer NOT NULL,
+    success boolean NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS product_name (
-    product_id VARCHAR(255) NOT NULL REFERENCES product (id),
-    language   VARCHAR(255) NOT NULL,
-    name       TEXT,
-    PRIMARY KEY (product_id, language)
-);
-
-CREATE TABLE IF NOT EXISTS product_description (
-    product_id        VARCHAR(255) NOT NULL REFERENCES product (id),
-    language          VARCHAR(255) NOT NULL,
-    short_description TEXT,
-    PRIMARY KEY (product_id, language)
-);
-
-CREATE TABLE IF NOT EXISTS archived_artifact (
+CREATE TABLE IF NOT EXISTS public.archived_artifact (
     id          VARCHAR(255) NOT NULL PRIMARY KEY,
     last_version VARCHAR(255),
     group_id    VARCHAR(255),
     artifact_id VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS artifact (
+CREATE TABLE IF NOT EXISTS public.artifact (
     id                  VARCHAR(255) NOT NULL PRIMARY KEY,
-    repo_url            VARCHAR(255),
-    name                VARCHAR(255),
-    group_id            VARCHAR(255),
     artifact_id         VARCHAR(255),
-    type                VARCHAR(255),
-    is_dependency       BOOLEAN,
     doc                 BOOLEAN,
-    is_invalid_artifact BOOLEAN      NOT NULL DEFAULT FALSE
+    group_id            VARCHAR(255),
+    is_dependency       BOOLEAN,
+    is_invalid_artifact BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_product_artifact BOOLEAN,
+    name                VARCHAR(255),
+    repo_url            VARCHAR(255),
+    type                VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS artifact_archived_artifacts (
-    artifact_id           VARCHAR(255) NOT NULL REFERENCES artifact (id),
-    archived_artifacts_id VARCHAR(255) NOT NULL REFERENCES archived_artifact (id),
+CREATE TABLE IF NOT EXISTS public.artifact_archived_artifacts (
+    artifact_id           VARCHAR(255) NOT NULL REFERENCES public.artifact (id),
+    archived_artifacts_id VARCHAR(255) NOT NULL REFERENCES public.archived_artifact (id),
     PRIMARY KEY (artifact_id, archived_artifacts_id)
 );
 
-CREATE TABLE IF NOT EXISTS product_artifacts (
-    product_id   VARCHAR(255) NOT NULL REFERENCES product (id),
-    artifacts_id VARCHAR(255) NOT NULL REFERENCES artifact (id),
-    PRIMARY KEY (product_id, artifacts_id)
+CREATE TABLE IF NOT EXISTS public.external_document_meta (
+    id                VARCHAR(255) NOT NULL PRIMARY KEY,
+    created_at        TIMESTAMP,
+    updated_at        TIMESTAMP,
+    artifact_id       VARCHAR(255),
+    artifact_name     VARCHAR(255),
+    language          VARCHAR(255),
+    product_id        VARCHAR(255),
+    relative_link     VARCHAR(255),
+    storage_directory VARCHAR(255),
+    version           VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS image (
+CREATE TABLE IF NOT EXISTS public.feedback (
+    id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    content VARCHAR(255),
+    feedback_status VARCHAR(255),
+    is_latest boolean,
+    moderator_name VARCHAR(255),
+    product_id VARCHAR(255),
+    rating integer,
+    review_date TIMESTAMP,
+    user_id VARCHAR(255),
+    version integer
+);
+
+CREATE TABLE IF NOT EXISTS public.github_repo (
+    id         VARCHAR(255) NOT NULL PRIMARY KEY,
+    name       VARCHAR(255),
+    product_id VARCHAR(255),
+    html_url   VARCHAR(255),
+    focused    BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS public.github_repo_meta (
+    repourl   VARCHAR(255) NOT NULL PRIMARY KEY,
+    repo_name  VARCHAR(255),
+    last_change BIGINT,
+    lastsha1  VARCHAR(255),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS public.github_user (
+    id         VARCHAR(255) NOT NULL PRIMARY KEY,
+    avatar_url VARCHAR(255),
+    git_hub_id VARCHAR(255),
+    name       VARCHAR(255),
+    provider   VARCHAR(255),
+    username   VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS public.image (
     id         VARCHAR(255) NOT NULL PRIMARY KEY,
     product_id VARCHAR(255),
     image_url  VARCHAR(255),
@@ -93,7 +109,21 @@ CREATE TABLE IF NOT EXISTS image (
     sha        VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS metadata (
+CREATE TABLE IF NOT EXISTS public.maven_artifact_version (
+    artifact_id           VARCHAR(255) NOT NULL,
+    product_version       VARCHAR(255) NOT NULL,
+    is_additional_version BOOLEAN      NOT NULL DEFAULT FALSE,
+    name                  VARCHAR(255),
+    download_url          VARCHAR(255),
+    is_invalid_artifact   BOOLEAN      NOT NULL DEFAULT FALSE,
+    group_id              VARCHAR(255),
+    product_id            VARCHAR(255),
+    created_at            TIMESTAMP,
+    updated_at            TIMESTAMP,
+    PRIMARY KEY (artifact_id, product_version, is_additional_version)
+);
+
+CREATE TABLE IF NOT EXISTS public.metadata (
     url                   VARCHAR(255) NOT NULL PRIMARY KEY,
     product_id            VARCHAR(255),
     last_updated          TIMESTAMP,
@@ -109,11 +139,93 @@ CREATE TABLE IF NOT EXISTS metadata (
     snapshot_version_value VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS product_custom_sort (
+CREATE TABLE IF NOT EXISTS public.product (
+    id                             VARCHAR(255) NOT NULL PRIMARY KEY,    
+    created_at                     TIMESTAMP,
+    updated_at                     TIMESTAMP,
+    best_match_version             VARCHAR(255),
+    compatibility_range            VARCHAR(255),
+    contact_us                     BOOLEAN,
+    cost                           VARCHAR(255),
+    deprecated                     BOOLEAN,
+    first_published_date           TIMESTAMP,
+    industry                       VARCHAR(255),
+    installation_count             INTEGER NOT NULL,
+    is_focused                     BOOLEAN,
+    is_maven_dropins               BOOLEAN NOT NULL,
+    language                       VARCHAR(255),
+    listed                         BOOLEAN,
+    logo_id                        VARCHAR(255),
+    logo_url                       VARCHAR(255),
+    market_directory               VARCHAR(255),
+    meta_product_json_url          VARCHAR(255),
+    newest_published_date          TIMESTAMP,
+    newest_release_version         VARCHAR(255),
+    platform_review                VARCHAR(255),
+    product_module_content         BYTEA,
+    released_versions              TEXT         NOT NULL DEFAULT '',
+    repository_name                VARCHAR(255),
+    source_url                     VARCHAR(255),
+    status_badge_url               VARCHAR(255),
+    successor                      VARCHAR(255),
+    synchronized_installation_count BOOLEAN,
+    tags                           TEXT         NOT NULL DEFAULT '',
+    type                           VARCHAR(255),
+    validate                       BOOLEAN,
+    vendor                         VARCHAR(255),
+    vendor_image                   VARCHAR(255),
+    vendor_image_dark_mode         VARCHAR(255),
+    vendor_image_dark_mode_path    VARCHAR(255),
+    vendor_image_path              VARCHAR(255),
+    vendor_url                     VARCHAR(255),
+    version                        VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_artifacts (
+    product_id   VARCHAR(255) NOT NULL REFERENCES product (id),
+    artifacts_id VARCHAR(255) NOT NULL REFERENCES artifact (id),
+    PRIMARY KEY (product_id, artifacts_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_custom_sort (
     rule_for_remainder VARCHAR(255) NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE IF NOT EXISTS product_json_content (
+CREATE TABLE IF NOT EXISTS public.product_dependency (
+    id           VARCHAR(255) NOT NULL PRIMARY KEY,
+    product_id   VARCHAR(255),
+    artifact_id  VARCHAR(255),
+    version      VARCHAR(255),
+    download_url VARCHAR(255),
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS public.product_dependency_dependencies (
+    product_dependency_id VARCHAR(255) NOT NULL REFERENCES product_dependency (id),
+    dependencies_id       VARCHAR(255) NOT NULL REFERENCES product_dependency (id),
+    PRIMARY KEY (product_dependency_id, dependencies_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_description (
+    product_id        VARCHAR(255) NOT NULL REFERENCES product (id),
+    language          VARCHAR(255) NOT NULL,
+    short_description TEXT,
+    PRIMARY KEY (product_id, language)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_designer_installation (
+    id                 VARCHAR(255) NOT NULL PRIMARY KEY,
+    product_id         VARCHAR(255),
+    designer_version   VARCHAR(255),
+    installation_count INTEGER      NOT NULL DEFAULT 0,
+    created_at         TIMESTAMP,
+    updated_at         TIMESTAMP
+);
+
+
+
+CREATE TABLE IF NOT EXISTS public.product_json_content (
     id         VARCHAR(255) NOT NULL PRIMARY KEY,
     version    VARCHAR(255),
     product_id VARCHAR(255),
@@ -123,7 +235,18 @@ CREATE TABLE IF NOT EXISTS product_json_content (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS product_module_content (
+CREATE TABLE IF NOT EXISTS public.product_marketplace_data (
+    id                              VARCHAR(255) NOT NULL PRIMARY KEY,
+    installation_count              INTEGER      NOT NULL DEFAULT 0,
+    synchronized_installation_count BOOLEAN,
+    custom_order                    INTEGER,
+    successor                       VARCHAR(255),
+    deprecation_date                TIMESTAMP,
+    deprecation_requester           VARCHAR(255),
+    alternative_extension           VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_module_content (
     id            VARCHAR(255) NOT NULL PRIMARY KEY,
     product_id    VARCHAR(255),
     version       VARCHAR(255),
@@ -136,72 +259,49 @@ CREATE TABLE IF NOT EXISTS product_module_content (
     updated_at    TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS product_module_content_description (
-    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
-    language                  VARCHAR(255) NOT NULL,
-    description               TEXT,
-    PRIMARY KEY (product_module_content_id, language)
-);
-
-CREATE TABLE IF NOT EXISTS product_module_content_setup (
-    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
-    language                  VARCHAR(255) NOT NULL,
-    setup                     TEXT,
-    PRIMARY KEY (product_module_content_id, language)
-);
-
-CREATE TABLE IF NOT EXISTS product_module_content_demo (
-    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
-    language                  VARCHAR(255) NOT NULL,
-    demo                      TEXT,
-    PRIMARY KEY (product_module_content_id, language)
-);
-
-CREATE TABLE IF NOT EXISTS product_module_content_component (
+CREATE TABLE IF NOT EXISTS public.product_module_content_component (
     product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
     language                  VARCHAR(255) NOT NULL,
     component                 TEXT,
     PRIMARY KEY (product_module_content_id, language)
 );
 
-CREATE TABLE IF NOT EXISTS maven_artifact_version (
-    artifact_id           VARCHAR(255) NOT NULL,
-    product_version       VARCHAR(255) NOT NULL,
-    is_additional_version BOOLEAN      NOT NULL DEFAULT FALSE,
-    name                  VARCHAR(255),
-    download_url          VARCHAR(255),
-    is_invalid_artifact   BOOLEAN      NOT NULL DEFAULT FALSE,
-    group_id              VARCHAR(255),
-    product_id            VARCHAR(255),
-    created_at            TIMESTAMP,
-    updated_at            TIMESTAMP,
-    PRIMARY KEY (artifact_id, product_version, is_additional_version)
+
+CREATE TABLE IF NOT EXISTS public.product_name (
+    product_id VARCHAR(255) NOT NULL REFERENCES product (id),
+    language   VARCHAR(255) NOT NULL,
+    name       TEXT,
+    PRIMARY KEY (product_id, language)
 );
 
-CREATE TABLE IF NOT EXISTS product_marketplace_data (
-    id                              VARCHAR(255) NOT NULL PRIMARY KEY,
-    installation_count              INTEGER      NOT NULL DEFAULT 0,
-    synchronized_installation_count BOOLEAN,
-    custom_order                    INTEGER,
-    successor                       VARCHAR(255),
-    deprecation_date                TIMESTAMP,
-    deprecation_requester           VARCHAR(255)
+
+CREATE TABLE IF NOT EXISTS public.product_module_content_description (
+    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
+    language                  VARCHAR(255) NOT NULL,
+    description               TEXT,
+    PRIMARY KEY (product_module_content_id, language)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_module_content_setup (
+    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
+    language                  VARCHAR(255) NOT NULL,
+    setup                     TEXT,
+    PRIMARY KEY (product_module_content_id, language)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_module_content_demo (
+    product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
+    language                  VARCHAR(255) NOT NULL,
+    demo                      TEXT,
+    PRIMARY KEY (product_module_content_id, language)
 );
 
 -- =============================================
 -- APP MODULE TABLES
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS github_user (
-    id         VARCHAR(255) NOT NULL PRIMARY KEY,
-    git_hub_id VARCHAR(255),
-    provider   VARCHAR(255),
-    username   VARCHAR(255),
-    name       VARCHAR(255),
-    avatar_url VARCHAR(255)
-);
 
-CREATE TABLE IF NOT EXISTS workflow_information (
+CREATE TABLE IF NOT EXISTS public.workflow_information (
     id                    VARCHAR(255) NOT NULL PRIMARY KEY,
     workflow_type         VARCHAR(255),
     last_built            TIMESTAMP,
@@ -212,7 +312,7 @@ CREATE TABLE IF NOT EXISTS workflow_information (
     repository_id         VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS test_step (
+CREATE TABLE IF NOT EXISTS public.test_step (
     id            VARCHAR(255) NOT NULL PRIMARY KEY,
     name          VARCHAR(255),
     status        VARCHAR(255),
@@ -220,15 +320,7 @@ CREATE TABLE IF NOT EXISTS test_step (
     repository_id VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS github_repo (
-    id         VARCHAR(255) NOT NULL PRIMARY KEY,
-    name       VARCHAR(255),
-    product_id VARCHAR(255),
-    html_url   VARCHAR(255),
-    focused    BOOLEAN
-);
-
-CREATE TABLE IF NOT EXISTS sync_task (
+CREATE TABLE IF NOT EXISTS public.sync_task (
     id             VARCHAR(255) NOT NULL PRIMARY KEY,
     type           VARCHAR(255),
     status         VARCHAR(255),
@@ -239,22 +331,24 @@ CREATE TABLE IF NOT EXISTS sync_task (
     updated_at     TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS product_security_info (
+CREATE TABLE IF NOT EXISTS public.product_security_info (
     repo_name                VARCHAR(255) NOT NULL PRIMARY KEY,
-    visibility               VARCHAR(255),
-    branch_protection_enabled BOOLEAN     NOT NULL DEFAULT FALSE,
-    last_commit_date         TIMESTAMP,
-    latest_commit_sha        VARCHAR(255),
-    dependabot_alerts        TEXT,
-    dependabot_status        VARCHAR(255),
-    code_scanning_alerts     TEXT,
-    code_scanning_status     VARCHAR(255),
-    secret_scanning_status   VARCHAR(255),
-    created_at               TIMESTAMP,
-    updated_at               TIMESTAMP
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    branch_protection_enabled boolean NOT NULL DEFAULT FALSE,
+    code_scanning_alerts text,
+    code_scanning_status VARCHAR(255),
+    dependabot_alerts text,
+    dependabot_status VARCHAR(255),
+    is_archived boolean NOT NULL,
+    last_commit_date TIMESTAMP,
+    latest_commitsha VARCHAR(255),
+    number_of_secret_scanning_alerts integer,
+    secret_scanning_status VARCHAR(255),
+    visibility VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS release_letter (
+CREATE TABLE IF NOT EXISTS public.release_letter (
     id         VARCHAR(255) NOT NULL PRIMARY KEY,
     sprint     VARCHAR(255),
     content    TEXT,
@@ -263,73 +357,11 @@ CREATE TABLE IF NOT EXISTS release_letter (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS release_letter_drafts (
+CREATE TABLE IF NOT EXISTS public.release_letter_drafts (
     id                 VARCHAR(255) NOT NULL PRIMARY KEY,
     git_hub_user_id    VARCHAR(255),
     release_letter_id  VARCHAR(255),
     draft_content      TEXT,
     created_at         TIMESTAMP,
     updated_at         TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS product_dependency (
-    id           VARCHAR(255) NOT NULL PRIMARY KEY,
-    product_id   VARCHAR(255),
-    artifact_id  VARCHAR(255),
-    version      VARCHAR(255),
-    download_url VARCHAR(255),
-    created_at   TIMESTAMP,
-    updated_at   TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS product_dependency_dependencies (
-    product_dependency_id VARCHAR(255) NOT NULL REFERENCES product_dependency (id),
-    dependencies_id       VARCHAR(255) NOT NULL REFERENCES product_dependency (id),
-    PRIMARY KEY (product_dependency_id, dependencies_id)
-);
-
-CREATE TABLE IF NOT EXISTS external_document_meta (
-    id                VARCHAR(255) NOT NULL PRIMARY KEY,
-    product_id        VARCHAR(255),
-    artifact_id       VARCHAR(255),
-    artifact_name     VARCHAR(255),
-    version           VARCHAR(255),
-    storage_directory VARCHAR(255),
-    relative_link     VARCHAR(255),
-    language          VARCHAR(255),
-    created_at        TIMESTAMP,
-    updated_at        TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS product_designer_installation (
-    id                 VARCHAR(255) NOT NULL PRIMARY KEY,
-    product_id         VARCHAR(255),
-    designer_version   VARCHAR(255),
-    installation_count INTEGER      NOT NULL DEFAULT 0,
-    created_at         TIMESTAMP,
-    updated_at         TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS github_repo_meta (
-    repo_url   VARCHAR(255) NOT NULL PRIMARY KEY,
-    repo_name  VARCHAR(255),
-    last_change BIGINT,
-    last_sha1  VARCHAR(255),
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS feedback (
-    id              VARCHAR(255) NOT NULL PRIMARY KEY,
-    user_id         VARCHAR(255),
-    product_id      VARCHAR(255),
-    content         TEXT,
-    rating          INTEGER,
-    feedback_status VARCHAR(255),
-    moderator_name  VARCHAR(255),
-    review_date     TIMESTAMP,
-    version         INTEGER,
-    is_latest       BOOLEAN,
-    created_at      TIMESTAMP,
-    updated_at      TIMESTAMP
 );

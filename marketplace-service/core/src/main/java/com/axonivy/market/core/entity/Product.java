@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.Transient;
+import jakarta.persistence.Transient;
 
 import java.io.Serial;
 import java.util.Date;
@@ -32,8 +32,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private static final long serialVersionUID = 1;
 
   @Id
-  private String id;
-  private String marketDirectory;
+  private String id;  
 
   @JsonProperty
   @ElementCollection
@@ -58,19 +57,16 @@ public class Product extends AbstractAuditableEntity<String> {
   private List<String> releasedVersions;
 
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<Artifact> artifacts;
-
+  private List<Artifact> artifacts;  
+  
+  private String marketDirectory;
   private String logoUrl;
   private Boolean listed;
   private Boolean deprecated;
   private String type;
   private String vendor;
   private String vendorUrl;
-  private String version;
-  @Transient
-  private String vendorImagePath;
-  @Transient
-  private String vendorImageDarkModePath;
+  private String version;  
   private String vendorImage;
   private String vendorImageDarkMode;
   private String platformReview;
@@ -82,17 +78,22 @@ public class Product extends AbstractAuditableEntity<String> {
   private String industry;
   private Boolean validate;
   private Boolean contactUs;
-  @Transient
-  private int installationCount;
   private Date newestPublishedDate;
   private Date firstPublishedDate;
   private String newestReleaseVersion;
+  private Boolean synchronizedInstallationCount;
+  private String logoId;
+  
+  @Transient
+  private String vendorImagePath;
+  @Transient
+  private String vendorImageDarkModePath;
+  @Transient
+  private int installationCount;
   @Transient
   private ProductModuleContent productModuleContent;
-  private Boolean synchronizedInstallationCount;
   @Transient
-  private String metaProductJsonUrl;
-  private String logoId;
+  private String metaProductJsonUrl;  
   @Transient
   private String bestMatchVersion;
   @Transient
