@@ -57,3 +57,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+i.ti.ti-info-circle {
+  font-size: 1.4rem;
+  vertical-align: text-bottom;
+
+  &::before {
+    color: var(--ivy-primary-bg);
+  }
+}

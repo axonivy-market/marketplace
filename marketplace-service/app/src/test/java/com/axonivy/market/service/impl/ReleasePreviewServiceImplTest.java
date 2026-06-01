@@ -18,11 +18,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.constants.PreviewConstants.IMAGE_DOWNLOAD_URL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -33,12 +33,12 @@ class ReleasePreviewServiceImplTest {
 
   private Path tempDirectory;
 
-  private static final String BASE_URL = "http://example.com";
-
   private static final String README_CONTENT = "# Sample README Content\n![image](image1.png)";
 
-  private static final String UPDATED_README_CONTENT = "# Sample README Content\n![image](http://example" +
-      ".com/api/image/preview/image1.png)";
+  private static final String INLINE_IMAGE_URL = "data:image/png;base64," +
+      Base64.getEncoder().encodeToString("mocked image content".getBytes());
+
+  private static final String UPDATED_README_CONTENT = "# Sample README Content\n![image](" + INLINE_IMAGE_URL + ")";
 
   @BeforeEach
   void setUp() throws IOException {
@@ -58,15 +58,15 @@ class ReleasePreviewServiceImplTest {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
 
     doReturn(UPDATED_README_CONTENT).when(releasePreviewService)
-        .updateImagesWithDownloadUrl(tempDirectory.toString(), README_CONTENT, BASE_URL);
-    releasePreviewService.processReadme(tempReadmeFile, moduleContents, BASE_URL, tempDirectory.toString());
+        .updateImagesWithInlineImages(tempDirectory.toString(), README_CONTENT);
+    releasePreviewService.processReadme(tempReadmeFile, moduleContents, tempDirectory.toString());
 
     assertEquals(4, moduleContents.size(),"Module contents size should be 4");
     Files.deleteIfExists(tempReadmeFile);
   }
 
   @Test
-  void testUpdateImagesWithDownloadUrlSuccess() throws IOException {
+  void testUpdateImagesWithInlineImagesSuccess() throws IOException {
     Path tempReadmeFile = Files.createTempFile("README", ".md");
     Files.writeString(tempReadmeFile, README_CONTENT);
     String parentPath = tempReadmeFile.getParent().toString();
@@ -77,26 +77,25 @@ class ReleasePreviewServiceImplTest {
           .thenReturn(Stream.of(imagePath1));
       mockedFiles.when(() -> Files.isRegularFile(any()))
           .thenReturn(true);
-      String result = releasePreviewService.updateImagesWithDownloadUrl(parentPath,
-          README_CONTENT
-          , BASE_URL);
+      mockedFiles.when(() -> Files.probeContentType(imagePath1)).thenReturn("image/png");
+      mockedFiles.when(() -> Files.readAllBytes(imagePath1)).thenReturn("mocked image content".getBytes());
+      String result = releasePreviewService.updateImagesWithInlineImages(parentPath, README_CONTENT);
 
       assertNotNull(result,
           "Images with download URL should not be null");
-      assertTrue(result.contains(String.format(IMAGE_DOWNLOAD_URL, BASE_URL, "image1.png")),
-          "Image download URL should follow correct syntax");
+      assertTrue(result.contains(INLINE_IMAGE_URL),
+          "Preview image references should be replaced with inline data URLs");
     }
     Files.deleteIfExists(tempReadmeFile);
   }
 
   @Test
-  void testUpdateImagesWithDownloadUrlIOException() {
+  void testUpdateImagesWithInlineImagesIOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenThrow(new IOException("Simulated IOException"));
       assertThrows(IOException.class, () ->
-              releasePreviewService.updateImagesWithDownloadUrl(tempDirectory.toString(),
-                  README_CONTENT, BASE_URL),
+              releasePreviewService.updateImagesWithInlineImages(tempDirectory.toString(), README_CONTENT),
           "Should not throw error if getting image directory failed");
     }
   }
@@ -114,10 +113,9 @@ class ReleasePreviewServiceImplTest {
           .thenReturn(true);
       mockedFiles.when(() -> Files.readString(any()))
           .thenReturn(README_CONTENT);
-      doReturn(UPDATED_README_CONTENT).when(releasePreviewService)
-          .updateImagesWithDownloadUrl(any(), anyString(), anyString());
+      doReturn(UPDATED_README_CONTENT).when(releasePreviewService).updateImagesWithInlineImages(any(), anyString());
 
-      ReleasePreview result = releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extractReadme(tempDirectory.toString());
       assertNotNull(result, "Release preview should not be null");
     }
     Files.deleteIfExists(readmeFile);
@@ -129,7 +127,7 @@ class ReleasePreviewServiceImplTest {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenReturn(Stream.empty());
 
-      ReleasePreview result = releasePreviewService.extractReadme(BASE_URL, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extractReadme(tempDirectory.toString());
       assertNull(result, "Release preview should be null");
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -143,8 +141,7 @@ class ReleasePreviewServiceImplTest {
           .thenThrow(new FileProcessingException(ErrorCode.FILE_PROCESSING_ERROR));
 
       String tempDirPath = tempDirectory.toString();
-      assertThrows(FileProcessingException.class,
-          () -> releasePreviewService.extractReadme(BASE_URL, tempDirPath),
+      assertThrows(FileProcessingException.class, () -> releasePreviewService.extractReadme(tempDirPath),
           "Should throw IOException if walking readme directory fails"
       );
     }
@@ -154,13 +151,15 @@ class ReleasePreviewServiceImplTest {
   void testExtractSuccess() throws IOException {
     MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "mockFileName",
         "application/zip", "test".getBytes());
-    when(releasePreviewService.extractReadme(anyString(), anyString())).thenReturn(new ReleasePreview());
+    when(releasePreviewService.extractReadme(anyString())).thenReturn(new ReleasePreview());
     try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class);
          MockedStatic<ZipSafetyScanner> zipScanner = Mockito.mockStatic(ZipSafetyScanner.class)) {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenAnswer(invocation -> null);
+      fileUtils.when(() -> FileUtils.clearDirectory(any())).thenAnswer(invocation -> null);
 
-      ReleasePreview result = releasePreviewService.extract(mockMultipartFile, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extract(mockMultipartFile);
       assertNotNull(result, "Release preview should NOT be null");
+      fileUtils.verify(() -> FileUtils.clearDirectory(any()), times(1));
     }
   }
 
@@ -171,9 +170,8 @@ class ReleasePreviewServiceImplTest {
     try (MockedStatic<FileUtils> fileUtils = Mockito.mockStatic(FileUtils.class)) {
       fileUtils.when(() -> FileUtils.unzip(any(), anyString())).thenThrow(new IOException());
     }
-    String tempDirPath = tempDirectory.toString();
     assertThrows(FileProcessingException.class,
-        () -> releasePreviewService.extract(mockMultipartFile, tempDirPath),
+        () -> releasePreviewService.extract(mockMultipartFile),
         "Should throw error if unzipping file failed");
   }
 
