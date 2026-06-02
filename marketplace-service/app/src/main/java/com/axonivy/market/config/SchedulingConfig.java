@@ -1,14 +1,30 @@
 package com.axonivy.market.config;
 
+import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.schedulingtask.ScheduledTasks;
+import com.axonivy.market.service.AppSettingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TriggerContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.scheduling.support.CronTrigger;
+
+import java.time.Instant;
 
 @Configuration
-public class SchedulingConfig {
+@EnableScheduling
+@RequiredArgsConstructor
+public class SchedulingConfig implements SchedulingConfigurer {
 
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
   private static final int POOL_SIZE = 10;
+
+  private final AppSettingService appSettingService;
+  private final ScheduledTasks scheduledTasks;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
@@ -17,5 +33,48 @@ public class SchedulingConfig {
     taskScheduler.setThreadNamePrefix(THREAD_NAME_PREFIX);
     taskScheduler.initialize();
     return taskScheduler;
+  }
+
+  @Override
+  public void configureTasks(ScheduledTaskRegistrar registrar) {
+
+    registrar.setTaskScheduler(taskScheduler());
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncDataForProductFromGitHubRepo,
+        context -> nextExecution(AppSettingKey.PRODUCTS_CRON, context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncDataForProductDocuments,
+        context -> nextExecution(AppSettingKey.DOCUMENTS_CRON, context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncDataForProductMavenDependencies,
+        context -> nextExecution(AppSettingKey.PRODUCTS_DEPENDENCY_CRON, context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncDataForProductReleases,
+        context -> nextExecution(AppSettingKey.PRODUCT_RELEASE_NOTES_CRON, context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncDataForGithubRepos,
+        context -> nextExecution(AppSettingKey.GITHUB_REPOS_CRON, context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::sendNotificationForSecurityMonitor,
+        context -> nextExecution(
+            AppSettingKey.SEND_NOTIFICATION_SECURITY_MONITOR_CRON,
+            context));
+
+    registrar.addTriggerTask(
+        scheduledTasks::syncSecurityMonitor,
+        context -> nextExecution(
+            AppSettingKey.SECURITY_MONITOR_CRON,
+            context));
+  }
+
+  private Instant nextExecution(AppSettingKey key, TriggerContext context) {
+    return new CronTrigger(appSettingService.getValueByKey(key))
+        .nextExecution(context);
   }
 }

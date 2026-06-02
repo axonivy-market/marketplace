@@ -1,0 +1,157 @@
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{
+      translateService.get(
+        'common.admin.app-settings.title'
+      ) | async
+    }}
+  </h1>
+
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{
+          translateService.get(
+            'common.admin.app-settings.description'
+          ) | async
+        }}
+      </h3>
+    </div>
+
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        class="text-secondary"
+        [lang]="languageService.selectedLanguage()">
+        {{
+          translateService.get(
+            'common.admin.app-settings.helpText'
+          ) | async
+        }}
+      </h4>
+    </div>
+  </div>
+</div>
+
+<div class="feature-bar">
+  <div class="input-group m-0">
+    <div
+      class="input-group-text text-primary bg-secondary border-0">
+      <i class="ti ti-search search-icon"></i>
+    </div>
+    <input
+      type="text"
+      autocomplete="on"
+      class="form-control input__search bg-secondary border-0 rounded-start-0 ps-0 search-input"
+      [placeholder]="'common.search.placeholder' | translate"
+      [(ngModel)]="searchText"
+      (ngModelChange)="onSearchChanged($event)" />
+    @if (searchText) {
+      <div
+        class="input-group-text text-primary bg-secondary border-0 clear-search-btn"
+        (click)="onClearSearch()">
+        <i class="ti ti-x clear-icon"></i>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="settings-wrapper position-relative">
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded"
+    [key]="LoadingComponentId.APP_SETTINGS">
+  </app-loading-spinner>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.app-settings.category' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.app-settings.key' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.app-settings.value' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.app-settings.settingDescription' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary text-end">
+          <h5 class="table-header">
+            {{ 'common.admin.app-settings.action' | translate }}
+          </h5>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (filteredSettings.length > 0) {
+        @for (setting of filteredSettings; track setting.settingKey) {
+          <tr>
+            <td class="align-middle">
+              <span class="badge bg-secondary">
+                {{ setting.category }}
+              </span>
+            </td>
+            <td class="align-middle">
+              <code>
+                {{ setting.settingKey }}
+              </code>
+            </td>
+            <td>
+              @if (setting.encrypted) {
+                <input
+                  type="password"
+                  class="form-control"
+                  [(ngModel)]="setting.settingValue" />
+              } @else {
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="setting.settingValue" />
+              }
+            </td>
+            <td class="align-middle">
+              {{ setting.description }}
+            </td>
+            <td class="align-middle text-end">
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="save(setting)">
+                <i class="ti ti-device-floppy me-1"></i>
+                {{
+                  'common.admin.app-settings.save.label'
+                  | translate
+                }}
+              </button>
+            </td>
+          </tr>
+        }
+      } @else {
+        <tr>
+          <td colspan="5" class="border-0">
+            <p
+              class="text-primary m-0 text-center"
+              [lang]="languageService.selectedLanguage()">
+              {{
+                'common.admin.app-settings.noSettings'
+                | translate
+              }}
+            </p>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+</div>

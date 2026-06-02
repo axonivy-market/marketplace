@@ -520,6 +520,23 @@
         "successorTooltip": "The full URL to the successor extension on the marketplace (must start with http:// or https://).",
         "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice."
       },
+      "app-settings": {
+        "title": "Application Settings",
+        "description": "Manage runtime configuration for the Marketplace application.",
+        "helpText": "Administrators can update scheduling, integrations, notifications, security, and other application settings without modifying deployment configuration or restarting services. Changes are stored centrally and can be applied across all Marketplace nodes.",
+        "category": "Category",
+        "key": "Setting Key",
+        "value": "Value",
+        "action": "Actions",
+        "settingDescription": "Description",
+        "noSettings": "No settings found.",
+        "saveSuccess": "Setting updated successfully.",
+        "saveError": "Failed to update setting.",
+        "save": {
+          "label": "Save",
+          "saving": "Saving..."
+         }
+      },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
         "editPageTitle": "Edit release letter",

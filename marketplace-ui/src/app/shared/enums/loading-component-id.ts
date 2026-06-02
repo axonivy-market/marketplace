@@ -11,5 +11,6 @@ export enum LoadingComponentId {
   NEWS_PAGE = 'news-page',
   TOKEN_REQUEST = 'token-request',
   RELEASE_LETTER_EDIT = 'release-letter-edit',
-  NEWS_MANAGEMENT = 'news-management'
+  NEWS_MANAGEMENT = 'news-management',
+  APP_SETTINGS = 'app-settings'
 }
