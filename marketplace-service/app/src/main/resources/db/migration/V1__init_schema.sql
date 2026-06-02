@@ -8,17 +8,17 @@
 -- CORE MODULE TABLES
 -- =============================================
 
-CREATE TABLE public.flyway_schema_history (
-    installed_rank integer NOT NULL,
-    version VARCHAR(50),
-    description VARCHAR(200) NOT NULL,
-    type VARCHAR(20) NOT NULL,
-    script VARCHAR(1000) NOT NULL,
-    checksum integer,
-    installed_by VARCHAR(100) NOT NULL,
-    installed_on timestamp without time zone DEFAULT now() NOT NULL,
-    execution_time integer NOT NULL,
-    success boolean NOT NULL
+CREATE TABLE IF NOT EXISTS public.external_document_meta (
+    id                VARCHAR(255) NOT NULL PRIMARY KEY,
+    created_at        TIMESTAMP,
+    updated_at        TIMESTAMP,
+    artifact_id       VARCHAR(255),
+    artifact_name     VARCHAR(255),
+    language          VARCHAR(255),
+    product_id        VARCHAR(255),
+    relative_link     VARCHAR(255),
+    storage_directory VARCHAR(255),
+    version           VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS public.archived_artifact (
@@ -45,19 +45,6 @@ CREATE TABLE IF NOT EXISTS public.artifact_archived_artifacts (
     artifact_id           VARCHAR(255) NOT NULL REFERENCES public.artifact (id),
     archived_artifacts_id VARCHAR(255) NOT NULL REFERENCES public.archived_artifact (id),
     PRIMARY KEY (artifact_id, archived_artifacts_id)
-);
-
-CREATE TABLE IF NOT EXISTS public.external_document_meta (
-    id                VARCHAR(255) NOT NULL PRIMARY KEY,
-    created_at        TIMESTAMP,
-    updated_at        TIMESTAMP,
-    artifact_id       VARCHAR(255),
-    artifact_name     VARCHAR(255),
-    language          VARCHAR(255),
-    product_id        VARCHAR(255),
-    relative_link     VARCHAR(255),
-    storage_directory VARCHAR(255),
-    version           VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS public.feedback (
@@ -178,7 +165,8 @@ CREATE TABLE IF NOT EXISTS public.product (
     vendor_image_dark_mode_path    VARCHAR(255),
     vendor_image_path              VARCHAR(255),
     vendor_url                     VARCHAR(255),
-    version                        VARCHAR(255)
+    version                        VARCHAR(255),
+    alternative_extension          VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS public.product_artifacts (
@@ -190,6 +178,7 @@ CREATE TABLE IF NOT EXISTS public.product_artifacts (
 CREATE TABLE IF NOT EXISTS public.product_custom_sort (
     rule_for_remainder VARCHAR(255) NOT NULL PRIMARY KEY
 );
+INSERT INTO public.product_custom_sort(rule_for_remainder) VALUES('alphabetically');
 
 CREATE TABLE IF NOT EXISTS public.product_dependency (
     id           VARCHAR(255) NOT NULL PRIMARY KEY,
