@@ -135,12 +135,30 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
     for (Artifact artifact : docArtifacts) {
-      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(forceSyncedVersion) ?
-          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(forceSyncedVersion);
+      List<String> needToBeSyncedDocVersions = getVersionsNeedToBeSynced(productId, isResetSync,
+          releasedVersions, artifact, forceSyncedVersion, latestSupportedDocVersions);
+      
       needToBeSyncedDocVersions.forEach(version ->
           handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
       );
     }
+  }
+
+  private List<String> getVersionsNeedToBeSynced(String productId, boolean isResetSync,
+      List<String> releasedVersions, Artifact artifact, String forceSyncedVersion,
+      Map<String, String> latestSupportedDocVersions) {
+    if (StringUtils.isNotBlank(forceSyncedVersion)) {
+      return List.of(forceSyncedVersion);
+    }
+
+    List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
+    List<String> versionsNeedToBeSynced = new ArrayList<>(missingVersions);
+    for (String latestVersion : latestSupportedDocVersions.values()) {
+      if (StringUtils.isNotBlank(latestVersion) && !versionsNeedToBeSynced.contains(latestVersion)) {
+        versionsNeedToBeSynced.add(latestVersion);
+      }
+    }
+    return versionsNeedToBeSynced;
   }
 
   private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,

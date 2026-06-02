@@ -651,9 +651,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
         updateFirstPublishedDate(product);
+        productRepo.save(product);
+        
         updateProductFromReleasedVersions(product);
         productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
-        productRepo.save(product);
         log.info("Sync product {} is finished!", productId);
         return true;
       }
