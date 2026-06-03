@@ -110,12 +110,6 @@ merge_env_files "${CURRENT_ENV_FILE}" "${REMOTE_TEMPLATE_DIR}/template.env" "${R
 echo "Preparing docker-compose.yml for ${NEW_RELEASE_NAME}..."
 NEW_COMPOSE="${NEW_RELEASE_PATH}/publish/docker-compose.yml"
 
-if [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/publish/docker-compose.yml" ]]; then
-    CURRENT_COMPOSE_FILE="${CURRENT_LINK}/publish/docker-compose.yml"
-elif [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/docker-compose.yml" ]]; then
-    CURRENT_COMPOSE_FILE="${CURRENT_LINK}/docker-compose.yml"
-fi
-
 cp "${REMOTE_TEMPLATE_DIR}/template.compose.yml" "${NEW_COMPOSE}"
 
 cp "${REMOTE_TEMPLATE_DIR}/template.Dockerfile" "${NEW_RELEASE_PATH}/publish/Dockerfile"
