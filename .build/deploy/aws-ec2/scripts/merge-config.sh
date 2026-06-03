@@ -97,7 +97,6 @@ merge_env_files() {
 
 echo "Merging .env for ${NEW_RELEASE_NAME}..."
 CURRENT_ENV_FILE=""
-CURRENT_COMPOSE_FILE=""
 if [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/publish/.env" ]]; then
     CURRENT_ENV_FILE="${CURRENT_LINK}/publish/.env"
 elif [[ -L "${CURRENT_LINK}" && -f "${CURRENT_LINK}/.env" ]]; then
