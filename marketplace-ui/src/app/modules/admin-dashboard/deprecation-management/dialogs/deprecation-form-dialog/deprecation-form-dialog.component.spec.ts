@@ -19,6 +19,8 @@ describe('DeprecateFormDialogComponent', () => {
     component = fixture.componentInstance;
     component.visible = true;
     component.deprecationRequest = {
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -47,6 +49,18 @@ describe('DeprecateFormDialogComponent', () => {
 
     items[0].triggerEventHandler('mousedown', null);
     expect(component.selectProduct.emit).toHaveBeenCalledWith('cms-live-editor');
+  });
+
+  it('should conditionally render replacement fields based on checkbox state', () => {
+    expect(fixture.debugElement.query(By.css('#has-alternative-extension-checkbox'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="alternativeExtensionInputPlaceholder"]'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).toBeNull();
+
+    component.deprecationRequest.hasAlternativeExtension = true;
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('input[placeholder*="alternativeExtensionInputPlaceholder"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('input[placeholder*="successorInputPlaceholder"]'))).not.toBeNull();
   });
 
   it('should show validation error for productId when present', () => {
@@ -84,7 +98,7 @@ describe('DeprecateFormDialogComponent', () => {
     vi.spyOn(component.readmeChecked, 'emit');
     vi.spyOn(component.submitForm, 'emit');
 
-    const readmeCheckbox = fixture.debugElement.query(By.css('#addReadmeCheckbox'));
+    const readmeCheckbox = fixture.debugElement.query(By.css('#add-readme-checkbox'));
     readmeCheckbox.triggerEventHandler('click', null);
 
     const submitButton = fixture.debugElement.query(By.css('.btn-primary'));

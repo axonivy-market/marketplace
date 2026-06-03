@@ -1,8 +1,10 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
+import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
@@ -10,16 +12,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +28,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @AllArgsConstructor
 @RestController
@@ -47,20 +48,18 @@ public class ReleaseLetterController {
   @GetMapping
   @Operation(summary = "Retrieve a paginated list of all release letter")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLetters(
-      @ParameterObject Pageable pageable,
-      @RequestParam(required = false, name = "isReadOnly", defaultValue = "true") boolean isReadOnly) {
-    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
+      @ParameterObject Pageable pageable) {
+    return buildReleaseLetterResponse(pageable, true, null);
+  }
 
-    if (releaseLetters.isEmpty()) {
-      return generateEmptyPagedModel();
-    }
+  @Authorized
+  @GetMapping("/management")
+  @Operation(summary = "Retrieve a list of all release letter for management")
+  public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLettersForManagement(
+      @ParameterObject Pageable pageable, HttpServletRequest request) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
 
-    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
-    pageModel.forEach(model ->
-        model.add(linkTo(methodOn(this.getClass()).findReleaseLetterById(model.getId())).withSelfRel())
-    );
-
-    return ResponseEntity.ok(pageModel);
+    return buildReleaseLetterResponse(pageable, false, gitHubUserId);
   }
 
   @GetMapping(BY_ID)
@@ -92,9 +91,9 @@ public class ReleaseLetterController {
   @Authorized
   @PostMapping()
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterModel> createReleaseLetter(
+  public ResponseEntity<Void> createReleaseLetter(
       @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest) {
-    var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest);
+    var newReleaseLetter = releaseLetterService.createReleaseLetter(releaseLetterModelRequest, false);
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
         .buildAndExpand(newReleaseLetter.getId())
@@ -108,13 +107,40 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
       @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id,
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request
   ) {
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest);
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest, gitHubUserId);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
         linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
     return ResponseEntity.ok(releaseLetterResource);
+  }
+
+  @Authorized
+  @PutMapping(SAVE_AS_DRAFT)
+  @Operation(hidden = true)
+  public ResponseEntity<ReleaseLetterDraftModel> saveAsDraft(
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request) {
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var releaseLetterDraftModel = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
+    return ResponseEntity.ok(releaseLetterDraftModel);
+  }
+
+  @Authorized
+  @GetMapping(DRAFT_BY_ID)
+  @Operation(hidden = true)
+  public ResponseEntity<ReleaseLetterDraftModel> getDraft(@PathVariable String id, HttpServletRequest request) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var releaseLetterDraft = releaseLetterService
+        .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
+
+    if (releaseLetterDraft == null) {
+      return ResponseEntity.ok(null);
+    }
+
+    var model = ReleaseLetterDraftModel.from(releaseLetterDraft);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @Authorized
@@ -131,6 +157,32 @@ public class ReleaseLetterController {
       return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler);
     }
     return pagedResourcesAssembler.toModel(page, releaseLetterModelAssembler::toModelWithoutContent);
+  }
+
+  private ResponseEntity<PagedModel<ReleaseLetterModel>> buildReleaseLetterResponse(
+      Pageable pageable,
+      boolean isReadOnly,
+      String gitHubUserId) {
+    Page<ReleaseLetter> releaseLetters = releaseLetterService.findAllReleaseLetters(pageable, isReadOnly);
+
+    if (releaseLetters.isEmpty()) {
+      return generateEmptyPagedModel();
+    }
+
+    PagedModel<ReleaseLetterModel> pageModel = buildPagedModel(releaseLetters, isReadOnly);
+
+    if (!isReadOnly) {
+      pageModel.forEach((ReleaseLetterModel model) -> {
+        var releaseLetterDraft = releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId,
+            model.getId());
+        model.setHasDraft(releaseLetterDraft != null);
+      });
+    }
+
+    pageModel.forEach(
+        model -> model.add(linkTo(methodOn(this.getClass()).findReleaseLetterById(model.getId())).withSelfRel()));
+
+    return ResponseEntity.ok(pageModel);
   }
 
   @SuppressWarnings("unchecked")

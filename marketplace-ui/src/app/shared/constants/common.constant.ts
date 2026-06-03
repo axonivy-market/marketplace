@@ -188,6 +188,11 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
     label: 'common.product.detail.installationGuide'
   },
   {
+    activeClass: "activeTab === 'component'",
+    value: 'component',
+    label: 'common.product.detail.components'
+  },
+  {
     activeClass: "activeTab === 'dependency'",
     value: 'dependency',
     label: 'common.product.detail.maven.label'
@@ -197,21 +202,6 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
     tabId: 'tab-changelog',
     value: 'changelog',
     label: 'common.product.detail.changelog'
-  }
-];
-
-export const FEEDBACK_APPROVAL_TABS: ItemDropdown[] = [
-  {
-    activeClass: "activeTab === 'review'",
-    tabId: 'review-tab',
-    value: 'review',
-    label: 'Review feedback'
-  },
-  {
-    activeClass: "activeTab === 'history'",
-    tabId: 'history-tab',
-    value: 'history',
-    label: 'History'
   }
 ];
 
@@ -432,3 +422,10 @@ export const FAVICON_REL = 'icon';
 export const FAVICON_LINK_REL_QUERY = 'link[rel="icon"]';
 export const FAVICON_DEFAULT_TYPE = 'image/x-icon';
 export const FAVICON_PNG_TYPE = 'image/png';
+
+export const INSTALL_TOOLTIP = {
+  defaultMessage:
+    "<p class='text-primary'>Please open the <a href='https://market.axonivy.com' class='ivy__link'>Axon Ivy Market</a> inside your <a class='ivy__link' href='https://developer.axonivy.com/download'>Axon Ivy Designer</a> (minimum version 9.2.0)</p>",
+  deprecatedWarning:
+    "<p class='text-primary'>Installing deprecated extensions is not recommended. Use at your own discretion.</p>"
+};

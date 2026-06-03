@@ -9,6 +9,8 @@ services:
     restart: always
     volumes:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
+      - ${NGINX_CACHE_PATH}:/usr/share/nginx/html/cache
+      - ${NGINX_LOG_PATH}:/var/log/nginx
       - marketcache:/usr/share/nginx/html/market-cache
       - marketbrowser:/usr/share/nginx/html/browser
     ports:
@@ -39,9 +41,9 @@ services:
   app:
     restart: always
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
+      - ${MARKET_INSTALLATIONS_PATH}:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
-      - ../logs:/app/logs
+      - ${APP_LOG_PATH}:/app/logs
     env_file:
       - ../.env
     build:
@@ -57,7 +59,7 @@ services:
   stable:
     restart: always
     volumes:
-      - ../logs/stable:/app/logs
+      - ${STABLE_LOG_PATH}:/app/logs
     env_file:
       - ../.env
     build:
@@ -66,7 +68,7 @@ services:
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
-      - "8080"
+      - 8080
     networks:
       - marketplace-network
 

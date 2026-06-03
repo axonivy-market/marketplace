@@ -79,13 +79,6 @@ import { Page } from '../../../shared/models/apis/page.model';
 import { RouteUtils } from '../../../shared/utils/route.utils';
 import { Language } from '../../../shared/enums/language.enum';
 
-export interface DetailTab {
-  activeClass: string;
-  tabId: string;
-  value: string;
-  label: string;
-}
-
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -321,6 +314,10 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
+  getDeprecationSuccessorName(): string {
+    return this.productDetail().successor?.trim() ?? '';
+  }
+
   hasMoreChangelogs() {
     if (!this.changeLogLinks || !this.changeLogPages) {
       return false;
@@ -437,40 +434,26 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  scrollToTop(): void {
-    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
     if (!content || Object.keys(content).length === 0) {
       return false;
     }
+    const currentLanguage = this.languageService.selectedLanguage();
+    const hasComponentContent = content.component !== null &&
+      CommonUtils.isContentDisplayedBasedOnLanguage(content.component,currentLanguage);
 
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.description,
-          this.languageService.selectedLanguage()
-        ),
-      demo:
-        content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.demo,
-          this.languageService.selectedLanguage()
-        ),
-      setup:
-        content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.setup,
-          this.languageService.selectedLanguage()
-        ),
-      dependency: content.isDependency,
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.description, currentLanguage),
+      demo: content.demo !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.demo, currentLanguage),
+      setup: content.setup !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.setup, currentLanguage),
+      component: hasComponentContent,
+      dependency: !hasComponentContent && content.isDependency,
       changelog: this.productReleaseSafeHtmls().length !== 0
     };
-
     return conditions[value] ?? false;
   }
 

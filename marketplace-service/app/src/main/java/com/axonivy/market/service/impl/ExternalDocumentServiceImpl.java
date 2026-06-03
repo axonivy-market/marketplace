@@ -135,12 +135,30 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     log.warn("Latest supported doc versions for {}: {}", productId, latestSupportedDocVersions);
 
     for (Artifact artifact : docArtifacts) {
-      List<String> needToBeSyncedDocVersions = StringUtils.isBlank(forceSyncedVersion) ?
-          getMissingVersions(productId, isResetSync, releasedVersions, artifact) : List.of(forceSyncedVersion);
+      List<String> needToBeSyncedDocVersions = getVersionsNeedToBeSynced(productId, isResetSync,
+          releasedVersions, artifact, forceSyncedVersion, latestSupportedDocVersions);
+      
       needToBeSyncedDocVersions.forEach(version ->
           handleDocumentMeta(productId, artifact, version, isResetSync, latestSupportedDocVersions)
       );
     }
+  }
+
+  private List<String> getVersionsNeedToBeSynced(String productId, boolean isResetSync,
+      List<String> releasedVersions, Artifact artifact, String forceSyncedVersion,
+      Map<String, String> latestSupportedDocVersions) {
+    if (StringUtils.isNotBlank(forceSyncedVersion)) {
+      return List.of(forceSyncedVersion);
+    }
+
+    List<String> missingVersions = getMissingVersions(productId, isResetSync, releasedVersions, artifact);
+    List<String> versionsNeedToBeSynced = new ArrayList<>(missingVersions);
+    for (String latestVersion : latestSupportedDocVersions.values()) {
+      if (StringUtils.isNotBlank(latestVersion) && !versionsNeedToBeSynced.contains(latestVersion)) {
+        versionsNeedToBeSynced.add(latestVersion);
+      }
+    }
+    return versionsNeedToBeSynced;
   }
 
   private void deleteExternalDocumentMetaRepo(String productId, List<String> versions,
@@ -193,14 +211,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(v2.getKey())) {
             return -1;
           }
-          return MavenVersionComparator.compare(v1.getKey(), v2.getKey());
+          return MavenVersionComparator.getInstance().compare(v2.getKey(), v1.getKey());
         })
         .map((Map.Entry<String, List<ExternalDocumentMeta>> entry) -> {
           String ver = entry.getKey();
           ExternalDocumentMeta chosenMeta = entry.getValue().stream()
               .filter(meta -> meta.getLanguage() != null && meta.getLanguage().equals(selectedLanguage))
               .findFirst()
-              .orElse(entry.getValue().get(0));
+              .orElse(entry.getValue().getFirst());
           return DocumentInfoResponse.DocumentVersion.builder().version(ver)
               .url(host + chosenMeta.getRelativeLink()).build();
         }).toList();
@@ -283,7 +301,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Switch to nexus repo for artifact
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+    var workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
+    if (!isResetSync && doesDocExistInShareFolder(workingDirectory)) {
+      return workingDirectory;
+    }
+    return downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync, workingDirectory);
   }
 
   private void createSymlinkForMajorVersions(Path versionFolder, List<String> majorVersions) {
@@ -317,13 +339,17 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return createSymlinkSafely(artifactRoot, fileName, majorVersion);
   }
 
-  private String createSymlinkSafely(Path artifactRoot, Path fileName, String majorVersion) {
+  private String createSymlinkSafely(Path artifactRoot, Path targetPath, String majorVersion) {
     var symlinkPath = artifactRoot.resolve(majorVersion);
-
     try {
-      prepareDirectoryForSymlinkPath(symlinkPath);
-      var targetPath = Path.of(fileName.toString());
-      Files.createSymbolicLink(symlinkPath, targetPath);
+      if (Files.isSymbolicLink(symlinkPath)) {
+        var currentTargetPath = Files.readSymbolicLink(symlinkPath);
+        if (StringUtils.equals(targetPath.toString(), currentTargetPath.toString())) {
+          return symlinkPath.toString();
+        }
+        Files.delete(symlinkPath);
+      }
+      Files.createSymbolicLink(symlinkPath, Path.of(targetPath.toString()));
       return symlinkPath.toString();
     } catch (IOException e) {
       log.error("Cannot create symlink for major version {}: {}", majorVersion, e.getMessage());
@@ -450,8 +476,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .toList();
   }
 
-  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
-    String workingDirectory = fileDownloadService.generateCacheStorageDirectory(downloadDocUrl);
+  private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync,
+		  String workingDirectory) {
     var downloadOption = DownloadOption.builder()
         .workingDirectory(workingDirectory)
         .isForced(isResetSync)
