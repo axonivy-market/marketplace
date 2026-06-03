@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.MatomoTrackerBuilder;
 import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,10 +25,10 @@ public class MatomoServiceImpl implements MatomoService {
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
 
-  private final MatomoTracker matomoTracker;
+  private final MatomoTrackerBuilder matomoTrackerBuilder;
 
-  public MatomoServiceImpl(MatomoTracker matomoTracker) {
-    this.matomoTracker = matomoTracker;
+  public MatomoServiceImpl(MatomoTrackerBuilder matomoTrackerBuilder) {
+    this.matomoTrackerBuilder = matomoTrackerBuilder;
   }
 
   @Override
@@ -51,7 +52,7 @@ public class MatomoServiceImpl implements MatomoService {
         .headers(headers)
         .build();
 
-    matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
+    matomoTrackerBuilder.create().sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });

@@ -15,7 +15,8 @@ import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,12 +37,11 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
+  private final AppSettingService appSettingService;
 
-  @Value("${market.github.market.branch}")
-  private String marketRepoBranch;
-
-  public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService) {
+  public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService, AppSettingService appSettingService) {
     this.gitHubService = gitHubService;
+    this.appSettingService = appSettingService;
   }
 
   @Override
@@ -49,7 +49,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
       List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
-          GitHubConstants.AXONIVY_MARKETPLACE_PATH, marketRepoBranch);
+          GitHubConstants.AXONIVY_MARKETPLACE_PATH, getMarketRepoBranch());
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
@@ -90,7 +90,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   }
 
   private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
-    return getRepository().queryCommits().since(lastCommitTime).from(marketRepoBranch);
+    return getRepository().queryCommits().since(lastCommitTime).from(getMarketRepoBranch());
   }
 
   @Override
@@ -150,10 +150,14 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     List<GHContent> ghContent = new ArrayList<>();
     try {
       ghContent = gitHubService.getDirectoryContent(getRepository(),
-          itemPath, marketRepoBranch);
+          itemPath, getMarketRepoBranch());
     } catch (IOException e) {
       log.error("Cannot fetch GHContent: ", e);
     }
     return ghContent;
+  }
+
+  private String getMarketRepoBranch() {
+    return appSettingService.getValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 }

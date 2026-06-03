@@ -63,25 +63,25 @@ public enum AppSettingKey {
   // GITHUB
   // =========================
 
+  GITHUB_OAUTH_CLIENT_ID(
+      "market.github.oauth2-clientId",
+      "",
+      "GITHUB",
+      "GitHub OAuth application client id.",
+      false),
+
+  GITHUB_OAUTH_CLIENT_SECRET(
+      "market.github.oauth2-clientSecret",
+      "",
+      "GITHUB",
+      "GitHub OAuth application client secret.",
+      true),
+
   GITHUB_TOKEN(
       "market.github.token",
       "",
       "GITHUB",
-      "GitHub Personal Access Token.",
-      true),
-
-  GITHUB_CLIENT_ID(
-      "market.github.oauth2-clientId",
-      "",
-      "GITHUB",
-      "GitHub OAuth Client ID.",
-      false),
-
-  GITHUB_CLIENT_SECRET(
-      "market.github.oauth2-clientSecret",
-      "",
-      "GITHUB",
-      "GitHub OAuth Client Secret.",
+      "GitHub personal access token used for API requests.",
       true),
 
   GITHUB_CONNECT_TIMEOUT(
@@ -95,7 +95,7 @@ public enum AppSettingKey {
       "market.github.market.branch",
       "master",
       "GITHUB",
-      "Marketplace GitHub branch.",
+      "Marketplace repository branch used for synchronization.",
       false),
 
   // =========================
@@ -123,15 +123,57 @@ public enum AppSettingKey {
       "Default Matomo site identifier.",
       false),
 
-  // =========================
-  // EMAIL
-  // =========================
+// =========================
+// MAIL
+// =========================
+
+  MAIL_HOST(
+      "spring.mail.host",
+      "",
+      "MAIL",
+      "SMTP server host.",
+      false),
+
+  MAIL_PORT(
+      "spring.mail.port",
+      "587",
+      "MAIL",
+      "SMTP server port.",
+      false),
+
+  MAIL_USERNAME(
+      "spring.mail.username",
+      "",
+      "MAIL",
+      "SMTP username.",
+      false),
+
+  MAIL_PASSWORD(
+      "spring.mail.password",
+      "",
+      "MAIL",
+      "SMTP password.",
+      true),
+
+  MAIL_SMTP_AUTH(
+      "spring.mail.properties.mail.smtp.auth",
+      "true",
+      "MAIL",
+      "Enable SMTP authentication.",
+      false),
+
+  MAIL_SMTP_STARTTLS_ENABLE(
+      "spring.mail.properties.mail.smtp.starttls.enable",
+      "true",
+      "MAIL",
+      "Enable SMTP STARTTLS.",
+      false),
 
   MAIL_FROM(
       "spring.mail.from",
       "",
       "MAIL",
-      "Sender email address.",
+      "Default sender email address.",
       false),
 
   MAIL_TO(
@@ -186,7 +228,14 @@ public enum AppSettingKey {
       "The restful api for marketplace website",
       "APPLICATION",
       "Application description.",
-      false);
+      false),
+
+  AXON_IVY_DEVELOPER_URL(
+    "axon.ivy.developer.url",
+        "https://developer.axonivy.com",
+        "GENERAL",
+        "Axon Ivy Developer Portal URL.",
+        false);
 
   private final String key;
   private final String defaultValue;

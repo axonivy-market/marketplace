@@ -39,19 +39,6 @@ spring:
   jackson:
     serialization:
       indent_output: 'true'
-  mail:
-    host: '${MAIL_HOST_URL}'
-    port: '${MAIL_PORT}'
-    username:
-    password:
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
-    from: '${FROM_MAIL}'
-    to: '${TO_MAIL}'
 
 springdoc:
   swagger-ui:
@@ -104,27 +91,3 @@ market:
       origin:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
-  github:
-    oauth2-clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
-    oauth2-clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
-    token: '${MARKET_GITHUB_TOKEN}'
-    connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
-    market:
-      branch: '${MARKET_GITHUB_MARKET_BRANCH}'
-  allowed:
-    click-capacity: '${MARKET_CLICK_LIMIT}'
-  info:
-    title: "Marketplace app"
-    description: "The restful api for marketplace website"
-    version: '${BUILD_VERSION}'
-
-axon:
-  ivy:
-    developer:
-      url: 'https://developer.axonivy.com'
-
-matomo:
-  tracker:
-    api-endpoint: '${MARKET_SERVER_MATOMO_TRACKER_URL}'
-    default-site-id: '${MARKET_MATOMO_SITE_ID}'
-    enabled: true

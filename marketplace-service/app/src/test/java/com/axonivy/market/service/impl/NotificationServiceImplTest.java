@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.enums.SecurityFeature;
-import com.axonivy.market.github.model.SecurityMonitorMailProperties;
 import jakarta.mail.Address;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
@@ -28,9 +27,6 @@ class NotificationServiceImplTest {
 
   @Mock
   private JavaMailSender mailSender;
-
-  @Mock
-  private SecurityMonitorMailProperties mailProperties;
 
   @InjectMocks
   private NotificationServiceImpl notificationService;

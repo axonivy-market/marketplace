@@ -17,7 +17,6 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -67,9 +66,6 @@ class GitHubServiceImplTest extends BaseSetup {
   private static final String BASE_BRANCH = "master";
   private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
   private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
-
-  @Mock
-  private GitHubProperty gitHubProperty;
 
   @Mock
   RestTemplate restTemplate;
