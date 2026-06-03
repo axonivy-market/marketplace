@@ -4,10 +4,6 @@
 -- Generated for all JPA entities in core and app modules
 -- =============================================
 
--- =============================================
--- CORE MODULE TABLES
--- =============================================
-
 CREATE TABLE IF NOT EXISTS public.external_document_meta (
     id                VARCHAR(255) NOT NULL PRIMARY KEY,
     created_at        TIMESTAMP,
@@ -212,8 +208,6 @@ CREATE TABLE IF NOT EXISTS public.product_designer_installation (
     updated_at         TIMESTAMP
 );
 
-
-
 CREATE TABLE IF NOT EXISTS public.product_json_content (
     id         VARCHAR(255) NOT NULL PRIMARY KEY,
     version    VARCHAR(255),
@@ -255,14 +249,12 @@ CREATE TABLE IF NOT EXISTS public.product_module_content_component (
     PRIMARY KEY (product_module_content_id, language)
 );
 
-
 CREATE TABLE IF NOT EXISTS public.product_name (
     product_id VARCHAR(255) NOT NULL REFERENCES product (id),
     language   VARCHAR(255) NOT NULL,
     name       TEXT,
     PRIMARY KEY (product_id, language)
 );
-
 
 CREATE TABLE IF NOT EXISTS public.product_module_content_description (
     product_module_content_id VARCHAR(255) NOT NULL REFERENCES product_module_content (id),
@@ -284,11 +276,6 @@ CREATE TABLE IF NOT EXISTS public.product_module_content_demo (
     demo                      TEXT,
     PRIMARY KEY (product_module_content_id, language)
 );
-
--- =============================================
--- APP MODULE TABLES
--- =============================================
-
 
 CREATE TABLE IF NOT EXISTS public.workflow_information (
     id                    VARCHAR(255) NOT NULL PRIMARY KEY,

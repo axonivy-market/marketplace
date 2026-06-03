@@ -25,7 +25,10 @@ JDK 21+, Maven 3.9+, PostgreSQL 16+
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration. App module also requires `GITHUB_TOKEN`.
 
 ### Build & Run
+marketplace-service `App` project base on `Core` project, thus you must build core project first.
+
 ```bash
+mvn -f core/pom.xml clean install
 mvn -f app/pom.xml clean install
 mvn -f app/pom.xml spring-boot:run
 ```
@@ -42,7 +45,7 @@ spring:
     password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 server:
   port: 8080
 ```
@@ -51,6 +54,8 @@ Set GitHub token:
 ```bash
 echo $GITHUB_TOKEN > github.token
 ```
+
+
 
 ## API Endpoints
 
@@ -76,11 +81,52 @@ docker run -p 8080:8080 \
   marketplace-app
 ```
 
-### WAR
-```bash
-mvn -f app/pom.xml clean package
-cp app/target/app-1.0.0-SNAPSHOT.war $CATALINA_HOME/webapps/
+## Database Migrations (Flyway)
+
+### Script Location
+
+Source (edit here):
 ```
+app/src/main/resources/db/migration/
+```
+
+After build, scripts are copied to the classpath and Flyway reads them from:
+```
+app/target/classes/db/migration/
+```
+
+This matches the Flyway configuration:
+```yaml
+flyway:
+  locations: classpath:db/migration
+  baseline-on-migrate: true
+  baseline-version: 1
+```
+
+### Naming Convention
+
+```
+V{YYYYMMDDHHmm}__{description}.sql
+```
+
+| Part | Rule | Example |
+|---|---|---|
+| `V` | Must start with uppercase V | `V` |
+| `YYYYMMDDHHmm` | Timestamp, ensures chronological order | `202606031045` |
+| `__` | Double underscore separator (required) | `__` |
+| `description` | Lowercase words separated by `_` | `add_user_table` |
+| `.sql` | File extension | `.sql` |
+
+**Examples:**
+```
+V202606031045__create_external_document_meta.sql
+V202606031200__add_sync_task_type_check.sql
+V202606031400__drop_columns_product.sql
+```
+
+> ⚠️ A single underscore (`V202606031045_description.sql`) will be silently ignored by Flyway.
+
+> ℹ️ `V1__init_schema.sql` is the baseline. All new scripts must have a version greater than `1` (any timestamp qualifies).
 
 ## Related
 
