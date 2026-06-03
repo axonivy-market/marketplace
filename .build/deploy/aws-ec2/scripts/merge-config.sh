@@ -110,6 +110,8 @@ merge_env_files "${CURRENT_ENV_FILE}" "${REMOTE_TEMPLATE_DIR}/template.env" "${R
 echo "Preparing docker-compose.yml for ${NEW_RELEASE_NAME}..."
 NEW_COMPOSE="${NEW_RELEASE_PATH}/publish/docker-compose.yml"
 
+cp "${REMOTE_TEMPLATE_DIR}/template.compose.yml" "${NEW_COMPOSE}"
+
 cp "${REMOTE_TEMPLATE_DIR}/template.Dockerfile" "${NEW_RELEASE_PATH}/publish/Dockerfile"
 
 echo "Preparing nginx.conf for ${NEW_RELEASE_NAME}..."
