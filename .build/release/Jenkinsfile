@@ -106,6 +106,16 @@ pipeline {
       }
     }
 
+    stage('Build Maven skip tests') {
+      steps {
+        script {
+          sh '''
+            mvn clean install --file ./target-source/marketplace-service/pom.xml -DskipTests=true
+          '''
+        }
+      }
+    }
+
     stage('Build env file') {
       steps {
         sh '''
