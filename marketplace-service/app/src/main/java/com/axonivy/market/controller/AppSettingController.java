@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.axonivy.market.constants.RequestMappingConstants.APP_SETTING;
+
 @RestController
-@RequestMapping("/admin/settings")
+@RequestMapping(APP_SETTING)
 @RequiredArgsConstructor
 public class AppSettingController {
 

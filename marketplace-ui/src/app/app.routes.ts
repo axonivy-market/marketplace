@@ -21,7 +21,7 @@ import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-manag
 import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
-import { AdminSettingsComponent } from './modules/admin-dashboard/app-settings/app-settings.component';
+import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -101,7 +101,7 @@ export const routes: Routes = [
         component: LogViewerComponent
       },
       {
-        path: 'app-settings',
+        path: 'settings',
         component: AdminSettingsComponent
       }
     ]

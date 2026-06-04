@@ -1,0 +1,30 @@
+.badge {
+  padding: 0.55rem 0.9rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.input__search {
+  height: 43px;
+}
+
+.search-input {
+  font-size: 1.4rem;
+}
+
+.search-icon {
+  font-size: 1.5rem;
+}
+
+.clear-search-btn {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--clear-search-text-button-bg-hover) !important;
+  }
+
+  &:active {
+    background-color: var(--clear-search-text-button-bg-active) !important;
+  }
+}

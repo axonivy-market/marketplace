@@ -1,6 +1,7 @@
 package com.axonivy.market.config;
 
 import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
+  private final NodeInfo nodeInfo;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
@@ -40,41 +42,33 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
     registrar.setTaskScheduler(taskScheduler());
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncDataForProductFromGitHubRepo,
+    registrar.addTriggerTask(scheduledTasks::syncDataForProductFromGitHubRepo,
         context -> nextExecution(AppSettingKey.PRODUCTS_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncDataForProductDocuments,
+    registrar.addTriggerTask(scheduledTasks::syncDataForProductDocuments,
         context -> nextExecution(AppSettingKey.DOCUMENTS_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncDataForProductMavenDependencies,
+    registrar.addTriggerTask(scheduledTasks::syncDataForProductMavenDependencies,
         context -> nextExecution(AppSettingKey.PRODUCTS_DEPENDENCY_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncDataForProductReleases,
+    registrar.addTriggerTask(scheduledTasks::syncDataForProductReleases,
         context -> nextExecution(AppSettingKey.PRODUCT_RELEASE_NOTES_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncDataForGithubRepos,
+    registrar.addTriggerTask(scheduledTasks::syncDataForGithubRepos,
         context -> nextExecution(AppSettingKey.GITHUB_REPOS_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::sendNotificationForSecurityMonitor,
-        context -> nextExecution(
-            AppSettingKey.SEND_NOTIFICATION_SECURITY_MONITOR_CRON,
-            context));
+    registrar.addTriggerTask(scheduledTasks::sendNotificationForSecurityMonitor,
+        context -> nextExecution(AppSettingKey.SEND_NOTIFICATION_SECURITY_MONITOR_CRON, context));
 
-    registrar.addTriggerTask(
-        scheduledTasks::syncSecurityMonitor,
-        context -> nextExecution(
-            AppSettingKey.SECURITY_MONITOR_CRON,
-            context));
+    registrar.addTriggerTask(scheduledTasks::syncSecurityMonitor,
+        context -> nextExecution(AppSettingKey.SECURITY_MONITOR_CRON, context));
   }
 
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
-    return new CronTrigger(appSettingService.getValueByKey(key))
-        .nextExecution(context);
+    Instant next = new CronTrigger(appSettingService.getValueByKey(key)).nextExecution(context);
+    if (next == null) {
+      return null;
+    }
+    return next.plusSeconds(nodeInfo.getNodeOffset() * 60L);
   }
 }

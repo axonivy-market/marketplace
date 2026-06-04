@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.AppSetting;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,4 +17,7 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
 
   @Query("select setting.key from AppSetting setting")
   Set<String> findAllKeys();
+
+  @Transactional
+  void deleteByKeyNotIn(Set<String> keys);
 }

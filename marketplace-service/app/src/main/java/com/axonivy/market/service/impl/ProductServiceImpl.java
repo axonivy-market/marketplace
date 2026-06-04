@@ -65,7 +65,9 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.springframework.beans.factory.annotation.Value;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -106,8 +108,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
   private final GithubRepoRepository githubRepo;
-  @Value("${market.github.market.branch}")
-  private String marketRepoBranch;
+  private final AppSettingService appSettingService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
@@ -120,7 +121,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataService productMarketplaceDataService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
-      VersionService versionService, GithubRepoRepository githubRepo) {
+      VersionService versionService, GithubRepoRepository githubRepo, AppSettingService appSettingService) {
     super(coreProductRepo);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -141,6 +142,11 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     this.fileDownloadService = fileDownloadService;
     this.versionService = versionService;
     this.githubRepo = githubRepo;
+    this.appSettingService = appSettingService;
+  }
+
+  private String getMarketRepoBranch() {
+    return appSettingService.getValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 
   @Override
@@ -247,7 +253,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
       var fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-          marketRepoBranch);
+          getMarketRepoBranch());
       return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
@@ -369,7 +375,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     if (StringUtils.isNotBlank(imageName)) {
       var imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
-        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, getMarketRepoBranch());
         return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
             .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {

@@ -520,7 +520,7 @@
         "successorTooltip": "The full URL to the successor extension on the marketplace (must start with http:// or https://).",
         "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice."
       },
-      "app-settings": {
+      "settings": {
         "title": "Application Settings",
         "description": "Manage runtime configuration for the Marketplace application.",
         "helpText": "Administrators can update scheduling, integrations, notifications, security, and other application settings without modifying deployment configuration or restarting services. Changes are stored centrally and can be applied across all Marketplace nodes.",
