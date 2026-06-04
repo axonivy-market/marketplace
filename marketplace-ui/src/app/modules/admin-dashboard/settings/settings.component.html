@@ -2,21 +2,13 @@
   <h1
     class="text-primary admin-title"
     [lang]="languageService.selectedLanguage()">
-    {{
-      translateService.get(
-        'common.admin.settings.title'
-      ) | async
-    }}
+    {{ 'common.admin.settings.title' | translate }}
   </h1>
 
   <div class="introduction-container">
     <div class="d-sm-block admin-about">
       <h3 class="text-secondary">
-        {{
-          translateService.get(
-            'common.admin.settings.description'
-          ) | async
-        }}
+        {{ 'common.admin.settings.description' | translate }}
       </h3>
     </div>
 
@@ -25,11 +17,7 @@
       <h4
         class="text-secondary"
         [lang]="languageService.selectedLanguage()">
-        {{
-          translateService.get(
-            'common.admin.settings.helpText'
-          ) | async
-        }}
+        {{ 'common.admin.settings.helpText' | translate }}
       </h4>
     </div>
   </div>
@@ -69,13 +57,13 @@
         <th class="text-primary sortable" (click)="sortBy('category')">
           <h5 class="table-header">
             {{ 'common.admin.settings.category' | translate }}
-            <i class="ti ti-caret-up-down ms-1"></i>
+            <i class="ti" [ngClass]="getSortIcon('category')"></i>
           </h5>
         </th>
         <th class="text-primary sortable" (click)="sortBy('settingKey')">
           <h5 class="table-header">
             {{ 'common.admin.settings.key' | translate }}
-            <i class="ti ti-caret-up-down ms-1"></i>
+            <i class="ti" [ngClass]="getSortIcon('settingKey')"></i>
           </h5>
         </th>
         <th class="text-primary">

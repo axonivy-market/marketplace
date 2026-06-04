@@ -1,14 +1,28 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { Component, DestroyRef, inject, OnInit } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { AppSetting, AppSettingsService } from "./settings.component.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { TranslateModule } from "@ngx-translate/core";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
 import { LanguageService } from "../../../core/services/language/language.service";
 import { PageTitleService } from "../../../shared/services/page-title.service";
-import { debounceTime, finalize, Subject, Subscription } from "rxjs";
+import { debounceTime, Subject } from "rxjs";
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ASCENDING, DESCENDING } from "../../../shared/constants/common.constant";
+
+const SHOW_ALL_PAGE_SIZE = -1;
+
+const CATEGORY_CLASS_MAP: Record<string, string> = {
+  SCHEDULING: 'bg-primary',
+  GITHUB: 'bg-dark',
+  MATOMO: 'bg-info',
+  MAIL: 'bg-success',
+  SECURITY: 'bg-danger',
+  CORS: 'bg-warning text-dark',
+  APPLICATION: 'bg-secondary'
+};
 
 @Component({
   selector: 'app-admin-settings',
@@ -23,129 +37,97 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
 })
-export class AdminSettingsComponent implements OnInit, OnDestroy {
+export class AdminSettingsComponent implements OnInit {
 
   protected readonly LoadingComponentId = LoadingComponentId;
 
-  appSettingsService = inject(AppSettingsService);
-  translateService = inject(TranslateService);
-  languageService = inject(LanguageService);
-  pageTitleService = inject(PageTitleService);
+  private readonly appSettingsService = inject(AppSettingsService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly languageService = inject(LanguageService);
+  private readonly pageTitleService = inject(PageTitleService);
 
-  settings: AppSetting[] = [];
-  filteredSettings: AppSetting[] = [];
-  sortColumn: keyof AppSetting = 'category';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  private settings: AppSetting[] = [];
+  protected filteredSettings: AppSetting[] = [];
+  protected sortColumn: keyof AppSetting = 'category';
+  protected sortDirection = ASCENDING;
 
-  page = 1;
-  pageSize = 10;
-  readonly ALL_ITEMS_PAGE_SIZE = -1;
-
-  searchText = '';
-  isLoading = false;
-  protected visibleSecrets = new Set<string>();
+  protected page = 1;
+  protected pageSize = 10;
+  protected searchText = '';
+  protected readonly visibleSecrets = new Set<string>();
 
   private readonly searchChanged = new Subject<string>();
-  private readonly subscriptions: Subscription[] = [];
+
+  constructor() {
+    this.searchChanged
+      .pipe(debounceTime(300), takeUntilDestroyed())
+      .subscribe(() => this.filterSettings());
+  }
 
   ngOnInit(): void {
-
-    this.pageTitleService.setTitleOnLangChange(
-      'common.admin.settings.title'
-    );
-
-    const searchSubscription = this.searchChanged
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        this.filterSettings();
-      });
-
-    this.subscriptions.push(searchSubscription);
-
+    this.pageTitleService.setTitleOnLangChange('common.admin.settings.title');
     this.loadSettings();
   }
 
-get pagedSettings(): AppSetting[] {
-  if (this.pageSize === this.ALL_ITEMS_PAGE_SIZE) {
-    return this.filteredSettings;
+  protected get pagedSettings(): AppSetting[] {
+    if (this.pageSize === SHOW_ALL_PAGE_SIZE) {
+      return this.filteredSettings;
+    }
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredSettings.slice(start, start + this.pageSize);
   }
 
-  const start = (this.page - 1) * this.pageSize;
-  return this.filteredSettings.slice(start, start + this.pageSize);
-}
+  protected get totalElements(): number {
+    return this.filteredSettings.length;
+  }
 
-get totalElements(): number {
-  return this.filteredSettings.length;
-}
+  protected onPageChange(page: number): void {
+    this.page = page;
+  }
 
-onPageChange(page: number): void {
-  this.page = page;
-}
-
-onPageSizeChanged(pageSize: number): void {
-  this.pageSize = pageSize;
-  this.page = 1;
-}
-
-  loadSettings(): void {
-    this.isLoading = true;
-    const subscription = this.appSettingsService
-      .getSettings('')
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
+  private loadSettings(): void {
+    this.appSettingsService
+      .getSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(settings => {
         this.settings = settings;
         this.filteredSettings = [...settings];
       });
-
-    this.subscriptions.push(subscription);
   }
 
-  onSearchChanged(value: string): void {
+  protected onSearchChanged(value: string): void {
     this.searchText = value;
     this.searchChanged.next(value);
     this.page = 1;
   }
 
-  onClearSearch(): void {
+  protected onClearSearch(): void {
     this.searchText = '';
     this.filterSettings();
     this.page = 1;
   }
 
   private filterSettings(): void {
-
     const keyword = this.searchText.toLowerCase();
-
     this.filteredSettings = this.settings.filter(
-      setting =>
-        setting.settingKey.toLowerCase().includes(keyword)
-        || setting.category.toLowerCase().includes(keyword)
-        || setting.description?.toLowerCase().includes(keyword)
+      s =>
+        s.settingKey.toLowerCase().includes(keyword) ||
+        s.category.toLowerCase().includes(keyword) ||
+        s.description?.toLowerCase().includes(keyword)
     );
   }
 
-  save(setting: AppSetting): void {
-
-    this.appSettingsService
-      .updateSetting(setting)
-      .subscribe();
+  protected save(setting: AppSetting): void {
+    this.appSettingsService.updateSetting(setting).subscribe();
   }
 
-  sortBy(column: keyof AppSetting): void {
+  protected sortBy(column: keyof AppSetting): void {
     if (this.sortColumn === column) {
-      this.sortDirection =
-        this.sortDirection === 'asc'
-          ? 'desc'
-          : 'asc';
+      this.sortDirection = this.sortDirection === ASCENDING ? DESCENDING : ASCENDING;
     } else {
       this.sortColumn = column;
-      this.sortDirection = 'asc';
+      this.sortDirection = ASCENDING;
     }
-
     this.applySorting();
   }
 
@@ -153,12 +135,8 @@ onPageSizeChanged(pageSize: number): void {
     this.filteredSettings.sort((a, b) => {
       const valueA = String(a[this.sortColumn] ?? '').toLowerCase();
       const valueB = String(b[this.sortColumn] ?? '').toLowerCase();
-
       const result = valueA.localeCompare(valueB);
-
-      return this.sortDirection === 'asc'
-        ? result
-        : -result;
+      return this.sortDirection === ASCENDING ? result : -result;
     });
   }
 
@@ -174,37 +152,12 @@ onPageSizeChanged(pageSize: number): void {
     return this.visibleSecrets.has(settingKey);
   }
 
-  getCategoryClass(category: string): string {
-  switch (category) {
-    case 'SCHEDULING':
-      return 'bg-primary';
-
-    case 'GITHUB':
-      return 'bg-dark';
-
-    case 'MATOMO':
-      return 'bg-info';
-
-    case 'MAIL':
-      return 'bg-success';
-
-    case 'SECURITY':
-      return 'bg-danger';
-
-    case 'CORS':
-      return 'bg-warning text-dark';
-
-    case 'APPLICATION':
-      return 'bg-secondary';
-
-    default:
-      return 'bg-light text-dark';
+  protected getSortIcon(column: keyof AppSetting): string {
+    if (this.sortColumn !== column) return 'ti-arrows-sort';
+    return this.sortDirection === ASCENDING ? 'ti-arrow-up' : 'ti-arrow-down';
   }
-}
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription =>
-      subscription.unsubscribe()
-    );
+  protected getCategoryClass(category: string): string {
+    return CATEGORY_CLASS_MAP[category] ?? 'bg-light text-dark';
   }
 }

@@ -1,10 +1,10 @@
 package com.axonivy.market.config;
 
 import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TriggerContext;
@@ -26,7 +26,9 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
-  private final NodeInfo nodeInfo;
+
+  @Value("${market.node.number:1}")
+  private final int nodeNumber;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
@@ -69,6 +71,10 @@ public class SchedulingConfig implements SchedulingConfigurer {
     if (next == null) {
       return null;
     }
-    return next.plusSeconds(nodeInfo.getNodeOffset() * 60L);
+    return next.plusSeconds(getOffsetMinutes() * 60L);
+  }
+
+  public int getOffsetMinutes() {
+    return nodeNumber == 2 ? 15 : 0;
   }
 }
