@@ -26,18 +26,17 @@ import static com.axonivy.market.constants.MailConstants.*;
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
-  private final MailSenderService mailSender;
+  private final MailSenderService mailSenderService;
   private final AppSettingService settingService;
 
   @Override
   public void notify(List<DisabledSecurityEvent> events) {
-
-    JavaMailSender mailSender = this.mailSender.createMailSender();
     if (events.isEmpty()) {
       return;
     }
 
     try {
+      JavaMailSender mailSender = this.mailSenderService.createMailSender();
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
       message.setFrom(

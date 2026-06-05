@@ -13,36 +13,39 @@ import org.springframework.stereotype.Service;
 public class EncryptionServiceImpl implements EncryptionService {
 
   private static final String SALT = "a1b2c3d4e5f6a7b8";
-
   private TextEncryptor encryptor;
-  private boolean enabled;
 
-  public EncryptionServiceImpl(
-      @Value("${encryption.key:}") String encryptionKey) {
+  public EncryptionServiceImpl(@Value("${encryption.key:}") String encryptionKey) {
 
     try {
       if (StringUtils.isNotBlank(encryptionKey)) {
         this.encryptor = Encryptors.text(encryptionKey, SALT);
-        this.enabled = true;
       }
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
       log.warn("Encryption is disabled due to invalid configuration", e);
     }
   }
 
   @Override
   public String encrypt(String value) {
-    if (!enabled || value == null) {
-      return value;
+    if (encryptor == null) {
+      throw new IllegalStateException("Encryption is not configured");
     }
-    return encryptor.encrypt(value);
+
+    try {
+      return encryptor.encrypt(value);
+    } catch (IllegalArgumentException ex) {
+      log.warn("Failed to encrypt value", ex);
+      return StringUtils.EMPTY;
+    }
   }
 
   @Override
   public String decrypt(String value) {
-    if (!enabled || value == null) {
-      return value;
+    try {
+      return encryptor.decrypt(value);
+    } catch (IllegalArgumentException ex) {
+      return StringUtils.EMPTY;
     }
-    return encryptor.decrypt(value);
   }
 }

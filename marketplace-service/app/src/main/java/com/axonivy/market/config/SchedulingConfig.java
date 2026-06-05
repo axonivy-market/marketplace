@@ -14,6 +14,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Configuration
@@ -23,6 +24,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
   private static final int POOL_SIZE = 10;
+  private static final Duration NODE_2_OFFSET = Duration.ofMinutes(15);
 
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
@@ -66,15 +68,23 @@ public class SchedulingConfig implements SchedulingConfigurer {
         context -> nextExecution(AppSettingKey.SECURITY_MONITOR_CRON, context));
   }
 
+  /**
+   * Calculates the next execution time based on the cron expression from AppSettingService and applies an offset for
+   * even-numbered nodes to reduce concurrent load in clustered deployments.
+   */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
     Instant next = new CronTrigger(appSettingService.getValueByKey(key)).nextExecution(context);
     if (next == null) {
       return null;
     }
-    return next.plusSeconds(getOffsetMinutes() * 60L);
+    return next.plus(getOffset());
   }
 
-  public int getOffsetMinutes() {
-    return nodeNumber == 2 ? 15 : 0;
+  /**
+   * Delay execution on even-numbered nodes to reduce
+   * concurrent load in clustered deployments.
+   */
+  private Duration getOffset() {
+    return nodeNumber == 2 ? NODE_2_OFFSET : Duration.ZERO;
   }
 }

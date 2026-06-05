@@ -1,6 +1,7 @@
 package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
@@ -10,16 +11,14 @@ import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -27,6 +26,7 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -36,7 +36,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.*;
-import com.axonivy.market.config.OkHttpClientBuilder;
 import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
@@ -94,7 +93,7 @@ public class GitHubServiceImpl implements GitHubService {
   private static final int MAX_CONCURRENCY = 50;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
-  private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String MUST_BE_ENABLED = "must be enabled";
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -105,7 +104,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHub getGitHub() throws IOException {
     var client = okHttpClientBuilder.build();
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(client);
+    var gitHubConnector = new OkHttpGitHubConnector(client);
     String token = getConfiguredToken();
     return new GitHubBuilder().withOAuthToken(token).withConnector(gitHubConnector).build();
   }
@@ -113,7 +112,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
     var client = okHttpClientBuilder.build();
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(client);
+    var gitHubConnector = new OkHttpGitHubConnector(client);
     return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
   }
 
@@ -152,13 +151,10 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubAccessTokenResponse getAccessToken(String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
+  public GitHubAccessTokenResponse getAccessToken(String code) throws Oauth2ExchangeCodeException {
     // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
     String clientId = appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
     String clientSecret = appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
-    if (isBlank(clientId) || isBlank(clientSecret)) {
-      throw new MissingHeaderException();
-    }
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add(Json.CLIENT_ID, clientId);
@@ -651,14 +647,10 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
-   * Read the GitHub token from DB-backed AppSetting. Throws if missing.
+   * Read the GitHub token from DB-backed AppSetting.
    */
   private String getConfiguredToken() {
-    String token = appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
-    if (isBlank(token)) {
-      throw new IllegalStateException("GitHub token is not configured in AppSettings (" + AppSettingKey.GITHUB_TOKEN.getKey() + ")");
-    }
-    return token;
+    return appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   /**
@@ -693,12 +685,12 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private record GitHubUnsupportedText(
-          String deprecatedMessage,
-          String removeUnsupportedNoticeMessage,
-          String unsupportedBranchName,
-          String removeUnsupportedNoticePrBody,
-          String addUnsupportedNoticePrBody,
-          String unsupportedNotice
+      String deprecatedMessage,
+      String removeUnsupportedNoticeMessage,
+      String unsupportedBranchName,
+      String removeUnsupportedNoticePrBody,
+      String addUnsupportedNoticePrBody,
+      String unsupportedNotice
   ) {
   }
 

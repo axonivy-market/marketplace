@@ -13,6 +13,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ASCENDING, DESCENDING } from "../../../shared/constants/common.constant";
 
 const SHOW_ALL_PAGE_SIZE = -1;
+const DEBOUNCE_TIME = 300;
 
 const CATEGORY_CLASS_MAP: Record<string, string> = {
   SCHEDULING: 'bg-primary',
@@ -60,7 +61,7 @@ export class AdminSettingsComponent implements OnInit {
 
   constructor() {
     this.searchChanged
-      .pipe(debounceTime(300), takeUntilDestroyed())
+      .pipe(debounceTime(DEBOUNCE_TIME), takeUntilDestroyed())
       .subscribe(() => this.filterSettings());
   }
 
@@ -153,7 +154,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   protected getSortIcon(column: keyof AppSetting): string {
-    if (this.sortColumn !== column) return 'ti-arrows-sort';
+    if (this.sortColumn !== column) { return 'ti-arrows-sort'; }
     return this.sortDirection === ASCENDING ? 'ti-arrow-up' : 'ti-arrow-down';
   }
 

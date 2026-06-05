@@ -13,37 +13,30 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class OkHttpClientBuilder {
 
+  private static final long DEFAULT_TIMEOUT_MILLIS = 10_000L;
   private final AppSettingService appSettingService;
-  private volatile OkHttpClient cachedClient;
-  private volatile long cachedTimeoutMillis = -1L;
+  private OkHttpClient cachedClient;
+  private long cachedTimeoutMillis = -1L;
 
-  public OkHttpClient build() {
-    long timeoutMillis = 10000L;
+  public synchronized OkHttpClient build() {
+    long timeoutMillis = DEFAULT_TIMEOUT_MILLIS;
+
     try {
       String configured = appSettingService.getValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
       if (StringUtils.isNotBlank(configured)) {
         timeoutMillis = Long.parseLong(configured);
       }
-    } catch (Exception ignored) {
+    } catch (NumberFormatException ignored) {
+        // Use default if parsing fails
     }
 
-    // return cached client if timeout hasn't changed
-    OkHttpClient client = cachedClient;
-    if (client != null && timeoutMillis == cachedTimeoutMillis) {
-      return client;
+    if (cachedClient != null && timeoutMillis == cachedTimeoutMillis) {
+      return cachedClient;
     }
 
-    synchronized (this) {
-      if (cachedClient != null && timeoutMillis == cachedTimeoutMillis) {
-        return cachedClient;
-      }
-      OkHttpClient newClient = new OkHttpClient.Builder()
-          .callTimeout(Duration.ofMillis(timeoutMillis))
-          .build();
-      cachedClient = newClient;
-      cachedTimeoutMillis = timeoutMillis;
-      return newClient;
-    }
+    cachedClient = new OkHttpClient.Builder().callTimeout(Duration.ofMillis(timeoutMillis)).build();
+    cachedTimeoutMillis = timeoutMillis;
+    return cachedClient;
   }
 }
 

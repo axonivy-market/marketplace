@@ -72,8 +72,8 @@ class EncryptionServiceImplTest {
     assertNotEquals(encrypted1, encrypted2,
         "Spring TextEncryptor should produce different ciphertext on each call due to random IV");
 
-    assertEquals(original, service.decrypt(encrypted1));
-    assertEquals(original, service.decrypt(encrypted2));
+    assertEquals(original, service.decrypt(encrypted1), "Decrypted value of encrypted1 should match the original");
+    assertEquals(original, service.decrypt(encrypted2), "Decrypted value of encrypted2 should match the original");
   }
 
   @Test

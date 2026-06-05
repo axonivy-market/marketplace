@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class AppSettingServiceImpl implements AppSettingService {
@@ -42,12 +44,14 @@ public class AppSettingServiceImpl implements AppSettingService {
   @Override
   public AppSettingDto update(String key, String value) {
     AppSetting setting = repository.findByKey(key).orElseThrow(
-        () -> new EntityNotFoundException("Setting not found: " + key));
+        () -> new EntityNotFoundException("Setting not found for key: " + key));
+
     if (setting.getEncrypted()) {
       setting.setValue(encryptionService.encrypt(value));
     } else {
       setting.setValue(value);
     }
+
     repository.save(setting);
     return toDto(setting);
   }
@@ -67,13 +71,14 @@ public class AppSettingServiceImpl implements AppSettingService {
   }
 
   private String resolveValue(AppSetting setting) {
-    String value = setting.getValue();
+    String value = setting.getValue().trim();
     if (StringUtils.isBlank(value) || !setting.getEncrypted()) {
       return value;
     }
     try {
-      return encryptionService.decrypt(value);
-    } catch (Exception ex) {
+      return encryptionService.decrypt(value).trim();
+    } catch (IllegalArgumentException ex) {
+      log.warn("Failed to decrypt setting '{}'", setting.getKey());
       return value;
     }
   }
@@ -81,18 +86,13 @@ public class AppSettingServiceImpl implements AppSettingService {
   @PostConstruct
   @Transactional
   public void initializeSettings() {
-    Set<String> enumKeys = Arrays.stream(AppSettingKey.values())
-        .map(AppSettingKey::getKey)
-        .collect(Collectors.toSet());
+    Set<String> enumKeys = Arrays.stream(AppSettingKey.values()).map(AppSettingKey::getKey).collect(Collectors.toSet());
 
     Set<String> existingKeys = repository.findAllKeys();
 
     repository.saveAll(
-        Arrays.stream(AppSettingKey.values())
-            .filter(settingKey -> !existingKeys.contains(settingKey.getKey()))
-            .map(AppSetting::from)
-            .toList()
-    );
+        Arrays.stream(AppSettingKey.values()).filter(settingKey -> !existingKeys.contains(settingKey.getKey())).map(
+            AppSetting::from).toList());
 
     repository.deleteByKeyNotIn(enumKeys);
   }

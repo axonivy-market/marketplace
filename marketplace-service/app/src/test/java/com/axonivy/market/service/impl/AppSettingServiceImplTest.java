@@ -41,10 +41,10 @@ class AppSettingServiceImplTest {
     List<AppSettingDto> result = appSettingService.findAll();
 
     assertEquals(2, result.size(), "Expected two settings");
-    assertEquals("key1", result.get(0).getSettingKey());
-    assertEquals("value1", result.get(0).getSettingValue());
-    assertEquals("key2", result.get(1).getSettingKey());
-    assertEquals("value2", result.get(1).getSettingValue());
+    assertEquals("key1", result.get(0).getSettingKey(), "First setting key should match");
+    assertEquals("value1", result.get(0).getSettingValue(), "First setting value should match");
+    assertEquals("key2", result.get(1).getSettingKey(), "Second setting key should match");
+    assertEquals("value2", result.get(1).getSettingValue(), "Second setting value should match");
   }
 
   @Test
@@ -55,7 +55,7 @@ class AppSettingServiceImplTest {
 
     List<AppSettingDto> result = appSettingService.findAll();
 
-    assertEquals(1, result.size());
+    assertEquals(1, result.size(), "Expected one setting");
     assertEquals("decrypted-value", result.getFirst().getSettingValue(),
         "Encrypted setting value should be decrypted in DTO");
   }
@@ -67,7 +67,7 @@ class AppSettingServiceImplTest {
 
     List<AppSettingDto> result = appSettingService.search("");
 
-    assertEquals(1, result.size());
+    assertEquals(1, result.size(), "Expected one setting when searching with blank keyword");
     verify(repository).findAll();
     verify(repository, never()).findByKeyContainingIgnoreCase(anyString());
   }
@@ -78,7 +78,7 @@ class AppSettingServiceImplTest {
 
     List<AppSettingDto> result = appSettingService.search(null);
 
-    assertTrue(result.isEmpty());
+    assertTrue(result.isEmpty(), "Expected empty result when searching with null keyword");
     verify(repository).findAll();
   }
 
@@ -89,8 +89,9 @@ class AppSettingServiceImplTest {
 
     List<AppSettingDto> result = appSettingService.search("github");
 
-    assertEquals(1, result.size());
-    assertEquals("market.github.token", result.getFirst().getSettingKey());
+    assertEquals(1, result.size(), "Expected one setting matching the keyword");
+    assertEquals("market.github.token", result.getFirst().getSettingKey(),
+        "Setting key should match the search keyword");
     verify(repository).findByKeyContainingIgnoreCase("github");
   }
 
@@ -179,7 +180,7 @@ class AppSettingServiceImplTest {
 
     String result = appSettingService.getValue("custom-key");
 
-    assertEquals("custom-value", result);
+    assertEquals("custom-value", result, "Should return the value from repository for the given key");
   }
 
   @Test

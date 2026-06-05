@@ -81,7 +81,6 @@ public class ScheduledTasks {
         log.warn("Sync security monitor failed", e);
       }
     }
-    ;
   }
 
   private static void run(Runnable runnable, String schedulingTaskName) {

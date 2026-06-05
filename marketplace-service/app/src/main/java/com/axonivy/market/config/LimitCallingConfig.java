@@ -61,7 +61,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private Bucket createNewBucket(String clientIp) {
-    long capacity = Long.parseLong(settingService.getValueByKey(AppSettingKey.CLICK_CAPACITY));
+    var capacity = Long.parseLong(settingService.getValueByKey(AppSettingKey.CLICK_CAPACITY));
     Bandwidth limit = Bandwidth.builder()
         .capacity(capacity)
         .refillGreedy(capacity, Duration.ofMinutes(1))

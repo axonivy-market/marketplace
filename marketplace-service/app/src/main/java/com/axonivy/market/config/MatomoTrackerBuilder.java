@@ -19,7 +19,7 @@ import java.util.Objects;
 public class MatomoTrackerBuilder {
 
   private final AppSettingService appSettingService;
-  private volatile MatomoTracker tracker;
+  private MatomoTracker tracker;
 
   private String endpoint;
   private Integer siteId;
@@ -28,7 +28,7 @@ public class MatomoTrackerBuilder {
   public synchronized MatomoTracker create() {
     String rawEndpoint = appSettingService.getValueByKey(AppSettingKey.MATOMO_API_ENDPOINT).trim();
     String rawSiteId = appSettingService.getValueByKey(AppSettingKey.MATOMO_SITE_ID).trim();
-    boolean newEnabled = Boolean.parseBoolean(appSettingService.getValueByKey(AppSettingKey.MATOMO_ENABLED).trim());
+    var newEnabled = Boolean.parseBoolean(appSettingService.getValueByKey(AppSettingKey.MATOMO_ENABLED).trim());
 
     int newSiteId;
     try {
@@ -37,10 +37,10 @@ public class MatomoTrackerBuilder {
       newSiteId = 1;
     }
 
-    if (tracker == null
-        || !Objects.equals(endpoint, rawEndpoint)
-        || !Objects.equals(siteId, newSiteId)
-        || !Objects.equals(enabled, newEnabled)) {
+    if (tracker != null
+        && Objects.equals(endpoint, rawEndpoint)
+        && Objects.equals(siteId, newSiteId)
+        && Objects.equals(enabled, newEnabled)) {
       return tracker;
     }
 
@@ -50,15 +50,13 @@ public class MatomoTrackerBuilder {
           .defaultSiteId(newSiteId)
           .enabled(newEnabled)
           .build();
-
-      // update cached values
       tracker = new MatomoTracker(config);
       endpoint = rawEndpoint;
       siteId = newSiteId;
       enabled = newEnabled;
 
       return tracker;
-    } catch (Exception ex) {
+    } catch (IllegalArgumentException ex) {
       return tracker;
     }
   }
