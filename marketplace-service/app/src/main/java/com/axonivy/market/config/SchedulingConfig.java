@@ -28,7 +28,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
   private final ScheduledTasks scheduledTasks;
 
   @Value("${market.node.number:1}")
-  private final int nodeNumber;
+  private int nodeNumber;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {

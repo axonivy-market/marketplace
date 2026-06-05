@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -22,7 +23,7 @@ import static com.axonivy.market.BaseSetup.DEFAULT_HOST;
 import static com.axonivy.market.BaseSetup.OPEN_API_SPEC_PATH;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApisUtilsTest {
     @LocalServerPort

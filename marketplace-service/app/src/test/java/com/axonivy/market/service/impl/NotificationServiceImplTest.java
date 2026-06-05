@@ -1,8 +1,11 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.MailSenderService;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.enums.SecurityFeature;
+import com.axonivy.market.service.AppSettingService;
 import jakarta.mail.Address;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
@@ -26,17 +29,24 @@ import static org.mockito.Mockito.*;
 class NotificationServiceImplTest {
 
   @Mock
-  private JavaMailSender mailSender;
+  private MailSenderService mailSender;
+
+  @Mock
+  private JavaMailSender javaMailSender;
+
+  @Mock
+  private AppSettingService settingService;
 
   @InjectMocks
   private NotificationServiceImpl notificationService;
 
   @Test
   void testNotifySendsEmailWhenDisabledChecksExist() throws Exception {
-    when(mailProperties.getFrom()).thenReturn("from@test.com");
-    when(mailProperties.getTo()).thenReturn("to@test.com");
+    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
-    when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
     DisabledSecurityEvent dependabotEvent =
         new DisabledSecurityEvent(
@@ -56,7 +66,7 @@ class NotificationServiceImplTest {
 
     ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
     notificationService.notify(events);
-    verify(mailSender).send(captor.capture());
+    verify(javaMailSender).send(captor.capture());
 
     MimeMessage sentMessage = captor.getValue();
     assertThat(sentMessage.getFrom()[0])
@@ -82,10 +92,11 @@ class NotificationServiceImplTest {
 
   @Test
   void testNotifySupportsMultipleRecipients() throws Exception {
-    when(mailProperties.getFrom()).thenReturn("from@test.com");
-    when(mailProperties.getTo()).thenReturn("to1@test.com, to2@test.com, to3@test.com");
+    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to1@test.com, to2@test.com, to3@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
-    when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
     DisabledSecurityEvent event =
         new DisabledSecurityEvent(
@@ -97,7 +108,7 @@ class NotificationServiceImplTest {
     notificationService.notify(List.of(event));
 
     ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
-    verify(mailSender).send(captor.capture());
+    verify(javaMailSender).send(captor.capture());
 
     MimeMessage sent = captor.getValue();
 
@@ -122,20 +133,21 @@ class NotificationServiceImplTest {
   @Test
   void testNotifyDoNothingIfAllAreEnabled() {
     notificationService.notify(List.of());
-    assertThatCode(() -> verifyNoInteractions(mailSender))
+    assertThatCode(() -> verifyNoInteractions(javaMailSender))
         .as("Mail sender should not be invoked when there are no disabled security events")
         .doesNotThrowAnyException();
   }
 
   @Test
   void testNotifyCatchMailError() {
-    when(mailProperties.getFrom()).thenReturn("from@test.com");
-    when(mailProperties.getTo()).thenReturn("to@test.com");
-    when(mailSender.createMimeMessage())
+    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
+    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(javaMailSender.createMimeMessage())
         .thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
 
     doThrow(new MailException("SMTP failure") {})
-        .when(mailSender)
+        .when(javaMailSender)
         .send(any(MimeMessage.class));
 
     DisabledSecurityEvent event =
@@ -148,6 +160,6 @@ class NotificationServiceImplTest {
     assertThatCode(() -> notificationService.notify(List.of(event)))
         .as("Notification service should catch mail exceptions and not propagate them")
         .doesNotThrowAnyException();
-    verify(mailSender).send(any(MimeMessage.class));
+    verify(javaMailSender).send(any(MimeMessage.class));
   }
 }
