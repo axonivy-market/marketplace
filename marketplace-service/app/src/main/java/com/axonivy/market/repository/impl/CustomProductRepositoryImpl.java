@@ -48,10 +48,16 @@ public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl
   @Override
   public Product findProductByIdAndRelatedData(String id) {
     CriteriaQueryContext<Product> context = createCriteriaQueryContext();
-    context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
-    context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
-    context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
-    context.query().where(context.builder().equal(context.root().get(ID), id));
+    var root = context.root();
+    var cb = context.builder();
+    root.fetch(PRODUCT_NAMES, JoinType.LEFT);
+    root.fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    root.fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
+    var idPredicate = cb.equal(root.get(ID), id);
+    var listedPredicate = cb.or(
+        cb.notEqual(root.get(LISTED), false),
+        cb.isNull(root.get(LISTED)));
+    context.query().where(idPredicate, listedPredicate);
     try {
       return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
