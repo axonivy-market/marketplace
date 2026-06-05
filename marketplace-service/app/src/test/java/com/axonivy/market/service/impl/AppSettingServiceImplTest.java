@@ -193,18 +193,6 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testResolveValueReturnsRawValueWhenDecryptionFails() {
-    AppSetting setting = buildAppSetting("key", "bad-encrypted", true);
-    when(repository.findByKey(any())).thenReturn(Optional.of(setting));
-    when(encryptionService.decrypt("bad-encrypted")).thenThrow(new RuntimeException("Decryption error"));
-
-    String value = appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
-
-    assertEquals("bad-encrypted", value,
-        "Should return raw value when decryption fails");
-  }
-
-  @Test
   void testInitializeSettingsCreatesNewAndDeletesObsolete() {
     Set<String> existingKeys = Set.of(AppSettingKey.GITHUB_TOKEN.getKey());
     when(repository.findAllKeys()).thenReturn(existingKeys);

@@ -26,39 +26,20 @@ class EncryptionServiceImplTest {
   }
 
   @Test
-  void testEncryptReturnsNullForNullInput() {
+  void testDecryptReturnsEmptyForNullInput() {
     EncryptionServiceImpl service = new EncryptionServiceImpl(ENCRYPTION_KEY);
 
-    assertNull(service.encrypt(null), "Encrypting null should return null");
+    String result = service.decrypt("null");
+    assertEquals("", result,
+        "Decrypting invalid should return empty string due to caught IllegalArgumentException");
   }
 
   @Test
-  void testDecryptReturnsNullForNullInput() {
-    EncryptionServiceImpl service = new EncryptionServiceImpl(ENCRYPTION_KEY);
-
-    assertNull(service.decrypt(null), "Decrypting null should return null");
-  }
-
-  @Test
-  void testEncryptionDisabledWhenKeyIsBlank() {
+  void testDecryptThrowsNPEWhenKeyIsBlank() {
     EncryptionServiceImpl service = new EncryptionServiceImpl("");
 
-    String original = "sensitiveData";
-    assertEquals(original, service.encrypt(original),
-        "When encryption is disabled, encrypt should return the original value");
-    assertEquals(original, service.decrypt(original),
-        "When encryption is disabled, decrypt should return the original value");
-  }
-
-  @Test
-  void testEncryptionDisabledWhenKeyIsNull() {
-    EncryptionServiceImpl service = new EncryptionServiceImpl(null);
-
-    String original = "sensitiveData";
-    assertEquals(original, service.encrypt(original),
-        "When encryption key is null, encrypt should return the original value");
-    assertEquals(original, service.decrypt(original),
-        "When encryption key is null, decrypt should return the original value");
+    assertThrows(NullPointerException.class, () -> service.decrypt("someValue"),
+        "Decrypt should throw NullPointerException when encryptor is null");
   }
 
   @Test
@@ -86,5 +67,12 @@ class EncryptionServiceImplTest {
     String decrypted = service.decrypt(encrypted);
     assertEquals("", decrypted, "Decrypting an encrypted empty string should return empty string");
   }
-}
 
+  @Test
+  void testDecryptInvalidCiphertextReturnsEmpty() {
+    EncryptionServiceImpl service = new EncryptionServiceImpl(ENCRYPTION_KEY);
+
+    String result = service.decrypt("not-a-valid-ciphertext");
+    assertEquals("", result, "Decrypting invalid ciphertext should return empty string");
+  }
+}

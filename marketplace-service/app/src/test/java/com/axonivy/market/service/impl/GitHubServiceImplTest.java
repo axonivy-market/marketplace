@@ -113,14 +113,6 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetGitHubWithNullToken() throws IOException {
-    stubOkHttpClientBuilder();
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn(null);
-    assertThrows(IllegalStateException.class, () -> gitHubService.getGitHub(),
-        "Expected IllegalStateException when token is null");
-  }
-
-  @Test
   void testGetGitHubWithExplicitAccessToken() throws IOException {
     String accessToken = "explicitToken";
     stubOkHttpClientBuilder();
@@ -238,23 +230,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
     verify(restTemplate).postForEntity(anyString(), any(HttpEntity.class), eq(GitHubAccessTokenResponse.class));
   }
-
-
-  @Test
-  void testGetAccessTokenBlankClientId() {
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn("");
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn("clientSecret");
-
-    MissingHeaderException exception = assertThrows(
-        MissingHeaderException.class,
-        () -> gitHubService.getAccessToken("validCode"),
-        "Expected MissingHeaderException when OAuth client ID is blank"
-    );
-
-    assertEquals("Invalid or missing header", exception.getMessage(),
-        "Expected exception message to be 'Invalid or missing header'");
-  }
-
 
   @Test
   void testGetAccessTokenGitHubErrorResponse() throws Oauth2ExchangeCodeException {

@@ -28,16 +28,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
   @Override
   public String encrypt(String value) {
-    if (encryptor == null) {
-      throw new IllegalStateException("Encryption is not configured");
-    }
-
-    try {
-      return encryptor.encrypt(value);
-    } catch (IllegalArgumentException ex) {
-      log.warn("Failed to encrypt value", ex);
-      return StringUtils.EMPTY;
-    }
+    return encryptor.encrypt(value);
   }
 
   @Override

@@ -75,12 +75,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     if (StringUtils.isBlank(value) || !setting.getEncrypted()) {
       return value;
     }
-    try {
-      return encryptionService.decrypt(value).trim();
-    } catch (IllegalArgumentException ex) {
-      log.warn("Failed to decrypt setting '{}'", setting.getKey());
-      return value;
-    }
+    return encryptionService.decrypt(value).trim();
   }
 
   @PostConstruct
