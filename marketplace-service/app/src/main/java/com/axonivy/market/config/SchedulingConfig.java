@@ -25,6 +25,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
   private static final int POOL_SIZE = 10;
   private static final Duration NODE_2_OFFSET = Duration.ofMinutes(15);
+  private static final int NODE_2 = 2;
 
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
@@ -85,6 +86,6 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * concurrent load in clustered deployments.
    */
   private Duration getOffset() {
-    return nodeNumber == 2 ? NODE_2_OFFSET : Duration.ZERO;
+    return nodeNumber == NODE_2 ? NODE_2_OFFSET : Duration.ZERO;
   }
 }

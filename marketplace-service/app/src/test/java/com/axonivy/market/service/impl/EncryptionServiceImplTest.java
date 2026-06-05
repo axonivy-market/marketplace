@@ -62,7 +62,7 @@ class EncryptionServiceImplTest {
     EncryptionServiceImpl service = new EncryptionServiceImpl(ENCRYPTION_KEY);
 
     String encrypted = service.encrypt("");
-    assertNotNull(encrypted);
+    assertNotNull(encrypted, "Encrypting an empty string should not return null");
 
     String decrypted = service.decrypt(encrypted);
     assertEquals("", decrypted, "Decrypting an encrypted empty string should return empty string");
