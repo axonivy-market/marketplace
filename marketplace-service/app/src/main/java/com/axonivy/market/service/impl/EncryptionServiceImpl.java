@@ -15,7 +15,7 @@ public class EncryptionServiceImpl implements EncryptionService {
   private static final String SALT = "a1b2c3d4e5f6a7b8";
   private TextEncryptor encryptor;
 
-  public EncryptionServiceImpl(@Value("${encryption.key:}") String encryptionKey) {
+  public EncryptionServiceImpl(@Value("${market.encryption.key:}") String encryptionKey) {
 
     try {
       if (StringUtils.isNotBlank(encryptionKey)) {
