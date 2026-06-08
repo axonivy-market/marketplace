@@ -673,8 +673,8 @@ public class GitHubServiceImpl implements GitHubService {
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
       GitHubUnsupportedText config, AlternativeExtensionData extensionData) {
 
-    String unsupportedNotices = config.unsupportedNotice;
-    if (extensionData != null && StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
+    String unsupportedNotices = String.format(config.unsupportedNotice, extensionData.getDeprecatedVersionFrom());
+    if (StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
       unsupportedNotices += String.format(ALTERNATIVE_EXTENSION_FORMAT,
           extensionData.getAlternativeExtension(), extensionData.getSuccessorUrl());
     }

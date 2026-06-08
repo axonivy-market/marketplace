@@ -17,9 +17,11 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.MavenUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -46,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Log4j2
@@ -62,6 +63,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
   private final GitHubService gitHubService;
+  private final AxonIvyClient axonIvyClient;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
@@ -208,9 +210,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       throws IOException {
     AlternativeExtensionData extensionData = null;
     ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+
     if (productMarketplaceData != null) {
-      extensionData = getSuccessorAndAlternativeExtensionForAction(productMarketplaceData,
-          request.getPullRequestAction(), request);
+      extensionData = getSuccessorAndAlternativeExtensionForAction(productMarketplaceData, request);
       Date deprecationDate = Optional.ofNullable(request.getDeprecationDate()).orElse(new Date());
       productMarketplaceData.setDeprecationDate(deprecationDate);
       productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
@@ -218,9 +220,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productMarketplaceData.setAlternativeExtension(request.getAlternativeExtension());
       productMarketplaceDataRepo.save(productMarketplaceData);
     }
+
     String pullRequestUrl = null;
     Product product = productRepo.findById(productId).orElse(null);
     if (product != null) {
+      if (extensionData != null) {
+        extensionData.setDeprecatedVersionFrom(findNextMajorVersion(product.getNewestReleaseVersion()));
+      }
       product.setDeprecated(request.getIsDeprecated());
       pullRequestUrl = handlePullRequest(product, request, extensionData);
       productRepo.save(product);
@@ -228,12 +234,23 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return pullRequestUrl;
   }
 
+  private String findNextMajorVersion(String newestReleaseVersion) {
+    List<String> allVersion = axonIvyClient.getAllVersions();
+    return MavenUtils.findNextByMajorPrefix(newestReleaseVersion, allVersion);
+  }
+
   private AlternativeExtensionData getSuccessorAndAlternativeExtensionForAction(
-      ProductMarketplaceData productMarketplaceData, PullRequestAction action, DeprecationRequest request) {
-    if (action == PullRequestAction.REMOVE) {
-      return new AlternativeExtensionData(productMarketplaceData.getSuccessor(), productMarketplaceData.getAlternativeExtension());
+      ProductMarketplaceData productMarketplaceData, DeprecationRequest request) {
+    if (request.getPullRequestAction() == PullRequestAction.REMOVE) {
+      return AlternativeExtensionData.builder()
+          .alternativeExtension(productMarketplaceData.getAlternativeExtension())
+          .successorUrl(productMarketplaceData.getSuccessor())
+          .build();
     }
-    return new AlternativeExtensionData(request.getSuccessorUrl(), request.getAlternativeExtension());
+    return AlternativeExtensionData.builder()
+        .alternativeExtension(request.getAlternativeExtension())
+        .successorUrl(request.getSuccessorUrl())
+        .build();
   }
 
 
