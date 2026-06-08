@@ -10,6 +10,7 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import org.kohsuke.github.GHArtifact;
@@ -324,5 +325,5 @@ public interface GitHubService {
    * @throws IOException - if an error occurs while updating the README or interacting with GitHub
    * @author tvtphuc
    */
-  GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
+  GHPullRequest updateReadmeForSuccessorNotes(Product product,  PullRequestAction action, AlternativeExtensionData marketplaceData) throws IOException;
 }

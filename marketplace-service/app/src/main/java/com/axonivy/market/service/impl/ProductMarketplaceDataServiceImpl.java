@@ -6,7 +6,9 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
@@ -44,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Log4j2
@@ -203,36 +206,51 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public String updateSuccessorForProduct(String productId, DeprecationRequest request)
       throws IOException {
-    Optional.ofNullable(getProductMarketplaceData(productId))
-        .ifPresent((ProductMarketplaceData productMarketplaceData) -> {
-          Date deprecationDate = Optional.ofNullable(request.getDeprecationDate()).orElse(new Date());
-          productMarketplaceData.setDeprecationDate(deprecationDate);
-          productMarketplaceData.setSuccessor(request.getSuccessorUrl());
-          productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
-          productMarketplaceData.setAlternativeExtension(request.getAlternativeExtension());
-          productMarketplaceDataRepo.save(productMarketplaceData);
-        });
-
+    AlternativeExtensionData extensionData = null;
+    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
+    if (productMarketplaceData != null) {
+      extensionData = getSuccessorAndAlternativeExtensionForAction(productMarketplaceData,
+          request.getPullRequestAction(), request);
+      Date deprecationDate = Optional.ofNullable(request.getDeprecationDate()).orElse(new Date());
+      productMarketplaceData.setDeprecationDate(deprecationDate);
+      productMarketplaceData.setDeprecationRequester(request.getDeprecationRequester());
+      productMarketplaceData.setSuccessor(request.getSuccessorUrl());
+      productMarketplaceData.setAlternativeExtension(request.getAlternativeExtension());
+      productMarketplaceDataRepo.save(productMarketplaceData);
+    }
     String pullRequestUrl = null;
     Product product = productRepo.findById(productId).orElse(null);
     if (product != null) {
       product.setDeprecated(request.getIsDeprecated());
-      pullRequestUrl = handlePullRequest(product.getRepositoryName(), request);
+      pullRequestUrl = handlePullRequest(product, request, extensionData);
       productRepo.save(product);
     }
     return pullRequestUrl;
   }
+
+  private AlternativeExtensionData getSuccessorAndAlternativeExtensionForAction(
+      ProductMarketplaceData productMarketplaceData, PullRequestAction action, DeprecationRequest request) {
+    if (action == PullRequestAction.REMOVE) {
+      return new AlternativeExtensionData(productMarketplaceData.getSuccessor(), productMarketplaceData.getAlternativeExtension());
+    }
+    return new AlternativeExtensionData(request.getSuccessorUrl(), request.getAlternativeExtension());
+  }
+
 
   @Override
   public List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated) {
     return productMarketplaceDataRepo.findProductIdsByDeprecated(isDeprecated);
   }
 
-  private String handlePullRequest(String repoPath, DeprecationRequest request) throws IOException {
-    if (!request.getIsAddReadme() || request.getPullRequestAction() == null || StringUtils.isBlank(repoPath)) {
+  private String handlePullRequest(Product product, DeprecationRequest request,
+      AlternativeExtensionData extensionData) throws IOException {
+    if (!request.getIsAddReadme() || request.getPullRequestAction() == null || StringUtils.isBlank(
+        product.getRepositoryName())) {
       return null;
     }
-    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(repoPath, request.getPullRequestAction());
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(product, request.getPullRequestAction(),
+        extensionData);
+
     return Optional.ofNullable(pullRequest)
         .map(GHPullRequest::getHtmlUrl)
         .map(Object::toString)

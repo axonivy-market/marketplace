@@ -4,6 +4,7 @@ import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
@@ -22,9 +23,11 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
@@ -91,6 +94,9 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+  private static final String ALTERNATIVE_EXTENSION_FORMAT = """
+   > **Recommended alternative:** [%s](%s)
+   """;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
@@ -99,6 +105,7 @@ public class GitHubServiceImpl implements GitHubService {
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
+  private final ProductMarketplaceDataRepository productMarketplaceDataRepository;
   private final OkHttpClient okHttpClient;
 
   @Override
@@ -518,15 +525,16 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
-      String repositoryPath, PullRequestAction action) throws IOException {
+      Product product, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
-    GHRepository repository = gitHub.getRepository(repositoryPath);
+    GHRepository repository = gitHub.getRepository("axonivy-market/readme-test");
     String baseBranch = repository.getDefaultBranch();
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
+
     String currentReadmeContent = getReadmeContent(readme);
-    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config, extensionData);
 
     boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (isSameContent) {
@@ -663,14 +671,26 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
-      GitHubUnsupportedText config) {
-    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
+      GitHubUnsupportedText config, AlternativeExtensionData extensionData) {
+
+    String unsupportedNotices = config.unsupportedNotice;
+    if (extensionData != null && StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
+      unsupportedNotices += String.format(ALTERNATIVE_EXTENSION_FORMAT,
+          extensionData.getAlternativeExtension(), extensionData.getSuccessorUrl());
+    }
+
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, unsupportedNotices);
     return switch (action) {
-      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
-          updatedContent, config.unsupportedBranchName());
-      case REMOVE ->
-          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
-              updatedContent, config.unsupportedBranchName());
+      case ADD -> new PullRequestData(
+          config.addUnsupportedNoticePrBody(),
+          config.deprecatedMessage(),
+          updatedContent,
+          config.unsupportedBranchName());
+      case REMOVE -> new PullRequestData(
+              config.removeUnsupportedNoticePrBody(),
+              config.removeUnsupportedNoticeMessage(),
+              updatedContent,
+              config.unsupportedBranchName());
     };
   }
 
