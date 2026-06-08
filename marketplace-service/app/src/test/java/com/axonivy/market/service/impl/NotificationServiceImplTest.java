@@ -42,8 +42,8 @@ class NotificationServiceImplTest {
 
   @Test
   void testNotifySendsEmailWhenDisabledChecksExist() throws Exception {
-    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
-    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
     when(mailSender.createMailSender()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
@@ -92,8 +92,8 @@ class NotificationServiceImplTest {
 
   @Test
   void testNotifySupportsMultipleRecipients() throws Exception {
-    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
-    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to1@test.com, to2@test.com, to3@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to1@test.com, to2@test.com, to3@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
     when(mailSender.createMailSender()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
@@ -140,8 +140,8 @@ class NotificationServiceImplTest {
 
   @Test
   void testNotifyCatchMailError() {
-    when(settingService.getValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
-    when(settingService.getValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
+    when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
     when(mailSender.createMailSender()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage())
         .thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));

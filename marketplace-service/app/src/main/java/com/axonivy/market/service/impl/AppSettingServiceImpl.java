@@ -57,7 +57,7 @@ public class AppSettingServiceImpl implements AppSettingService {
   }
 
   @Override
-  public String getValueByKey(AppSettingKey setting) {
+  public String getStringValueByKey(AppSettingKey setting) {
     return repository.findByKey(setting.getKey()).map(this::resolveValue).filter(StringUtils::isNotBlank).orElse(
         setting.getDefaultValue());
   }
@@ -76,6 +76,34 @@ public class AppSettingServiceImpl implements AppSettingService {
       return value;
     }
     return encryptionService.decrypt(value).trim();
+  }
+
+  @Override
+  public Long getLongValueByKey(AppSettingKey setting) {
+    String value = getStringValueByKey(setting);
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException ex) {
+      return Long.parseLong(setting.getDefaultValue());
+    }
+  }
+
+  @Override
+  public Integer getIntegerValueByKey(AppSettingKey setting) {
+    String value = getStringValueByKey(setting);
+
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException ex) {
+      return Integer.parseInt(setting.getDefaultValue());
+    }
+  }
+
+  @Override
+  public Boolean getBooleanValueByKey(AppSettingKey setting) {
+    String value = getStringValueByKey(setting);
+    return Boolean.valueOf(value);
+
   }
 
   @PostConstruct

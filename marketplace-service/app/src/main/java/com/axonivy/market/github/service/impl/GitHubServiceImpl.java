@@ -153,8 +153,8 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHubAccessTokenResponse getAccessToken(String code) throws Oauth2ExchangeCodeException {
     // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
-    String clientId = appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
-    String clientSecret = appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
+    String clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
+    String clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add(Json.CLIENT_ID, clientId);
@@ -650,7 +650,7 @@ public class GitHubServiceImpl implements GitHubService {
    * Read the GitHub token from DB-backed AppSetting.
    */
   private String getConfiguredToken() {
-    return appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   /**

@@ -30,7 +30,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
 
-  @Value("${market.node.number:1}")
+  @Value("${market.node-number:1}")
   private int nodeNumber;
 
   @Bean
@@ -74,7 +74,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * even-numbered nodes to reduce concurrent load in clustered deployments.
    */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
-    Instant next = new CronTrigger(appSettingService.getValueByKey(key)).nextExecution(context);
+    Instant next = new CronTrigger(appSettingService.getStringValueByKey(key)).nextExecution(context);
     if (next == null) {
       return null;
     }

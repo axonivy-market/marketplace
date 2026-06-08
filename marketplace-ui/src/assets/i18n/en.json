@@ -52,7 +52,8 @@
       "monitor": "Monitor",
       "login": "Login with GitHub",
       "logout": "Logout",
-      "logs": "Logs Viewer"
+      "logs": "Logs Viewer",
+      "settings": "Settings"
     },
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",

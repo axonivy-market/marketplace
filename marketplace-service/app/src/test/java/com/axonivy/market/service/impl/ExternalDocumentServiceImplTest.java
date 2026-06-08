@@ -105,7 +105,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @BeforeEach
   void setup() {
-    lenient().when(appSettingService.getValueByKey(any(AppSettingKey.class)))
+    lenient().when(appSettingService.getStringValueByKey(any(AppSettingKey.class)))
         .thenAnswer(inv -> {
           AppSettingKey key = inv.getArgument(0);
           System.out.println("Mock called with: " + key);

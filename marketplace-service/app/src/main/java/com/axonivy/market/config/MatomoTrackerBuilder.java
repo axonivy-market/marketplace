@@ -26,9 +26,9 @@ public class MatomoTrackerBuilder {
   private Boolean enabled;
 
   public synchronized MatomoTracker create() {
-    String rawEndpoint = appSettingService.getValueByKey(AppSettingKey.MATOMO_API_ENDPOINT).trim();
-    String rawSiteId = appSettingService.getValueByKey(AppSettingKey.MATOMO_SITE_ID).trim();
-    var newEnabled = Boolean.parseBoolean(appSettingService.getValueByKey(AppSettingKey.MATOMO_ENABLED).trim());
+    String rawEndpoint = appSettingService.getStringValueByKey(AppSettingKey.MATOMO_API_ENDPOINT).trim();
+    String rawSiteId = appSettingService.getStringValueByKey(AppSettingKey.MATOMO_SITE_ID).trim();
+    boolean newEnabled = appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED);
 
     int newSiteId;
     try {
@@ -37,19 +37,14 @@ public class MatomoTrackerBuilder {
       newSiteId = 1;
     }
 
-    if (tracker != null
-        && Objects.equals(endpoint, rawEndpoint)
-        && Objects.equals(siteId, newSiteId)
-        && Objects.equals(enabled, newEnabled)) {
+    if (tracker != null && Objects.equals(endpoint, rawEndpoint) && Objects.equals(siteId, newSiteId) && Objects.equals(
+        enabled, newEnabled)) {
       return tracker;
     }
 
     try {
-      TrackerConfiguration config = TrackerConfiguration.builder()
-          .apiEndpoint(URI.create(rawEndpoint))
-          .defaultSiteId(newSiteId)
-          .enabled(newEnabled)
-          .build();
+      TrackerConfiguration config = TrackerConfiguration.builder().apiEndpoint(URI.create(rawEndpoint)).defaultSiteId(
+          newSiteId).enabled(newEnabled).build();
       tracker = new MatomoTracker(config);
       endpoint = rawEndpoint;
       siteId = newSiteId;

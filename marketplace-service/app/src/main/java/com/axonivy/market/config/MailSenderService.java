@@ -15,13 +15,14 @@ public class MailSenderService {
 
   public JavaMailSender createMailSender() {
     var sender = new JavaMailSenderImpl();
-    sender.setHost(appSettingService.getValueByKey(AppSettingKey.MAIL_HOST));
-    sender.setPort(Integer.parseInt(appSettingService.getValueByKey(AppSettingKey.MAIL_PORT)));
-    sender.setUsername(appSettingService.getValueByKey(AppSettingKey.MAIL_USERNAME));
-    sender.setPassword(appSettingService.getValueByKey(AppSettingKey.MAIL_PASSWORD));
+    sender.setHost(appSettingService.getStringValueByKey(AppSettingKey.MAIL_HOST));
+    sender.setPort(appSettingService.getIntegerValueByKey(AppSettingKey.MAIL_PORT));
+    sender.setUsername(appSettingService.getStringValueByKey(AppSettingKey.MAIL_USERNAME));
+    sender.setPassword(appSettingService.getStringValueByKey(AppSettingKey.MAIL_PASSWORD));
     var props = sender.getJavaMailProperties();
-    props.put("mail.smtp.auth", appSettingService.getValueByKey(AppSettingKey.MAIL_SMTP_AUTH));
-    props.put("mail.smtp.starttls.enable", appSettingService.getValueByKey(AppSettingKey.MAIL_SMTP_STARTTLS_ENABLE));
+    props.put("mail.smtp.auth", appSettingService.getBooleanValueByKey(AppSettingKey.MAIL_SMTP_AUTH));
+    props.put("mail.smtp.starttls.enable",
+        appSettingService.getBooleanValueByKey(AppSettingKey.MAIL_SMTP_STARTTLS_ENABLE));
 
     return sender;
   }

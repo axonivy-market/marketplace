@@ -140,7 +140,7 @@ class ProductServiceImplTest extends BaseSetup {
   @BeforeEach
   void setup() {
     mockResultReturn = createPageProductsMock();
-    lenient().when(appSettingService.getValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
   }
 
   @Test

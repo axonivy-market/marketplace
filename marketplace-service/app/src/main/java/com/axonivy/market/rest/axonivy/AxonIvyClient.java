@@ -24,7 +24,7 @@ public class AxonIvyClient {
   private final AppSettingService settingService;
 
   public List<String> getDocumentVersions() {
-    String host = settingService.getValueByKey(AppSettingKey.AXON_IVY_DEVELOPER_URL);
+    String host = settingService.getStringValueByKey(AppSettingKey.AXON_IVY_DEVELOPER_URL);
     var url = String.format(HOST_PATH_FORMAT, host, DOCUMENT_VERSION_PATH);
     try {
       DocumentInfoResponse response = restTemplate.getForObject(url, DocumentInfoResponse.class);

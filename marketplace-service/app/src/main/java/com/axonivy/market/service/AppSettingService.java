@@ -11,6 +11,12 @@ public interface AppSettingService {
 
   AppSettingDto update(String key, String value);
 
-  String getValueByKey(AppSettingKey key);
+  Long getLongValueByKey(AppSettingKey key);
+
+  Boolean getBooleanValueByKey(AppSettingKey key);
+
+  Integer getIntegerValueByKey(AppSettingKey key);
+
+  String getStringValueByKey(AppSettingKey key);
 
 }

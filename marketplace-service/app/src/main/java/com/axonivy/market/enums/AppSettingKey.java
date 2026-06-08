@@ -15,49 +15,49 @@ public enum AppSettingKey {
   // =========================
   PRODUCTS_CRON(
       "market.scheduling.products-cron",
-      "0 0 */6 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for product synchronization.",
       false),
 
   PRODUCTS_DEPENDENCY_CRON(
       "market.scheduling.products-dependency-cron",
-      "0 30 */6 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for dependency synchronization.",
       false),
 
   GITHUB_REPOS_CRON(
       "market.scheduling.github-repos-cron",
-      "0 0 */12 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for GitHub repository synchronization.",
       false),
 
   DOCUMENTS_CRON(
       "market.scheduling.documents-cron",
-      "0 15 */12 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for documentation synchronization.",
       false),
 
   PRODUCT_RELEASE_NOTES_CRON(
       "market.scheduling.products-release-notes-cron",
-      "0 0 2 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for release notes synchronization.",
       false),
 
   SECURITY_MONITOR_CRON(
       "market.scheduling.security-monitor-cron",
-      "0 */30 * * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitoring.",
       false),
 
   SEND_NOTIFICATION_SECURITY_MONITOR_CRON(
       "market.scheduling.send-notification-security-monitor-cron",
-      "0 0 9 * * *",
+      "0 30 * * * *",
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitor notifications.",
       false),

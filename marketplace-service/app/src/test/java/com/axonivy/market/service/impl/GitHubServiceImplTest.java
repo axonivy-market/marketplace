@@ -13,7 +13,6 @@ import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -107,9 +106,9 @@ class GitHubServiceImplTest extends BaseSetup {
   @Test
   void testGetGitHubWithValidToken() throws IOException {
     stubOkHttpClientBuilder();
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
-    verify(appSettingService).getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
@@ -119,7 +118,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GitHub result = gitHubService.getGitHub(accessToken);
 
     assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
-    verify(appSettingService, never()).getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    verify(appSettingService, never()).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
@@ -209,8 +208,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String clientSecret = "clientSecret";
     String accessToken = "accessToken";
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn(null);
@@ -239,8 +238,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String error = "invalid_grant";
     String errorDescription = "The authorization code is invalid";
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn(error);
@@ -271,8 +270,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String clientId = "clientId";
     String clientSecret = "clientSecret";
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn("error_code");
@@ -1198,7 +1197,7 @@ class GitHubServiceImplTest extends BaseSetup {
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
     ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("test-repo");
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1229,7 +1228,7 @@ class GitHubServiceImplTest extends BaseSetup {
     ProductSecurityInfo infoB = buildMockProductSecurityInfo("repo-b");
     ProductSecurityInfo infoC = buildMockProductSecurityInfo("repo-c");
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1255,7 +1254,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHOrganization mockOrg = mock(GHOrganization.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
 
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1303,7 +1302,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
       throws Exception {
-    when(appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getRepository("org/repo")).thenReturn(repository);
     when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);

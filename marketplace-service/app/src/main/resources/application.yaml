@@ -52,7 +52,7 @@ management:
     web:
       exposure:
         include: health
-      base-path: /actuator 
+      base-path: /actuator
 
 logging:
   file:
@@ -72,8 +72,15 @@ jwt:
 
 market:
   environment: '${MARKET_ENVIRONMENT}'
+  node-number: '${MARKET_NODE_NUMBER}'
   cors:
     allowed:
       origin:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
+  encryption:
+    key: '${MARKET_ENCRYPTION_SECRET_KEY}'
+  info:
+    title: "Marketplace app"
+    description: "The restful api for marketplace website"
+    version: '${BUILD_VERSION}'

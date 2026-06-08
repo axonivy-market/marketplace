@@ -40,11 +40,11 @@ public class NotificationServiceImpl implements NotificationService {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
       message.setFrom(
-          settingService.getValueByKey(AppSettingKey.MAIL_FROM));
+          settingService.getStringValueByKey(AppSettingKey.MAIL_FROM));
 
       message.setTo(
           Arrays.stream(
-                  settingService.getValueByKey(AppSettingKey.MAIL_TO)
+                  settingService.getStringValueByKey(AppSettingKey.MAIL_TO)
                       .split(CoreCommonConstants.COMMA))
               .map(String::trim)
               .toArray(String[]::new));

@@ -21,7 +21,6 @@ import static org.mockito.Mockito.*;
 class LimitCallingConfigTest {
   private LimitCallingConfig filter;
 
-  private AppSettingService appSettingService;
   private HttpServletRequest request;
   private HttpServletResponse response;
   private FilterChain chain;
@@ -29,11 +28,11 @@ class LimitCallingConfigTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    appSettingService = mock(AppSettingService.class);
+    AppSettingService appSettingService = mock(AppSettingService.class);
     filter = new LimitCallingConfig(appSettingService);
 
-    when(appSettingService.getValueByKey(AppSettingKey.CLICK_CAPACITY)).thenReturn("2");
-    when(appSettingService.getValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS)).thenReturn("/api/test");
+    when(appSettingService.getIntegerValueByKey(AppSettingKey.CLICK_CAPACITY)).thenReturn(2);
+    when(appSettingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS)).thenReturn("/api/test");
 
     request = mock(HttpServletRequest.class);
     response = mock(HttpServletResponse.class);

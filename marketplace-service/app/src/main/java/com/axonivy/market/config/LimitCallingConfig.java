@@ -38,7 +38,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
     String clientIp = getClientIp(request);
     String apiPath = request.getRequestURI();
 
-    String paths = settingService.getValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
+    String paths = settingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
     List<String> requestPaths = Arrays.stream(paths.split(","))
         .map(String::trim)
         .filter(s -> !s.isEmpty())
@@ -61,7 +61,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private Bucket createNewBucket(String clientIp) {
-    var capacity = Long.parseLong(settingService.getValueByKey(AppSettingKey.CLICK_CAPACITY));
+    var capacity = settingService.getIntegerValueByKey(AppSettingKey.CLICK_CAPACITY);
     Bandwidth limit = Bandwidth.builder()
         .capacity(capacity)
         .refillGreedy(capacity, Duration.ofMinutes(1))

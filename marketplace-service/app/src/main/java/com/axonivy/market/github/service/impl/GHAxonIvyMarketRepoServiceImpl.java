@@ -158,6 +158,6 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   }
 
   private String getMarketRepoBranch() {
-    return appSettingService.getValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 }

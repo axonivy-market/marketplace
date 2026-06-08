@@ -146,7 +146,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private String getMarketRepoBranch() {
-    return appSettingService.getValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 
   @Override

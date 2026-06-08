@@ -136,7 +136,7 @@ class AppSettingServiceImplTest {
     AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "stored-token", false);
     when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
 
-    String value = appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
 
     assertEquals("stored-token", value, "Should return stored value from repository");
   }
@@ -147,7 +147,7 @@ class AppSettingServiceImplTest {
     when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
     when(encryptionService.decrypt("encrypted-token")).thenReturn("decrypted-token");
 
-    String value = appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
 
     assertEquals("decrypted-token", value, "Should return decrypted value for encrypted settings");
   }
@@ -156,7 +156,7 @@ class AppSettingServiceImplTest {
   void testGetValueByKeyReturnsDefaultWhenNotFound() {
     when(repository.findByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey())).thenReturn(Optional.empty());
 
-    String value = appSettingService.getValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
+    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
 
     assertEquals(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getDefaultValue(), value,
         "Should return default value when setting is not found in repository");
@@ -167,7 +167,7 @@ class AppSettingServiceImplTest {
     AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "", false);
     when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
 
-    String value = appSettingService.getValueByKey(AppSettingKey.GITHUB_TOKEN);
+    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
 
     assertEquals(AppSettingKey.GITHUB_TOKEN.getDefaultValue(), value,
         "Should return default value when stored value is blank");
