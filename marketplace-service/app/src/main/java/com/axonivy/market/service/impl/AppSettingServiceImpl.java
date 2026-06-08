@@ -84,7 +84,13 @@ public class AppSettingServiceImpl implements AppSettingService {
     try {
       return Long.parseLong(value);
     } catch (NumberFormatException ex) {
-      return Long.parseLong(setting.getDefaultValue());
+      try {
+        return Long.parseLong(setting.getDefaultValue());
+      } catch (NumberFormatException defaultEx) {
+        log.warn("Invalid long value '{}' and invalid default '{}' for setting key '{}'.", value,
+            setting.getDefaultValue(), setting.getKey(), defaultEx);
+        return 0L;
+      }
     }
   }
 
@@ -95,7 +101,13 @@ public class AppSettingServiceImpl implements AppSettingService {
     try {
       return Integer.parseInt(value);
     } catch (NumberFormatException ex) {
-      return Integer.parseInt(setting.getDefaultValue());
+      try {
+        return Integer.parseInt(setting.getDefaultValue());
+      } catch (NumberFormatException defaultEx) {
+        log.warn("Invalid integer value '{}' and invalid default '{}' for setting key '{}'", value,
+            setting.getDefaultValue(), setting.getKey(), defaultEx);
+        return null;
+      }
     }
   }
 
