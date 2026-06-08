@@ -2,97 +2,77 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.security.SecurityAuthorities;
+import com.axonivy.market.security.SecurityJwtProperties;
 import com.axonivy.market.service.JwtService;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-@Log4j2
 @Component
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
-  private static final int TOKEN_EXPIRE_DURATION = 86_400_000;
-  private static final long ADMIN_TOKEN_LIFETIME = 1;
 
-  @Value("${jwt.secret}")
-  private String secret;
+  public static final String USERNAME_CLAIM = "username";
+  public static final String AVATAR_URL_CLAIM = "avatarUrl";
+  public static final String PROVIDER_CLAIM = "provider";
+  public static final String AUTHORITIES_CLAIM = "authorities";
+  public static final String ADMIN_CLAIM = "admin";
 
-  @Value("${jwt.expiration}")
-  private long expiration;
-
-  @Override
-  public String generateToken(GithubUser githubUser, String accessToken) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put(GitHubConstants.NAME, githubUser.getName());
-    claims.put(GitHubConstants.USERNAME, githubUser.getUsername());
-    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
-    return createNewJWTCompactToken(githubUser.getId(), claims, expiration);
-  }
+  private final JwtEncoder jwtEncoder;
+  private final JwtDecoder jwtDecoder;
+  private final SecurityJwtProperties securityJwtProperties;
 
   @Override
-  public String generateJWTFromGitHubToken(String accessToken) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put(GitHubConstants.ACCESS_TOKEN, accessToken);
-    return createNewJWTCompactToken(GitHubConstants.ADMIN_SESSION_TOKEN, claims, ADMIN_TOKEN_LIFETIME);
+  public String generateToken(UserInfo userInfo) {
+    var now = java.time.Instant.now();
+    var claims = JwtClaimsSet.builder()
+        .issuer(securityJwtProperties.getIssuer())
+        .issuedAt(now)
+        .expiresAt(now.plusSeconds(securityJwtProperties.getExpirationMinutes() * 60L))
+        .audience(List.of(securityJwtProperties.getAudience()))
+        .id(UUID.randomUUID().toString())
+        .subject(userInfo.getGitHubId())
+        .claim(GitHubConstants.NAME, userInfo.getName())
+        .claim(USERNAME_CLAIM, userInfo.getUsername())
+        .claim(AVATAR_URL_CLAIM, userInfo.getAvatarUrl())
+        .claim(PROVIDER_CLAIM, userInfo.getProvider())
+        .claim(ADMIN_CLAIM, true)
+        .claim(AUTHORITIES_CLAIM, List.of(SecurityAuthorities.MARKET_ADMIN))
+        .build();
+
+    return jwtEncoder.encode(JwtEncoderParameters.from(
+        JwsHeader.with(MacAlgorithm.HS256).build(),
+        claims)).getTokenValue();
   }
 
   @Override
   public boolean validateToken(String token) {
     try {
-      getClaimsJws(token);
+      decodeToken(token);
       return true;
-    } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |
-             IllegalArgumentException e) {
-      log.error("Error validating token: ", e);
+    } catch (JwtException ex) {
       return false;
     }
   }
 
   @Override
-  public Claims getClaimsFromToken(String token) {
-    token = unifyJWTToken(token);
-    return getClaimsJws(token).getBody();
+  public Jwt decodeToken(String token) {
+    return jwtDecoder.decode(unifyToken(token));
   }
 
-  public Jws<Claims> getClaimsJws(String token) {
-    return Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-  }
-
-  @Override
-  public String getRawAccessToken(String jwtToken) {
-    var claims = getClaimsFromToken(jwtToken);
-    return claims.get(GitHubConstants.ACCESS_TOKEN, String.class);
-  }
-
-  private String unifyJWTToken(String jwtToken) {
-    var token = StringUtils.removeStart(jwtToken, CommonConstants.BEARER);
-    return StringUtils.trim(token);
-  }
-
-  private String createNewJWTCompactToken(String subject, Map<String, Object> claims, long expiration) {
-    return Jwts.builder()
-        .setClaims(claims)
-        .setSubject(subject)
-        .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
-        .signWith(SignatureAlgorithm.HS512, secret)
-        .compact();
+  private String unifyToken(String token) {
+    return StringUtils.trim(StringUtils.removeStart(token, CommonConstants.BEARER));
   }
 }

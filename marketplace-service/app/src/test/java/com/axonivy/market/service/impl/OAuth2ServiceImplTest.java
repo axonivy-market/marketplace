@@ -1,10 +1,10 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
+import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
@@ -28,6 +28,8 @@ class OAuth2ServiceImplTest extends BaseSetup {
   @Mock
   private GitHubService gitHubService;
   @Mock
+  private GitHubProperty gitHubProperty;
+  @Mock
   private JwtService jwtService;
   @InjectMocks
   private OAuth2ServiceImpl oAuth2Service;
@@ -41,12 +43,12 @@ class OAuth2ServiceImplTest extends BaseSetup {
   @Test
   void testGitHubLoginSuccess() throws Exception {
     String accessToken = "sampleAccessToken";
-    GithubUser githubUser = createUserMock();
     String jwtToken = "sampleJwtToken";
+    UserInfo userInfo = getMockGithubUser();
 
     when(gitHubService.getAccessToken(any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
-    when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(githubUser);
-    when(jwtService.generateToken(githubUser, accessToken)).thenReturn(jwtToken);
+    when(gitHubService.validateUserInOrganizationAndTeam(any(), any(), any())).thenReturn(userInfo);
+    when(jwtService.generateToken(userInfo)).thenReturn(jwtToken);
 
     String jwt = oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode);
 
@@ -85,10 +87,10 @@ class OAuth2ServiceImplTest extends BaseSetup {
   @Test
   void testRequestAccessSuccess() {
     String mockToken = "Bearer sampleAccessToken";
-    when(jwtService.generateJWTFromGitHubToken(any())).thenReturn("mockToken");
 
     UserInfo mockUser = new UserInfo();
     when(gitHubService.validateUserInOrganizationAndTeam(any(), any(), any())).thenReturn(mockUser);
+    when(jwtService.generateToken(mockUser)).thenReturn("mockToken");
 
     var userInfo = oAuth2Service.validateTokenAndGenerateJWT(mockToken);
     assertTrue(ObjectUtils.isNotEmpty(userInfo),

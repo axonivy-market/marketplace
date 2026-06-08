@@ -1,17 +1,14 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.Authorized.AuthorizationScope;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
-import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.security.AuthenticatedUser;
 import com.axonivy.market.service.FeedbackService;
-import com.axonivy.market.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -20,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -30,6 +26,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +39,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.USER_ID;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -54,7 +51,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class FeedbackController {
 
   private final FeedbackService feedbackService;
-  private final JwtService jwtService;
   private final FeedbackModelAssembler feedbackModelAssembler;
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
@@ -120,15 +116,15 @@ public class FeedbackController {
   @PutMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
-      @RequestBody @Valid FeedbackApprovalModel feedbackApproval, HttpServletRequest request) {
-    var moderatorName = (String) request.getAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE);
-    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval, moderatorName);
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval, currentUser.name());
     var model = feedbackModelAssembler.toModel(feedback);
     model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());
     return ResponseEntity.ok(model);
   }
 
-  @Authorized(scope = AuthorizationScope.USER)
+  @Authorized
   @PostMapping
   @Operation(summary = "Create user feedback",
     description = "Save user feedback of product with their token from Github account.")
@@ -137,11 +133,10 @@ public class FeedbackController {
         schema = @Schema(implementation = FeedbackModelRequest.class)))
   @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
       @ApiResponse(responseCode = "401", description = "Unauthorized request") })
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-      HttpServletRequest request) {
-    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
-    var claims = jwtService.getClaimsFromToken(token);
-    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+  public ResponseEntity<Void> createFeedback(
+      @RequestBody @Valid FeedbackModelRequest feedbackRequest,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, currentUser.gitHubUserId());
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
         .buildAndExpand(newFeedback.getId())
