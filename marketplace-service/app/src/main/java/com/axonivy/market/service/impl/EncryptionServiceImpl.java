@@ -28,13 +28,19 @@ public class EncryptionServiceImpl implements EncryptionService {
 
   @Override
   public String encrypt(String value) {
-    return encryptor.encrypt(value);
+    if (encryptor == null) {
+      throw new IllegalStateException("Encryption is not configured (market.encryption.key)");
+    }
+    return encryptor.encrypt(StringUtils.defaultString(value));
   }
 
   @Override
   public String decrypt(String value) {
+    if (encryptor == null) {
+      throw new IllegalStateException("Encryption is not configured (market.encryption.key)");
+    }
     try {
-      return encryptor.decrypt(value);
+      return encryptor.decrypt(StringUtils.defaultString(value));
     } catch (IllegalArgumentException ex) {
       return StringUtils.EMPTY;
     }

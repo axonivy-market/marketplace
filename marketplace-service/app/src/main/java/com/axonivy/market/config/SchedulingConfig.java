@@ -4,6 +4,7 @@ import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.scheduling.support.CronTrigger;
 import java.time.Duration;
 import java.time.Instant;
 
+@Log4j2
 @Configuration
 @EnableScheduling
 @RequiredArgsConstructor
@@ -24,8 +26,8 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
   private static final int POOL_SIZE = 10;
-  private static final Duration NODE_2_OFFSET = Duration.ofMinutes(15);
-  private static final int NODE_2 = 2;
+  private static final Duration MULTI_NODES_OFFSET = Duration.ofMinutes(15);
+  private static final int NODE_DIVISOR = 2;
 
   private final AppSettingService appSettingService;
   private final ScheduledTasks scheduledTasks;
@@ -74,11 +76,16 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * even-numbered nodes to reduce concurrent load in clustered deployments.
    */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
-    Instant next = new CronTrigger(appSettingService.getStringValueByKey(key)).nextExecution(context);
-    if (next == null) {
-      return null;
+    String cron = appSettingService.getStringValueByKey(key);
+    try {
+      Instant next = new CronTrigger(cron).nextExecution(context);
+      return next == null ? null : next.plus(getOffset());
+    } catch (IllegalArgumentException ex) {
+      log.warn("Invalid cron expression for key '{}': {}. Using default value: {}", key.getKey(), cron,
+          key.getDefaultValue(), ex);
+      Instant next = new CronTrigger(key.getDefaultValue()).nextExecution(context);
+      return next == null ? null : next.plus(getOffset());
     }
-    return next.plus(getOffset());
   }
 
   /**
@@ -86,6 +93,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * concurrent load in clustered deployments.
    */
   private Duration getOffset() {
-    return nodeNumber == NODE_2 ? NODE_2_OFFSET : Duration.ZERO;
+    return nodeNumber % NODE_DIVISOR == 0 ? MULTI_NODES_OFFSET : Duration.ZERO;
   }
+
 }

@@ -31,6 +31,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +43,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
 
+  private static final int MIN_RANDOM_INSTALLATION_COUNT = 20;
+  private static final int MAX_RANDOM_INSTALLATION_COUNT = 50;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -49,6 +52,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
   private final GitHubService gitHubService;
+  private final SecureRandom random = new SecureRandom();
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
@@ -106,15 +110,19 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
       return productMarketplaceDataRepo.increaseInstallationCount(productId);
     }
-    return productMarketplaceDataRepo.updateInitialCount(productId, 1);
+    int installationCount = generateRandomInstallationCount();
+    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
+  }
+
+  public int generateRandomInstallationCount() {
+    return random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
   }
 
   @Override
   public ProductMarketplaceData updateProductInstallationCount(String id) {
     var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      int installationCount = productMarketplaceDataRepo.updateInitialCount(id,
-          1);
+      int installationCount = productMarketplaceDataRepo.updateInitialCount(id, generateRandomInstallationCount());
       productMarketplaceData.setInstallationCount(installationCount);
     }
     return productMarketplaceData;

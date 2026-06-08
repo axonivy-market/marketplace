@@ -29,10 +29,13 @@ spring:
 
 market:
   environment: production
+  node-number: 1
   cors:
     allowed:
       origin:
         patterns: '*'
+  encryption:
+    key: a1b2c3d4e5f6a7b8
   info:
     title: "Marketplace app"
     description: "The restful api for marketplace website"
@@ -40,9 +43,6 @@ market:
 
 jwt:
   secret: jwtSecret
-
-encryption:
-  key: a1b2c3d4e5f6a7b8
 
 logging:
   file:

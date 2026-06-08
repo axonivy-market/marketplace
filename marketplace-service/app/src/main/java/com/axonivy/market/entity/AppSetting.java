@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.core.entity.GenericIdEntity;
 import com.axonivy.market.enums.AppSettingKey;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ public class AppSetting extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
 
+  @Column(unique = true, nullable = false)
   private String key;
   private String value;
   private String category;

@@ -14,6 +14,7 @@ import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -151,10 +152,15 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubAccessTokenResponse getAccessToken(String code) throws Oauth2ExchangeCodeException {
+  public GitHubAccessTokenResponse getAccessToken(
+      String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
     // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
     String clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
     String clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
+
+    if (StringUtils.isAnyBlank(clientId, clientSecret)) {
+      throw new MissingHeaderException();
+    }
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add(Json.CLIENT_ID, clientId);

@@ -62,20 +62,17 @@ public class AppSettingServiceImpl implements AppSettingService {
         setting.getDefaultValue());
   }
 
-  public String getValue(String key) {
-    return repository.findById(key).map(this::resolveValue).orElse(null);
-  }
-
   private AppSettingDto toDto(AppSetting entity) {
     return AppSettingDto.from(entity, resolveValue(entity));
   }
 
   private String resolveValue(AppSetting setting) {
-    String value = setting.getValue().trim();
-    if (StringUtils.isBlank(value) || !setting.getEncrypted()) {
+    String value = StringUtils.trimToEmpty(setting.getValue());
+    boolean encrypted = Boolean.TRUE.equals(setting.getEncrypted());
+    if (StringUtils.isBlank(value) || !encrypted) {
       return value;
     }
-    return encryptionService.decrypt(value).trim();
+    return StringUtils.trimToEmpty(encryptionService.decrypt(value));
   }
 
   @Override

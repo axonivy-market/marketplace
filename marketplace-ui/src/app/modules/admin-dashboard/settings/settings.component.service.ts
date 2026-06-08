@@ -52,11 +52,7 @@ export class AppSettingsService {
         settingValue: setting.settingValue
       },
       {
-        headers: this.adminAuth.getAuthHeaders(),
-        context: new HttpContext().set(
-          LoadingComponent,
-          LoadingComponentId.APP_SETTINGS
-        )
+        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }

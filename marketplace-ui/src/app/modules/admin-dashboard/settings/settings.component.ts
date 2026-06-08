@@ -56,6 +56,7 @@ export class AdminSettingsComponent implements OnInit {
   protected pageSize = 10;
   protected searchText = '';
   protected readonly visibleSecrets = new Set<string>();
+  protected isSaving = false;
 
   private readonly searchChanged = new Subject<string>();
 
@@ -90,9 +91,16 @@ export class AdminSettingsComponent implements OnInit {
     this.appSettingsService
       .getSettings()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(settings => {
-        this.settings = settings;
-        this.filteredSettings = [...settings];
+      .subscribe({
+        next: settings => {
+          this.settings = settings;
+          this.filteredSettings = [...settings];
+          this.applySorting();
+         },
+         error: () => {
+           this.settings = [];
+           this.filteredSettings = [];
+         }
       });
   }
 
@@ -116,10 +124,24 @@ export class AdminSettingsComponent implements OnInit {
         s.category.toLowerCase().includes(keyword) ||
         s.description?.toLowerCase().includes(keyword)
     );
+    this.applySorting();
   }
 
   protected save(setting: AppSetting): void {
-    this.appSettingsService.updateSetting(setting).subscribe();
+    const previousValue = this.settings.find(
+      s => s.settingKey === setting.settingKey
+    )?.settingValue ?? setting.settingValue;
+
+    this.isSaving = true;
+    this.appSettingsService.updateSetting(setting).subscribe({
+      error: () => {
+        setting.settingValue = previousValue;
+        this.isSaving = false;
+      },
+      complete: () => {
+        this.isSaving = false;
+      }
+    });
   }
 
   protected sortBy(column: keyof AppSetting): void {

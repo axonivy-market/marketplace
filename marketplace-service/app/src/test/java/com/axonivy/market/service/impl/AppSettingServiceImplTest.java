@@ -126,8 +126,7 @@ class AppSettingServiceImplTest {
   void testUpdateThrowsWhenSettingNotFound() {
     when(repository.findByKey("nonexistent")).thenReturn(Optional.empty());
 
-    assertThrows(EntityNotFoundException.class,
-        () -> appSettingService.update("nonexistent", "value"),
+    assertThrows(EntityNotFoundException.class, () -> appSettingService.update("nonexistent", "value"),
         "Expected EntityNotFoundException when setting key does not exist");
   }
 
@@ -175,21 +174,12 @@ class AppSettingServiceImplTest {
 
   @Test
   void testGetValueReturnsResolvedValue() {
-    AppSetting setting = buildAppSetting("custom-key", "custom-value", false);
-    when(repository.findById("custom-key")).thenReturn(Optional.of(setting));
+    AppSetting setting = buildAppSetting(AppSettingKey.DOCUMENTS_CRON.getKey(), "custom-value", false);
+    when(repository.findByKey(AppSettingKey.DOCUMENTS_CRON.getKey())).thenReturn(Optional.of(setting));
 
-    String result = appSettingService.getValue("custom-key");
+    String result = appSettingService.getStringValueByKey(AppSettingKey.DOCUMENTS_CRON);
 
     assertEquals("custom-value", result, "Should return the value from repository for the given key");
-  }
-
-  @Test
-  void testGetValueReturnsNullWhenNotFound() {
-    when(repository.findById("missing-key")).thenReturn(Optional.empty());
-
-    String result = appSettingService.getValue("missing-key");
-
-    assertNull(result, "Should return null when key is not found");
   }
 
   @Test
@@ -205,8 +195,7 @@ class AppSettingServiceImplTest {
     List<AppSetting> savedSettings = captor.getValue();
     assertTrue(savedSettings.stream().noneMatch(s -> s.getKey().equals(AppSettingKey.GITHUB_TOKEN.getKey())),
         "Should not save settings that already exist");
-    assertFalse(savedSettings.isEmpty(),
-        "Should save new settings that don't exist yet");
+    assertFalse(savedSettings.isEmpty(), "Should save new settings that don't exist yet");
 
     verify(repository).deleteByKeyNotIn(anySet());
   }
@@ -226,13 +215,8 @@ class AppSettingServiceImplTest {
   }
 
   private AppSetting buildAppSetting(String key, String value, boolean encrypted) {
-    return AppSetting.builder()
-        .key(key)
-        .value(value)
-        .category("TEST")
-        .description("Test setting")
-        .encrypted(encrypted)
-        .build();
+    return AppSetting.builder().key(key).value(value).category("TEST").description("Test setting").encrypted(
+        encrypted).build();
   }
 }
 

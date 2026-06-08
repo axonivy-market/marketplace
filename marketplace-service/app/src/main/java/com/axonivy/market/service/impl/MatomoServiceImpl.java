@@ -12,11 +12,11 @@ import org.matomo.java.tracking.MatomoRequests;
 import org.matomo.java.tracking.MatomoTracker;
 import org.springframework.stereotype.Service;
 
-import static com.axonivy.market.constants.CommonConstants.*;
-import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 @Service
 @Log4j2
@@ -51,8 +51,11 @@ public class MatomoServiceImpl implements MatomoService {
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
-
-    matomoTrackerBuilder.create().sendRequestAsync(req).exceptionally((Throwable ex) -> {
+    MatomoTracker tracker = matomoTrackerBuilder.create();
+    if (tracker == null) {
+      return;
+    }
+    tracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });

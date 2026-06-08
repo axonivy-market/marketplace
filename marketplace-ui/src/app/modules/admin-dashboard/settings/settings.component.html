@@ -135,8 +135,13 @@
               <button
                 type="button"
                 class="btn btn-primary"
+                [disabled]="isSaving"
                 (click)="save(setting)">
-                <i class="ti ti-device-floppy me-1"></i>
+                @if (isSaving) {
+                  <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                } @else {
+                  <i class="ti ti-device-floppy me-1"></i>
+                }
                 {{
                   'common.admin.settings.save.label'
                   | translate

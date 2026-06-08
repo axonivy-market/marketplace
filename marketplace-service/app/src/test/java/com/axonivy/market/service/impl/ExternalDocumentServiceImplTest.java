@@ -6,16 +6,16 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.DocumentLanguage;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +108,6 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     lenient().when(appSettingService.getStringValueByKey(any(AppSettingKey.class)))
         .thenAnswer(inv -> {
           AppSettingKey key = inv.getArgument(0);
-          System.out.println("Mock called with: " + key);
           return key.getDefaultValue();
         });
     when(axonIvyClient.getDocumentVersions()).thenReturn(majorVersions);

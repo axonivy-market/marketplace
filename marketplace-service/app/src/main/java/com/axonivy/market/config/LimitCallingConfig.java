@@ -1,5 +1,6 @@
 package com.axonivy.market.config;
 
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.service.AppSettingService;
 import io.github.bucket4j.Bandwidth;
@@ -39,7 +40,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
     String apiPath = request.getRequestURI();
 
     String paths = settingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
-    List<String> requestPaths = Arrays.stream(paths.split(","))
+    List<String> requestPaths = Arrays.stream(paths.split(CoreCommonConstants.COMMA))
         .map(String::trim)
         .filter(s -> !s.isEmpty())
         .toList();

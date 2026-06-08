@@ -38,7 +38,7 @@ class EncryptionServiceImplTest {
   void testDecryptThrowsNPEWhenKeyIsBlank() {
     EncryptionServiceImpl service = new EncryptionServiceImpl("");
 
-    assertThrows(NullPointerException.class, () -> service.decrypt("someValue"),
+    assertThrows(IllegalStateException.class, () -> service.decrypt("someValue"),
         "Decrypt should throw NullPointerException when encryptor is null");
   }
 

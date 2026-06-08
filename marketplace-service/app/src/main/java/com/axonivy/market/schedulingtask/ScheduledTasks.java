@@ -35,52 +35,63 @@ public class ScheduledTasks {
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
 
   public void syncDataForProductFromGitHubRepo() {
-    productService.syncLatestDataFromMarketRepo(false);
+    run(() -> productService.syncLatestDataFromMarketRepo(false),
+        "Product from GitHub repo");
   }
 
   public void syncDataForProductDocuments() {
-    for (var product : productRepo.findAllProductsHaveDocument()) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
-    }
+    run(() -> {
+      for (var product : productRepo.findAllProductsHaveDocument()) {
+        externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
+      }
+    }, "Product document");
   }
 
   public void syncDataForProductMavenDependencies() {
-    productDependencyService.syncIARDependenciesForProducts(false, null);
-
+    run(() -> productDependencyService.syncIARDependenciesForProducts(false, null),
+        "Product maven dependencies");
   }
 
   public void syncDataForProductReleases() {
-    try {
-      productDetailsController.syncLatestReleasesForProducts();
-    } catch (IOException e) {
-      log.error("Failed to sync data for product release notes: ", e);
-    }
+    run(() -> {
+      try {
+        productDetailsController.syncLatestReleasesForProducts();
+      } catch (IOException e) {
+        log.error("Failed to sync data for product release notes: ", e);
+      }
+    }, "Product release notes");
   }
 
   public void syncDataForGithubRepos() {
-    try {
-      githubReposService.loadAndStoreTestReports();
-    } catch (IOException e) {
-      log.warn("Sync data failed", e);
-    }
+    run(() -> {
+      try {
+        githubReposService.loadAndStoreTestReports();
+      } catch (IOException e) {
+        log.warn("Sync data failed", e);
+      }
+    }, "Github repositories");
   }
 
   public void sendNotificationForSecurityMonitor() {
-    try {
-      sendNotificationForDisabledSecurityChecks();
-    } catch (IOException e) {
-      log.warn("Sync security monitor failed", e);
-    }
+    run(() ->
+    {
+      try {
+        sendNotificationForDisabledSecurityChecks();
+      } catch (IOException e) {
+        log.warn("Sync security monitor failed", e);
+      }
+    }, "Send Notification for security monitor");
   }
 
   public void syncSecurityMonitor() {
+    run(() ->
     {
       try {
         gitHubService.syncSecurityDetailsForProduct();
       } catch (IOException e) {
         log.warn("Sync security monitor failed", e);
       }
-    }
+    }, "GitHub security monitor");
   }
 
   private static void run(Runnable runnable, String schedulingTaskName) {
@@ -95,8 +106,9 @@ public class ScheduledTasks {
   }
 
   private void sendNotificationForDisabledSecurityChecks() throws IOException {
-    List<DisabledSecurityEvent> disabledEvents = productSecurityInfoRepository.findAll().stream().flatMap(
-        info -> DisabledSecurityEventFactory.from(info).stream()).toList();
+    List<DisabledSecurityEvent> disabledEvents = productSecurityInfoRepository.findAll().stream()
+        .flatMap(info -> DisabledSecurityEventFactory.from(info).stream())
+        .toList();
 
     notificationService.notify(disabledEvents);
   }

@@ -1,13 +1,21 @@
-import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+ import { afterEach, beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { AdminSettingsComponent } from './settings.component';
 import { AppSetting, AppSettingsService } from './settings.component.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 
+// Order matches the default sort: category ASC (APPLICATION → GITHUB → SCHEDULING)
 const MOCK_SETTINGS: AppSetting[] = [
+  {
+    settingKey: 'app.name',
+    settingValue: 'marketplace',
+    category: 'APPLICATION',
+    description: 'Application display name',
+    encrypted: false
+  },
   {
     settingKey: 'github.token',
     settingValue: 'secret',
@@ -20,13 +28,6 @@ const MOCK_SETTINGS: AppSetting[] = [
     settingValue: '30',
     category: 'SCHEDULING',
     description: 'Scheduling interval in minutes',
-    encrypted: false
-  },
-  {
-    settingKey: 'app.name',
-    settingValue: 'marketplace',
-    category: 'APPLICATION',
-    description: 'Application display name',
     encrypted: false
   }
 ];
@@ -70,6 +71,8 @@ describe('AdminSettingsComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => vi.useRealTimers())
+
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
@@ -81,9 +84,35 @@ describe('AdminSettingsComponent', () => {
       );
     });
 
-    it('should load and populate settings', () => {
+    it('should load and populate settings sorted by category ascending', () => {
       expect(appSettingsServiceMock.getSettings).toHaveBeenCalled();
       expect(component['filteredSettings']).toEqual(MOCK_SETTINGS);
+    });
+
+    it('should clear settings on load error', () => {
+      appSettingsServiceMock.getSettings.mockReturnValue(
+        throwError(() => new Error('Network error'))
+      );
+      fixture.destroy();
+      TestBed.resetTestingModule();
+
+      TestBed.configureTestingModule({
+        imports: [AdminSettingsComponent, TranslateModule.forRoot()],
+        providers: [
+          { provide: AppSettingsService, useValue: appSettingsServiceMock },
+          { provide: PageTitleService, useValue: pageTitleServiceMock },
+          {
+            provide: LanguageService,
+            useValue: { selectedLanguage: vi.fn().mockReturnValue('en') }
+          }
+        ]
+      });
+
+      const errorFixture = TestBed.createComponent(AdminSettingsComponent);
+      const errorComponent = errorFixture.componentInstance;
+      errorFixture.detectChanges();
+
+      expect(errorComponent['filteredSettings']).toEqual([]);
     });
   });
 
@@ -178,6 +207,36 @@ describe('AdminSettingsComponent', () => {
       expect(appSettingsServiceMock.updateSetting).toHaveBeenCalledWith(
         MOCK_SETTINGS[0]
       );
+    });
+
+    it('should set isSaving to true while saving and false on complete', () => {
+      const setting = MOCK_SETTINGS[0];
+      let savingDuring = false;
+
+      appSettingsServiceMock.updateSetting.mockImplementation(() =>
+        new Observable(observer => {
+          savingDuring = component['isSaving'];
+          observer.next(setting);
+          observer.complete();
+        })
+      );
+
+      component['save'](setting);
+
+      expect(savingDuring).toBe(true);
+      expect(component['isSaving']).toBe(false);
+    });
+
+    it('should set isSaving to false and revert value on error', () => {
+      const setting: AppSetting = { ...MOCK_SETTINGS[1], settingValue: 'new-value' };
+      appSettingsServiceMock.updateSetting.mockReturnValue(
+        throwError(() => new Error('Save failed'))
+      );
+
+      component['save'](setting);
+
+      expect(setting.settingValue).toBe(MOCK_SETTINGS[1].settingValue);
+      expect(component['isSaving']).toBe(false);
     });
   });
 
