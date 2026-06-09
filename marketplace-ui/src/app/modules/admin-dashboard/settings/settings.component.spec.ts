@@ -71,7 +71,7 @@ describe('AdminSettingsComponent', () => {
     fixture.detectChanges();
   });
 
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => vi.useRealTimers());
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
