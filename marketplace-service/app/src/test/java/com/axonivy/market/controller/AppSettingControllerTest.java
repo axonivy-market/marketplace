@@ -53,7 +53,7 @@ class AppSettingControllerTest {
     ResponseEntity<List<AppSettingDto>> response = controller.getSettings("github");
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody());
+    assertNotNull(response.getBody(), "Response body should not be null");
     assertEquals(1, response.getBody().size(), "Should return filtered settings");
     assertEquals(AppSettingKey.GITHUB_TOKEN.getKey(), response.getBody().getFirst().getSettingKey(),
         "Returned setting key should match the search");
