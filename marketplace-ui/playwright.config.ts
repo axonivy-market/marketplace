@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:4200';
+const useExternalBaseURL = !!process.env.E2E_BASE_URL;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -8,15 +11,17 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:4200',
+    baseURL,
     trace: 'on-first-retry'
   },
-  webServer: {
-    command: 'npm run start -- --host 127.0.0.1 --port 4200',
-    url: 'http://127.0.0.1:4200',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000
-  },
+  webServer: useExternalBaseURL
+    ? undefined
+    : {
+      command: 'npm run start -- --host 127.0.0.1 --port 4200',
+      url: 'http://127.0.0.1:4200',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000
+    },
   projects: [
     {
       name: 'chromium',

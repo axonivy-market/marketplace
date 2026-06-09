@@ -26,6 +26,8 @@ This project uses Playwright for browser-driven end-to-end tests.
 
 - Run all e2e tests: `npm run test:e2e`
 - Run tests with Playwright UI mode: `npm run test:e2e:ui`
+- Run real-endpoint e2e tests: `npm run test:e2e:real`
+- Target an external deployed UI: `E2E_BASE_URL=https://your-host npm run test:e2e:real`
 
 ## Further help
 
