@@ -51,7 +51,7 @@ public class MatomoServiceImpl implements MatomoService {
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
-    MatomoTracker tracker = matomoTrackerBuilder.build();
+    var tracker = matomoTrackerBuilder.build();
     if (tracker == null) {
       return;
     }

@@ -77,7 +77,7 @@ public class AppSettingServiceImpl implements AppSettingService {
 
   @Override
   public Long getLongValueByKey(AppSettingKey setting) {
-    String value = getStringValueByKey(setting);
+    var value = getStringValueByKey(setting);
     try {
       return Long.parseLong(value);
     } catch (NumberFormatException ex) {
@@ -93,7 +93,7 @@ public class AppSettingServiceImpl implements AppSettingService {
 
   @Override
   public Integer getIntegerValueByKey(AppSettingKey setting) {
-    String value = getStringValueByKey(setting);
+    var value = getStringValueByKey(setting);
 
     try {
       return Integer.parseInt(value);
@@ -110,9 +110,8 @@ public class AppSettingServiceImpl implements AppSettingService {
 
   @Override
   public Boolean getBooleanValueByKey(AppSettingKey setting) {
-    String value = getStringValueByKey(setting);
+    var value = getStringValueByKey(setting);
     return Boolean.valueOf(value);
-
   }
 
   @PostConstruct

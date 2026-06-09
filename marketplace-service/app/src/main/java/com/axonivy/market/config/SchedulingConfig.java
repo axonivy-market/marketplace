@@ -76,7 +76,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * even-numbered nodes to reduce concurrent load in clustered deployments.
    */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
-    String cron = appSettingService.getStringValueByKey(key);
+    var cron = appSettingService.getStringValueByKey(key);
     try {
       Instant next = new CronTrigger(cron).nextExecution(context);
       return next == null ? null : next.plus(getOffset());

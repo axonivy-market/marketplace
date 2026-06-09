@@ -3,6 +3,8 @@ package com.axonivy.market.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import static com.axonivy.market.constants.SyncTaskConstants.DEFAULT_SCHEDULE_CRON;
+
 /**
  * Enum representing application setting keys, their default values, categories, descriptions, and encryption status.
  */
@@ -15,49 +17,49 @@ public enum AppSettingKey {
   // =========================
   PRODUCTS_CRON(
       "market.scheduling.products-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for product synchronization.",
       false),
 
   PRODUCTS_DEPENDENCY_CRON(
       "market.scheduling.products-dependency-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for dependency synchronization.",
       false),
 
   GITHUB_REPOS_CRON(
       "market.scheduling.github-repos-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for GitHub repository synchronization.",
       false),
 
   DOCUMENTS_CRON(
       "market.scheduling.documents-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for documentation synchronization.",
       false),
 
   PRODUCT_RELEASE_NOTES_CRON(
       "market.scheduling.products-release-notes-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for release notes synchronization.",
       false),
 
   SECURITY_MONITOR_CRON(
       "market.scheduling.security-monitor-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitoring.",
       false),
 
   SEND_NOTIFICATION_SECURITY_MONITOR_CRON(
       "market.scheduling.send-notification-security-monitor-cron",
-      "0 30 * * * *",
+      DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitor notifications.",
       false),

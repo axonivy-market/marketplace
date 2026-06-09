@@ -45,8 +45,8 @@ class MailSenderBuilderTest {
     assertEquals(587, impl.getPort(), "Port should match");
     assertEquals("user@example.com", impl.getUsername(), "Username should match");
     assertEquals("secret", impl.getPassword(), "Password should match");
-    assertEquals(true, impl.getJavaMailProperties().get("mail.smtp.auth"), "SMTP auth should be enabled");
-    assertEquals(true, impl.getJavaMailProperties().get("mail.smtp.starttls.enable"),
+    assertTrue((Boolean) impl.getJavaMailProperties().get("mail.smtp.auth"), "SMTP auth should be enabled");
+    assertTrue((Boolean) impl.getJavaMailProperties().get("mail.smtp.starttls.enable"),
         "STARTTLS should be enabled");
   }
 
@@ -63,8 +63,8 @@ class MailSenderBuilderTest {
 
     JavaMailSenderImpl impl = (JavaMailSenderImpl) sender;
     assertEquals(465, impl.getPort(), "Port should be 465");
-    assertEquals(false, impl.getJavaMailProperties().get("mail.smtp.auth"), "SMTP auth should be disabled");
-    assertEquals(false, impl.getJavaMailProperties().get("mail.smtp.starttls.enable"),
+    assertFalse((Boolean) impl.getJavaMailProperties().get("mail.smtp.auth"), "SMTP auth should be disabled");
+    assertFalse((Boolean) impl.getJavaMailProperties().get("mail.smtp.starttls.enable"),
         "STARTTLS should be disabled");
   }
 

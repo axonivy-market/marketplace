@@ -95,7 +95,7 @@ class AppSettingControllerTest {
     ResponseEntity<AppSettingDto> response = controller.updateSetting(AppSettingKey.MAIL_PORT.getKey(), request);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody());
+    assertNotNull(response.getBody(), "Response body should not be null");
     assertEquals("465", response.getBody().getSettingValue(),
         "Should pass the settingValue from the request body to the service");
     verify(service).update(AppSettingKey.MAIL_PORT.getKey(), "465");
@@ -109,7 +109,7 @@ class AppSettingControllerTest {
     ResponseEntity<List<AppSettingDto>> response = controller.getSettings("");
 
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody());
+    assertNotNull(response.getBody(), "Response body should not be null");
     assertEquals(1, response.getBody().size(), "Should delegate empty search to service");
     verify(service, times(1)).search("");
   }

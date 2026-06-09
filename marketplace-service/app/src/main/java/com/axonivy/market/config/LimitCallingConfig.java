@@ -40,7 +40,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
     String clientIp = getClientIp(request);
     String apiPath = request.getRequestURI();
 
-    String paths = settingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
+    var paths = settingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
     List<String> requestPaths = Arrays.stream(paths.split(CoreCommonConstants.COMMA))
         .map(String::trim)
         .filter(s -> !s.isEmpty())

@@ -155,8 +155,8 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHubAccessTokenResponse getAccessToken(
       String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
     // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
-    String clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
-    String clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
+    var clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
+    var clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
 
     if (StringUtils.isAnyBlank(clientId, clientSecret)) {
       throw new MissingHeaderException();
