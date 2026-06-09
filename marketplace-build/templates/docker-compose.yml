@@ -68,4 +68,5 @@ networks:
 
 volumes:
   marketcache:
+    external: true
   marketbrowser:
