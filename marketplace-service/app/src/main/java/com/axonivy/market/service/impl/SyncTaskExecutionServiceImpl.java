@@ -112,9 +112,9 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
 
     try {
-return syncTaskExecutionRepo.saveAndFlush(existingExecution);
+      return syncTaskExecutionRepo.saveAndFlush(existingExecution);
     } catch (ObjectOptimisticLockingFailureException ex) {
-log.warn("Concurrent restart detected for sync task [{}], treating as in-progress", jobType, ex);
+      log.warn("Concurrent restart detected for sync task {}, treating as in-progress", jobType, ex);
       String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
       throw new SyncTaskInProgressException(syncTaskInProgressMessage);
     }
@@ -135,9 +135,10 @@ log.warn("Concurrent restart detected for sync task [{}], treating as in-progres
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
 
     try {
-syncTaskExecutionRepo.saveAndFlush(execution);
+      syncTaskExecutionRepo.saveAndFlush(execution);
     } catch (ObjectOptimisticLockingFailureException ex) {
-log.warn("Concurrent update detected for sync task [{}], skipping status update to [{}]", execution.getType(), status, ex);
+      log.warn("Concurrent update detected for sync task {}, skipping status update to {}", execution.getType(),
+          status, ex);
     }
   }
 
