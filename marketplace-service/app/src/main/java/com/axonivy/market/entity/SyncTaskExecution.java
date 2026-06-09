@@ -26,11 +26,7 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(
-    name = SYNC_TASK,
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_sync_task_type", columnNames = "type")
-    })
+@Table(name = SYNC_TASK)
 public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
