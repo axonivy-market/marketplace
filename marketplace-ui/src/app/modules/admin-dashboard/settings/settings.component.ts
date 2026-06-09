@@ -16,13 +16,12 @@ const SHOW_ALL_PAGE_SIZE = -1;
 const DEBOUNCE_TIME = 300;
 
 const CATEGORY_CLASS_MAP: Record<string, string> = {
-  SCHEDULING: 'bg-primary',
-  GITHUB: 'bg-dark',
-  MATOMO: 'bg-info',
-  MAIL: 'bg-success',
-  SECURITY: 'bg-danger',
-  CORS: 'bg-warning text-dark',
-  APPLICATION: 'bg-secondary'
+  SCHEDULING: 'badge-scheduling',
+  GITHUB: 'badge-github',
+  MATOMO: 'badge-matomo',
+  MAIL: 'badge-mail',
+  SECURITY: 'badge-security',
+  GENERAL: 'badge-general'
 };
 
 @Component({
