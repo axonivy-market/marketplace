@@ -7,13 +7,14 @@ import { TranslateModule } from "@ngx-translate/core";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
 import { LanguageService } from "../../../core/services/language/language.service";
 import { PageTitleService } from "../../../shared/services/page-title.service";
-import { debounceTime, Subject } from "rxjs";
+import { debounceTime, Subject, timer } from "rxjs";
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ASCENDING, DESCENDING } from "../../../shared/constants/common.constant";
 
 const SHOW_ALL_PAGE_SIZE = -1;
 const DEBOUNCE_TIME = 300;
+const SAVE_SUCCESS_DISPLAY_MS = 2000;
 
 const CATEGORY_CLASS_MAP: Record<string, string> = {
   SCHEDULING: 'badge-scheduling',
@@ -55,7 +56,8 @@ export class AdminSettingsComponent implements OnInit {
   protected pageSize = 10;
   protected searchText = '';
   protected readonly visibleSecrets = new Set<string>();
-  protected isSaving = false;
+  protected savingKey: string | null = null;
+  protected savedKey: string | null = null;
 
   private readonly searchChanged = new Subject<string>();
 
@@ -131,14 +133,20 @@ export class AdminSettingsComponent implements OnInit {
       s => s.settingKey === setting.settingKey
     )?.settingValue ?? setting.settingValue;
 
-    this.isSaving = true;
+    this.savingKey = setting.settingKey;
     this.appSettingsService.updateSetting(setting).subscribe({
+      next: () => {
+        this.savedKey = setting.settingKey;
+        timer(SAVE_SUCCESS_DISPLAY_MS)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => { this.savedKey = null; });
+      },
       error: () => {
         setting.settingValue = previousValue;
-        this.isSaving = false;
+        this.savingKey = null;
       },
       complete: () => {
-        this.isSaving = false;
+        this.savingKey = null;
       }
     });
   }

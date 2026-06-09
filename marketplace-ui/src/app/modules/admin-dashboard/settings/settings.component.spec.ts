@@ -7,12 +7,12 @@ import { AppSetting, AppSettingsService } from './settings.component.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { PageTitleService } from '../../../shared/services/page-title.service';
 
-// Order matches the default sort: category ASC (APPLICATION → GITHUB → SCHEDULING)
+// Order matches the default sort: category ASC (GENERAL → GITHUB → SCHEDULING)
 const MOCK_SETTINGS: AppSetting[] = [
   {
     settingKey: 'app.name',
     settingValue: 'marketplace',
-    category: 'APPLICATION',
+    category: 'GENERAL',
     description: 'Application display name',
     encrypted: false
   },
@@ -209,13 +209,13 @@ describe('AdminSettingsComponent', () => {
       );
     });
 
-    it('should set isSaving to true while saving and false on complete', () => {
+    it('should set savingKey while saving and clear on complete', () => {
       const setting = MOCK_SETTINGS[0];
-      let savingDuring = false;
+      let savingDuring: string | null = null;
 
       appSettingsServiceMock.updateSetting.mockImplementation(() =>
         new Observable(observer => {
-          savingDuring = component['isSaving'];
+          savingDuring = component['savingKey'];
           observer.next(setting);
           observer.complete();
         })
@@ -223,11 +223,23 @@ describe('AdminSettingsComponent', () => {
 
       component['save'](setting);
 
-      expect(savingDuring).toBe(true);
-      expect(component['isSaving']).toBe(false);
+      expect(savingDuring).toBe(setting.settingKey);
+      expect(component['savingKey']).toBeNull();
     });
 
-    it('should set isSaving to false and revert value on error', () => {
+    it('should set savedKey on success and clear it after 2000ms', () => {
+      vi.useFakeTimers();
+      const setting = MOCK_SETTINGS[0];
+
+      component['save'](setting);
+
+      expect(component['savedKey']).toBe(setting.settingKey);
+
+      vi.advanceTimersByTime(2000);
+      expect(component['savedKey']).toBeNull();
+    });
+
+    it('should clear savingKey and revert value on error', () => {
       const setting: AppSetting = { ...MOCK_SETTINGS[1], settingValue: 'new-value' };
       appSettingsServiceMock.updateSetting.mockReturnValue(
         throwError(() => new Error('Save failed'))
@@ -236,7 +248,18 @@ describe('AdminSettingsComponent', () => {
       component['save'](setting);
 
       expect(setting.settingValue).toBe(MOCK_SETTINGS[1].settingValue);
-      expect(component['isSaving']).toBe(false);
+      expect(component['savingKey']).toBeNull();
+    });
+
+    it('should not set savedKey on error', () => {
+      const setting: AppSetting = { ...MOCK_SETTINGS[1], settingValue: 'new-value' };
+      appSettingsServiceMock.updateSetting.mockReturnValue(
+        throwError(() => new Error('Save failed'))
+      );
+
+      component['save'](setting);
+
+      expect(component['savedKey']).toBeNull();
     });
   });
 
@@ -291,13 +314,12 @@ describe('AdminSettingsComponent', () => {
 
   describe('getCategoryClass', () => {
     it.each([
-      ['SCHEDULING', 'bg-primary'],
-      ['GITHUB', 'bg-dark'],
-      ['MATOMO', 'bg-info'],
-      ['MAIL', 'bg-success'],
-      ['SECURITY', 'bg-danger'],
-      ['CORS', 'bg-warning text-dark'],
-      ['APPLICATION', 'bg-secondary'],
+      ['SCHEDULING', 'badge-scheduling'],
+      ['GITHUB', 'badge-github'],
+      ['MATOMO', 'badge-matomo'],
+      ['MAIL', 'badge-mail'],
+      ['SECURITY', 'badge-security'],
+      ['GENERAL', 'badge-general'],
       ['UNKNOWN', 'bg-light text-dark']
     ])('should return correct class for %s', (category, expectedClass) => {
       expect(component['getCategoryClass'](category)).toBe(expectedClass);
