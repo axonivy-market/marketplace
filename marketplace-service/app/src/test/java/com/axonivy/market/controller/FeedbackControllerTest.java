@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
@@ -9,7 +10,9 @@ import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.service.FeedbackService;
+import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.GithubUserService;
+import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +52,9 @@ class FeedbackControllerTest extends BaseSetup {
   private FeedbackService service;
 
   @Mock
+  private JwtService jwtService;
+
+  @Mock
   private GithubUserService githubUserService;
 
   @Mock
@@ -63,7 +69,8 @@ class FeedbackControllerTest extends BaseSetup {
   @BeforeEach
   void setup() {
     feedbackModelAssembler = new FeedbackModelAssembler(githubUserService);
-    feedbackController = new FeedbackController(service, feedbackModelAssembler, pagedResourcesAssembler);
+    feedbackController = new FeedbackController(service, jwtService, feedbackModelAssembler,
+        pagedResourcesAssembler);
   }
 
   @Test
@@ -192,12 +199,16 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
-    when(service.updateFeedbackWithNewStatus(feedbackApproval, getAuthenticatedUser().name())).thenReturn(updatedFeedback);
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, MODERATOR_NAME);
+
+    when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
 
-    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, getAuthenticatedUser());
+    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, request);
 
-    verify(service).updateFeedbackWithNewStatus(feedbackApproval, getAuthenticatedUser().name());
+    verify(service).updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME);
     assertEquals(HttpStatus.OK, result.getStatusCode(),
         "Response status should be 200 OK when feedback status is successfully updated.");
     assertTrue(result.hasBody(),
@@ -214,12 +225,13 @@ class FeedbackControllerTest extends BaseSetup {
   void testCreateFeedback() {
     FeedbackModelRequest mockFeedbackModel = createFeedbackModelRequestMock();
     Feedback mockFeedback = createFeedbackMock();
+    Claims mockClaims = createMockClaims();
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setRequestURI("/api/feedback");
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
-    var result = feedbackController.createFeedback(mockFeedbackModel, getAuthenticatedUser());
+    var result = feedbackController.createFeedback(mockFeedbackModel, request);
 
     assertEquals(HttpStatus.CREATED, result.getStatusCode(),
         "Response status should be 201 CREATED when a new feedback is successfully created.");
@@ -248,4 +260,9 @@ class FeedbackControllerTest extends BaseSetup {
     return mockFeedback;
   }
 
+  private Claims createMockClaims() {
+    Claims claims = new io.jsonwebtoken.impl.DefaultClaims();
+    claims.setSubject(USER_ID_SAMPLE);
+    return claims;
+  }
 }

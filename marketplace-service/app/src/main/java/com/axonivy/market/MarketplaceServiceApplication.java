@@ -24,10 +24,51 @@ import static com.axonivy.market.core.constants.BasePackageConstants.*;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {CORE_BASE_PACKAGE_NAME, APP_PACKAGE_NAME})
+@AllArgsConstructor
 @EnableCaching
 @EnableJpaAuditing
 public class MarketplaceServiceApplication {
+
+  private final ProductService productService;
+  private final ExternalDocumentService externalDocumentService;
+
   public static void main(String[] args) {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
+  }
+
+  @Async
+  @EventListener(ApplicationStartedEvent.class)
+  public void startInitializeSystem() {
+    List<String> productIds = syncProductData();
+    syncExternalDocumentData(productIds);
+  }
+
+  private List<String> syncProductData() {
+    var watch = new StopWatch();
+    log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
+    watch.start();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(false);
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
+      log.warn("Synchronizing Market repo: Nothing updated");
+    } else {
+      watch.stop();
+      log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
+          watch.getTime());
+      log.warn("Synchronizing Market repo: Synced products [{}]", syncedProductIds);
+    }
+    return syncedProductIds;
+  }
+
+  private void syncExternalDocumentData(List<String> productIds) {
+    var watch = new StopWatch();
+    log.warn("Synchronizing External Document: Started synchronizing data for Document");
+    watch.start();
+    if (ObjectUtils.isEmpty(productIds)) {
+      log.warn("Synchronizing External Document: Nothing updated");
+    }
+    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, false, null));
+    watch.stop();
+    log.warn("Synchronizing External Document: Finished synchronizing data for Document in [{}] milliseconds",
+        watch.getTime());
   }
 }

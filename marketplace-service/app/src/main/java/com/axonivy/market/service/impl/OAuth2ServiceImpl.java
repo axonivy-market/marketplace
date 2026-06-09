@@ -31,10 +31,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
           gitHubProperty);
       String accessToken = tokenResponse.getAccessToken();
-      var userInfo = gitHubService.validateUserInOrganizationAndTeam(accessToken,
-          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-          GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-      return jwtService.generateToken(userInfo);
+      var githubUser = gitHubService.getAndUpdateUser(accessToken);
+      return jwtService.generateToken(githubUser, accessToken);
     } catch (Oauth2ExchangeCodeException e) {
       log.error("Login Github failed: ", e);
       throw new Oauth2ExchangeCodeException(HttpStatus.BAD_REQUEST.name(), e.getErrorDescription());
@@ -58,7 +56,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
-    String jwt = jwtService.generateToken(userInfo);
+    String jwt = jwtService.generateJWTFromGitHubToken(token);
     userInfo.setToken(jwt);
 
     return userInfo;

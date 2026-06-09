@@ -1,17 +1,18 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
-import com.axonivy.market.security.AuthenticatedUser;
 import com.axonivy.market.service.ReleaseLetterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -20,7 +21,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,9 +56,10 @@ public class ReleaseLetterController {
   @GetMapping("/management")
   @Operation(summary = "Retrieve a list of all release letter for management")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLettersForManagement(
-      @ParameterObject Pageable pageable,
-      @AuthenticationPrincipal AuthenticatedUser currentUser) {
-    return buildReleaseLetterResponse(pageable, false, currentUser.gitHubUserId());
+      @ParameterObject Pageable pageable, HttpServletRequest request) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+
+    return buildReleaseLetterResponse(pageable, false, gitHubUserId);
   }
 
   @GetMapping(BY_ID)
@@ -106,13 +107,10 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
       @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id,
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest,
-      @AuthenticationPrincipal AuthenticatedUser currentUser
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request
   ) {
-    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(
-        id,
-        releaseLetterModelRequest,
-        currentUser.gitHubUserId());
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest, gitHubUserId);
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
     releaseLetterResource.add(
         linkTo(methodOn(this.getClass()).findReleaseLetterById(updatedReleaseLetter.getId())).withSelfRel());
@@ -123,21 +121,17 @@ public class ReleaseLetterController {
   @PutMapping(SAVE_AS_DRAFT)
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterDraftModel> saveAsDraft(
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest,
-      @AuthenticationPrincipal AuthenticatedUser currentUser) {
-    var releaseLetterDraftModel = releaseLetterService.saveAsDraft(
-        releaseLetterModelRequest,
-        currentUser.gitHubUserId());
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, HttpServletRequest request) {
+    var gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
+    var releaseLetterDraftModel = releaseLetterService.saveAsDraft(releaseLetterModelRequest, gitHubUserId);
     return ResponseEntity.ok(releaseLetterDraftModel);
   }
 
   @Authorized
   @GetMapping(DRAFT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterDraftModel> getDraft(
-      @PathVariable String id,
-      @AuthenticationPrincipal AuthenticatedUser currentUser) {
-    String gitHubUserId = currentUser.gitHubUserId();
+  public ResponseEntity<ReleaseLetterDraftModel> getDraft(@PathVariable String id, HttpServletRequest request) {
+    String gitHubUserId = (String) request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     var releaseLetterDraft = releaseLetterService
         .getDraftContentByGitHubUserIdAndReleaseLetterId(gitHubUserId, id);
 

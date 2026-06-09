@@ -24,7 +24,6 @@ import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.core.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.security.AuthenticatedUser;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHMyself;
@@ -488,12 +487,10 @@ public class BaseSetup extends CoreBaseSetup {
 
   protected UserInfo getMockUserInfo() {
     var mockUserInfo = new UserInfo();
-    mockUserInfo.setGitHubId("github-user-id");
     mockUserInfo.setUrl("https://github.com/mockuser");
     mockUserInfo.setName("mockUser");
     mockUserInfo.setUsername("mockUser");
     mockUserInfo.setAvatarUrl("https://avatar.url");
-    mockUserInfo.setProvider("GitHub");
     mockUserInfo.setToken(JWT_TOKEN);
 
     return mockUserInfo;
@@ -501,18 +498,12 @@ public class BaseSetup extends CoreBaseSetup {
 
   protected UserInfo getMockGithubUser() {
     var mockUser = new UserInfo();
-    mockUser.setGitHubId("github-user-id");
     mockUser.setUrl("https://github.com/mockuser");
     mockUser.setName("mockUser");
     mockUser.setUsername("mockUser");
     mockUser.setAvatarUrl("https://avatar.url");
-    mockUser.setProvider("GitHub");
 
     return mockUser;
-  }
-
-  protected AuthenticatedUser getAuthenticatedUser() {
-    return new AuthenticatedUser("github-user-id", "mockUser", "mockUser", "https://avatar.url", "GitHub", true);
   }
 
   protected GHMyself getFakeGHMyself() {

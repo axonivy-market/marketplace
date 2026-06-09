@@ -1,96 +1,100 @@
 package com.axonivy.market.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.config.SecurityConfig;
-import com.axonivy.market.security.SecurityAuthorities;
-import com.axonivy.market.security.SecurityJwtProperties;
-import javax.crypto.SecretKey;
+import com.axonivy.market.entity.GithubUser;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
 class JwtServiceImplTest extends BaseSetup {
 
-  private static final String SECRET = "12345678901234567890123456789012";
+  private static final String SECRET = "mySecret";
+  private static final long EXPIRATION = 7L; // 7 days
 
+  @InjectMocks
   private JwtServiceImpl jwtService;
-  private SecurityJwtProperties securityJwtProperties;
 
   @BeforeEach
   void setUp() {
-    securityJwtProperties = new SecurityJwtProperties();
-    securityJwtProperties.setSecret(SECRET);
-    securityJwtProperties.setExpirationMinutes(120);
-    securityJwtProperties.setIssuer("marketplace-service-test");
-    securityJwtProperties.setAudience("marketplace-admin-api-test");
-    securityJwtProperties.validateSecretStrength();
-
-    var securityConfig = new SecurityConfig();
-    SecretKey signingKey = securityConfig.securityJwtSigningKey(securityJwtProperties);
-    jwtService = new JwtServiceImpl(
-        securityConfig.jwtEncoder(signingKey),
-        securityConfig.jwtDecoder(signingKey, securityJwtProperties),
-        securityJwtProperties);
+    ReflectionTestUtils.setField(jwtService, "secret", SECRET);
+    ReflectionTestUtils.setField(jwtService, "expiration", EXPIRATION);
   }
 
   @Test
   void testGenerateToken() {
-    String token = jwtService.generateToken(getMockUserInfo());
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    assertNotNull(token);
-    assertFalse(token.isBlank());
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
-    var jwt = jwtService.decodeToken(token);
-    assertEquals("github-user-id", jwt.getSubject());
-    assertEquals("mockUser", jwt.getClaimAsString("name"));
-    assertEquals("mockUser", jwt.getClaimAsString(JwtServiceImpl.USERNAME_CLAIM));
-    assertEquals("GitHub", jwt.getClaimAsString(JwtServiceImpl.PROVIDER_CLAIM));
-    assertTrue(Boolean.TRUE.equals(jwt.getClaim(JwtServiceImpl.ADMIN_CLAIM)));
-    assertTrue(jwt.getClaimAsStringList(JwtServiceImpl.AUTHORITIES_CLAIM).contains(SecurityAuthorities.MARKET_ADMIN));
-    assertEquals("marketplace-service-test", jwt.getClaimAsString("iss"));
-    assertTrue(jwt.getAudience().contains("marketplace-admin-api-test"));
-    assertNotNull(jwt.getId());
+    assertNotNull(token, "Generated token should not be null for a valid GitHub user");
+    assertFalse(token.isEmpty(), "Generated token should not be empty");
+
+    Claims claims = jwtService.getClaimsFromToken(token);
+    assertEquals("123", claims.getSubject(), "JWT subject should match the GitHub user ID");
+    assertEquals("John Doe", claims.get("name"), "JWT claim 'name' should match the GitHub user name");
+    assertEquals("johndoe", claims.get("username"), "JWT claim 'username' should match the GitHub user username");
   }
 
   @Test
   void testValidateToken() {
-    String validToken = jwtService.generateToken(getMockUserInfo());
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    assertTrue(jwtService.validateToken(validToken));
-    assertFalse(jwtService.validateToken("invalid.token.here"));
+    String validToken = jwtService.generateToken(githubUser, ACCESS_TOKEN);
+    assertTrue(jwtService.validateToken(validToken),
+        "A token generated for a valid GitHub user should be recognized as valid");
+
+    String invalidToken = "invalid.token.here";
+    assertFalse(jwtService.validateToken(invalidToken),
+        "A malformed or random token should be recognized as invalid");
   }
 
   @Test
-  void testRejectTokenWithUnexpectedAudience() {
-    String token = jwtService.generateToken(getMockUserInfo());
+  void testGetClaimsFromToken() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    var mismatchedProperties = new SecurityJwtProperties();
-    mismatchedProperties.setSecret(SECRET);
-    mismatchedProperties.setExpirationMinutes(120);
-    mismatchedProperties.setIssuer("marketplace-service-test");
-    mismatchedProperties.setAudience("different-audience");
-    mismatchedProperties.validateSecretStrength();
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
-    var securityConfig = new SecurityConfig();
-    SecretKey signingKey = securityConfig.securityJwtSigningKey(mismatchedProperties);
-    var strictService = new JwtServiceImpl(
-        securityConfig.jwtEncoder(signingKey),
-        securityConfig.jwtDecoder(signingKey, mismatchedProperties),
-        mismatchedProperties);
-
-    assertFalse(strictService.validateToken(token));
+    Claims claims = jwtService.getClaimsFromToken(token);
+    assertNotNull(claims, "Extracted claims should not be null for a valid token");
+    assertEquals("123", claims.getSubject(),
+        "JWT subject should match the GitHub user ID set in the token");
+    assertEquals("John Doe", claims.get("name"),
+        "JWT claim 'name' should match the GitHub user's name");
+    assertEquals("johndoe", claims.get("username"),
+        "JWT claim 'username' should match the GitHub user's username");
   }
 
   @Test
-  void testExpirationMinutesApplied() {
-    String token = jwtService.generateToken(getMockUserInfo());
+  void testGetClaimsJws() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    var jwt = jwtService.decodeToken(token);
-    long lifetimeSeconds = jwt.getExpiresAt().getEpochSecond() - jwt.getIssuedAt().getEpochSecond();
-    assertEquals(120L * 60L, lifetimeSeconds);
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
+
+    Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
+    assertNotNull(claimsJws, "getClaimsJws should return a non-null JWS object for a valid token");
+    assertNotNull(claimsJws.getBody(), "JWS body (claims) should not be null for a valid token");
+    assertEquals("123", claimsJws.getBody().getSubject(),
+        "JWS subject should match the GitHub user ID encoded in the token");
   }
 }
+

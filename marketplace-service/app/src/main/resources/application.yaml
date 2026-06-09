@@ -79,12 +79,9 @@ logging:
 loggable:
   log-path: '${MARKET_LOG_PATH}'
 
-security:
-  jwt:
-    secret: '${MARKET_JWT_SECRET_KEY}'
-    expiration-minutes: '${MARKET_JWT_EXPIRATION_MINUTES:120}'
-    issuer: '${MARKET_JWT_ISSUER:marketplace-service}'
-    audience: '${MARKET_JWT_AUDIENCE:marketplace-admin-api}'
+jwt:
+  secret: '${MARKET_JWT_SECRET_KEY}'
+  expiration: '365'
 
 market:
   environment: '${MARKET_ENVIRONMENT}'

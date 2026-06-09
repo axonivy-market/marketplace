@@ -1,10 +1,12 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,12 +15,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,9 +73,9 @@ class OAuth2ControllerTest extends BaseSetup {
 
   @Test
   void testValidateAuthorizationCode() {
-    var authentication = UsernamePasswordAuthenticationToken.authenticated(getAuthenticatedUser(), JWT_TOKEN,
-        java.util.List.of());
-    ResponseEntity<?> response = oAuth2Controller.isAuthenticated(authentication);
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    when(mockRequest.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE)).thenReturn(JWT_TOKEN);
+    ResponseEntity<?> response = oAuth2Controller.isAuthenticated(mockRequest);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when authorization code is validated.");

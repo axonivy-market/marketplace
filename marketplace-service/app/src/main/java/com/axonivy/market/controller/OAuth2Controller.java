@@ -1,17 +1,18 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,8 +47,9 @@ public class OAuth2Controller {
 
   @Authorized
   @PutMapping(GITHUB_VALIDATE_TOKEN)
-  public ResponseEntity<Boolean> isAuthenticated(Authentication authentication) {
-    return new ResponseEntity<>(authentication != null && authentication.isAuthenticated(), HttpStatus.OK);
+  public ResponseEntity<Boolean> isAuthenticated(HttpServletRequest request) {
+    var validatedToken = request.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE);
+    return new ResponseEntity<>(ObjectUtils.isNotEmpty(validatedToken), HttpStatus.OK);
   }
 
   private ResponseEntity<Map<String, String>> responseJWTData(String jwt) {
