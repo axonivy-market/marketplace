@@ -48,7 +48,7 @@ pipeline {
                 script {
                     sh 'rm -rf target-source'
                     dir('target-source') {
-                        git branch: 'develop', url: env.MARKETPLACE_GIT_URL
+                        git branch: 'master', url: env.MARKETPLACE_GIT_URL
                     }
                 }
             }
