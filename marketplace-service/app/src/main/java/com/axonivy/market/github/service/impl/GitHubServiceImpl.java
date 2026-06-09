@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
+import static com.axonivy.market.enums.PullRequestAction.ADD;
 import static com.axonivy.market.enums.PullRequestAction.REMOVE;
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -525,14 +526,13 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
-      Product product, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
+      String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository("axonivy-market/readme-test");
     String baseBranch = repository.getDefaultBranch();
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
-
     String currentReadmeContent = getReadmeContent(readme);
     PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config, extensionData);
 
@@ -552,6 +552,39 @@ public class GitHubServiceImpl implements GitHubService {
     }
     readme.update(pullRequestData.updatedReadmeContent, config.deprecatedMessage(), config.unsupportedBranchName());
     return generatePullRequest(repository, baseBranch, pullRequestData);
+  }
+
+  @Override
+  public void archiveTheRepository(String repoPath) throws IOException {
+    GHRepository ghRepository = getRepository(repoPath);
+    if (ghRepository != null && !ghRepository.isArchived()) {
+      ghRepository.archive();
+      log.info("Repository '{}' has been archived.", repoPath);
+    }
+  }
+
+  @Override
+  public void unArchivedTheRepository() {
+    String url = "https://api.github.com/repos/axonivy-market/readme-test";
+    okhttp3.RequestBody body = okhttp3.RequestBody.create(
+        "{\"archived\": false}",
+        okhttp3.MediaType.parse("application/json")
+    );
+    okhttp3.Request request = new okhttp3.Request.Builder()
+        .url(url)
+        .patch(body)
+        .addHeader("Authorization", "Bearer " + gitHubProperty.getToken())
+        .build();
+
+    try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
+      if (!response.isSuccessful()) {
+        log.error("Failed to unarchive repository: {} {}", response.code(), response.message());
+        return;
+      }
+      log.info("Repository has been unarchived successfully.");
+    } catch (IOException e) {
+      log.error("Error unarchiving repository", e);
+    }
   }
 
   private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
@@ -582,7 +615,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private void removeBranchIfExistsWhenRemoveDeprecation(GHRepository repository, String headBranchName,
       PullRequestAction action) throws IOException {
-    if (action != REMOVE) {
+    if (action != REMOVE || repository.isArchived()) {
       return;
     }
 

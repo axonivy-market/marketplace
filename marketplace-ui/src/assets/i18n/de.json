@@ -488,6 +488,7 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Pull Request erstellen, um die README zu aktualisieren",
+        "archiveGithubRepoText": "GitHub-Repository archivieren",
         "hasAlternativeExtension": "Hat diese Erweiterung einen Ersatz?",
         "alternativeExtension": "Name der alternativen Erweiterung:",
         "successor": "Nachfolger:",

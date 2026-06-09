@@ -89,6 +89,7 @@ export class DeprecationManagementComponent implements OnInit {
       alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
+      isArchivedGithubRepo: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester,
@@ -294,6 +295,7 @@ export class DeprecationManagementComponent implements OnInit {
       const request: DeprecationRequest = {
         successorUrl: '',
         isAddReadme: true,
+        isArchivedGithubRepo: false,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
         deprecationDate: new Date(),

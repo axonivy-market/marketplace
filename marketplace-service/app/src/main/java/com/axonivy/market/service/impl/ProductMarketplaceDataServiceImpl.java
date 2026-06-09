@@ -265,8 +265,14 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         product.getRepositoryName())) {
       return null;
     }
-    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(product, request.getPullRequestAction(),
-        extensionData);
+    GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(
+        product.getRepositoryName(), request.getPullRequestAction(), extensionData);
+
+    if (request.getPullRequestAction() == PullRequestAction.ADD && request.getIsArchivedGithubRepo()) {
+      gitHubService.archiveTheRepository("axonivy-market/readme-test");
+    } else {
+      gitHubService.unArchivedTheRepository();
+    }
 
     return Optional.ofNullable(pullRequest)
         .map(GHPullRequest::getHtmlUrl)

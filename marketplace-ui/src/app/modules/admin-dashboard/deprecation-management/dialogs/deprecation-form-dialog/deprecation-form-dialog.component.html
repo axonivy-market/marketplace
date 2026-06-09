@@ -44,7 +44,7 @@
           }
         </div>
 
-        <div class="form-check mb-4">
+        <div class="form-check mb-3">
           <input
             type="checkbox"
             class="form-check-input"
@@ -124,6 +124,19 @@
                placement="top"
                [ngbTooltip]="'common.admin.deprecation.updateForReadmeTextTooltip' | translate"
                tooltipClass="custom-tooltip-class"></i>
+          </label>
+        </div>
+
+        <div class="form-check mt-3">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="deprecationRequest.isArchivedGithubRepo"
+            [disabled]="isDeprecating"
+            id="archive-github-repo-checkbox"
+          />
+          <label class="form-check-label" for="archive-github-repo-checkbox">
+            {{ 'common.admin.deprecation.archiveGithubRepoText' | translate }}
           </label>
         </div>
       </div>

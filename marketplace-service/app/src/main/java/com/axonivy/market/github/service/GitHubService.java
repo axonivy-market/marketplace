@@ -325,5 +325,10 @@ public interface GitHubService {
    * @throws IOException - if an error occurs while updating the README or interacting with GitHub
    * @author tvtphuc
    */
-  GHPullRequest updateReadmeForSuccessorNotes(Product product, PullRequestAction action, AlternativeExtensionData marketplaceData) throws IOException;
+  GHPullRequest updateReadmeForSuccessorNotes(String repoPath, PullRequestAction action,
+      AlternativeExtensionData marketplaceData) throws IOException;
+
+  void archiveTheRepository(String repoPath) throws IOException;
+
+  void unArchivedTheRepository();
 }

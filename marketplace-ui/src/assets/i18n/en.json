@@ -489,6 +489,7 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Create Pull Request to update Readme",
+        "archiveGithubRepoText": "Set archive for GitHub repo",
         "hasAlternativeExtension": "Has Alternative Extension?",
         "alternativeExtension": "Alternative extension name:",
         "successor": "Successor:",
