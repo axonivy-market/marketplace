@@ -8,7 +8,7 @@ on:
       - ".github/workflows/ci-ui.yml"
   push:
     branches:
-      - main
+      - master
     paths:
       - "marketplace-ui/**"
       - ".github/workflows/ci-ui.yml"
