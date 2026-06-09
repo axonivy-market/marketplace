@@ -289,17 +289,17 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private void updateLogoOfProduct(boolean isLogoDark, Product product, String imageId) {
     if (isLogoDark) {
-      deleteOldImageByProductId(product.getLogoDarkId(), imageId);
+      deleteOldLogo(product.getLogoDarkId(), imageId);
       product.setLogoDarkId(imageId);
     } else {
-      deleteOldImageByProductId(product.getLogoId(), imageId);
+      deleteOldLogo(product.getLogoId(), imageId);
       product.setLogoId(imageId);
     }
 
     productRepo.save(product);
   }
 
-  private void deleteOldImageByProductId(String productId, String imageId) {
+  private void deleteOldLogo(String productId, String imageId) {
     if (StringUtils.isNotBlank(productId) && !StringUtils.equals(productId, imageId)) {
       imageRepo.deleteById(productId);
     }
