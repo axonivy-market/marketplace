@@ -20,13 +20,20 @@ export class ProductCardComponent {
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
+
   logoUrl = DEFAULT_IMAGE_URL;
+  logoDarkUrl = DEFAULT_IMAGE_URL;
 
   ngOnInit(): void {
     this.logoUrl = this.product.logoUrl;
+    this.logoDarkUrl = !this.product.logoDarkUrl?.trim() ? this.product.logoUrl : this.product.logoDarkUrl;
   }
 
   onLogoError() {
-    this.logoUrl = DEFAULT_IMAGE_URL;
+    if (this.themeService.isDarkMode()) {
+      this.logoDarkUrl = DEFAULT_IMAGE_URL;
+    } else {
+      this.logoUrl = DEFAULT_IMAGE_URL;
+    }
   }
 }

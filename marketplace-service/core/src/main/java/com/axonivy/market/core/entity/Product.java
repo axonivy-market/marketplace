@@ -61,6 +61,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private List<Artifact> artifacts;
 
   private String logoUrl;
+  private String logoDarkUrl;
   private Boolean listed;
   private Boolean deprecated;
   private String type;
@@ -93,6 +94,7 @@ public class Product extends AbstractAuditableEntity<String> {
   @Transient
   private String metaProductJsonUrl;
   private String logoId;
+  private String logoDarkId;
   @Transient
   private String bestMatchVersion;
   @Transient
