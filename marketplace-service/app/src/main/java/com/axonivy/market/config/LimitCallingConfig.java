@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -53,7 +54,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
         log.warn("Request allowed for IP: {}. Remaining tokens: {}", clientIp, bucket.getAvailableTokens());
         filterChain.doFilter(request, response);
       } else {
-        response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.getWriter().write("Too many requests. Please try again later.");
       }
     } else {

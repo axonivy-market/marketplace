@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MailSenderService {
+public class MailSenderBuilder {
 
   private final AppSettingService appSettingService;
 
-  public JavaMailSender createMailSender() {
+  public JavaMailSender build() {
     var sender = new JavaMailSenderImpl();
     sender.setHost(appSettingService.getStringValueByKey(AppSettingKey.MAIL_HOST));
     sender.setPort(appSettingService.getIntegerValueByKey(AppSettingKey.MAIL_PORT));

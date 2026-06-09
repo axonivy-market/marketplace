@@ -25,7 +25,7 @@ public class MatomoTrackerBuilder {
   private Integer siteId;
   private Boolean enabled;
 
-  public synchronized MatomoTracker create() {
+  public synchronized MatomoTracker build() {
     String rawEndpoint = appSettingService.getStringValueByKey(AppSettingKey.MATOMO_API_ENDPOINT).trim();
     String rawSiteId = appSettingService.getStringValueByKey(AppSettingKey.MATOMO_SITE_ID).trim();
     boolean newEnabled = appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED);

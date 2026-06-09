@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.config.MailSenderService;
+import com.axonivy.market.config.MailSenderBuilder;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
@@ -26,7 +26,7 @@ import static com.axonivy.market.constants.MailConstants.*;
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
-  private final MailSenderService mailSenderService;
+  private final MailSenderBuilder mailSenderService;
   private final AppSettingService settingService;
 
   @Override
@@ -36,7 +36,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     try {
-      JavaMailSender mailSender = this.mailSenderService.createMailSender();
+      JavaMailSender mailSender = this.mailSenderService.build();
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
       message.setFrom(

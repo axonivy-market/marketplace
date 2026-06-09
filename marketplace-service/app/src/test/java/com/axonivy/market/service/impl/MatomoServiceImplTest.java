@@ -25,7 +25,7 @@ class MatomoServiceImplTest {
     matomoTrackerBuilder = mock(MatomoTrackerBuilder.class);
     matomoTracker = mock(MatomoTracker.class);
 
-    when(matomoTrackerBuilder.create()).thenReturn(matomoTracker);
+    when(matomoTrackerBuilder.build()).thenReturn(matomoTracker);
     when(matomoTracker.sendRequestAsync(any(MatomoRequest.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
 

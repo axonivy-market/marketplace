@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -81,7 +82,7 @@ class LimitCallingConfigTest {
     filter.doFilterInternal(request, response, chain);
 
     verify(response, times(1))
-        .setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+        .setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
     assertThat(responseWriter.toString())
         .as("Response writer should contain the rejection message after exceeding capacity")
         .contains("Too many requests");

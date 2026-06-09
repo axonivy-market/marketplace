@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.config.MailSenderService;
+import com.axonivy.market.config.MailSenderBuilder;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class NotificationServiceImplTest {
 
   @Mock
-  private MailSenderService mailSender;
+  private MailSenderBuilder mailSender;
 
   @Mock
   private JavaMailSender javaMailSender;
@@ -45,7 +45,7 @@ class NotificationServiceImplTest {
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
-    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(mailSender.build()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
     DisabledSecurityEvent dependabotEvent =
@@ -95,7 +95,7 @@ class NotificationServiceImplTest {
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to1@test.com, to2@test.com, to3@test.com");
     MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
-    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(mailSender.build()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
     DisabledSecurityEvent event =
@@ -142,7 +142,7 @@ class NotificationServiceImplTest {
   void testNotifyCatchMailError() {
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_FROM)).thenReturn("from@test.com");
     when(settingService.getStringValueByKey(AppSettingKey.MAIL_TO)).thenReturn("to@test.com");
-    when(mailSender.createMailSender()).thenReturn(javaMailSender);
+    when(mailSender.build()).thenReturn(javaMailSender);
     when(javaMailSender.createMimeMessage())
         .thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
 

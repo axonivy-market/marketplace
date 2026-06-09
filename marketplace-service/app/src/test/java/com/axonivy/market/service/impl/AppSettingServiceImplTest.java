@@ -214,12 +214,101 @@ class AppSettingServiceImplTest {
         "Should save all enum keys when no keys exist in repository");
   }
 
+  // ===== getLongValueByKey =====
+
+  @Test
+  void testGetLongValueByKeyReturnsStoredValue() {
+    AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey(), "5000", false);
+    when(repository.findByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey())).thenReturn(Optional.of(setting));
+
+    Long result = appSettingService.getLongValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
+
+    assertEquals(5000L, result, "Should parse stored value as long");
+  }
+
+  @Test
+  void testGetLongValueByKeyReturnsZeroWhenBothValueAndDefaultInvalid() {
+    AppSetting setting = buildAppSetting(AppSettingKey.LIMITED_REQUEST_PATHS.getKey(), "not-a-number", false);
+    when(repository.findByKey(AppSettingKey.LIMITED_REQUEST_PATHS.getKey())).thenReturn(Optional.of(setting));
+
+    Long result = appSettingService.getLongValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
+
+    assertEquals(0L, result, "Should return 0L when both stored and default values are invalid");
+  }
+
+  @Test
+  void testGetLongValueByKeyUsesDefaultWhenNotFound() {
+    when(repository.findByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey())).thenReturn(Optional.empty());
+
+    Long result = appSettingService.getLongValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
+
+    assertEquals(10000L, result, "Should parse default value as long when setting not found");
+  }
+
+  // ===== getIntegerValueByKey =====
+
+  @Test
+  void testGetIntegerValueByKeyReturnsStoredValue() {
+    AppSetting setting = buildAppSetting(AppSettingKey.MAIL_PORT.getKey(), "465", false);
+    when(repository.findByKey(AppSettingKey.MAIL_PORT.getKey())).thenReturn(Optional.of(setting));
+
+    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.MAIL_PORT);
+
+    assertEquals(465, result, "Should parse stored value as integer");
+  }
+
+  @Test
+  void testGetIntegerValueByKeyReturnsNullWhenBothValueAndDefaultInvalid() {
+    AppSetting setting = buildAppSetting(AppSettingKey.LIMITED_REQUEST_PATHS.getKey(), "not-a-number", false);
+    when(repository.findByKey(AppSettingKey.LIMITED_REQUEST_PATHS.getKey())).thenReturn(Optional.of(setting));
+
+    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
+
+    assertNull(result, "Should return null when both stored and default values are invalid");
+  }
+
+  @Test
+  void testGetIntegerValueByKeyUsesDefaultWhenNotFound() {
+    when(repository.findByKey(AppSettingKey.CLICK_CAPACITY.getKey())).thenReturn(Optional.empty());
+
+    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.CLICK_CAPACITY);
+
+    assertEquals(100, result, "Should parse default value as integer when setting not found");
+  }
+
+  // ===== getBooleanValueByKey =====
+
+  @Test
+  void testGetBooleanValueByKeyReturnsTrue() {
+    AppSetting setting = buildAppSetting(AppSettingKey.MATOMO_ENABLED.getKey(), "true", false);
+    when(repository.findByKey(AppSettingKey.MATOMO_ENABLED.getKey())).thenReturn(Optional.of(setting));
+
+    Boolean result = appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED);
+
+    assertTrue(result, "Should return true when stored value is 'true'");
+  }
+
+  @Test
+  void testGetBooleanValueByKeyReturnsFalse() {
+    AppSetting setting = buildAppSetting(AppSettingKey.MATOMO_ENABLED.getKey(), "false", false);
+    when(repository.findByKey(AppSettingKey.MATOMO_ENABLED.getKey())).thenReturn(Optional.of(setting));
+
+    Boolean result = appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED);
+
+    assertFalse(result, "Should return false when stored value is 'false'");
+  }
+
+  @Test
+  void testGetBooleanValueByKeyUsesDefaultWhenNotFound() {
+    when(repository.findByKey(AppSettingKey.MATOMO_ENABLED.getKey())).thenReturn(Optional.empty());
+
+    Boolean result = appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED);
+
+    assertTrue(result, "Should use default value 'true' when setting not found");
+  }
+
   private AppSetting buildAppSetting(String key, String value, boolean encrypted) {
     return AppSetting.builder().key(key).value(value).category("TEST").description("Test setting").encrypted(
         encrypted).build();
   }
 }
-
-
-
-
