@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +26,11 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = SYNC_TASK)
+@Table(
+    name = SYNC_TASK,
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_sync_task_type", columnNames = "type")
+    })
 public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
@@ -53,4 +59,7 @@ public class SyncTaskExecution extends AuditableIdEntity {
   private LocalDateTime completedDate;
 
   private String message;
+
+  @Version
+  private Integer version;
 }

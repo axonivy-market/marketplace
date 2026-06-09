@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,7 +110,14 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
 
     existingExecution.setStatus(SyncTaskStatus.STARTED);
     existingExecution.setMessage(SyncTaskConstants.STARTED_MESSAGE);
-    return syncTaskExecutionRepo.save(existingExecution);
+
+    try {
+      return syncTaskExecutionRepo.save(existingExecution);
+    } catch (ObjectOptimisticLockingFailureException ex) {
+      log.warn("Concurrent restart detected for sync task [{}], treating as in-progress", jobType);
+      String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
+      throw new SyncTaskInProgressException(syncTaskInProgressMessage);
+    }
   }
 
   private void updateSyncTask(SyncTaskExecution execution, SyncTaskStatus status, String message) {
@@ -125,7 +133,13 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     }
     execution.setStatus(status);
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
-    syncTaskExecutionRepo.save(execution);
+
+    try {
+      syncTaskExecutionRepo.save(execution);
+    } catch (ObjectOptimisticLockingFailureException ex) {
+      log.warn("Concurrent update detected for sync task [{}], skipping status update to [{}]",
+          execution.getType(), status);
+    }
   }
 
   private boolean isActiveStatus(SyncTaskStatus status) {
