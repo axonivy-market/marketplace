@@ -135,7 +135,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     execution.setMessage(StringUtils.abbreviate(message, MESSAGE_MAX_LENGTH));
 
     try {
-      syncTaskExecutionRepo.save(execution);
+syncTaskExecutionRepo.saveAndFlush(execution);
     } catch (ObjectOptimisticLockingFailureException ex) {
 log.warn("Concurrent update detected for sync task [{}], skipping status update to [{}]", execution.getType(), status, ex);
     }
