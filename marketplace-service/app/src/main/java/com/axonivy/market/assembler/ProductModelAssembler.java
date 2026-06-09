@@ -26,6 +26,7 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     resource.setType(product.getType());
     resource.setTags(product.getTags());
     resource.setMarketDirectory(product.getMarketDirectory());
+    resource.setDeprecated(product.getDeprecated());
 
     var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     resource.setLogoUrl(logoLink.getHref());

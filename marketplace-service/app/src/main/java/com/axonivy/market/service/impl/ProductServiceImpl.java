@@ -552,16 +552,20 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
-
     return Optional.ofNullable(product).map((Product productItem) -> {
-      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(marketplaceData.getInstallationCount());
-      productItem.setSuccessor(marketplaceData.getSuccessor());
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
+      mappingMetadataForProduct(id, product, productItem);
       return productItem;
     }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
+  }
+
+  private void mappingMetadataForProduct(String id, Product product, Product productItem) {
+    ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
+    productItem.setInstallationCount(marketplaceData.getInstallationCount());
+    productItem.setSuccessor(marketplaceData.getSuccessor());
+    productItem.setAlternativeExtension(marketplaceData.getAlternativeExtension());
+    String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
+    productItem.setCompatibilityRange(compatibilityRange);
+    updateFocusedStatusForProduct(product);
   }
 
   @Override
@@ -578,13 +582,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     return Optional.ofNullable(product).map((Product productItem) -> {
-      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
-      productItem.setInstallationCount(marketplaceData.getInstallationCount());
-      productItem.setSuccessor(marketplaceData.getSuccessor());
-
-      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
-      productItem.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
+      mappingMetadataForProduct(id, product, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + id));
@@ -628,13 +626,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null) {
-      ProductMarketplaceData marketplaceData = productMarketplaceDataService.updateProductInstallationCount(id);
-      product.setInstallationCount(marketplaceData.getInstallationCount());
-      product.setSuccessor(marketplaceData.getSuccessor());
-
-      String compatibilityRange = getCompatibilityRange(id, product.getDeprecated());
-      product.setCompatibilityRange(compatibilityRange);
-      updateFocusedStatusForProduct(product);
+      mappingMetadataForProduct(id, product, product);
     }
     return product;
   }
@@ -659,9 +651,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
         updateFirstPublishedDate(product);
+        productRepo.save(product);
+        
         updateProductFromReleasedVersions(product);
         productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
-        productRepo.save(product);
         log.info("Sync product {} is finished!", productId);
         return true;
       }

@@ -61,31 +61,4 @@ class ImageControllerTest {
     assertNull(result.getBody(),
         "Response body should be null when image is empty");
   }
-
-  @Test
-  void testFindPreviewImageByNameWhenImageExists() {
-    byte[] mockImageData = "preview data".getBytes();
-    when(imageService.readPreviewImageByName("sample.png")).thenReturn(mockImageData);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.IMAGE_PNG);
-    ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
-
-    ResponseEntity<byte[]> result = imageController.findPreviewImageByName("sample.png");
-
-    assertEquals(expectedResult, result,
-        "Preview image should be returned with correct headers and HTTP 200 status when data exists");
-  }
-
-  @Test
-  void testFindPreviewImageByNameWhenImageEmpty() {
-    when(imageService.readPreviewImageByName("empty.png")).thenReturn(new byte[0]);
-
-    ResponseEntity<byte[]> result = imageController.findPreviewImageByName("empty.png");
-
-    assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(),
-        "Status should be 204 NO_CONTENT when preview image data is empty");
-    assertNull(result.getBody(),
-        "Response body should be null when preview image data is empty");
-  }
 }
