@@ -77,7 +77,7 @@ cp stable/target/stable-1.0.0-SNAPSHOT.war $CATALINA_HOME/webapps/
 
 ## Troubleshooting
 
-**Port 8085 in use**: Change `server.port` in application.yaml
+**Port 8080 in use**: Change `server.port` in application.yaml
 
 **Database connection failed**: Check environment variables and PostgreSQL running
 

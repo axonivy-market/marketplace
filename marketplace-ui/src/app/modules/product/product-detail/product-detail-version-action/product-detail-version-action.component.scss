@@ -93,6 +93,18 @@
   border: 0px;
 }
 
+.btn__install-deprecated {
+  background-color: var(--deprecated-install-button-bg);
+  color: var(--deprecated-install-button-text);
+
+  &:hover {
+    color: var(--deprecated-install-button-text);
+    border-color: transparent;
+    box-shadow: none;
+    background-color: #ec6918;
+  }
+}
+
 .primary-color {
   color: var(--ivy-primary-bg);
 }

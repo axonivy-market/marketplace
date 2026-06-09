@@ -1,10 +1,13 @@
 {
   "common": {
+    "deprecated": "Deprecated",
     "branch": "Axon Ivy Market",
     "language": {
       "english": "English",
       "french": "Français",
-      "german": "Deutsch"
+      "german": "Deutsch",
+      "yes": "Yes",
+      "no": "No"
     },
     "team": {
       "title": "Meet Team Octopus",
@@ -176,7 +179,12 @@
         "contactUs": {
           "label": "Contact us"
         },
-        "changelog": "Changelog"
+        "changelog": "Changelog",
+        "deprecatedBanner": {
+          "title": "DEPRECATED",
+          "description": "This extension is deprecated and will no longer receive updates or support. It will be removed in release 14.",
+          "recommendedAlternative": "Recommended alternative"
+        }
       }
     },
     "feedback": {
@@ -364,17 +372,18 @@
         "helpText": "The security monitor helps track security events and alerts from GitHub repositories, including Dependabot alerts, code scanning results, security scanning findings, etc. Administrations can review identified issues and take appropriate actions to ensure the security of marketplace extensions.",
         "reloadData": "Reload Data",
         "repoName": "Repository",
-        "archived": "Archived",
         "dependabot": "Dependabot",
         "enabled": "Enabled",
         "disabled": "Disabled",
         "noPermission": "No Permission",
+        "notSupported": "Not Supported",
         "noVulnerabilities": "No Vulnerabilities",
         "noRepositories": "No repositories found.",
         "codeScanning": "Code Scanning",
         "secretScanning": "Secret Scanning",
         "branchProtection": "Branch Protection",
-        "lastCommit": "Last Commit"
+        "lastCommit": "Last Commit",
+        "alert": "Alert"
       },
       "customSort": {
         "pageTitle": "Custom Sort",
@@ -443,7 +452,7 @@
         "title": "Axon Ivy Market News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
         "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
-        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"
       },
@@ -455,6 +464,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "draft": "Draft",
         "createdAt": "Created at",
         "updatedAt": "Updated at",
         "sprintHeader": "Sprint: ",
@@ -466,7 +476,8 @@
         "delete": "Delete",
         "cancel": "Cancel",
         "warning": "Warning",
-        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint",
+        "draftAlertMessage": "You have an unfinished draft for this release letter. Do you want to continue editing it?"
       },
       "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",
@@ -478,6 +489,8 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Create Pull Request to update Readme",
+        "hasAlternativeExtension": "Has Alternative Extension?",
+        "alternativeExtension": "Alternative extension name:",
         "successor": "Successor:",
         "confirmRemoveDeprecatedContent": "Are you sure to remove deprecation for this extension?",
         "confirmRemoveDeprecatedTitle": "Remove deprecation confirmation",
@@ -488,6 +501,8 @@
         "action": "Action",
         "validation": {
           "extensionIdRequired": "Extension ID is required",
+          "alternativeExtensionRequired": "Alternative extension name is required",
+          "successorRequired": "Successor is required",
           "invalidSuccessorUrl": "URL must start with http:// or https://"
         },
         "deprecateSuccess": "Extension has been deprecated successfully!",
@@ -497,7 +512,13 @@
         "copiedLabel": "Copied!",
         "deprecateProduct": "Deprecate Product",
         "productIdInputPlaceholder": "Please select extension id to deprecate",
-        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
+        "alternativeExtensionInputPlaceholder": "Please enter alternative extension name e.g. Axon Ivy Smart Workflow",
+        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/smart-workflow",
+        "extensionIdTooltip": "The unique identifier of the marketplace extension you want to deprecate (e.g. portal).",
+        "hasAlternativeExtensionTooltip": "Check this if there is a newer or alternative extension that replaces this one.",
+        "alternativeExtensionTooltip": "The display name of the extension that replaces the deprecated one.",
+        "successorTooltip": "The full URL to the successor extension on the marketplace (must start with http:// or https://).",
+        "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice."
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
@@ -515,7 +536,9 @@
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
-        "genericErrorMessage": "An error occurred while processing your request. Please try again."
+        "genericErrorMessage": "An error occurred while processing your request. Please try again.",
+        "submit": "Submit",
+        "saveAsDraft": "Save as Draft"
       },
       "gitHubUserBadge": {
         "gitHubAccount": "GitHub account",

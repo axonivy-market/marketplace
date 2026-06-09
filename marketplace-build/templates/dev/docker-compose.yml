@@ -67,8 +67,10 @@ services:
       dockerfile: stable/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
+    ports:
+      - "8085:8085"
     expose:
-      - "8080"
+      - 8085
     networks:
       - marketplace-network
 

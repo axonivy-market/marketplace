@@ -48,8 +48,7 @@ class CoreVersionFactoryTest {
 
   @Test
   void testFindLowerVersionNullList() {
-    String result = CoreVersionFactory.findLowerVersion(null, "11.0.0");
-    assertNull(result);
+    assertNull(CoreVersionFactory.findLowerVersion(null, "11.0.0"));
   }
 
   @Test
