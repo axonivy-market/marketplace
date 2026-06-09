@@ -111,7 +111,7 @@ class CoreProductServiceImplTest extends CoreBaseSetup {
     name = new HashMap<>();
     name.put(Language.EN.getValue(), "Swiss phone directory");
     mockProduct.setNames(name);
-    mockProduct.setType("util");
+    mockProduct.setType("utils");
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
     mockProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
     mockProducts.add(mockProduct);
