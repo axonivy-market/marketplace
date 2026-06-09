@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env['CI'];
-const baseURL = process.env['E2E_BASE_URL'] ?? 'http://127.0.0.1:4200';
+const localBaseURL = isCI ? 'http://127.0.0.1:4000' : 'http://127.0.0.1:4200';
+const baseURL = process.env['E2E_BASE_URL'] ?? localBaseURL;
 const useExternalBaseURL = !!process.env['E2E_BASE_URL'];
 
 export default defineConfig({
@@ -20,8 +21,8 @@ export default defineConfig({
   webServer: useExternalBaseURL
     ? undefined
     : {
-      command: 'npm run start -- --host 127.0.0.1 --port 4200',
-      url: 'http://127.0.0.1:4200',
+      command: isCI ? 'npm run serve:ssr:marketplace-ui' : 'npm run start -- --host 127.0.0.1 --port 4200',
+      url: localBaseURL,
       reuseExistingServer: !isCI,
       timeout: 120000
     },
