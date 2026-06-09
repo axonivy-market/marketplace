@@ -114,7 +114,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     try {
       return syncTaskExecutionRepo.save(existingExecution);
     } catch (ObjectOptimisticLockingFailureException ex) {
-      log.warn("Concurrent restart detected for sync task [{}], treating as in-progress", jobType);
+log.warn("Concurrent restart detected for sync task [{}], treating as in-progress", jobType, ex);
       String syncTaskInProgressMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(jobType);
       throw new SyncTaskInProgressException(syncTaskInProgressMessage);
     }
