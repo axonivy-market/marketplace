@@ -21,6 +21,6 @@ test.describe('Product listing page', () => {
     await listing.goto();
 
     await listing.assertProductCount(0);
-    expect(await listing.emptyState.isVisible() ).toBe(false);
+    expect(await listing.emptyState.isVisible() ).toBe(true);
   });
 });
