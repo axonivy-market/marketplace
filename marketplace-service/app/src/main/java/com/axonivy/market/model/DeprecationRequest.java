@@ -13,6 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeprecationRequest {
+  private String alternativeExtension;
   private String successorUrl;
   private Boolean isDeprecated;
   private Boolean isAddReadme;

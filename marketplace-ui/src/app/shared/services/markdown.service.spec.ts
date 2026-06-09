@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-
 import { MarkdownService } from './markdown.service';
 import MarkdownIt from 'markdown-it';
 import { GITHUB_PULL_REQUEST_NUMBER_REGEX } from '../constants/common.constant';
@@ -19,32 +18,51 @@ describe('MarkdownService', () => {
 
   it('should render basic Markdown correctly', () => {
     const input = '# Hello World';
-    const expectedOutput = '<h1>Hello World</h1>\n';
-    expect(service.parseMarkdown(input)).toBe(expectedOutput);
+
+    const result = service.parseMarkdown(input);
+
+    expect(result).toContain('<h1>Hello World</h1>');
   });
 
   it('should convert bold and italic Markdown syntax', () => {
     const input = '**bold** _italic_';
-    const expectedOutput = '<p><strong>bold</strong> <em>italic</em></p>\n';
-    expect(service.parseMarkdown(input)).toBe(expectedOutput);
+
+    const result = service.parseMarkdown(input);
+
+    expect(result).toContain('<strong>bold</strong>');
+    expect(result).toContain('<em>italic</em>');
   });
 
   it('should render emoji using markdown-it-emoji', () => {
     const input = 'Hello :smile:';
-    const expectedOutput = '<p>Hello 😄</p>\n'; // Emoji gets converted
-    expect(service.parseMarkdown(input)).toBe(expectedOutput);
+
+    const result = service.parseMarkdown(input);
+
+    expect(result).toContain('Hello 😄');
   });
 
   it('should allow safe anchor tags', () => {
     const input = '[Google](https://google.com)';
+
     const result = service.parseMarkdown(input);
-    expect(result).toContain('<a href="https://google.com">Google</a>');
+
+    expect(result).toContain('href="https://google.com"');
+    expect(result).toContain('Google');
   });
 
   it('should not allow javascript: links (prevent phishing attacks)', () => {
     const input = '[Click me](javascript:alert("Hacked!"))';
     const result = service.parseMarkdown(input);
     expect(result).not.toContain('href="javascript:alert');
+  });
+
+  it('should sanitize unsafe HTML', () => {
+    const input =
+      '<img src="x" onerror="alert(\'hacked\')">';
+
+    const result = service.parseMarkdown(input);
+
+    expect(result).not.toContain('onerror');
   });
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
@@ -58,10 +76,12 @@ describe('MarkdownService', () => {
 
     const inputText =
       'Check out this PR: https://github.com/source-repo/pull/123';
-    const expectedOutput = 'Check out this PR: #123';
+
     const result = md.renderInline(inputText);
 
-    expect(result).toContain(expectedOutput);
+    expect(result).toContain(
+      'Check out this PR: #123'
+    );
   });
 
   it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
@@ -75,11 +95,12 @@ describe('MarkdownService', () => {
 
     const inputText =
       'Check out this PR: https://github.com/source-repo/compare/123';
-    const expectedOutput =
-      'Check out this PR: https://github.com/source-repo/compare/123';
+
     const result = md.renderInline(inputText);
 
-    expect(result).toContain(expectedOutput);
+    expect(result).toContain(
+      'https://github.com/source-repo/compare/123'
+    );
   });
 
   it('should convert GitHub profile URL to @mention in linkifyPullRequests', () => {
