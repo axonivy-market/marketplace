@@ -30,10 +30,7 @@ export class ProductCardComponent {
   }
 
   onLogoError() {
-    if (this.themeService.isDarkMode()) {
-      this.logoDarkUrl = DEFAULT_IMAGE_URL;
-    } else {
-      this.logoUrl = DEFAULT_IMAGE_URL;
-    }
+    this.logoUrl = DEFAULT_IMAGE_URL;
+    this.logoDarkUrl = DEFAULT_IMAGE_URL;
   }
 }

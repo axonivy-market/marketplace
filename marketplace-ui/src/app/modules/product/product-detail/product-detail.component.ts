@@ -414,11 +414,8 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   onLogoError(): void {
-    if (this.themeService.isDarkMode()) {
-      this.logoDarkUrl = DEFAULT_IMAGE_URL;
-    } else {
-      this.logoUrl = DEFAULT_IMAGE_URL;
-    }
+    this.logoDarkUrl = DEFAULT_IMAGE_URL;
+    this.logoUrl = DEFAULT_IMAGE_URL;
   }
 
   handleProductContentVersion(): void {
