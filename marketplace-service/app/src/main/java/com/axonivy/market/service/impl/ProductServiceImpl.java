@@ -299,9 +299,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     productRepo.save(product);
   }
 
-  private void deleteOldLogo(String productId, String imageId) {
-    if (StringUtils.isNotBlank(productId) && !StringUtils.equals(productId, imageId)) {
-      imageRepo.deleteById(productId);
+  private void deleteOldLogo(String oldLogoImageId, String newLogoImageId) {
+    if (StringUtils.isNotBlank(oldLogoImageId) && !StringUtils.equals(oldLogoImageId, newLogoImageId)) {
+      imageRepo.deleteById(oldLogoImageId);
     }
   }
 
