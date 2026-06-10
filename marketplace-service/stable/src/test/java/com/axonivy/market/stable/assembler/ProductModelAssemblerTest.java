@@ -42,7 +42,9 @@ class ProductModelAssemblerTest {
     assertEquals(product.getTags(), model.getTags());
     assertEquals(product.getMarketDirectory(), model.getMarketDirectory());
     assertNotNull(model.getLogoUrl());
-    assertNull(model.getLogoDarkUrl());
+    assertTrue(model.getLogoUrl().contains("logo-id"),
+        "logo ID should be included in Url when logoId is present");
+    assertNull(model.getLogoDarkUrl(), "Logo Dark URL should be null when logoDarkId is not present");
   }
 
   @Test
@@ -54,7 +56,8 @@ class ProductModelAssemblerTest {
 
     ProductModel model = productModelAssembler.toModel(product);
 
-    assertNotNull(model.getLogoDarkUrl());
-    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"));
+    assertNotNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is present");
+    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"),
+        "Dark logo ID should be included in Url when logoDarkId is present");
   }
 }

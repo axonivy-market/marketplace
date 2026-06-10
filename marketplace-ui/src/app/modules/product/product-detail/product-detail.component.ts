@@ -304,7 +304,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
-    this.logoDarkUrl = !productDetail.logoDarkUrl?.trim() ? productDetail.logoUrl : productDetail.logoDarkUrl;
+    this.logoDarkUrl = productDetail.logoDarkUrl?.trim() ? productDetail.logoDarkUrl : productDetail.logoUrl;
     const ratingLabels = RATING_LABELS_BY_TYPE.find(
       button => button.type === productDetail.type
     );

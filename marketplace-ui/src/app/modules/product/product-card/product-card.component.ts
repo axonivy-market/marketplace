@@ -26,7 +26,7 @@ export class ProductCardComponent {
 
   ngOnInit(): void {
     this.logoUrl = this.product.logoUrl;
-    this.logoDarkUrl = !this.product.logoDarkUrl?.trim() ? this.product.logoUrl : this.product.logoDarkUrl;
+    this.logoDarkUrl = this.product.logoDarkUrl?.trim() ? this.product.logoDarkUrl : this.product.logoUrl;
   }
 
   onLogoError() {

@@ -953,6 +953,24 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testModifyProductLogoDarkWithExistingProduct() {
+    String parentPath = "market/connector/";
+    var mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+
+    var mockGHContent = mock(GHContent.class);
+    when(mockGHContent.getName()).thenReturn("market/logo-dark.png");
+    var mockImage = getMockImage();
+
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(mockProduct);
+    when(imageService.mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent)).thenReturn(mockImage);
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+    productService.modifyProductLogo(parentPath, mockGHContent);
+
+    assertEquals(mockImage.getId(), mockProduct.getLogoDarkId(), "Product should have new logo Dark ID set");
+  }
+
+  @Test
   void testModifyProductLogoWithExistingProductButNoOldLogo() {
     String parentPath = "market/connector/";
     var mockProduct = new Product();

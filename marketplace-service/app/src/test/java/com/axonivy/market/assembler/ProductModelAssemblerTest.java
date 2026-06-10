@@ -26,8 +26,9 @@ class ProductModelAssemblerTest {
 
     ProductModel model = productModelAssembler.toModel(product);
 
-    assertNotNull(model.getLogoDarkUrl());
-    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"));
+    assertNotNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is present");
+    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"),
+        "Dark logo ID should be included in Url when logoDarkId is present");
   }
 
   @Test
@@ -39,6 +40,6 @@ class ProductModelAssemblerTest {
 
     ProductModel model = productModelAssembler.toModel(product);
 
-    assertNull(model.getLogoDarkUrl());
+    assertNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is blank");
   }
 }
