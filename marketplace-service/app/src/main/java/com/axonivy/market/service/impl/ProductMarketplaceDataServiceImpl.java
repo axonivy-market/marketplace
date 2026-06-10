@@ -8,6 +8,7 @@ import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.RepositoryAction;
+import com.axonivy.market.exceptions.model.ArchiveNotAllowedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.DeprecationRequest;
@@ -273,6 +274,10 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     }
 
     if (action == RepositoryAction.ARCHIVE) {
+      if (gitHubService.hasDeprecationWarningInReadme(repoPath)) {
+        throw new ArchiveNotAllowedException(ErrorCode.ARCHIVE_NOT_ALLOWED,
+            "Cannot archive repository '" + productId + "': README does not contain deprecation warning");
+      }
       gitHubService.archiveTheRepository(repoPath);
     } else {
       gitHubService.unArchivedTheRepository();

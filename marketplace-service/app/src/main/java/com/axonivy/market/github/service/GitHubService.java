@@ -331,4 +331,6 @@ public interface GitHubService {
   void archiveTheRepository(String repoPath) throws IOException;
 
   void unArchivedTheRepository();
+
+  boolean hasDeprecationWarningInReadme(String repoPath) throws IOException;
 }

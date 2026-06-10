@@ -565,6 +565,20 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
+  public boolean hasDeprecationWarningInReadme(String repoPath) throws IOException {
+    GHRepository repository = getRepository("axonivy-market/readme-test");
+    if (repository == null) {
+      return false;
+    }
+    GHContent readme = repository.getFileContent(README_FILE_PATH, repository.getDefaultBranch());
+    String readmeContent = getReadmeContent(readme);
+    GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
+    // Check if the README contains the deprecation notice prefix (without the version placeholder)
+    String noticePrefix = config.unsupportedNotice().split("%s")[0];
+    return readmeContent.contains(noticePrefix.trim());
+  }
+
+  @Override
   public void unArchivedTheRepository() {
     String url = "https://api.github.com/repos/axonivy-market/readme-test";
     okhttp3.RequestBody body = okhttp3.RequestBody.create(

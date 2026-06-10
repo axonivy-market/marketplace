@@ -1,8 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
+import { HttpToastService } from '../../../core/services/browser/http-toast.service';
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -42,6 +44,7 @@ export class DeprecationManagementComponent implements OnInit {
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
   translateService = inject(TranslateService);
+  httpToastService = inject(HttpToastService);
 
   // Deprecate form dialog state
   showDeprecatedProductDialog = false;
@@ -312,12 +315,32 @@ export class DeprecationManagementComponent implements OnInit {
         this.productService.updateArchiveStatus(row.id, action)
       );
       row.isArchived = !row.isArchived;
+    } catch (error) {
+      // Parse error response and show toast notification
+      this.showArchiveErrorToast(error);
       this.showArchiveConfirmDialog = false;
       this.isClosingArchiveDialog = false;
       this.archiveTargetRow = null;
     } finally {
       this.isArchiving = false;
     }
+  }
+
+  private showArchiveErrorToast(error: unknown): void {
+    let messageKey = 'common.error.description.default';
+    if (error instanceof HttpErrorResponse) {
+      try {
+        const errorBody = typeof error.error === 'string' ? JSON.parse(error.error) : error.error;
+        messageKey = errorBody?.messageDetails || messageKey;
+      } catch {
+        messageKey = error.error || messageKey;
+      }
+    }
+    this.httpToastService.publishError({
+      status: error instanceof HttpErrorResponse ? error.status : 0,
+      messageKey,
+      timestamp: Date.now()
+    });
   }
 
   closeRemoveDeprecationDialog(): void {

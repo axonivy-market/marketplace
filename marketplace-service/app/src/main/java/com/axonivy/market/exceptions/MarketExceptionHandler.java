@@ -4,6 +4,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
+import com.axonivy.market.exceptions.model.ArchiveNotAllowedException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MarketException;
@@ -133,5 +134,14 @@ public class MarketExceptionHandler {
     var message = new Message(ErrorCode.TASK_ALREADY_IN_PROGRESS.getCode(), syncTaskInProgressException.getMessage(),
         ErrorCode.TASK_ALREADY_IN_PROGRESS.getHelpText());
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
+  }
+
+  @ExceptionHandler(ArchiveNotAllowedException.class)
+  public ResponseEntity<Object> handleArchiveNotAllowedException(
+      ArchiveNotAllowedException archiveNotAllowedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(archiveNotAllowedException.getCode());
+    errorMessage.setMessageDetails(archiveNotAllowedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }
 }
