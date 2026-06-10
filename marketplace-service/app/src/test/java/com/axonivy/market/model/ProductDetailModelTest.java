@@ -128,7 +128,8 @@ class ProductDetailModelTest {
     ProductDetailModel model = ProductDetailModel.createModel(product, false);
 
     assertNotNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is present");
-    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"));
+    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"),
+        "logo Dark ID should be included in Url when logoDarkId is present");
   }
 
   @Test
