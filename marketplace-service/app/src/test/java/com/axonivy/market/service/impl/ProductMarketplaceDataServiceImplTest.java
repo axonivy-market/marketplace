@@ -18,6 +18,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private FileDownloadService fileDownloadService;
   @Mock
   private GitHubService gitHubService;
+  @Mock
+  private AxonIvyClient axonIvyClient;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
@@ -262,7 +265,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     assertNull(response, "Pull request URL should be null when product is not found");
     verify(productMarketplaceDataRepo).save(any(ProductMarketplaceData.class));
     verify(productRepo, never()).save(any(Product.class));
-    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any(), any());
   }
 
   @Test
@@ -287,32 +290,36 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   void testUpdateSuccessorForProductWithAddReadmeFalseDoesNotCreatePr() throws IOException {
     DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, false, null);
     Product product = getMockProduct();
+    product.setNewestReleaseVersion(MOCK_RELEASED_VERSION);
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData
         ()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(axonIvyClient.getAllVersions()).thenReturn(List.of());
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
     assertNull(response, "Pull request URL should be null when addReadme is false");
     assertEquals(Boolean.TRUE, product.getDeprecated(), "Product deprecated flag should be set to true");
     verify(productRepo).save(product);
-    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any(), any());
   }
 
   @Test
   void testUpdateSuccessorForProductWithAddReadmeTrueAndNullActionDoesNotCreatePr() throws IOException {
     DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, null);
     Product product = getMockProduct();
+    product.setNewestReleaseVersion(MOCK_RELEASED_VERSION);
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
         Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(axonIvyClient.getAllVersions()).thenReturn(List.of());
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
     assertNull(response, "Pull request URL should be null when pullRequestAction is null");
-    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any());
+    verify(gitHubService, never()).updateReadmeForSuccessorNotes(anyString(), any(), any());
   }
 
   @Test
@@ -320,13 +327,15 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    product.setNewestReleaseVersion(MOCK_RELEASED_VERSION);
 
     GHPullRequest mockPr = mock(GHPullRequest.class);
     when(mockPr.getHtmlUrl()).thenReturn(URI.create("https://github.com/axonivy-market/bpmn-statistic/pull/1").toURL());
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD)).thenReturn(
+    when(axonIvyClient.getAllVersions()).thenReturn(List.of());
+    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any())).thenReturn(
         mockPr);
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
@@ -334,7 +343,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     assertNotNull(response, "Pull request URL should be present when GitHub service returns a PR");
     assertEquals("https://github.com/axonivy-market/bpmn-statistic/pull/1", response,
         "Pull request URL should match the mocked GitHub PR HTML URL");
-    verify(gitHubService).updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD);
+    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any());
   }
 
   @Test
@@ -342,19 +351,21 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     DeprecationRequest request = buildDeprecatedRequest(null, false, true, PullRequestAction.REMOVE);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    product.setNewestReleaseVersion(MOCK_RELEASED_VERSION);
 
     GHPullRequest mockPr = mock(GHPullRequest.class);
     when(mockPr.getHtmlUrl()).thenReturn(URI.create("https://github.com/axonivy-market/bpmn-statistic/pull/2").toURL());
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE))
+    when(axonIvyClient.getAllVersions()).thenReturn(List.of());
+    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE), any()))
         .thenReturn(mockPr);
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
     assertNotNull(response, "Pull request URL should be present for REMOVE action");
-    verify(gitHubService).updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.REMOVE);
+    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE), any());
   }
 
   @Test
@@ -362,10 +373,12 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     DeprecationRequest request = buildDeprecatedRequest("https://successor.com", true, true, PullRequestAction.ADD);
     Product product = getMockProduct();
     product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    product.setNewestReleaseVersion(MOCK_RELEASED_VERSION);
 
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-    when(gitHubService.updateReadmeForSuccessorNotes(MOCK_PRODUCT_REPOSITORY_NAME, PullRequestAction.ADD))
+    when(axonIvyClient.getAllVersions()).thenReturn(List.of());
+    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any()))
         .thenReturn(null);
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
@@ -382,5 +395,4 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     return request;
   }
 }
-
 

@@ -21,6 +21,7 @@
 //import com.axonivy.market.entity.ProductSecurityInfo;
 //import com.axonivy.market.github.model.SecretScanning;
 //import com.axonivy.market.github.service.impl.GitHubServiceImpl;
+//import com.axonivy.market.model.AlternativeExtensionData;
 //import com.axonivy.market.model.GitHubReleaseModel;
 //import com.axonivy.market.repository.GithubUserRepository;
 //import com.axonivy.market.repository.ProductSecurityInfoRepository;
@@ -67,6 +68,11 @@
 //  private static final String BASE_BRANCH = "master";
 //  private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
 //  private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
+//  private static final AlternativeExtensionData EXTENSION_DATA_FIXTURE = AlternativeExtensionData.builder()
+//      .successorUrl("https://market.axonivy.com/successor")
+//      .alternativeExtension("successor-extension")
+//      .deprecatedVersionFrom("10.0.0")
+//      .build();
 //
 //  @Mock
 //  private GitHubProperty gitHubProperty;
@@ -959,7 +965,7 @@
 //    GHContent readme = mock(GHContent.class);
 //    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertNull(result, "Expected null when README already contains unsupported notice");
 //    verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -973,7 +979,7 @@
 //    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
 //    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 //
 //    assertNull(result, "Expected null when README has no unsupported notice to remove");
 //    verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -988,7 +994,7 @@
 //    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
 //    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 //
 //    assertNull(result, "Expected null when README already has no notice and content is unchanged");
 //    verify(branchRef).delete();
@@ -1001,7 +1007,7 @@
 //    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
 //    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 //
 //    assertNull(result, "Expected null and no exception when branch does not exist");
 //    verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
@@ -1014,7 +1020,7 @@
 //    GHRef branchRef = mock(GHRef.class);
 //    setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertNull(result, "Expected null when README already contains the unsupported notice");
 //    verify(branchRef, never()).delete();
@@ -1033,7 +1039,7 @@
 //    when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
 //    mockOpenPullRequests(repository, List.of(existingPr));
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertEquals(existingPr, result, "Expected already open pull request to be returned");
 //    verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
@@ -1056,7 +1062,7 @@
 //    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
 //        .thenReturn(createdPr);
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
 //    verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1082,7 +1088,7 @@
 //    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
 //        .thenReturn(createdPr);
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
 //    verify(existingBranchRef).delete();
@@ -1103,7 +1109,7 @@
 //    when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
 //        .thenReturn(createdPr);
 //
-//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+//    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 //
 //    assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
 //    verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
@@ -1117,7 +1123,7 @@
 //    setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
 //
 //    assertThrows(NullPointerException.class,
-//        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", null),
+//        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", null, EXTENSION_DATA_FIXTURE),
 //        "Expected NullPointerException when pull request action is null");
 //  }
 //
@@ -1128,7 +1134,7 @@
 //    setupBaseRepositoryMocks(repository, readme, "Body without markdown heading");
 //
 //    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-//        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD),
+//        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE),
 //        "Expected IllegalArgumentException when README has no heading");
 //
 //    assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage(),
