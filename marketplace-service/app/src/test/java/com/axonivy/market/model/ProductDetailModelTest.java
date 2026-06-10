@@ -117,4 +117,29 @@ class ProductDetailModelTest {
     assertEquals("p1", model.getId(), "ID should be copied from product");
     assertEquals("Vendor", model.getVendor(), "Vendor should be copied via createDetailResource");
   }
+
+  @Test
+  void testCreateModelShouldSetDarkLogoUrlWhenLogoDarkIdExists() {
+    Product product = new Product();
+    product.setId("p1");
+    product.setLogoId("logo-id");
+    product.setLogoDarkId("logo-dark-id");
+
+    ProductDetailModel model = ProductDetailModel.createModel(product, false);
+
+    assertNotNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is present");
+    assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"));
+  }
+
+  @Test
+  void testCreateModelShouldNotSetDarkLogoUrlWhenLogoDarkIdIsBlank() {
+    Product product = new Product();
+    product.setId("p1");
+    product.setLogoId("logo-id");
+    product.setLogoDarkId("   ");
+
+    ProductDetailModel model = ProductDetailModel.createModel(product, false);
+
+    assertNull(model.getLogoDarkUrl(), "Dark logo URL should be null when logoDarkId is blank");
+  }
 }
