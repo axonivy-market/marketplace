@@ -101,6 +101,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
     if (isPlatformServer(this.platformId) && this.apiPublicUrl && this.apiInternalUrl) {
       productLogoUrl =
         this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
+      productDetail.logoUrl = productLogoUrl; // Update logoUrl in productDetail for server-side rendering  
     } else {
       productLogoUrl = originalLogoUrl;
     }
