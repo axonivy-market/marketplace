@@ -518,7 +518,13 @@
         "hasAlternativeExtensionTooltip": "Aktiviere dies, wenn es eine neuere oder alternative Erweiterung gibt, die diese ersetzt.",
         "alternativeExtensionTooltip": "Der Anzeigename der Erweiterung, die die veraltete ersetzt.",
         "successorTooltip": "Die vollständige URL zur Nachfolge-Erweiterung im Marketplace (muss mit http:// oder https:// beginnen).",
-        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert."
+        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert.",
+        "archive": "Archivieren",
+        "unarchive": "Dearchivieren",
+        "confirmArchiveTitle": "Archivierung bestätigen",
+        "confirmUnarchiveTitle": "Dearchivierung bestätigen",
+        "confirmArchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung archivieren möchten?",
+        "confirmUnarchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung dearchivieren möchten?"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

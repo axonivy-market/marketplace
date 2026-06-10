@@ -204,7 +204,8 @@ export class ProductService {
         return {
           id: item?.id ?? '',
           deprecationDate: item?.deprecationDate ?? null,
-          deprecationRequester: item?.deprecationRequester ?? null
+          deprecationRequester: item?.deprecationRequester ?? null,
+          isArchivedGithubRepo: item?.isArchivedGithubRepo ?? false
         };
       })
       .filter(item => !!item.id);

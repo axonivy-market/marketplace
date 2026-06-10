@@ -60,6 +60,12 @@ export class DeprecationManagementComponent implements OnInit {
   isRemoving = false;
   productId = '';
 
+  // Archive confirm dialog state
+  showArchiveConfirmDialog = false;
+  isClosingArchiveDialog = false;
+  isArchiving = false;
+  archiveTargetRow: DeprecatedProductInfo | null = null;
+
   dropdownOpen = false;
   deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
   selectableProductIds: string[] = [];
@@ -161,7 +167,8 @@ export class DeprecationManagementComponent implements OnInit {
     return {
       id: this.productId,
       deprecationDate: this.deprecationRequest?.deprecationDate?.toISOString(),
-      deprecationRequester: this.moderatorName
+      deprecationRequester: this.moderatorName,
+      isArchivedGithubRepo: this.deprecationRequest?.isArchivedGithubRepo ?? false
     };
   }
 
@@ -271,6 +278,54 @@ export class DeprecationManagementComponent implements OnInit {
   async confirmRemovedDeprecation(productId: string): Promise<void> {
     this.productId = productId;
     this.showRemoveDeprecationConfirmDialog = true;
+  }
+
+  async toggleArchiveStatus(row: DeprecatedProductInfo): Promise<void> {
+    this.archiveTargetRow = row;
+    this.showArchiveConfirmDialog = true;
+  }
+
+  closeArchiveConfirmDialog(): void {
+    if (this.isArchiving) {
+      return;
+    }
+    this.isClosingArchiveDialog = true;
+    setTimeout(() => {
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+    }, this.DIALOG_CLOSE_DELAY_MS);
+  }
+
+  async executeToggleArchive(): Promise<void> {
+    if (this.isArchiving || !this.archiveTargetRow) {
+      return;
+    }
+    this.isArchiving = true;
+
+    const row = this.archiveTargetRow;
+    const newArchiveStatus = !row.isArchivedGithubRepo;
+    const request: DeprecationRequest = {
+      successorUrl: '',
+      isAddReadme: false,
+      isArchivedGithubRepo: newArchiveStatus,
+      isDeprecated: true,
+      deprecationRequester: this.moderatorName,
+      deprecationDate: new Date(),
+      pullRequestAction: PullRequestAction.ADD
+    };
+
+    try {
+      await firstValueFrom(
+        this.productService.updateDeprecatedProduct(row.id, request)
+      );
+      row.isArchivedGithubRepo = newArchiveStatus;
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+    } finally {
+      this.isArchiving = false;
+    }
   }
 
   closeRemoveDeprecationDialog(): void {

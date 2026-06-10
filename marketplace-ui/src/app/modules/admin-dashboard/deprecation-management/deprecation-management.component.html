@@ -69,6 +69,19 @@
           <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
           <td class="text-primary text-center">{{ getRequester(row) }}</td>
           <td class="action-column text-primary text-center">
+            @if (row.isArchivedGithubRepo) {
+              <i class="ti ti-archive-off archive-icon archived"
+                 role="button"
+                 title="{{ 'common.admin.deprecation.unarchive' | translate }}"
+                 (click)="toggleArchiveStatus(row)">
+              </i>
+            } @else {
+              <i class="ti ti-archive archive-icon"
+                 role="button"
+                 title="{{ 'common.admin.deprecation.archive' | translate }}"
+                 (click)="toggleArchiveStatus(row)">
+              </i>
+            }
             <i class="ti ti-trash delete-icon"
                role="button"
                (click)="confirmRemovedDeprecation(row.id)">
@@ -118,3 +131,17 @@
   (closeDialog)="closeRemoveDeprecationDialog()"
   (confirm)="executeRemoveDeprecation()">
 </app-remove-deprecation-confirm-dialog>
+
+<app-remove-deprecation-confirm-dialog
+  [visible]="showArchiveConfirmDialog"
+  [isClosing]="isClosingArchiveDialog"
+  [isRemoving]="isArchiving"
+  [removedProductId]="archiveTargetRow?.id ?? ''"
+  [titleKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.confirmUnarchiveTitle' : 'common.admin.deprecation.confirmArchiveTitle'"
+  [contentKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.confirmUnarchiveContent' : 'common.admin.deprecation.confirmArchiveContent'"
+  [confirmButtonKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.unarchive' : 'common.admin.deprecation.archive'"
+  [confirmButtonClass]="'btn-danger'"
+  (closeDialog)="closeArchiveConfirmDialog()"
+  (confirm)="executeToggleArchive()">
+</app-remove-deprecation-confirm-dialog>
+

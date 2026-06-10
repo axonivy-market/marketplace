@@ -103,6 +103,8 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
   }
 
+
+
   @GetMapping(DEPRECATIONS)
   @Operation(summary = "Get product deprecations by deprecated status",
       description = "Return product deprecations filtered by deprecated flag")
