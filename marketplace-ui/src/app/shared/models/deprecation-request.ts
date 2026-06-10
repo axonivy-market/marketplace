@@ -6,7 +6,7 @@ export interface DeprecationRequest {
   successorUrl?: string;
   isDeprecated: boolean | null;
   isAddReadme?: boolean;
-  isArchivedGithubRepo?: boolean;
+  isArchived?: boolean;
   pullRequestAction?: PullRequestAction;
   deprecationDate?: Date | null;
   deprecationRequester?: string;

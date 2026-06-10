@@ -69,7 +69,7 @@
           <td class="text-primary text-center">{{ getDeprecatedTime(row) | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
           <td class="text-primary text-center">{{ getRequester(row) }}</td>
           <td class="action-column text-primary text-center">
-            @if (row.isArchivedGithubRepo) {
+            @if (row.isArchived) {
               <i class="ti ti-archive-off archive-icon archived"
                  role="button"
                  title="{{ 'common.admin.deprecation.unarchive' | translate }}"
@@ -137,9 +137,9 @@
   [isClosing]="isClosingArchiveDialog"
   [isRemoving]="isArchiving"
   [removedProductId]="archiveTargetRow?.id ?? ''"
-  [titleKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.confirmUnarchiveTitle' : 'common.admin.deprecation.confirmArchiveTitle'"
-  [contentKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.confirmUnarchiveContent' : 'common.admin.deprecation.confirmArchiveContent'"
-  [confirmButtonKey]="archiveTargetRow?.isArchivedGithubRepo ? 'common.admin.deprecation.unarchive' : 'common.admin.deprecation.archive'"
+  [titleKey]="archiveTargetRow?.isArchived ? 'common.admin.deprecation.confirmUnarchiveTitle' : 'common.admin.deprecation.confirmArchiveTitle'"
+  [contentKey]="archiveTargetRow?.isArchived ? 'common.admin.deprecation.confirmUnarchiveContent' : 'common.admin.deprecation.confirmArchiveContent'"
+  [confirmButtonKey]="archiveTargetRow?.isArchived ? 'common.admin.deprecation.unarchive' : 'common.admin.deprecation.archive'"
   [confirmButtonClass]="'btn-danger'"
   (closeDialog)="closeArchiveConfirmDialog()"
   (confirm)="executeToggleArchive()">

@@ -13,6 +13,7 @@ import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
+import { ArchiveAction } from '../../../shared/enums/archive-action.enum';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
 import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
@@ -95,7 +96,7 @@ export class DeprecationManagementComponent implements OnInit {
       alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
-      isArchivedGithubRepo: false,
+      isArchived: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester,
@@ -168,7 +169,7 @@ export class DeprecationManagementComponent implements OnInit {
       id: this.productId,
       deprecationDate: this.deprecationRequest?.deprecationDate?.toISOString(),
       deprecationRequester: this.moderatorName,
-      isArchivedGithubRepo: this.deprecationRequest?.isArchivedGithubRepo ?? false
+      isArchived: this.deprecationRequest?.isArchived ?? false
     };
   }
 
@@ -304,22 +305,13 @@ export class DeprecationManagementComponent implements OnInit {
     this.isArchiving = true;
 
     const row = this.archiveTargetRow;
-    const newArchiveStatus = !row.isArchivedGithubRepo;
-    const request: DeprecationRequest = {
-      successorUrl: '',
-      isAddReadme: false,
-      isArchivedGithubRepo: newArchiveStatus,
-      isDeprecated: true,
-      deprecationRequester: this.moderatorName,
-      deprecationDate: new Date(),
-      pullRequestAction: PullRequestAction.ADD
-    };
+    const action = row.isArchived ? ArchiveAction.UNARCHIVE : ArchiveAction.ARCHIVE;
 
     try {
       await firstValueFrom(
-        this.productService.updateDeprecatedProduct(row.id, request)
+        this.productService.updateArchiveStatus(row.id, action)
       );
-      row.isArchivedGithubRepo = newArchiveStatus;
+      row.isArchived = !row.isArchived;
       this.showArchiveConfirmDialog = false;
       this.isClosingArchiveDialog = false;
       this.archiveTargetRow = null;
@@ -350,7 +342,7 @@ export class DeprecationManagementComponent implements OnInit {
       const request: DeprecationRequest = {
         successorUrl: '',
         isAddReadme: true,
-        isArchivedGithubRepo: false,
+        isArchived: false,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
         deprecationDate: new Date(),

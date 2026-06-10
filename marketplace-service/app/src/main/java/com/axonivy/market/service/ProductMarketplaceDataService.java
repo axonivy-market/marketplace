@@ -1,6 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
@@ -169,4 +170,18 @@ public interface ProductMarketplaceDataService {
    * @author tvtphuc
    */
   List<ProductDeprecationProjection> getProductIdsByDeprecated(Boolean isDeprecated);
+
+  /**
+   * <p>
+   * Archives or unarchives the GitHub repository associated with a product.
+   * </p>
+   *
+   * @param  productId
+   *              type {@link String} - the unique product identifier
+   * @param  action
+   *              type {@link RepositoryAction} - ARCHIVE to archive, UNARCHIVE to unarchive the repository
+   * @throws IOException if an error occurs during GitHub API operations
+   * @author tvtphuc
+   */
+  void archiveOrUnarchiveRepository(String productId, RepositoryAction action) throws IOException;
 }

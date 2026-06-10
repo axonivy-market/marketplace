@@ -556,7 +556,8 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void archiveTheRepository(String repoPath) throws IOException {
-    GHRepository ghRepository = getRepository(repoPath);
+//    GHRepository ghRepository = getRepository(repoPath);
+    GHRepository ghRepository = getRepository("axonivy-market/readme-test");
     if (ghRepository != null && !ghRepository.isArchived()) {
       ghRepository.archive();
       log.info("Repository '{}' has been archived.", repoPath);

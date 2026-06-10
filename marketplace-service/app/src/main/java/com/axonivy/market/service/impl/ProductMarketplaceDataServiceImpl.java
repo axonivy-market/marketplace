@@ -7,6 +7,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.DeprecationRequest;
@@ -259,6 +260,28 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return productMarketplaceDataRepo.findProductIdsByDeprecated(isDeprecated);
   }
 
+  @Override
+  public void archiveOrUnarchiveRepository(String productId, RepositoryAction action) throws IOException {
+    Product product = productRepo.findById(productId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(),
+            "Product not found: " + productId));
+
+    String repoPath = product.getRepositoryName();
+    if (StringUtils.isBlank(repoPath)) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(),
+          "Repository not found for product: " + productId);
+    }
+
+    if (action == RepositoryAction.ARCHIVE) {
+      gitHubService.archiveTheRepository(repoPath);
+    } else {
+      gitHubService.unArchivedTheRepository();
+    }
+
+    product.setIsArchived(action == RepositoryAction.ARCHIVE ? true : null);
+    productRepo.save(product);
+  }
+
   private String handlePullRequest(Product product, DeprecationRequest request,
       AlternativeExtensionData extensionData) throws IOException {
     if (!request.getIsAddReadme() || request.getPullRequestAction() == null || StringUtils.isBlank(
@@ -267,12 +290,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     }
     GHPullRequest pullRequest = gitHubService.updateReadmeForSuccessorNotes(
         product.getRepositoryName(), request.getPullRequestAction(), extensionData);
-
-    if (request.getPullRequestAction() == PullRequestAction.ADD && request.getIsArchivedGithubRepo()) {
-      gitHubService.archiveTheRepository("axonivy-market/readme-test");
-    } else {
-      gitHubService.unArchivedTheRepository();
-    }
 
     return Optional.ofNullable(pullRequest)
         .map(GHPullRequest::getHtmlUrl)

@@ -157,7 +157,7 @@ describe('DeprecationManagementComponent', () => {
       alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
-      isArchivedGithubRepo: false,
+      isArchived: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester: 'alice',

@@ -22,6 +22,7 @@ import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/c
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
+import { ArchiveAction } from '../../shared/enums/archive-action.enum';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
@@ -205,7 +206,7 @@ export class ProductService {
           id: item?.id ?? '',
           deprecationDate: item?.deprecationDate ?? null,
           deprecationRequester: item?.deprecationRequester ?? null,
-          isArchivedGithubRepo: item?.isArchivedGithubRepo ?? false
+          isArchived: item?.isArchived ?? false
         };
       })
       .filter(item => !!item.id);
@@ -221,6 +222,19 @@ export class ProductService {
       }
     );
   };
+
+  updateArchiveStatus(productId: string, action: ArchiveAction): Observable<string> {
+    const params = new HttpParams().set('action', action);
+    return this.httpClient.put(
+      API_URI.PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID(productId),
+      null,
+      {
+        headers: this.adminAuthService.getAuthHeaders(),
+        params,
+        responseType: 'text'
+      }
+    );
+  }
 
   fetchAllProductsForSync(pageSize = PAGE_SIZE, language: Language = Language.EN): Observable<MarketProduct[]> {
     return this.loadProductPage(0, pageSize, language).pipe(

@@ -11,6 +11,7 @@ import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
+import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -103,6 +104,20 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
   }
 
+  @Authorized
+  @PutMapping(ARCHIVE_BY_ID)
+  @Operation(summary = "Archive or unarchive a product repository",
+      description = "Archive or unarchive the GitHub repository of a product based on the given action")
+  public ResponseEntity<Message> archiveOrUnarchiveRepository(
+      @PathVariable String productId,
+      @RequestParam RepositoryAction action) throws IOException {
+    productMarketplaceDataService.archiveOrUnarchiveRepository(productId, action);
+    String description = action == RepositoryAction.ARCHIVE
+        ? "Repository archived successfully"
+        : "Repository unarchived successfully";
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(), description);
+    return new ResponseEntity<>(message, HttpStatus.OK);
+  }
 
 
   @GetMapping(DEPRECATIONS)
