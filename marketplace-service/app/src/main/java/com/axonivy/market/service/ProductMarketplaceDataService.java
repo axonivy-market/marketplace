@@ -176,10 +176,8 @@ public interface ProductMarketplaceDataService {
    * Archives or unarchives the GitHub repository associated with a product.
    * </p>
    *
-   * @param  productId
-   *              type {@link String} - the unique product identifier
-   * @param  action
-   *              type {@link RepositoryAction} - ARCHIVE to archive, UNARCHIVE to unarchive the repository
+   * @param  productId type {@link String} - the unique product identifier
+   * @param  action type {@link RepositoryAction} - ARCHIVE to archive, UNARCHIVE to unarchive the repository
    * @throws IOException if an error occurs during GitHub API operations
    * @author tvtphuc
    */

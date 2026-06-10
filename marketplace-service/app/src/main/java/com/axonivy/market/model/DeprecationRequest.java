@@ -17,7 +17,6 @@ public class DeprecationRequest {
   private String successorUrl;
   private Boolean isDeprecated;
   private Boolean isAddReadme;
-  private Boolean isArchivedGithubRepo;
   private PullRequestAction pullRequestAction;
   private String deprecationRequester;
   private Date deprecationDate;

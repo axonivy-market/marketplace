@@ -99,7 +99,6 @@ export class DeprecationManagementComponent implements OnInit {
       alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
-      isArchived: false,
       isDeprecated: false,
       pullRequestAction: PullRequestAction.ADD,
       deprecationRequester,
@@ -171,8 +170,7 @@ export class DeprecationManagementComponent implements OnInit {
     return {
       id: this.productId,
       deprecationDate: this.deprecationRequest?.deprecationDate?.toISOString(),
-      deprecationRequester: this.moderatorName,
-      isArchived: this.deprecationRequest?.isArchived ?? false
+      deprecationRequester: this.moderatorName
     };
   }
 
@@ -365,7 +363,6 @@ export class DeprecationManagementComponent implements OnInit {
       const request: DeprecationRequest = {
         successorUrl: '',
         isAddReadme: true,
-        isArchived: false,
         isDeprecated: null,
         deprecationRequester: this.moderatorName,
         deprecationDate: new Date(),
