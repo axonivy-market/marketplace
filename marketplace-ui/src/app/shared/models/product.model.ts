@@ -8,7 +8,7 @@ export interface Product {
   shortDescriptions: DisplayValue;
   type: string;
   logoUrl: string;
-  logoDarkUrl: string;
+  logoDarkUrl?: string;
   cost: string;
   platformReview: string;
   vendor: string;

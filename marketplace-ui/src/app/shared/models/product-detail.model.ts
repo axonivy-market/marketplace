@@ -6,7 +6,7 @@ export interface ProductDetail {
   names: DisplayValue;
   shortDescriptions: DisplayValue;
   logoUrl: string;
-  logoDarkUrl: string;
+  logoDarkUrl?: string;
   type: string;
   tags: string[];
   vendor: string;
