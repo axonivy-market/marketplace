@@ -579,7 +579,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void unArchivedTheRepository() {
+  public void unArchivedTheRepository(String repoPath) {
+//    String url = "https://api.github.com/repos/" + repoPath;
     String url = "https://api.github.com/repos/axonivy-market/readme-test";
     okhttp3.RequestBody body = okhttp3.RequestBody.create(
         "{\"archived\": false}",
@@ -596,9 +597,9 @@ public class GitHubServiceImpl implements GitHubService {
         log.error("Failed to unarchive repository: {} {}", response.code(), response.message());
         return;
       }
-      log.info("Repository has been unarchived successfully.");
+      log.info("Repository '{}' has been unarchived successfully.", repoPath);
     } catch (IOException e) {
-      log.error("Error unarchiving repository", e);
+      log.error("Error unarchiving repository: {}", repoPath, e);
     }
   }
 

@@ -263,24 +263,18 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public void archiveOrUnarchiveRepository(String productId, RepositoryAction action) throws IOException {
-    Product product = productRepo.findById(productId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(),
-            "Product not found: " + productId));
+    Product product = productRepo.findById(productId).orElseThrow(
+        () -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(), "Product not found: " + productId));
 
-    String repoPath = product.getRepositoryName();
-    if (StringUtils.isBlank(repoPath)) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(),
-          "Repository not found for product: " + productId);
-    }
-
-    if (action == RepositoryAction.ARCHIVE) {
-      if (gitHubService.hasDeprecationWarningInReadme(repoPath)) {
+    if (action == RepositoryAction.UNARCHIVE) {
+      gitHubService.unArchivedTheRepository(product.getRepositoryName());
+    } else {
+      boolean hasDeprecationWarning = gitHubService.hasDeprecationWarningInReadme(product.getRepositoryName());
+      if (!hasDeprecationWarning) {
         throw new ArchiveNotAllowedException(ErrorCode.ARCHIVE_NOT_ALLOWED,
             "Cannot archive repository '" + productId + "': README does not contain deprecation warning");
       }
-      gitHubService.archiveTheRepository(repoPath);
-    } else {
-      gitHubService.unArchivedTheRepository();
+      gitHubService.archiveTheRepository(product.getRepositoryName());
     }
 
     product.setIsArchived(action == RepositoryAction.ARCHIVE ? true : null);
