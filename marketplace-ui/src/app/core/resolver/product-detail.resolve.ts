@@ -98,13 +98,16 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
     );
     const originalLogoUrl = productDetail.logoUrl;
     let productLogoUrl = '';
+    console.log('Original Logo URL:', originalLogoUrl);
     if (isPlatformServer(this.platformId) && this.apiPublicUrl && this.apiInternalUrl) {
       productLogoUrl =
         this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
-      productDetail.logoUrl = productLogoUrl; // Update logoUrl in productDetail for server-side rendering  
+      productDetail.logoUrl = productLogoUrl; // Update logoUrl in productDetail for server-side rendering
+      console.log('Updated Logo URL for SSR:', productLogoUrl);
     } else {
       productLogoUrl = originalLogoUrl;
     }
+    console.log('Final Logo URL:', productLogoUrl);
     this.updateOGTag(OG_IMAGE_KEY, productLogoUrl);
     this.updateOGTag(OG_IMAGE_TYPE_KEY, OG_IMAGE_PNG_TYPE);
 
