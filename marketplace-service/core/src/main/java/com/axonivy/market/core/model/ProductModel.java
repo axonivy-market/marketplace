@@ -33,7 +33,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   @Schema(description = "Product's logo url",
       example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String logoUrl;
-  @Schema(description = "Product's logo url with dark mode",
+  @Schema(description = "Product's logo url for dark mode",
       example = "https://api.example.com/api/image/67079ca57b9ee74b16c18123")
   private String logoDarkUrl;
   @Schema(description = "Type of product", example = "connector")
