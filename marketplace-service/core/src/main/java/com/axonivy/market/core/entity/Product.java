@@ -93,6 +93,7 @@ public class Product extends AbstractAuditableEntity<String> {
   @Transient
   private String metaProductJsonUrl;
   private String logoId;
+  private String logoDarkId;
   @Transient
   private String bestMatchVersion;
   @Transient
