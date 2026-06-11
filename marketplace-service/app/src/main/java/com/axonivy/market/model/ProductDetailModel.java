@@ -89,6 +89,11 @@ public class ProductDetailModel extends ProductModel {
     var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     model.setLogoUrl(logoLink.getHref());
 
+    if (StringUtils.isNotBlank(product.getLogoDarkId())) {
+      var logoDarkLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoDarkId())).withSelfRel();
+      model.setLogoDarkUrl(logoDarkLink.getHref());
+    }
+
     createDetailResource(model, product, isProduction);
     return model;
   }

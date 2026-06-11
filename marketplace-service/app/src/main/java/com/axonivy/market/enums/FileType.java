@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @AllArgsConstructor
 public enum FileType {
-  META("meta.json"), LOGO("logo.png"), OTHER("other");
+  META("meta.json"), LOGO("logo.png"), LOGO_DARK("logo-dark.png"), OTHER("other");
 
   private final String fileName;
 
