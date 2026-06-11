@@ -1,4 +1,5 @@
 import 'zone.js';
+import '@angular/localize/init';
 import '@analogjs/vitest-angular/setup-zone';
 import { getTestBed, ComponentFixture } from '@angular/core/testing';
 import {

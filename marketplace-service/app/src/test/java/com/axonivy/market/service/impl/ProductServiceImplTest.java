@@ -30,6 +30,8 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -129,6 +131,8 @@ class ProductServiceImplTest extends BaseSetup {
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
   private FileDownloadService fileDownloadService;
+  @Mock
+  private AppSettingService appSettingService;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
@@ -136,6 +140,7 @@ class ProductServiceImplTest extends BaseSetup {
   @BeforeEach
   void setup() {
     mockResultReturn = createPageProductsMock();
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
   }
 
   @Test

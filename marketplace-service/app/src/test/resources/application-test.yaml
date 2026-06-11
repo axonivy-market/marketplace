@@ -1,0 +1,71 @@
+server:
+  servlet:
+    context-path: ''
+    session:
+      cookie:
+        secure: false
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;NON_KEYWORDS=KEY,VALUE
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  mail:
+    host: 10.193.8.78
+    port: 2525
+    from: noreply@ivyserver.local
+    to: noreply@ivyserver.local
+  task:
+    scheduling:
+      enabled: false
+
+market:
+  environment: production
+  node-number: 1
+  cors:
+    allowed:
+      origin:
+        patterns: '*'
+  encryption:
+    key: a1b2c3d4e5f6a7b8
+  info:
+    title: "Marketplace app"
+    description: "The restful api for marketplace website"
+    version: '1'
+
+jwt:
+  secret: jwtSecret
+
+logging:
+  file:
+    path: logs
+  level:
+    org:
+      hibernate:
+        SQL: WARN
+
+loggable:
+  log-path: logs
+
+axon:
+  ivy:
+    developer:
+      url: https://developer.axonivy.com
+
+matomo:
+  tracker:
+    enabled: false
+    api-endpoint: http://marketplace.server:8085
+    default-site-id: 1
+
+
+build:
+  version: test

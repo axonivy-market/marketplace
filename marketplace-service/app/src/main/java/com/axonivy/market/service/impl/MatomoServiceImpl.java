@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.MatomoTrackerBuilder;
 import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,11 +12,11 @@ import org.matomo.java.tracking.MatomoRequests;
 import org.matomo.java.tracking.MatomoTracker;
 import org.springframework.stereotype.Service;
 
-import static com.axonivy.market.constants.CommonConstants.*;
-import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 @Service
 @Log4j2
@@ -24,10 +25,10 @@ public class MatomoServiceImpl implements MatomoService {
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
 
-  private final MatomoTracker matomoTracker;
+  private final MatomoTrackerBuilder matomoTrackerBuilder;
 
-  public MatomoServiceImpl(MatomoTracker matomoTracker) {
-    this.matomoTracker = matomoTracker;
+  public MatomoServiceImpl(MatomoTrackerBuilder matomoTrackerBuilder) {
+    this.matomoTrackerBuilder = matomoTrackerBuilder;
   }
 
   @Override
@@ -50,8 +51,11 @@ public class MatomoServiceImpl implements MatomoService {
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
-
-    matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
+    var tracker = matomoTrackerBuilder.build();
+    if (tracker == null) {
+      return;
+    }
+    tracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });

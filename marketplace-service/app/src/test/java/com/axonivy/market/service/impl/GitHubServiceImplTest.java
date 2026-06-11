@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -10,20 +11,20 @@ import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.service.AppSettingService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
@@ -69,9 +70,6 @@ class GitHubServiceImplTest extends BaseSetup {
   private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
 
   @Mock
-  private GitHubProperty gitHubProperty;
-
-  @Mock
   RestTemplate restTemplate;
 
   @Mock
@@ -93,7 +91,10 @@ class GitHubServiceImplTest extends BaseSetup {
   private ProductSecurityInfoRepository productSecurityInfoRepository;
 
   @Mock
-  private okhttp3.OkHttpClient okHttpClient;
+  private OkHttpClientBuilder okHttpClientBuilder;
+
+  @Mock
+  private AppSettingService appSettingService;
 
   @Mock
   private ThreadPoolTaskScheduler taskScheduler;
@@ -105,16 +106,9 @@ class GitHubServiceImplTest extends BaseSetup {
   @Test
   void testGetGitHubWithValidToken() throws IOException {
     stubOkHttpClientBuilder();
-    when(gitHubProperty.getToken()).thenReturn("validToken");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
-    verify(gitHubProperty).getToken();
-  }
-
-  @Test
-  void testGetGitHubWithNullToken() throws IOException {
-    stubOkHttpClientBuilder();
-    when(gitHubProperty.getToken()).thenReturn(null);
-    assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created even when token is null");
+    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
@@ -124,7 +118,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GitHub result = gitHubService.getGitHub(accessToken);
 
     assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
-    verify(gitHubProperty, never()).getToken();
+    verify(appSettingService, never()).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
@@ -208,14 +202,14 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetAccessTokenValidCodeAndGitHubProperty() throws Exception {
+  void testGetAccessTokenValidCode() throws Exception {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
     String accessToken = "accessToken";
 
-    when(gitHubProperty.getOauth2ClientId()).thenReturn(clientId);
-    when(gitHubProperty.getOauth2ClientSecret()).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn(null);
@@ -227,7 +221,7 @@ class GitHubServiceImplTest extends BaseSetup {
         eq(GitHubAccessTokenResponse.class)
     )).thenReturn(responseEntity);
 
-    GitHubAccessTokenResponse result = gitHubService.getAccessToken(code, gitHubProperty);
+    GitHubAccessTokenResponse result = gitHubService.getAccessToken(code);
 
     assertNotNull(result, "Expected non-null GitHubAccessTokenResponse when valid code and properties are provided");
     assertEquals(accessToken, result.getAccessToken(),
@@ -235,20 +229,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
     verify(restTemplate).postForEntity(anyString(), any(HttpEntity.class), eq(GitHubAccessTokenResponse.class));
   }
-
-
-  @Test
-  void testGetAccessTokenNullGitHubProperty() {
-    MissingHeaderException exception = assertThrows(
-        MissingHeaderException.class,
-        () -> gitHubService.getAccessToken("validCode", null),
-        "Expected MissingHeaderException when GitHubProperty is null"
-    );
-
-    assertEquals("Invalid or missing header", exception.getMessage(),
-        "Expected exception message to be 'Invalid or missing header'");
-  }
-
 
   @Test
   void testGetAccessTokenGitHubErrorResponse() throws Oauth2ExchangeCodeException {
@@ -258,8 +238,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String error = "invalid_grant";
     String errorDescription = "The authorization code is invalid";
 
-    when(gitHubProperty.getOauth2ClientId()).thenReturn(clientId);
-    when(gitHubProperty.getOauth2ClientSecret()).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn(error);
@@ -273,7 +253,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
-        () -> gitHubService.getAccessToken(code, gitHubProperty),
+        () -> gitHubService.getAccessToken(code),
         "Expected Oauth2ExchangeCodeException when GitHub returns an error response"
     );
 
@@ -290,8 +270,8 @@ class GitHubServiceImplTest extends BaseSetup {
     String clientId = "clientId";
     String clientSecret = "clientSecret";
 
-    when(gitHubProperty.getOauth2ClientId()).thenReturn(clientId);
-    when(gitHubProperty.getOauth2ClientSecret()).thenReturn(clientSecret);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
     when(gitHubAccessTokenResponse.getError()).thenReturn("error_code");
@@ -305,7 +285,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
-        () -> gitHubService.getAccessToken(code, gitHubProperty),
+        () -> gitHubService.getAccessToken(code),
         "Expected Oauth2ExchangeCodeException when GitHub responds with error fields despite a successful response"
     );
 
@@ -1217,7 +1197,7 @@ class GitHubServiceImplTest extends BaseSetup {
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
     ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("test-repo");
 
-    when(gitHubProperty.getToken()).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1248,7 +1228,7 @@ class GitHubServiceImplTest extends BaseSetup {
     ProductSecurityInfo infoB = buildMockProductSecurityInfo("repo-b");
     ProductSecurityInfo infoC = buildMockProductSecurityInfo("repo-c");
 
-    when(gitHubProperty.getToken()).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1274,7 +1254,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHOrganization mockOrg = mock(GHOrganization.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
 
-    when(gitHubProperty.getToken()).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1322,7 +1302,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
       throws Exception {
-    when(gitHubProperty.getToken()).thenReturn("token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getRepository("org/repo")).thenReturn(repository);
     when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);
@@ -1342,7 +1322,7 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   private void stubOkHttpClientBuilder() {
-    when(okHttpClient.newBuilder()).thenReturn(new okhttp3.OkHttpClient.Builder());
+    when(okHttpClientBuilder.build()).thenReturn(new okhttp3.OkHttpClient.Builder().build());
   }
 
 }

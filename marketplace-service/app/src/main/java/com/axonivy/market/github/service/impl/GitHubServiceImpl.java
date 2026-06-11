@@ -1,6 +1,7 @@
 package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
@@ -10,6 +11,7 @@ import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -18,7 +20,6 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -26,6 +27,7 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -35,7 +37,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.*;
-import okhttp3.OkHttpClient;
 import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
@@ -93,23 +94,26 @@ public class GitHubServiceImpl implements GitHubService {
   private static final int MAX_CONCURRENCY = 50;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
-  private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String MUST_BE_ENABLED = "must be enabled";
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
-  private final GitHubProperty gitHubProperty;
+  private final AppSettingService appSettingService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
-  private final OkHttpClient okHttpClient;
+  private final OkHttpClientBuilder okHttpClientBuilder;
 
   @Override
   public GitHub getGitHub() throws IOException {
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
-    return new GitHubBuilder().withOAuthToken(gitHubProperty.getToken()).withConnector(gitHubConnector).build();
+    var client = okHttpClientBuilder.build();
+    var gitHubConnector = new OkHttpGitHubConnector(client);
+    String token = getConfiguredToken();
+    return new GitHubBuilder().withOAuthToken(token).withConnector(gitHubConnector).build();
   }
 
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
+    var client = okHttpClientBuilder.build();
+    var gitHubConnector = new OkHttpGitHubConnector(client);
     return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
   }
 
@@ -148,14 +152,19 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubAccessTokenResponse getAccessToken(String code,
-      GitHubProperty gitHubProperty) throws Oauth2ExchangeCodeException, MissingHeaderException {
-    if (gitHubProperty == null) {
+  public GitHubAccessTokenResponse getAccessToken(
+      String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
+    // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
+    var clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
+    var clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
+
+    if (StringUtils.isAnyBlank(clientId, clientSecret)) {
       throw new MissingHeaderException();
     }
+
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add(Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
-    params.add(Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
+    params.add(Json.CLIENT_ID, clientId);
+    params.add(Json.CLIENT_SECRET, clientSecret);
     params.add(Json.CODE, code);
 
     var headers = new HttpHeaders();
@@ -166,8 +175,7 @@ public class GitHubServiceImpl implements GitHubService {
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code,
-          gitHubProperty.getOauth2ClientId()));
+      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code, clientId));
       throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
 
@@ -227,11 +235,12 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
-    var gitHub = getGitHub(gitHubProperty.getToken());
+    var gitHub = getGitHub(getConfiguredToken());
     GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
 
+    String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
-        repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+        repo -> fetchSecurityInfoSafe(repo, organization, token);
 
     List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
@@ -519,7 +528,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
       String repositoryPath, PullRequestAction action) throws IOException {
-    String accessToken = gitHubProperty.getToken();
+    String accessToken = getConfiguredToken();
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repositoryPath);
     String baseBranch = repository.getDefaultBranch();
@@ -644,6 +653,13 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
+   * Read the GitHub token from DB-backed AppSetting.
+   */
+  private String getConfiguredToken() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+  }
+
+  /**
    * Loads all GitHub unsupported-notice related texts from the JSON resource file.
    * The returned object provides branch name, PR titles, bodies, and the notice text itself.
    */
@@ -675,12 +691,12 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private record GitHubUnsupportedText(
-          String deprecatedMessage,
-          String removeUnsupportedNoticeMessage,
-          String unsupportedBranchName,
-          String removeUnsupportedNoticePrBody,
-          String addUnsupportedNoticePrBody,
-          String unsupportedNotice
+      String deprecatedMessage,
+      String removeUnsupportedNoticeMessage,
+      String unsupportedBranchName,
+      String removeUnsupportedNoticePrBody,
+      String addUnsupportedNoticePrBody,
+      String unsupportedNotice
   ) {
   }
 
