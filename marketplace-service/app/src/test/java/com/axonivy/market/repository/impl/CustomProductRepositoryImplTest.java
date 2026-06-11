@@ -37,12 +37,18 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   private Product mockProduct;
   @Mock
   private MetadataRepository metadataRepo;
-
   @InjectMocks
   private CustomProductRepositoryImpl repo;
-
   @Mock
   private EntityManager em;
+  @Mock
+  TypedQuery<Product> query;
+  @Mock
+  CriteriaBuilder cb;
+  @Mock
+  CriteriaQuery<Product> criteriaQuery;
+  @Mock
+  Root<Product> productRoot;
 
   @BeforeEach
   void setup() {
@@ -56,11 +62,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     mockProduct = new Product();
     mockProduct.setId(MOCK_PRODUCT_ID);
     mockProduct.setReleasedVersions(expectedVersions);
-
-    TypedQuery<Product> query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
-    Root<Product> productRoot = mock(Root.class);
 
     when(em.getCriteriaBuilder()).thenReturn(cb);
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
@@ -85,11 +86,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     mockProduct.setId(MOCK_PRODUCT_ID);
     mockProduct.setReleasedVersions(expectedVersions);
 
-    TypedQuery<Product> query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
-    Root<Product> productRoot = mock(Root.class);
-
     when(em.getCriteriaBuilder()).thenReturn(cb);
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
@@ -106,11 +102,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     mockProduct = new Product();
     mockProduct.setId(MOCK_PRODUCT_ID);
 
-    TypedQuery<Product> query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
-    Root<Product> productRoot = mock(Root.class);
-
     when(em.getCriteriaBuilder()).thenReturn(cb);
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
@@ -125,11 +116,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Test
   void testFindProductByIdAndRelatedDataBuildsListedPredicateCriteria() {
     mockProduct = new Product();
-
-    TypedQuery<Product> query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
-    Root<Product> productRoot = mock(Root.class);
     Path<Object> idPath = mock(Path.class);
     Path<Object> listedPath = mock(Path.class);
     Predicate idPredicate = mock(Predicate.class);
