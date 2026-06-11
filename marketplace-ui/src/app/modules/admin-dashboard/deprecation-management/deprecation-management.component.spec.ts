@@ -366,6 +366,69 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isCopySuccessVisible).toBe(false);
   });
 
+  describe('confirmRemovedDeprecation', () => {
+    it('should set productId and show remove deprecation confirm dialog', async () => {
+      component.productId = '';
+      component.showRemoveDeprecationConfirmDialog = false;
+
+      await component.confirmRemovedDeprecation('cms-live-editor');
+
+      expect(component.productId).toBe('cms-live-editor');
+      expect(component.showRemoveDeprecationConfirmDialog).toBe(true);
+    });
+  });
+
+  describe('toggleArchiveStatus', () => {
+    it('should set archiveTargetRow, clear error message, and show archive confirm dialog', async () => {
+      const row = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+      component.archiveErrorMessage = 'previous error';
+      component.showArchiveConfirmDialog = false;
+
+      await component.toggleArchiveStatus(row);
+
+      expect(component.archiveTargetRow).toBe(row);
+      expect(component.archiveErrorMessage).toBe('');
+      expect(component.showArchiveConfirmDialog).toBe(true);
+    });
+  });
+
+  describe('closeArchiveConfirmDialog', () => {
+    it('should not close when isArchiving is true', () => {
+      vi.useFakeTimers();
+      component.isArchiving = true;
+      component.showArchiveConfirmDialog = true;
+      component.archiveTargetRow = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+
+      component.closeArchiveConfirmDialog();
+
+      expect(component.isClosingArchiveDialog).toBe(false);
+      vi.advanceTimersByTime(250);
+      expect(component.showArchiveConfirmDialog).toBe(true);
+      expect(component.archiveTargetRow).not.toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('should set isClosingArchiveDialog immediately and reset state after delay', () => {
+      vi.useFakeTimers();
+      component.isArchiving = false;
+      component.showArchiveConfirmDialog = true;
+      component.archiveTargetRow = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+
+      component.closeArchiveConfirmDialog();
+
+      expect(component.isClosingArchiveDialog).toBe(true);
+      expect(component.showArchiveConfirmDialog).toBe(true);
+      expect(component.archiveTargetRow).not.toBeNull();
+
+      vi.advanceTimersByTime(250);
+
+      expect(component.showArchiveConfirmDialog).toBe(false);
+      expect(component.isClosingArchiveDialog).toBe(false);
+      expect(component.archiveTargetRow).toBeNull();
+      vi.useRealTimers();
+    });
+  });
+
   describe('closeRemoveDeprecationDialog', () => {
     it('should not close when isRemoving is true', () => {
       vi.useFakeTimers();
