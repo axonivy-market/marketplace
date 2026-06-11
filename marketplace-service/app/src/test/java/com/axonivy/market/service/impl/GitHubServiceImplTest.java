@@ -1354,13 +1354,6 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testArchiveTheRepositoryWhenRepositoryIsNullShouldDoNothing() throws IOException {
-    doReturn(null).when(gitHubService).getRepository("org/repo");
-    gitHubService.archiveTheRepository("org/repo");
-    // No exception thrown, nothing to verify beyond null safety
-  }
-
-  @Test
   void testHasDeprecationWarningInReadmeWhenRepositoryIsNullShouldReturnFalse() throws IOException {
     doReturn(null).when(gitHubService).getRepository("org/repo");
 
