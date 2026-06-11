@@ -3,12 +3,13 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.ProductSecurityInfo;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -18,7 +19,6 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -45,6 +45,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -52,8 +54,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -65,6 +66,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -78,7 +80,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.*;
+import static com.axonivy.market.enums.PullRequestAction.REMOVE;
 import static org.apache.commons.lang3.StringUtils.*;
 
 
@@ -89,6 +91,9 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+
+  private static final String NO_ANALYSIS_FOUND = "no analysis found";
+  private static final String MUST_BE_ENABLED   = "must be enabled";
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -149,15 +154,15 @@ public class GitHubServiceImpl implements GitHubService {
       throw new MissingHeaderException();
     }
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add(GitHubConstants.Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
-    params.add(GitHubConstants.Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
-    params.add(GitHubConstants.Json.CODE, code);
+    params.add(Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
+    params.add(Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
+    params.add(Json.CODE, code);
 
     var headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
     ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
-        GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
+        GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
@@ -179,7 +184,7 @@ public class GitHubServiceImpl implements GitHubService {
       githubUser.setName(myself.getName());
       githubUser.setUsername(myself.getLogin());
       githubUser.setAvatarUrl(myself.getAvatarUrl());
-      githubUser.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+      githubUser.setProvider(GITHUB_PROVIDER_NAME);
       githubUserRepository.save(githubUser);
       return githubUser;
     } catch (IOException e) {
@@ -200,7 +205,7 @@ public class GitHubServiceImpl implements GitHubService {
         userInfo.setName(myself.getName());
         userInfo.setUsername(myself.getLogin());
         userInfo.setAvatarUrl(myself.getAvatarUrl());
-        userInfo.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+        userInfo.setProvider(GITHUB_PROVIDER_NAME);
         userInfo.setUrl(String.valueOf(myself.getHtmlUrl()));
 
         return userInfo;
@@ -223,18 +228,29 @@ public class GitHubServiceImpl implements GitHubService {
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(gitHubProperty.getToken());
-    GHOrganization organization = gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
 
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
         repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
 
     List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
-        organization.listRepositories().toList(),
+        organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
         MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
         MAX_CONCURRENCY);
 
-    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(productSecurityInfos);
+    List<ProductSecurityInfo> validSecurityInfos = productSecurityInfos.stream()
+        .filter(info -> isNotBlank(info.getRepoName()))
+        .toList();
+
+    List<ProductSecurityInfo> syncedSecurityRepos = productSecurityInfoRepository.saveAll(validSecurityInfos);
     log.info("Synced security details for {} repositories", syncedSecurityRepos.size());
+
+    List<String> syncedRepoNames = validSecurityInfos.stream()
+        .map(ProductSecurityInfo::getRepoName)
+        .toList();
+    if (!CollectionUtils.isEmpty(syncedRepoNames)) {
+      productSecurityInfoRepository.deleteByRepoNameNotIn(syncedRepoNames);
+    }
     return syncedSecurityRepos;
   }
 
@@ -265,20 +281,21 @@ public class GitHubServiceImpl implements GitHubService {
 
   private ProductSecurityInfo fetchSecurityInfo(GHRepository repo, GHOrganization organization,
       String accessToken) throws IOException {
-    var productSecurityInfo = new ProductSecurityInfo();
-    productSecurityInfo.setRepoName(repo.getName());
-    productSecurityInfo.setVisibility(repo.getVisibility().toString());
-    productSecurityInfo.setArchived(repo.isArchived());
     String defaultBranch = repo.getDefaultBranch();
-    productSecurityInfo.setBranchProtectionEnabled(repo.getBranch(defaultBranch).isProtected());
-    String latestCommitSHA = repo.getBranch(defaultBranch).getSHA1();
+    var branch = repo.getBranch(defaultBranch);
+    String latestCommitSHA = branch.getSHA1();
     GHCommit latestCommit = repo.getCommit(latestCommitSHA);
-    productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
-    productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
-    productSecurityInfo.setDependabot(getDependabotAlerts(repo, organization, accessToken));
-    productSecurityInfo.setSecretScanning(getNumberOfSecretScanningAlerts(repo, organization, accessToken));
-    productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization, accessToken));
-    return productSecurityInfo;
+
+    return ProductSecurityInfo.builder()
+        .repoName(repo.getName())
+        .visibility(repo.getVisibility().toString())
+        .branchProtectionEnabled(branch.isProtected())
+        .latestCommitSHA(latestCommitSHA)
+        .lastCommitDate(latestCommit.getCommitDate())
+        .dependabot(getDependabotAlerts(repo, organization, accessToken))
+        .secretScanning(getNumberOfSecretScanningAlerts(repo, organization, accessToken))
+        .codeScanning(getCodeScanningAlerts(repo, organization, accessToken))
+        .build();
   }
 
   private static Map<String, Integer> countAlertsBySeverity(List<Map<String, Object>> alerts,
@@ -296,8 +313,8 @@ public class GitHubServiceImpl implements GitHubService {
     var dependabot = new Dependabot();
     dependabot.setAlerts(countAlertsBySeverity(
         alerts,
-        GitHubConstants.Json.SEVERITY_ADVISORY,
-        GitHubConstants.Json.SEVERITY
+        Json.SEVERITY_ADVISORY,
+        Json.SEVERITY
     ));
     return dependabot;
   }
@@ -306,8 +323,8 @@ public class GitHubServiceImpl implements GitHubService {
     var codeScanning = new CodeScanning();
     codeScanning.setAlerts(countAlertsBySeverity(
         alerts,
-        GitHubConstants.Json.RULE,
-        GitHubConstants.Json.SECURITY_SEVERITY_LEVEL
+        Json.RULE,
+        Json.SECURITY_SEVERITY_LEVEL
     ));
     return codeScanning;
   }
@@ -316,7 +333,7 @@ public class GitHubServiceImpl implements GitHubService {
       String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         GitHubServiceImpl::mapToDependabot,
         Dependabot::new
     );
@@ -326,7 +343,7 @@ public class GitHubServiceImpl implements GitHubService {
       GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         (List<Map<String, Object>> alerts) -> {
           var secretScanning = new SecretScanning();
           secretScanning.setNumberOfSecretScanningAlerts(alerts.size());
@@ -340,7 +357,7 @@ public class GitHubServiceImpl implements GitHubService {
       GHPerson organization, String accessToken) {
     return fetchAlerts(
         accessToken,
-        String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        String.format(Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
         GitHubServiceImpl::mapToCodeScanning,
         CodeScanning::new
     );
@@ -355,26 +372,35 @@ public class GitHubServiceImpl implements GitHubService {
     var instance = defaultInstanceSupplier.get();
     try {
       ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken, url);
-      if (response.getBody() != null) {
-        instance = mapAlerts.apply(response.getBody());
-      } else {
-        instance = mapAlerts.apply(List.of());
-      }
+      instance = mapAlerts.apply(response.getBody() != null ? response.getBody() : List.of());
       setStatus(instance, ENABLED);
-    } catch (HttpClientErrorException.Forbidden e) {
-      log.error("Forbidden URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, DISABLED);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.error("Not Found URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, NO_PERMISSION);
-    } catch (HttpServerErrorException.ServiceUnavailable e) {
-      log.error("Service Unavailable URL: {} with the error: {}", url, e.getMessage());
-      setStatus(instance, DISABLED);
+    } catch (HttpStatusCodeException e) {
+      String body = e.getResponseBodyAsString().toLowerCase(Locale.ROOT);
+      AccessLevel status = resolveErrorStatus(e, body);
+      log.error("Failed to fetch alerts URL: {} with the error: {}", url, e.getMessage());
+      setStatus(instance, status);
     }
     return instance;
   }
 
-  private static void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
+  private AccessLevel resolveErrorStatus(HttpStatusCodeException e, String body) {
+    HttpStatusCode statusCode = e.getStatusCode();
+    switch (statusCode) {
+      case HttpStatus.NOT_FOUND -> {
+        if (body.contains(NO_ANALYSIS_FOUND)) return NOT_SUPPORTED;
+        return NO_PERMISSION;
+      }
+      case HttpStatus.FORBIDDEN -> {
+        return body.contains(MUST_BE_ENABLED) ? DISABLED : NO_PERMISSION;
+      }
+      case HttpStatus.SERVICE_UNAVAILABLE -> {
+        return DISABLED;
+      }
+      default -> {return NO_PERMISSION;}
+    }
+  }
+
+  private static void setStatus(Object instance, AccessLevel status) {
     if (instance instanceof Dependabot dependabot) {
       dependabot.setStatus(status);
     } else if (instance instanceof SecretScanning secretScanning) {
@@ -614,7 +640,7 @@ public class GitHubServiceImpl implements GitHubService {
     if (!readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
-    return readmeContent.replace(notice, StringUtils.EMPTY);
+    return readmeContent.replace(notice, EMPTY);
   }
 
   /**

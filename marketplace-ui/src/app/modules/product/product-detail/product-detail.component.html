@@ -31,7 +31,7 @@
                     fill
                     [lang]="languageService.selectedLanguage()"
                     class="logo__image"
-                    [ngSrc]="logoUrl"
+                    [ngSrc]="themeService.isDarkMode() ? logoDarkUrl : logoUrl"
                     (error)="onLogoError()"
                     [alt]="
                       productDetail().names
@@ -94,11 +94,43 @@
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
               [isMavenDropins]="productDetail().mavenDropins"
+              [isDeprecated]="productDetail().deprecated ?? false"
               [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
               "></app-product-detail-version-action>
           </div>
+          @if (productDetail().deprecated) {
+            <div
+              class="deprecation-banner d-flex flex-column flex-xl-row justify-content-between align-items-stretch"
+              [ngClass]="{ 'deprecation-banner--with-successor': getDeprecationSuccessorName() }">
+              <div class="deprecation-banner-left d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="ti ti-alert-triangle deprecation-banner-icon"></i>
+                  <span class="deprecation-banner-title" [lang]="languageService.selectedLanguage()">
+                    {{ 'common.product.detail.deprecatedBanner.title' | translate }}
+                  </span>
+                </div>
+                <h4 class="deprecation-banner-description mb-0" [lang]="languageService.selectedLanguage()">
+                  {{ 'common.product.detail.deprecatedBanner.description' | translate }}
+                </h4>
+              </div>
+              @if (getDeprecationSuccessorName()) {
+                <div class="deprecation-banner-right d-flex flex-column justify-content-center">
+                  <span class="deprecation-banner-alternative-label" [lang]="languageService.selectedLanguage()">
+                    {{ 'common.product.detail.deprecatedBanner.recommendedAlternative' | translate }}
+                  </span>
+                  <a
+                    class="deprecation-banner-alternative-link"
+                    [href]="getDeprecationSuccessorName()"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {{ productDetail().alternativeExtension }} &rarr;
+                  </a>
+                </div>
+              }
+            </div>
+          }
         }
       </div>
 

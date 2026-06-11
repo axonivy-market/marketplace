@@ -93,6 +93,7 @@ public class Product extends AbstractAuditableEntity<String> {
   @Transient
   private String metaProductJsonUrl;
   private String logoId;
+  private String logoDarkId;
   @Transient
   private String bestMatchVersion;
   @Transient
@@ -103,6 +104,8 @@ public class Product extends AbstractAuditableEntity<String> {
   private Boolean isFocused;
   @Transient
   private String successor;
+  @Transient
+  private String alternativeExtension;
 
   @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)

@@ -38,6 +38,7 @@ import { StarRatingCounting } from '../../../shared/models/star-rating-counting.
 import { Feedback } from '../../../shared/models/feedback.model';
 import MarkdownIt from 'markdown-it';
 import {
+  DEFAULT_IMAGE_URL,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
   PRODUCT_DETAIL_TABS
 } from '../../../shared/constants/common.constant';
@@ -234,6 +235,42 @@ describe('ProductDetailComponent', () => {
     expect(component.productDetail().names['en']).toEqual(
       MOCK_PRODUCT_DETAIL.names['en']
     );
+  });
+
+  it('should fallback dark logo to logoUrl when logoDarkUrl is blank', () => {
+    const productDetail = {
+      ...MOCK_PRODUCT_DETAIL,
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: '   '
+    };
+
+    component.handleProductDetail(productDetail as any);
+
+    expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
+    expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-light.png');
+  });
+
+  it('should keep dark logo when logoDarkUrl is provided', () => {
+    const productDetail = {
+      ...MOCK_PRODUCT_DETAIL,
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: 'http://localhost:1234/logo-dark.png'
+    };
+
+    component.handleProductDetail(productDetail as any);
+
+    expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
+    expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-dark.png');
+  });
+
+  it('should reset both logos to default on logo error', () => {
+    component.logoUrl = 'http://localhost:1234/logo-light.png';
+    component.logoDarkUrl = 'http://localhost:1234/logo-dark.png';
+
+    component.onLogoError();
+
+    expect(component.logoUrl).toBe(DEFAULT_IMAGE_URL);
+    expect(component.logoDarkUrl).toBe(DEFAULT_IMAGE_URL);
   });
 
   it('should open add feedback dialog if token is present', () => {
@@ -1800,4 +1837,5 @@ describe('ProductDetailComponent', () => {
 
     expect(spy).toHaveBeenCalledWith('demo', true, true);
   });
+
 });

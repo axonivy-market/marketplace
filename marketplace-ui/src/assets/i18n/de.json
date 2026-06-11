@@ -1,10 +1,13 @@
 {
   "common": {
+    "deprecated": "Veraltet",
     "branch": "Axon Ivy Marktplatz",
     "language": {
       "english": "Englisch",
       "german": "Deutsch",
-      "french": "Französisch"
+      "french": "Französisch",
+      "yes": "Ja",
+      "no": "Nein"
     },
     "team": {
       "title": "Meet Team Octopus",
@@ -175,7 +178,12 @@
         "contactUs": {
           "label": "Kontakt"
         },
-        "changelog": "Changelog"
+        "changelog": "Changelog",
+        "deprecatedBanner": {
+          "title": "VERALTET",
+          "description": "Diese Erweiterung ist veraltet und erhält keine Updates oder Unterstützung mehr. Sie wird in Release 14 entfernt.",
+          "recommendedAlternative": "Empfohlene Alternative"
+        }
       }
     },
     "feedback": {
@@ -363,17 +371,18 @@
         "helpText": "Der Sicherheitsmonitor unterstützt bei der Nachverfolgung von Sicherheitsereignissen und Warnmeldungen aus GitHub-Repositories, einschließlich Dependabot-Warnungen, Code-Scanning-Ergebnissen, Secret-Scanning-Funden usw. Administratoren können identifizierte Probleme überprüfen und geeignete Maßnahmen ergreifen, um die Sicherheit der im Marketplace angebotenen Erweiterungen sicherzustellen.",
         "reloadData": "Daten neu laden",
         "repoName": "Repository",
-        "archived": "Archiviert",
         "dependabot": "Dependabot",
         "enabled": "Aktiviert",
         "disabled": "Deaktiviert",
         "noPermission": "Keine Berechtigung",
+        "notSupported": "Nicht unterstützt",
         "noVulnerabilities": "Keine Sicherheitslücken",
         "noRepositories": "Keine Repositories gefunden.",
         "codeScanning": "Code-Scanning",
         "secretScanning": "Secret-Scanning",
         "branchProtection": "Branchenschutz",
-        "lastCommit": "Letzter Commit"
+        "lastCommit": "Letzter Commit",
+        "alert": "Alarm"
       },
       "customSort": {
         "pageTitle": "Benutzerdefinierte Sortierung",
@@ -442,7 +451,7 @@
         "title": "Axon Ivy Market News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
         "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
-        "emptyLatestReleaseLetter": "Looks like there are no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
+        "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"
       },
@@ -454,6 +463,7 @@
         "sprintPlaceholder": "Enter the desired sprint",
         "number": "No.",
         "sprint": "Sprint",
+        "draft": "Draft",
         "createdAt": "Created at",
         "updatedAt": "Updated at",
         "sprintHeader": "Sprint: ",
@@ -465,7 +475,8 @@
         "delete": "Delete",
         "cancel": "Cancel",
         "warning": "Warning",
-        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint"
+        "deleteConfirmMessage": "Are you sure you want to delete release letter of sprint",
+        "draftAlertMessage": "You have an unfinished draft for this release letter. Do you want to continue editing it?"
       },
       "deprecation": {
         "pageTitle": "Axon Ivy Market Deprecated Products",
@@ -473,30 +484,40 @@
         "description": "Manage how deprecated extensions are displayed",
         "helpText": "Configure the deprecated extensions. Administrators can add, update for products",
         "availableExtensions": "Deprecated Extensions",
-        "searchPlaceholder": "Search an extension",
+        "searchPlaceholder": "Suche nach einer Erweiterung",
         "order": "Order",
         "deprecatedButton": "Deprecate",
-        "updateForReadmeText": "Create Pull Request to update Readme",
-        "successor": "Successor:",
+        "updateForReadmeText": "Pull Request erstellen, um die README zu aktualisieren",
+        "hasAlternativeExtension": "Hat diese Erweiterung einen Ersatz?",
+        "alternativeExtension": "Name der alternativen Erweiterung:",
+        "successor": "Nachfolger:",
         "confirmRemoveDeprecatedContent": "Are you sure to remove deprecation for this extension?",
         "confirmRemoveDeprecatedTitle": "Remove deprecation confirmation",
         "removeDeprecated": "Remove deprecated",
-        "extensionId": "Extension ID:",
-        "deprecatedTime": "Deprecated time",
-        "requester": "Requester",
+        "extensionId": "Erweiterungs-ID:",
+        "deprecatedTime": "Zeitpunkt der Veraltung",
+        "requester": "Anforderer",
         "action": "Aktion",
         "validation": {
           "extensionIdRequired": "Erweiterungs-ID ist erforderlich",
+          "alternativeExtensionRequired": "Der Name der alternativen Erweiterung ist erforderlich",
+          "successorRequired": "Nachfolger ist erforderlich",
           "invalidSuccessorUrl": "URL muss mit http:// oder https:// beginnen"
         },
-        "deprecateSuccess": "Extension has been deprecated successfully!",
-        "removeDeprecatedSuccess": "Deprecation has been removed successfully!",
+        "deprecateSuccess": "Die Erweiterung wurde erfolgreich als veraltet markiert!",
+        "removeDeprecatedSuccess": "Die Kennzeichnung als veraltet wurde erfolgreich entfernt!",
         "pullRequestLabel": "Pull Request URL",
-        "copyLabel": "Copy",
-        "copiedLabel": "Copied!",
-        "deprecateProduct": "Deprecate Product",
-        "productIdInputPlaceholder": "Please select extension id to deprecate",
-        "successorInputPlaceholder": "Please put the path of successor extension, e.g. https://market.axonivy.com/portal"
+        "copyLabel": "Kopieren",
+        "copiedLabel": "Kopiert!",
+        "deprecateProduct": "Produkt als veraltet markieren",
+        "productIdInputPlaceholder": "Bitte wähle die zu veraltende Erweiterungs-ID aus",
+        "alternativeExtensionInputPlaceholder": "Bitte gib den Namen der alternativen Erweiterung ein, z. B. Axon Ivy Smart Workflow",
+        "successorInputPlaceholder": "Bitte gib den Pfad der Nachfolge-Erweiterung an, z. B. https://market.axonivy.com/smart-workflow",
+        "extensionIdTooltip": "Die eindeutige Kennung der Marketplace-Erweiterung, die du als veraltet markieren möchtest (z. B. portal).",
+        "hasAlternativeExtensionTooltip": "Aktiviere dies, wenn es eine neuere oder alternative Erweiterung gibt, die diese ersetzt.",
+        "alternativeExtensionTooltip": "Der Anzeigename der Erweiterung, die die veraltete ersetzt.",
+        "successorTooltip": "Die vollständige URL zur Nachfolge-Erweiterung im Marketplace (muss mit http:// oder https:// beginnen).",
+        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert."
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
@@ -514,7 +535,9 @@
         "backToNewsManagement": "Back to News Management",
         "sprintAlreadyExistsErrorMessage": "A letter of this sprint already exists. Please choose a different sprint.",
         "sprintCannotBeBlankErrorMessage": "Sprint name cannot be blank.",
-        "genericErrorMessage": "An error occurred while processing your request. Please try again."
+        "genericErrorMessage": "An error occurred while processing your request. Please try again.",
+        "submit": "Submit",
+        "saveAsDraft": "Save as Draft"
       },
       "gitHubUserBadge": {
         "gitHubAccount": "GitHub account",

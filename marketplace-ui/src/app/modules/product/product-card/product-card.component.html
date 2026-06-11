@@ -6,7 +6,7 @@
       class="card-img-top rounded"
       width="70"
       height="70"
-      [ngSrc]="logoUrl"
+      [ngSrc]="themeService.isDarkMode() ? logoDarkUrl : logoUrl"
       (error)="onLogoError()"
       [alt]="
         product.names | multilingualism: languageService.selectedLanguage()
@@ -19,12 +19,22 @@
         {{ product.tags[0] }}
       </div>
     } @else {
-      <div
-        [lang]="languageService.selectedLanguage()"
-        class="card__tag lh-md px-2 py-1"
-        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-        {{ 'common.filter.value.' + product.type | translate }}
+      <div class="d-flex gap-2">
+        @if (product.deprecated) {
+          <div
+            [lang]="languageService.selectedLanguage()"
+            class="card__tag card__tag--deprecated lh-md px-2 py-1 text-capitalize">
+            {{ 'common.deprecated' | translate }}
+          </div>
+        }
+        <div
+          [lang]="languageService.selectedLanguage()"
+          class="card__tag lh-md px-2 py-1"
+          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+          {{ 'common.filter.value.' + product.type | translate }}
+        </div>
       </div>
+
     }
   </div>
   <div>
