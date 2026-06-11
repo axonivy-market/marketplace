@@ -348,7 +348,7 @@ public class MavenUtils {
         .filter(major -> major > currentMajor)
         .min(Integer::compareTo)
         .map(String::valueOf)
-        .orElse(null);
+        .orElse(String.valueOf(currentMajor));
   }
 
   private static int extractMajorPrefix(String version) {

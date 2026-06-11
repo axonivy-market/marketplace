@@ -227,7 +227,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     Product product = productRepo.findById(productId).orElse(null);
     if (product != null) {
       if (extensionData != null) {
-        extensionData.setDeprecatedVersionFrom(findNextMajorVersion(product.getNewestReleaseVersion()));
+        String nextMajorVersion = findNextMajorVersion(product.getNewestReleaseVersion());
+        extensionData.setDeprecatedVersionFrom(nextMajorVersion);
       }
       product.setDeprecated(request.getIsDeprecated());
       pullRequestUrl = handlePullRequest(product, request, extensionData);
@@ -262,6 +263,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
+  @Transactional(rollbackOn = IOException.class)
   public void archiveOrUnarchiveRepository(String productId, RepositoryAction action) throws IOException {
     Product product = productRepo.findById(productId).orElseThrow(
         () -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getCode(), "Product not found: " + productId));

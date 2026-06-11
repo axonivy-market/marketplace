@@ -4,7 +4,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
-import { HttpToastService } from '../../../core/services/browser/http-toast.service';
 import { CustomSortCardComponent } from '../custom-sort/custom-sort-card/custom-sort-card.component';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -44,7 +43,6 @@ export class DeprecationManagementComponent implements OnInit {
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
   translateService = inject(TranslateService);
-  httpToastService = inject(HttpToastService);
 
   // Deprecate form dialog state
   showDeprecatedProductDialog = false;
@@ -69,6 +67,7 @@ export class DeprecationManagementComponent implements OnInit {
   isClosingArchiveDialog = false;
   isArchiving = false;
   archiveTargetRow: DeprecatedProductInfo | null = null;
+  archiveErrorMessage = '';
 
   dropdownOpen = false;
   deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
@@ -284,6 +283,7 @@ export class DeprecationManagementComponent implements OnInit {
 
   async toggleArchiveStatus(row: DeprecatedProductInfo): Promise<void> {
     this.archiveTargetRow = row;
+    this.archiveErrorMessage = '';
     this.showArchiveConfirmDialog = true;
   }
 
@@ -304,6 +304,7 @@ export class DeprecationManagementComponent implements OnInit {
       return;
     }
     this.isArchiving = true;
+    this.archiveErrorMessage = '';
 
     const row = this.archiveTargetRow;
     const action = row.isArchived ? ArchiveAction.UNARCHIVE : ArchiveAction.ARCHIVE;
@@ -312,19 +313,18 @@ export class DeprecationManagementComponent implements OnInit {
       await firstValueFrom(
         this.productService.updateArchiveStatus(row.id, action)
       );
-      row.isArchived = !row.isArchived;
-    } catch (error) {
-      // Parse error response and show toast notification
-      this.showArchiveErrorToast(error);
       this.showArchiveConfirmDialog = false;
       this.isClosingArchiveDialog = false;
       this.archiveTargetRow = null;
+      row.isArchived = !row.isArchived;
+    } catch (error) {
+      this.archiveErrorMessage = this.extractErrorMessage(error);
     } finally {
       this.isArchiving = false;
     }
   }
 
-  private showArchiveErrorToast(error: unknown): void {
+  private extractErrorMessage(error: unknown): string {
     let messageKey = 'common.error.description.default';
     if (error instanceof HttpErrorResponse) {
       try {
@@ -334,11 +334,7 @@ export class DeprecationManagementComponent implements OnInit {
         messageKey = error.error || messageKey;
       }
     }
-    this.httpToastService.publishError({
-      status: error instanceof HttpErrorResponse ? error.status : 0,
-      messageKey,
-      timestamp: Date.now()
-    });
+    return this.translateService.instant(messageKey);
   }
 
   closeRemoveDeprecationDialog(): void {

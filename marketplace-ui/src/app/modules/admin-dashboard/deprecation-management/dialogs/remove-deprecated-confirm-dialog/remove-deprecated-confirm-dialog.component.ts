@@ -17,6 +17,7 @@ export class RemoveDeprecatedConfirmDialogComponent {
   @Input() contentKey = 'common.admin.deprecation.confirmRemoveDeprecatedContent';
   @Input() confirmButtonKey = 'common.admin.deprecation.removeDeprecated';
   @Input() confirmButtonClass = 'btn-danger';
+  @Input() errorMessage = '';
 
   @Output() closeDialog = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();

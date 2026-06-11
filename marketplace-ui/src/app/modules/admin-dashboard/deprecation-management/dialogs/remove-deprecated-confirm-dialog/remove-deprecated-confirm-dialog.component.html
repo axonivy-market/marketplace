@@ -20,6 +20,11 @@
           <strong>{{ 'common.admin.deprecation.extensionId' | translate }}</strong>
           {{ removedProductId }}
         </p>
+        @if (errorMessage) {
+          <div class="alert alert-danger mt-2 mb-0">
+            {{ errorMessage }}
+          </div>
+        }
       </div>
 
       <div class="modal-footer">
@@ -29,16 +34,18 @@
           (click)="closeDialog.emit()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
-        <button
-          class="btn"
-          [ngClass]="confirmButtonClass"
-          [disabled]="isRemoving"
-          (click)="confirm.emit()">
-          @if (isRemoving) {
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-          }
-          {{ confirmButtonKey | translate }}
-        </button>
+        @if (!errorMessage) {
+          <button
+            class="btn"
+            [ngClass]="confirmButtonClass"
+            [disabled]="isRemoving"
+            (click)="confirm.emit()">
+            @if (isRemoving) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
+            {{ confirmButtonKey | translate }}
+          </button>
+        }
       </div>
     </div>
   </div>

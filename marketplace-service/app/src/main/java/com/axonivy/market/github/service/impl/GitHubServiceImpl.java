@@ -530,6 +530,11 @@ public class GitHubServiceImpl implements GitHubService {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository("axonivy-market/readme-test");
+
+    if (repository.isArchived()) {
+      unArchivedTheRepository(repoPath);
+    }
+
     String baseBranch = repository.getDefaultBranch();
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);

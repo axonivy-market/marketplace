@@ -141,6 +141,7 @@
   [contentKey]="archiveTargetRow?.isArchived ? 'common.admin.deprecation.confirmUnarchiveContent' : 'common.admin.deprecation.confirmArchiveContent'"
   [confirmButtonKey]="archiveTargetRow?.isArchived ? 'common.admin.deprecation.unarchive' : 'common.admin.deprecation.archive'"
   [confirmButtonClass]="'btn-danger'"
+  [errorMessage]="archiveErrorMessage"
   (closeDialog)="closeArchiveConfirmDialog()"
   (confirm)="executeToggleArchive()">
 </app-remove-deprecation-confirm-dialog>
