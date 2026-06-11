@@ -61,7 +61,7 @@ public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl
     try {
       return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
-      log.error("Cannot find product: ", e);
+      log.error("Cannot find product: {}", id, e);
       return null;
     }
   }

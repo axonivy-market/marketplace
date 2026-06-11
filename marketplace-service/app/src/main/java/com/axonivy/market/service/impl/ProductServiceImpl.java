@@ -616,9 +616,11 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     var product = productRepo.getProductByIdAndVersion(id, version);
+    if (product != null) {
     productJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
         ProductJsonContent::getContent).findFirst().ifPresent(
         jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
+    }
     return product;
   }
 
