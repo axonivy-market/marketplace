@@ -1,24 +1,45 @@
 package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.converter.StringListConverter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import jakarta.persistence.Transient;
+import static com.axonivy.market.core.constants.CoreEntityConstants.LANGUAGE;
+import static com.axonivy.market.core.constants.CoreEntityConstants.NAME;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_ID;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_NAME;
+import static com.axonivy.market.core.constants.CoreEntityConstants.SHORT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
 
 import java.io.Serial;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.core.constants.CoreEntityConstants.*;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import com.axonivy.market.core.converter.StringListConverter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -83,6 +104,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private String newestReleaseVersion;
   private Boolean synchronizedInstallationCount;
   private String logoId;
+  private String logoDarkId;
   
   @Transient
   private String vendorImagePath;
@@ -93,7 +115,7 @@ public class Product extends AbstractAuditableEntity<String> {
   @Transient
   private ProductModuleContent productModuleContent;
   @Transient
-  private String metaProductJsonUrl;  
+  private String metaProductJsonUrl;
   @Transient
   private String bestMatchVersion;
   @Transient

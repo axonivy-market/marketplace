@@ -25,7 +25,7 @@ JDK 21+, Maven 3.9+, PostgreSQL 16+
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration. App module also requires `GITHUB_TOKEN`.
 
 ### Build & Run
-marketplace-service `App` project base on `Core` project, thus you must build core project first.
+The marketplace-service `App` project is based on the `Core` project; you must build the core project first.
 
 ```bash
 mvn -f core/pom.xml clean install
