@@ -230,8 +230,8 @@ export class ProductService {
       null,
       {
         headers: this.adminAuthService.getAuthHeaders(),
-        params,
-        responseType: 'text'
+        responseType: 'text',
+        params
       }
     );
   }

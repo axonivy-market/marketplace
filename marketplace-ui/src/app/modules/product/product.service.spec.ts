@@ -28,6 +28,7 @@ import { ProductReleasesApiResponse } from '../../shared/models/apis/product-rel
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { PullRequestAction } from '../../shared/enums/pullrequest-action';
 import { MarketProduct } from '../../shared/models/product.model';
+import { ArchiveAction } from '../../shared/enums/archive-action.enum';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -559,6 +560,50 @@ describe('ProductService', () => {
 
       const result = await resultPromise;
       expect(result).toBe('https://github.com/org/repo/pull/10');
+    });
+  });
+
+  describe('updateArchiveStatus', () => {
+    it('should send PUT with action=ARCHIVE param and return response text', async () => {
+      const productId = 'cms-live-editor';
+
+      const resultPromise = firstValueFrom(
+        service.updateArchiveStatus(productId, ArchiveAction.ARCHIVE)
+      );
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID(productId) &&
+          request.params.get('action') === ArchiveAction.ARCHIVE
+      );
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toBeNull();
+
+      req.flush('OK');
+
+      const result = await resultPromise;
+      expect(result).toBe('OK');
+    });
+
+    it('should send PUT with action=UNARCHIVE param', async () => {
+      const productId = 'rtf-factory';
+
+      const resultPromise = firstValueFrom(
+        service.updateArchiveStatus(productId, ArchiveAction.UNARCHIVE)
+      );
+
+      const req = httpMock.expectOne(
+        request =>
+          request.url === API_URI.PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID(productId) &&
+          request.params.get('action') === ArchiveAction.UNARCHIVE
+      );
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toBeNull();
+
+      req.flush('OK');
+
+      const result = await resultPromise;
+      expect(result).toBe('OK');
     });
   });
 });
