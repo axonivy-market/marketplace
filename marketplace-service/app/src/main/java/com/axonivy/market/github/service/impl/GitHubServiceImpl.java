@@ -4,7 +4,6 @@ import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
@@ -27,7 +26,6 @@ import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
@@ -83,8 +81,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.ADD;
-import static com.axonivy.market.enums.PullRequestAction.REMOVE;
+import static com.axonivy.market.enums.PullRequestAction.*;
 import static org.apache.commons.lang3.StringUtils.*;
 
 
@@ -101,6 +98,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -577,7 +575,7 @@ public class GitHubServiceImpl implements GitHubService {
     String readmeContent = getReadmeContent(readme);
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     // Check if the README contains the deprecation notice prefix (without the version placeholder)
-    String noticePrefix = config.unsupportedNotice().split("%s")[0];
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(config.unsupportedNotice())[0];
     return readmeContent.contains(noticePrefix.trim());
   }
 
