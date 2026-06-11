@@ -4,8 +4,8 @@
  **/
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/app',
-  apiInternalUrl: 'http://localhost:8080/app',
+  apiUrl: 'http://localhost:8080',
+  apiInternalUrl: 'http://localhost:8080',
   githubOAuthAppClientId: 'Iv23livu9HbsC4Q24eSC',
   githubOAuthCallback: '/auth/github/callback',
   githubApiUrl: 'https://api.github.com',
