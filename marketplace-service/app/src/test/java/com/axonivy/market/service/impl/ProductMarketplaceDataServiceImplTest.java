@@ -10,6 +10,8 @@ import com.axonivy.market.core.enums.SortOption;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.RepositoryAction;
+import com.axonivy.market.exceptions.model.ArchiveNotAllowedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
@@ -383,6 +385,60 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
     assertNull(response, "Pull request URL should be null when GitHub service returns null");
+  }
+
+  @Test
+  void testArchiveOrUnarchiveRepositoryWhenProductNotFoundShouldThrowNotFoundException() {
+    when(productRepo.findById("non-existent")).thenReturn(Optional.empty());
+
+    assertThrows(NotFoundException.class,
+        () -> productMarketplaceDataService.archiveOrUnarchiveRepository("non-existent", RepositoryAction.ARCHIVE),
+        "Expected NotFoundException when product is not found");
+  }
+
+  @Test
+  void testArchiveOrUnarchiveRepositoryWhenUnarchiveShouldCallUnarchiveAndSave() throws IOException {
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+
+    productMarketplaceDataService.archiveOrUnarchiveRepository(MOCK_PRODUCT_ID, RepositoryAction.UNARCHIVE);
+
+    verify(gitHubService).unArchivedTheRepository(MOCK_PRODUCT_REPOSITORY_NAME);
+    verify(gitHubService, never()).archiveTheRepository(anyString());
+    assertNull(product.getIsArchived(), "isArchived should be null after unarchive");
+    verify(productRepo).save(product);
+  }
+
+  @Test
+  void testArchiveOrUnarchiveRepositoryWhenArchiveWithDeprecationWarningShouldArchiveAndSave() throws IOException {
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(gitHubService.hasDeprecationWarningInReadme(MOCK_PRODUCT_REPOSITORY_NAME)).thenReturn(true);
+
+    productMarketplaceDataService.archiveOrUnarchiveRepository(MOCK_PRODUCT_ID, RepositoryAction.ARCHIVE);
+
+    verify(gitHubService).hasDeprecationWarningInReadme(MOCK_PRODUCT_REPOSITORY_NAME);
+    verify(gitHubService).archiveTheRepository(MOCK_PRODUCT_REPOSITORY_NAME);
+    assertTrue(product.getIsArchived(), "isArchived should be true after archive");
+    verify(productRepo).save(product);
+  }
+
+  @Test
+  void testArchiveOrUnarchiveRepositoryWhenArchiveWithoutDeprecationWarningShouldThrowArchiveNotAllowed()
+      throws IOException {
+    Product product = getMockProduct();
+    product.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
+    when(gitHubService.hasDeprecationWarningInReadme(MOCK_PRODUCT_REPOSITORY_NAME)).thenReturn(false);
+
+    assertThrows(ArchiveNotAllowedException.class,
+        () -> productMarketplaceDataService.archiveOrUnarchiveRepository(MOCK_PRODUCT_ID, RepositoryAction.ARCHIVE),
+        "Expected ArchiveNotAllowedException when README has no deprecation warning");
+
+    verify(gitHubService, never()).archiveTheRepository(anyString());
+    verify(productRepo, never()).save(any());
   }
 
   private DeprecationRequest buildDeprecatedRequest(

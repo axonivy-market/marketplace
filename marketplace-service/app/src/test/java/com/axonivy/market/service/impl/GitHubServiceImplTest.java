@@ -1331,6 +1331,136 @@ class GitHubServiceImplTest extends BaseSetup {
     return info;
   }
 
+  @Test
+  void testArchiveTheRepositoryWhenNotArchivedShouldArchive() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.isArchived()).thenReturn(false);
+
+    gitHubService.archiveTheRepository("org/repo");
+
+    verify(mockRepo).archive();
+  }
+
+  @Test
+  void testArchiveTheRepositoryWhenAlreadyArchivedShouldNotArchive() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.isArchived()).thenReturn(true);
+
+    gitHubService.archiveTheRepository("org/repo");
+
+    verify(mockRepo, never()).archive();
+  }
+
+  @Test
+  void testArchiveTheRepositoryWhenRepositoryIsNullShouldDoNothing() throws IOException {
+    doReturn(null).when(gitHubService).getRepository("org/repo");
+    gitHubService.archiveTheRepository("org/repo");
+    // No exception thrown, nothing to verify beyond null safety
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenRepositoryIsNullShouldReturnFalse() throws IOException {
+    doReturn(null).when(gitHubService).getRepository("org/repo");
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertFalse(result, "Expected false when repository is null");
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenReadmeContainsNoticeShouldReturnTrue() throws IOException {
+    String readmeWithNotice = """
+        # My Project
+        
+        > [!CAUTION]
+        > ## Deprecated
+        > These connectors are deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
+        
+        Some content here.
+        """;
+    setupDeprecationReadmeMocks(readmeWithNotice);
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertTrue(result, "Expected true when README contains deprecation notice");
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenReadmeDoesNotContainNoticeShouldReturnFalse() throws IOException {
+    String readmeWithoutNotice = """
+        # My Project
+        
+        This is a normal README without any deprecation notice.
+        """;
+    setupDeprecationReadmeMocks(readmeWithoutNotice);
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertFalse(result, "Expected false when README does not contain deprecation notice");
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenSuccessful() throws IOException {
+    okhttp3.Call mockCall = setupUnarchiveCall(200, "OK");
+
+    gitHubService.unArchivedTheRepository("org/repo");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
+    okhttp3.Call mockCall = setupUnarchiveCall(403, "Forbidden");
+
+    gitHubService.unArchivedTheRepository("org/repo");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenIOExceptionThrown() throws IOException {
+    when(gitHubProperty.getToken()).thenReturn("test-token");
+
+    okhttp3.Call mockCall = mock(okhttp3.Call.class);
+    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(mockCall.execute()).thenThrow(new IOException("Network error"));
+
+    gitHubService.unArchivedTheRepository("org/repo");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  private void setupDeprecationReadmeMocks(String readmeContent) throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    GHContent mockReadme = mock(GHContent.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.getDefaultBranch()).thenReturn("main");
+    when(mockRepo.getFileContent(README_FILE_PATH, "main")).thenReturn(mockReadme);
+    when(mockReadme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private okhttp3.Call setupUnarchiveCall(int code, String message) throws IOException {
+    when(gitHubProperty.getToken()).thenReturn("test-token");
+
+    okhttp3.Call mockCall = mock(okhttp3.Call.class);
+    okhttp3.Response mockResponse = new okhttp3.Response.Builder()
+        .request(new okhttp3.Request.Builder().url("https://api.github.com/repos/org/repo").build())
+        .protocol(okhttp3.Protocol.HTTP_1_1)
+        .code(code)
+        .message(message)
+        .body(okhttp3.ResponseBody.create("{}", okhttp3.MediaType.parse("application/json")))
+        .build();
+
+    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(mockCall.execute()).thenReturn(mockResponse);
+    return mockCall;
+  }
+
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
       throws Exception {
     when(gitHubProperty.getToken()).thenReturn("token");
