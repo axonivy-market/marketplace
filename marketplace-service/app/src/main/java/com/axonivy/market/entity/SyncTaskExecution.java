@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,4 +55,7 @@ public class SyncTaskExecution extends AuditableIdEntity {
   private LocalDateTime completedDate;
 
   private String message;
+
+  @Version
+  private Integer version;
 }
