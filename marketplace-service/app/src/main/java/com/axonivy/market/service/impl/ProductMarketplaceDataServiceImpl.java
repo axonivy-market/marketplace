@@ -231,6 +231,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         extensionData.setDeprecatedVersionFrom(nextMajorVersion);
       }
       product.setDeprecated(request.getIsDeprecated());
+      // When we deprecate/undeprecate It should be null always. Updating this field will be executed in method
+      // archiveOrUnarchiveRepository
+      product.setIsArchived(null);
       pullRequestUrl = handlePullRequest(product, request, extensionData);
       productRepo.save(product);
     }

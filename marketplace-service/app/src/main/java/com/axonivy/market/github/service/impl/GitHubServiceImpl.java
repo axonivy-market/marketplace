@@ -106,7 +106,6 @@ public class GitHubServiceImpl implements GitHubService {
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
-  private final ProductMarketplaceDataRepository productMarketplaceDataRepository;
   private final OkHttpClient okHttpClient;
 
   @Override
@@ -529,7 +528,7 @@ public class GitHubServiceImpl implements GitHubService {
       String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
-    GHRepository repository = gitHub.getRepository("axonivy-market/readme-test");
+    GHRepository repository = gitHub.getRepository(repoPath);
 
     if (repository.isArchived()) {
       unArchivedTheRepository(repoPath);
@@ -561,8 +560,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void archiveTheRepository(String repoPath) throws IOException {
-//    GHRepository ghRepository = getRepository(repoPath);
-    GHRepository ghRepository = getRepository("axonivy-market/readme-test");
+    GHRepository ghRepository = getRepository(repoPath);
     if (ghRepository != null && !ghRepository.isArchived()) {
       ghRepository.archive();
       log.info("Repository '{}' has been archived.", repoPath);
@@ -571,7 +569,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public boolean hasDeprecationWarningInReadme(String repoPath) throws IOException {
-    GHRepository repository = getRepository("axonivy-market/readme-test");
+    GHRepository repository = getRepository(repoPath);
     if (repository == null) {
       return false;
     }
@@ -585,8 +583,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void unArchivedTheRepository(String repoPath) {
-//    String url = "https://api.github.com/repos/" + repoPath;
-    String url = "https://api.github.com/repos/axonivy-market/readme-test";
+    String url = "https://api.github.com/repos/" + repoPath;
     okhttp3.RequestBody body = okhttp3.RequestBody.create(
         "{\"archived\": false}",
         okhttp3.MediaType.parse("application/json")

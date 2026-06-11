@@ -526,7 +526,8 @@ describe('ProductService', () => {
         {
           id: 'cms-live-editor',
           deprecationDate: '2026-04-01T10:00:00Z',
-          deprecationRequester: 'john'
+          deprecationRequester: 'john',
+          isArchived: false
         }
       ]);
     });
