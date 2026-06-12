@@ -109,6 +109,10 @@
       <scope>test</scope> <!-- Only for testing -->
     </dependency>
     <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.piwik.java.tracking</groupId>
       <artifactId>matomo-java-tracker-spring-boot-starter</artifactId>
       <version>3.4.0</version>
