@@ -22,6 +22,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
@@ -80,7 +81,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.REMOVE;
+import static com.axonivy.market.enums.PullRequestAction.*;
 import static org.apache.commons.lang3.StringUtils.*;
 
 
@@ -91,9 +92,13 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+  private static final String ALTERNATIVE_EXTENSION_FORMAT = """
+   > **Recommended alternative:** [%s](%s)
+   """;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -518,15 +523,20 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
-      String repositoryPath, PullRequestAction action) throws IOException {
+      String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
-    GHRepository repository = gitHub.getRepository(repositoryPath);
+    GHRepository repository = gitHub.getRepository(repoPath);
+
+    if (repository.isArchived()) {
+      unArchivedTheRepository(repoPath);
+    }
+
     String baseBranch = repository.getDefaultBranch();
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
     String currentReadmeContent = getReadmeContent(readme);
-    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config, extensionData);
 
     boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (isSameContent) {
@@ -544,6 +554,53 @@ public class GitHubServiceImpl implements GitHubService {
     }
     readme.update(pullRequestData.updatedReadmeContent, config.deprecatedMessage(), config.unsupportedBranchName());
     return generatePullRequest(repository, baseBranch, pullRequestData);
+  }
+
+  @Override
+  public void archiveTheRepository(String repoPath) throws IOException {
+    GHRepository ghRepository = getRepository(repoPath);
+    if (ghRepository != null && !ghRepository.isArchived()) {
+      ghRepository.archive();
+      log.info("Repository '{}' has been archived.", repoPath);
+    }
+  }
+
+  @Override
+  public boolean hasDeprecationWarningInReadme(String repoPath) throws IOException {
+    GHRepository repository = getRepository(repoPath);
+    if (repository == null) {
+      return false;
+    }
+    GHContent readme = repository.getFileContent(README_FILE_PATH, repository.getDefaultBranch());
+    String readmeContent = getReadmeContent(readme);
+    GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
+    // Check if the README contains the deprecation notice prefix (without the version placeholder)
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(config.unsupportedNotice())[0];
+    return readmeContent.contains(noticePrefix.trim());
+  }
+
+  @Override
+  public void unArchivedTheRepository(String repoPath) {
+    String url = "https://api.github.com/repos/" + repoPath;
+    okhttp3.RequestBody body = okhttp3.RequestBody.create(
+        "{\"archived\": false}",
+        okhttp3.MediaType.parse("application/json")
+    );
+    okhttp3.Request request = new okhttp3.Request.Builder()
+        .url(url)
+        .patch(body)
+        .addHeader("Authorization", "Bearer " + gitHubProperty.getToken())
+        .build();
+
+    try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
+      if (!response.isSuccessful()) {
+        log.error("Failed to unarchive repository: {} {}", response.code(), response.message());
+        return;
+      }
+      log.info("Repository '{}' has been unarchived successfully.", repoPath);
+    } catch (IOException e) {
+      log.error("Error unarchiving repository: {}", repoPath, e);
+    }
   }
 
   private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
@@ -574,7 +631,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private void removeBranchIfExistsWhenRemoveDeprecation(GHRepository repository, String headBranchName,
       PullRequestAction action) throws IOException {
-    if (action != REMOVE) {
+    if (action != REMOVE || repository.isArchived()) {
       return;
     }
 
@@ -663,14 +720,26 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
-      GitHubUnsupportedText config) {
-    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
+      GitHubUnsupportedText config, AlternativeExtensionData extensionData) {
+
+    String unsupportedNotices = String.format(config.unsupportedNotice, extensionData.getDeprecatedVersionFrom());
+    if (StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
+      unsupportedNotices += String.format(ALTERNATIVE_EXTENSION_FORMAT,
+          extensionData.getAlternativeExtension(), extensionData.getSuccessorUrl());
+    }
+
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, unsupportedNotices);
     return switch (action) {
-      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
-          updatedContent, config.unsupportedBranchName());
-      case REMOVE ->
-          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
-              updatedContent, config.unsupportedBranchName());
+      case ADD -> new PullRequestData(
+          config.addUnsupportedNoticePrBody(),
+          config.deprecatedMessage(),
+          updatedContent,
+          config.unsupportedBranchName());
+      case REMOVE -> new PullRequestData(
+              config.removeUnsupportedNoticePrBody(),
+              config.removeUnsupportedNoticeMessage(),
+              updatedContent,
+              config.unsupportedBranchName());
     };
   }
 

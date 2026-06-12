@@ -28,15 +28,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -335,11 +327,6 @@ public class MavenUtils {
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
   }
 
-  public static boolean isProductMetadata(Metadata metadata) {
-    return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
-        MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
-  }
-
   public static boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
     return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
         ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
@@ -351,5 +338,25 @@ public class MavenUtils {
       return MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;
+  }
+
+  public static String findNextByMajorPrefix(String currentVersion, List<String> versionList) {
+    int currentMajor = extractMajorPrefix(currentVersion);
+
+    return versionList.stream()
+        .map(MavenUtils::extractMajorPrefix)
+        .filter(major -> major > currentMajor)
+        .min(Integer::compareTo)
+        .map(String::valueOf)
+        .orElse(String.valueOf(currentMajor));
+  }
+
+  private static int extractMajorPrefix(String version) {
+    if (version == null || version.isBlank()) {
+      throw new IllegalArgumentException("Version must not be blank");
+    }
+
+    String majorPart = version.split("\\.")[0];
+    return Integer.parseInt(majorPart);
   }
 }
