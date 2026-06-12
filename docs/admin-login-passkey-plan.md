@@ -2,7 +2,7 @@
 
 ## Summary
 
-- Bottom line: add a new admin auth v2 flow, keep current token-based auth untouched, and avoid exposing GitHub tokens to FE.
+- Bottom line: add a new admin auth v2 flow, keep current token-based auth untouched, and avoid exposing GitHub tokens to FE, use spring security technique as much as possible.
 - FE redirects to GitHub OAuth; GitHub redirects back to the FE callback route, which receives `code`.
 - FE sends only `{ code, state }` to BE; FE never holds the GitHub access token.
 - BE exchanges `code` for a GitHub access token internally (GitHub has no validate-from-code API), validates `axonivy-market` + `team-octopus` membership, then discards the token (not persisted, not returned), and creates a Spring Security session.
