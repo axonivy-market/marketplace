@@ -72,14 +72,13 @@
           </button>
           <ul class="dropdown-menu" aria-labelledby="fileFilterDropdown">
             <li>
-              <a class="dropdown-item" href="#" (click)="downloadLogs()">
+              <a class="dropdown-item" (click)="downloadLogs()">
                 {{ 'common.admin.logsViewer.actions.downloadAllLogs' | translate }}
               </a>
             </li>
             <li>
               <a
                 class="dropdown-item"
-                href="#"
                 (click)="downloadFilteredLogs()">
                 {{ 'common.admin.logsViewer.actions.downloadFiltered' | translate }}
               </a>
@@ -88,12 +87,12 @@
               <hr class="dropdown-divider" />
             </li>
             <li>
-              <a class="dropdown-item" href="#" (click)="downloadAsJSON()">
+              <a class="dropdown-item" (click)="downloadAsJSON()">
                 {{ 'common.admin.logsViewer.actions.downloadAsJSON' | translate }}
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#" (click)="downloadAsCSV()">
+              <a class="dropdown-item" (click)="downloadAsCSV()">
                 {{ 'common.admin.logsViewer.actions.downloadAsCSV' | translate }}
               </a>
             </li>
