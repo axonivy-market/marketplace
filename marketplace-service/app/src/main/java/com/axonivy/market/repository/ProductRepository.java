@@ -13,9 +13,15 @@ import java.util.List;
 public interface ProductRepository extends CoreProductRepository, CustomProductRepository {
   List<Product> findByMarketDirectory(String marketDirectory);
 
-  @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions LEFT JOIN FETCH p" +
-      ".artifacts a LEFT JOIN FETCH a.archivedArtifacts")
-  List<Product> findAllProductsWithNamesAndShortDescriptions();
+  @Query("""
+      SELECT DISTINCT p
+      FROM Product p
+      LEFT JOIN FETCH p.artifacts a
+      LEFT JOIN FETCH a.archivedArtifacts
+      JOIN p.names n
+      WHERE KEY(n) = 'en'
+      """)
+  List<Product> findProductsWithEnglishNameAndArtifacts();
 
   @Query("SELECT p.id FROM Product p ORDER BY p.id")
   List<String> findAllIds();
