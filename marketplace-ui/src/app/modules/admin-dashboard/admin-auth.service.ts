@@ -1,19 +1,17 @@
-import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { UserInfo } from '../../auth/auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
-import {
-  ADMIN_SESSION_TOKEN,
-  AUTHORIZATION_HEADER,
-  BEARER
-} from '../../shared/constants/common.constant';
+import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly _userInfo = signal<UserInfo | null>(null);
   readonly userInfo = this._userInfo.asReadonly();
 
@@ -21,9 +19,15 @@ export class AdminAuthService {
     const user = this.loadFromSessionStorage();
     if (user) {
       this._userInfo.set(user);
-    } else {
-      this.logout();
     }
+  }
+
+  initializeSecurity(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return Promise.resolve();
+    }
+
+    return firstValueFrom(this.fetchCsrfToken().pipe(catchError(() => of(null)))).then(() => undefined);
   }
 
   loadFromSessionStorage(): UserInfo | null {
@@ -32,13 +36,14 @@ export class AdminAuthService {
   }
 
   logout() {
-    this.clearToken();
-    this._userInfo.set(null);
-  }
-
-  get token(): string | null {
-    const storedUserInfo = this.loadFromSessionStorage();
-    return storedUserInfo ? storedUserInfo.token : null;
+    this.httpClient.post<void>(API_URI.ADMIN_LOGOUT, {}).pipe(
+      catchError(() => of(void 0))
+    ).subscribe({
+      complete: () => {
+        this.clearToken();
+        this._userInfo.set(null);
+      }
+    });
   }
 
   setUserInfo(userInfo: UserInfo): void {
@@ -46,29 +51,16 @@ export class AdminAuthService {
     this._userInfo.set(userInfo);
   }
 
-  requestAccessToken(token: string): Observable<UserInfo> {
-    this.clearToken();
-    return this.httpClient.post<UserInfo>(API_URI.GITHUB_REQUEST_ACCESS,
-      { token }
-    );
+  fetchCsrfToken(): Observable<unknown> {
+    return this.httpClient.get(API_URI.ADMIN_CSRF);
   }
 
   clearToken(): void {
     this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
+    this._userInfo.set(null);
   }
 
   isAuthenticated(): Observable<boolean> {
-    return this.httpClient.put<boolean>(API_URI.GITHUB_VALIDATE_TOKEN, {},
-      { headers: this.getAuthHeaders() });
-  }
-
-  getAuthHeaders(): HttpHeaders {
-    if (!this.token) {
-      return new HttpHeaders();
-    }
-
-    return new HttpHeaders({
-      [AUTHORIZATION_HEADER]: `${BEARER} ${this.token}`
-    });
+    return of(this.userInfo() !== null);
   }
 }

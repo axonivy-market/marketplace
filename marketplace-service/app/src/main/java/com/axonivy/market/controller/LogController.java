@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
@@ -43,7 +42,6 @@ public class LogController {
   private static final int HEART_BEAT_INTERVAL_SECONDS = 30;
   private final LogService logService;
 
-  @Authorized
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<List<LogFileModel>> listGzLogs(
@@ -52,7 +50,6 @@ public class LogController {
     return ResponseEntity.ok(logService.listGzLogNamesByDate(String.valueOf(date)));
   }
 
-  @Authorized
   @GetMapping(DOWNLOAD_LOG_ARTIFACT)
   @Operation(hidden = true)
   public ResponseEntity<StreamingResponseBody> downloadLog(@RequestParam String fileName) {
@@ -69,7 +66,6 @@ public class LogController {
         .body(outputStream -> logService.streamLogContent(safeFileName, outputStream));
   }
 
-  @Authorized
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(hidden = true)
   public Flux<ServerSentEvent<String>> stream(HttpServletRequest request) {
@@ -89,7 +85,6 @@ public class LogController {
         });
   }
 
-  @Authorized
   @GetMapping(value = LOG_STREAM_BY_TASK_KEY, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public Flux<String> streamLogsByTaskKey(@PathVariable String taskKey) {
     log.info("SSE request received for taskKey: {}", taskKey);

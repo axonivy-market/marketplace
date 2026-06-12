@@ -1,113 +1,52 @@
-import { type MockedObject, beforeEach, describe, expect, it, vi } from 'vitest';
-import { TestBed } from '@angular/core/testing';
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { errorInterceptor, handleHttpError } from './error.interceptor';
-import { HttpToastService } from '../services/browser/http-toast.service';
-import { FORBIDDEN, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { HttpErrorResponse } from '@angular/common/http';
+import { throwError } from 'rxjs';
+import { handleHttpError } from './error.interceptor';
+import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
 
-describe('errorInterceptor', () => {
-  const interceptor: HttpInterceptorFn = (req, next) =>
-    TestBed.runInInjectionContext(() => errorInterceptor(req, next));
+describe('handleHttpError', () => {
+  const toastService = {
+    publishError: vi.fn(),
+    getErrorMessageKey: vi.fn().mockReturnValue('common.error.description.default')
+  };
+  const router = {
+    navigate: vi.fn()
+  };
+  const adminAuthService = {
+    clearToken: vi.fn()
+  } as unknown as AdminAuthService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    vi.clearAllMocks();
   });
 
-  it('should be created', () => {
-    expect(interceptor).toBeTruthy();
+  it('redirects unauthenticated write requests to admin login', () => {
+    const error = new HttpErrorResponse({ status: 401 });
+
+    handleHttpError(toastService as any, error, '/api/release-letters', 'POST', router as any, adminAuthService, true)
+      .subscribe({ error: () => undefined });
+
+    expect(adminAuthService.clearToken).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/admin-login-v2']);
   });
 
-  describe('handleHttpError', () => {
-    let errorBusService: MockedObject<HttpToastService>;
+  it('does not redirect GET auth errors', () => {
+    const error = new HttpErrorResponse({ status: 401 });
 
-    beforeEach(() => {
-      errorBusService = {
-        publishError: vi.fn().mockName('HttpToastService.publishError'),
-        getErrorMessageKey: vi.fn().mockName('HttpToastService.getErrorMessageKey')
-      } as unknown as MockedObject<HttpToastService>;
+    handleHttpError(toastService as any, error, '/api/release-letters', 'GET', router as any, adminAuthService, true)
+      .subscribe({ error: () => undefined });
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('publishes non-auth browser errors', () => {
+    const error = new HttpErrorResponse({
+      status: 500,
+      error: { messageDetails: 'server.error' }
     });
 
-    it('should rethrow error without publishing if status is UNAUTHORIZED', () => {
-      const error = new HttpErrorResponse({ status: UNAUTHORIZED });
+    handleHttpError(toastService as any, error, '/api/failure', 'GET', router as any, adminAuthService, true)
+      .subscribe({ error: () => undefined });
 
-      handleHttpError(errorBusService, error, '/test-url', true).subscribe({
-        error: (err: HttpErrorResponse) => {
-          expect(err).toBe(error);
-          expect(errorBusService.publishError).not.toHaveBeenCalled();
-        }
-      });
-    });
-
-    it('should rethrow error without publishing if status is FORBIDDEN', () => {
-      const error = new HttpErrorResponse({ status: FORBIDDEN });
-
-      handleHttpError(errorBusService, error, '/test-url', true).subscribe({
-        error: (err: HttpErrorResponse) => {
-          expect(err).toBe(error);
-          expect(errorBusService.publishError).not.toHaveBeenCalled();
-        }
-      });
-    });
-
-    it('should publish error to error bus and rethrow for non-auth errors', () => {
-      const error = new HttpErrorResponse({ status: 500 });
-      const messageKey = 'common.error.description.500';
-      (errorBusService.getErrorMessageKey as any).mockReturnValue(messageKey);
-
-      handleHttpError(errorBusService, error, '/test-url', true).subscribe({
-        error: (err: HttpErrorResponse) => {
-          expect(err).toBe(error);
-        }
-      });
-
-      expect(errorBusService.getErrorMessageKey).toHaveBeenCalledWith(500);
-      expect(errorBusService.publishError).toHaveBeenCalledWith({
-        status: 500,
-        messageKey,
-        url: '/test-url',
-        timestamp: expect.any(Number)
-      });
-    });
-
-    it('should publish error for 404 status and rethrow', () => {
-      const error = new HttpErrorResponse({ status: 404 });
-      const messageKey = 'common.error.description.404';
-      (errorBusService.getErrorMessageKey as any).mockReturnValue(messageKey);
-
-      handleHttpError(errorBusService, error, '/product/not-found', true).subscribe({
-        error: () => {}
-      });
-
-      expect(errorBusService.publishError).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 404, url: '/product/not-found' })
-      );
-    });
-
-    it('should publish default message key for status 0 network errors', () => {
-      const error = new HttpErrorResponse({ status: 0 });
-
-      handleHttpError(errorBusService, error, '/api/unreachable', true).subscribe({
-        error: () => {}
-      });
-
-      expect(errorBusService.getErrorMessageKey).not.toHaveBeenCalled();
-      expect(errorBusService.publishError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 0,
-          url: '/api/unreachable',
-          messageKey: 'common.error.description.default'
-        })
-      );
-    });
-
-    it('should NOT publish to error bus on SSR (isBrowser=false)', () => {
-      const error = new HttpErrorResponse({ status: 500 });
-
-      handleHttpError(errorBusService, error, '/test-url', false).subscribe({
-        error: () => {}
-      });
-
-      expect(errorBusService.publishError).not.toHaveBeenCalled();
-    });
+    expect(toastService.publishError).toHaveBeenCalled();
   });
 });

@@ -2,10 +2,13 @@ server:
   port: '8080'
   forward-headers-strategy: framework
   servlet:
-    context-path: /app
     session:
+      timeout: '${SESSION_TIMEOUT:2h}'
       cookie:
+        name: '${SESSION_COOKIE_NAME:ADMIN_SESSION}'
+        http-only: true
         secure: '${SESSION_COOKIE_SECURE}'
+    context-path: /app
   tomcat:
     connection-timeout: 240000ms
     threads:
@@ -41,6 +44,10 @@ spring:
       enabled: 'true'
       max-file-size: 20MB
       max-request-size: 20MB
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: never
   jackson:
     serialization:
       indent_output: 'true'

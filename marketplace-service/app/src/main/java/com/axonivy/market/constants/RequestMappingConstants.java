@@ -30,6 +30,11 @@ public class RequestMappingConstants {
   public static final String GITHUB_REQUEST_ACCESS = "/github/request-access";
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
+  public static final String ADMIN_AUTH_V2 = AUTH + "/admin/v2";
+  public static final String GITHUB_AUTHORIZATION = "/github/authorization";
+  public static final String GITHUB_CALLBACK = "/github/callback";
+  public static final String CSRF = "/csrf";
+  public static final String LOGOUT = "/logout";
   public static final String BY_ID = "/{id}";
   public static final String SAVE_AS_DRAFT = "/save-as-draft";
   public static final String DRAFT_BY_ID = "/{id}/draft";

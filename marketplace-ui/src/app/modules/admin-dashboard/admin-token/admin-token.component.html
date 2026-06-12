@@ -10,22 +10,12 @@
   <div class="token-input-container d-flex flex-column align-items-center">
     <form (ngSubmit)="onSubmit()" class="d-flex flex-column align-items-center justify-content-start">
       <h3 class="text-primary">
-        {{ 'common.admin.enterToken' | translate }}
+        Sign in with GitHub to continue
       </h3>
-      <input
-        id="token-input"
-        class="border"
-        type="password"
-        [formControl]="tokenControl"
-        [attr.placeholder]="'common.admin.enterTokenPlaceholder' | translate"
-        autocomplete="current-password"
-        required />
-
       <button
         type="submit"
         class="btn-primary mt-3"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
-        [disabled]="isButtonDisabled"
         [style.pointer-events]="isProcessing ? 'none' : ''">
         @if (isProcessing) {
           <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
@@ -35,9 +25,6 @@
           {{ 'common.admin.proceedBtnLabel' | translate }}
         }
       </button>
-      @if (errorMessage) {
-        <div class="error-message text-center mt-2">{{ errorMessage }}</div>
-      }
     </form>
   </div>
 </div>
