@@ -1,4 +1,4 @@
-import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject, provideAppInitializer } from '@angular/core';
 import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -12,6 +12,7 @@ import { RuntimeConfigService } from './core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from './core/models/runtime-config';
 import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { AdminAuthService } from './modules/admin-dashboard/admin-auth.service';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -26,7 +27,14 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideClientHydration(withI18nSupport()),
-    provideHttpClient(withFetch(), withInterceptors([apiInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withFetch(),
+      withXsrfConfiguration({
+        cookieName: 'XSRF-TOKEN',
+        headerName: 'X-XSRF-TOKEN'
+      }),
+      withInterceptors([apiInterceptor, errorInterceptor])
+    ),
     provideMatomo(() => {
       const configService = inject(RuntimeConfigService);
       return {
@@ -46,6 +54,7 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    provideAppInitializer(() => inject(BootstrapLoaderService).init())
+    provideAppInitializer(() => inject(BootstrapLoaderService).init()),
+    provideAppInitializer(() => inject(AdminAuthService).initializeSecurity())
   ]
 };

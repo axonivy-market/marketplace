@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +25,6 @@ public class SyncTaskExecutionController {
 
   private final SyncTaskExecutionService syncTaskExecutionService;
 
-  @Authorized
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<List<SyncTaskExecutionModel>> getAllSyncTaskExecutions() {
@@ -34,7 +32,6 @@ public class SyncTaskExecutionController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @Authorized
   @GetMapping("/{jobKey}")
   @Operation(hidden = true)
   public ResponseEntity<SyncTaskExecutionModel> getSyncTaskExecutionByKey(@PathVariable String jobKey) {

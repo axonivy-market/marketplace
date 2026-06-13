@@ -11,7 +11,6 @@ import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboa
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
-import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { TeamIntroductionComponent } from './modules/home/team-introduction/team-introduction.component';
 import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
@@ -55,13 +54,16 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'request-access',
+    path: 'admin-login-v2',
     component: AdminTokenComponent
+  },
+  {
+    path: 'request-access',
+    redirectTo: 'admin-login-v2'
   },
   {
     path: 'internal-dashboard',
     component: AdminDashboardComponent,
-    canActivate: [AdminAuthGuard],
     children: [
       {
         path: 'security-monitor',

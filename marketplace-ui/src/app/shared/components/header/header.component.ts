@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs';
+import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
@@ -34,6 +35,7 @@ import { NavigationComponent } from './navigation/navigation.component';
 })
 export class HeaderComponent {
   adminAuthService = inject(AdminAuthService);
+  authService = inject(AuthService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
@@ -42,6 +44,8 @@ export class HeaderComponent {
 
   selectedNav = '/';
   isAdminRoute = false;
+  isPasskeyBusy = false;
+  readonly supportsPasskeys = this.authService.isPasskeySupported();
   userInfo = this.adminAuthService.userInfo;
 
   constructor(private readonly renderer: Renderer2) {
@@ -78,5 +82,14 @@ export class HeaderComponent {
 
   isHeaderOffcanvasOpen(): boolean {
     return this.headerOffcanvasService.isOpen();
+  }
+
+  async registerPasskey(): Promise<void> {
+    this.isPasskeyBusy = true;
+    try {
+      await this.authService.registerPasskey();
+    } finally {
+      this.isPasskeyBusy = false;
+    }
   }
 }

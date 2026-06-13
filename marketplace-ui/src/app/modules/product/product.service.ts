@@ -21,13 +21,11 @@ import { MarketProduct } from '../../shared/models/product.model';
 import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
-import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 
 const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly httpClient = inject(HttpClient);
-  private readonly adminAuthService = inject(AdminAuthService);
 
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
@@ -215,7 +213,6 @@ export class ProductService {
       API_URI.PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID(productId),
       deprecatedRequest,
       {
-        headers: this.adminAuthService.getAuthHeaders(),
         responseType: 'text'
       }
     );
@@ -229,7 +226,7 @@ export class ProductService {
         return hasNextPage ? this.loadProductPage(pageInfo.number + 1, pageSize, language) : EMPTY;
       }),
 
-      map(response => (response._embedded?.products ?? []).map((product: MarketProduct) => ({
+      map(response => (response.content ?? []).map((product: MarketProduct) => ({
           id: product.id,
           marketDirectory: product.marketDirectory
         }))
