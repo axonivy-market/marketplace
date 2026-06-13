@@ -1,8 +1,11 @@
 package com.axonivy.market.config;
 
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,11 +28,20 @@ import org.springframework.security.web.webauthn.registration.PublicKeyCredentia
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
 public class PasskeyConfig {
+  @Bean
+  @ConditionalOnMissingBean(ObjectMapper.class)
+  public ObjectMapper objectMapper(List<Module> modules) {
+    JsonMapper.Builder builder = JsonMapper.builder().findAndAddModules();
+    modules.forEach(builder::addModule);
+    return builder.build();
+  }
+
   @Bean
   @ConditionalOnExpression(
       "T(org.springframework.util.StringUtils).hasText('${market.passkey.rp-id:}')"

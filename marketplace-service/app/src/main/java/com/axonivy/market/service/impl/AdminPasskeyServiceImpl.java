@@ -7,7 +7,6 @@ import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.service.AdminAuthenticationSessionService;
 import com.axonivy.market.service.AdminPasskeyService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +40,8 @@ import org.springframework.security.web.webauthn.registration.PublicKeyCredentia
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -53,19 +54,19 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   private final WebAuthnRelyingPartyOperations webAuthnRelyingPartyOperations;
   private final PublicKeyCredentialCreationOptionsRepository creationOptionsRepository;
   private final PublicKeyCredentialRequestOptionsRepository requestOptionsRepository;
-  private final ObjectMapper objectMapper;
   private final GithubUserRepository githubUserRepository;
   private final AdminAuthenticationSessionService adminAuthenticationSessionService;
+  private final ObjectMapper objectMapper;
 
   @Override
-  public JsonNode beginRegistration(UserInfo currentUser, HttpServletRequest request, HttpServletResponse response) {
+  public Map<String, Object> beginRegistration(UserInfo currentUser, HttpServletRequest request, HttpServletResponse response) {
     GithubUser githubUser = requireGithubUser(currentUser == null ? null : currentUser.getId());
-    Authentication authentication = requireAuthenticatedPrincipal(githubUser.getUsername());
+    Authentication authentication = createAdminAuthentication(githubUser.getUsername());
 
     PublicKeyCredentialCreationOptions options = webAuthnRelyingPartyOperations
         .createPublicKeyCredentialCreationOptions(new ImmutablePublicKeyCredentialCreationOptionsRequest(authentication));
     creationOptionsRepository.save(request, response, options);
-    return objectMapper.valueToTree(options);
+    return writeOptions(options);
   }
 
   @Override
@@ -96,13 +97,13 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   }
 
   @Override
-  public JsonNode beginAuthentication(PasskeyAssertionOptionsRequest optionsRequest, HttpServletRequest request,
+  public Map<String, Object> beginAuthentication(PasskeyAssertionOptionsRequest optionsRequest, HttpServletRequest request,
       HttpServletResponse response) {
-    Authentication authentication = createAuthenticationRequest(optionsRequest);
+    Authentication authentication = createAssertionRequestAuthentication(optionsRequest);
     PublicKeyCredentialRequestOptions options = webAuthnRelyingPartyOperations
         .createCredentialRequestOptions(new ImmutablePublicKeyCredentialRequestOptionsRequest(authentication));
     requestOptionsRepository.save(request, response, options);
-    return objectMapper.valueToTree(options);
+    return writeOptions(options);
   }
 
   @Override
@@ -132,16 +133,15 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
     }
   }
 
-  private Authentication requireAuthenticatedPrincipal(String username) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated() || StringUtils.isBlank(authentication.getName())) {
-      return UsernamePasswordAuthenticationToken.authenticated(username, null,
-          AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+  private Authentication createAdminAuthentication(String username) {
+    if (StringUtils.isBlank(username)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing GitHub username for passkey registration");
     }
-    return authentication;
+    return UsernamePasswordAuthenticationToken.authenticated(username, null,
+        AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
   }
 
-  private Authentication createAuthenticationRequest(PasskeyAssertionOptionsRequest optionsRequest) {
+  private Authentication createAssertionRequestAuthentication(PasskeyAssertionOptionsRequest optionsRequest) {
     String username = optionsRequest == null ? null : StringUtils.trimToNull(optionsRequest.getUsername());
     if (username == null) {
       return new AnonymousAuthenticationToken(ANONYMOUS_KEY, "anonymous",
@@ -179,6 +179,11 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
     if (credentialRequest == null || credentialRequest.getCredential() == null || credentialRequest.getCredential().isNull()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey credential payload");
     }
+  }
+
+  private Map<String, Object> writeOptions(Object options) {
+    JavaType mapType = objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+    return objectMapper.convertValue(options, mapType);
   }
 
   private <T extends AuthenticatorResponse> PublicKeyCredential<T> readCredential(JsonNode credentialNode,

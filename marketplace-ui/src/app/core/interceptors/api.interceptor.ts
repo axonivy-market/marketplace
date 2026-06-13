@@ -7,6 +7,7 @@ import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
+import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -45,6 +46,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
+  const adminAuthService = inject(AdminAuthService);
   let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
 
   if (isPlatformServer(platformId)) {
@@ -58,7 +60,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const cloneReq = req.clone({
     url: requestURL,
-    headers: addIvyHeaders(req.headers)
+    headers: addIvyHeaders(req.headers, req.method, adminAuthService.csrfToken()),
+    withCredentials: true
   });
 
   return next(cloneReq).pipe(
@@ -77,10 +80,14 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
-  if (headers.has(REQUEST_BY)) {
-    return headers;
+function addIvyHeaders(headers: HttpHeaders, method: string, csrfToken: string | null): HttpHeaders {
+  let updatedHeaders = headers;
+  if (!updatedHeaders.has(REQUEST_BY)) {
+    updatedHeaders = updatedHeaders.append(REQUEST_BY, IVY);
   }
-  return headers.append(REQUEST_BY, IVY);
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS' && csrfToken && !updatedHeaders.has('X-XSRF-TOKEN')) {
+    updatedHeaders = updatedHeaders.append('X-XSRF-TOKEN', csrfToken);
+  }
+  return updatedHeaders;
 }
 

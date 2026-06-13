@@ -7,12 +7,19 @@ import { SessionStorageRef } from '../../core/services/browser/session-storage-r
 import { API_URI } from '../../shared/constants/api.constant';
 import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
 
+interface CsrfTokenResponse {
+  token: string;
+  headerName?: string;
+  parameterName?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly _userInfo = signal<UserInfo | null>(null);
+  private readonly _csrfToken = signal<string | null>(null);
   readonly userInfo = this._userInfo.asReadonly();
 
   constructor() {
@@ -51,16 +58,23 @@ export class AdminAuthService {
     this._userInfo.set(userInfo);
   }
 
-  fetchCsrfToken(): Observable<unknown> {
-    return this.httpClient.get(API_URI.ADMIN_CSRF);
+  fetchCsrfToken(): Observable<CsrfTokenResponse> {
+    return this.httpClient.get<CsrfTokenResponse>(API_URI.ADMIN_CSRF).pipe(
+      tap(response => this._csrfToken.set(response?.token ?? null))
+    );
   }
 
   clearToken(): void {
     this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
     this._userInfo.set(null);
+    this._csrfToken.set(null);
   }
 
   isAuthenticated(): Observable<boolean> {
     return of(this.userInfo() !== null);
+  }
+
+  csrfToken(): string | null {
+    return this._csrfToken();
   }
 }

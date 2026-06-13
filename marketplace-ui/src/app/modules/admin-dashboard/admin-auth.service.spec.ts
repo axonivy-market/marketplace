@@ -57,6 +57,7 @@ describe('AdminAuthService', () => {
     request.flush({ token: 'csrf' });
 
     await initPromise;
+    expect(service.csrfToken()).toBe('csrf');
   });
 
   it('stores and clears the session user locally', () => {

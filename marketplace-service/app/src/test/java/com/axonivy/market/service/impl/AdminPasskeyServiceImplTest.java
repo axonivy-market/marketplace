@@ -6,7 +6,6 @@ import com.axonivy.market.model.PasskeyCredentialRequest;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.service.AdminAuthenticationSessionService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,10 +30,10 @@ import org.springframework.security.web.webauthn.management.PublicKeyCredentialR
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
 import org.springframework.security.web.webauthn.registration.PublicKeyCredentialCreationOptionsRepository;
 import org.springframework.security.web.webauthn.authentication.PublicKeyCredentialRequestOptionsRepository;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,6 +65,12 @@ class AdminPasskeyServiceImplTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new WebauthnJackson2Module());
 
+  @org.junit.jupiter.api.BeforeEach
+  void setUp() {
+    service = new AdminPasskeyServiceImpl(webAuthnRelyingPartyOperations, creationOptionsRepository,
+        requestOptionsRepository, githubUserRepository, adminAuthenticationSessionService, objectMapper);
+  }
+
   @AfterEach
   void tearDown() {
     SecurityContextHolder.clearContext();
@@ -73,8 +78,6 @@ class AdminPasskeyServiceImplTest {
 
   @Test
   void beginRegistrationStoresChallengeInRepository() {
-    ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
-
     UserInfo currentUser = new UserInfo();
     currentUser.setId("user-1");
     currentUser.setUsername("octopus");
@@ -102,16 +105,15 @@ class AdminPasskeyServiceImplTest {
     when(githubUserRepository.findById("user-1")).thenReturn(Optional.of(githubUser));
     when(webAuthnRelyingPartyOperations.createPublicKeyCredentialCreationOptions(any())).thenReturn(options);
 
-    JsonNode result = service.beginRegistration(currentUser, request, response);
+    Map<String, Object> result = service.beginRegistration(currentUser, request, response);
 
     assertNotNull(result);
+    assertNotNull(result.get("challenge"));
     verify(creationOptionsRepository).save(request, response, options);
   }
 
   @Test
   void beginAuthenticationStoresRequestOptions() {
-    ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
-
     PublicKeyCredentialRequestOptions options = PublicKeyCredentialRequestOptions.builder()
         .challenge(new Bytes(new byte[] {1, 2, 3}))
         .rpId("localhost")
@@ -121,9 +123,9 @@ class AdminPasskeyServiceImplTest {
     PasskeyAssertionOptionsRequest optionsRequest = new PasskeyAssertionOptionsRequest();
     optionsRequest.setUsername("octopus");
 
-    JsonNode result = service.beginAuthentication(optionsRequest, request, response);
+    Map<String, Object> result = service.beginAuthentication(optionsRequest, request, response);
 
-    assertEquals("localhost", result.get("rpId").asText());
+    assertEquals("localhost", result.get("rpId"));
     verify(requestOptionsRepository).save(request, response, options);
 
     ArgumentCaptor<PublicKeyCredentialRequestOptionsRequest> captor =
@@ -134,7 +136,6 @@ class AdminPasskeyServiceImplTest {
 
   @Test
   void finishAuthenticationFailsWhenChallengeMissing() {
-    ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
     when(requestOptionsRepository.load(request)).thenReturn(null);
 
     ResponseStatusException exception = assertThrows(ResponseStatusException.class,
@@ -146,8 +147,6 @@ class AdminPasskeyServiceImplTest {
 
   @Test
   void finishRegistrationFailsWhenCredentialMissing() {
-    ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
-
     UserInfo currentUser = new UserInfo();
     currentUser.setId("user-1");
     GithubUser githubUser = new GithubUser();

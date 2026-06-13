@@ -20,6 +20,7 @@ describe('AuthService', () => {
   let router: { navigate: ReturnType<typeof vi.fn> };
   let adminAuthService: {
     fetchCsrfToken: ReturnType<typeof vi.fn>;
+    csrfToken: ReturnType<typeof vi.fn>;
     setUserInfo: ReturnType<typeof vi.fn>;
     userInfo: ReturnType<typeof signal<UserInfo | null>>;
     loadFromSessionStorage: ReturnType<typeof vi.fn>;
@@ -37,6 +38,7 @@ describe('AuthService', () => {
     };
     adminAuthService = {
       fetchCsrfToken: vi.fn().mockReturnValue(of({})),
+      csrfToken: vi.fn().mockReturnValue('csrf'),
       setUserInfo: vi.fn(),
       userInfo: signal<UserInfo | null>(null),
       loadFromSessionStorage: vi.fn().mockReturnValue(null)

@@ -50,7 +50,9 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
-        .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(csrfTokenRepository)
+            .ignoringRequestMatchers(ADMIN_AUTH_V2 + GITHUB_CALLBACK))
         .securityContext(securityContext -> securityContext
             .requireExplicitSave(true)
             .securityContextRepository(securityContextRepository()))

@@ -4,7 +4,6 @@ import com.axonivy.market.model.PasskeyAssertionOptionsRequest;
 import com.axonivy.market.model.PasskeyCredentialRequest;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.AdminPasskeyService;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH_V2;
 import static com.axonivy.market.constants.RequestMappingConstants.AUTHENTICATE;
@@ -33,7 +34,7 @@ public class AdminPasskeyController {
   private final AdminPasskeyService adminPasskeyService;
 
   @PostMapping(REGISTER + OPTIONS)
-  public JsonNode beginRegistration(@AuthenticationPrincipal UserInfo currentUser, HttpServletRequest request,
+  public Map<String, Object> beginRegistration(@AuthenticationPrincipal UserInfo currentUser, HttpServletRequest request,
       HttpServletResponse response) {
     return adminPasskeyService.beginRegistration(currentUser, request, response);
   }
@@ -45,7 +46,7 @@ public class AdminPasskeyController {
   }
 
   @PostMapping(AUTHENTICATE + OPTIONS)
-  public JsonNode beginAuthentication(@RequestBody(required = false) PasskeyAssertionOptionsRequest optionsRequest,
+  public Map<String, Object> beginAuthentication(@RequestBody(required = false) PasskeyAssertionOptionsRequest optionsRequest,
       HttpServletRequest request, HttpServletResponse response) {
     return adminPasskeyService.beginAuthentication(optionsRequest, request, response);
   }
