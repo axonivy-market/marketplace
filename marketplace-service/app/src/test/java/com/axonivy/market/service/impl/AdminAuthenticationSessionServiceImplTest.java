@@ -1,0 +1,72 @@
+package com.axonivy.market.service.impl;
+
+import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.PasskeyCredential;
+import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.repository.PasskeyCredentialRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.SecurityContextRepository;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AdminAuthenticationSessionServiceImplTest {
+  @Mock
+  private SessionAuthenticationStrategy sessionAuthenticationStrategy;
+  @Mock
+  private SecurityContextRepository securityContextRepository;
+  @Mock
+  private PasskeyCredentialRepository passkeyCredentialRepository;
+  @Mock
+  private HttpServletRequest request;
+  @Mock
+  private HttpServletResponse response;
+
+  @InjectMocks
+  private AdminAuthenticationSessionServiceImpl service;
+
+  @AfterEach
+  void clearSecurityContext() {
+    SecurityContextHolder.clearContext();
+  }
+
+  @Test
+  void createSessionBuildsPrincipalAndSavesSecurityContext() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("user-1");
+    githubUser.setGitHubId("gh-1");
+    githubUser.setProvider("GitHub");
+    githubUser.setUsername("octopus");
+    githubUser.setName("Octopus");
+    githubUser.setAvatarUrl("https://avatar");
+
+    when(passkeyCredentialRepository.findByGithubUserId("user-1"))
+        .thenReturn(Optional.of(new PasskeyCredential()));
+
+    UserInfo result = service.createSession(githubUser, null, request, response);
+
+    assertEquals("user-1", result.getId());
+    assertEquals("gh-1", result.getGitHubId());
+    assertEquals("octopus", result.getUsername());
+    assertEquals("https://github.com/octopus", result.getUrl());
+    assertTrue(result.isHasPasskey());
+
+    verify(sessionAuthenticationStrategy).onAuthentication(any(), any(), any());
+    verify(securityContextRepository).saveContext(any(), any(), any());
+  }
+}

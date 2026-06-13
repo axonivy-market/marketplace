@@ -22,10 +22,13 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH_V2;
+import static com.axonivy.market.constants.RequestMappingConstants.AUTHENTICATE;
+import static com.axonivy.market.constants.RequestMappingConstants.COMPLETE;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_CALLBACK;
 import static com.axonivy.market.constants.RequestMappingConstants.LOGOUT;
+import static com.axonivy.market.constants.RequestMappingConstants.OPTIONS;
+import static com.axonivy.market.constants.RequestMappingConstants.PASSKEY;
 
 @Configuration
 @RequiredArgsConstructor
@@ -57,9 +60,12 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/auth/github/login", "/auth/github/request-access").permitAll()
             .requestMatchers(HttpMethod.POST, ADMIN_AUTH_V2 + GITHUB_CALLBACK).permitAll()
+            .requestMatchers(HttpMethod.POST,
+                ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + OPTIONS,
+                ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + COMPLETE).permitAll()
             .anyRequest().authenticated())
         .logout(logout -> logout
-            .logoutRequestMatcher(new AntPathRequestMatcher(ADMIN_AUTH_V2 + LOGOUT, HttpMethod.POST.name()))
+            .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
             .invalidateHttpSession(true)
             .deleteCookies(sessionCookieName)
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))

@@ -25,6 +25,11 @@ describe('AuthService', () => {
     loadFromSessionStorage: ReturnType<typeof vi.fn>;
   };
   const location = { origin: 'http://localhost', href: '' };
+  const credentials = {
+    create: vi.fn(),
+    get: vi.fn()
+  };
+  const originalPublicKeyCredential = globalThis.PublicKeyCredential;
 
   beforeEach(() => {
     router = {
@@ -52,7 +57,14 @@ describe('AuthService', () => {
         },
         {
           provide: WindowRef,
-          useValue: { nativeWindow: { location } }
+          useValue: {
+            nativeWindow: {
+              location,
+              isSecureContext: true,
+              navigator: { credentials },
+              PublicKeyCredential: function PublicKeyCredential() {}
+            }
+          }
         },
         {
           provide: RuntimeConfigService,
@@ -75,10 +87,14 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
     location.href = '';
+    credentials.create.mockReset();
+    credentials.get.mockReset();
+    (globalThis as any).PublicKeyCredential = function PublicKeyCredential() {};
   });
 
   afterEach(() => {
     httpMock.verify();
+    (globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
   });
 
   it('redirects to GitHub using a server-issued state', () => {
@@ -128,5 +144,101 @@ describe('AuthService', () => {
     expect(service.getDisplayName()).toBe('Market User');
     expect(service.getUserId()).toBe('user-2');
     expect(service.getToken()).toBeNull();
+  });
+
+  it('registers a passkey and refreshes the local user session', async () => {
+    const createdCredential = {
+      id: 'credential-1',
+      rawId: new Uint8Array([1, 2, 3]).buffer,
+      type: 'public-key',
+      authenticatorAttachment: 'platform',
+      getClientExtensionResults: () => ({}),
+      response: {
+        clientDataJSON: new Uint8Array([1]).buffer,
+        attestationObject: new Uint8Array([2]).buffer,
+        getTransports: () => ['internal']
+      }
+    };
+    credentials.create.mockResolvedValue(createdCredential);
+
+    const registerPromise = service.registerPasskey();
+    await Promise.resolve();
+
+    const optionsRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_REGISTER_OPTIONS);
+    expect(optionsRequest.request.method).toBe('POST');
+    optionsRequest.flush({
+      challenge: 'AQID',
+      rp: { id: 'localhost', name: 'Axon Ivy Marketplace Admin' },
+      user: { id: 'BAUG', name: 'octopus', displayName: 'Octopus' },
+      pubKeyCredParams: [],
+      timeout: 300000
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const completeRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_REGISTER_COMPLETE);
+    expect(completeRequest.request.method).toBe('POST');
+    completeRequest.flush({
+      id: 'user-1',
+      token: null,
+      login: 'octopus',
+      name: 'Octopus',
+      avatarUrl: '',
+      url: 'https://github.com/octopus',
+      hasPasskey: true
+    });
+
+    await registerPromise;
+
+    expect(adminAuthService.setUserInfo).toHaveBeenCalledWith(expect.objectContaining({ hasPasskey: true }));
+  });
+
+  it('logs in with a passkey and navigates to the dashboard', async () => {
+    const assertedCredential = {
+      id: 'credential-1',
+      rawId: new Uint8Array([1, 2, 3]).buffer,
+      type: 'public-key',
+      authenticatorAttachment: 'platform',
+      getClientExtensionResults: () => ({}),
+      response: {
+        clientDataJSON: new Uint8Array([1]).buffer,
+        authenticatorData: new Uint8Array([2]).buffer,
+        signature: new Uint8Array([3]).buffer,
+        userHandle: new Uint8Array([4]).buffer
+      }
+    };
+    credentials.get.mockResolvedValue(assertedCredential);
+
+    const loginPromise = service.loginWithPasskey('octopus');
+    await Promise.resolve();
+
+    const optionsRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_AUTHENTICATE_OPTIONS);
+    expect(optionsRequest.request.method).toBe('POST');
+    expect(optionsRequest.request.body).toEqual({ username: 'octopus' });
+    optionsRequest.flush({
+      challenge: 'AQID',
+      rpId: 'localhost',
+      timeout: 300000,
+      allowCredentials: [{ id: 'BAUG', type: 'public-key' }]
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const completeRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_AUTHENTICATE_COMPLETE);
+    expect(completeRequest.request.method).toBe('POST');
+    completeRequest.flush({
+      id: 'user-1',
+      token: null,
+      login: 'octopus',
+      name: 'Octopus',
+      avatarUrl: '',
+      url: 'https://github.com/octopus',
+      hasPasskey: true
+    });
+
+    await loginPromise;
+
+    expect(adminAuthService.setUserInfo).toHaveBeenCalledWith(expect.objectContaining({ id: 'user-1' }));
+    expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
   });
 });

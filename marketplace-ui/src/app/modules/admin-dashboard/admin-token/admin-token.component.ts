@@ -15,10 +15,22 @@ import { AuthService } from '../../../auth/auth.service';
 export class AdminTokenComponent {
   themeService = inject(ThemeService);
   authService = inject(AuthService);
-  isProcessing = false;
+  isGitHubProcessing = false;
+  isPasskeyProcessing = false;
+  passkeyUsername = '';
+  readonly supportsPasskeys = this.authService.isPasskeySupported();
 
   onSubmit(): void {
-    this.isProcessing = true;
+    this.isGitHubProcessing = true;
     this.authService.redirectToGitHub('/internal-dashboard');
+  }
+
+  async onPasskeyLogin(): Promise<void> {
+    this.isPasskeyProcessing = true;
+    try {
+      await this.authService.loginWithPasskey(this.passkeyUsername);
+    } finally {
+      this.isPasskeyProcessing = false;
+    }
   }
 }

@@ -7,6 +7,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AdminGitHubCallbackRequest;
 import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.service.AdminAuthenticationSessionService;
 import com.axonivy.market.service.AdminSessionAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,12 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -38,8 +33,7 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
 
   private final GitHubProperty gitHubProperty;
   private final GitHubService gitHubService;
-  private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
-  private final SecurityContextRepository securityContextRepository;
+  private final AdminAuthenticationSessionService adminAuthenticationSessionService;
 
   @Override
   public String createAuthorizationState(HttpServletRequest request) {
@@ -65,17 +59,8 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
       UserInfo authorizedGitHubUser = gitHubService.validateUserInOrganizationAndTeam(accessToken,
           GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
       GithubUser persistedUser = gitHubService.getAndUpdateUser(accessToken);
-      UserInfo sessionUser = toSessionUser(authorizedGitHubUser, persistedUser);
-
-      var authentication = UsernamePasswordAuthenticationToken.authenticated(sessionUser, null,
-          AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
-
-      sessionAuthenticationStrategy.onAuthentication(authentication, request, response);
-
-      SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-      securityContext.setAuthentication(authentication);
-      SecurityContextHolder.setContext(securityContext);
-      securityContextRepository.saveContext(securityContext, request, response);
+      UserInfo sessionUser = adminAuthenticationSessionService.createSession(persistedUser, authorizedGitHubUser.getUrl(),
+          request, response);
 
       log.info("Admin login success userId={} username={}", sessionUser.getId(), sessionUser.getUsername());
       return sessionUser;
@@ -123,18 +108,5 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
   private void removeExpiredStates(Map<String, Instant> pendingStates) {
     Instant now = Instant.now();
     pendingStates.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().isBefore(now));
-  }
-
-  private UserInfo toSessionUser(UserInfo authorizedGitHubUser, GithubUser persistedUser) {
-    UserInfo sessionUser = new UserInfo();
-    sessionUser.setId(persistedUser.getId());
-    sessionUser.setGitHubId(persistedUser.getGitHubId());
-    sessionUser.setProvider(persistedUser.getProvider());
-    sessionUser.setUsername(persistedUser.getUsername());
-    sessionUser.setName(persistedUser.getName());
-    sessionUser.setAvatarUrl(persistedUser.getAvatarUrl());
-    sessionUser.setUrl(authorizedGitHubUser.getUrl());
-    sessionUser.setToken(null);
-    return sessionUser;
   }
 }

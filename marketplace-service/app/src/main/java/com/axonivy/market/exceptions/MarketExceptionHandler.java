@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -133,5 +134,12 @@ public class MarketExceptionHandler {
     var message = new Message(ErrorCode.TASK_ALREADY_IN_PROGRESS.getCode(), syncTaskInProgressException.getMessage(),
         ErrorCode.TASK_ALREADY_IN_PROGRESS.getHelpText());
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Message> handleResponseStatusException(ResponseStatusException exception) {
+    var message = new Message(String.valueOf(exception.getStatusCode().value()), exception.getReason(),
+        exception.getReason());
+    return ResponseEntity.status(exception.getStatusCode()).body(message);
   }
 }

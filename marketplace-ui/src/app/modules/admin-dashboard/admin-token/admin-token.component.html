@@ -16,8 +16,8 @@
         type="submit"
         class="btn-primary mt-3"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'"
-        [style.pointer-events]="isProcessing ? 'none' : ''">
-        @if (isProcessing) {
+        [style.pointer-events]="isGitHubProcessing ? 'none' : ''">
+        @if (isGitHubProcessing) {
           <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
           {{ 'common.admin.proceedingBtnLabel' | translate }}
         } @else {
@@ -25,6 +25,35 @@
           {{ 'common.admin.proceedBtnLabel' | translate }}
         }
       </button>
+
+      @if (supportsPasskeys) {
+        <div class="w-100 mt-4">
+          <label class="text-primary d-block mb-2" for="passkey-username">
+            GitHub username (optional)
+          </label>
+          <input
+            id="passkey-username"
+            name="passkeyUsername"
+            class="form-control"
+            type="text"
+            [(ngModel)]="passkeyUsername"
+            autocomplete="username webauthn" />
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline-primary mt-3"
+          [disabled]="isPasskeyProcessing"
+          (click)="onPasskeyLogin()">
+          @if (isPasskeyProcessing) {
+            <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
+            Signing in with passkey
+          } @else {
+            <i class="ti ti-fingerprint me-2"></i>
+            Login with passkey
+          }
+        </button>
+      }
     </form>
   </div>
 </div>

@@ -8,7 +8,9 @@ describe('AdminTokenComponent', () => {
   let fixture: ComponentFixture<AdminTokenComponent>;
   let component: AdminTokenComponent;
   const authService = {
-    redirectToGitHub: vi.fn()
+    redirectToGitHub: vi.fn(),
+    loginWithPasskey: vi.fn().mockResolvedValue(undefined),
+    isPasskeySupported: vi.fn().mockReturnValue(true)
   };
 
   beforeEach(async () => {
@@ -31,7 +33,16 @@ describe('AdminTokenComponent', () => {
   it('starts the GitHub login flow', () => {
     component.onSubmit();
 
-    expect(component.isProcessing).toBe(true);
+    expect(component.isGitHubProcessing).toBe(true);
     expect(authService.redirectToGitHub).toHaveBeenCalledWith('/internal-dashboard');
+  });
+
+  it('starts the passkey login flow', async () => {
+    component.passkeyUsername = 'octopus';
+
+    await component.onPasskeyLogin();
+
+    expect(authService.loginWithPasskey).toHaveBeenCalledWith('octopus');
+    expect(component.isPasskeyProcessing).toBe(false);
   });
 });
