@@ -226,7 +226,7 @@ export class ProductService {
         return hasNextPage ? this.loadProductPage(pageInfo.number + 1, pageSize, language) : EMPTY;
       }),
 
-      map(response => (response._embedded?.products ?? []).map((product: MarketProduct) => ({
+      map(response => (response.content ?? []).map((product: MarketProduct) => ({
           id: product.id,
           marketDirectory: product.marketDirectory
         }))
