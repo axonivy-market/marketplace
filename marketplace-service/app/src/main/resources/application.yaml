@@ -7,7 +7,7 @@ server:
       cookie:
         name: '${SESSION_COOKIE_NAME:ADMIN_SESSION}'
         http-only: true
-        secure: '${SESSION_COOKIE_SECURE}'
+        secure: '${SESSION_COOKIE_SECURE:true}'
     context-path: /app
   tomcat:
     connection-timeout: 240000ms

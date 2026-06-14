@@ -22,13 +22,9 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH_V2;
-import static com.axonivy.market.constants.RequestMappingConstants.AUTHENTICATE;
-import static com.axonivy.market.constants.RequestMappingConstants.COMPLETE;
-import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_CALLBACK;
-import static com.axonivy.market.constants.RequestMappingConstants.LOGOUT;
-import static com.axonivy.market.constants.RequestMappingConstants.OPTIONS;
-import static com.axonivy.market.constants.RequestMappingConstants.PASSKEY;
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.IMAGE;
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.ROOT;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -59,7 +55,40 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionFixation(sessionFixation -> sessionFixation.changeSessionId()))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/**").permitAll()
+            .requestMatchers(HttpMethod.GET,
+                ROOT,
+                IMAGE + BY_ID,
+                PRODUCT,
+                PRODUCT + IDS,
+                PRODUCT + PRODUCT_RATING_BY_ID,
+                PRODUCT_DETAILS + BY_ID_AND_VERSION,
+                PRODUCT_DETAILS + BEST_MATCH_BY_ID_AND_VERSION,
+                PRODUCT_DETAILS + BY_ID,
+                PRODUCT_DETAILS + VERSIONS_BY_ID,
+                PRODUCT_DETAILS + PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION,
+                PRODUCT_DETAILS + PRODUCT_PUBLIC_RELEASES,
+                PRODUCT_DETAILS + PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID,
+                PRODUCT_DETAILS + LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID,
+                PRODUCT_DETAILS + ARTIFACTS_AS_ZIP,
+                EXTERNAL_DOCUMENT + BY_ID_AND_VERSION,
+                EXTERNAL_DOCUMENT + DOCUMENT_BEST_MATCH,
+                DOCUMENT + DOCUMENT_VERSION_LANGUAGE,
+                RELEASE_LETTER,
+                RELEASE_LETTER + BY_ID,
+                RELEASE_LETTER + BY_LATEST,
+                FEEDBACK + PRODUCT_BY_ID,
+                FEEDBACK + BY_ID,
+                FEEDBACK,
+                FEEDBACK + PRODUCT_RATING_BY_ID,
+                PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
+                PRODUCT_MARKETPLACE_DATA + INSTALLATION_COUNT_BY_ID,
+                PRODUCT_MARKETPLACE_DATA + DEPRECATIONS,
+                PRODUCT_MARKETPLACE_DATA + VERSION_DOWNLOAD_BY_ID,
+                PRODUCT_DESIGNER_INSTALLATION + DESIGNER_INSTALLATION_BY_ID,
+                PRODUCT_DETAILS + PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION,
+                ADMIN_AUTH_V2 + GITHUB_AUTHORIZATION,
+                ADMIN_AUTH_V2 + CSRF)
+                .permitAll()
             .requestMatchers(HttpMethod.POST, "/auth/github/login", "/auth/github/request-access").permitAll()
             .requestMatchers(HttpMethod.POST, ADMIN_AUTH_V2 + GITHUB_CALLBACK).permitAll()
             .requestMatchers(HttpMethod.POST,

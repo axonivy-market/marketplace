@@ -51,7 +51,7 @@ export class AuthService {
   ) {
     const win = this.windowRef.nativeWindow;
     const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK);
-    this.githubOAuthCallbackUrl = (win?.location?.origin ?? '') + callbackPath;
+    this.githubOAuthCallbackUrl = `${win?.location?.origin ?? ''}${callbackPath}`;
   }
 
   redirectToGitHub(_originalUrl: string): void {
@@ -152,16 +152,20 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.adminAuthService.userInfo()?.id ?? null;
+    return this.currentUser()?.token ?? null;
   }
 
   getDisplayName(): string | null {
-    const userInfo = this.adminAuthService.userInfo() ?? this.adminAuthService.loadFromSessionStorage();
+    const userInfo = this.currentUser();
     return userInfo?.name || userInfo?.username || null;
   }
 
   getUserId(): string | null {
-    const userInfo = this.adminAuthService.userInfo() ?? this.adminAuthService.loadFromSessionStorage();
+    const userInfo = this.currentUser();
     return userInfo?.id ?? null;
+  }
+
+  private currentUser(): UserInfo | null {
+    return this.adminAuthService.userInfo() ?? this.adminAuthService.loadFromSessionStorage();
   }
 }

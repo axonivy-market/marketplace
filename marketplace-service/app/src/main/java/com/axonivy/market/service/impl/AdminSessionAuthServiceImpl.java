@@ -56,7 +56,6 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
 
     try {
       String accessToken = gitHubService.getAccessToken(callbackRequest.getCode(), gitHubProperty).getAccessToken();
-      log.error(callbackRequest.getCode());
       UserInfo authorizedGitHubUser = gitHubService.validateUserInOrganizationAndTeam(accessToken,
           GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
       GithubUser persistedUser = gitHubService.getAndUpdateUser(accessToken);

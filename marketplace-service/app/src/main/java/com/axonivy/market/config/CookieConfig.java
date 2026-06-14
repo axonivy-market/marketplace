@@ -12,7 +12,7 @@ import java.util.Locale;
 public class CookieConfig {
   @Bean
   public CookieSameSiteSupplier applicationCookieSameSiteSupplier(
-      @Value("${SESSION_COOKIE_SAME_SITE:Lax}") String sameSite) {
+      @Value("${SESSION_COOKIE_SAME_SITE:None}") String sameSite) {
     return CookieSameSiteSupplier.of(SameSite.valueOf(sameSite.toUpperCase(Locale.ROOT)));
   }
 }

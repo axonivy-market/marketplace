@@ -48,7 +48,6 @@ export class AdminAuthService {
     ).subscribe({
       complete: () => {
         this.clearToken();
-        this._userInfo.set(null);
       }
     });
   }
@@ -71,10 +70,14 @@ export class AdminAuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    return of(this.userInfo() !== null);
+    return of(this.currentUser() !== null);
   }
 
   csrfToken(): string | null {
     return this._csrfToken();
+  }
+
+  private currentUser(): UserInfo | null {
+    return this.userInfo() ?? this.loadFromSessionStorage();
   }
 }

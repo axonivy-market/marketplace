@@ -286,7 +286,7 @@ export class ProductDetailComponent implements AfterViewInit {
   private handlePopupLogic(): void {
     this.route.queryParams.subscribe(params => {
       this.showPopup = params['showPopup'] === 'true';
-      if (this.showPopup && this.authService.getToken()) {
+      if (this.showPopup && this.authService.getUserId()) {
         this.appModalService
           .openAddFeedbackDialog()
           .then(() => this.removeQueryParam())
@@ -591,7 +591,7 @@ export class ProductDetailComponent implements AfterViewInit {
 
   onClickRateBtn(): void {
     const productId = this.productDetailService.productId();
-    if (this.authService.getToken()) {
+    if (this.authService.getUserId()) {
       this.appModalService.openAddFeedbackDialog();
     } else {
       this.authService.redirectToGitHub(productId);
