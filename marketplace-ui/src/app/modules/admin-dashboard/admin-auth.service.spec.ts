@@ -9,6 +9,7 @@ import { AdminAuthService } from './admin-auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { UserInfo } from '../../auth/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 describe('AdminAuthService', () => {
   let service: AdminAuthService;
@@ -96,5 +97,65 @@ describe('AdminAuthService', () => {
     request.flush({});
 
     expect(service.userInfo()).toBeNull();
+  });
+
+  it('validates the session against the backend before allowing access', async () => {
+    session.getItem.mockReturnValue(
+      JSON.stringify({
+        id: 'fake-user',
+        token: null,
+        login: 'fake',
+        name: 'Fake',
+        avatarUrl: '',
+        url: ''
+      })
+    );
+
+    const resultPromise = firstValueFrom(service.isAuthenticated());
+
+    const request = httpMock.expectOne(API_URI.ADMIN_SESSION);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      id: 'user-1',
+      token: null,
+      login: 'octopus',
+      name: 'Octopus',
+      avatarUrl: '',
+      url: '',
+      hasPasskey: true
+    });
+
+    await expect(resultPromise).resolves.toBe(true);
+    expect(service.userInfo()).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        login: 'octopus'
+      })
+    );
+    expect(session.setItem).toHaveBeenCalledWith(
+      'admin-session-token',
+      expect.stringContaining('"user-1"')
+    );
+  });
+
+  it('clears local state when the backend session probe fails', async () => {
+    service.setUserInfo({
+      id: 'user-1',
+      token: null,
+      login: 'octopus',
+      name: 'Octopus',
+      avatarUrl: '',
+      url: ''
+    });
+
+    const resultPromise = firstValueFrom(service.isAuthenticated());
+
+    const request = httpMock.expectOne(API_URI.ADMIN_SESSION);
+    expect(request.request.method).toBe('GET');
+    request.flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+
+    await expect(resultPromise).resolves.toBe(false);
+    expect(service.userInfo()).toBeNull();
+    expect(session.removeItem).toHaveBeenCalledWith('admin-session-token');
   });
 });

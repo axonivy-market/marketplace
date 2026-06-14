@@ -25,6 +25,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.webauthn.api.AuthenticatorResponse;
 import org.springframework.security.web.webauthn.api.AuthenticatorAssertionResponse;
 import org.springframework.security.web.webauthn.api.AuthenticatorAttestationResponse;
+import org.springframework.security.web.webauthn.api.Bytes;
+import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity;
 import org.springframework.security.web.webauthn.api.PublicKeyCredential;
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialCreationOptions;
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialRequestOptions;
@@ -35,6 +37,7 @@ import org.springframework.security.web.webauthn.management.ImmutablePublicKeyCr
 import org.springframework.security.web.webauthn.management.ImmutableRelyingPartyRegistrationRequest;
 import org.springframework.security.web.webauthn.management.RelyingPartyAuthenticationRequest;
 import org.springframework.security.web.webauthn.management.RelyingPartyPublicKey;
+import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
 import org.springframework.security.web.webauthn.registration.PublicKeyCredentialCreationOptionsRepository;
 import org.springframework.stereotype.Service;
@@ -55,12 +58,14 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   private final PublicKeyCredentialCreationOptionsRepository creationOptionsRepository;
   private final PublicKeyCredentialRequestOptionsRepository requestOptionsRepository;
   private final GithubUserRepository githubUserRepository;
+  private final PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
   private final AdminAuthenticationSessionService adminAuthenticationSessionService;
   private final ObjectMapper objectMapper;
 
   @Override
   public Map<String, Object> beginRegistration(UserInfo currentUser, HttpServletRequest request, HttpServletResponse response) {
     GithubUser githubUser = requireGithubUser(currentUser == null ? null : currentUser.getId());
+    savePasskeyUserEntity(githubUser);
     Authentication authentication = createAdminAuthentication(githubUser.getUsername());
 
     PublicKeyCredentialCreationOptions options = webAuthnRelyingPartyOperations
@@ -179,6 +184,14 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
     if (credentialRequest == null || credentialRequest.getCredential() == null || credentialRequest.getCredential().isNull()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey credential payload");
     }
+  }
+
+  private void savePasskeyUserEntity(GithubUser githubUser) {
+    publicKeyCredentialUserEntityRepository.save(ImmutablePublicKeyCredentialUserEntity.builder()
+        .id(new Bytes(githubUser.getId().getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+        .name(githubUser.getUsername())
+        .displayName(StringUtils.defaultIfBlank(githubUser.getName(), githubUser.getUsername()))
+        .build());
   }
 
   private Map<String, Object> writeOptions(Object options) {

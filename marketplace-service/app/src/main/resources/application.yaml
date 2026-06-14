@@ -44,10 +44,6 @@ spring:
       enabled: 'true'
       max-file-size: 20MB
       max-request-size: 20MB
-  session:
-    store-type: jdbc
-    jdbc:
-      initialize-schema: never
   jackson:
     serialization:
       indent_output: 'true'

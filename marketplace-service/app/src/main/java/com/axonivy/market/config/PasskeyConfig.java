@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.security.web.webauthn.api.AttestationConveyancePreference;
 import org.springframework.security.web.webauthn.api.AuthenticatorSelectionCriteria;
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialCreationOptions;
@@ -19,6 +20,8 @@ import org.springframework.security.web.webauthn.api.UserVerificationRequirement
 import org.springframework.security.web.webauthn.authentication.HttpSessionPublicKeyCredentialRequestOptionsRepository;
 import org.springframework.security.web.webauthn.authentication.PublicKeyCredentialRequestOptionsRepository;
 import org.springframework.security.web.webauthn.jackson.WebauthnJackson2Module;
+import org.springframework.security.web.webauthn.management.JdbcPublicKeyCredentialUserEntityRepository;
+import org.springframework.security.web.webauthn.management.JdbcUserCredentialRepository;
 import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
 import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
@@ -72,6 +75,17 @@ public class PasskeyConfig {
     operations.setCustomizeCreationOptions(builder -> customizeCreationOptions(timeoutMs, builder));
     operations.setCustomizeRequestOptions(builder -> customizeRequestOptions(timeoutMs, builder));
     return operations;
+  }
+
+  @Bean
+  public PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository(
+      JdbcOperations jdbcOperations) {
+    return new JdbcPublicKeyCredentialUserEntityRepository(jdbcOperations);
+  }
+
+  @Bean
+  public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations) {
+    return new JdbcUserCredentialRepository(jdbcOperations);
   }
 
   @Bean

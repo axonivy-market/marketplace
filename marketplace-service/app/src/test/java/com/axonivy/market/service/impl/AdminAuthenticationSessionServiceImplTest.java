@@ -1,9 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.GithubUser;
-import com.axonivy.market.entity.PasskeyCredential;
 import com.axonivy.market.model.UserInfo;
-import com.axonivy.market.repository.PasskeyCredentialRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -15,7 +13,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.webauthn.api.Bytes;
+import org.springframework.security.web.webauthn.api.CredentialRecord;
+import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity;
+import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
+import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +36,9 @@ class AdminAuthenticationSessionServiceImplTest {
   @Mock
   private SecurityContextRepository securityContextRepository;
   @Mock
-  private PasskeyCredentialRepository passkeyCredentialRepository;
+  private PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
+  @Mock
+  private UserCredentialRepository userCredentialRepository;
   @Mock
   private HttpServletRequest request;
   @Mock
@@ -55,8 +62,14 @@ class AdminAuthenticationSessionServiceImplTest {
     githubUser.setName("Octopus");
     githubUser.setAvatarUrl("https://avatar");
 
-    when(passkeyCredentialRepository.findByGithubUserId("user-1"))
-        .thenReturn(Optional.of(new PasskeyCredential()));
+    when(publicKeyCredentialUserEntityRepository.findByUsername("octopus"))
+        .thenReturn(ImmutablePublicKeyCredentialUserEntity.builder()
+            .id(new Bytes("user-1".getBytes(StandardCharsets.UTF_8)))
+            .name("octopus")
+            .displayName("Octopus")
+            .build());
+    when(userCredentialRepository.findByUserId(new Bytes("user-1".getBytes(StandardCharsets.UTF_8))))
+        .thenReturn(List.of(org.mockito.Mockito.mock(CredentialRecord.class)));
 
     UserInfo result = service.createSession(githubUser, null, request, response);
 

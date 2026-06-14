@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { UserInfo } from '../../auth/auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
@@ -70,7 +70,14 @@ export class AdminAuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    return of(this.currentUser() !== null);
+    return this.httpClient.get<UserInfo>(API_URI.ADMIN_SESSION).pipe(
+      tap(userInfo => this.setUserInfo(userInfo)),
+      map(() => true),
+      catchError(() => {
+        this.clearToken();
+        return of(false);
+      })
+    );
   }
 
   csrfToken(): string | null {

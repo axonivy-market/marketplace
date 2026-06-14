@@ -24,6 +24,7 @@ export const API_URI = {
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   ADMIN_GITHUB_AUTHORIZATION: 'auth/admin/v2/github/authorization',
   ADMIN_GITHUB_CALLBACK: 'auth/admin/v2/github/callback',
+  ADMIN_SESSION: 'auth/admin/v2/session',
   ADMIN_PASSKEY_REGISTER_OPTIONS: 'auth/admin/v2/passkey/register/options',
   ADMIN_PASSKEY_REGISTER_COMPLETE: 'auth/admin/v2/passkey/register/complete',
   ADMIN_PASSKEY_AUTHENTICATE_OPTIONS: 'auth/admin/v2/passkey/authenticate/options',

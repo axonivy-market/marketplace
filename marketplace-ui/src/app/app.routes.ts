@@ -20,6 +20,7 @@ import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-manag
 import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
+import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 
 export const routes: Routes = [
   // OAuth callback
@@ -64,6 +65,7 @@ export const routes: Routes = [
   {
     path: 'internal-dashboard',
     component: AdminDashboardComponent,
+    canActivate: [AdminAuthGuard],
     children: [
       {
         path: 'security-monitor',

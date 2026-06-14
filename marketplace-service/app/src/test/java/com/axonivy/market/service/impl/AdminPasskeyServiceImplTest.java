@@ -27,6 +27,7 @@ import org.springframework.security.web.webauthn.api.PublicKeyCredentialRpEntity
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialUserEntity;
 import org.springframework.security.web.webauthn.jackson.WebauthnJackson2Module;
 import org.springframework.security.web.webauthn.management.PublicKeyCredentialRequestOptionsRequest;
+import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
 import org.springframework.security.web.webauthn.registration.PublicKeyCredentialCreationOptionsRepository;
 import org.springframework.security.web.webauthn.authentication.PublicKeyCredentialRequestOptionsRepository;
@@ -54,6 +55,8 @@ class AdminPasskeyServiceImplTest {
   @Mock
   private GithubUserRepository githubUserRepository;
   @Mock
+  private PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
+  @Mock
   private AdminAuthenticationSessionService adminAuthenticationSessionService;
   @Mock
   private HttpServletRequest request;
@@ -68,7 +71,8 @@ class AdminPasskeyServiceImplTest {
   @org.junit.jupiter.api.BeforeEach
   void setUp() {
     service = new AdminPasskeyServiceImpl(webAuthnRelyingPartyOperations, creationOptionsRepository,
-        requestOptionsRepository, githubUserRepository, adminAuthenticationSessionService, objectMapper);
+        requestOptionsRepository, githubUserRepository, publicKeyCredentialUserEntityRepository,
+        adminAuthenticationSessionService, objectMapper);
   }
 
   @AfterEach
@@ -109,6 +113,7 @@ class AdminPasskeyServiceImplTest {
 
     assertNotNull(result);
     assertNotNull(result.get("challenge"));
+    verify(publicKeyCredentialUserEntityRepository).save(any());
     verify(creationOptionsRepository).save(request, response, options);
   }
 
