@@ -247,12 +247,12 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   private AlternativeExtensionData getSuccessorAndAlternativeExtensionForAction(
       ProductMarketplaceData productMarketplaceData, DeprecationRequest request) {
-//    if (request.getPullRequestAction() == PullRequestAction.REMOVE) {
-//      return AlternativeExtensionData.builder()
-//          .alternativeExtension(productMarketplaceData.getAlternativeExtension())
-//          .successorUrl(productMarketplaceData.getSuccessor())
-//          .build();
-//    }
+    if (request.getPullRequestAction() == PullRequestAction.REMOVE) {
+      return AlternativeExtensionData.builder()
+          .alternativeExtension(productMarketplaceData.getAlternativeExtension())
+          .successorUrl(productMarketplaceData.getSuccessor())
+          .build();
+    }
     return AlternativeExtensionData.builder()
         .alternativeExtension(request.getAlternativeExtension())
         .successorUrl(request.getSuccessorUrl())

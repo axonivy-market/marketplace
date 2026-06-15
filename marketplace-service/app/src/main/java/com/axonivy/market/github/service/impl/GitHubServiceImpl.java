@@ -618,7 +618,17 @@ public class GitHubServiceImpl implements GitHubService {
         .stream().findFirst().orElse(null);
 
     if (existingPR != null) {
-      log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      // If the existing PR has a different title (e.g., REMOVE vs ADD), update it with new content
+      if (!existingPR.getTitle().equals(pullRequestData.title)) {
+        log.info("Existing PR '{}' has different action, updating with new content", existingPR.getHtmlUrl());
+        // Fetch README from the unsupported branch (not base) to get correct SHA for update
+        GHContent branchReadme = repository.getFileContent(README_FILE_PATH, unsupportedBranchName);
+        branchReadme.update(pullRequestData.updatedReadmeContent, pullRequestData.title, unsupportedBranchName);
+        existingPR.setTitle(pullRequestData.title);
+        existingPR.setBody(pullRequestData.body);
+      } else {
+        log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      }
       return existingPR;
     }
     GHCompare compare = repository.getCompare(baseBranch, unsupportedBranchName);
@@ -729,11 +739,6 @@ public class GitHubServiceImpl implements GitHubService {
    * Returns original content when the notice does not exist.
    */
   private String removeUnsupportedNotice(String readmeContent, String notice) {
-    // First try exact match
-    if (readmeContent.contains(notice.trim())) {
-      return readmeContent.replace(notice, EMPTY);
-    }
-
     // If exact match fails, use regex to match the deprecation block structure
     // Match from "> [!CAUTION]" through all consecutive blockquote lines (starting with ">")
     // including the optional "Recommended alternative" line with any URL

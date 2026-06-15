@@ -1040,6 +1040,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequest existingPr = mock(GHPullRequest.class);
     when(existingPr.getHtmlUrl())
         .thenReturn(URI.create("https://example.com/pr/1").toURL());
+    when(existingPr.getTitle()).thenReturn("Add unsupported notice to README");
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
