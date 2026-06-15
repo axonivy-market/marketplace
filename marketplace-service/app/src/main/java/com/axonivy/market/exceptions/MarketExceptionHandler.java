@@ -5,6 +5,7 @@ import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
 import com.axonivy.market.exceptions.model.ArchiveNotAllowedException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MarketException;
@@ -143,5 +144,14 @@ public class MarketExceptionHandler {
     errorMessage.setHelpCode(archiveNotAllowedException.getCode());
     errorMessage.setMessageDetails(archiveNotAllowedException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(UnarchiveFailedException.class)
+  public ResponseEntity<Object> handleUnarchiveFailedException(
+      UnarchiveFailedException unarchiveFailedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(unarchiveFailedException.getCode());
+    errorMessage.setMessageDetails(unarchiveFailedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

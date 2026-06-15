@@ -1,0 +1,26 @@
+package com.axonivy.market.exceptions.model;
+
+import com.axonivy.market.core.enums.ErrorCode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serial;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class UnarchiveFailedException extends RuntimeException {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
+
+  private final String code;
+  private final String message;
+
+  public UnarchiveFailedException(ErrorCode errorCode, String additionalMessage) {
+    this.code = errorCode.getCode();
+    this.message = additionalMessage;
+  }
+}
+

@@ -13,6 +13,7 @@ import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
@@ -1408,7 +1409,7 @@ class GitHubServiceImplTest extends BaseSetup {
   void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
     okhttp3.Call mockCall = setupUnarchiveCall(403, "Forbidden");
 
-    gitHubService.unArchivedTheRepository("org/repo");
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"));
 
     verify(okHttpClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
@@ -1422,7 +1423,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
     when(mockCall.execute()).thenThrow(new IOException("Network error"));
 
-    gitHubService.unArchivedTheRepository("org/repo");
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"));
 
     verify(okHttpClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();

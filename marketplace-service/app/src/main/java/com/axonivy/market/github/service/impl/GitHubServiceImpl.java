@@ -14,6 +14,7 @@ import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
@@ -594,12 +595,14 @@ public class GitHubServiceImpl implements GitHubService {
 
     try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
       if (!response.isSuccessful()) {
-        log.error("Failed to unarchive repository: {} {}", response.code(), response.message());
-        return;
+        throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
+            String.format("Failed to unarchive repository '%s': %d %s", repoPath, response.code(),
+                response.message()));
       }
       log.info("Repository '{}' has been unarchived successfully.", repoPath);
     } catch (IOException e) {
-      log.error("Error unarchiving repository: {}", repoPath, e);
+      throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
+          String.format("Error unarchiving repository '%s': %s", repoPath, e.getMessage()));
     }
   }
 
@@ -744,12 +747,12 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private record GitHubUnsupportedText(
-          String deprecatedMessage,
-          String removeUnsupportedNoticeMessage,
-          String unsupportedBranchName,
-          String removeUnsupportedNoticePrBody,
-          String addUnsupportedNoticePrBody,
-          String unsupportedNotice
+      String deprecatedMessage,
+      String removeUnsupportedNoticeMessage,
+      String unsupportedBranchName,
+      String removeUnsupportedNoticePrBody,
+      String addUnsupportedNoticePrBody,
+      String unsupportedNotice
   ) {
   }
 

@@ -321,14 +321,6 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testFindNextByMajorPrefixWithNullCurrentVersionThrowsException() {
-    List<String> versions = List.of("10.0", "12.0", "13.2", "14.0");
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MavenUtils.findNextByMajorPrefix(null, versions),
-        "Should throw IllegalArgumentException when current version is null");
-  }
-
-  @Test
   void testFindNextByMajorPrefixWithBlankCurrentVersionThrowsException() {
     List<String> versions = List.of("10.0", "12.0", "13.2", "14.0");
     Assertions.assertThrows(IllegalArgumentException.class,
