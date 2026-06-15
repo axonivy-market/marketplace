@@ -99,6 +99,17 @@ public class GitHubServiceImpl implements GitHubService {
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String MULTILINE_START = "(?m)^";
+  /**
+   * Regex suffix that matches the remainder of a blockquote block:
+   * captures the rest of the first line, then continues matching consecutive lines starting with ">".
+   */
+  private static final String BLOCKQUOTE_LINES_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*";
+  /**
+   * Same as {@link #BLOCKQUOTE_LINES_PATTERN} but also consumes any trailing whitespace/blank lines
+   * after the block, useful for clean removal without leaving extra empty lines.
+   */
+  private static final String BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
   private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
   private final RestTemplate restTemplate;
@@ -718,7 +729,7 @@ public class GitHubServiceImpl implements GitHubService {
    * Returns the matched block text, or null if not found.
    */
   private String extractExistingDeprecationBlock(String readmeContent, String noticePrefix) {
-    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*";
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_PATTERN;
     Matcher matcher = Pattern.compile(regex).matcher(readmeContent);
     return matcher.find() ? matcher.group() : null;
   }
@@ -728,7 +739,7 @@ public class GitHubServiceImpl implements GitHubService {
    * Matches from the notice prefix through all consecutive blockquote lines.
    */
   private String removeExistingDeprecationBlock(String readmeContent, String noticePrefix) {
-    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
     return readmeContent.replaceFirst(regex, EMPTY);
   }
 
@@ -749,9 +760,7 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     // Build a regex that matches the full deprecation block:
-    // starts with "> [!CAUTION]" and continues through all lines starting with ">"
-    // followed by optional trailing blank lines
-    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
     return readmeContent.replaceFirst(regex, EMPTY);
   }
 
