@@ -675,19 +675,21 @@ public class GitHubServiceImpl implements GitHubService {
   /**
    * Inserts the unsupported notice right below the first Markdown heading.
    * - Keeps original newline style (CRLF/LF).
-   * - Returns original content when the exact notice already exists.
-   * - If an older/different deprecation notice exists, removes it first then adds the new one.
+   * - Returns original content when the notice already exists.
    * - Fails fast when README has no heading line.
    */
   private String addUnsupportedNotice(String readmeContent, String notice) {
-    if (readmeContent.contains(notice.trim())) {
-      return readmeContent;
-    }
-
-    // If there's already a different deprecation notice, remove it first
     String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
         getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
+
+    // If there's already a deprecation block, check if it's identical to the new notice
     if (readmeContent.contains(noticePrefix)) {
+      // Case: When we deprecate a repository at 2nd times, but not yet to remove deprecated items from PR
+      String existingBlock = extractExistingDeprecationBlock(readmeContent, noticePrefix);
+      if (existingBlock != null && existingBlock.trim().equals(notice.trim())) {
+        return readmeContent;
+      }
+      // Different notice exists — remove the old one first
       readmeContent = removeExistingDeprecationBlock(readmeContent, noticePrefix);
     }
 
@@ -699,6 +701,16 @@ public class GitHubServiceImpl implements GitHubService {
       return matcher.replaceFirst(Matcher.quoteReplacement(replacement));
     }
     throw new IllegalArgumentException("README.md must contain a heading line starting with '#'");
+  }
+
+  /**
+   * Extracts the existing deprecation block from the README content.
+   * Returns the matched block text, or null if not found.
+   */
+  private String extractExistingDeprecationBlock(String readmeContent, String noticePrefix) {
+    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*";
+    Matcher matcher = Pattern.compile(regex).matcher(readmeContent);
+    return matcher.find() ? matcher.group() : null;
   }
 
   /**
@@ -723,13 +735,19 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     // If exact match fails, use regex to match the deprecation block structure
+    // Match from "> [!CAUTION]" through all consecutive blockquote lines (starting with ">")
+    // including the optional "Recommended alternative" line with any URL
     String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
         getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
     if (!readmeContent.contains(noticePrefix)) {
       return readmeContent;
     }
 
-    return removeExistingDeprecationBlock(readmeContent, noticePrefix);
+    // Build a regex that matches the full deprecation block:
+    // starts with "> [!CAUTION]" and continues through all lines starting with ">"
+    // followed by optional trailing blank lines
+    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
+    return readmeContent.replaceFirst(regex, EMPTY);
   }
 
   /**

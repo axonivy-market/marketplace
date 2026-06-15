@@ -317,6 +317,12 @@ export class DeprecationManagementComponent implements OnInit {
       this.isClosingArchiveDialog = false;
       this.archiveTargetRow = null;
       row.isArchived = !row.isArchived;
+
+      // Show success dialog
+      this.successMode = action === ArchiveAction.ARCHIVE ? DeprecationMode.ARCHIVE : DeprecationMode.UNARCHIVE;
+      this.successPullRequestUrl = null;
+      this.isCopySuccessVisible = false;
+      this.showSuccessDialog = true;
     } catch (error) {
       this.archiveErrorMessage = this.extractErrorMessage(error);
     } finally {

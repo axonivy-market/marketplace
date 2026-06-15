@@ -525,7 +525,9 @@
         "confirmArchiveTitle": "Archive confirmation",
         "confirmUnarchiveTitle": "Unarchive confirmation",
         "confirmArchiveContent": "Are you sure you want to archive the GitHub repository for this extension?",
-        "confirmUnarchiveContent": "Are you sure you want to unarchive the GitHub repository for this extension?"
+        "confirmUnarchiveContent": "Are you sure you want to unarchive the GitHub repository for this extension?",
+        "archiveSuccess": "Extension has been archived successfully!",
+        "unarchiveSuccess": "Extension has been unarchived successfully!"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

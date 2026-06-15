@@ -524,7 +524,9 @@
         "confirmArchiveTitle": "Archivierung bestätigen",
         "confirmUnarchiveTitle": "Dearchivierung bestätigen",
         "confirmArchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung archivieren möchten?",
-        "confirmUnarchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung dearchivieren möchten?"
+        "confirmUnarchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung dearchivieren möchten?",
+        "archiveSuccess": "Erweiterung wurde erfolgreich archiviert!",
+        "unarchiveSuccess": "Erweiterung wurde erfolgreich dearchiviert!"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
