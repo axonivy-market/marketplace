@@ -51,7 +51,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existing = SyncTaskExecution.builder().type(type).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existing));
-    when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
@@ -118,7 +118,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existingExecution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.SUCCESS).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existingExecution));
-    when(repo.save(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class, type));
+    when(repo.saveAndFlush(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class, type));
 
     assertThrows(SyncTaskInProgressException.class,
         () -> service.start(type),

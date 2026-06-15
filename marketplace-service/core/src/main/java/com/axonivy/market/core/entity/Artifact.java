@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Transient;
+import jakarta.persistence.Transient;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -36,12 +36,14 @@ public class Artifact extends GenericIdEntity {
   private String artifactId;
   private String type;
   private Boolean isDependency;
-  @Transient
-  private Boolean isProductArtifact;
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private Set<ArchivedArtifact> archivedArtifacts;
   private Boolean doc;
   private boolean isInvalidArtifact;
+  
+  @Transient
+  private Boolean isProductArtifact;
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private Set<ArchivedArtifact> archivedArtifacts;
 
   @Override
   public boolean equals(Object o) {
