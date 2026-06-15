@@ -1409,7 +1409,8 @@ class GitHubServiceImplTest extends BaseSetup {
   void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
     okhttp3.Call mockCall = setupUnarchiveCall(403, "Forbidden");
 
-    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"));
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
+        "Expected UnarchiveFailedException when GitHub API returns a non-successful response");
 
     verify(okHttpClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
@@ -1423,7 +1424,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
     when(mockCall.execute()).thenThrow(new IOException("Network error"));
 
-    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"));
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
+        "Expected UnarchiveFailedException when an IOException occurs during the unarchive request");
 
     verify(okHttpClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
