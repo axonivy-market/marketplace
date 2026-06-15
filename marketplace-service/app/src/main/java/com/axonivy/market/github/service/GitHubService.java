@@ -362,8 +362,8 @@ public interface GitHubService {
    * </p>
    *
    * @param repoPath type {@link String} - the repository path (format: "owner/repo")
-   * @return {@code true} if the README does NOT contain the deprecation warning (archive not allowed),
-   *         {@code false} if the README contains the deprecation warning (archive allowed)
+   * @return {@code true} if the README contains the deprecation warning (archive allowed),
+   *         {@code false} if the README does NOT contain the deprecation warning (archive not allowed)
    * @throws IOException - if GitHub API call fails or README cannot be read
    * @author tvtphuc
    */

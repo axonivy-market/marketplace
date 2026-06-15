@@ -1442,7 +1442,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
     okhttp3.Call mockCall = mock(okhttp3.Call.class);
     okhttp3.Response mockResponse = new okhttp3.Response.Builder()
-        .request(new okhttp3.Request.Builder().url("https://api.github.com/repos/org/repo").build())
+        .request(new okhttp3.Request.Builder().url(Url.REPOS_BASE_URL + "org/repo").build())
         .protocol(okhttp3.Protocol.HTTP_1_1)
         .code(code)
         .message(message)

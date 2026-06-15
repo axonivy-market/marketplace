@@ -11,17 +11,14 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static com.axonivy.market.rest.axonivy.AxonIvyClientConstant.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AxonIvyClient {
 
-  private static final String DOCUMENT_VERSION_PATH = "/api/docs/Axon-Ivy-Platform/dev/en";
-  private static final String HOST_PATH_FORMAT = "%s%s";
-  private static final String DEV_VERSION = "dev";
-  private static final Pattern VERSION_FROM_URL_PATTERN = Pattern.compile("/doc/([\\d.]+)/");
   @Value("${axon.ivy.developer.url}")
   private String host;
 

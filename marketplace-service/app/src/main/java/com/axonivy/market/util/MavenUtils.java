@@ -352,10 +352,6 @@ public class MavenUtils {
   }
 
   private static int extractMajorPrefix(String version) {
-    if (version == null || version.isBlank()) {
-      throw new IllegalArgumentException("Version must not be blank");
-    }
-
     String majorPart = version.split("\\.")[0];
     return Integer.parseInt(majorPart);
   }

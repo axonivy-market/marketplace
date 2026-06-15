@@ -581,7 +581,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void unArchivedTheRepository(String repoPath) {
-    String url = "https://api.github.com/repos/" + repoPath;
+    String url = Url.REPOS_BASE_URL + repoPath;
     okhttp3.RequestBody body = okhttp3.RequestBody.create(
         "{\"archived\": false}",
         okhttp3.MediaType.parse("application/json")
@@ -589,7 +589,7 @@ public class GitHubServiceImpl implements GitHubService {
     okhttp3.Request request = new okhttp3.Request.Builder()
         .url(url)
         .patch(body)
-        .addHeader("Authorization", "Bearer " + gitHubProperty.getToken())
+        .addHeader(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + gitHubProperty.getToken())
         .build();
 
     try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
@@ -722,7 +722,7 @@ public class GitHubServiceImpl implements GitHubService {
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
       GitHubUnsupportedText config, AlternativeExtensionData extensionData) {
 
-    String unsupportedNotices = String.format(config.unsupportedNotice, extensionData.getDeprecatedVersionFrom());
+    String unsupportedNotices = String.format(config.unsupportedNotice(), extensionData.getDeprecatedVersionFrom());
     if (StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
       unsupportedNotices += String.format(ALTERNATIVE_EXTENSION_FORMAT,
           extensionData.getAlternativeExtension(), extensionData.getSuccessorUrl());
