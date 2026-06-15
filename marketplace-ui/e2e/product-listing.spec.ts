@@ -3,7 +3,7 @@ import { setupApiMocks, setupEmptyProductsMock } from './mock/api.mock';
 import { PRODUCTS_PAGE } from './mock/products.mock';
 import { ProductListingPage } from './page-objects/ProductListingPage';
 
-test.describe('Product listing page', () => {
+test.describe(() => {
   test('renders products in a real browser', async ({ page }) => {
     await setupApiMocks(page);
     const listing = new ProductListingPage(page);

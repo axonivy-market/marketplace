@@ -61,7 +61,7 @@
     "@angular/cli": "^21.2.0",
     "@angular/compiler-cli": "21.2.13",
     "@angular/localize": "21.2.13",
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.60.0",
     "@types/bootstrap": "^5.2.10",
     "@types/express": "^4.17.25",
     "@types/markdown-it": "^14.1.2",
