@@ -675,13 +675,22 @@ public class GitHubServiceImpl implements GitHubService {
   /**
    * Inserts the unsupported notice right below the first Markdown heading.
    * - Keeps original newline style (CRLF/LF).
-   * - Returns original content when the notice already exists.
+   * - Returns original content when the exact notice already exists.
+   * - If an older/different deprecation notice exists, removes it first then adds the new one.
    * - Fails fast when README has no heading line.
    */
   private String addUnsupportedNotice(String readmeContent, String notice) {
     if (readmeContent.contains(notice.trim())) {
       return readmeContent;
     }
+
+    // If there's already a different deprecation notice, remove it first
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
+        getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
+    if (readmeContent.contains(noticePrefix)) {
+      readmeContent = removeExistingDeprecationBlock(readmeContent, noticePrefix);
+    }
+
     String lineSeparator = readmeContent.contains(CRLF) ? CRLF : LF;
     Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
     if (matcher.find()) {
@@ -693,14 +702,34 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
+   * Removes an existing deprecation block from the README content using regex.
+   * Matches from the notice prefix through all consecutive blockquote lines.
+   */
+  private String removeExistingDeprecationBlock(String readmeContent, String noticePrefix) {
+    String regex = "(?m)^" + Pattern.quote(noticePrefix) + "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
+    return readmeContent.replaceFirst(regex, EMPTY);
+  }
+
+  /**
    * Removes the unsupported notice when present.
+   * Uses pattern matching to handle cases where the URL in the README
+   * may differ from the one constructed at removal time.
    * Returns original content when the notice does not exist.
    */
   private String removeUnsupportedNotice(String readmeContent, String notice) {
-    if (!readmeContent.contains(notice.trim())) {
+    // First try exact match
+    if (readmeContent.contains(notice.trim())) {
+      return readmeContent.replace(notice, EMPTY);
+    }
+
+    // If exact match fails, use regex to match the deprecation block structure
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
+        getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
+    if (!readmeContent.contains(noticePrefix)) {
       return readmeContent;
     }
-    return readmeContent.replace(notice, EMPTY);
+
+    return removeExistingDeprecationBlock(readmeContent, noticePrefix);
   }
 
   /**
