@@ -198,4 +198,25 @@ class MarketExceptionHandlerTest {
     assertEquals("Release letter already exists", body.getMessageDetails(),
         "Message details in response do not match AlreadyExistedException message");
   }
+
+  @Test
+  void testHandleArchiveNotAllowedException() {
+    ArchiveNotAllowedException exception = mock(ArchiveNotAllowedException.class);
+
+    when(exception.getCode()).thenReturn("ARCHIVE_NOT_ALLOWED");
+    when(exception.getMessage()).thenReturn("Repository still has open pull requests");
+
+    ResponseEntity<Object> response = exceptionHandler.handleArchiveNotAllowedException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for ArchiveNotAllowedException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for ArchiveNotAllowedException");
+
+    assertEquals("ARCHIVE_NOT_ALLOWED", body.getHelpCode(),
+        "Help code in response does not match ArchiveNotAllowedException code");
+    assertEquals("Repository still has open pull requests", body.getMessageDetails(),
+        "Message details in response do not match ArchiveNotAllowedException message");
+  }
 }
