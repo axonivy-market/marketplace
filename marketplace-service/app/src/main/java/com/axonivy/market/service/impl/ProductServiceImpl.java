@@ -34,6 +34,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -613,6 +614,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return versions.contains(version) ? version : VersionFactory.get(versions, version);
+  }
+
+  @Override
+  public Product updateProduct(String id, UpdateProductRequest request) {
+    Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+        "Product not found with id: " + id));
+    product.setInternal(request.getInternal());
+    return productRepo.save(product);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {

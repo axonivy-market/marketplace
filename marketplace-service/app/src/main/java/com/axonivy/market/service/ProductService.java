@@ -2,6 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -224,4 +225,12 @@ public interface ProductService {
    * @author pvquan
    */
   String getBestMatchVersion(String productId, String version, Boolean isShowDevVersion);
+
+  /**
+   * Updates product's mutable properties via API request.
+   * @param id product id
+   * @param request update request payload
+   * @return updated Product
+   */
+  Product updateProduct(String id, UpdateProductRequest request);
 }

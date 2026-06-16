@@ -109,6 +109,7 @@ public class ProductDetailModel extends ProductModel {
     model.setIndustry(product.getIndustry());
     model.setContactUs(product.getContactUs());
     model.setDeprecated(product.getDeprecated());
+    model.setInternal(product.getInternal());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());

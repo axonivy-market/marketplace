@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -182,5 +183,14 @@ public class ProductController {
           "Nothing to sync");
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
+  }
+
+  @Authorized
+  @Operation(hidden = true)
+  @PutMapping(ID)
+  public ResponseEntity<Product> updateProduct(@PathVariable String id,
+      @RequestBody com.axonivy.market.model.UpdateProductRequest request) {
+    Product updated = productService.updateProduct(id, request);
+    return ResponseEntity.ok(updated);
   }
 }

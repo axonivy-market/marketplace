@@ -296,6 +296,8 @@ export const BEARER = 'Bearer';
 export const AUTHORIZATION_HEADER = 'Authorization';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
+export const DARK_INTERNAL_BADGE_URL = '/assets/images/misc/dark-internal-badge.png';
+export const LIGHT_INTERNAL_BADGE_URL = '/assets/images/misc/light-internal-badge.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
 export const SEARCH_URL = 'https://developer.axonivy.com/search';
 export const GITHUB_MARKET_ORG_URL = 'https://github.com/axonivy-market';
