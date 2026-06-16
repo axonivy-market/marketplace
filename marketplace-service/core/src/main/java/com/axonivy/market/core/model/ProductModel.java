@@ -45,7 +45,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   private String marketDirectory;
   @Schema(description = "Whether the product is deprecated", example = "true")
   private Boolean deprecated;
-  @Schema(description = "Whether the product is internal to the marketplace (not publicly listed)", example = "false")
+  @Schema(description = "Whether the product is developed from Ivy", example = "false")
   private Boolean internal;
 
   @Override

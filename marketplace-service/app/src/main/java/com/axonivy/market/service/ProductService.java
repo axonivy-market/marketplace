@@ -227,10 +227,17 @@ public interface ProductService {
   String getBestMatchVersion(String productId, String version, Boolean isShowDevVersion);
 
   /**
-   * Updates product's mutable properties via API request.
-   * @param id product id
-   * @param request update request payload
-   * @return updated Product
+   * <p>
+   * Updates a product's information based on the provided update request. Modifies product metadata,
+   * versions, artifacts, and other details according to the fields specified in the UpdateProductRequest.
+   * </p>
+   *
+   * @param  id
+   *              type {@link String} - the unique product identifier to update
+   * @param  request
+   *              type {@link UpdateProductRequest} - the request object containing updated product information
+   * @return {@link Product} - the updated product object with new data; throws exception if product not found.
+   * @author pvquan
    */
   Product updateProduct(String id, UpdateProductRequest request);
 }

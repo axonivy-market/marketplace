@@ -188,9 +188,16 @@ public class ProductController {
   @Authorized
   @Operation(hidden = true)
   @PutMapping(ID)
-  public ResponseEntity<Product> updateProduct(@PathVariable String id,
+  public ResponseEntity<Message> updateProduct(@PathVariable String id,
       @RequestBody com.axonivy.market.model.UpdateProductRequest request) {
     Product updated = productService.updateProduct(id, request);
-    return ResponseEntity.ok(updated);
+    if (updated == null) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
+          "Product with id " + id + " not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Product with id " + id + " updated successfully");
+    return ResponseEntity.status(HttpStatus.OK).body(message);
   }
 }

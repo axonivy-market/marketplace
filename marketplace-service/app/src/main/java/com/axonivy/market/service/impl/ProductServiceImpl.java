@@ -229,14 +229,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
           EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
-        productId = productList.get(0).getId();
+        productId = productList.getFirst().getId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
       }
     } else {
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
-        var currentImage = images.get(0);
+        var currentImage = images.getFirst();
         productId = currentImage.getProductId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
@@ -417,7 +417,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     try {
       if (!CollectionUtils.isEmpty(gitHubTags)) {
         List<GHTag> sortedTags = sortByTagCommitDate(gitHubTags);
-        GHCommit commit = sortedTags.get(0).getCommit();
+        GHCommit commit = sortedTags.getFirst().getCommit();
         if (commit != null) {
           firstTagPublishedDate = commit.getCommitDate();
         }
@@ -620,7 +620,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public Product updateProduct(String id, UpdateProductRequest request) {
     Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
         "Product not found with id: " + id));
-    product.setInternal(request.getInternal());
+    if (request.getInternal() != null) {
+      product.setInternal(request.getInternal());
+    }
+
     return productRepo.save(product);
   }
 
