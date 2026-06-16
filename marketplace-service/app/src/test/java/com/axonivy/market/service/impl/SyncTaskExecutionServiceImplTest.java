@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +51,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existing = SyncTaskExecution.builder().type(type).build();
     when(repo.findByType(type)).thenReturn(Optional.of(existing));
-    when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
     assertEquals(type, result.getType(), "Type should match the input type");
@@ -110,6 +111,28 @@ class SyncTaskExecutionServiceImplTest {
 
     assertThrows(DataIntegrityViolationException.class,
         () -> service.start(type), "Should rethrow DataIntegrityViolationException when no row can be re-read");
+  }
+
+  @Test
+  void testStartThrowsSyncTaskInProgressExceptionWhenRestartCollidesWithConcurrentUpdate() {
+    SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
+    SyncTaskExecution existingExecution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.SUCCESS).build();
+    when(repo.findByType(type)).thenReturn(Optional.of(existingExecution));
+    when(repo.saveAndFlush(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class, type));
+
+    assertThrows(SyncTaskInProgressException.class,
+        () -> service.start(type),
+        "Should throw SyncTaskInProgressException when another node updates the row concurrently during restart");
+  }
+
+  @Test
+  void testMarkStatusSuccessDoesNotThrowWhenConcurrentUpdateDetected() {
+    SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
+    when(repo.save(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class,
+        SyncTaskType.SYNC_PRODUCTS));
+
+    assertDoesNotThrow(() -> service.markStatusSuccess(execution, MESSAGE),
+        "Should silently skip status update when optimistic lock conflict is detected");
   }
 
   @Test

@@ -1,24 +1,45 @@
 package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.converter.StringListConverter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.Transient;
+import static com.axonivy.market.core.constants.CoreEntityConstants.LANGUAGE;
+import static com.axonivy.market.core.constants.CoreEntityConstants.NAME;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_ID;
+import static com.axonivy.market.core.constants.CoreEntityConstants.PRODUCT_NAME;
+import static com.axonivy.market.core.constants.CoreEntityConstants.SHORT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
 
 import java.io.Serial;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.core.constants.CoreEntityConstants.*;
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import com.axonivy.market.core.converter.StringListConverter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -32,8 +53,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private static final long serialVersionUID = 1;
 
   @Id
-  private String id;
-  private String marketDirectory;
+  private String id;  
 
   @JsonProperty
   @ElementCollection
@@ -58,8 +78,9 @@ public class Product extends AbstractAuditableEntity<String> {
   private List<String> releasedVersions;
 
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<Artifact> artifacts;
-
+  private List<Artifact> artifacts;  
+  
+  private String marketDirectory;
   private String logoUrl;
   private Boolean listed;
   private Boolean deprecated;
@@ -67,11 +88,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private String type;
   private String vendor;
   private String vendorUrl;
-  private String version;
-  @Transient
-  private String vendorImagePath;
-  @Transient
-  private String vendorImageDarkModePath;
+  private String version;  
   private String vendorImage;
   private String vendorImageDarkMode;
   private String platformReview;
@@ -83,17 +100,23 @@ public class Product extends AbstractAuditableEntity<String> {
   private String industry;
   private Boolean validate;
   private Boolean contactUs;
-  @Transient
-  private int installationCount;
   private Date newestPublishedDate;
   private Date firstPublishedDate;
   private String newestReleaseVersion;
+  private Boolean synchronizedInstallationCount;
+  private String logoId;
+  private String logoDarkId;
+  
+  @Transient
+  private String vendorImagePath;
+  @Transient
+  private String vendorImageDarkModePath;
+  @Transient
+  private int installationCount;
   @Transient
   private ProductModuleContent productModuleContent;
-  private Boolean synchronizedInstallationCount;
   @Transient
   private String metaProductJsonUrl;
-  private String logoId;
   @Transient
   private String bestMatchVersion;
   @Transient
