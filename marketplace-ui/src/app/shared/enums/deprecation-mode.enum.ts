@@ -1,5 +1,7 @@
 export enum DeprecationMode {
   DEPRECATE = 'deprecate',
-  UNDEPRECATE = 'undeprecate'
+  UNDEPRECATE = 'undeprecate',
+  ARCHIVE = 'archive',
+  UNARCHIVE = 'unarchive'
 }
 

@@ -4,7 +4,9 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.model.DeprecationRequest;
+import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -25,6 +27,8 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class ProductMarketplaceDataControllerTest extends BaseSetup {
@@ -156,6 +160,53 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     verify(productMarketplaceDataService).updateSuccessorForProduct(productId, request);
   }
 
+  @Test
+  void testArchiveRepository() throws IOException {
+    String productId = "cms-live-editor";
+    doNothing().when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+
+    ResponseEntity<Message> response =
+        productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(response.hasBody(), "Response body should not be null");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Help code should match SUCCESSFUL");
+    assertEquals("Repository archived successfully", response.getBody().getMessageDetails(),
+        "Message details should indicate archive success");
+    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+  }
+
+  @Test
+  void testUnarchiveRepository() throws IOException {
+    String productId = "cms-live-editor";
+    doNothing().when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
+
+    ResponseEntity<Message> response =
+        productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
+    assertTrue(response.hasBody(), "Response body should not be null");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Help code should match SUCCESSFUL");
+    assertEquals("Repository unarchived successfully", response.getBody().getMessageDetails(),
+        "Message details should indicate unarchive success");
+    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
+  }
+
+  @Test
+  void testArchiveRepositoryThrowsIOException() throws IOException {
+    String productId = "cms-live-editor";
+    doThrow(new IOException("mock IO error"))
+        .when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+
+    assertThrows(IOException.class,
+        () -> productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE),
+        "Expected IOException to propagate from service");
+
+    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+  }
+
   private ProductCustomSortRequest createProductCustomSortRequestMock() {
     List<String> productIds = new ArrayList<>();
     productIds.add("a-trust");
@@ -183,6 +234,11 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
       @Override
       public Boolean getDeprecated() {
+        return null;
+      }
+
+      @Override
+      public Boolean getIsArchived() {
         return null;
       }
 

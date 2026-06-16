@@ -8,6 +8,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @TestPropertySource("classpath:application-test.properties")
@@ -20,5 +21,13 @@ class AxonIvyClientTest {
   void testGetDocumentVersions() {
     List<String> versions = axonIvyClient.getDocumentVersions();
     assertFalse(versions.isEmpty(), "Expected to fetch at least one document");
+  }
+
+  @Test
+  void testGetAllVersions() {
+    List<String> versions = axonIvyClient.getAllVersions();
+    assertFalse(versions.isEmpty(), "Expected to fetch at least one version");
+    assertTrue(versions.stream().noneMatch("dev"::equalsIgnoreCase),
+        "Dev version should be resolved to actual version number");
   }
 }

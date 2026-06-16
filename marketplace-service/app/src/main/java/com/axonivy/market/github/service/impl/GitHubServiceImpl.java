@@ -14,6 +14,7 @@ import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
@@ -22,6 +23,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
@@ -80,7 +82,7 @@ import java.util.stream.Collectors;
 import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
-import static com.axonivy.market.enums.PullRequestAction.REMOVE;
+import static com.axonivy.market.enums.PullRequestAction.*;
 import static org.apache.commons.lang3.StringUtils.*;
 
 
@@ -91,9 +93,24 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+  private static final String ALTERNATIVE_EXTENSION_FORMAT = """
+   > **Recommended alternative:** [%s](%s)
+   """;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String MULTILINE_START = "(?m)^";
+  /**
+   * Regex suffix that matches the remainder of a blockquote block:
+   * captures the rest of the first line, then continues matching consecutive lines starting with ">".
+   */
+  private static final String BLOCKQUOTE_LINES_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*";
+  /**
+   * Same as {@link #BLOCKQUOTE_LINES_PATTERN} but also consumes any trailing whitespace/blank lines
+   * after the block, useful for clean removal without leaving extra empty lines.
+   */
+  private static final String BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
+  private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
@@ -536,15 +553,20 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
-      String repositoryPath, PullRequestAction action) throws IOException {
+      String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
     String accessToken = gitHubProperty.getToken();
     GitHub gitHub = getGitHub(accessToken);
-    GHRepository repository = gitHub.getRepository(repositoryPath);
+    GHRepository repository = gitHub.getRepository(repoPath);
+
+    if (repository.isArchived()) {
+      unArchivedTheRepository(repoPath);
+    }
+
     String baseBranch = repository.getDefaultBranch();
     GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
     GHContent readme = repository.getFileContent(README_FILE_PATH, baseBranch);
     String currentReadmeContent = getReadmeContent(readme);
-    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config);
+    PullRequestData pullRequestData = buildPullRequestData(action, currentReadmeContent, config, extensionData);
 
     boolean isSameContent = Objects.equals(currentReadmeContent, pullRequestData.updatedReadmeContent);
     if (isSameContent) {
@@ -564,6 +586,55 @@ public class GitHubServiceImpl implements GitHubService {
     return generatePullRequest(repository, baseBranch, pullRequestData);
   }
 
+  @Override
+  public void archiveTheRepository(String repoPath) throws IOException {
+    GHRepository ghRepository = getRepository(repoPath);
+    if (ghRepository != null && !ghRepository.isArchived()) {
+      ghRepository.archive();
+      log.info("Repository '{}' has been archived.", repoPath);
+    }
+  }
+
+  @Override
+  public boolean hasDeprecationWarningInReadme(String repoPath) throws IOException {
+    GHRepository repository = getRepository(repoPath);
+    if (repository == null) {
+      return false;
+    }
+    GHContent readme = repository.getFileContent(README_FILE_PATH, repository.getDefaultBranch());
+    String readmeContent = getReadmeContent(readme);
+    GitHubUnsupportedText config = getGithubUnsupportedTextConfig();
+    // Check if the README contains the deprecation notice prefix (without the version placeholder)
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(config.unsupportedNotice())[0];
+    return readmeContent.contains(noticePrefix.trim());
+  }
+
+  @Override
+  public void unArchivedTheRepository(String repoPath) {
+    String url = Url.REPOS_BASE_URL + repoPath;
+    okhttp3.RequestBody body = okhttp3.RequestBody.create(
+        "{\"archived\": false}",
+        okhttp3.MediaType.parse("application/json")
+    );
+    okhttp3.Request request = new okhttp3.Request.Builder()
+        .url(url)
+        .patch(body)
+        .addHeader(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + gitHubProperty.getToken())
+        .build();
+
+    try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
+      if (!response.isSuccessful()) {
+        throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
+            String.format("Failed to unarchive repository '%s': %d %s", repoPath, response.code(),
+                response.message()));
+      }
+      log.info("Repository '{}' has been unarchived successfully.", repoPath);
+    } catch (IOException e) {
+      throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
+          String.format("Error unarchiving repository '%s': %s", repoPath, e.getMessage()));
+    }
+  }
+
   private GHPullRequest getPullRequestFromExistingBranch(GHRepository repository, String baseBranch,
       PullRequestData pullRequestData, GHContent readme) throws IOException {
     String unsupportedBranchName = pullRequestData.unsupportedBranchName;
@@ -576,7 +647,17 @@ public class GitHubServiceImpl implements GitHubService {
         .stream().findFirst().orElse(null);
 
     if (existingPR != null) {
-      log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      // If the existing PR has a different title (e.g., REMOVE vs ADD), update it with new content
+      if (!existingPR.getTitle().equals(pullRequestData.title)) {
+        log.info("Existing PR '{}' has different action, updating with new content", existingPR.getHtmlUrl());
+        // Fetch README from the unsupported branch (not base) to get correct SHA for update
+        GHContent branchReadme = repository.getFileContent(README_FILE_PATH, unsupportedBranchName);
+        branchReadme.update(pullRequestData.updatedReadmeContent, pullRequestData.title, unsupportedBranchName);
+        existingPR.setTitle(pullRequestData.title);
+        existingPR.setBody(pullRequestData.body);
+      } else {
+        log.info("There was existing pull request '{}'", existingPR.getHtmlUrl().toString());
+      }
       return existingPR;
     }
     GHCompare compare = repository.getCompare(baseBranch, unsupportedBranchName);
@@ -592,7 +673,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private void removeBranchIfExistsWhenRemoveDeprecation(GHRepository repository, String headBranchName,
       PullRequestAction action) throws IOException {
-    if (action != REMOVE) {
+    if (action != REMOVE || repository.isArchived()) {
       return;
     }
 
@@ -637,9 +718,20 @@ public class GitHubServiceImpl implements GitHubService {
    * - Fails fast when README has no heading line.
    */
   private String addUnsupportedNotice(String readmeContent, String notice) {
-    if (readmeContent.contains(notice.trim())) {
-      return readmeContent;
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
+        getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
+
+    // If there's already a deprecation block, check if it's identical to the new notice
+    if (readmeContent.contains(noticePrefix)) {
+      // Case: When we deprecate a repository at 2nd times, but not yet to remove deprecated items from PR
+      String existingBlock = extractExistingDeprecationBlock(readmeContent, noticePrefix);
+      if (existingBlock != null && existingBlock.trim().equals(notice.trim())) {
+        return readmeContent;
+      }
+      // Different notice exists — remove the old one first
+      readmeContent = removeExistingDeprecationBlock(readmeContent, noticePrefix);
     }
+
     String lineSeparator = readmeContent.contains(CRLF) ? CRLF : LF;
     Matcher matcher = Pattern.compile("^#[^\\r\\n]*", Pattern.MULTILINE).matcher(readmeContent);
     if (matcher.find()) {
@@ -651,14 +743,43 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   /**
+   * Extracts the existing deprecation block from the README content.
+   * Returns the matched block text, or null if not found.
+   */
+  private String extractExistingDeprecationBlock(String readmeContent, String noticePrefix) {
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_PATTERN;
+    Matcher matcher = Pattern.compile(regex).matcher(readmeContent);
+    return matcher.find() ? matcher.group() : null;
+  }
+
+  /**
+   * Removes an existing deprecation block from the README content using regex.
+   * Matches from the notice prefix through all consecutive blockquote lines.
+   */
+  private String removeExistingDeprecationBlock(String readmeContent, String noticePrefix) {
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
+    return readmeContent.replaceFirst(regex, EMPTY);
+  }
+
+  /**
    * Removes the unsupported notice when present.
+   * Uses pattern matching to handle cases where the URL in the README
+   * may differ from the one constructed at removal time.
    * Returns original content when the notice does not exist.
    */
   private String removeUnsupportedNotice(String readmeContent, String notice) {
-    if (!readmeContent.contains(notice.trim())) {
+    // If exact match fails, use regex to match the deprecation block structure
+    // Match from "> [!CAUTION]" through all consecutive blockquote lines (starting with ">")
+    // including the optional "Recommended alternative" line with any URL
+    String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
+        getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();
+    if (!readmeContent.contains(noticePrefix)) {
       return readmeContent;
     }
-    return readmeContent.replace(notice, EMPTY);
+
+    // Build a regex that matches the full deprecation block:
+    String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
+    return readmeContent.replaceFirst(regex, EMPTY);
   }
 
   /**
@@ -681,24 +802,36 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private PullRequestData buildPullRequestData(PullRequestAction action, String currentReadmeContent,
-      GitHubUnsupportedText config) {
-    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, config.unsupportedNotice());
+      GitHubUnsupportedText config, AlternativeExtensionData extensionData) {
+
+    String unsupportedNotices = String.format(config.unsupportedNotice(), extensionData.getDeprecatedVersionFrom());
+    if (StringUtils.isNoneBlank(extensionData.getSuccessorUrl(), extensionData.getAlternativeExtension())) {
+      unsupportedNotices += String.format(ALTERNATIVE_EXTENSION_FORMAT,
+          extensionData.getAlternativeExtension(), extensionData.getSuccessorUrl());
+    }
+
+    String updatedContent = updateUnsupportedNotice(currentReadmeContent, action, unsupportedNotices);
     return switch (action) {
-      case ADD -> new PullRequestData(config.addUnsupportedNoticePrBody(), config.deprecatedMessage(),
-          updatedContent, config.unsupportedBranchName());
-      case REMOVE ->
-          new PullRequestData(config.removeUnsupportedNoticePrBody(), config.removeUnsupportedNoticeMessage(),
-              updatedContent, config.unsupportedBranchName());
+      case ADD -> new PullRequestData(
+          config.addUnsupportedNoticePrBody(),
+          config.deprecatedMessage(),
+          updatedContent,
+          config.unsupportedBranchName());
+      case REMOVE -> new PullRequestData(
+              config.removeUnsupportedNoticePrBody(),
+              config.removeUnsupportedNoticeMessage(),
+              updatedContent,
+              config.unsupportedBranchName());
     };
   }
 
   private record GitHubUnsupportedText(
-          String deprecatedMessage,
-          String removeUnsupportedNoticeMessage,
-          String unsupportedBranchName,
-          String removeUnsupportedNoticePrBody,
-          String addUnsupportedNoticePrBody,
-          String unsupportedNotice
+      String deprecatedMessage,
+      String removeUnsupportedNoticeMessage,
+      String unsupportedBranchName,
+      String removeUnsupportedNoticePrBody,
+      String addUnsupportedNoticePrBody,
+      String unsupportedNotice
   ) {
   }
 
