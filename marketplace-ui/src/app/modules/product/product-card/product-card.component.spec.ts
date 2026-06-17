@@ -15,7 +15,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
-import { DEFAULT_IMAGE_URL, DARK_INTERNAL_BADGE_URL, LIGHT_INTERNAL_BADGE_URL } from '../../../shared/constants/common.constant';
+import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 const products = MOCK_PRODUCTS._embedded.products as Product[];
 const noDeNameAndNoLogoUrlProducts =
