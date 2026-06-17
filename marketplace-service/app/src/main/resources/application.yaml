@@ -85,6 +85,7 @@ market:
         maxAge: '3600'
   encryption:
     key: '${MARKET_ENCRYPTION_SECRET_KEY}'
+    salt: '${MARKET_ENCRYPTION_SALT}'
   info:
     title: "Marketplace app"
     description: "The restful api for marketplace website"

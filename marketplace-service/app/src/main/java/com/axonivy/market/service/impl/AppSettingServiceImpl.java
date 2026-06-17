@@ -57,6 +57,11 @@ public class AppSettingServiceImpl implements AppSettingService {
   }
 
   @Override
+  public List<AppSettingDto> getAllByCategory(String category) {
+    return List.of();
+  }
+
+  @Override
   public String getStringValueByKey(AppSettingKey setting) {
     return repository.findByKey(setting.getKey()).map(this::resolveValue).filter(StringUtils::isNotBlank).orElse(
         setting.getDefaultValue());

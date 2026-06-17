@@ -11,6 +11,8 @@ public interface AppSettingService {
 
   AppSettingDto update(String key, String value);
 
+  List<AppSettingDto> getAllByCategory(String category);
+
   Long getLongValueByKey(AppSettingKey key);
 
   Boolean getBooleanValueByKey(AppSettingKey key);

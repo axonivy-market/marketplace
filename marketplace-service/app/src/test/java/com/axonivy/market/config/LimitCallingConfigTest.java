@@ -32,7 +32,7 @@ class LimitCallingConfigTest {
     AppSettingService appSettingService = mock(AppSettingService.class);
     filter = new LimitCallingConfig(appSettingService);
 
-    when(appSettingService.getIntegerValueByKey(AppSettingKey.CLICK_CAPACITY)).thenReturn(2);
+    when(appSettingService.getLongValueByKey(AppSettingKey.CLICK_CAPACITY)).thenReturn(2L);
     when(appSettingService.getStringValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS)).thenReturn("/api/test");
 
     request = mock(HttpServletRequest.class);

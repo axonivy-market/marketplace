@@ -15,11 +15,12 @@ public class EncryptionServiceImpl implements EncryptionService {
   private static final String SALT = "a1b2c3d4e5f6a7b8";
   private TextEncryptor encryptor;
 
-  public EncryptionServiceImpl(@Value("${market.encryption.key:}") String encryptionKey) {
+  public EncryptionServiceImpl(@Value("${market.encryption.key:}") String encryptionKey,
+      @Value("${market.encryption.salt:}") String salt) {
 
     try {
       if (StringUtils.isNotBlank(encryptionKey)) {
-        this.encryptor = Encryptors.text(encryptionKey, SALT);
+        this.encryptor = Encryptors.text(encryptionKey, salt);
       }
     } catch (IllegalStateException e) {
       log.warn("Encryption is disabled due to invalid configuration", e);

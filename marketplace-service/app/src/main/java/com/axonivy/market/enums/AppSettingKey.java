@@ -33,7 +33,7 @@ public enum AppSettingKey {
       "market.scheduling.github-repos-cron",
       DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
-      "Cron expression for GitHub repository synchronization.",
+      "Cron expression for workflow test status synchronization.",
       false),
 
   DOCUMENTS_CRON(
@@ -201,7 +201,7 @@ public enum AppSettingKey {
 
   CLICK_CAPACITY(
       "market.allowed.click-capacity",
-      "100",
+      "5",
       AppSettingCategory.SECURITY.name(),
       "Maximum allowed click capacity.",
       false),
@@ -210,7 +210,7 @@ public enum AppSettingKey {
       "axon.ivy.developer.url",
       "https://developer.axonivy.com",
       AppSettingCategory.GENERAL.name(),
-      "Axon Ivy Developer Portal URL.",
+      "Axon Ivy Developer URL.",
       false);
 
   private final String key;

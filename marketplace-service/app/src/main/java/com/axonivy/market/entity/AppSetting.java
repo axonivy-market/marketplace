@@ -13,11 +13,13 @@ import lombok.Setter;
 
 import java.io.Serial;
 
+import static com.axonivy.market.constants.EntityConstants.APP_SETTINGS;
+
 @Getter
 @Setter
 @Builder
 @Entity
-@Table(name = "app_settings")
+@Table(name = APP_SETTINGS)
 @AllArgsConstructor
 @NoArgsConstructor
 public class AppSetting extends GenericIdEntity {

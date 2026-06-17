@@ -27,4 +27,5 @@ public class EntityConstants {
   public static final String RELEASE_LETTER = "release_letter";
   public static final String PRODUCT_SECURITY_INFO = "product_security_info";
   public static final String RELEASE_LETTER_DRAFTS = "release_letter_drafts";
+  public static final String APP_SETTINGS = "app_settings";
 }
