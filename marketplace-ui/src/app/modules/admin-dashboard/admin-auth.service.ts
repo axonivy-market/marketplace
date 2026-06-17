@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { UserInfo } from '../../auth/auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
+import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
 
@@ -18,6 +19,7 @@ export class AdminAuthService {
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly windowRef = inject(WindowRef);
   private readonly _userInfo = signal<UserInfo | null>(null);
   private readonly _csrfToken = signal<string | null>(null);
   readonly userInfo = this._userInfo.asReadonly();
@@ -59,7 +61,7 @@ export class AdminAuthService {
 
   fetchCsrfToken(): Observable<CsrfTokenResponse> {
     return this.httpClient.get<CsrfTokenResponse>(API_URI.ADMIN_CSRF).pipe(
-      tap(response => this._csrfToken.set(response?.token ?? null))
+      tap(response => this._csrfToken.set(this.getLiveCsrfToken() ?? response?.token ?? null))
     );
   }
 
@@ -81,10 +83,32 @@ export class AdminAuthService {
   }
 
   csrfToken(): string | null {
-    return this._csrfToken();
+    return this.getLiveCsrfToken() ?? this._csrfToken();
   }
 
   private currentUser(): UserInfo | null {
     return this.userInfo() ?? this.loadFromSessionStorage();
+  }
+
+  private getLiveCsrfToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+
+    const cookie = this.windowRef.nativeWindow?.document.cookie ?? '';
+    return this.readCookie(cookie, 'XSRF-TOKEN');
+  }
+
+  private readCookie(cookieHeader: string, cookieName: string): string | null {
+    const parts = cookieHeader.split(';');
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const [rawName, ...rawValueParts] = parts[i].trim().split('=');
+      if (rawName === cookieName) {
+        const rawValue = rawValueParts.join('=');
+        return rawValue ? decodeURIComponent(rawValue) : null;
+      }
+    }
+
+    return null;
   }
 }

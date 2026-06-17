@@ -31,6 +31,48 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 public class SecurityConfig {
   private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
   private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
+  private static final String RELEASE_LETTER_MANAGEMENT = RELEASE_LETTER + "/management";
+  private static final String[] AUTHENTICATED_GET_ENDPOINTS = {
+      ADMIN_AUTH_V2 + SESSION,
+      FEEDBACK,
+      FEEDBACK + FEEDBACK_APPROVAL,
+      LOGS,
+      LOGS + DOWNLOAD_LOG_ARTIFACT,
+      LOGS + LOG_STREAM,
+      LOGS + LOG_STREAM_BY_TASK_KEY,
+      MONITOR_DASHBOARD + REPOS,
+      MONITOR_DASHBOARD + REPOS_REPORT,
+      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
+      RELEASE_LETTER_MANAGEMENT,
+      RELEASE_LETTER + DRAFT_BY_ID,
+      SECURITY_MONITOR,
+      SYNC_TASK_EXECUTION,
+      SYNC_TASK_EXECUTION + "/{jobKey}"
+  };
+  private static final String[] AUTHENTICATED_POST_ENDPOINTS = {
+      ADMIN_AUTH_V2 + PASSKEY + REGISTER + OPTIONS,
+      ADMIN_AUTH_V2 + PASSKEY + REGISTER + COMPLETE,
+      FEEDBACK,
+      MONITOR_DASHBOARD + SYNC,
+      MONITOR_DASHBOARD + SYNC_ONE_PRODUCT_BY_ID,
+      MONITOR_DASHBOARD + FOCUSED,
+      PRODUCT + SYNC,
+      PRODUCT + SYNC_ONE_PRODUCT_BY_ID,
+      PRODUCT + SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS,
+      PRODUCT + SYNC_ZIP_ARTIFACTS,
+      PRODUCT_DETAILS + SYNC_RELEASE_NOTES_FOR_PRODUCTS,
+      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
+      RELEASE_LETTER,
+      RELEASE_LETTER + SAVE_AS_DRAFT,
+      SECURITY_MONITOR,
+      EXTERNAL_DOCUMENT + SYNC
+  };
+  private static final String[] AUTHENTICATED_PUT_ENDPOINTS = {
+      PRODUCT_MARKETPLACE_DATA + DEPRECATION_BY_ID
+  };
+  private static final String[] AUTHENTICATED_DELETE_ENDPOINTS = {
+      RELEASE_LETTER + BY_ID
+  };
   private final WriteAuditLoggingFilter writeAuditLoggingFilter;
   @Value("${SESSION_COOKIE_NAME:ADMIN_SESSION}")
   private String sessionCookieName;
@@ -55,46 +97,12 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionFixation(sessionFixation -> sessionFixation.changeSessionId()))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(HttpMethod.GET,
-                ROOT,
-                IMAGE + BY_ID,
-                PRODUCT,
-                PRODUCT + IDS,
-                PRODUCT + PRODUCT_RATING_BY_ID,
-                PRODUCT_DETAILS + BY_ID_AND_VERSION,
-                PRODUCT_DETAILS + BEST_MATCH_BY_ID_AND_VERSION,
-                PRODUCT_DETAILS + BY_ID,
-                PRODUCT_DETAILS + VERSIONS_BY_ID,
-                PRODUCT_DETAILS + PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION,
-                PRODUCT_DETAILS + PRODUCT_PUBLIC_RELEASES,
-                PRODUCT_DETAILS + PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID,
-                PRODUCT_DETAILS + LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID,
-                PRODUCT_DETAILS + ARTIFACTS_AS_ZIP,
-                EXTERNAL_DOCUMENT + BY_ID_AND_VERSION,
-                EXTERNAL_DOCUMENT + DOCUMENT_BEST_MATCH,
-                DOCUMENT + DOCUMENT_VERSION_LANGUAGE,
-                RELEASE_LETTER,
-                RELEASE_LETTER + BY_ID,
-                RELEASE_LETTER + BY_LATEST,
-                FEEDBACK + PRODUCT_BY_ID,
-                FEEDBACK + BY_ID,
-                FEEDBACK,
-                FEEDBACK + PRODUCT_RATING_BY_ID,
-                PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
-                PRODUCT_MARKETPLACE_DATA + INSTALLATION_COUNT_BY_ID,
-                PRODUCT_MARKETPLACE_DATA + DEPRECATIONS,
-                PRODUCT_MARKETPLACE_DATA + VERSION_DOWNLOAD_BY_ID,
-                PRODUCT_DESIGNER_INSTALLATION + DESIGNER_INSTALLATION_BY_ID,
-                PRODUCT_DETAILS + PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION,
-                ADMIN_AUTH_V2 + GITHUB_AUTHORIZATION,
-                ADMIN_AUTH_V2 + CSRF)
-                .permitAll()
-            .requestMatchers(HttpMethod.POST, "/auth/github/login", "/auth/github/request-access").permitAll()
-            .requestMatchers(HttpMethod.POST, ADMIN_AUTH_V2 + GITHUB_CALLBACK).permitAll()
-            .requestMatchers(HttpMethod.POST,
-                ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + OPTIONS,
-                ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + COMPLETE).permitAll()
-            .anyRequest().authenticated())
+            .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
+            .requestMatchers(HttpMethod.POST, AUTHENTICATED_POST_ENDPOINTS).authenticated()
+            .requestMatchers(HttpMethod.PUT, AUTHENTICATED_PUT_ENDPOINTS).authenticated()
+            .requestMatchers(HttpMethod.DELETE, AUTHENTICATED_DELETE_ENDPOINTS).authenticated()
+            .requestMatchers(HttpMethod.PUT, ADMIN_AUTH_V2 + GITHUB_VALIDATE_TOKEN).permitAll()
+            .anyRequest().permitAll())
         .logout(logout -> logout
             .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
             .invalidateHttpSession(true)

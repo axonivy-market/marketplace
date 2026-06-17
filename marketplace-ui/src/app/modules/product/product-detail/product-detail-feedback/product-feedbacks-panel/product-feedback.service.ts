@@ -174,6 +174,11 @@ export class ProductFeedbackService {
   }
 
   private processUserFeedbacks(): void {
+    if (!this.hasUserSession()) {
+      this.userFeedback.set(null);
+      return;
+    }
+
     this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
       if (!userFeedbacks?.length) {
         return;
@@ -208,6 +213,11 @@ export class ProductFeedbackService {
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
   ): Observable<Feedback[]> {
+    if (!this.hasUserSession()) {
+      this.userFeedback.set(null);
+      return of([]);
+    }
+
     const params = new HttpParams()
       .set('productId', productId)
       .set('userId', this.authService.getUserId() ?? '');
@@ -243,6 +253,10 @@ export class ProductFeedbackService {
           return of([defaultFeedback]);
         })
       );
+  }
+
+  private hasUserSession(): boolean {
+    return Boolean(this.authService.getToken() && this.authService.getUserId());
   }
 
   fetchFeedbacks(): void {

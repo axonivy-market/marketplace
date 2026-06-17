@@ -21,7 +21,6 @@ import { MarketProduct } from '../../shared/models/product.model';
 import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
 import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-info';
-import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 import { ArchiveAction } from '../../shared/enums/archive-action.enum';
 
 const PAGE_SIZE = 200;
@@ -227,7 +226,6 @@ export class ProductService {
       API_URI.PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID(productId),
       null,
       {
-        headers: this.adminAuthService.getAuthHeaders(),
         responseType: 'text',
         params
       }

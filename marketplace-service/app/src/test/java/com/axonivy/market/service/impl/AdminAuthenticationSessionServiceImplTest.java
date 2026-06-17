@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class AdminAuthenticationSessionServiceImplTest {
@@ -35,6 +38,8 @@ class AdminAuthenticationSessionServiceImplTest {
   private SessionAuthenticationStrategy sessionAuthenticationStrategy;
   @Mock
   private SecurityContextRepository securityContextRepository;
+  @Mock
+  private FindByIndexNameSessionRepository<? extends Session> sessionRepository;
   @Mock
   private PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
   @Mock
@@ -68,6 +73,11 @@ class AdminAuthenticationSessionServiceImplTest {
             .name("octopus")
             .displayName("Octopus")
             .build());
+    when(sessionRepository.findByIndexNameAndIndexValue(
+        FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, "octopus"))
+        .thenReturn(java.util.Map.of(
+            "old-session-1", mock(Session.class),
+            "old-session-2", mock(Session.class)));
     when(userCredentialRepository.findByUserId(new Bytes("user-1".getBytes(StandardCharsets.UTF_8))))
         .thenReturn(List.of(org.mockito.Mockito.mock(CredentialRecord.class)));
 
@@ -80,6 +90,8 @@ class AdminAuthenticationSessionServiceImplTest {
     assertTrue(result.isHasPasskey());
 
     verify(sessionAuthenticationStrategy).onAuthentication(any(), any(), any());
+    verify(sessionRepository).deleteById("old-session-1");
+    verify(sessionRepository).deleteById("old-session-2");
     verify(securityContextRepository).saveContext(any(), any(), any());
   }
 }

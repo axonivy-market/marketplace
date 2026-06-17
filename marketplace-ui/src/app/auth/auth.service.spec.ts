@@ -112,7 +112,7 @@ describe('AuthService', () => {
     expect(location.href).toContain('state=server-state');
   });
 
-  it('exchanges callback code for a session and navigates to the dashboard', () => {
+  it('exchanges callback code for a session and navigates to the dashboard', async () => {
     const userInfo: UserInfo = {
       id: 'user-1',
       token: null,
@@ -129,6 +129,10 @@ describe('AuthService', () => {
     expect(request.request.body).toEqual({ code: 'code-1', state: 'state-1' });
     request.flush(userInfo);
 
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(adminAuthService.fetchCsrfToken).toHaveBeenCalled();
     expect(adminAuthService.setUserInfo).toHaveBeenCalledWith(userInfo);
     expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
   });

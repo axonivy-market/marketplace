@@ -2,7 +2,7 @@ import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpSta
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
-import { finalize, of, tap } from 'rxjs';
+import { finalize, of, switchMap, tap } from 'rxjs';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
@@ -63,6 +63,22 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers, req.method, adminAuthService.csrfToken()),
     withCredentials: true
   });
+
+  const needsCsrf = req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS';
+  if (needsCsrf && !adminAuthService.csrfToken()) {
+    return adminAuthService.fetchCsrfToken().pipe(
+      switchMap(() => next(req.clone({
+        url: requestURL,
+        headers: addIvyHeaders(req.headers, req.method, adminAuthService.csrfToken()),
+        withCredentials: true
+      }))),
+      finalize(() => {
+        if (req.context.get(LoadingComponent)) {
+          loadingService.hideLoading(req.context.get(LoadingComponent));
+        }
+      })
+    );
+  }
 
   return next(cloneReq).pipe(
     tap(event => {

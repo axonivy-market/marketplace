@@ -67,6 +67,12 @@ export class LogStreamService {
     this.ctrl = new AbortController();
     fetchEventSource(logsUrl, {
       signal: this.ctrl.signal,
+      credentials: 'include',
+      onopen: async (response: Response) => {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(`Log stream unauthorized: ${response.status}`);
+        }
+      },
       onmessage: (event: EventSourceMessage) => {
         if (event.data === '') {
           return;
@@ -129,10 +135,11 @@ export class LogStreamService {
 
     this._fetchEventSource(url, {
       signal: ctrl.signal,
+      credentials: 'include',
 
       onopen: async (response: Response) => {
         if (!response.ok) {
-          this.disconnectTask(taskKey);
+          throw new Error(`Task log stream failed: ${response.status}`);
         }
       },
 

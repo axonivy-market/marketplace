@@ -1,15 +1,9 @@
 package com.axonivy.market.config;
 
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.security.web.webauthn.api.AttestationConveyancePreference;
 import org.springframework.security.web.webauthn.api.AuthenticatorSelectionCriteria;
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialCreationOptions;
@@ -19,9 +13,6 @@ import org.springframework.security.web.webauthn.api.ResidentKeyRequirement;
 import org.springframework.security.web.webauthn.api.UserVerificationRequirement;
 import org.springframework.security.web.webauthn.authentication.HttpSessionPublicKeyCredentialRequestOptionsRepository;
 import org.springframework.security.web.webauthn.authentication.PublicKeyCredentialRequestOptionsRepository;
-import org.springframework.security.web.webauthn.jackson.WebauthnJackson2Module;
-import org.springframework.security.web.webauthn.management.JdbcPublicKeyCredentialUserEntityRepository;
-import org.springframework.security.web.webauthn.management.JdbcUserCredentialRepository;
 import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
 import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
@@ -31,61 +22,38 @@ import org.springframework.security.web.webauthn.registration.PublicKeyCredentia
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
-public class PasskeyConfig {
+@Conditional(PasskeyCondition.class)
+public class PasskeyRelyingPartyConfig {
   @Bean
-  @ConditionalOnMissingBean(ObjectMapper.class)
-  public ObjectMapper objectMapper(List<Module> modules) {
-    JsonMapper.Builder builder = JsonMapper.builder().findAndAddModules();
-    modules.forEach(builder::addModule);
-    return builder.build();
+  public PublicKeyCredentialRpEntity passkeyRelyingParty(PasskeyProperties properties) {
+    return PublicKeyCredentialRpEntity.builder()
+        .id(properties.getRpId())
+        .name(StringUtils.defaultIfBlank(properties.getRpName(), "Axon Ivy Marketplace Admin"))
+        .build();
   }
 
   @Bean
-  @ConditionalOnExpression(
-      "T(org.springframework.util.StringUtils).hasText('${market.passkey.rp-id:}')"
-          + " and T(org.springframework.util.StringUtils).hasText('${market.passkey.origins:}')")
-  public PublicKeyCredentialRpEntity passkeyRelyingParty(
-      @Value("${market.passkey.rp-id}") String rpId,
-      @Value("${market.passkey.rp-name:Axon Ivy Marketplace Admin}") String rpName) {
-    return PublicKeyCredentialRpEntity.builder().id(rpId).name(rpName).build();
-  }
-
-  @Bean
-  @ConditionalOnExpression(
-      "T(org.springframework.util.StringUtils).hasText('${market.passkey.rp-id:}')"
-          + " and T(org.springframework.util.StringUtils).hasText('${market.passkey.origins:}')")
   public WebAuthnRelyingPartyOperations webAuthnRelyingPartyOperations(
       PublicKeyCredentialUserEntityRepository userEntityRepository,
       UserCredentialRepository userCredentialRepository,
       PublicKeyCredentialRpEntity rpEntity,
-      @Value("${market.passkey.origins}") String originsConfig,
-      @Value("${market.passkey.timeout-ms:300000}") long timeoutMs) {
-    Set<String> origins = Arrays.stream(StringUtils.defaultString(originsConfig).split(","))
+      PasskeyProperties properties) {
+    Set<String> origins = Arrays.stream(StringUtils.defaultString(properties.getOrigins()).split(","))
         .map(String::trim)
         .filter(StringUtils::isNotBlank)
         .collect(Collectors.toSet());
 
     Webauthn4JRelyingPartyOperations operations = new Webauthn4JRelyingPartyOperations(
         userEntityRepository, userCredentialRepository, rpEntity, origins);
-    operations.setCustomizeCreationOptions(builder -> customizeCreationOptions(timeoutMs, builder));
-    operations.setCustomizeRequestOptions(builder -> customizeRequestOptions(timeoutMs, builder));
+    operations.setCustomizeCreationOptions(
+        builder -> customizeCreationOptions(properties.getTimeoutMs(), builder));
+    operations.setCustomizeRequestOptions(
+        builder -> customizeRequestOptions(properties.getTimeoutMs(), builder));
     return operations;
-  }
-
-  @Bean
-  public PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository(
-      JdbcOperations jdbcOperations) {
-    return new JdbcPublicKeyCredentialUserEntityRepository(jdbcOperations);
-  }
-
-  @Bean
-  public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations) {
-    return new JdbcUserCredentialRepository(jdbcOperations);
   }
 
   @Bean
@@ -96,11 +64,6 @@ public class PasskeyConfig {
   @Bean
   public PublicKeyCredentialRequestOptionsRepository publicKeyCredentialRequestOptionsRepository() {
     return new HttpSessionPublicKeyCredentialRequestOptionsRepository();
-  }
-
-  @Bean
-  public Module webauthnJacksonModule() {
-    return new WebauthnJackson2Module();
   }
 
   private void customizeCreationOptions(long timeoutMs,

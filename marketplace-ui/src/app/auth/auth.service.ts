@@ -73,7 +73,9 @@ export class AuthService {
     const body = { code, state };
 
     this.exchangeCodeForSession(body).subscribe({
-      next: userInfo => this.handleAuthenticatedUser(userInfo),
+      next: userInfo => {
+        void this.handleAuthenticatedUser(userInfo);
+      },
       error: error => throwError(() => error)
     });
   }
@@ -106,7 +108,7 @@ export class AuthService {
       })
     );
 
-    this.handleAuthenticatedUser(userInfo);
+    await this.handleAuthenticatedUser(userInfo);
   }
 
   async registerPasskey(): Promise<void> {
@@ -131,7 +133,7 @@ export class AuthService {
       })
     );
 
-    this.adminAuthService.setUserInfo(userInfo);
+    await this.handleAuthenticatedUser(userInfo);
   }
 
   private exchangeCodeForSession(body: { code: string; state: string }): Observable<UserInfo> {
@@ -140,7 +142,8 @@ export class AuthService {
       .pipe(catchError(error => throwError(() => error)));
   }
 
-  private handleAuthenticatedUser(userInfo: UserInfo): void {
+  private async handleAuthenticatedUser(userInfo: UserInfo): Promise<void> {
+    await firstValueFrom(this.adminAuthService.fetchCsrfToken());
     this.adminAuthService.setUserInfo(userInfo);
     this.router.navigate(['/internal-dashboard']);
   }

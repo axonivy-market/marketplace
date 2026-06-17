@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
 import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,8 +22,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticationSessionService {
+  private static final String PRINCIPAL_NAME_INDEX = FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
+
   private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
   private final SecurityContextRepository securityContextRepository;
+  private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
   private final PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
   private final UserCredentialRepository userCredentialRepository;
 
@@ -38,7 +43,28 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
     securityContext.setAuthentication(authentication);
     SecurityContextHolder.setContext(securityContext);
     securityContextRepository.saveContext(securityContext, request, response);
+    clearExistingSessions(sessionUser.getName(), currentSessionId(request));
     return sessionUser;
+  }
+
+  private void clearExistingSessions(String principalName, String currentSessionId) {
+    if (StringUtils.isBlank(principalName)) {
+      return;
+    }
+
+    sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX, principalName)
+        .forEach((sessionId, session) -> {
+          if (!StringUtils.equals(sessionId, currentSessionId)) {
+            sessionRepository.deleteById(sessionId);
+          }
+        });
+  }
+
+  private String currentSessionId(HttpServletRequest request) {
+    if (request.getSession(false) == null) {
+      return null;
+    }
+    return request.getSession(false).getId();
   }
 
   private UserInfo toSessionUser(GithubUser githubUser, String profileUrl) {

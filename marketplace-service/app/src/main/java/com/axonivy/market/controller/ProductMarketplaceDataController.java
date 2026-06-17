@@ -101,7 +101,6 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
   }
 
-  @Authorized
   @PutMapping(ARCHIVE_BY_ID)
   @Operation(summary = "Archive or unarchive a product repository",
       description = "Archive or unarchive the GitHub repository of a product based on the given action")

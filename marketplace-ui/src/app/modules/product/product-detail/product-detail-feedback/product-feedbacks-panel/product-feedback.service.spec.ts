@@ -29,7 +29,8 @@ describe('ProductFeedbackService', () => {
         {
           provide: AuthService,
           useValue: {
-            getUserId: vi.fn().mockReturnValue('user-1')
+            getUserId: vi.fn().mockReturnValue('user-1'),
+            getToken: vi.fn().mockReturnValue('token-1')
           }
         },
         {
@@ -93,5 +94,20 @@ describe('ProductFeedbackService', () => {
       _embedded: { feedbacks: [] },
       page: { totalPages: 1, totalElements: 0 }
     });
+  });
+
+  it('skips user feedback lookup when token is missing', () => {
+    const authService = TestBed.inject(AuthService) as {
+      getToken: ReturnType<typeof vi.fn>;
+      getUserId: ReturnType<typeof vi.fn>;
+    };
+    authService.getToken.mockReturnValue(null);
+
+    service.findProductFeedbackOfUser().subscribe(userFeedbacks => {
+      expect(userFeedbacks).toEqual([]);
+    });
+
+    httpMock.expectNone('api/feedback?productId=portal&userId=user-1');
+    expect(service.userFeedback()).toBeNull();
   });
 });
