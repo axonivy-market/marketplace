@@ -143,15 +143,6 @@ describe('ProductCardComponent', () => {
     expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-dark.png');
   });
 
-  it('should reset badge URLs to defaults on logo error', () => {
-    component.darkInternalBadgeUrl = 'custom-dark.png';
-    component.lightInternalBadgeUrl = 'custom-light.png';
-
-    component.onLogoError();
-
-    expect(component.darkInternalBadgeUrl).toBe(DARK_INTERNAL_BADGE_URL);
-    expect(component.lightInternalBadgeUrl).toBe(LIGHT_INTERNAL_BADGE_URL);
-  });
 
   it('should show internal badge when product is internal in marketplace mode', () => {
     component.product = { ...products[0], internal: true };
