@@ -42,7 +42,7 @@ class ProductModelAssemblerTest {
     assertEquals(product.getTags(), model.getTags());
     assertEquals(product.getMarketDirectory(), model.getMarketDirectory());
     assertNotNull(model.getLogoUrl());
-    assertTrue(model.getLogoUrl().contains("logo-id"),
+    assertTrue(model.getLogoUrl().contains("logo-123"),
         "logo ID should be included in Url when logoId is present");
     assertNull(model.getLogoDarkUrl(), "Logo Dark URL should be null when logoDarkId is not present");
   }
