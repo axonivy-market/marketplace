@@ -274,20 +274,35 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
-    var result = productRepo.findByCriteria(searchCriteria);
-    if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(
+    var product = productRepo.findByCriteria(searchCriteria);
+    if (product != null) {
+      var isLogoDark = StringUtils.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), fileContent)).ifPresent(
           (Image image) -> {
-            if (StringUtils.isNotBlank(result.getLogoId())) {
-              imageRepo.deleteById(result.getLogoId());
-            }
-            result.setLogoId(image.getId());
-            productRepo.save(result);
+            updateLogoOfProduct(isLogoDark, product, image.getId());
           });
-      return result.getId();
+      return product.getId();
     }
     log.info("There is no product to update the logo with path {}", parentPath);
     return EMPTY;
+  }
+
+  private void updateLogoOfProduct(boolean isLogoDark, Product product, String imageId) {
+    if (isLogoDark) {
+      deleteOldLogo(product.getLogoDarkId(), imageId);
+      product.setLogoDarkId(imageId);
+    } else {
+      deleteOldLogo(product.getLogoId(), imageId);
+      product.setLogoId(imageId);
+    }
+
+    productRepo.save(product);
+  }
+
+  private void deleteOldLogo(String oldLogoImageId, String newLogoImageId) {
+    if (StringUtils.isNotBlank(oldLogoImageId) && !StringUtils.equals(oldLogoImageId, newLogoImageId)) {
+      imageRepo.deleteById(oldLogoImageId);
+    }
   }
 
   private boolean isLastGithubCommitCovered() {
@@ -347,9 +362,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
-    if (ghContent != null && StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
-          .ifPresent(image -> product.setLogoId(image.getId()));
+    if (ghContent != null) {
+      if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
+        Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
+            .ifPresent(image -> product.setLogoId(image.getId()));
+      } else if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
+        Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
+            .ifPresent(image -> product.setLogoDarkId(image.getId()));
+      }
     }
   }
 
@@ -616,9 +636,11 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     var product = productRepo.getProductByIdAndVersion(id, version);
-    productJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
-        ProductJsonContent::getContent).findFirst().ifPresent(
-        jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
+    if (product != null) {
+      productJsonContentRepo.findByProductIdAndVersionIgnoreCase(id, version).stream().map(
+          ProductJsonContent::getContent).findFirst().ifPresent(
+          jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
+    }
     return product;
   }
 
@@ -689,7 +711,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private void mappingMetaDataAndLogoFromGHContent(List<GHContent> gitHubContent, Product product) {
     var gitHubContents = new ArrayList<>(gitHubContent);
     gitHubContents.sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
-    for (var content : gitHubContent) {
+    for (var content : gitHubContents) {
       ProductFactory.mappingByGHContent(product, content);
       mappingVendorImageFromGHContent(product, content);
       mappingLogoFromGHContent(product, content);

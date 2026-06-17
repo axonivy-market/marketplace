@@ -108,11 +108,38 @@ describe('ProductCardComponent', () => {
 
   it('should load default image when logo fails to load', () => {
     const imageElement = fixture.nativeElement.querySelector('img');
-    
+
     imageElement.dispatchEvent(new Event('error'));
 
     fixture.detectChanges();
     expect(component.logoUrl).toBe(DEFAULT_IMAGE_URL);
+    expect(component.logoDarkUrl).toBe(DEFAULT_IMAGE_URL);
     expect(imageElement.src).toContain(DEFAULT_IMAGE_URL);
+  });
+
+  it('should fallback dark logo to logoUrl when logoDarkUrl is blank', () => {
+    component.product = {
+      ...products[0],
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: '   '
+    };
+
+    component.ngOnInit();
+
+    expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
+    expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-light.png');
+  });
+
+  it('should keep dark logo when logoDarkUrl is provided', () => {
+    component.product = {
+      ...products[0],
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: 'http://localhost:1234/logo-dark.png'
+    };
+
+    component.ngOnInit();
+
+    expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
+    expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-dark.png');
   });
 });

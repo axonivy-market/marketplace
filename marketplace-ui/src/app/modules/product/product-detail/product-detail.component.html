@@ -31,7 +31,7 @@
                     fill
                     [lang]="languageService.selectedLanguage()"
                     class="logo__image"
-                    [ngSrc]="logoUrl"
+                    [ngSrc]="themeService.isDarkMode() ? logoDarkUrl : logoUrl"
                     (error)="onLogoError()"
                     [alt]="
                       productDetail().names

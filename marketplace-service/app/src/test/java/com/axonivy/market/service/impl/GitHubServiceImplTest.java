@@ -13,6 +13,7 @@ import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
@@ -21,6 +22,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
@@ -66,7 +68,17 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private static final String BASE_BRANCH = "master";
   private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
-  private static final String UNSUPPORTED_NOTICE_FIXTURE = "*Note that this Market Extension is marked for deprecation. We recommend using the successor instead. **No new features** will be added to this extension; **only bug and security fixes** will be provided.*";
+  private static final String UNSUPPORTED_NOTICE_FIXTURE = """
+      > [!CAUTION]
+      > ## Deprecated
+      > These connectors are deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
+      >
+      > **Recommended alternative:** [successor-extension](https://market.axonivy.com/successor)""".stripIndent().trim();
+  private static final AlternativeExtensionData EXTENSION_DATA_FIXTURE = AlternativeExtensionData.builder()
+      .successorUrl("https://market.axonivy.com/successor")
+      .alternativeExtension("successor-extension")
+      .deprecatedVersionFrom("10.0.0")
+      .build();
 
   @Mock
   private GitHubProperty gitHubProperty;
@@ -630,7 +642,7 @@ class GitHubServiceImplTest extends BaseSetup {
         "Expected Dependabot alerts status to be DISABLED when the API returns 403 Forbidden"
     );
   }
-  
+
   @Test
   void testGetGitHubReleaseModelsWithMEmptyReleases() throws IOException {
     Product mockProduct = mock(Product.class);
@@ -959,7 +971,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHContent readme = mock(GHContent.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains unsupported notice");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -973,7 +985,7 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README has no unsupported notice to remove");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -988,7 +1000,7 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already has no notice and content is unchanged");
     verify(branchRef).delete();
@@ -1001,7 +1013,7 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null and no exception when branch does not exist");
     verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
@@ -1014,7 +1026,7 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRef branchRef = mock(GHRef.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains the unsupported notice");
     verify(branchRef, never()).delete();
@@ -1028,12 +1040,13 @@ class GitHubServiceImplTest extends BaseSetup {
     GHPullRequest existingPr = mock(GHPullRequest.class);
     when(existingPr.getHtmlUrl())
         .thenReturn(URI.create("https://example.com/pr/1").toURL());
+    when(existingPr.getTitle()).thenReturn("Add unsupported notice to README");
 
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, List.of(existingPr));
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertEquals(existingPr, result, "Expected already open pull request to be returned");
     verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
@@ -1056,7 +1069,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1082,7 +1095,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
     verify(existingBranchRef).delete();
@@ -1103,7 +1116,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
     verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
@@ -1117,7 +1130,7 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
 
     assertThrows(NullPointerException.class,
-        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", null),
+        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", null, EXTENSION_DATA_FIXTURE),
         "Expected NullPointerException when pull request action is null");
   }
 
@@ -1128,7 +1141,7 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "Body without markdown heading");
 
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD),
+        () -> gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE),
         "Expected IllegalArgumentException when README has no heading");
 
     assertEquals("README.md must contain a heading line starting with '#'", ex.getMessage(),
@@ -1318,6 +1331,131 @@ class GitHubServiceImplTest extends BaseSetup {
     codeScanning.setStatus(AccessLevel.ENABLED);
     info.setCodeScanning(codeScanning);
     return info;
+  }
+
+  @Test
+  void testArchiveTheRepositoryWhenNotArchivedShouldArchive() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.isArchived()).thenReturn(false);
+
+    gitHubService.archiveTheRepository("org/repo");
+
+    verify(mockRepo).archive();
+  }
+
+  @Test
+  void testArchiveTheRepositoryWhenAlreadyArchivedShouldNotArchive() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.isArchived()).thenReturn(true);
+
+    gitHubService.archiveTheRepository("org/repo");
+
+    verify(mockRepo, never()).archive();
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenRepositoryIsNullShouldReturnFalse() throws IOException {
+    doReturn(null).when(gitHubService).getRepository("org/repo");
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertFalse(result, "Expected false when repository is null");
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenReadmeContainsNoticeShouldReturnTrue() throws IOException {
+    String readmeWithNotice = """
+        # My Project
+        
+        > [!CAUTION]
+        > ## Deprecated
+        > These connectors are deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
+        
+        Some content here.
+        """;
+    setupDeprecationReadmeMocks(readmeWithNotice);
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertTrue(result, "Expected true when README contains deprecation notice");
+  }
+
+  @Test
+  void testHasDeprecationWarningInReadmeWhenReadmeDoesNotContainNoticeShouldReturnFalse() throws IOException {
+    String readmeWithoutNotice = """
+        # My Project
+        
+        This is a normal README without any deprecation notice.
+        """;
+    setupDeprecationReadmeMocks(readmeWithoutNotice);
+
+    boolean result = gitHubService.hasDeprecationWarningInReadme("org/repo");
+
+    assertFalse(result, "Expected false when README does not contain deprecation notice");
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenSuccessful() throws IOException {
+    okhttp3.Call mockCall = setupUnarchiveCall(200, "OK");
+
+    gitHubService.unArchivedTheRepository("org/repo");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
+    okhttp3.Call mockCall = setupUnarchiveCall(403, "Forbidden");
+
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
+        "Expected UnarchiveFailedException when GitHub API returns a non-successful response");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  @Test
+  void testUnArchivedTheRepositoryWhenIOExceptionThrown() throws IOException {
+    when(gitHubProperty.getToken()).thenReturn("test-token");
+
+    okhttp3.Call mockCall = mock(okhttp3.Call.class);
+    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(mockCall.execute()).thenThrow(new IOException("Network error"));
+
+    assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
+        "Expected UnarchiveFailedException when an IOException occurs during the unarchive request");
+
+    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockCall).execute();
+  }
+
+  private void setupDeprecationReadmeMocks(String readmeContent) throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    GHContent mockReadme = mock(GHContent.class);
+    doReturn(mockRepo).when(gitHubService).getRepository("org/repo");
+    when(mockRepo.getDefaultBranch()).thenReturn("main");
+    when(mockRepo.getFileContent(README_FILE_PATH, "main")).thenReturn(mockReadme);
+    when(mockReadme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private okhttp3.Call setupUnarchiveCall(int code, String message) throws IOException {
+    when(gitHubProperty.getToken()).thenReturn("test-token");
+
+    okhttp3.Call mockCall = mock(okhttp3.Call.class);
+    okhttp3.Response mockResponse = new okhttp3.Response.Builder()
+        .request(new okhttp3.Request.Builder().url(Url.REPOS_BASE_URL + "org/repo").build())
+        .protocol(okhttp3.Protocol.HTTP_1_1)
+        .code(code)
+        .message(message)
+        .body(okhttp3.ResponseBody.create("{}", okhttp3.MediaType.parse("application/json")))
+        .build();
+
+    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(mockCall.execute()).thenReturn(mockResponse);
+    return mockCall;
   }
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)

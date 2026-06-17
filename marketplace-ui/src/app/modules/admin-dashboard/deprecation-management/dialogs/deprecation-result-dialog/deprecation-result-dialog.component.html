@@ -19,11 +19,20 @@
           class="success-icon">
 
         <h4 class="text-primary success-title">
-          {{
-            (successMode === DeprecationMode.UNDEPRECATE
-              ? 'common.admin.deprecation.removeDeprecatedSuccess'
-              : 'common.admin.deprecation.deprecateSuccess') | translate
-          }}
+          @switch (successMode) {
+            @case (DeprecationMode.UNDEPRECATE) {
+              {{ 'common.admin.deprecation.removeDeprecatedSuccess' | translate }}
+            }
+            @case (DeprecationMode.ARCHIVE) {
+              {{ 'common.admin.deprecation.archiveSuccess' | translate }}
+            }
+            @case (DeprecationMode.UNARCHIVE) {
+              {{ 'common.admin.deprecation.unarchiveSuccess' | translate }}
+            }
+            @default {
+              {{ 'common.admin.deprecation.deprecateSuccess' | translate }}
+            }
+          }
         </h4>
 
         @if (showPullRequest) {

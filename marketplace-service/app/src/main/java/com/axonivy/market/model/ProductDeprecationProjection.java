@@ -7,4 +7,5 @@ public interface ProductDeprecationProjection {
   Date getDeprecationDate();
   String getDeprecationRequester();
   Boolean getDeprecated();
+  Boolean getIsArchived();
 }

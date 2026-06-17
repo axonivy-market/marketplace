@@ -55,8 +55,6 @@ services:
       - ${STABLE_LOG_PATH}:/app/logs
     env_file:
       - .env
-    ports:
-      - "8085:8085"
     expose:
       - 8085
     networks:

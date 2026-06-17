@@ -37,6 +37,8 @@ public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   private String visibility;
   private boolean branchProtectionEnabled;
   private Date lastCommitDate;
+  
+  @Column(name = "latest_commitsha")
   private String latestCommitSHA;
 
   @Embedded

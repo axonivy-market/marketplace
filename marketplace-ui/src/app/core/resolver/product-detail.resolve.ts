@@ -99,8 +99,8 @@ export class ProductDetailResolver implements Resolve<ProductDetail | UrlTree> {
     const originalLogoUrl = productDetail.logoUrl;
     let productLogoUrl = '';
     if (isPlatformServer(this.platformId) && this.apiPublicUrl && this.apiInternalUrl) {
-      productLogoUrl =
-        this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
+      productLogoUrl = this.apiPublicUrl + originalLogoUrl.replace(this.apiInternalUrl, '');
+      productDetail.logoUrl = productLogoUrl; // Update logoUrl in productDetail for SSR
     } else {
       productLogoUrl = originalLogoUrl;
     }

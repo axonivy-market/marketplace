@@ -155,6 +155,7 @@ export class ProductDetailComponent implements AfterViewInit {
   isMobileMode = signal<boolean>(false);
   refreshInstallationCount = signal<number>(0);
   logoUrl = DEFAULT_IMAGE_URL;
+  logoDarkUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: WritableSignal<ProductReleaseSafeHtml[]> = signal(
     []
@@ -303,6 +304,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
+    this.logoDarkUrl = productDetail.logoDarkUrl?.trim() ? productDetail.logoDarkUrl : productDetail.logoUrl;
     const ratingLabels = RATING_LABELS_BY_TYPE.find(
       button => button.type === productDetail.type
     );
@@ -412,6 +414,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   onLogoError(): void {
+    this.logoDarkUrl = DEFAULT_IMAGE_URL;
     this.logoUrl = DEFAULT_IMAGE_URL;
   }
 

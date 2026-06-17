@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -13,6 +14,7 @@ import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
+import { ArchiveAction } from '../../../shared/enums/archive-action.enum';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
 import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
@@ -59,6 +61,13 @@ export class DeprecationManagementComponent implements OnInit {
   isClosingRemoveDeprecationDialog = false;
   isRemoving = false;
   productId = '';
+
+  // Archive confirm dialog state
+  showArchiveConfirmDialog = false;
+  isClosingArchiveDialog = false;
+  isArchiving = false;
+  archiveTargetRow: DeprecatedProductInfo | null = null;
+  archiveErrorMessage = '';
 
   dropdownOpen = false;
   deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
@@ -270,6 +279,68 @@ export class DeprecationManagementComponent implements OnInit {
   async confirmRemovedDeprecation(productId: string): Promise<void> {
     this.productId = productId;
     this.showRemoveDeprecationConfirmDialog = true;
+  }
+
+  async toggleArchiveStatus(row: DeprecatedProductInfo): Promise<void> {
+    this.archiveTargetRow = row;
+    this.archiveErrorMessage = '';
+    this.showArchiveConfirmDialog = true;
+  }
+
+  closeArchiveConfirmDialog(): void {
+    if (this.isArchiving) {
+      return;
+    }
+    this.isClosingArchiveDialog = true;
+    setTimeout(() => {
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+    }, this.DIALOG_CLOSE_DELAY_MS);
+  }
+
+  async executeToggleArchive(): Promise<void> {
+    if (this.isArchiving || !this.archiveTargetRow) {
+      return;
+    }
+    this.isArchiving = true;
+    this.archiveErrorMessage = '';
+
+    const row = this.archiveTargetRow;
+    const action = row.isArchived ? ArchiveAction.UNARCHIVE : ArchiveAction.ARCHIVE;
+
+    try {
+      await firstValueFrom(
+        this.productService.updateArchiveStatus(row.id, action)
+      );
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+      row.isArchived = !row.isArchived;
+
+      // Show success dialog
+      this.successMode = action === ArchiveAction.ARCHIVE ? DeprecationMode.ARCHIVE : DeprecationMode.UNARCHIVE;
+      this.successPullRequestUrl = null;
+      this.isCopySuccessVisible = false;
+      this.showSuccessDialog = true;
+    } catch (error) {
+      this.archiveErrorMessage = this.extractErrorMessage(error);
+    } finally {
+      this.isArchiving = false;
+    }
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    let messageKey = 'common.error.description.default';
+    if (error instanceof HttpErrorResponse) {
+      try {
+        const errorBody = typeof error.error === 'string' ? JSON.parse(error.error) : error.error;
+        messageKey = errorBody?.messageDetails || messageKey;
+      } catch {
+        messageKey = error.error || messageKey;
+      }
+    }
+    return this.translateService.instant(messageKey);
   }
 
   closeRemoveDeprecationDialog(): void {

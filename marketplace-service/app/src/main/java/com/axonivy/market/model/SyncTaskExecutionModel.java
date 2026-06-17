@@ -21,6 +21,7 @@ public class SyncTaskExecutionModel {
   private LocalDateTime lastRunDate;
   private LocalDateTime completedDate;
   private String message;
+  private Integer version;
 
   public static SyncTaskExecutionModel from(SyncTaskExecution execution) {
     return SyncTaskExecutionModel.builder()
@@ -29,6 +30,7 @@ public class SyncTaskExecutionModel {
         .lastRunDate(execution.getLastRunDate())
         .completedDate(execution.getCompletedDate())
         .message(execution.getMessage())
+        .version(execution.getVersion())
         .build();
   }
 }

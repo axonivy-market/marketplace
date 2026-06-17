@@ -488,6 +488,7 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Pull Request erstellen, um die README zu aktualisieren",
+        "archiveGithubRepoText": "GitHub-Repository archivieren",
         "hasAlternativeExtension": "Hat diese Erweiterung einen Ersatz?",
         "alternativeExtension": "Name der alternativen Erweiterung:",
         "successor": "Nachfolger:",
@@ -517,7 +518,15 @@
         "hasAlternativeExtensionTooltip": "Aktiviere dies, wenn es eine neuere oder alternative Erweiterung gibt, die diese ersetzt.",
         "alternativeExtensionTooltip": "Der Anzeigename der Erweiterung, die die veraltete ersetzt.",
         "successorTooltip": "Die vollständige URL zur Nachfolge-Erweiterung im Marketplace (muss mit http:// oder https:// beginnen).",
-        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert."
+        "updateForReadmeTextTooltip": "Erstellt einen Pull Request, der die README der veralteten Erweiterung automatisch mit einem Hinweis auf die Veraltung aktualisiert.",
+        "archive": "Archivieren",
+        "unarchive": "Dearchivieren",
+        "confirmArchiveTitle": "Archivierung bestätigen",
+        "confirmUnarchiveTitle": "Dearchivierung bestätigen",
+        "confirmArchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung archivieren möchten?",
+        "confirmUnarchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung dearchivieren möchten?",
+        "archiveSuccess": "Erweiterung wurde erfolgreich archiviert!",
+        "unarchiveSuccess": "Erweiterung wurde erfolgreich dearchiviert!"
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",
