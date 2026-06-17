@@ -15,7 +15,10 @@ import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -117,10 +120,14 @@ public class MarketExceptionHandler {
   }
 
   @ExceptionHandler(IOException.class)
-  public ResponseEntity<Message> handleIOException(IOException ex) {
+  public ResponseEntity<?> handleIOException(IOException ex, HttpServletRequest request) {
+    var responseBuilder = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
+    if (isServerSentEventRequest(request)) {
+      return responseBuilder.build();
+    }
     var message = new Message(ErrorCode.INTERNAL_EXCEPTION.getCode(),
         ErrorCode.INTERNAL_EXCEPTION.getHelpText(), ex.getMessage());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    return responseBuilder.body(message);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
@@ -161,5 +168,11 @@ public class MarketExceptionHandler {
     errorMessage.setHelpCode(unarchiveFailedException.getCode());
     errorMessage.setMessageDetails(unarchiveFailedException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  private boolean isServerSentEventRequest(HttpServletRequest request) {
+    return request != null
+        && request.getHeader(HttpHeaders.ACCEPT) != null
+        && request.getHeader(HttpHeaders.ACCEPT).contains(MediaType.TEXT_EVENT_STREAM_VALUE);
   }
 }
