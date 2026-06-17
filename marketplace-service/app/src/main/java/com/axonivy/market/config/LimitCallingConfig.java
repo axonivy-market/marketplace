@@ -69,16 +69,19 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
   private static String getClientIp(HttpServletRequest request) {
     String realIp = request.getHeader(X_REAL_IP);
-    if (StringUtils.isNotBlank(realIp) && isValidIp(realIp)) {
-      return realIp;
+    if (StringUtils.isNotBlank(realIp)) {
+      String trimmedIp = realIp.trim();
+      if (isValidIp(trimmedIp)) {
+        return trimmedIp;
+      }
     }
     return request.getRemoteAddr();
   }
 
   private static boolean isValidIp(String ip) {
+    InetAddressValidator validator = InetAddressValidator.getInstance();
     return ip != null && (
-        InetAddressValidator.getInstance().isValidInet4Address(ip) ||
-            InetAddressValidator.getInstance().isValidInet6Address(ip)
+        validator.isValidInet4Address(ip) || validator.isValidInet6Address(ip)
     );
   }
 }

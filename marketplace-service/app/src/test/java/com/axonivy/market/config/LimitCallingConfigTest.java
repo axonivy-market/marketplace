@@ -86,7 +86,7 @@ class LimitCallingConfigTest {
   }
 
   @Test
-  void testShouldReturnFirstIpWhenXForwardedForHasMultipleIps() {
+  void testShouldReturnClientIpWhenXRealIp() {
     when(request.getHeader(X_REAL_IP)).thenReturn("203.0.113.45");
     when(request.getRemoteAddr()).thenReturn("192.168.0.5");
 
