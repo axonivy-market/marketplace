@@ -74,7 +74,7 @@ public class SecurityConfig {
       RELEASE_LETTER + BY_ID
   };
   private final WriteAuditLoggingFilter writeAuditLoggingFilter;
-  @Value("${SESSION_COOKIE_NAME:ADMIN_SESSION}")
+  @Value("${server.servlet.session.cookie.name:ADMIN_SESSION}")
   private String sessionCookieName;
 
   @Bean

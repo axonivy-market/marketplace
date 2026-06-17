@@ -12,14 +12,16 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 public class SessionConfig {
   @Bean
   public CookieSerializer cookieSerializer(
-      @Value("${SESSION_COOKIE_NAME:ADMIN_SESSION}") String sessionCookieName,
-      @Value("${SESSION_COOKIE_SECURE:true}") boolean secureCookie) {
+      @Value("${server.servlet.session.cookie.name:ADMIN_SESSION}") String sessionCookieName,
+      @Value("${server.servlet.session.cookie.secure:true}") boolean secureCookie,
+      @Value("${server.servlet.session.cookie.http-only:true}") boolean httpOnlyCookie,
+      @Value("${server.servlet.session.cookie.same-site:Lax}") String sameSite) {
     DefaultCookieSerializer serializer = new DefaultCookieSerializer();
     serializer.setCookieName(sessionCookieName);
     serializer.setCookiePath("/");
-    serializer.setUseHttpOnlyCookie(true);
+    serializer.setUseHttpOnlyCookie(httpOnlyCookie);
     serializer.setUseSecureCookie(secureCookie);
-    serializer.setSameSite("Lax");
+    serializer.setSameSite(sameSite);
     serializer.setUseBase64Encoding(false);
     return serializer;
   }
