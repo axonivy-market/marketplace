@@ -92,6 +92,8 @@ class GHAxonIvyMarketRepoServiceImplTest {
     final String endSHA1 = "c57259288e208feea7e18fdb2fd483081bb69fb4";
     final String fileName = "market/test-meta.json";
     final String fileName2 = "market-test/test-meta.json";
+    final String logoFileName = "market/logo.png";
+    final String logoDarkFileName = "market/logo-dark.png";
     var mockCommit = mock(Commit.class);
     var mockGHCompare = mock(GHCompare.class);
     when(mockGHCompare.listCommits()).thenReturn(pagedCommit);
@@ -110,11 +112,24 @@ class GHAxonIvyMarketRepoServiceImplTest {
 
     var mockFile2 = mock(File.class);
     when(mockFile2.getFileName()).thenReturn(fileName2);
-    when(pagedFile.toList()).thenReturn(List.of(mockFile, mockFile2));
+
+    var logoFile = mock(File.class);
+    when(logoFile.getFileName()).thenReturn(logoFileName);
+    when(logoFile.getRawUrl()).thenReturn(URI.create("http://github/test-repo-url/logo.png").toURL());
+    when(logoFile.getStatus()).thenReturn("modified");
+    when(logoFile.getPreviousFilename()).thenReturn("logo.png");
+
+    var logoDarkFile = mock(File.class);
+    when(logoDarkFile.getFileName()).thenReturn(logoDarkFileName);
+    when(logoDarkFile.getRawUrl()).thenReturn(URI.create("http://github/test-repo-url/logo-dark.png").toURL());
+    when(logoDarkFile.getStatus()).thenReturn("added");
+    when(logoDarkFile.getPreviousFilename()).thenReturn("logo-dark.png");
+
+    when(pagedFile.toList()).thenReturn(List.of(mockFile, mockFile2, logoFile, logoDarkFile));
 
     gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
-    assertEquals(1, gitHubFiles.size(), "Expected exactly one file matching the 'market/' directory");
-    assertEquals(fileName, gitHubFiles.get(0).getFileName(), "Expected the file name to be 'market/test-meta.json'");
+    assertEquals(3, gitHubFiles.size(),
+        "Expected exactly one meta.json file and two logo files matching the 'market/' directory");
   }
 
   @Test

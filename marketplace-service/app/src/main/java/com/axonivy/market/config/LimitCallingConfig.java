@@ -5,13 +5,14 @@ import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.service.AppSettingService;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 
 @Log4j2
 @Component
@@ -72,10 +73,12 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private static String getClientIp(HttpServletRequest request) {
-    String forwardedFor = request.getHeader(X_FORWARDED_FOR);
-    if (StringUtils.isNotEmpty(forwardedFor)) {
-      return forwardedFor.split(",")[0];
-    }
-    return request.getRemoteAddr();
+    String realIp = StringUtils.trimToNull(request.getHeader(X_REAL_IP));
+    return isValidIp(realIp) ? realIp : request.getRemoteAddr();
+  }
+
+  private static boolean isValidIp(String ip) {
+    InetAddressValidator validator = InetAddressValidator.getInstance();
+    return ip != null && (validator.isValidInet4Address(ip) || validator.isValidInet6Address(ip));
   }
 }

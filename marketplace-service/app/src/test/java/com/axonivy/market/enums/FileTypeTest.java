@@ -19,6 +19,12 @@ class FileTypeTest {
         "FileType.of should return LOGO when name ends with 'logo.png'");
   }
 
+  void testOfReturnsLogoForLogoDarkPng() {
+    FileType result = FileType.of("assets/logo-dark.png");
+    assertEquals(FileType.LOGO_DARK, result,
+        "FileType.of should return LOGO when name ends with 'logo-dark.png'");
+  }
+
   @Test
   void testOfIsCaseInsensitive() {
     FileType result = FileType.of("META.JSON");
@@ -55,5 +61,7 @@ class FileTypeTest {
         "LOGO should have fileName 'logo.png'");
     assertEquals("other", FileType.OTHER.getFileName(),
         "OTHER should have fileName 'other'");
+    assertEquals("logo-dark.png", FileType.LOGO_DARK.getFileName(),
+        "LOGO should have fileName 'logo-dark.png'");
   }
 }

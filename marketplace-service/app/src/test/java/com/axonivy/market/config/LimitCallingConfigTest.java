@@ -8,14 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -89,15 +89,15 @@ class LimitCallingConfigTest {
   }
 
   @Test
-  void testShouldReturnFirstIpWhenXForwardedForHasMultipleIps() {
-    when(request.getHeader(X_FORWARDED_FOR)).thenReturn("203.0.113.45, 10.0.0.1, proxy");
+  void testShouldReturnClientIpWhenXRealIp() {
+    when(request.getHeader(X_REAL_IP)).thenReturn("203.0.113.45");
     when(request.getRemoteAddr()).thenReturn("192.168.0.5");
 
     String result = ReflectionTestUtils.invokeMethod(LimitCallingConfig.class,
         "getClientIp", request);
 
     assertThat(result)
-        .as("Should return the first IP from X-Forwarded-For header")
+        .as("Should return the first IP from X_REAL_IP header")
         .isEqualTo("203.0.113.45");
   }
 }
